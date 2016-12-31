@@ -25,7 +25,7 @@
  * @param string users - list of userIds (the active user may be omitted).
  *
  * TODO -- Ignore List
-*/
+ */
 
 $apiRequest = true;
 
@@ -34,52 +34,52 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'userIds' => array(
-    'default' => '',
-    'cast' => 'list',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
+    'userIds' => array(
+        'default' => '',
+        'cast' => 'list',
+        'filter' => 'int',
+        'evaltrue' => true,
+    ),
 ));
 
 /* Data Predefine */
 $xmlData = array(
-  'getPrivateRoom' => array(
-    'room' => array(),
-  ),
+    'getPrivateRoom' => array(
+        'room' => array(),
+    ),
 );
 
 
 
 if (!$user['userDefs']['privateRoomsFriends']) {
-  $errStr = 'noPerm';
+    $errStr = 'noPerm';
 }
 else {
-  /** TODO: FREINDLIST **/
+    /** TODO: FREINDLIST **/
 
 
-  /* Get Rooms From Database */
-  if (!in_array($user['userId'], $request['userIds'])) $request['userIds'][] = $user['userId']; // The active user is automatically added if not specified. This is to say, this API can _not_ be used to obtain a private room that doesn't involve a user (for administrative purposes, for instance). getRooms.php can be used for this by querying roomAlias.
+    /* Get Rooms From Database */
+    if (!in_array($user['userId'], $request['userIds'])) $request['userIds'][] = $user['userId']; // The active user is automatically added if not specified. This is to say, this API can _not_ be used to obtain a private room that doesn't involve a user (for administrative purposes, for instance). getRooms.php can be used for this by querying roomAlias.
 
-  if (count($request['userIds']) < 2) {
-    $errStr = 'noUsers';
-  }
-  else {
-    $privateAlias = fim_getPrivateRoomAlias($request['userIds']);
+    if (count($request['userIds']) < 2) {
+        $errStr = 'noUsers';
+    }
+    else {
+        $privateAlias = fim_getPrivateRoomAlias($request['userIds']);
 
-    $room = $database->getRooms(array(
-      'roomAliases' => array($privateAlias),
-    ))->getAsArray(false);
-
-
-    if (!count($room)) $roomId = $database->createPrivateRoom($privateAlias, $request['userIds']);
-    else $roomId = $room['roomId'];
+        $room = $database->getRooms(array(
+            'roomAliases' => array($privateAlias),
+        ))->getAsArray(false);
 
 
-    /* Process Rooms Obtained from Database */
-    $xmlData['getPrivateRoom']['roomAlias'] = $privateAlias;
-    $xmlData['getPrivateRoom']['roomId'] = $roomId;
-  }
+        if (!count($room)) $roomId = $database->createPrivateRoom($privateAlias, $request['userIds']);
+        else $roomId = $room['roomId'];
+
+
+        /* Process Rooms Obtained from Database */
+        $xmlData['getPrivateRoom']['roomAlias'] = $privateAlias;
+        $xmlData['getPrivateRoom']['roomId'] = $roomId;
+    }
 }
 
 
