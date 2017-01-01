@@ -120,8 +120,8 @@ $request = fim_sanitizeGPC(
         'crc32bhash' => array(),
     
         'roomId' => array(
-            'default' => 0,
-            'cast' => 'int',
+            'default' => false,
+            'cast' => 'roomId',
         ),
     
         'parentalAge' => array(
@@ -163,7 +163,7 @@ case 'edit': case 'create':
 
     if ($requestHead['_action'] === 'create') {
         /* Get Room Data, if Applicable */
-        if ($request['roomId']) $roomData = $slaveDatabase->getRoom($request['roomId']);
+        if ($request['roomId']) $roomData = new fimRoom($request['roomId']);
         else $roomData = false;
 
 
@@ -280,6 +280,7 @@ case 'edit': case 'create':
             /* TODO: move to DB */
             $database->insert("{$sqlPrefix}files", array(
                 'userId' => $user->id,
+                'roomIdLink' => $room->id,
                 'fileName' => $request['fileName'],
                 'fileType' => $mime,
                 'fileParentalAge' => $request['parentalAge'],
@@ -294,7 +295,6 @@ case 'edit': case 'create':
             $database->insert("{$sqlPrefix}fileVersions", array(
                 'fileId' => $fileId,
                 'sha256hash' => $sha256hash,
-                'md5hash' => $md5hash,
                 'salt' => $saltNum,
                 'iv' => $iv,
                 'size' => $rawSize,
