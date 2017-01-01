@@ -365,13 +365,13 @@
             <!-- General -->
             <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
             <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
-            <column name="roomAlias" type="string" maxlen="6" comment="An alias that can be used to identify a room by. This should be unique, and is meant to be used for otr and private rooms. Caching recommended." />
+            <column name="roomAlias" type="string" maxlen="6" comment="An alias that can be used to identify a room by. Deprecated." />
             <column name="roomNameSearchable" type="string" maxlen="50" comment="The name of the room, formatted for searching." />
             <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
             <column name="options" type="bitfield" bits="8" default="0" comment="A bitfield corrosponding to certain room options." />
 
             <!-- Permissions -->
-            <column name="roomType" type="string" default="general" restrict="general,otr,private" comment="The room type." />
+            <column name="roomType" type="string" default="general" restrict="general" comment="The room type. This used to be used to distinguish between OTR and private rooms, but since they are no longer used, it is essentially an unused field. It may be removed in the future, or it may be repurposed." />
             <column name="ownerId" type="int" maxlen="10" comment="The owner/creator of the room." />
             <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
 
