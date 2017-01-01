@@ -39,6 +39,7 @@ class fimRoom {
     private $lastMessageTime;
     private $messageCount;
     private $flags;
+    private $encodedId;
 
     protected $roomData;
 
@@ -83,8 +84,8 @@ class fimRoom {
         }
         elseif (is_string($roomData) && $this->isPrivateRoomId($roomData)) {
             /* Set room type */
-            if ($roomData[0] === 'p') $this->type === 'private';
-            elseif ($roomData[1] === 'o') $this->type === 'otr';
+            if ($roomData[0] === 'p')     $this->__set('type', 'private');
+            elseif ($roomData[0] === 'o') $this->__set('type', 'otr');
             else throw new Exception('Sanity check failed.');
 
             /* Set other room defaults */
@@ -114,11 +115,14 @@ class fimRoom {
         if ($id[0] === 'p' || $id[0] === 'o') {
             $idList = explode(',', substr($id, 1));
 
+            if (count($idList) < 2)
+                return false;
+
             foreach ($idList AS $id) {
                 if ((int) $id < 1)
                     return false;
 
-                if (preg_match('/^[0-9]+$/', $id) !== 1)
+                if (!ctype_digit($id))
                     return false;
             }
 
@@ -127,6 +131,52 @@ class fimRoom {
         else {
             return false;
         }
+    }
+
+
+    /**
+     * Packs the ID into hexadecimal, with the ID's number being unchanged, but either 'A' or 'B' being prepended to signify a private/off-the-record room, and with an 'A' character delimiting userIds for a private/otr room.
+     * @param $id
+     * @return string
+     */
+    public static function encodeId($id) {
+        $packString = '';
+
+        switch ($id[0]) {
+            case 'p': $packString .= 'a'; break;
+            case 'o': $packString .= 'b'; break;
+        }
+
+        if ($packString) {
+            $ids = explode(',', substr($id, 1));
+            sort($ids, SORT_NUMERIC);
+
+            foreach ($ids AS $id)
+                $packString .= "a$id";
+        }
+        else {
+            $packString = $id;
+        }
+
+        return pack("H*", $packString);
+    }
+
+
+    public static function decodeId($id) {
+        $unpackString = '';
+
+        $decoded = unpack("H*", $id);
+
+        switch ($decoded[0]) {
+            case 'a': $unpackString .= 'p'; break;
+            case 'b': $unpackString .= 'o'; break;
+        }
+
+        if ($unpackString) {
+            return $unpackString . str_replace(',', 'a', substr($decoded, 1));
+        }
+        else
+            return $decoded;
     }
 
 
@@ -144,6 +194,18 @@ class fimRoom {
      */
     public function isPrivateRoom() {
         return $this->type === 'private' || $this->type === 'otr';
+    }
+
+
+    /**
+     * Returns true if the room has valid data in the database, or should otherwise be treated as "existing" (e.g. is a private room).
+     */
+    public function roomExists() {
+        global $database;
+
+        return (count($database->getRooms([
+            'roomIds' => $this->id,
+        ])->getAsArray(false)) > 0);
     }
 
 
@@ -186,36 +248,42 @@ class fimRoom {
      */
     public function __get($property) {
         if ($this->id && !in_array($property, $this->resolved)) {
-            if ($this->isPrivateRoom()) {
-                switch ($property) {
-                case 'name':
-                    $userNames = [];
-                    foreach($this->getPrivateRoomMembers() AS $user)
-                        $userNames[] = $user->name;
-
-                    $name = ($this->type === 'private' ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
-                    $this->__set('user', $name);
-                    return $name;
-                    break;
-
-                default:
-                    throw new Exception("Unhandled property $property in fimRoom.");
-                    break;
-                }
+            if ($property === 'encodeId') {
+                $this->__set('encodedId', $this->encodeId($this->id));
             }
 
             else {
-                // Find selection group
-                if (isset(array_flip($this->roomDataConversion)[$property])) {
-                    $needle = array_flip($this->roomDataConversion)[$property];
-                    $selectionGroup = array_values(array_filter($this->roomDataPullGroups, function ($var) use ($needle) {
-                        return strpos($var, $needle) !== false;
-                    }))[0];
+                if ($this->isPrivateRoom()) {
+                    switch ($property) {
+                    case 'name':
+                        $userNames = [];
+                        foreach($this->getPrivateRoomMembers() AS $user)
+                            $userNames[] = $user->name;
 
-                    if ($selectionGroup)
-                        $this->getColumns(explode(',', $selectionGroup));
-                    else
-                        throw new Exception("Selection group not found for '$property'");
+                        $name = ($this->type === 'private' ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
+                        $this->__set('name', $name);
+                        return $name;
+                        break;
+
+                    default:
+                        throw new Exception("Unhandled property '$property' in fimRoom.");
+                        break;
+                    }
+                }
+
+                else {
+                    // Find selection group
+                    if (isset(array_flip($this->roomDataConversion)[$property])) {
+                        $needle = array_flip($this->roomDataConversion)[$property];
+                        $selectionGroup = array_values(array_filter($this->roomDataPullGroups, function ($var) use ($needle) {
+                            return strpos($var, $needle) !== false;
+                        }))[0];
+
+                        if ($selectionGroup)
+                            $this->getColumns(explode(',', $selectionGroup));
+                        else
+                            throw new Exception("Selection group not found for '$property'");
+                    }
                 }
             }
         }
@@ -273,6 +341,10 @@ class fimRoom {
                 $this->archived = ($this->options & ROOM_ARCHIVED);
                 $this->official = ($this->options & ROOM_OFFICIAL) && $config['officialRooms'];
                 $this->hidden   = ($this->options & ROOM_HIDDEN) && $config['hiddenRooms'];
+            }
+
+            else if ($property === 'id' && $this->isPrivateRoom()) {
+
             }
         }
     }
