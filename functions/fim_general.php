@@ -534,6 +534,9 @@ function fim_sanitizeGPC($type, $data) {
 
             /* Casting */
             switch($indexMetaData['cast']) {
+            /**
+             * Treat as JSON. Still working out the kinks here.
+             */
             case 'json':
                 $newData[$indexName] = json_decode(
                     $activeGlobal[$indexName],
@@ -549,18 +552,23 @@ function fim_sanitizeGPC($type, $data) {
                 }
             break;
 
-            case 'dict': // Associative Array
-                if (isset($activeGlobal[$indexName])) {
-                    if (!is_array($activeGlobal[$indexName])) {
-                        throw new Exception("Bad API data: '$indexName' must be array.");
-                    }
 
-                    $arrayFromGlobal = $activeGlobal[$indexName];
-                }
-                else {
-                    $arrayFromGlobal = array();
+            /*
+             * Treat as an associative (two-dimensional) array.
+             * Most of list's parameters are omitted here, though the following still apply:
+             ** "filter" will cast values
+             ** "evaltrue" will remove array values (not keys) that are falsey
+             ** "valid" will remove any array value (not key) that is not present in the valid list.
+             */
+            case 'dict':
+                // Make sure the passed element is an array -- we don't do any conversion to make it one.
+                if (!is_array($activeGlobal[$indexName])) {
+                    throw new Exception("Bad API data: '$indexName' must be array.");
                 }
 
+                $arrayFromGlobal = $activeGlobal[$indexName];
+
+                // Apply filters, evaltrue, and valid -- these will cast the datatype, remove falsey entries, and remove entries not on the valid list respectively.
                 $newData[$indexName] = fim_arrayValidate(
                     $arrayFromGlobal,
                     ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
@@ -569,20 +577,24 @@ function fim_sanitizeGPC($type, $data) {
                 );
             break;
 
-            case 'list': // List Array
-                if (isset($activeGlobal[$indexName])) {
-                    if (!is_array($activeGlobal[$indexName])) {
-                        throw new Exception("Bad API data: '$indexName' must be array.");
-                    }
 
-                    $arrayFromGlobal = array_values(
-                        $activeGlobal[$indexName]
-                    );
-                }
-                else {
-                    $arrayFromGlobal = array();
+            /*
+             * Treat as a list (one-dimensional array).
+             * We apply all kinds of filters here, only including truthy values if evaltrue is set, applying casts to the list's contents if filter is set, and tranforming the entire list into a new datatype if transform is set.
+             *
+             */
+            case 'list':
+                // Make sure the passed element is an array -- we don't do any conversion to make it an array.
+                if (!is_array($activeGlobal[$indexName])) {
+                    throw new Exception("Bad API data: '$indexName' must be array.");
                 }
 
+                // Remove any array keys.
+                $arrayFromGlobal = array_values(
+                    $activeGlobal[$indexName]
+                );
+
+                // Apply filters, evaltrue, and valid -- these will cast the datatype, remove falsey entries, and remove entries not on the valid list respectively.
                 $newData[$indexName] = fim_arrayValidate(
                     $arrayFromGlobal,
                     ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
@@ -590,10 +602,12 @@ function fim_sanitizeGPC($type, $data) {
                     (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
                 );
 
+                // Remove duplicate values from the list if required
                 if (isset($indexMetaData['removeDuplicates']) && $indexMetaData['removeDuplicates']) {
                     $newData[$indexName] = array_unique($newData[$indexName]);
                 }
 
+                // Transform the list into a single, non-list datatype
                 if (isset($indexMetaData['transform'])) {
                     switch ($indexMetaData['transform']) {
                     case 'bitfield':
@@ -618,11 +632,14 @@ function fim_sanitizeGPC($type, $data) {
                 }
             break;
 
+
+            /*
+             * Treat as an integer. When evaltrue is set, we only include the value in $newData if it is truthy (according to PHP's own logic after cast to an int).
+             * We also apply min/maxes here -- if the value exceeds max, it is set to max, and if it is under the min, it is set to the min.
+             */
             case 'int':
-                if ($indexMetaData['evaltrue'] &&
-                    (int) $activeGlobal[$indexName]) $newData[$indexName] = (int) $activeGlobal[$indexName]; // Only include the value if non-zero.
-                else
-                    $newData[$indexName] = (int) $activeGlobal[$indexName]; // Include the value whether true or false.
+                if (!$indexMetaData['evaltrue'] || (int) $activeGlobal[$indexName]) // If evaltrue is true, only include the value if it's true.
+                    $newData[$indexName] = (int) $activeGlobal[$indexName];
 
                 if (isset($indexMetaData['min']) &&
                     $newData[$indexName] < $indexMetaData['min']) $newData[$indexName] = $indexMetaData['min']; // Minimum Value
@@ -630,6 +647,11 @@ function fim_sanitizeGPC($type, $data) {
                     $newData[$indexName] > $indexMetaData['max']) $newData[$indexName] = $indexMetaData['max']; // Maximum Value
             break;
 
+
+            /*
+             * Treat as a bool, according to fim_cast's boolean logic -- which only treats a very small subset of truthy values as true.
+             * If we have a default, and the cast value is unrecognised by fim_cast (e.g. 2 is neither seen as true nor false), then it will set to default. Otherwise, it will set to null.
+             */
             case 'bool':
                 $newData[$indexName] = fim_cast(
                     'bool',
@@ -638,13 +660,22 @@ function fim_sanitizeGPC($type, $data) {
                 );
             break;
 
+
+            /*
+             * Remove characters outside of the ASCII128 range.
+             */
             case 'ascii128':
-                $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $activeGlobal[$indexName]); break; // Remove characters outside of ASCII128 range.
+                $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $activeGlobal[$indexName]);
             break;
 
+
+            /*
+             * Remove characters that are non-alphanumeric. Note that we will try to romanise what we can, based on the $config directive romanisation.
+             */
             case 'alphanum':
-                $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $activeGlobal[$indexName])); break; // Remove characters that are non-alphanumeric. Note that we will try to romanise what we can.
+                $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $activeGlobal[$indexName]));
             break;
+
 
             /* This is a funky one that really helps when dealing with bitfields.
              * First of all, it uniquely has the "flipTable" parameter, which is an array of [bit => name]s.
@@ -670,11 +701,19 @@ function fim_sanitizeGPC($type, $data) {
                 $newData[$indexName] = $equation;
             break;
 
-            default: // String or otherwise.
+            /*
+             * Treat as a string.
+             */
+            default:
                 $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
             break;
             }
         }
+
+
+        /* If a required value was previously set, but was then unset by the above casts, we through an error. */
+        if (!isset($newData[$indexName]) && $indexMetaData['require'])
+            throw new Exception('Required data not present, unset by cast (index ' . $indexName . ').'); // And required, throw an exception.
     }
 
     return $newData;
