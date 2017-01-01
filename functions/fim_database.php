@@ -651,7 +651,7 @@ class fimDatabase extends databaseSQL
 
 
         /* roomId */
-        $conditions['both']['roomId'] = $this->int($options['room']->id);
+        $conditions['both']['roomId'] = $options['room']->id;
 
 
         /* Query via the Archive */
@@ -666,9 +666,10 @@ class fimDatabase extends databaseSQL
 
         /* Access the Stream */
         else {
-            $columns = array(
-                $this->sqlPrefix . "messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, messageFormatting, text",
-            );
+            if ($options['room']->isPrivateRoom())
+                $columns = [$this->sqlPrefix . "messagesCached" => "messageId, roomId, time, flag, userId, text"];
+            else
+                $columns = [$this->sqlPrefix . "messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, messageFormatting, text"];
         }
 
 
@@ -1671,7 +1672,7 @@ class fimDatabase extends databaseSQL
 
         // Delete old messages from the cache, based on the maximum allowed rows.
         if ($messageId2 > $this->config['cacheTableMaxRows']) {
-            $this->delete($this->sqlPrefix . "messagesCached",
+            $this->delete($this->sqlPrefix . "messagesCached" . ($room->isPrivateRoom() ? 'Private' : ''),
                 array('id' => array(
                     'cond'  => 'lte',
                     'value' => (int) ($messageId2 - $this->config['cacheTableMaxRows'])
@@ -1681,14 +1682,14 @@ class fimDatabase extends databaseSQL
 
 
         // If the contact is a private communication, create an event and add to the message unread table.
-        if ($room->type === ROOM_TYPE_PRIVATE) {
-            foreach (fim_reversePrivateRoomAlias($room->alias) AS $sendToUserId) { // Todo: use roomAlias.
+        if ($room->isPrivateRoom()) {
+            /*TODO foreach (fim_reversePrivateRoomAlias($room->alias) AS $sendToUserId) { // Todo: use roomAlias.
                 if ($sendToUserId == $user['userId']) {
                     continue;
                 } else {
                     createUnreadMessage($sendToUserId, $user, $room, $messageId);
                 }
-            }
+            }*/
         }
         else {
             foreach ($this->getWatchRoomIds($room->id) AS $sendToUserId) {
