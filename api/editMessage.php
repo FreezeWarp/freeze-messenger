@@ -36,8 +36,12 @@ $request = fim_sanitizeGPC('p', array(
         'valid' => array(
             'delete',
             'undelete',
-            'edit', // FIMv4
+            'edit',
         ),
+    ),
+
+    'roomId' => array(
+        'cast' => 'roomId',
     ),
 
     'messageId' => array(
@@ -52,10 +56,9 @@ $xmlData = array(
     'response' => array(),
 );
 
-if (!$messageData = $database->getMessage($request['messageId'])->getAsArray(false))
+$room = new fimRoom((int) $request['roomId']);
+if (!$messageData = $database->getMessage($room, $request['messageId'])->getAsArray(false))
     new fimError('invalidMessage', 'The message specified is invalid.');
-
-$room = new fimRoom((int) $messageData['roomId']);
 
 
 

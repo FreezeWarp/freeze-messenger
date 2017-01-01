@@ -195,6 +195,7 @@ else {
 
     /* Get Messages from Database */
     $messages = $database->getMessages(array(
+        'room' => $room,
         'messageIdEnd' => $request['messageIdEnd'],
         'messageIdStart' => $request['messageIdStart'],
         'messageDateMin' => $request['messageDateMax'],
@@ -203,7 +204,6 @@ else {
         'messageTextSearch' => $request['search'],
         'archive' => $request['archive'],
         'userIds' => $request['userIds'],
-        'roomIds' => $request['roomId'],
         'messageIds' => $request['messageIds'],
         'messageHardLimit' => $request['messageHardLimit'],
         'page' => $request['page']

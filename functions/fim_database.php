@@ -608,7 +608,7 @@ class fimDatabase extends databaseSQL
     public function getMessages($options = array(), $sort = array('messageId' => 'asc'), $limit = false, $page = 0)
     {
         $options = $this->argumentMerge(array(
-            'roomIds'           => array(),
+            'room'              => false,
             'messageIds'        => array(),
             'userIds'           => array(),
             'messageTextSearch' => '', // Overwrites messageIds.
@@ -624,6 +624,10 @@ class fimDatabase extends databaseSQL
         ), $options);
 
 
+        if (!($options['room'] instanceof fimRoom))
+            throw new Exception('fim_database->getMessages requires the \'room\' option to be an instance of fimRoom.');
+
+
         /* Create a $messages list based on search parameter. */
         if (strlen($options['messageTextSearch']) > 0) {
             if (!$options['archive']) {
@@ -631,7 +635,7 @@ class fimDatabase extends databaseSQL
             } else {
                 /* Run the Query */
                 $searchMessageIds = $this->getMessagesFromPhrases(array(
-                    'roomIds' => $options['roomIds'],
+                    'roomIds' => $options['room']->id,
                     'userIds' => $options['userIds'],
                     'messageTextSearch' => $options['messageTextSearch'],
                 ), null, $limit, $page)->getAsArray('messageId');
@@ -646,6 +650,10 @@ class fimDatabase extends databaseSQL
         }
 
 
+        /* roomId */
+        $conditions['both']['roomId'] = $this->int($options['room']->id);
+
+
         /* Query via the Archive */
         if ($options['archive']) {
             $columns = array(
@@ -654,7 +662,9 @@ class fimDatabase extends databaseSQL
             );
 
             $conditions['both']['muserId'] = $this->col('userId');
-        } /* Access the Stream */
+        }
+
+        /* Access the Stream */
         else {
             $columns = array(
                 $this->sqlPrefix . "messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, messageFormatting, text",
@@ -678,7 +688,6 @@ class fimDatabase extends databaseSQL
         if ($options['showDeleted'] === false && $options['archive'] === true) $conditions['both']['deleted'] = $this->bool(false);
         if (count($options['messageIds']) > 0) $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO
         if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
-        if (count($options['roomIds']) > 0) $conditions['both']['roomId'] = $this->in($options['roomIds']);
 
 
         $messages = $this->select($columns, $conditions, $sort, $options['messageHardLimit'], $options['page']);
@@ -688,8 +697,9 @@ class fimDatabase extends databaseSQL
     }
 
 
-    public function getMessage($messageId) {
+    public function getMessage($room, $messageId) {
         return $this->getMessages(array(
+            'room' => $room,
             'messageIds' => array($messageId),
             'archive' => true,
         ));
