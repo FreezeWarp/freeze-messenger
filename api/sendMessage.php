@@ -39,6 +39,7 @@ require('../global.php');
 $request = fim_sanitizeGPC('p', array(
     'roomId' => array(
         'require' => true,
+        'cast' => 'roomId',
     ),
 
     'message' => array(),
@@ -57,18 +58,30 @@ $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 
 
 /* Get Room for DB */
-$room = $database->getRoom($request['roomId']);
+$room = new fimRoom($request['roomId']);
 
 
 /* Start Processing */
-if (!$room->id) new fimError('badRoom'); // Room doesn't exist.
-elseif (strlen($request['message']) < $generalCache->getConfig('messageMinLength') || strlen($request['message']) > $generalCache->getConfig('messageMaxLength')) new fimError('messageLength', 'Minimum: ' . $generalCache->getConfig('messageMinLength') . ', Maximum: ' . $generalCache->getConfig('messageMaxLength')); // Too short/long.
-elseif (preg_match('/^(\ |\n|\r)*$/', $request['message'])) new fimError('spaceMessage'); // All spaces. TODO: MB Support
-elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_POST)) new fimError('noPerm');
+if (!$room->id)
+    new fimError('badRoom'); // Room doesn't exist.
+
+elseif (strlen($request['message']) < $generalCache->getConfig('messageMinLength') || strlen($request['message']) > $generalCache->getConfig('messageMaxLength'))
+    new fimError('messageLength', 'Minimum: ' . $generalCache->getConfig('messageMinLength') . ', Maximum: ' . $generalCache->getConfig('messageMaxLength')); // Too short/long.
+
+elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))
+    new fimError('spaceMessage'); // All spaces. TODO: MB Support
+
+elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_POST))
+    new fimError('noPerm');
+
 elseif (in_array($request['flag'], array('image', 'video', 'url', 'html', 'audio'))
-    && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED)) new fimError('badUrl'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+    && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED))
+    new fimError('badUrl'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+
 elseif ($request['flag'] === 'email'
-    && !filter_var($request['message'], FILTER_VALIDATE_EMAIL)) new fimError('badUrl'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+    && !filter_var($request['message'], FILTER_VALIDATE_EMAIL))
+    new fimError('badUrl'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+
 elseif (strpos($request['message'], '/kick') === 0) { // TODO
     $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$request['message']);
     $kickData = explode(',',$kickData);
@@ -79,6 +92,7 @@ elseif (strpos($request['message'], '/kick') === 0) { // TODO
 
     $userData->kick($kickData[1]);
 }
+
 else {
     if (strpos($request['message'], '/topic') === 0 && ($database->hasPermission($user, $room) & ROOM_PERMISSION_TOPIC)) {
         $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $request['message']));
