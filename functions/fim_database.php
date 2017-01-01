@@ -1584,20 +1584,32 @@ class fimDatabase extends databaseSQL
 
 
         // Insert into cache/memory datastore.
-        $this->insert($this->sqlPrefix . "messagesCached", array(
-            'messageId'         => $messageId,
-            'roomId'            => $room->id,
-            'userId'            => $user->id,
-            'userName'          => $user->name,
-            'userGroupId'       => $user->mainGroupId,
-            'avatar'            => $user->avatar,
-            'profile'           => $user->profile,
-            'userNameFormat'    => $user->userNameFormat,
-            'messageFormatting' => $user->messageFormatting,
-            'text'              => $messageText,
-            'flag'              => $messageFlag,
-            'time'              => $this->now(),
-        ));
+        if ($room->isPrivateRoom()) {
+            $this->insert($this->sqlPrefix . "messagesCachedPrivate", array(
+                'messageId'         => $messageId,
+                'roomId'            => $room->id,
+                'userId'            => $user->id,
+                'text'              => $messageText,
+                'flag'              => $messageFlag,
+                'time'              => $this->now(),
+            ));
+        }
+        else {
+            $this->insert($this->sqlPrefix . "messagesCached", array(
+                'messageId'         => $messageId,
+                'roomId'            => $room->id,
+                'userId'            => $user->id,
+                'userName'          => $user->name,
+                'userGroupId'       => $user->mainGroupId,
+                'avatar'            => $user->avatar,
+                'profile'           => $user->profile,
+                'userNameFormat'    => $user->userNameFormat,
+                'messageFormatting' => $user->messageFormatting,
+                'text'              => $messageText,
+                'flag'              => $messageFlag,
+                'time'              => $this->now(),
+            ));
+        }
         $messageId2 = $this->insertId;
 
 
@@ -1622,14 +1634,16 @@ class fimDatabase extends databaseSQL
 
 
         // Update the messageIndex if appropriate
-        $room = $this->getRoom($room->id); // Get the new room data. (TODO: UPDATE ... RETURNING for PostGreSQL)
+        if (!$room->isPrivateRoom()) {
+            $room = $this->getRoom($room->id); // Get the new room data. (TODO: UPDATE ... RETURNING for PostGreSQL)
 
-        if ($room->messageCount % $this->config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical). Postgres would avoid this issue, once implemented.
-            $this->insert($this->sqlPrefix . "messageIndex", array(
-                'roomId'    => $room->id,
-                'interval'  => $room->messageCount,
-                'messageId' => $messageId
-            ));
+            if ($room->messageCount % $this->config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical). Postgres would avoid this issue, once implemented.
+                $this->insert($this->sqlPrefix . "messageIndex", array(
+                    'roomId'    => $room->id,
+                    'interval'  => $room->messageCount,
+                    'messageId' => $messageId
+                ));
+            }
         }
 
 
@@ -1754,6 +1768,10 @@ class fimDatabase extends databaseSQL
         ));
 
         $this->delete($this->sqlPrefix . "messagesCached", array(
+            "messageId" => $messageId
+        ));
+
+        $this->delete($this->sqlPrefix . "messagesCachedPrivate", array(
             "messageId" => $messageId
         ));
 
