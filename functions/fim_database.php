@@ -364,7 +364,6 @@ class fimDatabase extends databaseSQL
             'roomIds'         => array(),
             'fileIds'         => array(),
             'vfileIds'        => array(),
-            'md5hashes'       => array(),
             'sha256hashes'    => array(),
             'fileTypes'       => array(),
             'creationTimeMax' => 0,
@@ -378,14 +377,14 @@ class fimDatabase extends databaseSQL
 
         $columns = array(
             $this->sqlPrefix . "files"        => 'fileId, fileName, fileType, creationTime, userId, fileParentalAge, fileParentalFlags, roomIdLink, source',
-            $this->sqlPrefix . "fileVersions" => 'fileId vfileId, md5hash, sha256hash, size',
+            $this->sqlPrefix . "fileVersions" => 'fileId vfileId, sha256hash, size',
         );
 
         if ($options['includeContent']) $columns[$this->sqlPrefix . 'fileVersions'] .= ', salt, iv, contents';
 
 
         // This is a method of optimisation I'm trying. Basically, if a very small sample is requested, then we can optimise by doing those first. Otherwise, the other filters are usually better performed first.
-        foreach (array('fileIds' => 'fileId', 'vfileIds' => 'vfileId', 'md5hashes' => 'md5hash', 'sha256hashes' => 'sha256hash') AS $group => $key) {
+        foreach (array('fileIds' => 'fileId', 'vfileIds' => 'vfileId', 'sha256hashes' => 'sha256hash') AS $group => $key) {
             if (count($options[$group]) > 0 && count($options[$group]) <= 10) {
                 $conditions['both'][$key] = $this->in($options[$group]);
             }
@@ -412,8 +411,7 @@ class fimDatabase extends databaseSQL
 
         // Narrow down fileVersions _after_ it has been restricted to matched files.
         if (!isset($conditions['both']['vfileIds']) && count($options['vfileIds']) > 0) $conditions['both']['vfileId'] = $this->in($options['vfileIds']);
-        if (!isset($conditions['both']['md5hashes']) && count($options['md5hashes']) > 0) $conditions['both']['md5hash'] = $this->in($options['md5hashes']);
-        if (!isset($conditions['both']['sha256hashes']) && count($options['md5hashes']) > 0) $conditions['both']['sha256hash'] = $this->in($options['sha256hashes']);
+        if (!isset($conditions['both']['sha256hashes']) && count($options['sha256hashes']) > 0) $conditions['both']['sha256hash'] = $this->in($options['sha256hashes']);
 
         if ($options['sizeMin'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'gte');
         if ($options['sizeMax'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'lte');
@@ -1720,6 +1718,7 @@ class fimDatabase extends databaseSQL
     }
 
 
+    /* TODO: require roomId */
     public function editMessage(int $messageId, $options) {
         global $user;
 
