@@ -123,20 +123,7 @@ class databaseSQL extends database
 
     protected $dbLink = false;
 
-    protected $encodeRoomId = array(
-        'files' => ['roomId'],
-        'messages' => ['roomId'],
-        'messageIndex' => ['roomId'],
-        'ping' => ['roomId'],
-        'roomEvents' => ['roomId'],
-        'roomPermissionsCache' => ['roomId'],
-        'roomStats' => ['roomId'],
-        'searchMessages' => ['roomId'],
-        'searchCache' => ['roomId'],
-        'unreadMessages' => ['roomId'],
-        'users' => ['defaultRoomId'],
-        'userFavRooms' => ['roomId'],
-    );
+    protected $encodeRoomId = [];
 
     /*********************************************************
      ************************ START **************************
@@ -386,6 +373,10 @@ class databaseSQL extends database
                 break;
             case 'bool': case DatabaseTypeType::bool:
                 return $this->boolValues[$values[1]];
+                break;
+            case 'blob': case DatabaseTypeType::blob:
+                return 'FROM_BASE64("' . base64_encode($values[1]) . '")';
+                break;
             case 'integer': case DatabaseTypeType::integer:
                 return $this->intQuoteStart . (int)$this->escape($values[1], 'integer') . $this->intQuoteEnd;
                 break;
@@ -470,7 +461,7 @@ class databaseSQL extends database
                         throw new Exception('unimplemented.');
                     }
                     else {
-                        $values[3][$key] = fimRoom::encodeId($values[3][$key]);
+                        $values[3][$key] = $this->blob(fimRoom::encodeId($values[3][$key]));
                     }
                 }
 
@@ -499,7 +490,7 @@ class databaseSQL extends database
                         throw new Exception('unimplemented.');
                     }
                     else {
-                        $value = fimRoom::encodeId($value);
+                        $value = $this->blob(fimRoom::encodeId($value));
                     }
                 }
 
@@ -572,6 +563,21 @@ class databaseSQL extends database
     {
         $this->setLanguage($driver);
         $this->sqlPrefix = $tablePrefix;
+
+        $this->encodeRoomId = [
+            $this->sqlPrefix . 'files' => ['roomIdLink'],
+            $this->sqlPrefix . 'messages' => ['roomId'],
+            $this->sqlPrefix . 'messageIndex' => ['roomId'],
+            $this->sqlPrefix . 'ping' => ['roomId'],
+            $this->sqlPrefix . 'roomEvents' => ['roomId'],
+            $this->sqlPrefix . 'roomPermissionsCache' => ['roomId'],
+            $this->sqlPrefix . 'roomStats' => ['roomId'],
+            $this->sqlPrefix . 'searchMessages' => ['roomId'],
+            $this->sqlPrefix . 'searchCache' => ['roomId'],
+            $this->sqlPrefix . 'unreadMessages' => ['roomId'],
+            $this->sqlPrefix . 'users' => ['defaultRoomId'],
+            $this->sqlPrefix . 'userFavRooms' => ['roomId'],
+        ];
 
         switch ($driver) {
             case 'mysqli':
@@ -759,8 +765,18 @@ class databaseSQL extends database
                         255 => 'CHAR', 65535 => 'VARCHAR'
                     ),
 
+
+                    'columnBlobPermLimits' => array(
+                        1000 => 'VARBINARY', 65535 => 'BLOB', 16777215 => 'MEDIUMBLOB', '4294967295' => 'LONGBLOB' // In MySQL, TEXT types are stored outside of the table. For searching purposes, we only use VARCHAR for relatively small values (I decided 1000 would be reasonable).
+                    ),
+
+                    'columnBlobTempLimits' => array(
+                        65535 => 'VARBINARY'
+                    ),
+
                     'columnStringNoLength' => array(
-                        'MEDIUMTEXT', 'LONGTEXT'
+                        'MEDIUMTEXT', 'LONGTEXT',
+                        'MEDIUMBLOB', 'LONGBLOB',
                     ),
 
                     'columnBitLimits' => array(
@@ -1081,6 +1097,7 @@ class databaseSQL extends database
                     break;
 
                 case 'string':
+                case 'blob':
                     if ($column['restrict'] && !$this->disableEnum) {
                         $restrictValues = array();
                         foreach ((array)$column['restrict'] AS $value) $restrictValues[] = $this->formatValue("string", $value);
@@ -1095,8 +1112,7 @@ class databaseSQL extends database
                             $typePiece = 'ENUM(' . implode(',', $restrictValues) . ')';
                         }
                     } else {
-                        if ($engine === 'memory') $stringLimits = $this->dataTypes['columnStringTempLimits'];
-                        else                      $stringLimits = $this->dataTypes['columnStringPermLimits'];
+                        $stringLimits = $this->dataTypes['column' . ($column['type'] === 'blob' ? 'Blob' : 'String') . ($engine === 'memory' ? 'Temp' : 'Perm') . 'Limits'];
 
                         $typePiece = '';
 
@@ -1299,9 +1315,13 @@ class databaseSQL extends database
             $columns = array(
                 "$columns" => array_keys($conditionArray)
             );
-        } elseif (!is_array($columns)) {
+        }
+
+        elseif (!is_array($columns)) {
             $this->triggerError('Invalid Select Array (Columns Not String or Array)', array(), 'validation');
-        } elseif (!count($columns)) {
+        }
+
+        elseif (!count($columns)) {
             $this->triggerError('Invalid Select Array (Columns Array Empty)', array(), 'validation');
         }
 
@@ -1319,17 +1339,25 @@ class databaseSQL extends database
                 $subQueries[substr($tableName, 4)] = $tableCols;
 
                 continue;
-            } elseif (isset($subQueries[$tableName])) { // If the table was earlier defined as a subquery. (TODO)
+            }
+
+            elseif (isset($subQueries[$tableName])) { // If the table was earlier defined as a subquery. (TODO)
                 $finalQuery['tables'][] = '(' . $subQueries[$tableName] . ') AS ' . $tableName; // TODO: Format value?
-            } elseif (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
+            }
+
+            elseif (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
                 $tableParts = explode(' ', $tableName);
 
                 $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]; note: may be removed if the table is part of a join.
 
                 $tableName = $tableParts[1];
-            } else {
+            }
+
+            else {
                 $finalQuery['tables'][] = $this->formatValue('table', $tableName); // Identify the table as [tableName]; note: may be removed if the table is part of a join.
             }
+
+
 
             if (is_array($tableCols)) { // Table columns have been defined with an array, e.g. ["a", "b", "c"]
                 foreach ($tableCols AS $colName => $colAlias) {
@@ -1346,20 +1374,27 @@ class databaseSQL extends database
                                 throw new Exception('Deprecated context.'); // TODO
                             }
 
+
                             if ($colAlias['joinOn']) {
                                 $joinTableName = array_pop($finalQuery['tables']);;
 
-                                $finalQuery['join'][] = $joinTableName . ' ON ' . $reverseAlias[$colAlias['joinOn']] . ' = ' . $this->formatValue('tableColumn', $tableName, $colName);
-                            } else {
+                                $finalQuery['join'][] = $joinTableName . ' ON ' . $this->formatValue('tableColumn', $reverseAlias[$colAlias['joinOn']][0], $reverseAlias[$colAlias['joinOn']][1]) . ' = ' . $this->formatValue('tableColumn', $tableName, $colName);
+                            }
+
+                            else {
                                 $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias['alias']);
                             }
 
-                            $reverseAlias[$colAlias['alias']] = $this->formatValue('tableColumn', $tableName, $colName);
-                        } else {
-                            $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias);
-                            $reverseAlias[$colAlias] = $this->formatValue('tableColumn', $tableName, $colName);
+                            $reverseAlias[$colAlias['alias']] = [$tableName, $colName];
                         }
-                    } else {
+
+                        else {
+                            $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colName, $colAlias);
+                            $reverseAlias[$colAlias] = [$tableName, $colName];
+                        }
+                    }
+
+                    else {
                         $this->triggerError('Invalid Select Array (Empty Column Name)', array(
                             'tableName' => $tableName,
                             'columnName' => $colName,
@@ -1386,7 +1421,7 @@ class databaseSQL extends database
                     // $reverseAlias[$columnPartAlias] = $this->tableQuoteStart . $tableName . $this->tableQuoteEnd . $this->tableColumnDivider . $this->columnQuoteStart . $columnPartName . $this->columnQuoteStart;
 
                     $finalQuery['columns'][] = $this->formatValue('tableColumnAlias', $tableName, $colPartName, $colPartAlias);
-                    $reverseAlias[$colPartAlias] = $this->formatValue('tableColumn', $tableName, $colPartName);
+                    $reverseAlias[$colPartAlias] = [$tableName, $colPartName];
                 }
             }
         }
@@ -1394,7 +1429,7 @@ class databaseSQL extends database
 
         /* Process Conditions (Must be Array) */
         if (is_array($conditionArray) && count($conditionArray)) {
-            $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias, 'both', $tableName);
+            $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias, 'both');
         }
 
 
@@ -1412,7 +1447,7 @@ class databaseSQL extends database
                                 default: $directionSym = $this->sortOrderAsc; break;
                             }
 
-                            $finalQuery['sort'][] = $reverseAlias[$sortColumn] . " $directionSym";
+                            $finalQuery['sort'][] = $this->formatValue('tableColumn', $reverseAlias[$sortColumn][0], $reverseAlias[$sortColumn][1]) . " $directionSym";
                         }
                         else {
                             $this->triggerError('Unrecognised Sort Column', array(
@@ -1443,7 +1478,7 @@ class databaseSQL extends database
                         $directionSym = $this->sortOrderAsc; // Set the alias equal to the default, ascending.
                     }
 
-                    $finalQuery['sort'][] = $reverseAlias[$sortColumn] . " $directionSym";
+                    $finalQuery['sort'][] = $this->formatValue('tableColumn', $reverseAlias[$sortColumn], $reverseAlias[$sortColumn]) . " $directionSym";
                 }
             }
 
@@ -1519,7 +1554,9 @@ LIMIT
 
             if ($key === 'both' || $key === 'either' || $key === 'neither') { // TODO: neither?
                 $sideTextFull[$i] = $this->recurseBothEither($value, $reverseAlias, $key, $tableName);
-            } else {
+            }
+
+            else {
                 // Defaults
                 $sideTextFull[$i] = '';
                 if (!is_object($value)) $value = $this->str($value);  // If value is not a DatabaseType, treat it as a string.
@@ -1528,7 +1565,7 @@ LIMIT
 
                 // Side Text Left
                 $column = ($this->startsWith($key, '!') ? substr($key, 1) : $key);
-                $sideText['left'] = ($reverseAlias ? $reverseAlias[$column] : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
+                $sideText['left'] = ($reverseAlias ? $this->formatValue('tableColumn', $reverseAlias[$column][0], $reverseAlias[$column][1]) : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
 
 
 
@@ -1541,11 +1578,11 @@ LIMIT
                     $sideText['right'] = 'IS NULL';
 
                 elseif ($value->type === DatabaseTypeType::column)
-                    $sideText['right'] = ($reverseAlias ? $reverseAlias[$value->value] : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
+                    $sideText['right'] = ($reverseAlias ? $this->formatValue('tableColumn', $reverseAlias[$value->value][0], $reverseAlias[$value->value][1]) : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
 
                 else {
-                    if ($tableName && isset($this->encodeRoomId[$tableName]) && in_array($column, $this->encodeRoomId[$tableName])) {
-                        $value->value = fimRoom::encodeId($value->value);
+                    if (isset($reverseAlias[$column]) && isset($this->encodeRoomId[$reverseAlias[$column][0]]) && in_array($column, $this->encodeRoomId[$reverseAlias[$column][0]])) { //var_dump($tableName); var_dump($value);
+                        $value = $this->blob(fimRoom::encodeId($value->value)); //var_dump($value);
                     }
 
                     $sideText['right'] = $this->formatValue(($value->comparison === DatabaseTypeComparison::search ? 'search' : $value->type), $value->value); // The value is a data type, and should be processed as such.

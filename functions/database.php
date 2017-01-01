@@ -683,6 +683,10 @@ abstract class database
                 return new DatabaseType(DatabaseTypeType::equation, (string)$value, $typeComp);
                 break;
 
+            case 'blob':case 'binary':
+                return new DatabaseType(DatabaseTypeType::blob, $value, $typeComp);
+                break;
+
             case 'arr': case 'array':
                 if (count($value) === 0) $this->triggerError('Empty arrays can not be specified.', false, 'validation');
 
@@ -713,6 +717,11 @@ abstract class database
     public function bool($value)
     {
         return $this->type('bool', $value);
+    }
+
+    public function blob($value)
+    {
+        return $this->type('blob', $value);
     }
 
     /**
@@ -1050,6 +1059,7 @@ class DatabaseTypeType {
     const bool = 5;
     const column = 6;
     const equation = 7;
+    const blob = 8;
 }
 
 class DatabaseTypeComparison {

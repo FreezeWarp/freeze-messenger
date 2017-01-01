@@ -111,7 +111,7 @@
             <column name="fileSize" type="int" maxlen="12" comment="The file's size." />
             <column name="userId" type="int" maxlen="8" comment="The ID of the user who uploaded the file." />
             <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
-            <column name="roomIdLink" type="string" maxlen="23" comment="If provided, the upload is linked to a particular room, which means that is may only be viewed by those who can view that room. The file will always be viewable by its poster. Additionally, FreezeMessenger may be configured to require that all images are posted to specific rooms -- this is, in-fact, the default." />
+            <column name="roomIdLink" type="blob" maxlen="23" comment="If provided, the upload is linked to a particular room, which means that is may only be viewed by those who can view that room. The file will always be viewable by its poster. Additionally, FreezeMessenger may be configured to require that all images are posted to specific rooms -- this is, in-fact, the default." />
             <column name="fileParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
             <column name="fileParentalAge" type="int" maxlen="2" comment="The file's parental content age rating." />
             <column name="options" type="bitfield" bits="16" comment="File options." />
@@ -130,7 +130,7 @@
             <column name="sha256hash" type="string" maxlen="64" comment="The SHA256 hash of the file's binary data." />
             <column name="salt" type="int" maxlen="6" comment="The salt number (stored in the product configuration) used for encryption." />
             <column name="iv" type="string" maxlen="255" comment="The base64-encoded IV used for encryption." />
-            <column name="contents" type="string" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
+            <column name="contents" type="blob" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
 
             <column name="location" type="string" maxlen="1024" comment="The location of the file on the fileserver, if used." />
 
@@ -242,7 +242,7 @@
         <table name="messages" type="general" comment="User-created messages.">
             <column name="messageId" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
             <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
-            <column name="roomId" type="string" maxlen="23" comment="The ID of the room the message was made in." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="text" type="string" maxlen="5000" comment="The text of the message." />
             <column name="textSha1" type="string" maxlen="40" comment="A SHA1 hash of the text of the message." />
             <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
@@ -261,7 +261,7 @@
 
 
         <table name="messageIndex" type="general" comment="A pseudo-cache that indexes every x (usually 1000) messages made in a room, thus allowing faster lookup. It must be rebuilt if corrupted. (I haven't had time to check to see the performance of both this and messageDates, but I'm guessing I just somehow was using bad indexes when I came up with this seemingly asinine idea. I'll quite likely remove both, or just keep them in for fun.">
-            <column name="roomId" type="string" maxlen="23" comment="The ID of the room the message was made in." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="interval" type="int" maxlen="15" comment="The interval of messages in the room with which the message ID corresponds." />
             <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
 
@@ -362,7 +362,7 @@
 
         <table name="ping" type="memory" comment="User online statuses.">
             <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
-            <column name="roomId" type="string" maxlen="23" comment="The ID of the room." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room." />
             <column name="time" type="time" default="__TIME__" comment="The time of the ping." />
             <column name="status" type="string" restrict="away,busy,available,invisible,offline," comment="The user's status." />
             <column name="typing" type="bool" default="0" comment="Whether or not the user is typing." />
@@ -415,7 +415,7 @@
         <table name="roomEvents" type="memory" comment="Events that relate to a specific room.">
             <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
             <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. topic-change, edit-message)." />
-            <column name="roomId" type="string" maxlen="23" comment="The room ID." />
+            <column name="roomId" type="blob" maxlen="23" comment="The room ID." />
             <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
             <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
             <column name="time" type="time" comment="The time of the event's occurrence, primarily for maintenance." />
@@ -458,7 +458,7 @@
 
 
         <table name="roomPermissionsCache" type="memory" content="A simplified cache of room permissions. This table should be used to determine if a user is known to be allowed access to a room. When a row doesn't exist, it should be tested fully and then inserted here. It does not index private rooms.">
-            <column name="roomId" type="string" maxlen="23" comment="The room ID." />
+            <column name="roomId" type="blob" maxlen="23" comment="The room ID." />
             <column name="userId" type="int" maxlen="8" comment="The user ID." />
             <column name="permissions" type="bitfield" bits="16" comment="The user's permissions." />
             <column name="expires" type="time" comment="After this time, the entry will no longer be considered valid. May be disabled if this cache is updated automatically." />
@@ -470,8 +470,8 @@
 
         <table name="roomStats" type="general" comment="A cache for the number of posts made by different users in rooms.">
             <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
-            <column name="roomId" type="string" maxlen="23" comment="The ID of the room." />
-            <column name="messages" type="int" maxlen="10" comment="The number of messages made by the user in the room." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room." />
+            <column name="messages" type="int" maxlen="8" comment="The number of messages made by the user in the room." />
 
             <key name="userId,roomId" type="primary" />
             <key name="roomId" type="index" />
@@ -482,7 +482,7 @@
             <column name="phraseId" type="int" maxlen="8" comment="The ID of the phrase found in the message." />
             <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
             <column name="userId" type="int" maxlen="8" comment="The user who made the above post." />
-            <column name="roomId" type="string" maxlen="23" comment="The room the above post is contained in." />
+            <column name="roomId" type="blob" maxlen="23" comment="The room the above post is contained in." />
 
             <key name="messageId,phraseId" type="primary" />
             <key name="roomId" type="index" />
@@ -501,7 +501,7 @@
         <table name="searchCache" type="general" comment="A cache of message searches. Note that this cache is most efficient when fulltext searching is enabled (which is otherwise quite slow), but that it will still have minor benefits when using searchPhrases instead.">
             <column name="phraseName" type="string" maxlen="50" comment="The phrase to search." />
             <column name="userId" type="int" maxlen="8" comment="Limits the search results to this userId." />
-            <column name="roomId" type="string" maxlen="23" comment="Limits the search results to this roomId." />
+            <column name="roomId" type="blob" maxlen="23" comment="Limits the search results to this roomId." />
             <column name="resultPage" type="int" maxlen="6" comment="The result page this set corresponds with." />
             <column name="resultLimit" type="int" maxlen="6" comment="The result limit this set corresponds with." />
             <column name="messageIds" type="string" maxlen="50000" comment="The message IDs that result when searching phraseName, userId, and roomId (CSV)." />
@@ -547,7 +547,7 @@
             <column name="senderId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who sent the message." />
             <column name="senderName" type="string" maxlen="50" fkey="users.userName" fkeyWeak="true" comment="The name of the user who sent the message." />
             <column name="senderNameFormat" type="string" maxlen="300" fkey="users.userNameFormat" fkeyWeak="true" comment="CSS-formatting to be applied to the sender's name." />
-            <column name="roomId" type="string" maxlen="23" comment="The ID of the room in question." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room in question." />
             <column name="roomName" type="string" maxlen="50" comment="The name of the room in question." />
             <column name="messageId" type="int" maxlen="9" fkey="messages.messageId" comment="The ID of the message." />
             <column name="time" type="time" default="__TIME__" comment="The time the message was made." />
@@ -589,7 +589,7 @@
             <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the user's name for its display." />
 
             <!-- Prefs -->
-            <column name="defaultRoomId" type="string" maxlen="23" default="1" fkey="rooms.roomId" comment="The user's default room." />
+            <column name="defaultRoomId" type="blob" maxlen="23" default="1" fkey="rooms.roomId" comment="The user's default room." />
 
             <!-- Status -->
             <column name="status" type="int" maxlen="3" comment="The user's activity status." />
@@ -644,7 +644,7 @@
 
         <table name="userFavRooms" type="general" comment="A list of starred rooms. Unlike most other lists, this list generally doesn't have any backend effects, but we thought it was too useful not to include. Clients are still encouraged to implement more powerful tagging and lists themselves.">
             <column name="userId" type="int" maxlen="8" comment="The user ID." />
-            <column name="roomId" type="string" maxlen="23" comment="The room ID." />
+            <column name="roomId" type="blob" maxlen="23" comment="The room ID." />
 
             <key name="userId,roomId" type="primary" />
         </table>
