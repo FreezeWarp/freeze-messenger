@@ -34,6 +34,10 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
+    'roomId' => array(
+        'cast' => 'roomId',
+    ),
+
     'userIds' => array(
         'default' => [],
         'cast' => 'list',
@@ -47,21 +51,25 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'bool',
     )
 ));
-if (!in_array($user->id, $request['userIds'])) $request['userIds'][] = $user->id; // The active user is automatically added if not specified. This is to say, this API can _not_ be used to obtain a private room that doesn't involve a user (for administrative purposes, for instance) -- getMessages.php can be called directly with the relevant roomId, however, if an admin is allowed to view private rooms.
+
+
+
+if (isset($request['roomId'])) {
+    $room = new fimRoom($request['roomId']);
+}
+else {
+    if (!in_array($user->id, $request['userIds'])) $request['userIds'][] = $user->id; // The active user is automatically added if not specified. This is to say, this API can _not_ be used to obtain a private room that doesn't involve a user (for administrative purposes, for instance) -- getMessages.php can be called directly with the relevant roomId, however, if an admin is allowed to view private rooms.
+
+    $room = new fimRoom(($request['otr'] ? 'o' : 'p') . implode(',', $request['userIds']));
+}
 
 
 /* Data PreDefine */
 $xmlData = ['room'];
 
 
-/* Get Room */
-$room = new fimRoom(($request['otr'] ? 'o' : 'p') . implode(',', $request['userIds']));
-
 if (!$room->isPrivateRoom())
     new fimError('logicError', 'A logic error has occurred.');
-
-elseif (count($request['userIds']) < 2)
-    new fimError('noUsers', 'At least one other user must be specified.');
 
 elseif (!$database->hasPermission($user, $room))
     new fimError('noPerm', 'You do not have permission.');
