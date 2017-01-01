@@ -23,15 +23,15 @@ $request = fim_sanitizeGPC('g', array(
 switch ($request['list']) {
 
   case 'users':
-    $entries = $slaveDatabase->getUsers(array(
+    $entries = new apiOutputDict($slaveDatabase->getUsers(array(
       'userNameSearch' => $request['search'],
-    ))->getColumnValues('userName');
+    ))->getColumnValues('userName', 'userId'));
     break;
 
   case 'rooms':
-    $entries = $slaveDatabase->getRooms(array(
+    $entries = new apiOutputDict($slaveDatabase->getRooms(array(
       'roomNameSearch' => $request['search'],
-    ))->getColumnValues('roomName');
+    ))->getColumnValues('roomName', 'roomId'));
      break;
 
 }

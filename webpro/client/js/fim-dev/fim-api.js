@@ -371,22 +371,28 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
 
 
 fimApi.prototype.acHelper = function(list) {
-        return function acHelper_query(search, callback) {
-            $.ajax({
-                type: 'get',
-                url: directory + 'api/acHelper.php',
-                data: {
-                    'access_token' : window.sessionHash,
-                    'fim3_format' : 'json',
-                    'list' : list,
-                    'search' : search.term
-                },
-                success : function(json) { console.log(json);
-                    callback(json.entries);
-                    console.log(json);
+    return function acHelper_query(search, callback) {
+        $.ajax({
+            type: 'get',
+            url: directory + 'api/acHelper.php',
+            data: {
+                'access_token' : window.sessionHash,
+                'fim3_format' : 'json',
+                'list' : list,
+                'search' : search.term
+            },
+            success : function(json) {
+                var results = [];
+
+                for (var i in json.entries) {
+                    results.push({label : json.entries[i], value : i});
                 }
-            });
-        }
+
+                callback(results);
+            },
+
+        });
+    }
 };
 
 

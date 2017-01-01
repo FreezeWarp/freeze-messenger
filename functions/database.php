@@ -986,12 +986,16 @@ class databaseResult
     }
 
 
-    public function getColumnValues($column)
+    public function getColumnValues($column, $columnKey = false)
     {
         $columnValues = array();
 
         while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
-            $columnValues[] = $row[$column];
+            if ($columnKey)
+                $columnValues[$row[$columnKey]] = $row[$column];
+
+            else
+                $columnValues[] = $row[$column];
         }
 
         return $columnValues;

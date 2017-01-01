@@ -111,6 +111,17 @@ class apiData {
             else
                 return $this->outputJson($value);
         }
+        elseif (is_object($value) && get_class($value) === 'apiOutputDict') {
+            $values = $value->getArray();
+
+            if (count($values)) {
+                foreach ($values AS $key => &$v) $v = "\"$key\": " . $this->formatJsonValue($v);
+                return '{' . implode(',', $values) . '}';
+            }
+            else {
+                return '[]';
+            }
+        }
         elseif (is_object($value) && get_class($value) === 'apiOutputList') {
             $values = $value->getArray();
 
@@ -174,6 +185,18 @@ class apiData {
 }
 
 class apiOutputList {
+    private $array;
+
+    function __construct($array) {
+        $this->array = $array;
+    }
+
+    function getArray() {
+        return $this->array;
+    }
+}
+
+class apiOutputDict {
     private $array;
 
     function __construct($array) {
