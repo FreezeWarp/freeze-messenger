@@ -69,6 +69,7 @@ require('../global.php');
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
     'roomId' => array(
+        'cast' => 'roomId',
         'require' => true,
     ),
 
@@ -173,7 +174,7 @@ else {
 
 
 /* Get the roomdata. */
-$room = $database->getRoom($request['roomId']);
+$room = new fimRoom($request['roomId']);
 
 
 /* Data Predefine */
