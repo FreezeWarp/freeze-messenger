@@ -706,10 +706,10 @@ function fim_sanitizeGPC($type, $data) {
              * Basically, cast it to an integer if otherwise looks like one (e.g. the string "123"), keep it as-is if it's a private room ID (e.g. the string "p1,4,90"), or set it to null.
              */
             case 'roomId':
-                if (ctype_digits($activeGlobal[$indexName]))
+                if (ctype_digit($activeGlobal[$indexName]))
                     $newData[$indexName] = (int) $activeGlobal[$indexName];
-                elseif (!fimRoom::isPrivateRoomId($activeGlobal[$indexName]))
-                    $newData[$indexName] = null;
+                elseif (fimRoom::isPrivateRoomId($activeGlobal[$indexName]))
+                    $newData[$indexName] = $activeGlobal[$indexName];
             break;
 
 
