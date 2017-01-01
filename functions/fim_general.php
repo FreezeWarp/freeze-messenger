@@ -470,7 +470,7 @@ function fim_sanitizeGPC($type, $data) {
                     throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
 
                 elseif ($metaName === 'cast'
-                    && !in_array($metaData, array('int', 'bool', 'string', 'json', 'list', 'dict', 'ascii128', 'alphanum', 'bitfieldEquation')))
+                    && !in_array($metaData, array('int', 'bool', 'string', 'json', 'list', 'dict', 'ascii128', 'alphanum', 'bitfieldEquation', 'roomId')))
                     throw new Exception("Invalid 'cast' (value = $metaData) in data in fim_sanitizeGPC.");
 
                 elseif ($metaName === 'cast'
@@ -700,6 +700,18 @@ function fim_sanitizeGPC($type, $data) {
 
                 $newData[$indexName] = $equation;
             break;
+
+
+            /*
+             * Basically, cast it to an integer if otherwise looks like one (e.g. the string "123"), keep it as-is if it's a private room ID (e.g. the string "p1,4,90"), or set it to null.
+             */
+            case 'roomId':
+                if (ctype_digits($activeGlobal[$indexName]))
+                    $newData[$indexName] = (int) $activeGlobal[$indexName];
+                elseif (!fimRoom::isPrivateRoomId($activeGlobal[$indexName]))
+                    $newData[$indexName] = null;
+            break;
+
 
             /*
              * Treat as a string.
