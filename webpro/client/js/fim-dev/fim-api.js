@@ -153,6 +153,35 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
 };
 
 
+fimApi.prototype.getPrivateRoom = function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(params, {
+        'access_token' : window.sessionHash,
+        'fim3_format' : 'json',
+        'roomId' : null,
+        'userIds' : null,
+        'otr' : null,
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    function getRooms_query() {
+        $.ajax({
+            type: 'get',
+            url: directory + 'api/getPrivateRoom.php',
+            data: params,
+            timeout: requestSettings.timeout,
+            cache: requestSettings.cache
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }
+
+
+    if (requestSettings.close) clearInterval(fimApi.timers['getRooms_' + requestSettings.timerId]);
+
+    getRooms_query();
+    if (requestSettings.refresh > -1) fimApi.timers['getRooms_' + requestSettings.timerId] = setInterval(getRooms_query, requestSettings.refresh);
+};
+
+
     /*            var errStr = json.getMessages.errStr,
      errDesc = json.getMessages.errDesc,
      sentUserId = 0,
@@ -382,13 +411,12 @@ fimApi.prototype.acHelper = function(list) {
                 'search' : search.term
             },
             success : function(json) {
-                var results = [];
-
-                for (var i in json.entries) {
-                    results.push({label : json.entries[i], value : i});
-                }
-
-                callback(results);
+                callback($.map(json.entries, function (value, key) {
+                    return {
+                        label: value,
+                        value: key
+                    };
+                }));
             },
 
         });

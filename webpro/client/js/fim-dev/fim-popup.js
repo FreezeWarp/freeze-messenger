@@ -1003,12 +1003,18 @@ popup = {
             id : 'privateRoomDialogue',
             width : 1000,
             oF : function() {
-                $('#userName').autocomplete({source: fimApi.acHelper('users')});
+                $('#userName').autocomplete({
+                    source: fimApi.acHelper('users'),
+                    select: function (event, ui) {
+                        $(event.target).val(ui.item.label);
+                        $(event.target).attr('data-userId', ui.item.value);
+
+                        return false;
+                    }
+                });
 
                 $("#privateRoomForm").submit(function() {
-                    standard.privateRoom({
-                        'userName' : $("#privateRoomForm > #userName").val()
-                    });
+                    standard.changeRoom("p" + [window.userId, $("#privateRoomForm > #userName").attr('data-userId')].join(','), true);
 
                     return false; // Don't submit the form.
                 });

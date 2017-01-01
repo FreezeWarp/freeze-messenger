@@ -283,23 +283,34 @@ standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
 };
 
 
-standard.prototype.changeRoom = function(roomIdLocal) { console.log("Hi.");
-    if (!roomIdLocal) {
+standard.prototype.changeRoom = function(roomId) {
+    if (!roomId) {
+        console.log("Failed changeRoom.");
         return false;
     }
     var intervalPing, intervalWhosOnline;
 
-    isPrivateRoom = false;
-    if (isPrivateRoom) {
-        // TODO
+    if (roomId[0] === 'p' || roomId[0] === 'o') {
+        fimApi.getPrivateRoom({
+            'roomId' : roomId,
+        }, {
+            'begin' : function(roomData) { console.log(roomData);
+                enableSender();
+                window.roomId = roomData.roomId;
+
+                $('#roomName').html(roomData.roomName); // Update the room name.
+
+                standard.populateMessages(roomData.roomId);
+            }
+        });
     }
     else { // Normal procedure otherwise.
         fimApi.getRooms({
-            'roomIds' : [roomIdLocal],
+            'roomIds' : [roomId],
             'permLevel' : 'view'
         }, {'each' : function(roomData) {
             if (!roomData.permissions.view) { // If we can not view the room
-                window.roomId = false; // Set the internal roomId false.
+                window.roomId = false; // Set the global roomId false.
                 popup.selectRoom(); // Prompt the user to select a new room.
                 dia.error('You have been restricted access from this room. Please select a new room.');
             }
@@ -313,33 +324,39 @@ standard.prototype.changeRoom = function(roomIdLocal) { console.log("Hi.");
 
 
             if (roomData.permissions.view) { // If we can view the room...
-                roomId = roomData.roomId;
+                window.roomId = roomData.roomId;
 
                 $('#roomName').html(roomData.roomName); // Update the room name.
                 $('#topic').html(roomData.roomTopic); // Update the room topic.
-                $('#messageList').html(''); // Clear the message list.
 
                /*** Get Messages (TODO: Streamline) ***/
-                $(document).ready(function() {
-                    requestSettings.firstRequest = true;
-                    requestSettings.lastMessage = 0;
-                    messageIndex = [];
-
-                    standard.getMessages();
-
-                    clearInterval(intervalPing);
-                    fimApi.ping(roomId);
-                    intervalPing = window.setInterval(function() {
-                        fimApi.ping(roomId)
-                    }, 5 * 60 * 1000);
-
-                    windowDraw();
-                    windowDynaLinks();
-                });
+                standard.populateMessages(roomData.roomId);
             }
         }});
     }
 };
+
+
+standard.prototype.populateMessages = function(roomId) {
+    $(document).ready(function() {
+        $('#messageList').html(''); // Clear the message list.
+
+        requestSettings.firstRequest = true;
+        requestSettings.lastMessage = 0;
+        messageIndex = [];
+
+        standard.getMessages();
+
+        clearInterval(intervalPing);
+        fimApi.ping(roomId);
+        intervalPing = window.setInterval(function() {
+            fimApi.ping(roomId)
+        }, 5 * 60 * 1000);
+
+        windowDraw();
+        windowDynaLinks();
+    });
+}
 
 
 standard.prototype.deleteRoom = function(roomIdLocal) {
@@ -368,11 +385,6 @@ standard.prototype.unfavRoom = function(roomIdLocal) {
         return false;
     });
 };
-
-/* TODO */
-standard.prototype.privateRoom = function(params) {
-};
-
 
 standard.prototype.kick = function(userLocalId, roomId, length) {
     $.post(directory + 'api/moderate.php', 'action=kickUser&userId=' + userLocalId + '&roomId=' + roomId + '&length=' + length + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
