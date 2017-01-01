@@ -123,6 +123,21 @@ class databaseSQL extends database
 
     protected $dbLink = false;
 
+    protected $encodeRoomId = array(
+        'files' => ['roomId'],
+        'messages' => ['roomId'],
+        'messageIndex' => ['roomId'],
+        'ping' => ['roomId'],
+        'roomEvents' => ['roomId'],
+        'roomPermissionsCache' => ['roomId'],
+        'roomStats' => ['roomId'],
+        'searchMessages' => ['roomId'],
+        'searchCache' => ['roomId'],
+        'unreadMessages' => ['roomId'],
+        'users' => ['defaultRoomId'],
+        'userFavRooms' => ['roomId'],
+    );
+
     /*********************************************************
      ************************ START **************************
      ******************* General Functions *******************
@@ -439,9 +454,60 @@ class databaseSQL extends database
             case 'tableColumnAlias':
                 return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]) . $this->columnAliasDivider . $this->formatValue('columnA', $values[3]);
                 break;
+
             case 'tableAlias' :
                 return $this->formatValue('table', $values[1]) . $this->tableAliasDivider . $this->formatValue('tableA', $values[2]);
                 break;
+
+            /* new for encoding */
+        case 'tableColumnValues':
+            $tableName = $values[1];
+
+            // Columns
+            foreach ($values[2] AS $key => &$column) {
+                if (isset($this->encodeRoomId[$tableName]) && in_array($column, $this->encodeRoomId[$tableName])) {
+                    if ($this->isTypeObject($values[3][$key])) {
+                        throw new Exception('unimplemented.');
+                    }
+                    else {
+                        $values[3][$key] = fimRoom::encodeId($values[3][$key]);
+                    }
+                }
+
+                $column = $this->formatValue('column', $column);
+            }
+
+            // Values
+            foreach ($values[3] AS &$item) {
+                if (!$this->isTypeObject($item))
+                    $item = $this->str($item);
+
+                $item = $this->formatValue($item->type, $item->value);
+            }
+
+            // Combine as list.
+            return $this->arrayQuoteStart . implode($this->arraySeperator, $values[2]) . $this->arrayQuoteEnd . ' VALUES ' . $this->arrayQuoteStart . implode($this->arraySeperator, $values[3]) . $this->arrayQuoteEnd;
+        break;
+
+        case 'tableUpdateArray':
+            $tableName = $values[1];
+            $update = array();
+
+            foreach ($values[2] AS $column => $value) {
+                if (isset($this->encodeRoomId[$tableName]) && in_array($column, $this->encodeRoomId[$tableName])) {
+                    if ($this->isTypeObject($value)) {
+                        throw new Exception('unimplemented.');
+                    }
+                    else {
+                        $value = fimRoom::encodeId($value);
+                    }
+                }
+
+                $update[] = $this->formatValue('column', $column) . $this->comparisonTypes[DatabaseTypeComparison::assignment] . $this->formatValue('detect', $value);
+            }
+
+            return implode($update, $this->statementSeperator);
+        break;
 
             default:
                 throw new Exception("databaseSQL->formatValue does not recognise type '$type'");
@@ -1090,8 +1156,10 @@ class databaseSQL extends database
 
             if ($column['default'] !== null) {
                 // We use triggers here when the SQL implementation is otherwise stubborn, but FreezeMessenger is designed to only do this when it would otherwise be tedious. Manual setting of values is preferred in most cases.
-                if ($column['default'] === '__TIME__')
+                if ($column['default'] === '__TIME__') {
+                    $triggers[] = "DROP TRIGGER IF EXISTS {$tableName}_{$columnName}__TIME__;";
                     $triggers[] = "CREATE TRIGGER {$tableName}_{$columnName}__TIME__ BEFORE INSERT ON $tableName FOR EACH ROW SET NEW.{$columnName} = UNIX_TIMESTAMP(NOW());";
+                }
                 else if (isset($this->defaultPhrases[$column['default']]))
                     $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
                 else
@@ -1326,7 +1394,7 @@ class databaseSQL extends database
 
         /* Process Conditions (Must be Array) */
         if (is_array($conditionArray) && count($conditionArray)) {
-            $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias);
+            $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias, 'both', $tableName);
         }
 
 
@@ -1434,7 +1502,7 @@ LIMIT
      * @return string
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    private function recurseBothEither($conditionArray, $reverseAlias = false, $type = 'both')
+    private function recurseBothEither($conditionArray, $reverseAlias = false, $type = 'both', $tableName = false)
     {
         $i = 0;
 
@@ -1450,7 +1518,7 @@ LIMIT
             if (strstr($key, ' ') !== false) list($key) = explode(' ', $key); // A space can be used to reference the same key twice in different contexts. It's basically a hack, but it's better than using further arrays.
 
             if ($key === 'both' || $key === 'either' || $key === 'neither') { // TODO: neither?
-                $sideTextFull[$i] = $this->recurseBothEither($value, $reverseAlias, $key);
+                $sideTextFull[$i] = $this->recurseBothEither($value, $reverseAlias, $key, $tableName);
             } else {
                 // Defaults
                 $sideTextFull[$i] = '';
@@ -1461,6 +1529,7 @@ LIMIT
                 // Side Text Left
                 $column = ($this->startsWith($key, '!') ? substr($key, 1) : $key);
                 $sideText['left'] = ($reverseAlias ? $reverseAlias[$column] : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
+
 
 
                 // Comparison Operator
@@ -1474,14 +1543,21 @@ LIMIT
                 elseif ($value->type === DatabaseTypeType::column)
                     $sideText['right'] = ($reverseAlias ? $reverseAlias[$value->value] : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
 
-                else
+                else {
+                    if ($tableName && isset($this->encodeRoomId[$tableName]) && in_array($column, $this->encodeRoomId[$tableName])) {
+                        $value->value = fimRoom::encodeId($value->value);
+                    }
+
                     $sideText['right'] = $this->formatValue(($value->comparison === DatabaseTypeComparison::search ? 'search' : $value->type), $value->value); // The value is a data type, and should be processed as such.
+                }
 
 
                 // Side Text Full
                 if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
                     $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
-                } else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
+                }
+
+                else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
                     $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
                     $this->triggerError('Query Nullified', array('Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validation'); // Dev, basically. TODO.
@@ -1490,7 +1566,7 @@ LIMIT
         }
 
 
-        if (!isset($this->concatTypes[$type])) {
+        if (!isset($this->concatTypes[$type])) { var_dump($type);
             $this->triggerError('Unrecognised Concatenation Operator', array(
                 'operator' => $type,
             ), 'validation');
@@ -1518,8 +1594,7 @@ LIMIT
         $values = array_values($dataArray);
 
         $query = 'INSERT INTO' . $this->formatValue('table', $table) . ' ' .
-            $this->formatValue('columnArray', $columns) . '
-      VALUES ' . $this->formatValue('array', $values);
+            $this->formatValue('tableColumnValues', $table, $columns, $values);
 
         if ($queryData = $this->rawQuery($query)) {
             $this->insertId = $this->functionMap('insertId');
@@ -1542,7 +1617,7 @@ LIMIT
     public function delete($tableName, $conditionArray = false)
     {
         $query = 'DELETE FROM ' . $this->formatValue('table', $tableName) . '
-    WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray) : 'TRUE');
+    WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, false, 'both', $tableName) : 'TRUE');
 
         return $this->rawQuery($query);
     }
@@ -1557,7 +1632,7 @@ LIMIT
      */
     public function update($tableName, $dataArray, $conditionArray = false)
     {
-        $query = 'UPDATE ' . $this->formatValue('table', $tableName) . ' SET ' . $this->formatValue('updateArray', $dataArray) . ' WHERE ' . $this->recurseBothEither($conditionArray);
+        $query = 'UPDATE ' . $this->formatValue('table', $tableName) . ' SET ' . $this->formatValue('tableUpdateArray', $tableName, $dataArray) . ' WHERE ' . $this->recurseBothEither($conditionArray, false, 'both', $tableName);
 
         return $this->rawQuery($query);
     }
@@ -1572,9 +1647,8 @@ LIMIT
                 $allValues = array_values($allArray);
 
                 $query = 'INSERT INTO ' . $this->formatValue('table', $table) . '
-        ' . $this->formatValue('columnArray', $allColumns) . '
-        VALUES ' . $this->formatValue('array', $allValues) . '
-        ON DUPLICATE KEY UPDATE ' . $this->formatValue('updateArray', $dataArray);
+        ' . $this->formatValue('tableColumnValues', $table, $allColumns, $allValues) . '
+        ON DUPLICATE KEY UPDATE ' . $this->formatValue('tableUpdateArray', $table, $dataArray);
 
                 if ($queryData = $this->rawQuery($query)) {
                     $this->insertId = $this->functionMap('insertId');
