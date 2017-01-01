@@ -390,36 +390,6 @@ fimApi.prototype.acHelper = function(list) {
 };
 
 
-
-fimApi.prototype.editFile = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(params, {
-            'access_token' : window.sessionHash,
-            'fim3_format' : 'json',
-            'action' : 'create',
-            'dataEncode' : 'base64',
-            'uploadMethod' : 'raw',
-            'autoInsert' : true,
-            'roomId' : null,
-            'fileName' : '',
-            'fileData' : '',
-            'parentalFlags' : '[]',
-            'parentalAge' : 0,
-            'md5hash' : null
-        });
-
-        var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
-
-        $.ajax({
-            url : directory + 'api/editFile.php',
-            type : 'POST',
-            data: params,
-            timeout: requestSettings.timeout,
-            cache: requestSettings.cache,
-        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
-}
-
-
-
 fimApi.prototype.sendMessage = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
