@@ -27,7 +27,7 @@
  * @param string message - The message text, properly URLencoded.
  * @param string flag - A message content-type/context flag, used for sending images, urls, etc.
  * @param bool ignoreBlock - If true, the system will ignore censor warnings. You must pass this to resend a message that was denied because of a censor warning.
-*/
+ */
 
 $apiRequest = true;
 
@@ -37,20 +37,20 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-  'roomId' => array(
-    'require' => true,
-  ),
+    'roomId' => array(
+        'require' => true,
+    ),
 
-  'message' => array(),
+    'message' => array(),
 
-  'flag' => array(
-    'valid' => array('image', 'video', 'url', 'email', 'html', 'audio', 'text', 'source', ''),
-  ),
+    'flag' => array(
+        'valid' => array('image', 'video', 'url', 'email', 'html', 'audio', 'text', 'source', ''),
+    ),
 
-  'ignoreBlock' => array(
-    'default' => false,
-    'cast' => 'bool',
-  ),
+    'ignoreBlock' => array(
+        'default' => false,
+        'cast' => 'bool',
+    ),
 ));
 $ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
 
@@ -66,25 +66,25 @@ elseif (strlen($request['message']) < $generalCache->getConfig('messageMinLength
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message'])) new fimError('spaceMessage'); // All spaces. TODO: MB Support
 elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_POST)) new fimError('noPerm');
 elseif (in_array($request['flag'], array('image', 'video', 'url', 'html', 'audio'))
-  && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED)) new fimError('badUrl'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+    && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED)) new fimError('badUrl'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 elseif ($request['flag'] === 'email'
-  && !filter_var($request['message'], FILTER_VALIDATE_EMAIL)) new fimError('badUrl'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+    && !filter_var($request['message'], FILTER_VALIDATE_EMAIL)) new fimError('badUrl'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 elseif (strpos($request['message'], '/kick') === 0) { // TODO
-  $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$request['message']);
-  $kickData = explode(',',$kickData);
+    $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$request['message']);
+    $kickData = explode(',',$kickData);
 
-  $userData = $database->getUsers(array(
-    'userNames' => array($kickData[0])
-  ))->getAsUser();
+    $userData = $database->getUsers(array(
+        'userNames' => array($kickData[0])
+    ))->getAsUser();
 
-  $userData->kick($kickData[1]);
+    $userData->kick($kickData[1]);
 }
 else {
-  if (strpos($request['message'], '/topic') === 0 && ($database->hasPermission($user, $room) & ROOM_PERMISSION_TOPIC)) {
-    $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $request['message']));
-  }
+    if (strpos($request['message'], '/topic') === 0 && ($database->hasPermission($user, $room) & ROOM_PERMISSION_TOPIC)) {
+        $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $request['message']));
+    }
 
-  $database->storeMessage($request['message'], $request['flag'], $user, $room, $request['ignoreBlock'], $censorMatches);
+    $database->storeMessage($request['message'], $request['flag'], $user, $room, $request['ignoreBlock'], $censorMatches);
 }
 
 
@@ -93,9 +93,9 @@ else {
 
 /* Data Define */
 $xmlData = array(
-  'sendMessage' => array(
-    'censor' => $censorMatches
-  ),
+    'sendMessage' => array(
+        'censor' => $censorMatches
+    ),
 );
 
 
