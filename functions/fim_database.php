@@ -1425,28 +1425,6 @@ class fimDatabase extends databaseSQL
 
 
 
-    public function createPrivateRoom($roomAlias, $userIds) {
-        $userNames = $this->getUsers(array(
-            'userIds' => $userIds
-        ))->getColumnValues('userName');
-
-        if (count($userNames) !== count($userIds)) throw new Exception('Invalid userIds in createPrivateRooms().');
-
-
-        $room = new fimRoom(false);
-        $room->set(array(
-            'roomType' => 'private',
-            'roomAlias' => $roomAlias,
-        ));
-
-        foreach ($userIds AS $userId)
-            $this->setPermission($room->id, 'user', $userId, ROOM_PERMISSION_VIEW + ROOM_PERMISSION_POST + ROOM_PERMISSION_TOPIC); // Note: Originally, I had intentioned that this would be automatic. Right now, it is not, but it would be fairly easy to remedy by adding the appropriate code to hasPermission. For now, I think it would be best to do both in some regard.
-
-        return $room;
-    }
-
-
-
     public function setPermission($roomId, $attribute, $param, $permissionsMask) {
         /* Start Transaction */
         $this->startTransaction();
