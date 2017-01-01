@@ -1539,7 +1539,7 @@ class fimDatabase extends databaseSQL
     /*
      * Store message does not check for permissions. Make sure that all permissions are cleared before calling storeMessage.
      */
-    public function storeMessage($messageText, $messageFlag, $user, $room, $ignoreBlock = false, &$censorMatches = array())
+    public function storeMessage($messageText, $messageFlag, fimUser $user, fimRoom $room, $ignoreBlock = false, &$censorMatches = array())
     {
         global $generalCache; // TODO
 
@@ -1559,19 +1559,27 @@ class fimDatabase extends databaseSQL
 
 
         /* Insert Message Data */
-        // Insert into permanent datastore.
-        $this->insert($this->sqlPrefix . "messages", array(
-            'roomId'   => $room->id,
-            'userId'   => $user->id,
-            'text'     => $messageTextEncrypted,
-            'textSha1' => sha1($messageText),
-            'salt'     => $encryptSalt,
-            'iv'       => $encryptIV,
-            'ip'       => $_SERVER['REMOTE_ADDR'],
-            'flag'     => $messageFlag,
-            'time'     => $this->now(),
-        ));
-        $messageId = $this->insertId;
+        // Insert into permanent datastore, unless it's an off-the-record room (since that's the only way it's different from a normal private room), in which case we just try to get an autoincremented messageId, storing nothing else.
+        if ($room->type === 'otr') {
+            $this->insert($this->sqlPrefix . "messages", array(
+                'roomId'   => $room->id,
+            ));
+            $messageId = $this->insertId;
+        }
+        else {
+            $this->insert($this->sqlPrefix . "messages", array(
+                'roomId'   => $room->id,
+                'userId'   => $user->id,
+                'text'     => $messageTextEncrypted,
+                'textSha1' => sha1($messageText),
+                'salt'     => $encryptSalt,
+                'iv'       => $encryptIV,
+                'ip'       => $_SERVER['REMOTE_ADDR'],
+                'flag'     => $messageFlag,
+                'time'     => $this->now(),
+            ));
+            $messageId = $this->insertId;
+        }
 
 
         // Insert into cache/memory datastore.
@@ -1593,9 +1601,11 @@ class fimDatabase extends databaseSQL
 
 
 
-        /* Generate (and Insert) Key Words */
-        $keyWords = $this->getKeyWordsFromText($messageText);
-        $this->storeKeyWords($keyWords, $messageId, $user->id, $room->id);
+        /* Generate (and Insert) Key Words, Unless an Off-the-Record Room */
+        if ($room->type !== 'otr') {
+            $keyWords = $this->getKeyWordsFromText($messageText);
+            $this->storeKeyWords($keyWords, $messageId, $user->id, $room->id);
+        }
 
 
 
