@@ -238,8 +238,8 @@
             <column name="encryption_algorithm" type="string" maxlen="100" default="RS256" />
         </table>
 
-
-        <table name="messages" type="general" partitionBy="roomId" comment="User-created messages.">
+        <!-- partitionBy=roomId would be nice here, but doesn't work with strings. -->
+        <table name="messages" type="general" comment="User-created messages.">
             <column name="messageId" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
             <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
             <column name="roomId" type="string" maxlen="23" comment="The ID of the room the message was made in." />
