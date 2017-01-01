@@ -43,19 +43,6 @@ function fim_getMessageRange($roomId, $startId, $endId, $startDate, $endDate) {
 
 
 
-function fim_getPrivateRoomAlias($userIds) {
-    sort($userIds);
-
-    return 'p' . implode(',', $userIds);
-}
-
-function fim_reversePrivateRoomAlias($roomAlias) {
-    return explode(',', substr($roomAlias, 1));
-}
-
-
-
-
 
 
 
@@ -66,22 +53,6 @@ function fim_reversePrivateRoomAlias($roomAlias) {
  ************************ START **************************
  **************** Encoding & Encryption ******************
  *********************************************************/
-
-
-/**
- * Decodes a specifically-formatted URL string, converting entities for "+", "&", '%', and new line to their respective string value.
- *
- * @param string $str - The string to be decoded.
- * @return string - The decoded text.
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_urldecode($str) {
-    return str_ireplace(
-        array('%2b', '%26', '%20', '%25', '%0a'),
-        array('+', '&', ' ', '%', "\n"),
-        $str
-    );
-}
 
 
 /**
