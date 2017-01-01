@@ -450,7 +450,7 @@ function fim_sanitizeGPC($type, $data) {
         else {
             /* Validate Metadata */
             foreach ($indexData AS $metaName => $metaData) {
-                if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'filter', 'cast', 'transform', 'bitTable', 'flipTable')))
+                if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'filter', 'cast', 'transform', 'bitTable', 'flipTable', 'removeDuplicates')))
                     throw new Exception('Unrecognised metadata: ' . $metaName);
 
                 elseif (($metaName === 'require' || $metaName === 'trim' || $metaName === 'evaltrue')
@@ -590,6 +590,10 @@ function fim_sanitizeGPC($type, $data) {
                     (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
                 );
 
+                if (isset($indexMetaData['removeDuplicates']) && $indexMetaData['removeDuplicates']) {
+                    $newData[$indexName] = array_unique($newData[$indexName]);
+                }
+
                 if (isset($indexMetaData['transform'])) {
                     switch ($indexMetaData['transform']) {
                     case 'bitfield':
@@ -635,7 +639,6 @@ function fim_sanitizeGPC($type, $data) {
             break;
 
             case 'ascii128':
-
                 $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $activeGlobal[$indexName]); break; // Remove characters outside of ASCII128 range.
             break;
 
