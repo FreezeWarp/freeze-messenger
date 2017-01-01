@@ -68,7 +68,6 @@ foreach ($files AS $file) {
         'mime' => $file['mime'],
         'parentalAge' => $file['fileParentalAge'],
         'parentalFlags' => explode(',', $file['fileParentalFlags']),
-        'md5hash' => $file['md5hash'],
         'sha256hash' => $file['sha256hash'],
     );
 }
