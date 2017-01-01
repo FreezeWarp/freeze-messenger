@@ -1092,10 +1092,18 @@ class fimDatabase extends databaseSQL
         if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
 
 
-        if ($room->type === 'otr' || $room->type === 'private') {
-            if (!$this->config['privateRoomsEnabled']) return 0;
-            elseif (in_array($user->id, fim_reversePrivateRoomAlias($room->alias))) return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
-            else return 0;
+        if ($room->isPrivateRoom()) {
+            $users = $room->getPrivateRoomMembers();
+            $userIds = $room->getPrivateRoomMemberIds();
+
+            if (count($users) !== count($userIds)) // This checks for invalid users, as getPrivateRoomMembers() will only return members who exist in the database, while getPrivateRoomMemberIds() returns all ids who were specified when the fimRoom object was created.
+                return 0;
+            elseif (!$this->config['privateRoomsEnabled'])
+                return 0;
+            elseif (in_array($user->id, $userIds))
+                return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
+            else
+                return 0;
         }
         else {
             if (!$user->resolve(array('socialGroupIds', 'parentalAge', 'parentalFlags'))) throw new Exception('hasPermission was called without a valid user.'); // Make sure we know the room type and alias in addition to ID.
