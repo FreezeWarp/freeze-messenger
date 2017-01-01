@@ -73,7 +73,7 @@ class fimDatabase extends databaseSQL
     /**
      * Run a query to obtain users who appear "active."
      * Scans table `ping`, and links in tables `rooms` and `users`, particularly for use in hasPermission().
-     * Returns columns ping[status, typing, ptime, proomId, puserId], rooms[roomId, roomName, roomTopic, owner, defaultPermissions, roomType, roomParentalAge, roomParentalFlags, options], and users[userId, userName, userNameFormat, userGroupId, socialGroupIds, status]
+     * Returns columns ping[status, typing, ptime, proomId, puserId], rooms[roomId, roomName, roomTopic, owner, defaultPermissions, roomParentalAge, roomParentalFlags, options], and users[userId, userName, userNameFormat, userGroupId, socialGroupIds, status]
      *
      * @param       $options
      *              int ['onlineThreshold']
@@ -101,7 +101,7 @@ class fimDatabase extends databaseSQL
 
         $columns = array(
             $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId',
-            $this->sqlPrefix . "rooms" => 'roomId, roomName, ownerId, defaultPermissions, roomType, roomParentalAge, roomParentalFlags, options',
+            $this->sqlPrefix . "rooms" => 'roomId, roomName, ownerId, defaultPermissions, roomParentalAge, roomParentalFlags, options',
             $this->sqlPrefix . "users" => 'userId, userName, userNameFormat, userGroupId, socialGroupIds, status',
         );
 
@@ -469,7 +469,7 @@ class fimDatabase extends databaseSQL
             $conditions['both']['roomId'] = $this->col('kroomId');
         }
         if ($options['includeRoomData']) {
-            $columns[$this->sqlPrefix . "rooms"] = 'roomId kroomId, roomName, ownerId, options, defaultPermissions, roomType, roomParentalFlags, roomParentalAge';
+            $columns[$this->sqlPrefix . "rooms"] = 'roomId kroomId, roomName, ownerId, options, defaultPermissions, roomParentalFlags, roomParentalAge';
             $conditions['both']['kickerId'] = $this->col('kkickerId');
         }
 
@@ -749,7 +749,7 @@ class fimDatabase extends databaseSQL
         $columns = array(
             $this->sqlPrefix . 'roomStats' => 'roomId sroomId, userId suserId, messages',
             $this->sqlPrefix . 'users'     => 'userId, userName, privs, userNameFormat, userParentalFlags, userParentalAge',
-            $this->sqlPrefix . 'rooms'     => 'roomId, roomName, ownerId, defaultPermissions, roomParentalFlags, roomParentalAge, options, messageCount, roomType',
+            $this->sqlPrefix . 'rooms'     => 'roomId, roomName, ownerId, defaultPermissions, roomParentalFlags, roomParentalAge, options, messageCount',
         );
 
 
@@ -783,7 +783,7 @@ class fimDatabase extends databaseSQL
             'lastMessageTimeMax' => 0,
             'showDeleted'        => false,
             'roomNameSearch'     => false,
-            'columns'            => ['roomId', 'roomName', 'roomAlias', 'roomTopic', 'ownerId', 'defaultPermissions', 'roomParentalFlags', 'roomParentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount', 'roomType'],
+            'columns'            => ['roomId', 'roomName', 'roomAlias', 'roomTopic', 'ownerId', 'defaultPermissions', 'roomParentalFlags', 'roomParentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount'],
         ), $options);
 
         $columns = [$this->sqlPrefix . 'rooms' => $options['columns']];

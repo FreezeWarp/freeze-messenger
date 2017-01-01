@@ -51,7 +51,6 @@ class fimRoom {
         'options' => 'options',
         'ownerId' => 'ownerId',
         'roomTopic' => 'topic',
-        'roomType' => 'type',
         'roomParentalFlags' => 'parentalFlags',
         'roomParentalAge' => 'parentalAge',
         'defaultPermissions' => 'defaultPermissions',
@@ -79,7 +78,7 @@ class fimRoom {
 
 
         if (is_int($roomData)) {
-            $this->type = 'general';
+            $this->__set('type', 'general');
             $this->id = $roomData;
         }
         elseif (is_string($roomData) && $this->isPrivateRoomId($roomData)) {
