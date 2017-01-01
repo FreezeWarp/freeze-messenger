@@ -59,7 +59,7 @@
  ** Step 2: If using date-based criteria, we lookup the approximate post ID that corresponds to the room and date. At this point, we are basically done. Simply set the messageIdStart to the date that occured before and mesageIdEnd to the date that occured after.
  ** If, however, we are using ID-based criteria, we will instead look into messageIndex. Here, we correlate room and ID, and try to find an approprimate messageIdEnd and messageIdStart.
  ** Step 3: Use a more narrow range if neccessary. The indexes we used may be too large. In this case, we need to do our best to approximate.
-*/
+ */
 
 
 $apiRequest = true;
@@ -68,90 +68,90 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'roomId' => array(
-    'require' => true,
-  ),
-
-  'userIds' => array(
-    'default' => [],
-    'cast' => 'list',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
-
-  'messageIds' => array(
-    'default' => [],
-    'cast' => 'list',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
-
-  'sortBy' => array(
-    'valid' => array(
-      'messageId',
+    'roomId' => array(
+        'require' => true,
     ),
-    'default' => 'messageId',
-  ),
 
-  'sortOrder' => array(
-    'valid' => array(
-      'desc', 'asc'
+    'userIds' => array(
+        'default' => [],
+        'cast' => 'list',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
-    'default' => 'asc'
-  ),
 
-  'showDeleted' => array(
-    'default' => false,
-    'cast' => 'bool',
-  ),
-
-  'archive' => array(
-    'default' => false,
-    'cast' => 'bool',
-  ),
-
-  'noping' => array(
-    'default' => false,
-    'cast' => 'bool',
-  ),
-
-  'messageDateMax' => array(
-    'default' => 0,
-    'cast' => 'int',
-  ),
-
-  'messageDateMin' => array(
-    'default' => 0,
-    'cast' => 'int',
-  ),
-
-  'messageIdStart' => array(
-    'default' => 0,
-    'cast' => 'int',
-  ),
-
-  'messageIdEnd' => array(
-    'default' => 0,
-    'cast' => 'int',
-  ),
-
-  'messageHardLimit' => array(
-    'default' => $config['defaultMessageHardLimit'],
-    'max' => $config['maxMessageHardLimit'],
-    'min' => 1,
-    'cast' => 'int',
-  ),
-
-  'search' => array(
-    'default' => false,
-  ),
-
-  'encode' => array(
-    'default' => 'plaintext',
-    'valid' => array(
-      'plaintext', 'base64',
+    'messageIds' => array(
+        'default' => [],
+        'cast' => 'list',
+        'filter' => 'int',
+        'evaltrue' => true,
     ),
-  ),
+
+    'sortBy' => array(
+        'valid' => array(
+            'messageId',
+        ),
+        'default' => 'messageId',
+    ),
+
+    'sortOrder' => array(
+        'valid' => array(
+            'desc', 'asc'
+        ),
+        'default' => 'asc'
+    ),
+
+    'showDeleted' => array(
+        'default' => false,
+        'cast' => 'bool',
+    ),
+
+    'archive' => array(
+        'default' => false,
+        'cast' => 'bool',
+    ),
+
+    'noping' => array(
+        'default' => false,
+        'cast' => 'bool',
+    ),
+
+    'messageDateMax' => array(
+        'default' => 0,
+        'cast' => 'int',
+    ),
+
+    'messageDateMin' => array(
+        'default' => 0,
+        'cast' => 'int',
+    ),
+
+    'messageIdStart' => array(
+        'default' => 0,
+        'cast' => 'int',
+    ),
+
+    'messageIdEnd' => array(
+        'default' => 0,
+        'cast' => 'int',
+    ),
+
+    'messageHardLimit' => array(
+        'default' => $config['defaultMessageHardLimit'],
+        'max' => $config['maxMessageHardLimit'],
+        'min' => 1,
+        'cast' => 'int',
+    ),
+
+    'search' => array(
+        'default' => false,
+    ),
+
+    'encode' => array(
+        'default' => 'plaintext',
+        'valid' => array(
+            'plaintext', 'base64',
+        ),
+    ),
 
     'page' => array(
         'default' => 0,
@@ -161,14 +161,14 @@ $request = fim_sanitizeGPC('g', array(
 
 
 if ($config['longPolling'] && $request['longPolling'] === true) {
-  $config['longPolling'] = true;
-  $longPollingRetries = 0;
+    $config['longPolling'] = true;
+    $longPollingRetries = 0;
 
-  set_time_limit(0);
-  ini_set('max_execution_time',0);
+    set_time_limit(0);
+    ini_set('max_execution_time',0);
 }
 else {
-  $config['longPolling'] = false;
+    $config['longPolling'] = false;
 }
 
 
@@ -185,67 +185,67 @@ $xmlData = array(
 if (!$room->id) new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
 elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW)) new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 else {
-  /* Process Ping */
-  if (!$request['noping']) $database->setUserStatus($room->id);
-  
-
-  /* Get Messages from Database */
-  $messages = $database->getMessages(array(
-    'messageIdEnd' => $request['messageIdEnd'],
-    'messageIdStart' => $request['messageIdStart'],
-    'messageDateMin' => $request['messageDateMax'],
-    'messageDateMax' => $request['messageDateMax'],
-    'showDeleted' => $request['showDeleted'],
-    'messageTextSearch' => $request['search'],
-    'archive' => $request['archive'],
-    'userIds' => $request['userIds'],
-    'roomIds' => $request['roomId'],
-    'messageIds' => $request['messageIds'],
-    'messageHardLimit' => $request['messageHardLimit'],
-    'page' => $request['page']
-  ), array($request['sortBy'] => $request['sortOrder']), $request['messageLimit'], $request['page'])->getAsArray(true);// print($messages->sourceQuery); die('3');
+    /* Process Ping */
+    if (!$request['noping']) $database->setUserStatus($room->id);
 
 
-  /* Process Messages */
-  if (count($messages) > 0) {
-    if (count($messages) > $request['messageHardLimit']) {
-      if (isset($request['messageIdEnd'])) array_splice($messages, 0, -1 * $request['messageHardLimit']);
-      else array_splice($messages, $request['messageHardLimit']);
+    /* Get Messages from Database */
+    $messages = $database->getMessages(array(
+        'messageIdEnd' => $request['messageIdEnd'],
+        'messageIdStart' => $request['messageIdStart'],
+        'messageDateMin' => $request['messageDateMax'],
+        'messageDateMax' => $request['messageDateMax'],
+        'showDeleted' => $request['showDeleted'],
+        'messageTextSearch' => $request['search'],
+        'archive' => $request['archive'],
+        'userIds' => $request['userIds'],
+        'roomIds' => $request['roomId'],
+        'messageIds' => $request['messageIds'],
+        'messageHardLimit' => $request['messageHardLimit'],
+        'page' => $request['page']
+    ), array($request['sortBy'] => $request['sortOrder']), $request['messageLimit'], $request['page'])->getAsArray(true);// print($messages->sourceQuery); die('3');
+
+
+    /* Process Messages */
+    if (count($messages) > 0) {
+        if (count($messages) > $request['messageHardLimit']) {
+            if (isset($request['messageIdEnd'])) array_splice($messages, 0, -1 * $request['messageHardLimit']);
+            else array_splice($messages, $request['messageHardLimit']);
+        }
+
+        foreach ($messages AS $id => $message) {
+            if (isset($message['iv'], $message['salt'])) $message = fim_decrypt($message, 'text');
+
+            switch ($request['encode']) {
+            case 'plaintext': break; // All Good
+            case 'base64': $message['text'] = base64_encode($message['text']); break;
+            }
+
+            $xmlData['messages'][] = array(
+                'messageData' => array(
+                    'roomId' => (int) $room->id,
+                    'messageId' => (int) $message['messageId'],
+                    'messageTime' => (int) $message['time'],
+                    'messageText' => $message['text'],
+                    'flags' => ($message['flag']),
+                ),
+                'userData' => array(
+                    'userName' => ($message['userName']),
+                    'userId' => (int) $message['userId'],
+                    'userGroup' => (int) $message['userGroup'],
+                    'avatar' => ($message['avatar']),
+                    'socialGroups' => ($message['socialGroups']),
+                    'userNameFormat' => ($message['userNameFormat']),
+                    'defaultFormatting' => array(
+                        'color' => ($message['defaultColor']),
+                        'highlight' => ($message['defaultHighlight']),
+                        'fontface' => ($message['defaultFontface']),
+                        'general' => (int) $message['defaultFormatting']
+                    ),
+                ),
+            );
+        }
     }
-
-    foreach ($messages AS $id => $message) {
-      if (isset($message['iv'], $message['salt'])) $message = fim_decrypt($message, 'text');
-
-      switch ($request['encode']) {
-        case 'plaintext': break; // All Good
-        case 'base64': $message['text'] = base64_encode($message['text']); break;
-      }
-
-      $xmlData['messages'][] = array(
-        'messageData' => array(
-          'roomId' => (int) $room->id,
-          'messageId' => (int) $message['messageId'],
-          'messageTime' => (int) $message['time'],
-          'messageText' => $message['text'],
-          'flags' => ($message['flag']),
-        ),
-        'userData' => array(
-          'userName' => ($message['userName']),
-          'userId' => (int) $message['userId'],
-          'userGroup' => (int) $message['userGroup'],
-          'avatar' => ($message['avatar']),
-          'socialGroups' => ($message['socialGroups']),
-          'userNameFormat' => ($message['userNameFormat']),
-          'defaultFormatting' => array(
-            'color' => ($message['defaultColor']),
-            'highlight' => ($message['defaultHighlight']),
-            'fontface' => ($message['defaultFontface']),
-            'general' => (int) $message['defaultFormatting']
-          ),
-        ),
-      );
-    }
-  }
 }
 //var_dump($xmlData); die();
 
