@@ -182,8 +182,12 @@ $xmlData = array(
 );
 
 
-if (!$room->id) new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
-elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW)) new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
+if (!$room->id)
+    new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
+
+elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW))
+    new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
+
 else {
     /* Process Ping */
     if (!$request['noping']) $database->setUserStatus($room->id);
@@ -247,7 +251,6 @@ else {
         }
     }
 }
-//var_dump($xmlData); die();
 
 
 
