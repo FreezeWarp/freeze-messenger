@@ -765,6 +765,18 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
     return $arrayValidated; // Return the validated array.
 }
 
+/**
+ * Join a string with a natural language conjunction at the end.
+ * Derived from https://gist.github.com/dan-sprog/e01b8712d6538510dd9c
+ */
+function fim_naturalLanguageJoin(string $glue, array $list, string $conjunction = 'and') {
+    $last = array_pop($list);
+    if ($list) {
+        return implode($glue, $list) . ' ' . $conjunction . ' ' . $last;
+    }
+    return $last;
+}
+
 
 
 

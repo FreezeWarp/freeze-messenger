@@ -23,7 +23,7 @@ define("ROOM_PERMISSION_GRANT", 128);
 class fimRoom {
     public $id = 0;
     private $name = "Missingname.";
-    private $alias;
+    private $alias; // TODO: remove
     private $options;
     private $deleted;
     private $official;
@@ -31,7 +31,7 @@ class fimRoom {
     private $archived;
     private $ownerId;
     private $topic;
-    private $type;
+    private $type = 'unknown';
     private $parentalFlags;
     private $parentalAge;
     private $defaultPermissions;
@@ -46,7 +46,7 @@ class fimRoom {
     private $roomDataConversion = array( // Eventually, we'll hopefully rename everything in the DB itself, but that'd be too time-consuming right now.
         'roomId' => 'id',
         'roomName' => 'name',
-        'roomAlias' => 'alias',
+        'roomAlias' => 'alias', // TODO: remove
         'options' => 'options',
         'ownerId' => 'ownerId',
         'roomTopic' => 'topic',
@@ -62,7 +62,7 @@ class fimRoom {
 
     private $roomDataPullGroups = array(
         'roomId, roomName',
-        'roomType, defaultPermissions, options',
+        'defaultPermissions, options',
         'roomParentalFlags,roomParentalAge,roomTopic',
         'lastMessageTime,lastMessageId,messageCount,flags'
     );
@@ -77,31 +77,146 @@ class fimRoom {
         $this->generalCache = $generalCache;
 
 
-        if (is_int($roomData))
+        if (is_int($roomData)) {
+            $this->type = 'general';
             $this->id = $roomData;
+        }
+        elseif (is_string($roomData) && $this->isPrivateRoomId($roomData)) {
+            /* Set room type */
+            if ($roomData[0] === 'p') $this->type === 'private';
+            elseif ($roomData[1] === 'o') $this->type === 'otr';
+            else throw new Exception('Sanity check failed.');
+
+            /* Set other room defaults */
+            $this->__set('options', 0);
+            $this->__set('parentalAge', 0);
+            $this->__set('parentalFlags', []);
+            $this->__set('topic', '');
+            $this->__set('ownerId', 0);
+            $this->__set('defaultPermissions', 0);
+
+            /* Set the ID */
+            $this->id = $roomData;
+        }
         elseif (is_array($roomData))
             $this->populateFromArray($roomData); // TODO: test contents
         elseif ($roomData === false)
             $this->id = false;
-        else throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.) Passed: ' . print_r($roomData, true));
+        else
+            throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.) Passed: ' . print_r($roomData, true));
 
         $this->roomData = $roomData;
     }
 
 
+    /* Returns true if and only if $id is a private or off-the-record room ID string, e.g. "o1,2" or "p5,60". The user IDs must be greater than 0 for this to return true. Duplicates are not checked for, though they will be flagged by hasPermission _and_ will be removed by fimRoom->getPrivateRoomMembers(). */
+    public static function isPrivateRoomId(string $id) {
+        if ($id[0] === 'p' || $id[0] === 'o') {
+            $idList = explode(',', substr($id, 1));
+
+            foreach ($idList AS $id) {
+                if ((int) $id < 1)
+                    return false;
+
+                if (preg_match('/^[0-9]+$/', $id) !== 1)
+                    return false;
+            }
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+
+    /**
+     * Returns true if the room type is a general room, or false otherwise.
+     * @return bool
+     */
+    public function isGeneralRoom() {
+        return $this->type === 'general';
+    }
+
+    /**
+     * Returns true if the room type is a private or OTR room, or false otherwise.
+     * @return bool
+     */
+    public function isPrivateRoom() {
+        return $this->type === 'private' || $this->type === 'otr';
+    }
+
+
+    /**
+     * Returns an array of the user IDs who are part of the private/otr room. It does not check to see if they exist.
+     * @return array
+     * @throws Exception
+     */
+    public function getPrivateRoomMemberIds() {
+        if ($this->type !== 'private' && $this->type !== 'otr')
+            throw new Exception('Call to fimRoom->getPrivateRoomMemberIds only supported on instances of a private room.');
+
+        return array_unique(explode(',', substr($this->id, 1)));
+    }
+
+    /**
+     * Returns an array of fimUser objects corresponding with those returned by getPrivateRoomMemberIds(), though only valid members (those that exist in the database) will be returned. Thus, the count of this may differ from the count of getPrivateRoomMemberIds(), and this fact can be used to check if the room exists solely of valid members.
+     *
+     * @return fimUser[]
+     * @throws Exception
+     */
+    public function getPrivateRoomMembers() : array {
+        global $database;
+
+        if ($this->type !== 'private' && $this->type !== 'otr')
+            throw new Exception('Call to fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
+
+        return $database->getUsers(array(
+            'userIds' => $this->getPrivateRoomMemberIds(),
+        ))->getAsUsers();
+    }
+
+
+    /**
+     * Returns the object's property, fetching from the database or cache if needed.
+     *
+     * @param $property
+     * @return mixed
+     * @throws Exception
+     */
     public function __get($property) {
         if ($this->id && !in_array($property, $this->resolved)) {
-            // Find selection group
-            if (isset(array_flip($this->roomDataConversion)[$property])) {
-                $needle = array_flip($this->roomDataConversion)[$property];
-                $selectionGroup = array_values(array_filter($this->roomDataPullGroups, function ($var) use ($needle) {
-                    return strpos($var, $needle) !== false;
-                }))[0];
+            if ($this->isPrivateRoom()) {
+                switch ($property) {
+                case 'name':
+                    $userNames = [];
+                    foreach($this->getPrivateRoomMembers() AS $user)
+                        $userNames[] = $user->name;
 
-                if ($selectionGroup)
-                    $this->getColumns(explode(',', $selectionGroup));
-                else
-                    throw new Exception("Selection group not found for '$property'");
+                    $name = ($this->type === 'private' ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
+                    $this->__set('user', $name);
+                    return $name;
+                    break;
+
+                default:
+                    throw new Exception("Unhandled property $property in fimRoom.");
+                    break;
+                }
+            }
+
+            else {
+                // Find selection group
+                if (isset(array_flip($this->roomDataConversion)[$property])) {
+                    $needle = array_flip($this->roomDataConversion)[$property];
+                    $selectionGroup = array_values(array_filter($this->roomDataPullGroups, function ($var) use ($needle) {
+                        return strpos($var, $needle) !== false;
+                    }))[0];
+
+                    if ($selectionGroup)
+                        $this->getColumns(explode(',', $selectionGroup));
+                    else
+                        throw new Exception("Selection group not found for '$property'");
+                }
             }
         }
 
@@ -109,14 +224,24 @@ class fimRoom {
     }
 
 
+    /**
+     * Sets the object's property, applying filters and config preferences.
+     *
+     * @param $property
+     * @param $value
+     * @throws fimError
+     */
     public function __set($property, $value)
     {
         global $config;
+
 
         if (property_exists($this, $property))
             $this->{$property} = $value;
         else
             throw new fimError("fimRoomBadProperty", "fimRoom does not have property '$property'");
+
+
         // If we've already processed the value once, it generally won't need to be reprocessed. Permissions, for instance, may be altered intentionally. We do make an exception for setting integers to what should be arrays -- we will reprocess in this case.
         if (!in_array($property, $this->resolved) ||
             (($property === 'parentalFlags' || $property === 'socialGroupIds')
@@ -133,14 +258,13 @@ class fimRoom {
 
 
             // Parental Age: Disable if feature is disabled.
-            else if ($property === 'parentalAge') {
-                if ($config['parentalEnabled']) $this->parentalAge = $value;
-                else                            $this->parentalAge = 255;
+            else if ($property === 'parentalAge' && !$config['parentalEnabled']) {
+                $this->parentalAge = 0;
             }
 
 
             else if ($property === 'topic' && $config['disableTopic']) {
-                $this->topic = "";
+                $this->topic = '';
             }
 
 
@@ -153,11 +277,21 @@ class fimRoom {
         }
     }
 
+
+    /**
+     * Resolves an array of database columns. This can be called preemptively to prevent fimRoom from making multiple database calls to resolve itself.
+     *
+     * @param array $columns
+     * @return bool
+     * @throws Exception
+     */
     private function getColumns(array $columns) : bool
     {
         global $database;
 
-        if (count($columns) > 0)
+        if ($this->isPrivateRoom())
+            throw new Exception('Can\'t call fimRoom->getColumns on private room.');
+        elseif (count($columns) > 0)
             return $this->populateFromArray($database->where(array('roomId' => $this->id))->select(array($database->sqlPrefix . 'rooms' => array_merge(array('roomId'), $columns)))->getAsArray(false));
         else
             return true;
@@ -171,15 +305,36 @@ class fimRoom {
     }
 
 
+    /**
+     * Resolves an array of database properties. It will not resolve already-resolved properties.
+     *
+     * @param array $columns
+     * @return bool
+     * @throws Exception
+     */
     public function resolve($properties) {
         return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff($properties, $this->resolved)));
     }
 
+    /**
+     * Resolves the entirety of the fimRoom object. It will not resolve already-resolved properties.
+     *
+     * @return bool
+     * @throws Exception
+     */
     public function resolveAll() {
         return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff(array_values($this->roomDataConversion), $this->resolved)));
     }
 
 
+    /**
+     * Resolves properties based on the passed data, presumably from either the database or a cache.
+     *
+     * @param array $roomData
+     * @param bool $dbNameMapping
+     * @return bool
+     * @throws fimError
+     */
     private function populateFromArray(array $roomData, $dbNameMapping = true): bool {
         if ($roomData) {
 //            $this->resolved = array_diff($this->resolved, array_values($roomData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
@@ -203,12 +358,14 @@ class fimRoom {
     }
 
 
-    /* TODO: move to DB */
+    /* TODO: move to DB, I think? */
     public function changeTopic($topic) {
         global $config, $database;
-        if ($config['disableTopic']) {
+
+        if ($this->isPrivateRoom())
+            throw new Exception('Can\'t call fimRoom->changeTopic on private room.');
+        elseif ($config['disableTopic'])
             throw new fimError('topicsDisabled', 'Topics are disabled on this server.');
-        }
         else {
             $database->createRoomEvent('topicChange', $this->id, $topic); // name, roomId, message
             $database->update($database->sqlPrefix . "rooms", array(
@@ -252,6 +409,10 @@ class fimRoom {
     public function setDatabase(array $roomParameters)
     {
         global $database;
+
+        if ($this->isPrivateRoom())
+            throw new Exception('Can\'t call fimRoom->setDatabase on private rooms.');
+
         fim_removeNullValues($roomParameters);
         $this->populateFromArray($roomParameters, true);
 
