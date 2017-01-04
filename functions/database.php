@@ -832,6 +832,14 @@ abstract class database
             if ($data->type === DatabaseTypeType::equation || $data->type === DatabaseTypeType::column) {
                 throw new Exception('Database data transformation attempted on unsuported object.');
             }
+            elseif ($data->type === DatabaseTypeType::arraylist) {
+                foreach ($data->value AS &$value) {
+                    $value = $this->applyTransformFunction($function, $value, $forceType);
+                }
+
+                return $data;
+            }
+
             else {
                 return new DatabaseType(($forceType ? $forceType : $data->type), call_user_func($function, $data), $data->comparison);
             }
