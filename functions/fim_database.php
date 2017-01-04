@@ -103,7 +103,7 @@ class fimDatabase extends databaseSQL
 
         $columns = array(
             $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId',
-            $this->sqlPrefix . "rooms" => 'roomId, roomName, ownerId, defaultPermissions, roomParentalAge, roomParentalFlags, options',
+            $this->sqlPrefix . "rooms" => 'roomId, roomIdEncoded, roomName, ownerId, defaultPermissions, roomParentalAge, roomParentalFlags, options',
             $this->sqlPrefix . "users" => 'userId, userName, userNameFormat, userGroupId, socialGroupIds, status',
         );
 
@@ -117,7 +117,7 @@ class fimDatabase extends databaseSQL
 
         $conditions['both'] = array(
             'ptime'   => $this->int(time() - $options['onlineThreshold'], 'gt'),
-            'proomId' => $this->col('roomId'),
+            'proomId' => $this->col('roomIdEncoded'),
             'puserId' => $this->col('userId'),
         );
 

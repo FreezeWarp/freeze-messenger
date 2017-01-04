@@ -40,7 +40,7 @@ $request = fim_sanitizeGPC('g', array(
     'roomIds' => array(
         'default' => [],
         'cast' => 'list',
-        'filter' => 'int',
+        'filter' => 'roomId',
         'evaltrue' => true,
     ),
 
@@ -80,10 +80,10 @@ $activeUsers = $database->getActiveUsers(array(
     'onlineThreshold' => $request['onlineThreshold'],
     'roomIds' => $request['roomIds'],
     'userIds' => $request['userIds']
-));
+))->getAsArray(true);
 
 
-foreach ($activeUsers->getAsArray(true) AS $activeUser) {
+foreach ($activeUsers AS $activeUser) {
     if (!isset($xmlData['users']['user ' . $activeUser['userId']])) {
         $xmlData['users']['user ' . $activeUser['userId']] = array(
             'userData' => array(
