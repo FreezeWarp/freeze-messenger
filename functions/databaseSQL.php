@@ -369,36 +369,47 @@ class databaseSQL extends database
             case 'search':
                 return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($values[1], 'search') . $this->stringFuzzy . $this->stringQuoteEnd;
                 break;
+
             case 'string': case DatabaseTypeType::string:
                 return $this->stringQuoteStart . $this->escape($values[1], 'string') . $this->stringQuoteEnd;
                 break;
+
             case 'bool': case DatabaseTypeType::bool:
                 return $this->boolValues[$values[1]];
                 break;
+
             case 'blob': case DatabaseTypeType::blob:
                 return 'FROM_BASE64("' . base64_encode($values[1]) . '")';
                 break;
+
             case 'integer': case DatabaseTypeType::integer:
                 return $this->intQuoteStart . (int)$this->escape($values[1], 'integer') . $this->intQuoteEnd;
                 break;
+
             case 'timestamp': case DatabaseTypeType::timestamp:
                 return $this->timestampQuoteStart . (int)$this->escape($values[1], 'timestamp') . $this->timestampQuoteEnd;
                 break;
+
             case 'column': case DatabaseTypeType::column:
                 return $this->columnQuoteStart . $this->escape($values[1], 'column') . $this->columnQuoteEnd;
                 break;
+
             case 'columnA':
                 return $this->columnAliasQuoteStart . $this->escape($values[1], 'columnA') . $this->columnAliasQuoteEnd;
                 break;
+
             case 'table':
                 return $this->tableQuoteStart . $this->escape($values[1], 'table') . $this->tableQuoteEnd;
                 break;
+
             case 'tableA':
                 return $this->tableAliasQuoteStart . $this->escape($values[1], 'tableA') . $this->tableAliasQuoteEnd;
                 break;
+
             case 'database':
                 return $this->databaseQuoteStart . $this->escape($values[1], 'database') . $this->databaseQuoteEnd;
                 break;
+
             case 'index':
                 return $this->indexQuoteStart . $this->escape($values[1], 'index') . $this->indexQuoteEnd;
                 break;
@@ -439,6 +450,7 @@ class databaseSQL extends database
             case 'tableColumn':
                 return $this->formatValue('table', $values[1]) . $this->tableColumnDivider . $this->formatValue('column', $values[2]);
                 break;
+
             case 'databaseTable':
                 return $this->formatValue('database', $values[1]) . $this->databaseTableDivider . $this->formatValue('table', $values[2]);
                 break;
@@ -790,24 +802,36 @@ class databaseSQL extends database
 
                 $this->dataTypes = array(
                     'columnIntLimits' => array(
-                        2 => 'TINYINT', 4 => 'SMALLINT', 7 => 'MEDIUMINT', 9 => 'INT',
+                        2 => 'TINYINT',
+                        4 => 'SMALLINT',
+                        7 => 'MEDIUMINT',
+                        9 => 'INT',
                         'default' => 'BIGINT'
                     ),
 
                     'columnStringPermLimits' => array(
-                        255 => 'CHAR', 1000 => 'VARCHAR', 65535 => 'TEXT', 16777215 => 'MEDIUMTEXT', '4294967295' => 'LONGTEXT' // In MySQL, TEXT types are stored outside of the table. For searching purposes, we only use VARCHAR for relatively small values (I decided 1000 would be reasonable).
+                        255 => 'CHAR',
+                        1000 => 'VARCHAR', // In MySQL, TEXT types are stored outside of the table. For searching purposes, we only use VARCHAR for relatively small values (I decided 1000 would be reasonable).
+                        65535 => 'TEXT',
+                        16777215 => 'MEDIUMTEXT',
+                        '4294967295' => 'LONGTEXT'
                     ),
 
-                    'columnStringTempLimits' => array(
-                        255 => 'CHAR', 65535 => 'VARCHAR'
+                    'columnStringTempLimits' => array( // In MySQL, TEXT is not allowed in memory tables.
+                        255 => 'CHAR',
+                        65535 => 'VARCHAR'
                     ),
 
 
                     'columnBlobPermLimits' => array(
-                        1000 => 'VARBINARY', 65535 => 'BLOB', 16777215 => 'MEDIUMBLOB', '4294967295' => 'LONGBLOB' // In MySQL, TEXT types are stored outside of the table. For searching purposes, we only use VARCHAR for relatively small values (I decided 1000 would be reasonable).
+                        // In MySQL, BINARY values get right-padded. This is... difficult to work with, so we don't use it.
+                        1000 => 'VARBINARY',  // In MySQL, BLOB types are stored outside of the table. For searching purposes, we only use VARBLOB for relatively small values (I decided 1000 would be reasonable).
+                        65535 => 'BLOB',
+                        16777215 => 'MEDIUMBLOB',
+                        '4294967295' => 'LONGBLOB'
                     ),
 
-                    'columnBlobTempLimits' => array(
+                    'columnBlobTempLimits' => array( // In MySQL, BLOB is not allowed outside of
                         65535 => 'VARBINARY'
                     ),
 
@@ -817,8 +841,12 @@ class databaseSQL extends database
                     ),
 
                     'columnBitLimits' => array(
-                        8 => 'TINYINT UNSIGNED', 16 => 'SMALLINT UNSIGNED', 24 => 'MEDIUMINT UNSIGNED',
-                        32 => 'INTEGER UNSIGNED', 64 => 'BIGINT UNSIGNED', 'default' => 'INTEGER UNSIGNED',
+                        8  => 'TINYINT UNSIGNED',
+                        16 => 'SMALLINT UNSIGNED',
+                        24 => 'MEDIUMINT UNSIGNED',
+                        32 => 'INTEGER UNSIGNED',
+                        64 => 'BIGINT UNSIGNED',
+                        'default' => 'INTEGER UNSIGNED',
                     ),
 
                     'bool' => 'TINYINT(1) UNSIGNED',
@@ -863,12 +891,13 @@ class databaseSQL extends database
 
                 $this->dataTypes = array(
                     'columnIntLimits' => array(
-                        1 => 'SMALLINT', 2 => 'SMALLINT', 3 => 'SMALLINT', 4 => 'SMALLINT', 5 => 'INTEGER',
-                        6 => 'INTEGER', 7 => 'INTEGER', 8 => 'INTEGER', 9 => 'INTEGER', 0 => 'BIGINT',
+                        1 => 'SMALLINT', 2 => 'SMALLINT', 3 => 'SMALLINT',
+                        4 => 'SMALLINT', 5 => 'INTEGER', 6 => 'INTEGER', 7 => 'INTEGER', 8 => 'INTEGER', 9 => 'INTEGER',
+                        0 => 'BIGINT',
                     ),
                     'columnSerialLimits' => array(
-                        1 => 'SERIAL', 2 => 'SERIAL', 3 => 'SERIAL', 4 => 'SERIAL', 5 => 'SERIAL',
-                        6 => 'SERIAL', 7 => 'SERIAL', 8 => 'SERIAL', 9 => 'SERIAL', 'default' => 'BIGSERIAL',
+                        1 => 'SERIAL', 2 => 'SERIAL', 3 => 'SERIAL', 4 => 'SERIAL', 5 => 'SERIAL', 6 => 'SERIAL', 7 => 'SERIAL', 8 => 'SERIAL', 9 => 'SERIAL',
+                        'default' => 'BIGSERIAL',
                     ),
                     'columnStringPermLimits' => array(
                         'default' => 'VARCHAR',
@@ -877,7 +906,9 @@ class databaseSQL extends database
                         'TEXT', // Unused
                     ),
                     'columnBitLimits' => array(
-                        15 => 'SMALLINT', 31 => 'INTEGER', 63 => 'BIGINT',
+                        15 =>  'SMALLINT',
+                        31 =>  'INTEGER',
+                        63 =>  'BIGINT',
                         127 => 'NUMERIC(40,0)', // Approximately -- maybe TODO
                         'default' => 'INTEGER',
                     ),
