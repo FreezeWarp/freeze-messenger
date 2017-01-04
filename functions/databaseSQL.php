@@ -123,8 +123,8 @@ class databaseSQL extends database
 
     protected $dbLink = false;
 
-    protected $encodeRoomId = [];
-    protected $encodeCopyRoomId = [];
+    protected $encode = [];
+    protected $encodeCopy = [];
 
     /*********************************************************
      ************************ START **************************
@@ -454,29 +454,28 @@ class databaseSQL extends database
             /* new for encoding */
         case 'tableColumnValues':
             $tableName = $values[1];
+
             /* Copy & transform values
              * Some columns get inserted as-is, but a transformed copy is also then added. When we are modifying such a column, we create the copy here.
              * If the copy is modified independently, it will not be altered here -- but it should also not be modified independently.
              * TODO: items stored as DatabaseType will not be detected properly
              */
-            if (isset($this->encodeCopyRoomId[$tableName])) { // Do we have copy & transform values for the table we are inserting into?
-                var_dump($this->encodeCopyRoomId[$tableName]); die();
-                foreach ($this->encodeCopyRoomId[$tableName] AS $startColumn => $endColumn) { // For each copy & transform value in our table...
+            if (isset($this->encodeCopy[$tableName])) { // Do we have copy & transform values for the table we are inserting into?
+//                var_dump($this->encodeCopyRoomId[$tableName]); die();
+                foreach ($this->encodeCopy[$tableName] AS $startColumn => $endResult) { // For each copy & transform value in our table...
+                    list($endFunction, $endColumn) = $endResult;
+
                     if (($key = array_search($startColumn, $values[2])) !== false) { // Check to see if we are, in-fact, inserting the column
                         $values[2][] = $endColumn;
-                        $values[3][] = $this->blob(fimRoom::encodeId($values[3][$key])); // And if we are, add the new copy column to the list of insert columns
+                        $values[3][] = $this->blob(call_user_func($endFunction, $values[3][$key])); // And if we are, add the new copy column to the list of insert columns
                     }
                 }
             }
 
             // Columns
             foreach ($values[2] AS $key => &$column) {
-                if (isset($this->encodeRoomId[$tableName]) && in_array($column, $this->encodeRoomId[$tableName])) {
-                    if ($this->isTypeObject($values[3][$key]))
-                        $values[3][$key] = $this->blob(fimRoom::encodeId($values[3][$key]->value));
-
-                    else
-                        $values[3][$key] = $this->blob(fimRoom::encodeId($values[3][$key]));
+                if (isset($this->encode[$tableName]) && isset($this->encode[$tableName][$column])) {
+                    $values[3][$key] = $this->blob(call_user_func($this->encode[$tableName][$column], $this->isTypeObject($values[3][$key]) ? $values[3][$key]->value : $values[3][$key]));
                 }
 
                 $column = $this->formatValue('column', $column);
@@ -502,10 +501,12 @@ class databaseSQL extends database
              * Some columns get inserted as-is, but a transformed copy is also then added. When we are modifying such a column, we create the copy here.
              * If the copy is modified independently, it will not be altered here -- but it should also not be modified independently. *
              */
-            if (isset($this->encodeCopyRoomId[$tableName])) { // Do we have copy & transform values for the table we are updating?
-                foreach ($this->encodeCopyRoomId[$tableName] AS $startColumn => $endColumn) { // For each copy & transform value in our table...
+            if (isset($this->encodeCopy[$tableName])) { // Do we have copy & transform values for the table we are updating?
+                foreach ($this->encodeCopy[$tableName] AS $startColumn => $endResult) { // For each copy & transform value in our table...
+                    list($endFunction, $endColumn) = $endResult;
+
                     if (isset($values[2][$startColumn])) // Check to see if we are, in-fact, updating the column
-                        $values[2][$endColumn] = $this->blob(fimRoom::encodeId($values[2][$startColumn])); // And if we are, add the new copy column to the list of update columns
+                        $values[2][$endColumn] = $this->blob(call_user_func($endFunction, $values[2][$startColumn])); // And if we are, add the new copy column to the list of update columns
                 }
             }
 
@@ -513,12 +514,8 @@ class databaseSQL extends database
             foreach ($values[2] AS $column => $value) {
                 /* Transform values
                  * Some columns get transformed prior to being sent to the database: we handle those here. */
-                if (isset($this->encodeRoomId[$tableName]) && in_array($column, $this->encodeRoomId[$tableName])) {
-                    if ($this->isTypeObject($value))
-                        $value = $this->blob(fimRoom::encodeId($value->value));
-
-                    else
-                        $value = $this->blob(fimRoom::encodeId($value));
+                if (isset($this->encode[$tableName]) && isset($this->encode[$tableName][$column])) {
+                    $value = $this->blob(call_user_func($this->encode[$tableName][$column], $this->isTypeObject($value) ? $value->value : $value));
                 }
 
                 /* Format and add the column/value pair to our list */
@@ -589,27 +586,29 @@ class databaseSQL extends database
 
 
     public function connect($host, $port, $user, $password, $database, $driver, $tablePrefix = '')
-    {-
+    {
         $this->setLanguage($driver);
         $this->sqlPrefix = $tablePrefix;
 
-        $this->encodeRoomId = [
-            $this->sqlPrefix . 'files' => ['roomIdLink'],
-            $this->sqlPrefix . 'messages' => ['roomId'],
-            $this->sqlPrefix . 'messageIndex' => ['roomId'],
-            $this->sqlPrefix . 'ping' => ['roomId'],
-            $this->sqlPrefix . 'roomEvents' => ['roomId'],
-            $this->sqlPrefix . 'roomPermissionsCache' => ['roomId'],
-            $this->sqlPrefix . 'roomStats' => ['roomId'],
-            $this->sqlPrefix . 'searchMessages' => ['roomId'],
-            $this->sqlPrefix . 'searchCache' => ['roomId'],
-            $this->sqlPrefix . 'unreadMessages' => ['roomId'],
-            $this->sqlPrefix . 'users' => ['defaultRoomId'],
-            $this->sqlPrefix . 'userFavRooms' => ['roomId'],
+        $this->encode = [
+            $this->sqlPrefix . 'files' => ['roomIdLink' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'messages' => ['roomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'messageIndex' => ['roomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'ping' => ['roomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'roomEvents' => ['roomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'roomPermissionsCache' => ['roomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'roomStats' => ['roomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'searchMessages' => ['roomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'searchCache' => ['roomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'unreadMessages' => ['roomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'users' => ['defaultRoomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'userFavRooms' => ['roomId' => 'fimRoom::encodeId'],
         ];
 
-        $this->encodeCopyRoomId = [
-            $this->sqlPrefix . 'rooms' => ['roomId' => 'roomIdEncoded'],
+        $this->encodeCopy = [
+            $this->sqlPrefix . 'rooms' => [
+                'roomId' => ['fimRoom::encodeId', 'roomIdEncoded'],
+            ],
         ];
 
         $this->insertIdColumns = [
@@ -1618,8 +1617,8 @@ LIMIT
                     $sideText['right'] = ($reverseAlias ? $this->formatValue('tableColumn', $reverseAlias[$value->value][0], $reverseAlias[$value->value][1]) : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
 
                 else {
-                    if (isset($reverseAlias[$column]) && isset($this->encodeRoomId[$reverseAlias[$column][0]]) && in_array($column, $this->encodeRoomId[$reverseAlias[$column][0]])) { //var_dump($tableName); var_dump($value);
-                        $value = $this->blob(fimRoom::encodeId($value->value)); //var_dump($value);
+                    if (isset($reverseAlias[$column]) && isset($this->encode[$reverseAlias[$column][0]][$column])) {
+                        $value = $this->blob(call_user_func($this->encode[$reverseAlias[$column][0]][$column], $value->value)); //var_dump($value);
                     }
 
                     $sideText['right'] = $this->formatValue(($value->comparison === DatabaseTypeComparison::search ? 'search' : $value->type), $value->value); // The value is a data type, and should be processed as such.
@@ -1739,9 +1738,11 @@ LIMIT
 
         /* Transform code for insert ID
          * If we are supposed to copy over an insert ID into a new, transformed column, we do it here. */
-        if (isset($this->insertIdColumns[$table]) && isset($this->encodeCopyRoomId[$table][$this->insertIdColumns[$table]])) {
+        if (isset($this->insertIdColumns[$table]) && isset($this->encodeCopy[$table][$this->insertIdColumns[$table]])) {
+            list($function, $column) = $this->encodeCopy[$table][$this->insertIdColumns[$table]];
+
             $this->update($table, [
-                $this->encodeCopyRoomId[$table][$this->insertIdColumns[$table]] => fimRoom::encodeId($this->insertId)
+                $column => call_user_func($function, $this->insertId)
             ], [
                 $this->insertIdColumns[$table] => $this->insertId
             ]);
