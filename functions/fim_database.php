@@ -56,9 +56,11 @@ class fimDatabase extends databaseSQL
 
 
     /****** Helper Functions ******/
-    function makeSearchable($string) {
-        $string = str_replace(array_keys($this->config['romanisation']), array_values($this->config['romanisation']), $string); // Romanise.
-        $string = str_replace($this->config['searchWordPunctuation'], ' ', $string); // Get rid of punctuation.
+    public static function makeSearchable($string) {
+        global $config;
+
+        $string = str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $string); // Romanise.
+        $string = str_replace($config['searchWordPunctuation'], ' ', $string); // Get rid of punctuation.
         $string = preg_replace('/\s+/', ' ', $string); // Get rid of extra spaces.
         $string = strtolower($string); // Lowercase the string.
 
