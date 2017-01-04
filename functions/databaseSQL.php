@@ -608,6 +608,7 @@ class databaseSQL extends database
         $this->encodeCopy = [
             $this->sqlPrefix . 'rooms' => [
                 'roomId' => ['fimRoom::encodeId', 'roomIdEncoded'],
+                'roomName' => ['fimDatabase::makeSearchable', 'roomNameSearchable']
             ],
         ];
 
