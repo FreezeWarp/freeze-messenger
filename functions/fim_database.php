@@ -750,13 +750,13 @@ class fimDatabase extends databaseSQL
         $columns = array(
             $this->sqlPrefix . 'roomStats' => 'roomId sroomId, userId suserId, messages',
             $this->sqlPrefix . 'users'     => 'userId, userName, privs, userNameFormat, userParentalFlags, userParentalAge',
-            $this->sqlPrefix . 'rooms'     => 'roomId, roomName, ownerId, defaultPermissions, roomParentalFlags, roomParentalAge, options, messageCount',
+            $this->sqlPrefix . 'rooms'     => 'roomId, roomIdEncoded, roomName, ownerId, defaultPermissions, roomParentalFlags, roomParentalAge, options, messageCount',
         );
 
 
         $conditions['both'] = array(
             'suserId' => $this->col('userId'),
-            'sroomId' => $this->col('roomId'),
+            'sroomId' => $this->col('roomIdEncoded'),
         );
 
 
@@ -1675,6 +1675,7 @@ class fimDatabase extends databaseSQL
         $this->upsert($this->sqlPrefix . "roomStats", array(
             'userId'   => $user->id,
             'roomId'   => $room->id,
+            'messages' => 1,
         ), array(
             'messages' => $this->type('equation', '$messages + 1')
         ));
