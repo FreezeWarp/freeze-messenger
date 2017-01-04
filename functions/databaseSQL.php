@@ -475,11 +475,11 @@ class databaseSQL extends database
             if (isset($this->encodeCopy[$tableName])) { // Do we have copy & transform values for the table we are inserting into?
 //                var_dump($this->encodeCopyRoomId[$tableName]); die();
                 foreach ($this->encodeCopy[$tableName] AS $startColumn => $endResult) { // For each copy & transform value in our table...
-                    list($endFunction, $endColumn) = $endResult;
+                    list($endFunction, $typeOverride, $endColumn) = $endResult;
 
                     if (($key = array_search($startColumn, $values[2])) !== false) { // Check to see if we are, in-fact, inserting the column
                         $values[2][] = $endColumn;
-                        $values[3][] = $this->blob(call_user_func($endFunction, $values[3][$key])); // And if we are, add the new copy column to the list of insert columns
+                        $values[3][] = $this->applyTransformFunction($endFunction, $values[3][$key], $typeOverride); // And if we are, add the new copy column to the list of insert columns
                     }
                 }
             }
@@ -487,7 +487,9 @@ class databaseSQL extends database
             // Columns
             foreach ($values[2] AS $key => &$column) {
                 if (isset($this->encode[$tableName]) && isset($this->encode[$tableName][$column])) {
-                    $values[3][$key] = $this->blob(call_user_func($this->encode[$tableName][$column], $this->isTypeObject($values[3][$key]) ? $values[3][$key]->value : $values[3][$key]));
+                    list($function, $typeOverride) = $this->encode[$tableName][$column];
+
+                    $values[3][$key] = $this->applyTransformFunction($function, $values[3][$key], $typeOverride);
                 }
 
                 $column = $this->formatValue('column', $column);
@@ -515,10 +517,10 @@ class databaseSQL extends database
              */
             if (isset($this->encodeCopy[$tableName])) { // Do we have copy & transform values for the table we are updating?
                 foreach ($this->encodeCopy[$tableName] AS $startColumn => $endResult) { // For each copy & transform value in our table...
-                    list($endFunction, $endColumn) = $endResult;
+                    list($endFunction, $typeOverride, $endColumn) = $endResult;
 
                     if (isset($values[2][$startColumn])) // Check to see if we are, in-fact, updating the column
-                        $values[2][$endColumn] = $this->blob(call_user_func($endFunction, $values[2][$startColumn])); // And if we are, add the new copy column to the list of update columns
+                        $values[2][$endColumn] = $this->applyTransformFunction($endFunction, $values[2][$startColumn], $typeOverride); // And if we are, add the new copy column to the list of update columns
                 }
             }
 
@@ -527,7 +529,9 @@ class databaseSQL extends database
                 /* Transform values
                  * Some columns get transformed prior to being sent to the database: we handle those here. */
                 if (isset($this->encode[$tableName]) && isset($this->encode[$tableName][$column])) {
-                    $value = $this->blob(call_user_func($this->encode[$tableName][$column], $this->isTypeObject($value) ? $value->value : $value));
+                    list($function, $typeOverride) = $this->encode[$tableName][$column];
+
+                    $value = $this->applyTransformFunction($function, $value, $typeOverride);
                 }
 
                 /* Format and add the column/value pair to our list */
@@ -603,24 +607,24 @@ class databaseSQL extends database
         $this->sqlPrefix = $tablePrefix;
 
         $this->encode = [
-            $this->sqlPrefix . 'files' => ['roomIdLink' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'messages' => ['roomId' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'messageIndex' => ['roomId' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'ping' => ['roomId' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'roomEvents' => ['roomId' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'roomPermissionsCache' => ['roomId' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'roomStats' => ['roomId' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'searchMessages' => ['roomId' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'searchCache' => ['roomId' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'unreadMessages' => ['roomId' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'users' => ['defaultRoomId' => 'fimRoom::encodeId'],
-            $this->sqlPrefix . 'userFavRooms' => ['roomId' => 'fimRoom::encodeId'],
+            $this->sqlPrefix . 'files' => ['roomIdLink' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'messages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'messageIndex' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'ping' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'roomEvents' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'roomPermissionsCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'roomStats' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'searchMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'searchCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'unreadMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'users' => ['defaultRoomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'userFavRooms' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
         ];
 
         $this->encodeCopy = [
             $this->sqlPrefix . 'rooms' => [
-                'roomId' => ['fimRoom::encodeId', 'roomIdEncoded'],
-                'roomName' => ['fimDatabase::makeSearchable', 'roomNameSearchable']
+                'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'roomIdEncoded'],
+                'roomName' => ['fimDatabase::makeSearchable', false, 'roomNameSearchable']
             ],
         ];
 
@@ -1587,6 +1591,16 @@ LIMIT
     }
 
 
+    /**
+     * Used to perform subqueries.
+     *
+     * @param $columns
+     * @param bool $conditionArray
+     * @param bool $sort
+     * @param bool $limit
+     * @return bool|object|resource|string
+     * @throws Exception
+     */
     public function subSelect($columns, $conditionArray = false, $sort = false, $limit = false)
     {
         $this->returnQueryString = true;
@@ -1627,21 +1641,19 @@ LIMIT
             else {
                 // Defaults
                 $sideTextFull[$i] = '';
-                if (!is_object($value)) $value = $this->str($value);  // If value is not a DatabaseType, treat it as a string.
-                else if (get_class($value) !== 'DatabaseType') throw new Exception('Invalid class for value.');
+                if (!$this->isTypeObject($value)) $value = $this->str($value);  // If value is not a DatabaseType, treat it as a string.
 
 
-                // Side Text Left
+                // lvalue
                 $column = ($this->startsWith($key, '!') ? substr($key, 1) : $key);
                 $sideText['left'] = ($reverseAlias ? $this->formatValue('tableColumn', $reverseAlias[$column][0], $reverseAlias[$column][1]) : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
 
 
-
-                // Comparison Operator
+                // comparison operator
                 $symbol = $this->comparisonTypes[$value->comparison];
 
 
-                // Side Text Right
+                // rvalue
                 if ($value->type === DatabaseTypeType::null)
                     $sideText['right'] = 'IS NULL';
 
@@ -1649,20 +1661,24 @@ LIMIT
                     $sideText['right'] = ($reverseAlias ? $this->formatValue('tableColumn', $reverseAlias[$value->value][0], $reverseAlias[$value->value][1]) : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
 
                 else {
+                    // Apply transform function, if set
                     if (isset($reverseAlias[$column]) && isset($this->encode[$reverseAlias[$column][0]][$column])) {
-                        $value = $this->blob(call_user_func($this->encode[$reverseAlias[$column][0]][$column], $value->value)); //var_dump($value);
+                        list($function, $typeOverride) = $this->encode[$reverseAlias[$column][0]][$column];
+
+                        $value = $this->applyTransformFunction($function, $value->value, $typeOverride);
                     }
 
+                    // Build rvalue
                     $sideText['right'] = $this->formatValue(($value->comparison === DatabaseTypeComparison::search ? 'search' : $value->type), $value->value); // The value is a data type, and should be processed as such.
                 }
 
 
-                // Side Text Full
+                // Combine l and rvalues
                 if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
                     $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
                 }
 
-                else {//var_dump($reverseAlias); echo $key;  var_dump($value); var_dump($sideText); die();
+                else {
                     $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
                     $this->triggerError('Query Nullified', array('Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validation'); // Dev, basically. TODO.
@@ -1671,7 +1687,7 @@ LIMIT
         }
 
 
-        if (!isset($this->concatTypes[$type])) { var_dump($type);
+        if (!isset($this->concatTypes[$type])) {
             $this->triggerError('Unrecognised Concatenation Operator', array(
                 'operator' => $type,
             ), 'validation');
@@ -1771,10 +1787,10 @@ LIMIT
         /* Transform code for insert ID
          * If we are supposed to copy over an insert ID into a new, transformed column, we do it here. */
         if (isset($this->insertIdColumns[$table]) && isset($this->encodeCopy[$table][$this->insertIdColumns[$table]])) {
-            list($function, $column) = $this->encodeCopy[$table][$this->insertIdColumns[$table]];
+            list($function, $typeOverride, $column) = $this->encodeCopy[$table][$this->insertIdColumns[$table]];
 
             $this->update($table, [
-                $column => call_user_func($function, $this->insertId)
+                $column => $this->applyTransformFunction($function, $this->insertId, $typeOverride)
             ], [
                 $this->insertIdColumns[$table] => $this->insertId
             ]);

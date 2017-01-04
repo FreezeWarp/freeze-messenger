@@ -827,6 +827,21 @@ abstract class database
      **************** Type-Casting Functions *****************
      *********************************************************/
 
+    protected function applyTransformFunction($function, $data, $forceType = false): DatabaseType {
+        if ($this->isTypeObject($data)) {
+            if ($data->type === DatabaseTypeType::equation || $data->type === DatabaseTypeType::column) {
+                throw new Exception('Database data transformation attempted on unsuported object.');
+            }
+            else {
+                return new DatabaseType(($forceType ? $forceType : $data->type), call_user_func($function, $data), $data->comparison);
+            }
+        }
+
+        else {
+            return new DatabaseType(($forceType ? $forceType : DatabaseTypeType::string), call_user_func($function, $data), DatabaseTypeComparison::equals);
+        }
+    }
+
 
     /**
      * Opens a database result object using the specified parameters.
