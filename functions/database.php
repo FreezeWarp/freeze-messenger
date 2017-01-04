@@ -607,41 +607,15 @@ abstract class database
     public function type($type, $value = '', $comp = 'e')
     {
         switch ($comp) {
-            case 'e':
-                $typeComp = DatabaseTypeComparison::equals;
-                break;
-
-            case 'lt':
-                $typeComp = DatabaseTypeComparison::lessThan;
-                break;
-
-            case 'lte':
-                $typeComp = DatabaseTypeComparison::lessThanEquals;
-                break;
-
-            case 'gt':
-                $typeComp = DatabaseTypeComparison::greaterThan;
-                break;
-
-            case 'gte':
-                $typeComp = DatabaseTypeComparison::greaterThanEquals;
-                break;
-
-            case 'search':
-                $typeComp = DatabaseTypeComparison::search;
-                break;
-
-            case 'in':
-                $typeComp = DatabaseTypeComparison::in;
-                break;
-
-            case 'notin':
-                $typeComp = DatabaseTypeComparison::notin;
-                break;
-
-            case 'bAnd':
-                $typeComp = DatabaseTypeComparison::binaryAnd;
-                break;
+            case 'e':      $typeComp = DatabaseTypeComparison::equals;            break;
+            case 'lt':     $typeComp = DatabaseTypeComparison::lessThan;          break;
+            case 'lte':    $typeComp = DatabaseTypeComparison::lessThanEquals;    break;
+            case 'gt':     $typeComp = DatabaseTypeComparison::greaterThan;       break;
+            case 'gte':    $typeComp = DatabaseTypeComparison::greaterThanEquals; break;
+            case 'search': $typeComp = DatabaseTypeComparison::search;            break;
+            case 'in':     $typeComp = DatabaseTypeComparison::in;                break;
+            case 'notin':  $typeComp = DatabaseTypeComparison::notin;             break;
+            case 'bAnd':   $typeComp = DatabaseTypeComparison::binaryAnd;         break;
 
             default:
                 throw new Exception("Invalid comparison '$comp'");
@@ -701,7 +675,7 @@ abstract class database
 
     protected function isTypeObject($type)
     {
-        return (is_object($type) && get_class($type) === 'DatabaseType');
+        return (is_object($type) && get_class($type) === 'DatabaseType'); // TODO: instanceof, dummy
     }
 
     public function in($value)
@@ -737,29 +711,6 @@ abstract class database
     public function int($value, $comp = 'e')
     {
         return $this->type('int', $value, $comp);
-    }
-
-
-    // Okay, so I know I'm doing this wrong. Sorry. (It will seriously need to be rewritten later, I know that.)
-    public function bitChange($typeArray, $bit, $change)
-    {
-        if ($typeArray[0] !== 'integer') throw new Exception('Invalid typeArray');
-        else {
-            switch ($change) {
-                case 'add':
-                    if (!($typeArray[1] & $bit === $bit)) $typeArray[1] += $bit; // Increase by $bit if $bit is
-                    break;
-
-                case 'remove':
-                    if ($typeArray[1] & $bit === $bit) $typeArray[1] -= $bit; // Decrease by $bit if $bit is in $typeArray.
-                    break;
-
-                case 'flip': // TODO
-                    break;
-            }
-        }
-
-        return $typeArray;
     }
 
 
@@ -827,11 +778,25 @@ abstract class database
      **************** Type-Casting Functions *****************
      *********************************************************/
 
+    /**
+     * Applies $function to the $data. If $data is an instance of DatabaseType, its other values will be retained, though its type may change if $forceType is set to one of the DatabaseTypeType values.
+     * If $data was not an instance of DatabaseType, it will be returned as one, with $forceType or DatabaseTypeType::string as its type, and DatabaseTypeComparison::equals as its comparison operator.
+     *
+     * @param callable $function
+     * @param mixed|DatabaseType $data
+     * @param bool|DatabaseTypeType $forceType
+     * @return DatabaseType
+     * @throws Exception
+     */
     protected function applyTransformFunction($function, $data, $forceType = false): DatabaseType {
+        // If $data is an instance of DatabaseType...
         if ($this->isTypeObject($data)) {
+            // Equations and columns cannot be transformed.
             if ($data->type === DatabaseTypeType::equation || $data->type === DatabaseTypeType::column) {
                 throw new Exception('Database data transformation attempted on unsuported object.');
             }
+
+            // Lists are fancy -- we trasnsform the elements of the list recursively. The elements can be of any type that can be passed to applyTransformFunction normally.
             elseif ($data->type === DatabaseTypeType::arraylist) {
                 foreach ($data->value AS &$value) {
                     $value = $this->applyTransformFunction($function, $value, $forceType);
@@ -840,11 +805,13 @@ abstract class database
                 return $data;
             }
 
+            // All other values apply the function and, if $forceType is set, the relevant datatype. The comparison operator is not changed.
             else {
                 return new DatabaseType(($forceType ? $forceType : $data->type), call_user_func($function, $data), $data->comparison);
             }
         }
 
+        // If $data isn't an instance of DatabaseType, set it to one, with $forceType or DatabaseTypeType::string as its type, and DatabaseTypeComparison::equals as its comparison operator.
         else {
             return new DatabaseType(($forceType ? $forceType : DatabaseTypeType::string), call_user_func($function, $data), DatabaseTypeComparison::equals);
         }
