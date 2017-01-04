@@ -21,6 +21,7 @@ require('../functions/database.php'); // DB Operations
 require('../functions/databaseSQL.php'); // ""
 require('../functions/fim_database.php'); // ""
 require('../functions/fim_user.php'); // ""
+require('../functions/fim_room.php'); // ""
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!ini_get('safe_mode')) {
@@ -48,14 +49,13 @@ switch ($_REQUEST['phase']) {
         $databaseName = urldecode($_GET['db_database']);
         $createdb = urldecode($_GET['db_createdb']);
         $prefix = urldecode($_GET['db_tableprefix']);
-        $prefix = urldecode($_GET['db_tableprefix']);
 
 
 
 
         /* Part 1 : Connect to the Database, Create a New Database If Needed */
 
-        $database = new databaseSQL(); // Note: In the future, we will probably change this to be just database(), with driver selection taking place afterwards. That has not yet happened.
+        $database = new fimDatabase();
         $database->setErrorLevel(E_USER_WARNING);
         $database->getVersion = true;
         //$database->printErrors = true;
@@ -64,12 +64,7 @@ switch ($_REQUEST['phase']) {
 //    die('PostGreSQL is unable to create databases. Please manually create the database before you continue.');
 //  }
 //  else {
-        if ($createdb) { // Databases that we will skip the create DB stuff for.
-            $database->connect($host, $port, $userName, $password, false, $driver);
-        }
-        else {
-            $database->connect($host, $port, $userName, $password, $databaseName, $driver);
-        }
+        $database->connect($host, $port, $userName, $password, $createdb ? false : $databaseName, $driver, $prefix);
 
 
         if ($database->getLastError()) {

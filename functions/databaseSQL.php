@@ -124,6 +124,7 @@ class databaseSQL extends database
     protected $dbLink = false;
 
     protected $encodeRoomId = [];
+    protected $encodeCopyRoomId = [];
 
     /*********************************************************
      ************************ START **************************
@@ -453,16 +454,29 @@ class databaseSQL extends database
             /* new for encoding */
         case 'tableColumnValues':
             $tableName = $values[1];
+            /* Copy & transform values
+             * Some columns get inserted as-is, but a transformed copy is also then added. When we are modifying such a column, we create the copy here.
+             * If the copy is modified independently, it will not be altered here -- but it should also not be modified independently.
+             * TODO: items stored as DatabaseType will not be detected properly
+             */
+            if (isset($this->encodeCopyRoomId[$tableName])) { // Do we have copy & transform values for the table we are inserting into?
+                var_dump($this->encodeCopyRoomId[$tableName]); die();
+                foreach ($this->encodeCopyRoomId[$tableName] AS $startColumn => $endColumn) { // For each copy & transform value in our table...
+                    if (($key = array_search($startColumn, $values[2])) !== false) { // Check to see if we are, in-fact, inserting the column
+                        $values[2][] = $endColumn;
+                        $values[3][] = $this->blob(fimRoom::encodeId($values[3][$key])); // And if we are, add the new copy column to the list of insert columns
+                    }
+                }
+            }
 
             // Columns
             foreach ($values[2] AS $key => &$column) {
                 if (isset($this->encodeRoomId[$tableName]) && in_array($column, $this->encodeRoomId[$tableName])) {
-                    if ($this->isTypeObject($values[3][$key])) {
-                        throw new Exception('unimplemented.');
-                    }
-                    else {
+                    if ($this->isTypeObject($values[3][$key]))
+                        $values[3][$key] = $this->blob(fimRoom::encodeId($values[3][$key]->value));
+
+                    else
                         $values[3][$key] = $this->blob(fimRoom::encodeId($values[3][$key]));
-                    }
                 }
 
                 $column = $this->formatValue('column', $column);
@@ -484,19 +498,34 @@ class databaseSQL extends database
             $tableName = $values[1];
             $update = array();
 
+            /* Copy & transform values
+             * Some columns get inserted as-is, but a transformed copy is also then added. When we are modifying such a column, we create the copy here.
+             * If the copy is modified independently, it will not be altered here -- but it should also not be modified independently. *
+             */
+            if (isset($this->encodeCopyRoomId[$tableName])) { // Do we have copy & transform values for the table we are updating?
+                foreach ($this->encodeCopyRoomId[$tableName] AS $startColumn => $endColumn) { // For each copy & transform value in our table...
+                    if (isset($values[2][$startColumn])) // Check to see if we are, in-fact, updating the column
+                        $values[2][$endColumn] = $this->blob(fimRoom::encodeId($values[2][$startColumn])); // And if we are, add the new copy column to the list of update columns
+                }
+            }
+
+            /* Process each column and value pair */
             foreach ($values[2] AS $column => $value) {
+                /* Transform values
+                 * Some columns get transformed prior to being sent to the database: we handle those here. */
                 if (isset($this->encodeRoomId[$tableName]) && in_array($column, $this->encodeRoomId[$tableName])) {
-                    if ($this->isTypeObject($value)) {
-                        throw new Exception('unimplemented.');
-                    }
-                    else {
+                    if ($this->isTypeObject($value))
+                        $value = $this->blob(fimRoom::encodeId($value->value));
+
+                    else
                         $value = $this->blob(fimRoom::encodeId($value));
-                    }
                 }
 
+                /* Format and add the column/value pair to our list */
                 $update[] = $this->formatValue('column', $column) . $this->comparisonTypes[DatabaseTypeComparison::assignment] . $this->formatValue('detect', $value);
             }
 
+            /* Return our list of paired values as an string */
             return implode($update, $this->statementSeperator);
         break;
 
@@ -560,7 +589,7 @@ class databaseSQL extends database
 
 
     public function connect($host, $port, $user, $password, $database, $driver, $tablePrefix = '')
-    {
+    {-
         $this->setLanguage($driver);
         $this->sqlPrefix = $tablePrefix;
 
@@ -577,6 +606,14 @@ class databaseSQL extends database
             $this->sqlPrefix . 'unreadMessages' => ['roomId'],
             $this->sqlPrefix . 'users' => ['defaultRoomId'],
             $this->sqlPrefix . 'userFavRooms' => ['roomId'],
+        ];
+
+        $this->encodeCopyRoomId = [
+            $this->sqlPrefix . 'rooms' => ['roomId' => 'roomIdEncoded'],
+        ];
+
+        $this->insertIdColumns = [
+            $this->sqlPrefix . 'rooms' => 'roomId',
         ];
 
         switch ($driver) {
@@ -1634,7 +1671,7 @@ LIMIT
             $this->formatValue('tableColumnValues', $table, $columns, $values);
 
         if ($queryData = $this->rawQuery($query)) {
-            $this->insertId = $this->functionMap('insertId');
+            $this->insertIdCallback($table, $this->functionMap('insertId'));
 
             return $queryData;
         } else {
@@ -1688,14 +1725,28 @@ LIMIT
         ON DUPLICATE KEY UPDATE ' . $this->formatValue('tableUpdateArray', $table, $dataArray);
 
                 if ($queryData = $this->rawQuery($query)) {
-                    $this->insertId = $this->functionMap('insertId');
+                    $this->insertIdCallback($table, $this->functionMap('insertId'));
 
                     return $queryData;
-                } else {
-                    return false;
                 }
+                else return false;
                 break;
         }
+    }
+
+    public function insertIdCallback($table, $insertId) {
+        $this->insertId = $insertId;
+
+        /* Transform code for insert ID
+         * If we are supposed to copy over an insert ID into a new, transformed column, we do it here. */
+        if (isset($this->insertIdColumns[$table]) && isset($this->encodeCopyRoomId[$table][$this->insertIdColumns[$table]])) {
+            $this->update($table, [
+                $this->encodeCopyRoomId[$table][$this->insertIdColumns[$table]] => fimRoom::encodeId($this->insertId)
+            ], [
+                $this->insertIdColumns[$table] => $this->insertId
+            ]);
+        }
+
     }
     /*********************************************************
      ************************* END ***************************
