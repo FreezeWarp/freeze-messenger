@@ -96,13 +96,13 @@ elseif (!$request['password']) {
 elseif (!$request['passwordEncrypt']) {
   throw new Exception('noPasswordEncrypt ', 'A valid password encryption was not specified.');
 }
-elseif ($config['ageRequired'] && !isset($request['birthdate'])) {
+elseif ($generalCache->getConfig('ageRequired') && !isset($request['birthdate'])) {
   throw new Exception('ageRequired', 'An age must be specified to continue.');
 }
-elseif (isset($request['birthdate']) && ($userAge > $config['ageMaximum'])) {
+elseif (isset($request['birthdate']) && ($userAge > $generalCache->getConfig('ageMaximum'))) {
   throw new Exception('ageMaximum', 'The age specified exceeds the maximum age allowed by the server.');
 }
-elseif (isset($request['birthdate']) && ($userAge < $config['ageMinimum'])) {
+elseif (isset($request['birthdate']) && ($userAge < $generalCache->getConfig('ageMinimum'))) {
   throw new Exception('ageMinimum', 'The age specified is below the minimum age allowed by the server.');
 }
 else{

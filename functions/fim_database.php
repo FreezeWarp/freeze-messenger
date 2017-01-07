@@ -49,6 +49,12 @@ class fimDatabase extends databaseSQL
     }
 
 
+
+    public function setConfig($config) {
+        $this->config = $config;
+    }
+
+
     /****** Helper Functions ******/
     public static function makeSearchable($string) {
         global $config;
@@ -85,10 +91,9 @@ class fimDatabase extends databaseSQL
      */
     public function getActiveUsers($options, $sort = array('userName' => 'asc'), $limit = false, $pagination = false)
     {
-        global $config;
 
         $options = $this->argumentMerge(array(
-            'onlineThreshold' => $config['defaultOnlineThreshold'],
+            'onlineThreshold' => $this->config['defaultOnlineThreshold'],
             'roomIds'         => array(),
             'userIds'         => array(),
             'typing'          => null,
@@ -520,8 +525,6 @@ class fimDatabase extends databaseSQL
 
 
     public function getMessagesFromPhrases($options, $sort = array('messageId' => 'asc')) {
-        global $config;
-
         $options = $this->argumentMerge(array(
             'roomIds'           => array(),
             'userIds'           => array(),
@@ -531,8 +534,8 @@ class fimDatabase extends databaseSQL
         $searchArray = array();
         foreach (explode(',', $options['messageTextSearch']) AS $searchVal) {
             $searchArray[] = str_replace(
-                $config['searchWordConvertsFind'],
-                $config['searchWordConvertsReplace'],
+                $this->config['searchWordConvertsFind'],
+                $this->config['searchWordConvertsReplace'],
                 $searchVal
             );
         }
@@ -551,7 +554,7 @@ class fimDatabase extends databaseSQL
 
 
         /* Determine Whether to Use the Fast or Slow Algorithms */
-        if (!$config['fullTextArchive']) { // Original, Fastest Algorithm
+        if (!$this->config['fullTextArchive']) { // Original, Fastest Algorithm
             $conditions['both']['phraseName'] = $this->in((array) $searchArray);
         } else { // Slower Algorithm
             foreach ($searchArray AS $phrase) $conditions['both']['either'][]['phraseName'] = $this->type('string', $phrase, 'search');
@@ -1045,9 +1048,7 @@ class fimDatabase extends databaseSQL
 
 
     public function getPermissionCache($roomId, $userId) {
-        global $config;
-
-        if (!$config['roomPermissionsCacheEnabled']) return -1;
+        if (!$this->config['roomPermissionsCacheEnabled']) return -1;
         else {
             $permissions = $this->select(array(
                 $this->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'
@@ -1098,8 +1099,6 @@ class fimDatabase extends databaseSQL
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function hasPermission(fimUser $user, fimRoom $room) {
-        global $config;
-
         $permissionsCached = $this->getPermissionCache($room->id, $user->id);
         if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
 
@@ -1110,7 +1109,7 @@ class fimDatabase extends databaseSQL
 
             if (count($users) !== count($userIds)) // This checks for invalid users, as getPrivateRoomMembers() will only return members who exist in the database, while getPrivateRoomMemberIds() returns all ids who were specified when the fimRoom object was created.
                 return 0;
-            elseif (!$config['privateRoomsEnabled'])
+            elseif (!$this->config['privateRoomsEnabled'])
                 return 0;
             elseif (in_array($user->id, $userIds))
                 return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
@@ -1130,7 +1129,7 @@ class fimDatabase extends databaseSQL
 
             /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
             if ($user->privs & ADMIN_ROOMS) $returnBitfield = 65535; // Super moderators have all permissions.
-            elseif (in_array($user->groupId, $config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
+            elseif (in_array($user->groupId, $this->config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
             elseif ($room->ownerId === $user->id) $returnBitfield = 65535; // Owners have all permissions.
             elseif ($room->parentalAge > $user->parentalAge
                 || fim_inArray($user->parentalFlags, $room->parentalFlags)
@@ -1166,15 +1165,13 @@ class fimDatabase extends databaseSQL
 
 
     public function updatePermissionsCache($roomId, $userId, $permissions, $isKicked = false) {
-        global $config;
-
-        if ($config['roomPermissionsCacheEnabled']) {
+        if ($this->config['roomPermissionsCacheEnabled']) {
             $this->upsert($this->sqlPrefix . 'roomPermissionsCache', array(
                 'roomId' => $roomId,
                 'userId' => $userId,
             ), array(
                 'permissions' => $permissions,
-                'expires' => $this->now($config['roomPermissionsCacheExpires']),
+                'expires' => $this->now($this->config['roomPermissionsCacheExpires']),
                 'isKicked' => $this->bool($isKicked),
             ));
         }
@@ -1232,28 +1229,24 @@ class fimDatabase extends databaseSQL
 
 
     public function lockoutIncrement() {
-        global $config;
-
         // Note: As defined, attempts will further increase, and expires will further increase, with each additional query beyond the "lockout". As a result, this function generally shouldn't be called if a user is already lockedout -- otherwise, further attempts just lock them out further, when they could be the user checking to see if they are still locked out. So always call lockoutActive before calling lockoutIncrement.
         $this->upsert($this->sqlPrefix . 'sessionLockout', array(
             'ip' => $_SERVER['REMOTE_ADDR'],
         ), array(
             'attempts' => $this->type('equation', '$attempts + 1'),
-            'expires' => $this->now($config['lockoutExpires']) // TOOD: Config
+            'expires' => $this->now($this->config['lockoutExpires']) // TOOD: Config
         ));
 
         return true;
     }
 
     public function lockoutActive() {
-        global $config;
-
         // Note: Select condition format is experimental and untested, and numRows is not yet implemented. So, uh, do that. Lockout count is also unimplemented.
         if ($this->select(array(
                 $this->sqlPrefix . 'sessionLockout' => 'ip, attempts, expires'
             ), array(
                 'ip' => $_SERVER['REMOTE_ADDR'],
-            ))->getColumnValue('attempts') >= $config['lockoutCount']) return true;
+            ))->getColumnValue('attempts') >= $this->config['lockoutCount']) return true;
 
         return false;
     }
@@ -1550,9 +1543,7 @@ class fimDatabase extends databaseSQL
 
     public function markMessageRead($messageId, $userId)
     {
-        global $config;
-
-        if ($config['enableUnreadMessages']) {
+        if ($this->config['enableUnreadMessages']) {
             $this->delete($this->sqlPrefix . "unreadMessages", array(
                 'messageId' => $messageId,
                 'userId'    => $userId
@@ -1591,7 +1582,7 @@ class fimDatabase extends databaseSQL
      */
     public function storeMessage($messageText, $messageFlag, fimUser $user, fimRoom $room, $ignoreBlock = false, &$censorMatches = array())
     {
-        global $generalCache, $config; // TODO
+        global $generalCache; // TODO
 
 
         $user->resolve(array("messageFormatting", "userNameFormat", "profile", "avatar", "mainGroupId", "name"));
@@ -1686,7 +1677,7 @@ class fimDatabase extends databaseSQL
         if (!$room->isPrivateRoom()) {
             $room = $this->getRoom($room->id); // Get the new room data. (TODO: UPDATE ... RETURNING for PostGreSQL)
 
-            if ($room->messageCount % $config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical). Postgres would avoid this issue, once implemented.
+            if ($room->messageCount % $this->config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical). Postgres would avoid this issue, once implemented.
                 $this->insert($this->sqlPrefix . "messageIndex", array(
                     'roomId'    => $room->id,
                     'interval'  => $room->messageCount,
@@ -1700,7 +1691,7 @@ class fimDatabase extends databaseSQL
         $lastDayCache = (int) $generalCache->get('fim3_lastDayCache');
 
         $currentTime = time();
-        $lastMidnight = $currentTime - ($currentTime % $config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight reference point.
+        $lastMidnight = $currentTime - ($currentTime % $this->config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight reference point.
 
         if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that. Note that, though rare-ish, this query may be executed by a few different messages. It's not a big deal, since the primary key will prevent any duplicate entries, but still.
             $generalCache->set('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
@@ -1735,11 +1726,11 @@ class fimDatabase extends databaseSQL
 
 
         // Delete old messages from the cache, based on the maximum allowed rows.
-        if ($messageId2 > $config['cacheTableMaxRows']) {
+        if ($messageId2 > $this->config['cacheTableMaxRows']) {
             $this->delete($this->sqlPrefix . "messagesCached" . ($room->isPrivateRoom() ? 'Private' : ''),
                 array('id' => array(
                     'cond'  => 'lte',
-                    'value' => (int) ($messageId2 - $config['cacheTableMaxRows'])
+                    'value' => (int) ($messageId2 - $this->config['cacheTableMaxRows'])
                 )
                 ));
         }
@@ -1835,11 +1826,9 @@ class fimDatabase extends databaseSQL
 
 
     public function createUnreadMessage($sendToUserId, $user, $room, $messageId) {
-        global $config;
-
         $this->createUserEvent('missedMessage', $sendToUserId, $room->id, $messageId);
 
-        if ($config['enableUnreadMessages']) {
+        if ($this->config['enableUnreadMessages']) {
             $this->upsert($this->sqlPrefix . "unreadMessages", array(
                 'userId'            => $sendToUserId,
                 'roomId'            => $room->id
@@ -1888,9 +1877,7 @@ class fimDatabase extends databaseSQL
      */
     public function createEvent($eventName, $userId = 0, $roomId = 0, $messageId = 0, $param1 = '', $param2 = '', $param3 = '')
     {
-        global $config;
-
-        if ($config['enableEvents']) {
+        if ($this->config['enableEvents']) {
             $this->insert($this->sqlPrefix . "events", array(
                 'eventName' => $eventName,
                 'userId'    => $userId,
@@ -1907,9 +1894,7 @@ class fimDatabase extends databaseSQL
 
     public function createUserEvent($eventName, $userId, $param1 = '', $param2 = '')
     {
-        global $config;
-
-        if ($config['enableEvents']) {
+        if ($this->config['enableEvents']) {
             $this->insert($this->sqlPrefix . "userEvents", array(
                 'eventName' => $eventName,
                 'userId'    => $userId,
@@ -2041,9 +2026,9 @@ class fimDatabase extends databaseSQL
 
     public function accessLog($action, $info)
     {
-        global $user, $globalTime, $config; // TODO
+        global $user, $globalTime; // TODO
 
-        if ($config['accessLogEnabled']) {
+        if ($this->config['accessLogEnabled']) {
             if ($this->insert($this->sqlPrefix . "accessLog", array(
                 'userId' => $user['userId'],
                 'action' => $action,
@@ -2086,7 +2071,7 @@ class fimDatabase extends databaseSQL
      */
     // TODO: Shouldn't be part of fim_database.php.
     public function getKeyWordsFromText($text) {
-        global $config; // TODO
+        global $sqlPrefix, $user; // TODO
 
         $string = $this->makeSearchable($text);
 
@@ -2094,9 +2079,9 @@ class fimDatabase extends databaseSQL
         $stringPiecesAdd = array();
 
         foreach ($stringPieces AS $piece) {
-            if (strlen($piece) >= $config['searchWordMinimum'] &&
-                strlen($piece) <= $config['searchWordMaximum'] &&
-                !in_array($piece, $config['searchWordOmissions'])) $stringPiecesAdd[] = str_replace($config['searchWordConvertsFind'], $config['searchWordConvertsReplace'], $piece);
+            if (strlen($piece) >= $this->config['searchWordMinimum'] &&
+                strlen($piece) <= $this->config['searchWordMaximum'] &&
+                !in_array($piece, $this->config['searchWordOmissions'])) $stringPiecesAdd[] = str_replace($this->config['searchWordConvertsFind'], $this->config['searchWordConvertsReplace'], $piece);
         }
 
         if (count($stringPiecesAdd) > 0) {
