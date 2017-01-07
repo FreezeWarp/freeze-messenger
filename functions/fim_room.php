@@ -44,7 +44,7 @@ class fimRoom {
     protected $roomData;
 
     private $resolved = array();
-    private $roomDataConversion = array( // Eventually, we'll hopefully rename everything in the DB itself, but that'd be too time-consuming right now.
+    private static $roomDataConversion = array( // Eventually, we'll hopefully rename everything in the DB itself, but that'd be too time-consuming right now.
         'roomId' => 'id',
         'roomName' => 'name',
         'roomAlias' => 'alias', // TODO: remove
@@ -60,7 +60,7 @@ class fimRoom {
         'flags' => 'flags'
     );
 
-    private $roomDataPullGroups = array(
+    private static $roomDataPullGroups = array(
         'roomId, roomName',
         'defaultPermissions, options',
         'roomParentalFlags,roomParentalAge,roomTopic',
@@ -198,6 +198,7 @@ class fimRoom {
 
     /**
      * Returns true if the room has valid data in the database, or should otherwise be treated as "existing" (e.g. is a private room).
+     * TODO: caching
      */
     public function roomExists() {
         global $database;
@@ -272,8 +273,8 @@ class fimRoom {
 
                 else {
                     // Find selection group
-                    if (isset(array_flip($this->roomDataConversion)[$property])) {
-                        $needle = array_flip($this->roomDataConversion)[$property];
+                    if (isset(array_flip(fimRoom::$roomDataConversion)[$property])) {
+                        $needle = array_flip(fimRoom::$roomDataConversion)[$property];
                         $selectionGroup = array_values(array_filter($this->roomDataPullGroups, function ($var) use ($needle) {
                             return strpos($var, $needle) !== false;
                         }))[0];
@@ -369,10 +370,10 @@ class fimRoom {
     }
 
     private function mapDatabaseProperty($property) {
-        if (!isset(array_flip($this->roomDataConversion)[$property]))
+        if (!isset(array_flip(fimRoom::$roomDataConversion)[$property]))
             throw new Exception("Unable to map database property '$property'");
         else
-            return array_flip($this->roomDataConversion)[$property];
+            return array_flip(fimRoom::$roomDataConversion)[$property];
     }
 
 
@@ -394,7 +395,7 @@ class fimRoom {
      * @throws Exception
      */
     public function resolveAll() {
-        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff(array_values($this->roomDataConversion), $this->resolved)));
+        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff(array_values(fimRoom::$roomDataConversion), $this->resolved)));
     }
 
 
@@ -414,10 +415,10 @@ class fimRoom {
                 if (!$dbNameMapping) {
                     $this->__set($attribute, $value);
                 }
-                elseif (!isset($this->roomDataConversion[$attribute]))
+                elseif (!isset(fimRoom::$roomDataConversion[$attribute]))
                     trigger_error("fimRoom was passed a roomData array containing '$attribute', which is unsupported.", E_USER_ERROR);
                 else {
-                    $this->__set($this->roomDataConversion[$attribute], $value);
+                    $this->__set(fimRoom::$roomDataConversion[$attribute], $value);
                 }
             }
 
