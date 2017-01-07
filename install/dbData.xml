@@ -7,6 +7,11 @@
       <column name="value" value="true" />
       <column name="type" value="bool" />
     </table>
+    <table name="configuration" mode="dev">
+      <column name="directive" value="logQueries" />
+      <column name="value" value="true" />
+      <column name="type" value="bool" />
+    </table>
 
     <!-- Table censorLists -->
     <table name="censorLists">

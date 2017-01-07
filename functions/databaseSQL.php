@@ -102,9 +102,11 @@ class databaseSQL extends database
     public $versionString = '0.0.0';
     public $supportedLanguages = array('mysql', 'mysqli', 'pdo');
     public $storeTypes = array('memory', 'general', 'innodb');
-    public $queryLog = array();
     public $mode = 'SQL';
     public $language = '';
+
+    public $queryLog = array();
+    public $queryLogToFile = false;
 
     private $driverMap = array(
         'mysql' => 'mysql',
@@ -130,6 +132,17 @@ class databaseSQL extends database
      ************************ START **************************
      ******************* General Functions *******************
      *********************************************************/
+
+    public function __destruct() {
+        if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
+            $this->close();
+        }
+
+        if ($this->queryLogToFile) {
+            file_put_contents($this->queryLogToFile, '*****' . $_SERVER['SCRIPT_FILENAME'] . '*****' . PHP_EOL . print_r($this->queryLog, true) . PHP_EOL . PHP_EOL . PHP_EOL, FILE_APPEND | LOCK_EX);
+        }
+    }
+
 
     /**
      * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
@@ -969,19 +982,25 @@ class databaseSQL extends database
      */
     protected function rawQuery($query)
     {
-        $this->newQuery($query);
-
-        if ($queryData = $this->functionMap('query', $query)) {
-            if ($queryData === true) return true; // Insert, Update, Delete, etc.
-            else return $this->databaseResultPipe($queryData, $query, $this->driver); // Select, etc.
-        }
+        if ($this->returnQueryString)
+            return $query;
 
         else {
-            $this->errors[] = $this->functionMap('error');
+            $start = microtime(true);
+            if ($queryData = $this->functionMap('query', $query)) {
+                $this->newQuery($query, microtime(true) - $start);
 
-            $this->triggerError("badQuery", $query);
+                if ($queryData === true) return true; // Insert, Update, Delete, etc.
+                else return $this->databaseResultPipe($queryData, $query, $this->driver); // Select, etc.
+            }
 
-            return false;
+            else {
+                $this->errors[] = $this->functionMap('error');
+
+                $this->triggerError("badQuery", $query);
+
+                return false;
+            }
         }
     }
 
@@ -1008,10 +1027,10 @@ class databaseSQL extends database
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
 
-    protected function newQuery($queryText)
+    protected function newQuery($queryText, $microtime = false)
     {
         $this->queryCounter++;
-        $this->queryLog[] = $queryText;
+        $this->queryLog[] = [$queryText, $microtime];
     }
 
 

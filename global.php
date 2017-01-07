@@ -225,7 +225,7 @@ $config = $generalCache->getConfig();
 $database->setConfig($config);
 
 
-
+$database->queryLogToFile = ($config['logQueries'] ? $config['logQueriesFile'] : false);
 ////* User Login (Requires Database) *////
 require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
 ?>

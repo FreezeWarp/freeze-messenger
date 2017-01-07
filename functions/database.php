@@ -83,9 +83,7 @@ abstract class database
      */
     public function __destruct()
     {
-        if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
-            $this->close();
-        }
+
     }
 
     public function startsWith($haystack, $needle)
