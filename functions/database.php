@@ -30,6 +30,7 @@ abstract class database
     public $classProduct = 'fim';
 
     public $queryCounter = 0;
+
     public $insertId = null;
     public $errors = array();
     public $printErrors = false;
@@ -140,6 +141,8 @@ abstract class database
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     abstract public function close();
+
+
 
     /*********************************************************
      ************************* END ***************************
@@ -889,7 +892,7 @@ abstract class database
      * @return databaseResult
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    abstract protected function databaseResultPipe($queryData, $query, $driver);
+    abstract protected function databaseResultPipe($queryData, $reverseAlias, $query, $driver);
 }
 
 class databaseResult
@@ -902,9 +905,10 @@ class databaseResult
      * @return void
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function __construct($queryData, $sourceQuery, $language)
+    public function __construct($queryData, $reverseAlias, $sourceQuery, $language)
     {
         $this->queryData = $queryData;
+        $this->reverseAlias = $reverseAlias;
         $this->sourceQuery = $sourceQuery;
         $this->driver = $language;
     }
@@ -989,58 +993,48 @@ class databaseResult
                 while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
                     if ($row === null || $row === false) break;
 
+                    /* Decoding */
+                    foreach ($row AS $columnName => &$columnValue) {
+                        $columnValue = $this->applyColumnTransformation($columnName, $columnValue);
+                    }
+
+
+
                     if ($index === true) { // If the index is boolean "true", we simply create numbered rows to use. (1,2,3,4,5)
                         $data[$indexV++] = $row; // Append the data.
-                    } else { // If the index is not boolean "true", we instead get the column value of the index/column name.
-                        $index = (array)$index;
+                    }
 
-                        // Okay, so here's the thing: there's no easy way to build this thing below with an unlimited number of index values. Instead, just because I can, I'm going to hardcode five. If someone can submit a patch that is more flexible, it would be awesome -- I simply can't think of a good way how myself.
-                        if ($group) { // Allow duplicate values.
-                            switch (count($index)) {
-                                case 1:
-                                    $data[$row[$index[0]]][] = $row;
-                                    break;
-                                case 2:
-                                    $data[$row[$index[0]]][$row[$index[1]]][] = $row;
-                                    break;
-                                case 3:
-                                    $data[$row[$index[0]]][$row[$index[1]]][$row[$index[2]]][] = $row;
-                                    break;
-                                case 4:
-                                    $data[$row[$index[0]]][$row[$index[1]]][$row[$index[2]]][$row[$index[3]]][] = $row;
-                                    break;
-                                case 5:
-                                    $data[$row[$index[0]]][$row[$index[1]]][$row[$index[2]]][$row[$index[3]]][$row[$index[4]]][] = $row;
-                                    break;
-                            }
-                        } else { // Overwrite duplicate values.
-                            switch (count($index)) {
-                                case 1:
-                                    $data[$row[$index[0]]] = $row;
-                                    break;
-                                case 2:
-                                    $data[$row[$index[0]]][$row[$index[1]]] = $row;
-                                    break;
-                                case 3:
-                                    $data[$row[$index[0]]][$row[$index[1]]][$row[$index[2]]] = $row;
-                                    break;
-                                case 4:
-                                    $data[$row[$index[0]]][$row[$index[1]]][$row[$index[2]]][$row[$index[3]]] = $row;
-                                    break;
-                                case 5:
-                                    $data[$row[$index[0]]][$row[$index[1]]][$row[$index[2]]][$row[$index[3]]][$row[$index[4]]] = $row;
-                                    break;
-                            }
+                    else { // If the index is not boolean "true", we instead get the column value of the index/column name.
+                        $index = (array) $index;
+
+                        $ref =& $data;
+                        for ($i = 1; $i <= count($index); $i++) {
+                            $ref =& $ref[$row[$index[$i - 1]]];
                         }
+
+                        if ($group)
+                            $ref[] = $row;
+
+                        else
+                            $ref = $row;
                     }
                 }
 
                 return $data; // All rows fetched, return the data.
-            } else { // No index is present, generate a two-dimensional array (key => value, key being the column name, value being the corrosponding value).
-                $return = $this->functionMap('fetchAsArray', $this->queryData);
-                return (!$return ? array() : ($index !== false ? $return[$index] : $return));
             }
-        } else {
+
+            else { // No index is present, generate a two-dimensional array (key => value, key being the column name, value being the corrosponding value).
+                $return = $this->functionMap('fetchAsArray', $this->queryData);
+
+                foreach ($return AS $columnName => &$columnValue) {
+                    $columnValue = $this->applyColumnTransformation($columnName, $columnValue);
+                }
+
+                return (!$return ? array() : $return);
+            }
+        }
+
+        else {
             return array(); // Query data is false or null, return an empty array.
         }
     }
@@ -1052,10 +1046,10 @@ class databaseResult
 
         while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
             if ($columnKey)
-                $columnValues[$row[$columnKey]] = $row[$column];
+                $columnValues[$this->applyColumnTransformation($columnKey, $row[$columnKey])] = $this->applyColumnTransformation($column, $row[$column]);
 
             else
-                $columnValues[] = $row[$column];
+                $columnValues[] = $this->applyColumnTransformation($column, $row[$column]);
         }
 
         return $columnValues;
@@ -1066,7 +1060,18 @@ class databaseResult
     {
         $row = $this->functionMap('fetchAsArray', $this->queryData);
 
-        return $row[$column];
+        return $this->applyColumnTransformation($column, $row[$column]);
+    }
+
+
+    public function applyColumnTransformation($column, $value) {
+        $tableName = $this->reverseAlias[$column][0];
+
+        if (isset($this->encode[$tableName][$column]))
+            return call_user_func($this->encode[$tableName][$column][2], $value);
+
+        else
+            return $value;
     }
 
 

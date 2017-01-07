@@ -620,18 +620,18 @@ class databaseSQL extends database
         $this->sqlPrefix = $tablePrefix;
 
         $this->encode = [
-            $this->sqlPrefix . 'files' => ['roomIdLink' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'messages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'messageIndex' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'ping' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'roomEvents' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'roomPermissionsCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'roomStats' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'searchMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'searchCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'unreadMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'users' => ['defaultRoomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
-            $this->sqlPrefix . 'userFavRooms' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob]],
+            $this->sqlPrefix . 'files' => ['roomIdLink' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'messages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'messageIndex' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'ping' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'roomEvents' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'roomPermissionsCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'roomStats' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'searchMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'searchCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'unreadMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'users' => ['defaultRoomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+            $this->sqlPrefix . 'userFavRooms' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
         ];
 
         $this->encodeCopy = [
@@ -980,7 +980,7 @@ class databaseSQL extends database
      * @return resource|bool - The database resource returned by the query, or false on failure.
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    protected function rawQuery($query)
+    protected function rawQuery($query, $reverseAlias = false)
     {
         if ($this->returnQueryString)
             return $query;
@@ -991,7 +991,7 @@ class databaseSQL extends database
                 $this->newQuery($query, microtime(true) - $start);
 
                 if ($queryData === true) return true; // Insert, Update, Delete, etc.
-                else return $this->databaseResultPipe($queryData, $query, $this->driver); // Select, etc.
+                else return $this->databaseResultPipe($queryData, $reverseAlias, $query, $this->driver); // Select, etc.
             }
 
             else {
@@ -1014,9 +1014,9 @@ class databaseSQL extends database
      *
      * @return databaseResult
      */
-    protected function databaseResultPipe($queryData, $query, $driver)
+    protected function databaseResultPipe($queryData, $reverseAlias, $query, $driver)
     {
-        return new databaseResult($queryData, $query, $driver);
+        return new databaseResult($queryData, $reverseAlias, $query, $driver);
     }
 
 
@@ -1605,8 +1605,7 @@ LIMIT
   ' . $finalQuery['limit'] : '');
 
         /* And Run the Query */
-        if ($this->returnQueryString) return $finalQueryText;
-        else return $this->rawQuery($finalQueryText);
+        return $this->rawQuery($finalQueryText, $reverseAlias);
     }
 
 
