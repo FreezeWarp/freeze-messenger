@@ -138,9 +138,10 @@ elseif (isset($_REQUEST['access_token'])) {
     if (!$attempt = $oauthServer->verifyResourceRequest($oauthRequest)) {
         $oauthServer->getResponse()->send();
         die();
-    } else {//var_dump($oauthServer->getResourceController()->getAccessTokenData($oauthRequest, $oauthServer->getResponse())['user_id']); die();
-        $user = new fimUser((int)$oauthServer->getResourceController()->getAccessTokenData($oauthRequest, $oauthServer->getResponse())['user_id']);
-//      var_dump($user);
+    }
+
+    else {
+        $user = new fimUser((int) $oauthServer->getResourceController()->getToken()['user_id']);
     }
 }
 else {
