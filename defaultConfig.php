@@ -402,7 +402,7 @@ $defaultConfig = array(
 
     /*** Error Handling and Logging ***/
     'email' => '',
-    'displayBacktrace' => true, // TOOD: False by default.
+    'displayBacktrace' => false,
     'logQueries' => false,
     'logQueriesFile' => 'U:\wamp\www\freeze-messenger\querylog',
 
