@@ -27,6 +27,8 @@ class fimUser
     private $passwordHash;
     private $passwordSalt;
     private $passwordFormat;
+    private $passwordLastReset;
+    private $passwordResetNow = false;
 
     private $fileCount;
     private $fileSize;
@@ -37,34 +39,51 @@ class fimUser
     protected $userData;
 
     private $resolved = array();
-    private $userDataConversion = array(
+    private static $userDataConversion = array(
         'userId' => 'id',
         'userName' => 'name',
         'userNameFormat' => 'userNameFormat',
+
         'userGroupId' => 'mainGroupId',
         'socialGroupIds' => 'socialGroupIds',
+
         'userParentalFlags' => 'parentalFlags',
         'userParentalAge' => 'parentalAge',
+
         'privs' => 'privs',
+
         'lastSync' => 'lastSync',
-        'messageFormatting' => 'messageFormatting',
+
         'defaultRoomId' => 'defaultRoomId',
+
+        'messageFormatting' => 'messageFormatting',
         'profile' => 'profile',
         'avatar' => 'avatar',
+
         'options' => 'options',
+
         'passwordHash' => 'passwordHash',
         'passwordFormat' => 'passwordFormat',
+        'passwordResetNow' => 'passwordResetNow',
+        'passwordLastReset' => 'passwordLastReset',
+
         'fileCount' => 'fileCount',
         'fileSize' => 'fileSize',
+
+        'favRoomIds' => 'favRooms',
+        'watchRoomIds' => 'watchRooms',
+        'ignoredUserIds' => 'ignoreList',
+        'friendedUserIds' => 'friendsList'
     );
 
-    private $userDataPullGroups = array(
+    private static $userDataPullGroups = array(
         'userId,userName,privs,lastSync',
         'userGroupId,socialGroupIds,userParentalFlags,userParentalAge',
         'joinDate,messageFormatting,profile,avatar,userNameFormat',
         'options,defaultRoomId',
         'passwordHash,passwordFormat',
-        'fileCount,fileSize'
+        'fileCount,fileSize',
+        'favRoomIds,watchRoomIds,ignoredUserIds,friendedUserIds'
     );
 
 
@@ -120,8 +139,8 @@ class fimUser
             }
 
             // Find selection group
-            elseif (isset(array_flip($this->userDataConversion)[$property])) {
-                $needle = array_flip($this->userDataConversion)[$property];
+            elseif (isset(array_flip(fimUser::$userDataConversion)[$property])) {
+                $needle = array_flip(fimUser::$userDataConversion)[$property];
                 $selectionGroup = array_values(array_filter($this->userDataPullGroups, function ($var) use ($needle) {
                     return strpos($var, $needle) !== false;
                 }))[0];
@@ -163,16 +182,19 @@ class fimUser
 
 
             // Parental Flags: Convert CSV to Array, or empty if disabled
-            else if ($property === 'parentalFlags') {
+            elseif ($property === 'parentalFlags') {
                 if ($config['parentalEnabled']) $this->parentalFlags = explode(',', $value);
-                else                              $this->parentalFlags = array();
+                else                            $this->parentalFlags = array();
             }
 
 
             // Parental Age: Disable if feature is disabled.
-            else if ($property === 'parentalAge') {
+            elseif ($property === 'parentalAge') {
                 if ($config['parentalEnabled']) $this->parentalAge = $value;
-                else                              $this->parentalAge = 255;
+                else                            $this->parentalAge = 255;
+            }
+
+
             // Room and user lists: explode from CSV
             // TODO: validation; if the entry doesn't end with a control character, regenerate the list
             elseif ($property === 'favRooms' || $property === 'watchRooms' || $property === 'friendsList' || $property === 'ignoreList') {
@@ -181,7 +203,7 @@ class fimUser
 
 
             // Priviledges: modify based on global permissions, inconsistencies, and superuser status.
-            else if ($property === 'privs') {
+            elseif ($property === 'privs') {
                 // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
                 if (!$this->generalCache->getConfig('userRoomCreation'))
                     $this->privs &= ~USER_PRIV_CREATE_ROOMS;
@@ -201,7 +223,7 @@ class fimUser
                     $this->privs |= (USER_PRIV_VIEW | USER_PRIV_POST | USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
             }
 
-            else if ($property === 'anonId') {
+            elseif ($property === 'anonId') {
                 if ($this->id === $this->generalCache->getConfig('anonymousUserId')) {
                     $this->name .= $this->anonId;
                 }
@@ -304,11 +326,11 @@ class fimUser
                     break;
 
                 case 'plaintext':
-                    return ($this->passwordHash === $password);
+                    return ($this->__get('passwordHash') === $password);
                     break;
 
                 case 'phpbb':
-                    return strlen($password) > 0 && $this->phpbb_check_hash($password, $this->passwordHash);
+                    return strlen($password) > 0 && $this->phpbb_check_hash($password, $this->__get('passwordHash'));
                     break;
 
                 default:
@@ -416,7 +438,7 @@ class fimUser
      */
     function phpbb_check_hash($password, $hash) {
         if (strlen($hash) == 34) {
-            return (phpbb_hash_crypt_private($password, $hash, $itoa64) === $hash) ? true : false;
+            return ($this->phpbb_hash_crypt_private($password, $hash, $itoa64) === $hash) ? true : false;
         }
 
         return (md5($password) === $hash) ? true : false;
@@ -465,10 +487,11 @@ class fimUser
             $this->resolved = array_diff($this->resolved, array_values($userData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
 
             foreach ($userData AS $attribute => $value) {
-                if (!isset($this->userDataConversion[$attribute]))
-                    trigger_error("fimUser was passed a userData array containing '$attribute', which is unsupported.", E_USER_NOTICE);
-                else
-                    $this->__set($this->userDataConversion[$attribute], $value);
+                if (!isset(fimUser::$userDataConversion[$attribute]))
+                    throw new fimError("fimUserBadProperty", "fimUser does not have conversion data for property '$attribute'");
+                else {
+                    $this->__set(fimUser::$userDataConversion[$attribute], $value);
+                }
             }
 
             return true;
@@ -480,10 +503,10 @@ class fimUser
 
 
     private function mapDatabaseProperty($property) {
-        if (!isset(array_flip($this->userDataConversion)[$property]))
+        if (!isset(array_flip(fimUser::$userDataConversion)[$property]))
             throw new Exception("Unable to map database property '$property'");
         else
-            return array_flip($this->userDataConversion)[$property];
+            return array_flip(fimUser::$userDataConversion)[$property];
     }
 
 
@@ -492,7 +515,7 @@ class fimUser
     }
 
     public function resolveAll() {
-        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff(array_values($this->userDataConversion), $this->resolved)));
+        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff(array_values(fimUser::$userDataConversion), $this->resolved)));
     }
 
     /* Do I even remember what this was going to be for? Not really. */
@@ -544,7 +567,9 @@ class fimUser
             $database->endTransaction();
 
             return $return;
-        } else {
+        }
+
+        else {
             $databaseFields = array_merge(array(
                 'privs' => $this->generalCache->getConfig('defaultUserPrivs')
             ), $databaseFields);
