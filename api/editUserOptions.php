@@ -67,54 +67,11 @@ These parameteres are, where applicable, documented in the SQL documentation.
  * ==parentalAge==
  * @throw badAge - The parental age specified is not valid.
  *
- * =Response=
- * @return APIOBJ
- ** editUserOptions
- *** activeUser
- **** userId
- **** userName
- *** errStr
- *** errDesc
- *** response
- **** avatar
- ***** status - true or false
- ***** newValue
- ***** errStr
- ***** errDesc
- **** profile
- ***** status - true or false
- ***** newValue
- ***** errStr
- ***** errDesc
- **** defaultRoom-
- ***** status - true or false
- ***** newValue
- ***** errStr
- ***** errDesc
- **** defaultFormatting
- ***** status - true or false (always true)
- ***** newValue
- **** defaultHighlight, defaultColor
- ***** status - true or false
- ***** newValue
- ***** errStr
- ***** errDesc
- **** defaultFontface
- ***** status - true or false
- ***** newValue
- ***** errStr
- ***** errDesc
- **** parentalAge
- ***** status - true or false
- ***** newValue
- ***** errStr
- ***** errDesc
- **** parentalFlags
- ***** status - true or false
- ***** newValue
  *
- * Notes
- * This API should ideally be possible to represent using these REST requests:
+ *
+ * PUT editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == replaces the list of watch rooms with the new list, [1,2,3]
+ * DELETE editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == removes rooms 1, 2, and 3 from the watch rooms list
+ * POST editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == adds rooms 1, 2, and 3 from the watch rooms list
  */
 
 $apiRequest = true;
@@ -124,9 +81,13 @@ require('../global.php');
 
 
 /* Get Request Data */
+$requestHead = fim_sanitizeGPC('g', array(
+    '_action' => [],
+));
+
 $request = fim_sanitizeGPC('p', array(
     'defaultRoomId' => array(
-        'cast' => 'int',
+        'cast' => 'roomId',
     ),
 
     'avatar' => array(
@@ -150,7 +111,8 @@ $request = fim_sanitizeGPC('p', array(
     ),
 
     'defaultFormatting' => array(
-        'cast' => 'int',
+        'cast' => 'list',
+        'valid' => array('bold', 'italics')
     ),
 
     'parentalAge' => array(
@@ -158,39 +120,36 @@ $request = fim_sanitizeGPC('p', array(
     ),
 
     'parentalFlags' => array(
-        'cast' => 'csv',
+        'cast' => 'list',
         'valid' => $config['parentalFlags'], // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
     ),
-));
 
-$sRequest = fim_sanitizeGPC('pgd', array(
     'watchRooms' => array(
-        'cast' => 'csv',
+        'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
-        'default' => array(),
     ),
 
     'favRooms' => array(
-        'cast' => 'csv',
+        'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
-        'default' => array(),
     ),
 
     'friendsList' => array(
-        'cast' => 'csv',
+        'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
-        'default' => array(),
     ),
 
     'ignoreList' => array(
-        'cast' => 'csv',
+        'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
-        'default' => array(),
     )
+));
+
+$sRequest = fim_sanitizeGPC('pud', array(
 ));
 
 /* Data Predefine */
@@ -201,228 +160,239 @@ $xmlData = array(
 );
 
 
-/* Start Processing */
-if ($loginConfig['method'] === 'vanilla') {
-    /* Avatar */
-    if (isset($request['avatar'])) { // TODO: Add regex policy.
-        $imageData = getimagesize($request['avatar']);
 
-        if ($imageData[0] <= $config['avatarMinimumWidth'] || $imageData[1] <= $config['avatarMinimumHeight']) {
-            $xmlData['editUserOptions']['response']['avatar']['status'] = false;
-            $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'smallSize';
-            $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar specified is too small.';
-        }
-        elseif ($imageData[0] >= $config['avatarMaximumWidth'] || $imageData[1] >= $config['avatarMaximumHeight']) {
-            $xmlData['editUserOptions']['response']['avatar']['status'] = false;
-            $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'bigSize';
-            $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar specified is too large.';
-        }
-        elseif (!in_array($imageData[2], $config['imageType'])) {
-            $xmlData['editUserOptions']['response']['avatar']['status'] = false;
-            $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'badType';
-            $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar is not a valid image type.';
-        }
-        elseif ($badRegex) {
-            $xmlData['editUserOptions']['response']['avatar']['status'] = false;
-            $xmlData['editUserOptions']['response']['avatar']['errStr'] = 'bannedFile';
-            $xmlData['editUserOptions']['response']['avatar']['errDesc'] = 'The avatar specified is not allowed.';
-        }
-        else {
-            $updateArray['avatar'] = $request['avatar'];
+/************************************
+ **** Editable Only Properties ******
+ ************************************/
+if ($requestHead['_action'] === 'edit') {
 
-            $xmlData['editUserOptions']['response']['avatar']['status'] = true;
-            $xmlData['editUserOptions']['response']['avatar']['newValue'] = (int) $request['avatar'];
-        }
-    }
+    /************************************
+     ***** Vanilla Only Properties ******
+     ************************************/
+    if ($loginConfig['method'] === 'vanilla') {
 
+        /************************************
+         ************ Avatar ****************
+         ************************************/
+        if (isset($request['avatar'])) { // TODO: Add regex policy.
+            if ($badRegex) // TODO
+                $xmlData['editUserOptions']['avatar'] = new fimError('bannedFile', 'The avatar specified is not allowed.', null, true);
 
-    /* Profile */
-    if (isset($request['profile'])) { // TODO: Add regex policy.
-        if ($request['profile'] === '') {
-            // Really, do nothing for now. Could have a hook here later if we want to.
-        }
-        elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === FALSE) {
-            $xmlData['editUserOptions']['response']['profile']['status'] = false;
-            $xmlData['editUserOptions']['response']['profile']['errStr'] = 'noUrl';
-            $xmlData['editUserOptions']['response']['profile']['errDesc'] = 'The URL is not a URL.';
-        }
-        else {
-            $ch = curl_init($request['profile']);
-            curl_setopt($ch, CURLOPT_USERAGENT, $config['curlUA']);
-            curl_setopt($ch, CURLOPT_NOBODY, true);
-            curl_exec($ch);
-            $retcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            if ($retcode !== 200) {
-                $xmlData['editUserOptions']['response']['profile']['status'] = false;
-                $xmlData['editUserOptions']['response']['profile']['errStr'] = 'badUrl';
-                $xmlData['editUserOptions']['response']['profile']['errDesc'] = 'The URL does not validate.';
-            }
-            elseif ($badRegex) {
-                $xmlData['editUserOptions']['response']['profile']['status'] = false;
-                $xmlData['editUserOptions']['response']['profile']['errStr'] = 'bannedUrl';
-                $xmlData['editUserOptions']['response']['profile']['errDesc'] = 'The URL specified is not allowed.';
-            }
             else {
-                $updateArray['profile'] = $request['profile'];
+                $imageData = getimagesize($request['avatar']);
 
-                $xmlData['editUserOptions']['response']['profile']['status'] = true;
-                $xmlData['editUserOptions']['response']['profile']['newValue'] = $request['profile'];
+                if ($imageData[0] <= $config['avatarMinimumWidth'] || $imageData[1] <= $config['avatarMinimumHeight'])
+                    $xmlData['editUserOptions']['avatar'] = new fimError('smallSize', 'The avatar specified is too small.', null, true);
+
+                elseif ($imageData[0] >= $config['avatarMaximumWidth'] || $imageData[1] >= $config['avatarMaximumHeight'])
+                    $xmlData['editUserOptions']['avatar'] = new fimError('bigSize', 'The avatar specified is too large.', null, true);
+
+                elseif (!in_array($imageData[2], $config['imageType']))
+                    $xmlData['editUserOptions']['avatar'] = new fimError('badType', 'The avatar is not a valid image type.', null, true);
+
+                else
+                    $updateArray['avatar'] = $request['avatar'];
+            }
+        }
+
+
+
+        /************************************
+         ************** Profile *************
+         ************************************/
+        if (isset($request['profile'])) { // TODO: Add regex policy.
+            if ($request['profile'] === '') {
+                // Really, do nothing for now. Could have a hook here later if we want to.
+            }
+
+            elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === FALSE) {
+                $xmlData['editUserOptions']['profile'] = new fimError('noUrl', 'The URL is not a URL.', null, true);
+            }
+
+            else {
+                if ($badRegex) // TODO
+                    $xmlData['editUserOptions']['profile'] = new fimError('bannedUrl', 'The URL specified is not allowed.', null, true);
+
+                elseif (!curlRequest::exists($request['profile']))
+                    $xmlData['editUserOptions']['profile'] = new fimError('badUrl', 'The URL does not exist.', null, true);
+
+                else
+                    $updateArray['profile'] = $request['profile'];
+            }
+        }
+
+    }
+
+    /************************************
+     * Error for Vanilla Only Properties*
+     ************************************/
+    else {
+        if (isset($request['avatar']))
+            $xmlData['editUserOptions']['avatar'] = new fimError('avatarDisabled', 'The avatar can not be changed through this API.', null, true);
+
+        if (isset($request['profile']))
+            $xmlData['editUserOptions']['profile'] = new fimError('profileDisabled', 'The profile can not be changed through this API.', null, true);
+    }
+
+    /*** END: Vanilla-Only Properties ***/
+
+
+
+    /************************************
+     *********** Default Room ID ********
+     ************************************/
+    if (isset($request['defaultRoomId'])) {
+        $defaultRoom = new fimRoom($request['defaultRoomId']);
+
+        if (!$defaultRoom->roomExists())
+            $xmlData['editUserOptions']['defaultRoom'] = new fimError('invalidRoom', 'The room specified does not exist.');
+
+        elseif (!($database->hasPermission($user, $defaultRoom) & ROOM_PERMISSION_VIEW))
+            $xmlData['editUserOptions']['defaultRoom'] = new fimError('noPerm', 'You do not have permission to view the room you are trying to default to.');
+
+        else
+            $updateArray['defaultRoom'] = $defaultRoom->id;
+    }
+
+
+
+    /************************************
+     ********* Default Formatting *******
+     ************************************/
+    if (isset($request['defaultFormatting'])) {
+        if (in_array('bold', $request['defaultFormatting']) && $config['defaultFormattingBold'])
+            $updateArray['messageFormatting'][] = 'font-weight: bold';
+
+        if (in_array('italics', $request['defaultFormatting']) && $config['defaultFormattingItalics'])
+            $updateArray['messageFormatting'][] = 'font-style: italic';
+    }
+
+
+
+    /************************************
+     ***** Default Highlight/Color ******
+     ************************************/
+    foreach (array('defaultHighlight', 'defaultColor') AS $value) {
+        if (isset($request[$value])) {
+            $rgb = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
+
+            if (!$config['defaultFormatting' . substr($value, 7)])
+                $xmlData['editUserOptions'][$value] = new fimError('disabled', $value . ' is disabled on this server.', null, true);
+
+            elseif (count($rgb) !== 3) // Too many entries.
+                $xmlData['editUserOptions'][$value] = new fimError('badFormat', 'The ' . $value . ' value was not properly formatted.', null, true);
+
+            elseif ($rgb[0] < 0 || $rgb[0] > 255) // First val out of range.
+                $xmlData['editUserOptions'][$value] = new fimError('outOfRange1', 'The first value ("red") was out of range.', null, true);
+
+            elseif ($rgb[1] < 0 || $rgb[1] > 255) // Second val out of range.
+                $xmlData['editUserOptions'][$value] = new fimError('outOfRange2', 'The first value ("green") was out of range.', null, true);
+
+            elseif ($rgb[2] < 0 || $rgb[2] > 255) // Third val out of range.
+                $xmlData['editUserOptions'][$value] = new fimError('outOfRange3', 'The first value ("blue") was out of range.', null, true);
+
+            else {
+                switch ($value) {
+                    case 'defaultHighlight':
+                        $updateArray['messageFormatting'][] = 'background-color: rgb(' . implode(',', $rgb) . ')';
+                    break;
+                    case 'defaultColor':
+                        $updateArray['messageFormatting'][] = 'color: rgb(' . implode(',', $rgb) . ')';
+                    break;
+                }
             }
         }
     }
+
+
+
+    /************************************
+     ********* Default Fontface *********
+     ************************************/
+    if (isset($request['defaultFontface'])) {
+        if (!$config['defaultFormattingFont'])
+            $xmlData['editUserOptions']['defaultFontface'] = new fimError('disabled', 'Defaults fonts are disabled on this server.');
+
+        else if (!isset($config['fonts'][$request['defaultFontface']]))
+            $xmlData['editUserOptions']['defaultFontface'] = new fimError('noFont', 'The specified font is not recognised. A list of recognised fonts can be obtained through the getServerStatus API.');
+
+        else
+            $updateArray['messageFormatting'][] = 'font-family: ' . $config['fonts'][$request['defaultFontface']];
+    }
+
+
+
+    /************************************
+     *********** Parental Age ***********
+     ************************************/
+    if (isset($request['parentalAge'])) {
+        if (!in_array($request['parentalAge'], $config['parentalAges'], true))
+            $xmlData['editUserOptions']['parentalAge'] = new fimError('badAge', 'The parental age specified is invalid. A list of valid parental ages can be obtained from the getServerStatus API.', null, true);
+
+        else
+            $updateArray['userParentalAge'] = $request['parentalAge'];
+    }
+
+
+
+    /************************************
+     ********** Parental Flags **********
+     ************************************/
+    if (isset($request['parentalFlags']))
+        $updateArray['userParentalFlags'] = implode(',', $request['parentalFlags']);
+}
+
+/*** END: Editable Only Properties ***/
+
+
+
+/************************************
+ ********* Perform the Update *******
+ ************************************/
+
+if (count($updateArray) > 0) {
+    $updateArray['messageFormatting'] = implode(';', $updateArray['messageFormatting']);
+
+    $user->setDatabase($updateArray);
 }
 
 
-/* Default Room */
-if ($request['defaultRoomId'] > 0) {
-    $defaultRoomData = $slaveDatabase->getRoom($request['defaultRoomId']);
-
-    if (fim_hasPermission($defaultRoomData,$user,'view')) {
-        $updateArray['defaultRoom'] = (int) $request['defaultRoomId'];
-
-        $xmlData['editUserOptions']['response']['defaultRoom']['status'] = true;
-        $xmlData['editUserOptions']['response']['defaultRoom']['newValue'] = (int) $request['defaultRoomId'];
-    }
-    else {
-        $xmlData['editUserOptions']['response']['defaultRoom']['status'] = false;
-        $xmlData['editUserOptions']['response']['defaultRoom']['errStr'] = 'noPerm';
-        $xmlData['editUserOptions']['response']['defaultRoom']['errDesc'] = 'You do not have permission to view the room you are trying to default to.';
-    }
-}
 
 
+/************************************
+ **** Edit/Replace/Delete Lists *****
+ ************************************/
+
+$database->autoQueue(true);
 
 /* Watch Rooms (used for notifications of new messages, which are placed in unreadMessages) */
 if (count($request['watchRooms'])) {
-    $database->editRoomList('watchRooms', $user, $request['watchRooms'], $_SERVER['REQUEST_METHOD']);
+    $database->editRoomList('watchRooms', $user, $request['watchRooms'], $requestHead['_action']);
 }
 
 
 
 /* Fav List */
 if (count($request['favRooms'])) {
-    $database->editRoomList('userFavRooms', $user, $request['favRooms'], $_SERVER['REQUEST_METHOD']);
+    $database->editRoomList('favRooms', $user, $request['favRooms'], $requestHead['_action']);
 }
 
 
 
 /* Ignore List */
 if (count($request['ignoreList'])) {
-    $database->editUserLists('userIgnoreList', $user, $request['ignoreList'], $_SERVER['REQUEST_METHOD']);
+    $database->editUserLists('ignoreList', $user, $request['ignoreList'], $requestHead['_action']);
 }
 
 
 
 /* Friends List */
 if (count($request['friendsList'])) {
-    $database->editUserLists('userFriendsList', $user, $request['friendsList'], $_SERVER['REQUEST_METHOD']);
+    $database->editUserLists('friendsList', $user, $request['friendsList'], $requestHead['_action']);
 }
 
+$database->autoQueue(false);
 
-
-/* Default Formatting */
-if (isset($request['defaultFormatting'])) {
-    $updateArray['defaultFormatting'] = (int) $request['defaultFormatting'];
-
-    $xmlData['editUserOptions']['response']['defaultFormatting']['status'] = true;
-    $xmlData['editUserOptions']['response']['defaultFormatting']['newValue'] = (string) implode(',', $defaultFormatting);
-}
-
-
-
-/* Default Highlight & Default Colour */
-foreach (array('defaultHighlight', 'defaultColor') AS $value) {
-    if (isset($request[$value])) {
-        $rgb = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
-
-        if (count($rgb) === 3) { // Too many entries.
-            if ($rgb[0] < 0 || $rgb[0] > 255) { // First val out of range.
-                $xmlData['editUserOptions']['response'][$value]['status'] = false;
-                $xmlData['editUserOptions']['response'][$value]['errStr'] = 'outOfRange1';
-                $xmlData['editUserOptions']['response'][$value]['errDesc'] = 'The first value ("red") was out of range.';
-            }
-            elseif ($rgb[1] < 0 || $rgb[1] > 255) { // Second val out of range.
-                $xmlData['editUserOptions']['response'][$value]['status'] = false;
-                $xmlData['editUserOptions']['response'][$value]['errStr'] = 'outOfRange2';
-                $xmlData['editUserOptions']['response'][$value]['errDesc'] = 'The first value ("green") was out of range.';
-            }
-            elseif ($rgb[2] < 0 || $rgb[2] > 255) { // Third val out of range.
-                $xmlData['editUserOptions']['response'][$value]['status'] = false;
-                $xmlData['editUserOptions']['response'][$value]['errStr'] = 'outOfRange3';
-                $xmlData['editUserOptions']['response'][$value]['errDesc'] = 'The third value ("blue") was out of range.';
-            }
-            else {
-                $updateArray[$value] = implode(',', $rgb);
-
-                $xmlData['editUserOptions']['response'][$value]['status'] = true;
-                $xmlData['editUserOptions']['response'][$value]['newValue'] = (string) implode(',', $rgb);
-            }
-        }
-        else {
-            $xmlData['editUserOptions']['response'][$value]['status'] = false;
-            $xmlData['editUserOptions']['response'][$value]['errStr'] = 'badFormat';
-            $xmlData['editUserOptions']['response'][$value]['errDesc'] = 'The default highlight value was not properly formatted.';
-        }
-    }
-}
-
-
-
-/* Default Fontface */
-if (isset($request['defaultFontface'])) {
-    if (isset($config['fonts'][$request['defaultFontface']])) {
-        $updateArray['defaultFontface'] = $config['fonts'][$request['defaultFontface']];
-
-        $xmlData['editUserOptions']['response']['defaultFontface']['status'] = true;
-        $xmlData['editUserOptions']['response']['defaultFontface']['newValue'] = $config['fonts'][$request['defaultFontface']];
-    }
-    else {
-        $xmlData['editUserOptions']['response']['defaultFontface']['status'] = false;
-        $xmlData['editUserOptions']['response']['defaultFontface']['errStr'] = 'noFont';
-    }
-}
-
-
-/* Parental Age */
-if (isset($request['parentalAge'])) {
-    if (in_array($request['parentalAge'], $config['parentalAges'])) {
-        $updateArray['parentalAge'] = (int) $request['parentalAge'];
-
-        $xmlData['editUserOptions']['response']['parentalAge']['status'] = true;
-        $xmlData['editUserOptions']['response']['parentalAge']['newValue'] = (int) $request['parentalAge'];
-    }
-    else {
-        $xmlData['editUserOptions']['response']['parentalAge']['status'] = false;
-        $xmlData['editUserOptions']['response']['parentalAge']['errStr'] = 'badAge';
-    }
-}
-
-
-/* Parental Flags */
-if (isset($request['parentalFlags'])) {
-    $updateArray['parentalFlags'] = implode(',', $request['parentalFlags']);
-
-    $xmlData['editUserOptions']['response']['parentalFlags']['status'] = true;
-    $xmlData['editUserOptions']['response']['parentalFlags']['newValue'] = $request['parentalFlags'];
-}
-
-
-
-
-if (count($updateArray) > 0) {
-    $database->update(
-        "{$sqlPrefix}users", $updateArray, array(
-            'userId' => $user['userId'],
-        )
-    );
-}
-
-
-
-/* Update Data for Errors */
-$xmlData['editUserOptions']['errStr'] = (string) $errStr;
 
 
 

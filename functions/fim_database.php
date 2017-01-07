@@ -1000,7 +1000,7 @@ class fimDatabase extends databaseSQL
     }
 
 
-    public function getWatchRoomIds($roomId) {
+    public function getWatchRoomUsers($roomId) {
         $watchRoomIds = $this->select(array(
             $this->sqlPrefix . 'watchRooms' => 'userId, roomId'
         ), array(
@@ -1263,108 +1263,148 @@ class fimDatabase extends databaseSQL
      * @param        $roomIds
      * @param string $method
      */
-    public function editRoomList($roomList, $userData, $roomIds, $method = 'PUT') {
+    public function editRoomList(string $roomListName, fimUser $userData, array $roomIds, string $action = 'create') {
         $rooms = $this->getRooms(array(
             'roomIds' => $roomIds
-        ))->getAsArray('roomId');
+        ))->getAsRooms();
 
-        if ($method === 'DELETE') {
+
+        $table = $this->sqlPrefix . ($roomListName === 'favRooms' ? 'user' : '') . $roomListName;
+
+
+        if ($action === 'delete') {
             foreach ($rooms AS $roomId => $room) {
-                $this->delete($this->sqlPrefix . $roomList, array(
+                $this->delete($table, array(
                     'userId' => $userData['userId'],
                     'roomId' => $roomId,
                 ));
             }
         }
 
-        if ($method === 'PUT') {
+        if ($action === 'edit') {
             foreach ($rooms AS $roomId => $room) {
-                $this->delete($this->sqlPrefix . $roomList, array(
+                $this->delete($table, array(
                     'userId' => $userData['userId'],
                 ));
             }
         }
 
-        if ($method === 'POST' || $method === 'PUT') {
+        if ($action === 'create' || $action === 'edit') {
             foreach ($rooms AS $roomId => $room) {
-                if (fim_hasPermission($room, $userData, 'view')) {
-                    $this->insert($this->sqlPrefix . $roomList, array(
-                        'userId' => $userData['userId'],
+                if ($this->hasPermission($userData, $room) & ROOM_PERMISSION_VIEW) {
+                    $this->insert($table, array(
+                        'userId' => $userData->id,
                         'roomId' => $roomId,
                     ));
                 }
             }
         }
 
-        $this->editListCache($roomList, $userData, $roomIds, $method);
+        $this->editListCache($roomListName, $userData, $roomIds, $action);
     }
 
 
 
-    public function editUserLists($userList, $userData, $userIds, $method = 'PUT') {
-        $users = $this->getUsers(array(
-            'userIds' => $userIds
-        ))->getAsArray('userId');
+    public function editUserList(string $userListName, fimUser $user, array $userIds, string $action = 'create') {
+        /* Get the user data corresponding with $userIds
+         * This will filter out any non-existing userIds, as well. */
+        $userIds = $this->getUsers(array(
+            'userIds' => $userIds,
+            'columns' => 'userId'
+        ))->getColumnValues('userId');
 
 
-        if ($method === 'DELETE') {
-            foreach ($users AS $userId => $userData) {
-                $this->delete($this->sqlPrefix . $userList, array(
-                    'userId' => $userData['userId'],
+        $table = $this->sqlPrefix . 'user' . $userListName;
+
+
+        /* If the action is delete, delete users in $userIds */
+        if ($action === 'delete') {
+            foreach ($userIds AS $userId) {
+                $this->delete($table, array(
+                    'userId' => $user->id,
                     'subjectId' => $userId,
                 ));
             }
         }
 
-        if ($method === 'PUT') {
-            $this->delete($this->sqlPrefix . $userList, array(
-                'userId' => $userData['userId'],
+
+        /* If the action is edit (which replaces existing users), delete all existing users. */
+        if ($action === 'edit') {
+            $this->delete($table, array(
+                'userId' => $user->id,
             ));
         }
 
-        if ($method === 'POST' || $method === 'PUT') {
-            foreach ($users AS $userId => $userData) {
-                $conditionArray = array(
-                    'userId' => $userData['userId'],
+
+        /* If the action is either edit or create, add users from $userIds */
+        if ($action === 'edit' || $action === 'create') {
+            foreach ($userIds AS $userId) {
+                // Base data
+                $dataArray = array(
+                    'userId' => $user->id,
                     'subjectId' => $userId,
                 );
-                if ($userList === 'userFriendsList') $conditionArray['status'] = 'request';
 
-                $this->insert($this->sqlPrefix . $userList, $conditionArray);
+                // TODO: If it is the friends list, status should be request
+                // if ($userListName === 'friendsList')
+                //    $dataArray['status'] = 'request';
 
-                if ($userList === 'userFriendsList') $this->createUserEvent('friendRequest', $userId, $userData['userId']);
+                // Perform insertion
+                $this->insert($table, $dataArray);
+
+                // TODO: If it is the friends list, create a friendRequest event
+                // if ($userListName === 'friendsList')
+                //    $this->createUserEvent('friendRequest', $userId, $user->id);
             }
         }
 
-        $this->editListCache($userList, $userData, $userIds, $method);
+
+        /* Update any caches */
+        $this->editListCache($userListName, $user, $userIds, $action);
     }
 
 
 
-    public function editListCache($list, $userData, $itemIds, $method = 'PUT') {
-        $listMap = array(
-            'userFavRooms' => 'favRooms',
-            'watchRooms' => 'watchRooms',
-            'userIgnoreList' => 'ignoredUsers',
-            'userFriendsList' => 'friendedUsers'
-        );
+    public function editListCache(string $listName, fimRoom $user, array $itemIds, $action = 'create') {
+        $userColNames = [
+            'favRooms' => 'favRoomIds',
+            'watchRooms' => 'watchRoomIds',
+            'ignoreList' => 'ignoredUserIds',
+            'friendsList' => 'friendedUserIds'
+        ];
 
-        $listEntries = explode(',', $userData[$listMap[$list]]);
+        $roomColNames = [
+            'watchRooms' => 'watchedBy',
+        ];
 
-        if ($method === 'PUT') $listEntries = $itemIds;
-        elseif ($method === 'DELETE') $listEntries = array_diff($listEntries, $itemIds);
-        elseif ($method === 'POST') {
-            foreach ($itemIds AS $item) $listEntries[] = $item;
+        /* Process room caches */
+        if (isset($roomColNames[$listName])) {
+
         }
 
-        $listEntries = array_unique($listEntries);
-        sort($listEntries);
+        /* Process user caches */
+        if (isset($userColNames[$listName])) {
+            $listEntries = $user->__get($listName);
 
-        $this->update($this->sqlPrefix . 'users', array(
-            $this->sqlPrefix . $listMap[$list] => implode(',', $listEntries)
-        ), array(
-            'userId' => $userData['userId'],
-        ));
+            if ($action === 'edit')
+                $listEntries = $itemIds;
+
+            elseif ($action === 'delete')
+                $listEntries = array_diff($listEntries, $itemIds);
+
+            elseif ($action === 'create')
+                foreach ($itemIds AS $item) $listEntries[] = $item;
+
+
+            $listEntries = array_unique($listEntries);
+            sort($listEntries);
+
+            $this->update($this->sqlPrefix . 'users', [
+                $this->sqlPrefix . $userColNames[$listName] => implode(',', $listEntries)
+            ], [
+                'userId' => $user->id,
+            ]);
+        }
     }
 
 
@@ -1707,7 +1747,7 @@ class fimDatabase extends databaseSQL
             }*/
         }
         else {
-            foreach ($this->getWatchRoomIds($room->id) AS $sendToUserId) {
+            foreach ($this->getWatchRoomUsers($room->id) AS $sendToUserId) {
                 createUnreadMessage($sendToUserId, $user, $room, $messageId);
             }
         }
