@@ -65,8 +65,8 @@ $room = new fimRoom($request['roomId']);
 if (!$room->id)
     new fimError('badRoom'); // Room doesn't exist.
 
-elseif (strlen($request['message']) < $config['messageMinLength'] || strlen($request['message']) > $config['messageMaxLength'])
-    new fimError('messageLength', 'Minimum: ' . $config['messageMinLength'] . ', Maximum: ' . $config['messageMaxLength']); // Too short/long.
+elseif (strlen($request['message']) < $generalCache->getConfig('messageMinLength') || strlen($request['message']) > $generalCache->getConfig('messageMaxLength'))
+    new fimError('messageLength', 'Minimum: ' . $generalCache->getConfig('messageMinLength') . ', Maximum: ' . $generalCache->getConfig('messageMaxLength')); // Too short/long.
 
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))
     new fimError('spaceMessage'); // All spaces. TODO: MB Support

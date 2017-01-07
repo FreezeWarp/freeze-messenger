@@ -41,6 +41,7 @@ class fimCache extends generalCache {
     function __construct($servers, $method = '', $database, $slaveDatabase = false) {
         parent::__construct($method, $servers);
 
+        $this->defaultConfigFile = dirname(dirname(__FILE__)) . '/defaultConfig.php';
 
 
         if (!$database) {
@@ -61,7 +62,7 @@ class fimCache extends generalCache {
      * @param array array - The cache array.
      * @param string index - The name of the array index.
      */
-    protected function returnValue($array) {
+    private function returnValue($array) {
         $arguments = func_get_args();
 
         for ($i = 1; $i <= count($arguments) - 1; $i++) {
@@ -82,7 +83,7 @@ class fimCache extends generalCache {
      * @param mixed data - The data to cache.
      * @param mixed refresh - The period after which the cache will no longer be valid.
      */
-    protected function storeMemory($index, $data, $refresh) {
+    private function storeMemory($index, $data, $refresh) {
         if ($refresh) $this->set($index, $data, $refresh);
 
         $this->memory[$index] = $data;
@@ -94,7 +95,7 @@ class fimCache extends generalCache {
      *
      * @param string index - The name of the cache index
      */
-    protected function issetMemory($index) {
+    private function issetMemory($index) {
         if (isset($this->memory[$index])) return true;
         else return false;
     }
@@ -105,10 +106,69 @@ class fimCache extends generalCache {
      *
      * @param string index - The name of the cache index
      */
-    protected function getMemory($index) {
+    private function getMemory($index) {
         return $this->memory[$index];
     }
 
+
+    /**
+     * Retrieve and store configuration data into cache.
+     * The database is stored as $config[index].
+     * TODO: Config is supposed to be able to support associative arrays, but they currently are not understood by this function.
+     *
+     * @param mixed index -- If false, all configuration information will be returned. Otherwise, will return the value of the index specified.
+     *
+     * @global bool disableConfig - If true, only the default cache will be used (note that the configuration will not be cahced so long as disableConfig is in effect -- it will need to be disabled ASAP). This I picked up from vBulletin, and it makes it possible to disable the database-stored configuration if something goes horribly wrong.
+     *
+     * @return mixed -- The config array if no index is specified, otherwise the formatted config value corresponding to the index (this may be an array, but due to the nature of $config, we will not support going two levels in).
+     *
+     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+     */
+    public function getConfig($index = null) {
+        global $disableConfig, $sqlPrefix;
+
+        if ($this->issetMemory('fim_config')) {
+            $config = $this->getMemory('fim_config');
+        }
+        elseif ($this->exists('fim_config') && !$disableConfig) {
+            $config = $this->get('fim_config');
+        }
+        else {
+            $defaultConfig = array();
+            require_once($this->defaultConfigFile); // Not exactly best practice, but the best option for reducing resources. (The alternative is to parse it with JSON, but really, why?). This should provide $defaultConfig.
+
+            $config = array();
+
+            if (!$disableConfig) {
+                $configDatabase = $this->slaveDatabase->getConfigurations()->getAsArray(true);
+
+                if (is_array($configDatabase) && count($configDatabase) > 0) {
+                    foreach ($configDatabase AS $configDatabaseRow) {
+                        switch ($configDatabaseRow['type']) {
+                            case 'int':    $config[$configDatabaseRow['directive']] = (int) $configDatabaseRow['value']; break;
+                            case 'string': $config[$configDatabaseRow['directive']] = (string) $configDatabaseRow['value']; break;
+                            case 'array':  $config[$configDatabaseRow['directive']] = (array) fim_explodeEscaped(',', $configDatabaseRow['value']); break;
+                            case 'associative': $config[$configDatabaseRow['directive']] = (array) json_decode($configDatabaseRow['value']); break;
+                            case 'bool':
+                                if (in_array($configDatabaseRow['value'], array('true', '1', true, 1), true)) $config[$configDatabaseRow['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
+                                else $config[$configDatabaseRow['directive']] = false;
+                                break;
+                            case 'float':  $config[$configDatabaseRow['directive']] = (float) $configDatabaseRow['value']; break;
+                        }
+                    }
+                }
+            }
+
+            foreach ($defaultConfig AS $key => $value) {
+                if (!isset($config[$key])) $config[$key] = $value;
+            }
+
+
+            $this->storeMemory('fim_config', $config, $config['configCacheRefresh']);
+        }
+
+        return $this->returnValue($config, $index);
+    }
 
     public function getRooms($roomIndex) {
         return $this->slaveDatabase->getRoom($roomIndex);
@@ -117,16 +177,14 @@ class fimCache extends generalCache {
 
     ////* Caches Entire Table as watchRooms[userId] = [roomId, userId] *////
     public function getWatchRooms($userIndex = null) {
-        global $sqlPrefix, $config;
+        global $sqlPrefix;
 
         if ($this->issetMemory('fim_watchRooms')) {
             $watchRooms = $this->getMemory('fim_watchRooms');
         }
-
         elseif ($this->exists('fim_watchRooms')) {
             $watchRooms = $this->get('fim_watchRooms');
         }
-
         else {
             $watchRooms = array();
 
@@ -143,7 +201,7 @@ class fimCache extends generalCache {
                 $watchRooms[$watchRoom['userId']][] = $watchRoom['roomId'];
             }
 
-            $this->storeMemory('fim_watchRooms', $watchRooms, $config['watchRoomsCacheRefresh']);
+            $this->storeMemory('fim_watchRooms', $watchRooms, $this->getConfig('watchRoomsCacheRefresh'));
         }
 
         return $this->returnValue($watchRooms, $userIndex);
@@ -158,11 +216,9 @@ class fimCache extends generalCache {
         if ($this->issetMemory('fim_censorLists')) {
             $censorLists = $this->getMemory('fim_censorLists');
         }
-
         elseif ($this->exists('fim_censorLists')) {
             $censorLists = $this->get('fim_censorLists');
         }
-
         else {
             $censorListsDatabase = $this->slaveDatabase->getCensorLists()->getAsArray(true);
 
@@ -170,7 +226,7 @@ class fimCache extends generalCache {
                 $censorLists['byListId'][$censorList['listId']] = $censorList;
             }
 
-            $this->storeMemory('fim_censorLists', $censorLists, $config['censorListsCacheRefresh']);
+            $this->storeMemory('fim_censorLists', $censorLists, $this->getConfig('censorListsCacheRefresh'));
         }
 
         return $this->returnValue($censorLists, $listIndex);
@@ -181,11 +237,9 @@ class fimCache extends generalCache {
         if ($this->issetMemory('fim_censorLists')) {
             $censorLists = $this->getMemory('fim_censorLists');
         }
-
         elseif ($this->exists('fim_censorLists')) {
             $censorLists = $this->get('fim_censorLists');
         }
-
         else {
 
         }
@@ -198,17 +252,13 @@ class fimCache extends generalCache {
     ////* Caches Entire Table as censorWords[word] = [listId, word, severity, param] *////
     public function getCensorWords($listIndex = null)
     {
-        global $config;
+        global $sqlPrefix;
 
         if ($this->issetMemory('fim_censorWords')) {
             $censorWords = $this->getMemory('fim_censorWords');
-        }
-
-        elseif ($this->exists('fim_censorWords')) {
+        } elseif ($this->exists('fim_censorWords')) {
             $censorWords = $this->get('fim_censorWords');
-        }
-
-        else {
+        } else {
             $censorWordsDatabase = $this->database->getCensorWords()->getAsArray(true);
             $censorWords = array();
 
@@ -216,14 +266,14 @@ class fimCache extends generalCache {
                 $censorWords[$censorWord['listId']][$censorWord['word']] = $censorWord;
             }
 
-            $this->storeMemory('fim_censorWords', $censorWords, $config['censorWordsCacheRefresh']);
+            $this->storeMemory('fim_censorWords', $censorWords, $this->getConfig('censorWordsCacheRefresh'));
         }
 
         return $this->returnValue($censorWords, $listIndex);
     }
 
     public function getCensorBlackWhiteLists($roomIndex, $listIndex = null) {
-        global $sqlPrefix, $config;
+        global $sqlPrefix;
 
         if ($this->issetMemory('fim_censorBlackWhiteLists')) {
             $censorBlackWhiteLists = $this->getMemory('fim_censorBlackWhiteLists');
@@ -245,7 +295,7 @@ class fimCache extends generalCache {
                 $censorBlackWhiteLists[$censorBlackWhiteList['roomId']][$censorBlackWhiteList['listId']] = $censorBlackWhiteList;
             }
 
-            $this->storeMemory('fim_censorBlackWhiteLists', $censorBlackWhiteLists, $config['censorBlackWhiteListsCacheRefresh']);
+            $this->storeMemory('fim_censorBlackWhiteLists', $censorBlackWhiteLists, $this->getConfig('censorBlackWhiteListsCacheRefresh'));
         }
 
         return $this->returnValue($censorBlackWhiteLists, $roomIndex, $listIndex);
@@ -267,7 +317,6 @@ class fimCache extends generalCache {
                 if ($censorList['listType'] === 'black' && in_array($censorList['listId'], array_keys($censorBlackWhiteLists))) {
                     $activeCensorLists[] = $censorList;
                 }
-
                 elseif ($censorList['listType'] === 'white' && !in_array($censorList['listId'], array_keys($censorBlackWhiteLists))) {
                     $activeCensorLists[] = $censorList;
                 }
@@ -343,96 +392,6 @@ class fimCache extends generalCache {
         }
 
         return $text;
-    }
-}
-
-class fimConfig extends fimCache implements ArrayAccess {
-    private $container = [];
-    private $defaultConfigFile;
-
-    public function __construct($servers, $method, $database, $slaveDatabase) {
-        parent::__construct($servers, $method, $database, $slaveDatabase);
-
-        $this->defaultConfigFile = dirname(dirname(__FILE__)) . '/defaultConfig.php';
-        $this->container = $this->getConfig();
-    }
-
-    /**
-     * Retrieve and store configuration data into cache.
-     * The database is stored as $config[index].
-     * TODO: Config is supposed to be able to support associative arrays, but they currently are not understood by this function.
-     *
-     * @param mixed index -- If false, all configuration information will be returned. Otherwise, will return the value of the index specified.
-     *
-     * @global bool disableConfig - If true, only the default cache will be used (note that the configuration will not be cahced so long as disableConfig is in effect -- it will need to be disabled ASAP). This I picked up from vBulletin, and it makes it possible to disable the database-stored configuration if something goes horribly wrong.
-     *
-     * @return mixed -- The config array if no index is specified, otherwise the formatted config value corresponding to the index (this may be an array, but due to the nature of $config, we will not support going two levels in).
-     *
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    public function getConfig($index = null) {
-        global $disableConfig, $sqlPrefix;
-
-        if ($this->issetMemory('fim_config')) {
-            $config = $this->getMemory('fim_config');
-        }
-        elseif ($this->exists('fim_config') && !$disableConfig) {
-            $config = $this->get('fim_config');
-        }
-        else {
-            $defaultConfig = array();
-            require_once($this->defaultConfigFile); // Not exactly best practice, but the best option for reducing resources. (The alternative is to parse it with JSON, but really, why?). This should provide $defaultConfig.
-
-            $config = array();
-
-            if (!$disableConfig) {
-                $configDatabase = $this->slaveDatabase->getConfigurations()->getAsArray(true);
-
-                if (is_array($configDatabase) && count($configDatabase) > 0) {
-                    foreach ($configDatabase AS $configDatabaseRow) {
-                        switch ($configDatabaseRow['type']) {
-                        case 'int':    $config[$configDatabaseRow['directive']] = (int) $configDatabaseRow['value']; break;
-                        case 'string': $config[$configDatabaseRow['directive']] = (string) $configDatabaseRow['value']; break;
-                        case 'array':  $config[$configDatabaseRow['directive']] = (array) fim_explodeEscaped(',', $configDatabaseRow['value']); break;
-                        case 'associative': $config[$configDatabaseRow['directive']] = (array) json_decode($configDatabaseRow['value']); break;
-                        case 'bool':
-                            if (in_array($configDatabaseRow['value'], array('true', '1', true, 1), true)) $config[$configDatabaseRow['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
-                            else $config[$configDatabaseRow['directive']] = false;
-                        break;
-                        case 'float':  $config[$configDatabaseRow['directive']] = (float) $configDatabaseRow['value']; break;
-                        }
-                    }
-                }
-            }
-
-            foreach ($defaultConfig AS $key => $value) {
-                if (!isset($config[$key])) $config[$key] = $value;
-            }
-
-
-            $this->storeMemory('fim_config', $config, $config['configCacheRefresh']);
-        }
-
-        return $this->returnValue($config, $index);
-    }
-
-
-
-
-    public function offsetSet($offset, $value) {
-        throw new Exception('Configuration directives may not be set.');
-    }
-
-    public function offsetExists($offset) {
-        return isset($this->container[$offset]);
-    }
-
-    public function offsetUnset($offset) {
-        unset($this->container[$offset]);
-    }
-
-    public function offsetGet($offset) {
-        return isset($this->container[$offset]) ? $this->container[$offset] : null;
     }
 }
 
