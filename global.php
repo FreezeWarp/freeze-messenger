@@ -126,6 +126,11 @@ define("ADMIN_USERS", 0x100000);
 define("ADMIN_FILES", 0x400000);
 define("ADMIN_CENSOR", 0x1000000);
 
+define("POST_FORMAT_BOLD", 0x1);
+define("POST_FORMAT_ITALICS", 0x2);
+define("POST_FORMAT_BOLD", 0x1);
+define("POST_FORMAT_BOLD", 0x1);
+
 
 
 
@@ -221,11 +226,10 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 $generalCache = new fimCache($cacheConnect['servers'], $cacheConnect['driver'], $database, $slaveDatabase);
 
 // Get Configuration Data
-$config = $generalCache->getConfig();
-$database->setConfig($config);
-
-
+$config = new fimConfig($cacheConnect['servers'], $cacheConnect['driver'], $database, $slaveDatabase);
 $database->queryLogToFile = ($config['logQueries'] ? $config['logQueriesFile'] : false);
+
+
 ////* User Login (Requires Database) *////
 require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
 ?>
