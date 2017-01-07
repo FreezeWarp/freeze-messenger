@@ -472,7 +472,7 @@
         <table name="roomStats" type="general" comment="A cache for the number of posts made by different users in rooms.">
             <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room." />
-            <column name="messages" type="int" maxlen="8" comment="The number of messages made by the user in the room." />
+            <column name="messages" type="int" default="0" maxlen="8" comment="The number of messages made by the user in the room." />
 
             <key name="userId,roomId" type="primary" />
             <key name="roomId" type="index" />
@@ -654,7 +654,7 @@
         <table name="userFriendsList" type="general" comment="A list of user friends, with whom private contact may be restricted in some cases. Clients are encouraged to enable more advanced tagging and lists.">
             <column name="userId" type="int" maxlen="8" comment="The user ID." />
             <column name="subjectId" type="int" maxlen="8" comment="The user ID friended." />
-            <column name="status" type="string" restrict="friend,request,deny" comment="Whether the relationship is a friend connection, merely a request, or if the request has been denied permanently." />
+            <column name="status" type="string" restrict="friend,request,deny" default="request" comment="Whether the relationship is a friend connection, merely a request, or if the request has been denied permanently." />
 
             <key name="userId,subjectId" type="primary" />
         </table>
