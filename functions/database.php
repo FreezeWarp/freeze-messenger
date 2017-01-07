@@ -46,6 +46,11 @@ abstract class database
     protected $sortArray = array();
     protected $limitArray = array();
 
+    protected $autoQueue = false;
+    protected $updateQueue = array();
+    protected $deleteQueue = array();
+    protected $insertQueue = array();
+
     public $sqlPrefix;
 
 
@@ -576,6 +581,64 @@ abstract class database
      ************************* END ***************************
      ******************** Row Functions **********************
      *********************************************************/
+
+
+
+
+    /*********************************************************
+     ************************ START **************************
+     ******************** Queue Functions ********************
+     *********************************************************/
+
+    /**
+     * Enable or disable autoQueue.
+     * When autoQueue is turned on, all insert(), update(), and delete() calls are automatically put into the queue.
+     * When autoQueue is turned off, the queue is processed.
+     *
+     * @param bool $on
+     * @return mixed
+     */
+    abstract public function autoQueue(bool $on);
+
+    /**
+     * Queue an update, but don't perform it until processQueue is called.
+     * This function can be used to allow optimisations.
+     *
+     * @param $tableName - See update.
+     * @param $dataArray - See update.
+     * @param bool $conditionArray - See update.
+     */
+    abstract public function queueUpdate($tableName, $dataArray, $conditionArray = false);
+
+    /**
+     * Queue a deletion, but don't perform it until processQueue is called.
+     * This function can be used to allow optimisations.
+     *
+     * @param $tableName - See delete.
+     * @param $dataArray - See delete.
+     */
+    abstract public function queueDelete($tableName, $dataArray);
+
+    /**
+     * Queue an insert, but don't perform it until processQueue is called.
+     * This function can be used to allow optimisations.
+     *
+     * @param $tableName - See insert.
+     * @param $dataArray - See insert.
+     */
+    abstract public function queueInsert($tableName, $dataArray);
+
+    /**
+     * Runs all queued operations in sequence, combining and optimisation queries if possible.
+     */
+    abstract public function processQueue();
+
+    /*********************************************************
+     ************************* END ***************************
+     ******************** Queue Functions ********************
+     *********************************************************/
+
+
 
 
     /*********************************************************

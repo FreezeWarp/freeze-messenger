@@ -1756,10 +1756,14 @@ LIMIT
      */
     public function delete($tableName, $conditionArray = false)
     {
-        $query = 'DELETE FROM ' . $this->formatValue('table', $tableName) . '
-    WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, false, 'both', $tableName) : 'TRUE');
+        if ($this->autoQueue)
+            return $this->queueDelete($tableName, $conditionArray);
 
-        return $this->rawQuery($query);
+        else
+            return $this->rawQuery(
+                'DELETE FROM ' . $this->formatValue('table', $tableName) .
+                ' WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, false, 'both', $tableName) : 'TRUE')
+            );
     }
 
 
@@ -1772,9 +1776,15 @@ LIMIT
      */
     public function update($tableName, $dataArray, $conditionArray = false)
     {
-        $query = 'UPDATE ' . $this->formatValue('table', $tableName) . ' SET ' . $this->formatValue('tableUpdateArray', $tableName, $dataArray) . ' WHERE ' . $this->recurseBothEither($conditionArray, false, 'both', $tableName);
+        if ($this->autoQueue)
+            return $this->queueUpdate($tableName, $dataArray, $conditionArray);
 
-        return $this->rawQuery($query);
+        else
+            return $this->rawQuery(
+                'UPDATE ' . $this->formatValue('table', $tableName) .
+                ' SET ' . $this->formatValue('tableUpdateArray', $tableName, $dataArray) .
+                ' WHERE ' . $this->recurseBothEither($conditionArray, false, 'both', $tableName)
+            );
     }
 
 
@@ -1819,6 +1829,75 @@ LIMIT
     /*********************************************************
      ************************* END ***************************
      ******************** Row Functions **********************
+     *********************************************************/
+
+
+
+
+    /*********************************************************
+     ************************ START **************************
+     ******************** Queue Functions ********************
+     *********************************************************/
+
+    public function autoQueue(bool $on) {
+        $previous = $this->autoQueue;
+        $this->autoQueue = $on;
+
+        // If we just turned autoQueue off (it wasn't off before), process all the queued calls.
+        if ($previous && !$on)
+            $this->processQueue();
+    }
+
+    public function queueUpdate($tableName, $dataArray, $conditionArray = false) {
+        $this->updateQueue[$tableName][json_encode($conditionArray)][] = $dataArray;
+    }
+
+    public function queueDelete($tableName, $dataArray) {
+        $this->deleteQueue[$tableName][] = $dataArray;
+    }
+
+    public function queueInsert($tableName, $dataArray) {
+        $this->insertQueue[$tableName][] = $dataArray;
+    }
+
+
+    public function processQueue() {
+        $this->startTransaction();
+
+        foreach ($this->updateQueue AS $tableName => $update) {
+            foreach ($update AS $conditionArray => $dataArrays) {
+                $conditionArray = json_decode($conditionArray);
+                $mergedDataArray = [];
+
+                foreach ($dataArrays AS $dataArray) {
+                    // The order here is important: by specifying dataArray second, later entries in the queue overwrite earlier entries in it. This is important to maintain.
+                    $mergedDataArray = array_merge($mergedDataArray, $dataArray);
+                }
+
+                $this->update($tableName, $mergedDataArray, $conditionArray);
+            }
+        }
+
+
+        foreach ($this->deleteQueue AS $tableName => $deleteConditions) {
+            $deleteConditionsCombined = ['either' => $deleteConditions];
+
+            $this->delete($tableName, $deleteConditionsCombined);
+        }
+
+
+        foreach ($this->insertQueue AS $tableName => $dataArrays) {
+            foreach ($dataArray AS $dataArray) {
+                $this->insert($tableName, $dataArray);
+            }
+        }
+
+        $this->endTransaction();
+    }
+
+    /*********************************************************
+     ************************* END ***************************
+     ******************** Queue Functions ********************
      *********************************************************/
 
 }
