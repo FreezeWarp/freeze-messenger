@@ -111,7 +111,8 @@ class curlRequest {
                 }
             }
         }
-        else {
+
+        elseif (function_exists('fsockopen')) {
             $errno = false;
             $errstr = false;
 
@@ -120,7 +121,6 @@ class curlRequest {
             $fp = fsockopen($urlData['host'], 80, $errno, $errstr); // open a socket connection on port 80
 
             if ($fp) {
-
                 // send the request headers:
                 fputs($fp, "POST " . $urlData['path'] . " HTTP/1.1\r\n");
                 fputs($fp, "Host: " . $urlData['host'] . "\r\n");
@@ -152,6 +152,31 @@ class curlRequest {
                 // return as structured array:
                 return $this->response;
             }
+        }
+
+        else {
+            throw new Exception('fim_curl: no compatible PHP function found. Please enable fsock or curl.');
+        }
+    }
+
+
+    /**
+     * Verify whether a given resource exists or not.
+     */
+    public static function exists($file) {
+        global $config;
+
+        if (function_exists('curl_init')) {
+            $ch = curl_init($file); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); /* obey redirects */
+            curl_setopt($ch, CURLOPT_USERAGENT, $config['curlUA']);
+            curl_setopt($ch, CURLOPT_NOBODY, true);
+            curl_exec($ch);
+
+            $retcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            return $retcode === 200;
         }
     }
 
