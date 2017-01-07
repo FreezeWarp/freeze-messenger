@@ -67,6 +67,9 @@ $defaultConfig = array(
 
     'userRoomCreation' => false, // bool Whether _any_ user can create rooms, even those with the permission to do so. Setting this false, in effect, disables the entire feature. (Admins are excluded.)
     'userPrivateRoomCreation' => true, // bool Whether _any_ user can create private rooms, even those with the permission to do so. Setting this false, in effect, disables the entire feature.
+    'userRoomMaximum' => 1000, // int The maximum number of rooms a single user can create. TODO
+    'userRoomMaximumPerYear' => 50, // int The maximum number of rooms a single user can create times the number of years the user has been registered. TODO
+
     'hiddenRooms' => true,
     'officialRooms' => true,
     'defaultRoomId' => 1,
