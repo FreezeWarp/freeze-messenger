@@ -19,6 +19,8 @@ class fimUser
     private $profile;
     private $options;
 
+    private $joinDate;
+
     private $favRooms = [];
     private $watchRooms = [];
     private $ignoreList = [];
@@ -43,6 +45,7 @@ class fimUser
         'userId' => 'id',
         'userName' => 'name',
         'userNameFormat' => 'userNameFormat',
+        'joinDate' => 'joinDate',
 
         'userGroupId' => 'mainGroupId',
         'socialGroupIds' => 'socialGroupIds',
