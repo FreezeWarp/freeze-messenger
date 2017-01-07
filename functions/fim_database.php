@@ -1848,7 +1848,7 @@ class fimDatabase extends databaseSQL
                 'iv2' => $encryptIV,
                 'salt1' => $oldMessage['salt'],
                 'salt2' => $encryptSalt,
-                //'ip_address' => $_SERVER['REMOTE_ADDR'], // Todo: enable once reinstalled
+                'ip' => $_SERVER['REMOTE_ADDR'],
             ));
 
             $options = $this->argumentMerge($options, array(
