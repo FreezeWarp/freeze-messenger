@@ -93,12 +93,12 @@ class fimUser
      */
     public function __construct($userData)
     {
-        global $generalCache;
+        global $generalCache, $config;
         $this->generalCache = $generalCache;
 
-        $this->avatar = $this->generalCache->getConfig('avatarDefault');
+        $this->avatar = $config['avatarDefault'];
 //        $this->userNameFormat = '';
-        $this->defaultRoomId = $this->generalCache->getConfig('defaultRoomId');
+        $this->defaultRoomId = $config['defaultRoomId'];
 
 
 
@@ -205,11 +205,11 @@ class fimUser
             // Priviledges: modify based on global permissions, inconsistencies, and superuser status.
             elseif ($property === 'privs') {
                 // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
-                if (!$this->generalCache->getConfig('userRoomCreation'))
+                if (!$config['userRoomCreation'])
                     $this->privs &= ~USER_PRIV_CREATE_ROOMS;
-                if (!$this->generalCache->getConfig('userPrivateRoomCreation'))
+                if (!$config['userPrivateRoomCreation'])
                     $this->privs &= ~(USER_PRIV_PRIVATE_ALL | USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
-                if ($this->generalCache->getConfig('disableTopic'))
+                if ($config['disableTopic'])
                     $this->privs &= ~USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
 
                 // Certain bits imply other bits. Make sure that these are consistent.
@@ -224,7 +224,7 @@ class fimUser
             }
 
             elseif ($property === 'anonId') {
-                if ($this->id === $this->generalCache->getConfig('anonymousUserId')) {
+                if ($this->id === $config['anonymousUserId']) {
                     $this->name .= $this->anonId;
                 }
             }
@@ -245,7 +245,7 @@ class fimUser
      */
     public function hasPriv(string $priv) : bool
     {
-        global $generalCache;
+        global $config;
         $privs = $this->__get('privs');
 
         switch ($priv) {
@@ -270,8 +270,8 @@ class fimUser
 
             /* Config Aliases
              * (These may become full priviledges in the future.) */
-            case 'editOwnPosts':   return $generalCache->getConfig('usersCanEditOwnPosts') && !$this->isAnonymousUser();   break;
-            case 'deleteOwnPosts': return $generalCache->getConfig('usersCanDeleteOwnPosts') && !$this->isAnonymousUser(); break;
+            case 'editOwnPosts':   return $config['usersCanEditOwnPosts'] && !$this->isAnonymousUser();   break;
+            case 'deleteOwnPosts': return $config['usersCanDeleteOwnPosts'] && !$this->isAnonymousUser(); break;
 
             default: throw new Exception("Invalid priv; $priv"); break;
         }
@@ -521,9 +521,9 @@ class fimUser
     /* Do I even remember what this was going to be for? Not really. */
     public function syncUser()
     {
-        global $database;
+        global $database, $config;
 
-        if ($this->lastSync >= (time() - $this->generalCache->getConfig('userSyncThreshold'))) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500 miliseconds, really).
+        if ($this->lastSync >= (time() - $config['userSyncThreshold'])) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500 miliseconds, really).
             $database->updateUserCaches($this); // TODO
         }
     }
@@ -539,7 +539,7 @@ class fimUser
      */
     public function setDatabase($databaseFields)
     {
-        global $database;
+        global $database, $config;
 
         if (isset($databaseFields['password'])) {
             require 'PasswordHash.php';
@@ -549,6 +549,8 @@ class fimUser
 
             unset($databaseFields['password']);
         }
+
+        $this->populateFromArray($databaseFields, true);
 
         if ($this->id) {
             $database->startTransaction();
@@ -571,7 +573,7 @@ class fimUser
 
         else {
             $databaseFields = array_merge(array(
-                'privs' => $this->generalCache->getConfig('defaultUserPrivs')
+                'privs' => $config['defaultUserPrivs']
             ), $databaseFields);
 
             return $database->insert($database->sqlPrefix . "users", $databaseFields);
