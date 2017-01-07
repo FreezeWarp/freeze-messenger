@@ -41,12 +41,14 @@ $request = fim_sanitizeGPC('g', array(
         'filter' => 'int',
         'evaltrue' => true,
     ),
+
     'users' => array(
         'default' => [],
         'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
     ),
+
     'number' => array(
         'default' => 10,
         'cast' => 'int',
@@ -67,7 +69,7 @@ $xmlData = array(
 $totalPosts = $database->getPostStats(array(
     'roomIds' => $request['rooms'],
 ))->getAsArray(array('roomId', 'userId'), false);
-//var_dump($totalPosts);
+
 
 foreach ($totalPosts AS $room) {
     foreach ($room AS $roomId => $totalPoster) {
