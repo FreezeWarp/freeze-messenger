@@ -22,6 +22,9 @@ require('../functions/databaseSQL.php'); // ""
 require('../functions/fim_database.php'); // ""
 require('../functions/fim_user.php'); // ""
 require('../functions/fim_room.php'); // ""
+require('../defaultConfig.php');
+
+$config = $defaultConfig;
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!ini_get('safe_mode')) {
