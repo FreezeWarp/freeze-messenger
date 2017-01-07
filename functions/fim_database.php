@@ -1100,24 +1100,35 @@ class fimDatabase extends databaseSQL
     public function hasPermission(fimUser $user, fimRoom $room) {
         global $config;
 
-        $permissionsCached = $this->getPermissionCache($room->id, $user->id);
-        if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
-
-
         if ($room->isPrivateRoom()) {
-            $users = $room->getPrivateRoomMembers();
             $userIds = $room->getPrivateRoomMemberIds();
 
-            if (count($users) !== count($userIds)) // This checks for invalid users, as getPrivateRoomMembers() will only return members who exist in the database, while getPrivateRoomMemberIds() returns all ids who were specified when the fimRoom object was created.
+            if ($room->type === 'otr' && !$config['otrRoomsEnabled'])
                 return 0;
-            elseif (!$config['privateRoomsEnabled'])
+
+            elseif ($room->type === 'private' && !$config['privateRoomsEnabled'])
                 return 0;
-            elseif (in_array($user->id, $userIds))
-                return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
-            else
+
+            elseif (count($userIds) > $config['privateRoomMaxUsers'])
                 return 0;
+
+            else {
+                $users = $room->getPrivateRoomMembers(); // TODO: rewrite to use cached $user->exists() checks
+
+                if (count($users) !== count($userIds)) // This checks for invalid users, as getPrivateRoomMembers() will only return members who exist in the database, while getPrivateRoomMemberIds() returns all ids who were specified when the fimRoom object was created.
+                    return 0;
+
+                elseif (in_array($user->id, $userIds))
+                    return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
+
+                else
+                    return 0;
+            }
         }
         else {
+            $permissionsCached = $this->getPermissionCache($room->id, $user->id);
+            if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
+
             if (!$user->resolve(array('socialGroupIds', 'parentalAge', 'parentalFlags'))) throw new Exception('hasPermission was called without a valid user.'); // Make sure we know the room type and alias in addition to ID.
 
 

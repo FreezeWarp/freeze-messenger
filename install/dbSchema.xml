@@ -342,7 +342,6 @@
             <column name="salt2" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
             <column name="iv1" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
             <column name="iv2" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
-            <column name="ip_address" type="string" maxlen="128" comment="The IP used to make the edit." />
 
             <key name="messageId,time" type="primary" />
         </table>
@@ -470,7 +469,7 @@
 
 
         <table name="roomPermissionsCache" type="memory" content="A simplified cache of room permissions. This table should be used to determine if a user is known to be allowed access to a room. When a row doesn't exist, it should be tested fully and then inserted here. It does not index private rooms.">
-            <column name="roomId" type="blob" maxlen="23" comment="The room ID." />
+            <column name="roomId" type="int" maxlen="6" comment="The room ID." />
             <column name="userId" type="int" maxlen="8" comment="The user ID." />
             <column name="permissions" type="bitfield" bits="16" comment="The user's permissions." />
             <column name="expires" type="time" comment="After this time, the entry will no longer be considered valid. May be disabled if this cache is updated automatically." />

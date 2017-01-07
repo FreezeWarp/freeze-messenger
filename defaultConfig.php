@@ -77,9 +77,12 @@ $defaultConfig = array(
 
     /* Private & OTR Rooms */
     'privateRoomsEnabled' => true,
+    'otrRoomsEnabled' => true,
+    'privateRoomMaxUsers' => 5, // int The maximum number of users who can join a private room. If this is increased, then all string roomId fields in the database must be adjusted accordingly, according to the pack format ("H*", "A99999999"), with A99999999 appearing for the number of max users.
 
 
-    /* Default Formatting */
+    /* Default Formatting
+     * Altering any of these values will not automatically disable existing formatting preferences. */
     'defaultFormattingColor' => true,
     'defaultFormattingFont' => true,
     'defaultFormattingHighlight' => true,
