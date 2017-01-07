@@ -1594,6 +1594,26 @@ class fimDatabase extends databaseSQL
         global $generalCache, $config; // TODO
 
 
+        /**
+         * Flood limit check.
+         * As this is... pretty important to ensure, we perform this check at the last possible moment, here in storeMessage.
+         */
+        $messageFlood = $this->select([
+            $this->sqlPrefix . 'messageFlood' => 'userId, roomId, messages, time'
+        ], [
+            'userId' => $user->id,
+            'roomId' => $this->in([$room->id, 0])
+        ])->getAsArray('roomId');
+
+        if ($messageFlood[$room->id] > $config['floodRoomLimitPerMinute'])
+            throw new Exception('Room flood limit breached.');
+
+        if ($messageFlood[0] > $config['floodSiteLimitPerMinute'])
+            throw new Exception('Site flood limit breached.');
+
+
+
+
         $user->resolve(array("messageFormatting", "userNameFormat", "profile", "avatar", "mainGroupId", "name"));
 
 
@@ -1708,6 +1728,23 @@ class fimDatabase extends databaseSQL
             $this->insert($this->sqlPrefix . "messageDates", array(
                 'time'      => $lastMidnight,
                 'messageId' => $messageId
+            ));
+        }
+
+
+
+        // Update Flood Counter
+        $time = time();
+        $minute = $this->ts($time - ($time % 60));
+        foreach ([$room->id, 0] AS $roomId) {
+            $this->upsert($this->sqlPrefix . "users", array(
+                'userId' => $user->id,
+                'roomId' => $roomId,
+                'time' => $this->ts($minute),
+                'messages' => 1,
+            ), array(
+                'ip' => $_SERVER['REMOTE_ADDR'],
+                'messages' => $this->type('equation', '$messages + 1'),
             ));
         }
 
