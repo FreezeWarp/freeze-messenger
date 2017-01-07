@@ -139,7 +139,7 @@ class databaseSQL extends database
         }
 
         if ($this->queryLogToFile) {
-            file_put_contents($this->queryLogToFile, '*****' . $_SERVER['SCRIPT_FILENAME'] . '*****' . PHP_EOL . print_r($this->queryLog, true) . PHP_EOL . PHP_EOL . PHP_EOL, FILE_APPEND | LOCK_EX);
+            file_put_contents($this->queryLogToFile, '*****' . $_SERVER['SCRIPT_FILENAME'] . '***** (Max Memory: ' . memory_get_peak_usage() . ') ' . PHP_EOL . print_r($this->queryLog, true) . PHP_EOL . PHP_EOL . PHP_EOL, FILE_APPEND | LOCK_EX);
         }
     }
 
@@ -1030,7 +1030,7 @@ class databaseSQL extends database
     protected function newQuery($queryText, $microtime = false)
     {
         $this->queryCounter++;
-        $this->queryLog[] = [$queryText, $microtime];
+        $this->queryLog[] = [$queryText/*, debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)*/, $microtime];
     }
 
 
