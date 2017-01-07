@@ -19,6 +19,11 @@ class fimUser
     private $profile;
     private $options;
 
+    private $favRooms = [];
+    private $watchRooms = [];
+    private $ignoreList = [];
+    private $friendsList = [];
+
     private $passwordHash;
     private $passwordSalt;
     private $passwordFormat;
@@ -168,6 +173,10 @@ class fimUser
             else if ($property === 'parentalAge') {
                 if ($config['parentalEnabled']) $this->parentalAge = $value;
                 else                              $this->parentalAge = 255;
+            // Room and user lists: explode from CSV
+            // TODO: validation; if the entry doesn't end with a control character, regenerate the list
+            elseif ($property === 'favRooms' || $property === 'watchRooms' || $property === 'friendsList' || $property === 'ignoreList') {
+                $this->$property = explode(',', $value);
             }
 
 
