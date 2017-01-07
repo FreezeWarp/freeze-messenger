@@ -183,7 +183,7 @@ $xmlData = array(
 );
 
 
-if (!$room->id)
+if (!$room->roomExists())
     new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
 
 elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW))
