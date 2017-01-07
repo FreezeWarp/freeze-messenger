@@ -346,6 +346,10 @@ class fimCache extends generalCache {
     }
 }
 
+
+/**
+ * The fimConfig class is used to reference all configuration variables. It is not currently optimised, but we may eventually cache config variables seperately, lowering the memory footprint.
+ */
 class fimConfig extends fimCache implements ArrayAccess {
     private $container = [];
     private $defaultConfigFile;
@@ -374,11 +378,13 @@ class fimConfig extends fimCache implements ArrayAccess {
         global $disableConfig, $sqlPrefix;
 
         if ($this->issetMemory('fim_config')) {
-            $config = $this->getMemory('fim_config');
+            $this->container = $this->getMemory('fim_config');
         }
+
         elseif ($this->exists('fim_config') && !$disableConfig) {
-            $config = $this->get('fim_config');
+            $this->container = $this->get('fim_config');
         }
+
         else {
             $defaultConfig = array();
             require_once($this->defaultConfigFile); // Not exactly best practice, but the best option for reducing resources. (The alternative is to parse it with JSON, but really, why?). This should provide $defaultConfig.
@@ -413,7 +419,7 @@ class fimConfig extends fimCache implements ArrayAccess {
             $this->storeMemory('fim_config', $config, $config['configCacheRefresh']);
         }
 
-        return $this->returnValue($config, $index);
+        return $this->container[$index];
     }
 
 
@@ -432,7 +438,7 @@ class fimConfig extends fimCache implements ArrayAccess {
     }
 
     public function offsetGet($offset) {
-        return isset($this->container[$offset]) ? $this->container[$offset] : null;
+        return isset($this->container[$offset]) ? $this->container[$offset] : $this->getConfig($offset);
     }
 }
 
