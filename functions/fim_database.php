@@ -1771,7 +1771,7 @@ class fimDatabase extends databaseSQL
 
 
     /* TODO: require roomId */
-    public function editMessage(int $messageId, $options) {
+    public function editMessage(int $roomId, int $messageId, $options) {
         global $user;
 
         $options = $this->argumentMerge(array(

@@ -67,7 +67,7 @@ switch ($request['action']) {
     case 'delete': case 'undelete':
         if (($messageData['userId'] = $user->id && $user->hasPriv('editOwnPosts'))
             || ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE)) {
-            $database->editMessage($messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
+            $database->editMessage($messageData['roomId'], $messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
         }
         else
             new fimError('noPerm', 'You are not allowed to delete this message.');
@@ -75,7 +75,7 @@ switch ($request['action']) {
 
     case 'edit':
     if ($messageData['userId'] = $user->id && $user->hasPriv('editOwnPosts')) {
-        $database->editMessage($messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
+        $database->editMessage($messageData['roomId'], $messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
     }
     else
 
