@@ -77,7 +77,7 @@ $xmlData = array(
 
 /* Get Users from Database */
 $users = $slaveDatabase->getUsers(array(
-  'userIds' => $request['users'],
+  'userIds' => $request['userIds'],
   'userNames' => $request['userNames']
 ), array($request['sort'] => 'asc'))->getAsUsers();
 
@@ -154,16 +154,16 @@ foreach ($users AS $userId => $userData) {
 
   if ($userId === $user->id
     && in_array('self', $request['info'])) {
-    $xmlData['users']['user ' . $userId]['defaultRoom'] = $userData->defaultRoom;
+
+    $xmlData['users']['user ' . $userId]['defaultRoomId'] = $userData->defaultRoomId;
     $xmlData['users']['user ' . $userId]['options'] = $userData->options;
     $xmlData['users']['user ' . $userId]['parentalAge'] = $userData->parentalAge;
     $xmlData['users']['user ' . $userId]['parentalFlags'] = new apiOutputList($userData->parentalFlags);
-//TODO        $xmlData['users']['user ' . $userId]['ignoreList'] = $userData['ignoreList'];
-//TODO        $xmlData['users']['user ' . $userId]['favRooms'] = $userData['favRooms'];
-//TODO        $xmlData['users']['user ' . $userId]['watchRooms'] = $userData['watchRooms'];
+    $xmlData['users']['user ' . $userId]['ignoreList'] = $userData->ignoreList;
+    $xmlData['users']['user ' . $userId]['favRooms'] = $userData->favRooms;
+    $xmlData['users']['user ' . $userId]['watchRooms'] = $userData->watchRooms;
   }
 }
-
 
 
 /* Output Data */
