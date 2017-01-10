@@ -99,6 +99,7 @@ fimApi.prototype.login = function (params, requestSettings) {
  */
 fimApi.prototype.getUsers = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
+        'info' : ['self', 'groups', 'profile'],
         'access_token' : window.sessionHash,
         'fim3_format' : 'json',
         'userIds' : null,
@@ -451,6 +452,7 @@ fimApi.prototype.editUserOptions = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
         'access_token' : window.sessionHash,
         'fim3_format' : 'json',
+        '_action' : "edit",
         'defaultFormatting' : null,
         'defaultColor' : null,
         'defaultHighlight' : null,
@@ -466,7 +468,7 @@ fimApi.prototype.editUserOptions = function(params, requestSettings) {
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
     $.ajax({
-        url: directory + 'api/editFile.php',
+        url: directory + 'api/editUserOptions.php',
         type: 'POST',
         data: params,
         timeout: requestSettings.timeout,
@@ -599,6 +601,40 @@ fimApi.prototype.changeAvatar = function(avatarHash, requestSettings) {
     this.editUserOptions({
         'avatarHash' : avatarHash,
     }, requestSettings);
+};
+
+
+
+fimApi.prototype.resolveUsers = function(ids, names, callback) {
+    var returnData = {};
+
+    fimApi.getUsers({'userIds' : ids, 'userNames' : names}, {
+        'each': function(user) {
+            returnData[user.userId] = user.userName;
+        },
+        'end' : function() {
+            if (callback)
+                callback(returnData)
+        }
+    });
+};
+
+
+
+fimApi.prototype.resolveRooms = function(ids, names, callback) {
+    var returnData = {};
+
+    fimApi.getRooms({'roomIds' : ids, 'roomNames' : names}, {
+        'each': function(room) {
+            returnData[room.userId] = room.roomName;
+        },
+        'end' : function() {
+            if (callback)
+                callback(returnData)
+        }
+    });
+
+    return returnData;
 };
 
 

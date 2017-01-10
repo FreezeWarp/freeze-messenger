@@ -429,42 +429,49 @@ popup = {
                 return false;
             },
             oF : function() {
-                var defaultColour = false,
-                    defaultHighlight = false,
-                    defaultFontface = false,
-                    defaultGeneral, ignoreList, watchRooms, options, defaultRoom,
-                    defaultHighlightHashPre, defaultHighlightHash, defaultColourHashPre, defaultColourHash,
-                    parentalAge, parentalFlags,
-                    idMap = {
-                        disableFormatting : 16, disableImage : 32, disableVideos : 64, reversePostOrder : 1024,
-                        showAvatars : 2048, audioDing : 8192, disableFx : 262144, disableRightClick : 1048576,
-                        usTime : 16777216, twelveHourTime : 33554432, webkitNotifications : 536870912
-                    };
+                var idMap = {
+                    disableFormatting : 16, disableImage : 32, disableVideos : 64, reversePostOrder : 1024,
+                    showAvatars : 2048, audioDing : 8192, disableFx : 262144, disableRightClick : 1048576,
+                    usTime : 16777216, twelveHourTime : 33554432, webkitNotifications : 536870912
+                };
 
                 fimApi.getUsers({
+                    'info' : ['self', 'profile'],
                     'userIds' : [userId]
                 }, {'each' : function(active) { console.log(active);
-                    defaultColour = active.defaultFormatting.color;
-                    defaultHighlight = active.defaultFormatting.highlight;
-                    defaultFontface = active.defaultFormatting.fontface;
-                    defaultGeneral = active.defaultFormatting.general;
-                    ignoreList = active.ignoreList;
-                    watchRooms = active.watchRooms;
-                    options = active.options;
-                    defaultRoom = active.defaultRoom;
-                    defaultHighlightHashPre = [];
-                    defaultHighlightHash = {r:0, g:0, b:0};
-                    defaultColourHashPre = [];
-                    defaultColourHash = {r:0, g:0, b:0};
-                    parentalAge = active.parentalAge;
-                    parentalFlags = active.parentalFlags;
+                    var options = active.options,
+                        defaultHighlightHashPre = [],
+                        defaultHighlightHash = {r:0, g:0, b:0},
+                        defaultColourHashPre = [],
+                        defaultColourHash = {r:0, g:0, b:0};
+
+                    var ignoreList = new autoEntry($("#ignoreListContainer"), {
+                        'name' : 'ignoreList',
+                        'default' : active.ignoreList,
+                        'list' : 'users',
+                        'resolve' : fimApi.resolveUsers
+                    });
+
+                    var watchRooms = new autoEntry($("#watchRoomsContainer"), {
+                        'name' : 'watchRooms',
+                        'default' : active.watchRooms,
+                        'list' : 'rooms',
+                        'resolve' : fimApi.resolveRooms
+                    });
+
+                    defaultFormatting = active.messageFormatting.split(';');
+                    defaultFormattingObj = {};
+                    jQuery.each(defaultFormatting, function(index, value) {
+                        pair = value.split(':');
+                        defaultFormattingObj[pair[0]] = pair[1];
+                    });
 
                     /* Update Default Forum Values Based on Server Settings */
                     // User Profile
                     if (active.profile) $('#profile').val(active.profile);
 
                     // Default Formatting -- Bold
-                    if (defaultGeneral & 256) {
+                    if ('font-weight' in defaultFormattingObj && defaultFormattingObj['font-weight'] == 'bold') {
                         $('#fontPreview').css('font-weight', 'bold');
                         $('#defaultBold').attr('checked', 'checked');
                     }
@@ -474,7 +481,7 @@ popup = {
                     });
 
                     // Default Formatting -- Italics
-                    if (defaultGeneral & 512) {
+                    if ('font-weight' in defaultFormattingObj && defaultFormattingObj['font-style'] == 'italic') {
                         $('#fontPreview').css('font-style', 'italic');
                         $('#defaultItalics').attr('checked', 'checked');
                     }
@@ -483,27 +490,28 @@ popup = {
                         else $('#fontPreview').css('font-style', 'normal');
                     });
 
-                    // Default Formatting -- Font Colour
-                    if (defaultColour) {
-                        $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
-                        $('#defaultColour').css('background-color', 'rgb(' + defaultColour + ')');
 
-                        defaultColourHashPre = defaultColour.split(',');
+                    // Default Formatting -- Font Colour
+                    if ('color' in defaultFormattingObj) {
+                        $('#fontPreview').css('color', defaultFormattingObj['color']);
+                        $('#defaultColour').css('background-color', defaultFormattingObj['color']);
+
+                        defaultColourHashPre = defaultFormattingObj['color'].slice(4, -1).split(',');
                         defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
                     }
 
                     // Default Formatting -- Highlight Colour
-                    if (defaultHighlight) {
-                        $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
-                        $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
+                    if ('background-color' in defaultFormattingObj) {
+                        $('#fontPreview').css('background-color', defaultFormattingObj['background-color']);
+                        $('#defaultHighlight').css('background-color', defaultFormattingObj['background-color']);
 
-                        defaultHighlightHashPre = defaultHighlight.split(',');
+                        defaultHighlightHashPre = defaultFormattingObj['background-color'].slice(4, -1).split(',');
                         defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
                     }
 
                     // Default Formatting -- Fontface
-                    if (defaultFontface) {
-                        $('#defaultFace > option[value="' + defaultFontface + '"]').attr('selected', 'selected');
+                    if ('font-family' in defaultFormattingObj) {
+                        $('#defaultFace > option').filter(function () { return $(this).attr('data-font') == defaultFormattingObj['font-family']; }).attr('selected', 'selected');
                     }
                     $('#defaultFace').change(function() {
                         $('#fontPreview').css('fontFamily', $('#defaultFace > option:selected').attr('data-font'));
@@ -536,17 +544,13 @@ popup = {
                     });
 
                     // Default Room Value
-                    fimApi.getRooms({'roomIds' : [defaultRoom]}, {'each' : function(roomData) { $('#defaultRoom').val(roomData.roomName); }});
-
-                    // Populate Existing Entries for Lists
-                    autoEntry.showEntries('ignoreList', ignoreList);
-                    autoEntry.showEntries('watchRooms', watchRooms);
+                    fimApi.getRooms({'roomIds' : [active.defaultRoomId]}, {'each' : function(roomData) { $('#defaultRoom').val(roomData.roomName).attr('data-id', roomData.roomId); }});
 
                     // Parental Control Flags
-                    for (i in parentalFlags) {
-                        $('input[data-cat=parentalFlag][data-name=' + parentalFlags[i] + ']').attr('checked', true);
+                    for (i in active.parentalFlags) {
+                        $('input[data-cat=parentalFlag][data-name=' + active.parentalFlags[i] + ']').attr('checked', true);
                     }
-                    $('select#parentalAge option[value=' + parentalAge + ']').attr('selected', 'selected');
+                    $('select#parentalAge option[value=' + active.parentalAge + ']').attr('selected', 'selected');
                 }});
 
 
@@ -575,9 +579,7 @@ popup = {
                 if (window.serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
 
                 // Autocomplete Rooms and Users
-                $("#defaultRoom").autocomplete({ source: fimApi.acHelper('rooms') });
-                $("#watchRoomsBridge").autocomplete({ source: fimApi.acHelper('rooms') });
-                $("#ignoreListBridge").autocomplete({ source: fimApi.acHelper('users') });
+                $("#defaultRoom").autocompleteHelper('rooms');
 
                 // Populate Fontface Checkbox
                 for (i in window.serverSettings.formatting.fonts) {
@@ -672,24 +674,43 @@ popup = {
 
                 /* Submit Processer */
                 $("#changeSettingsForm").submit(function() {
-                    var watchRooms = $('#watchRooms').val(),
-                        defaultRoom = $('#defaultRoom').val(),
-                        ignoreList = $('#ignoreList').val(),
-                        profile = $('#profile').val(),
-//            defaultRoomId = (defaultRoom ? roomRef[defaultRoom] : 0), TODO
-                        fontId = $('#defaultFace option:selected').val(),
-                        defaultFormatting = ($('#defaultBold').is(':checked') ? 256 : 0) + ($('#defaultItalics').is(':checked') ? 512 : 0),
-                        parentalAge = $('#parentalAge option:selected').val(),
+                    var defaultFormatting = [],
                         parentalFlags = [];
+
+                    if ($('#defaultBold').is(':checked')) defaultFormatting.push("bold");
+                    if ($('#defaultItalics').is(':checked')) defaultFormatting.push("italic");
 
                     $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
                         parentalFlags.push($(b).attr('data-name'));
                     });
 
-                    $.post(directory + 'api/editUserOptions.php', 'defaultFormatting=' + defaultFormatting + '&defaultColor=' + defaultColour + '&defaultHighlight=' + defaultHighlight + '&defaultRoomId=' + defaultRoomId + '&watchRooms=' + watchRooms + '&ignoreList=' + ignoreList + '&profile=' + profile + '&defaultFontface=' + fontId + '&parentalAge=' + parentalAge + '&parentalFlags=' + parentalFlags.join(',') + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json', function(json) {
+                    fimApi.editUserOptions({
+                        "defaultFontface" : $('#defaultFace option:selected').val(),
+                        "defaultFormatting" : defaultFormatting,
+                        "defaultHighlight" : $('#fontPreview').css('background-color').slice(4,-1),
+                        "defaultColor" : $('#fontPreview').css('color').slice(4,-1),
+                        "defaultRoomId" : $('#defaultRoom').attr('data-id'),
+                        "watchRooms" : $('#watchRooms').val().split(','),
+                        "ignoreList" : $('#ignoreList').val().split(','),
+                        "profile" : $('#profile').val(),
+                        "parentalAge" : $('#parentalAge option:selected').val(),
+                        "parentalFlags" : parentalFlags
+                    }, {
+                        'each' : function(value) {
+                            console.log(value);
+                        },
+                        'end' : function() {
+                            dia.info('Your settings have been updated successfully.');
+                        },
+                        'error' : function(errors) {
+                            errorsList = [];
 
-                        dia.info('Your settings may or may not have been updated.');
-                    }); // Send the form data via AJAX.
+                            for (i in errors.responseJSON.editUserOptions) {
+                                errorsList.push("<li>" + i + ": " + errors.responseJSON.editUserOptions[i].exception.details + "</li>")
+                            }
+                            dia.error('Some of your settings have been updated. However, the following values were unable to be processed:<ul>' + errorsList.join() + '</ul>')
+                        }
+                    });
 
                     $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
                     $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
@@ -757,52 +778,31 @@ popup = {
                 /* Autocomplete Users and Groups */
                 moderatorsList = new autoEntry($("#moderatorsContainer"), {
                     'name' : 'moderator',
-                    'autoCompleteSource' : fimApi.acHelper('users'),
+                    'list' : 'users',
                     'onAdd' : function(id) {
                         if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post", "moderate"])
                     },
                     'onRemove' : function(id) {
                         if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"])
                     },
-                    'resolve' : function(ids, names) {
-                        var returnData = {};
-
-                        fimApi.getUsers({'userIds' : ids, 'userNames' : names}, {
-                            'each': function(user) {
-                                returnData[user.userId] = user.userName;
-                            }
-                        });
-
-                        return returnData;
-                    }
+                    'resolve' : fimApi.resolveUsers
                 });
 
                 allowedUsersList = new autoEntry($("#allowedUsersContainer"), {
                     'name' : 'allowedUsers',
-                    'autoCompleteSource' : fimApi.acHelper('users'),
+                    'list' : 'users',
                     'onAdd' : function(id) {
                         if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"])
                     },
                     'onRemove' : function(id) {
                         if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, [])
                     },
-                    'resolve' : function(ids, names, callback) {
-                        var returnData = {};
-
-                        fimApi.getUsers({'userIds' : ids, 'userNames' : names}, {
-                            'each': function(user) {
-                                returnData[user.userId] = user.userName;
-                            },
-                            'end' : function() {
-                                callback(returnData)
-                            }
-                        });
-                    }
+                    'resolve' : fimApi.resolveUsers
                 });
 
                 allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
                     'name' : 'allowedGroups',
-                    'autoCompleteSource' : fimApi.acHelper('groups'),
+                    'list' : 'groups',
                     'onAdd' : function(id) {
                         if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, ["post"])
                     },
@@ -1003,18 +1003,10 @@ popup = {
             id : 'privateRoomDialogue',
             width : 1000,
             oF : function() {
-                $('#userName').autocomplete({
-                    source: fimApi.acHelper('users'),
-                    select: function (event, ui) {
-                        $(event.target).val(ui.item.label);
-                        $(event.target).attr('data-userId', ui.item.value);
-
-                        return false;
-                    }
-                });
+                $('#userName').autocompleteHelper('users')
 
                 $("#privateRoomForm").submit(function() {
-                    standard.changeRoom("p" + [window.userId, $("#privateRoomForm > #userName").attr('data-userId')].join(','), true);
+                    standard.changeRoom("p" + [window.userId, $("#privateRoomForm > #userName").attr('data-id')].join(','), true);
 
                     return false; // Don't submit the form.
                 });

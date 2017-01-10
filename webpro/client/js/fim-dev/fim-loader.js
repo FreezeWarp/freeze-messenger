@@ -695,24 +695,23 @@ function updateVids(searchPhrase) {
  * @copyright Joseph T. Parsons 2014
  */
 var autoEntry = function(target, options) {
-    return this._init(target, options);
+    this.options = options;
+    var _this = this;
+
+    target.append($('<input type="text" name="' + this.options.name + 'Bridge" id="' + this.options.name + 'Bridge" class="ui-autocomplete-input" autocomplete="off" />').autocompleteHelper(this.options.list))
+        .append($('<input type="button" value="Add">').click(function() {
+            _this.addEntry($("#" + _this.options.name + "Bridge").attr('data-id'), $("#" + _this.options.name + "Bridge").val());
+        }))
+        .append('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">');
+
+    if ('default' in options) {
+        this.displayEntries(options.default);
+    }
+
+    return this;
 }
 
 autoEntry.prototype = {
-    _init : function(target, options) {
-        this.options = options;
-        var _this = this;
-
-        target.append($('<input type="text" name="' + this.options.name + 'Bridge" id="' + this.options.name + 'Bridge" class="ui-autocomplete-input" autocomplete="off" />').autocomplete({ source: this.options.autoCompleteSource }))
-            .append($('<input type="button" value="Add">').click(function() {
-                _this.addEntry(null, $("#" + _this.options.name + "Bridge").val());
-            }))
-            .append('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">');
-
-        return this;
-    },
-
-
     setOnAdd : function(onAdd) {
         this.options.onAdd = onAdd;
     },
@@ -721,36 +720,32 @@ autoEntry.prototype = {
         var _this = this;
         var id = id;
 
-        if (!id) {
+        if (!id && name) {
             this.options.resolve(null, [name], function(data) {
                 id = Object.keys(data)[0];
-                addEntry_dom(id, name)
             });
         }
 
-        else if (!name) {
+        else if (!name && id) {
             this.options.resolve([id], null, function(data) {
                 name = Object.values(data)[0];
-                addEntry_dom(id, name)
             });
         }
 
-        addEntry_dom = function(id, name) {
-            if (!id) {
-                dia.error("Invalid user.");
-            }
-            else {
-                $("#" + _this.options.name).val($("#" + _this.options.name).val() + "," + id);
+        if (!id) {
+            dia.error("Invalid user.");
+        }
+        else {
+            $("#" + this.options.name).val($("#" + this.options.name).val() + "," + id);
 
-                $("#" + _this.options.name + "List").append("<span id=\"" + _this.options.name + "SubList" + id + "\">" + name + ' (<span class="close"></span>), </span>');
-                $("#" + _this.options.name + "List .close").html($('<a href="javascript:false(0);">×</a>').click(function() {
-                    _this.removeEntry(id)
-                }));
+            $("#" + this.options.name + "List").append("<span id=\"" + this.options.name + "SubList" + id + "\">" + name + ' (<span class="close"></span>), </span>');
+            $("#" + this.options.name + "List .close").html($('<a href="javascript:false(0);">×</a>').click(function() {
+                _this.removeEntry(id)
+            }));
 
-                $("#" + _this.options.name + "Bridge").val('');
+            $("#" + this.options.name + "Bridge").val('');
 
-                _this.options.onAdd(id);
-            }
+            if (this.options.onAdd) this.options.onAdd(id);
         }
     },
 
@@ -765,7 +760,7 @@ autoEntry.prototype = {
     },
 
     displayEntries : function(string) {
-        if (typeof string === 'object' || typeof string === 'array') { entryList = string; } // String is already not a string! (yeah...) Also, "array" doesn't exist as a type far as I know, but I don't really want to remove it for whatever reason.
+        if (typeof string === 'object') { entryList = string; }
         else if (typeof string === 'string' && string.length > 0) { entryList = string.split(','); } // String is a string and not empty.
         else { entryList = []; }
 

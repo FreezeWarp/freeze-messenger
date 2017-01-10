@@ -1615,7 +1615,19 @@ jQTubeUtil = (function ($) { /* singleton */
 
 
 
+jQuery.fn.extend({autocompleteHelper : function(resourceName) {
+    this.autocomplete({
+        source: fimApi.acHelper(resourceName),
+        select: function (event, ui) {
+            $(event.target).val(ui.item.label);
+            $(event.target).attr('data-id', ui.item.value);
 
+            return false;
+        }
+    });
+
+    return this;
+}});
 
 
 
