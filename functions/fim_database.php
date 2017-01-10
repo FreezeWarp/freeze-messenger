@@ -883,8 +883,10 @@ class fimDatabase extends databaseSQL
 
 
         /* Modify Query Data for Directives */
-        if ($options['bannedStatus'] === 'banned') $conditions['both']['!options'] = $this->int(1, 'bAnd'); // TODO: Test!
-        if ($options['bannedStatus'] === 'unbanned') $conditions['both']['options'] = $this->int(1, 'bAnd'); // TODO: Test!
+        if ($options['bannedStatus'] === 'banned')
+            $conditions['both']['!options'] = $this->int(1, 'bAnd'); // TODO: Test!
+        if ($options['bannedStatus'] === 'unbanned')
+            $conditions['both']['options'] = $this->int(1, 'bAnd'); // TODO: Test!
 
 
         if (isset($options['hasAdminPrivs']) && count($options['hasAdminPrivs']) > 0) {
@@ -892,11 +894,12 @@ class fimDatabase extends databaseSQL
         }
 
 
-        if (count($options['userIds']) > 0 || count($options['userNames']) > 0 || $options['userNameSearch']) {
-            if (count($options['userIds']) > 0) $conditions['both']['either']['userId'] = $this->in($options['userIds']);
-            if (count($options['userNames']) > 0) $conditions['both']['either']['userName 1'] = $this->in($options['userNames']);
-            if ($options['userNameSearch']) $conditions['both']['either']['userName 2'] = $this->type('string', $options['userNameSearch'], 'search');
-        }
+        if (count($options['userIds']) > 0)
+            $conditions['both']['either']['userId'] = $this->in($options['userIds']);
+        if (count($options['userNames']) > 0)
+            $conditions['both']['either']['userName 1'] = $this->in($options['userNames']);
+        if ($options['userNameSearch'])
+            $conditions['both']['either']['userName 2'] = $this->type('string', $options['userNameSearch'], 'search');
 
 
         return $this->select($columns, $conditions, $sort);
@@ -1982,7 +1985,7 @@ class fimDatabase extends databaseSQL
             array(
                 $this->sqlPrefix . 'searchPhrases' => 'phraseName, phraseId'
             )
-        )->getAsArray('phraseName');
+        )->getAsArray('phraseName'); // TODO: what the hell were you thinking, exactly?
 
 
         foreach (array_unique($words) AS $piece) {
