@@ -350,7 +350,7 @@
         <table name="messageFlood" partitionBy="userId" type="general" comment="A counter for the messages submitted by a user in individual rooms and sitewide for every minute.">
             <column name="userId" type="int" maxlen="8" comment="The user ID." />
             <column name="roomId" type="blob" maxlen="23" comment="The room ID, or 0 if side-wide." />
-            <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
+            <column name="time" type="time" comment="The time the action was performed on." />
             <column name="messages" type="int" maxlen="4" comment="The number of messages submitted" />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user during their first message." />
 
