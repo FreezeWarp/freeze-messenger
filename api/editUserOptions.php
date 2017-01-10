@@ -112,7 +112,7 @@ $request = fim_sanitizeGPC('p', array(
 
     'defaultFormatting' => array(
         'cast' => 'list',
-        'valid' => array('bold', 'italics')
+        'valid' => array('bold', 'italic')
     ),
 
     'parentalAge' => array(
@@ -149,13 +149,9 @@ $request = fim_sanitizeGPC('p', array(
     )
 ));
 
-$sRequest = fim_sanitizeGPC('pud', array(
-));
-
 /* Data Predefine */
 $xmlData = array(
     'editUserOptions' => array(
-        'response' => array(),
     ),
 );
 
@@ -176,19 +172,19 @@ if ($requestHead['_action'] === 'edit') {
          ************************************/
         if (isset($request['avatar'])) { // TODO: Add regex policy.
             if ($badRegex) // TODO
-                $xmlData['editUserOptions']['avatar'] = new fimError('bannedFile', 'The avatar specified is not allowed.', null, true);
+                $xmlData['editUserOptions']['avatar'] = (new fimError('bannedFile', 'The avatar specified is not allowed.', null, true));
 
             else {
                 $imageData = getimagesize($request['avatar']);
 
                 if ($imageData[0] <= $config['avatarMinimumWidth'] || $imageData[1] <= $config['avatarMinimumHeight'])
-                    $xmlData['editUserOptions']['avatar'] = new fimError('smallSize', 'The avatar specified is too small.', null, true);
+                    $xmlData['editUserOptions']['avatar'] = (new fimError('smallSize', 'The avatar specified is too small.', null, true));
 
                 elseif ($imageData[0] >= $config['avatarMaximumWidth'] || $imageData[1] >= $config['avatarMaximumHeight'])
-                    $xmlData['editUserOptions']['avatar'] = new fimError('bigSize', 'The avatar specified is too large.', null, true);
+                    $xmlData['editUserOptions']['avatar'] = (new fimError('bigSize', 'The avatar specified is too large.', null, true));
 
                 elseif (!in_array($imageData[2], $config['imageType']))
-                    $xmlData['editUserOptions']['avatar'] = new fimError('badType', 'The avatar is not a valid image type.', null, true);
+                    $xmlData['editUserOptions']['avatar'] = (new fimError('badType', 'The avatar is not a valid image type.', null, true))->value();
 
                 else
                     $updateArray['avatar'] = $request['avatar'];
@@ -206,15 +202,16 @@ if ($requestHead['_action'] === 'edit') {
             }
 
             elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === FALSE) {
-                $xmlData['editUserOptions']['profile'] = new fimError('noUrl', 'The URL is not a URL.', null, true);
+                $xmlData['editUserOptions']['profile'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->value();
             }
 
             else {
-                if ($badRegex) // TODO
-                    $xmlData['editUserOptions']['profile'] = new fimError('bannedUrl', 'The URL specified is not allowed.', null, true);
+                if (($config['profileMustMatchRegex'] && !preg_match($config['profileMustMatchRegex'], $request['profile']))
+                    || ($config['profileMustNotMatchRegex'] && preg_match($config['profileMustNotMatchRegex'], $request['profile'])))
+                    $xmlData['editUserOptions']['profile'] = (new fimError('bannedUrl', 'The URL specified is not allowed.', null, true))->value();
 
                 elseif (!curlRequest::exists($request['profile']))
-                    $xmlData['editUserOptions']['profile'] = new fimError('badUrl', 'The URL does not exist.', null, true);
+                    $xmlData['editUserOptions']['profile'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->value();
 
                 else
                     $updateArray['profile'] = $request['profile'];
@@ -228,10 +225,10 @@ if ($requestHead['_action'] === 'edit') {
      ************************************/
     else {
         if (isset($request['avatar']))
-            $xmlData['editUserOptions']['avatar'] = new fimError('avatarDisabled', 'The avatar can not be changed through this API.', null, true);
+            $xmlData['editUserOptions']['avatar'] = (new fimError('avatarDisabled', 'The avatar can not be changed through this API.', null, true))->value();
 
         if (isset($request['profile']))
-            $xmlData['editUserOptions']['profile'] = new fimError('profileDisabled', 'The profile can not be changed through this API.', null, true);
+            $xmlData['editUserOptions']['profile'] = (new fimError('profileDisabled', 'The profile can not be changed through this API.', null, true))->value();
     }
 
     /*** END: Vanilla-Only Properties ***/
@@ -245,13 +242,13 @@ if ($requestHead['_action'] === 'edit') {
         $defaultRoom = new fimRoom($request['defaultRoomId']);
 
         if (!$defaultRoom->roomExists())
-            $xmlData['editUserOptions']['defaultRoom'] = new fimError('invalidRoom', 'The room specified does not exist.');
+            $xmlData['editUserOptions']['defaultRoom'] = (new fimError('invalidRoom', 'The room specified does not exist.', null, true))->value();
 
         elseif (!($database->hasPermission($user, $defaultRoom) & ROOM_PERMISSION_VIEW))
-            $xmlData['editUserOptions']['defaultRoom'] = new fimError('noPerm', 'You do not have permission to view the room you are trying to default to.');
+            $xmlData['editUserOptions']['defaultRoom'] = (new fimError('noPerm', 'You do not have permission to view the room you are trying to default to.', null, true))->value();
 
         else
-            $updateArray['defaultRoom'] = $defaultRoom->id;
+            $updateArray['defaultRoomId'] = $defaultRoom->id;
     }
 
 
@@ -261,10 +258,10 @@ if ($requestHead['_action'] === 'edit') {
      ************************************/
     if (isset($request['defaultFormatting'])) {
         if (in_array('bold', $request['defaultFormatting']) && $config['defaultFormattingBold'])
-            $updateArray['messageFormatting'][] = 'font-weight: bold';
+            $updateArray['messageFormatting'][] = 'font-weight:bold';
 
-        if (in_array('italics', $request['defaultFormatting']) && $config['defaultFormattingItalics'])
-            $updateArray['messageFormatting'][] = 'font-style: italic';
+        if (in_array('italic', $request['defaultFormatting']) && $config['defaultFormattingItalics'])
+            $updateArray['messageFormatting'][] = 'font-style:italic';
     }
 
 
@@ -277,27 +274,27 @@ if ($requestHead['_action'] === 'edit') {
             $rgb = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
 
             if (!$config['defaultFormatting' . substr($value, 7)])
-                $xmlData['editUserOptions'][$value] = new fimError('disabled', $value . ' is disabled on this server.', null, true);
+                $xmlData['editUserOptions'][$value] = (new fimError('disabled', $value . ' is disabled on this server.', null, true))->value();
 
             elseif (count($rgb) !== 3) // Too many entries.
-                $xmlData['editUserOptions'][$value] = new fimError('badFormat', 'The ' . $value . ' value was not properly formatted.', null, true);
+                $xmlData['editUserOptions'][$value] = (new fimError('badFormat', 'The ' . $value . ' value was not properly formatted.', null, true))->value();
 
             elseif ($rgb[0] < 0 || $rgb[0] > 255) // First val out of range.
-                $xmlData['editUserOptions'][$value] = new fimError('outOfRange1', 'The first value ("red") was out of range.', null, true);
+                $xmlData['editUserOptions'][$value] = (new fimError('outOfRange1', 'The first value ("red") was out of range.', null, true))->value();
 
             elseif ($rgb[1] < 0 || $rgb[1] > 255) // Second val out of range.
-                $xmlData['editUserOptions'][$value] = new fimError('outOfRange2', 'The first value ("green") was out of range.', null, true);
+                $xmlData['editUserOptions'][$value] = (new fimError('outOfRange2', 'The first value ("green") was out of range.', null, true))->value();
 
             elseif ($rgb[2] < 0 || $rgb[2] > 255) // Third val out of range.
-                $xmlData['editUserOptions'][$value] = new fimError('outOfRange3', 'The first value ("blue") was out of range.', null, true);
+                $xmlData['editUserOptions'][$value] = (new fimError('outOfRange3', 'The first value ("blue") was out of range.', null, true))->value();
 
             else {
                 switch ($value) {
                     case 'defaultHighlight':
-                        $updateArray['messageFormatting'][] = 'background-color: rgb(' . implode(',', $rgb) . ')';
+                        $updateArray['messageFormatting'][] = 'background-color:rgb(' . implode(',', $rgb) . ')';
                     break;
                     case 'defaultColor':
-                        $updateArray['messageFormatting'][] = 'color: rgb(' . implode(',', $rgb) . ')';
+                        $updateArray['messageFormatting'][] = 'color:rgb(' . implode(',', $rgb) . ')';
                     break;
                 }
             }
@@ -311,13 +308,13 @@ if ($requestHead['_action'] === 'edit') {
      ************************************/
     if (isset($request['defaultFontface'])) {
         if (!$config['defaultFormattingFont'])
-            $xmlData['editUserOptions']['defaultFontface'] = new fimError('disabled', 'Defaults fonts are disabled on this server.');
+            $xmlData['editUserOptions']['defaultFontface'] = (new fimError('disabled', 'Defaults fonts are disabled on this server.', null, true))->value();
 
         else if (!isset($config['fonts'][$request['defaultFontface']]))
-            $xmlData['editUserOptions']['defaultFontface'] = new fimError('noFont', 'The specified font is not recognised. A list of recognised fonts can be obtained through the getServerStatus API.');
+            $xmlData['editUserOptions']['defaultFontface'] = (new fimError('noFont', 'The specified font is not recognised. A list of recognised fonts can be obtained through the getServerStatus API.', null, true))->value();
 
         else
-            $updateArray['messageFormatting'][] = 'font-family: ' . $config['fonts'][$request['defaultFontface']];
+            $updateArray['messageFormatting'][] = 'font-family:' . $config['fonts'][$request['defaultFontface']];
     }
 
 
@@ -327,7 +324,7 @@ if ($requestHead['_action'] === 'edit') {
      ************************************/
     if (isset($request['parentalAge'])) {
         if (!in_array($request['parentalAge'], $config['parentalAges'], true))
-            $xmlData['editUserOptions']['parentalAge'] = new fimError('badAge', 'The parental age specified is invalid. A list of valid parental ages can be obtained from the getServerStatus API.', null, true);
+            $xmlData['editUserOptions']['parentalAge'] = (new fimError('badAge', 'The parental age specified is invalid. A list of valid parental ages can be obtained from the getServerStatus API.', null, true))->value();
 
         else
             $updateArray['userParentalAge'] = $request['parentalAge'];
