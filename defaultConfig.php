@@ -38,6 +38,9 @@ $defaultConfig = array(
 
     'avatarDefault' => '',
 
+    'profileMustMatchRegex' => false,
+    'profileMustNotMatchRegex' => false,
+
 
     /* Sessions */
     'sessionExpires' => 60 * 15,
