@@ -1622,10 +1622,10 @@ class fimDatabase extends databaseSQL
             'time' => $minute,
         ])->getAsArray('roomId');
 
-        if ($messageFlood[$room->id]['messages'] > $config['floodRoomLimitPerMinute'])
+        if ($messageFlood[$room->id]['messages'] >= $config['floodRoomLimitPerMinute'])
             new fimError('roomFlood', 'Room flood limit breached.');
 
-        if ($messageFlood[0]['messages'] > $config['floodSiteLimitPerMinute'])
+        if ($messageFlood[0]['messages'] >= $config['floodSiteLimitPerMinute'])
             new fimError('siteFlood', 'Site flood limit breached.');
 
 
