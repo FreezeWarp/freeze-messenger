@@ -220,7 +220,8 @@ class fimUser
                     $this->privs |= USER_PRIV_PRIVATE_FRIENDS;
 
                 // Superuser override (note that any user with GRANT or in the $config superuser array is automatically given all permissions, and is marked as protected. The only way, normally, to remove a user's GRANT status, because they are automatically protected, is to do so directly in the database.)
-                if (in_array($this->id, $loginConfig['superUsers']) || ($this->privs & ADMIN_GRANT))
+                // LoginConfig is not guranteed to be set here (e.g. during installation), which is why we cast.
+                if (in_array($this->id, (array) $loginConfig['superUsers']) || ($this->privs & ADMIN_GRANT))
                     $this->privs = 0x7FFFFFFF;
                 elseif ($this->privs & ADMIN_ROOMS)
                     $this->privs |= (USER_PRIV_VIEW | USER_PRIV_POST | USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
