@@ -144,7 +144,7 @@ class fimUser
             // Find selection group
             elseif (isset(array_flip(fimUser::$userDataConversion)[$property])) {
                 $needle = array_flip(fimUser::$userDataConversion)[$property];
-                $selectionGroup = array_values(array_filter($this->userDataPullGroups, function ($var) use ($needle) {
+                $selectionGroup = array_values(array_filter(fimUser::$userDataPullGroups, function ($var) use ($needle) {
                     return strpos($var, $needle) !== false;
                 }))[0];
 
@@ -180,7 +180,7 @@ class fimUser
 
 
             // Social Group IDs: Convert CSV to Array
-            if ($property = 'socialGroupIds')
+            if ($property === 'socialGroupIds')
                 $this->socialGroupIds = explode(',', $value);
 
 
@@ -562,7 +562,20 @@ class fimUser
                 'userIds' => array($this->id),
                 'columns' => $database->userHistoryColumns,
             ))->getAsArray(false)) {
-                $database->insert($database->sqlPrefix . "usersHistory", $existingUserData);
+                $database->insert($database->sqlPrefix . "userHistory", [
+                    "userId" => $existingUserData['userId'],
+                    "userName" => $existingUserData['userName'],
+                    "userNameFormat" => $existingUserData['userNameFormat'],
+                    "profile" => $existingUserData['profile'],
+                    "avatar" => $existingUserData['avatar'],
+                    "userGroupId" => $existingUserData['userGroupId'],
+                    "socialGroupIds" => $existingUserData['socialGroupIds'],
+                    "messageFormatting" => $existingUserData['messageFormatting'],
+                    "options" => (int) $existingUserData['options'],
+                    "userParentalAge" => (int) $existingUserData['userParentalAge'],
+                    "userParentalFlags" => $existingUserData['userParentalFlags'],
+                    "privs" => $existingUserData['privs']
+                ]);
             }
 
             $return = $database->upsert($database->sqlPrefix . "users", array(
