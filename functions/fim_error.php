@@ -11,18 +11,20 @@ class fimError extends Exception {
 
         $this->email = $config['email'];
         $this->displayBacktrace = $config['displayBacktrace'];
+        $this->code = $code;
+        $this->string = $string;
 
-        if ($code) $this->trigger($code, $string, $context, $return);
+        if ($this->code && !$return) $this->trigger();
     }
 
 
-    public function trigger($code, $string = '', $context = array(), $return = false) {
+    public function trigger($return = false) {
         ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
-        header('HTTP/1.1 500 Internal Server Error'); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
+        header('HTTP/1.1 403 Forbidden'); // FimError is invoked when the user did something wrong, not us. (At least, it should be. I've been a little inconsistent.)
 
-        $errorData = array_merge($context, array(
-            'string' => $code,
-            'details' => (substr($string, 0, 1) === '[' || substr($string, 0, 1) === '{') ? json_decode($string, true) : $string,
+        $errorData = array_merge((array) $this->context, array(
+            'string' => $this->code,
+            'details' => (substr($this->string, 0, 1) === '[' || substr($this->string, 0, 1) === '{') ? json_decode($this->string, true) : $this->string,
             'contactEmail' => $this->email,
         ));
 
@@ -46,5 +48,10 @@ class fimError extends Exception {
                 'exception' => $errorData,
             )));
         }
+    }
+
+
+    public function value() {
+        return $this->trigger(true);
     }
 }
