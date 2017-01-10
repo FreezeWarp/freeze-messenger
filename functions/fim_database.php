@@ -27,7 +27,7 @@ class fimDatabase extends databaseSQL
 {
     public $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs, lastSync';
     public $userPasswordColumns = 'passwordHash, passwordFormat, passwordResetNow, passwordLastReset';
-    public $userHistoryColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs';
+    public $userHistoryColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, userParentalAge, userParentalFlags, privs';
     public $roomHistoryColumns = 'roomId, roomName, roomTopic, options, ownerId, defaultPermissions, roomParentalAge, roomParentalFlags';
     public $errorFormatFunction = 'fimError';
     protected $config;
