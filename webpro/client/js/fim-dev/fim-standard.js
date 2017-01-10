@@ -265,8 +265,7 @@ standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
                     else if (exception.string === 'spaceMessage') {
                         dia.error("Too... many... spaces!")
                     }
-                    else
-                        fimApi.getDefaultExceptionHandler(exception);
+                    else { fimApi.getDefaultExceptionHandler()(exception); }
                 },
                 'error' : function(request) {
                     if (settings.reversePostOrder)
