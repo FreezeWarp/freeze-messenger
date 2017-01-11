@@ -1891,8 +1891,8 @@ class fimDatabase extends databaseSQL
             }*/
         }
         else {
-            foreach ($this->getWatchRoomUsers($room->id) AS $sendToUserId) {
-                createUnreadMessage($sendToUserId, $user, $room, $messageId);
+            foreach ($room->watchedBy AS $sendToUserId) {
+                $this->createUnreadMessage($sendToUserId, $user, $room, $messageId);
             }
         }
 
