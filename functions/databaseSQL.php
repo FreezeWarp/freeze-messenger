@@ -1875,6 +1875,11 @@ LIMIT
     public function processQueue() {
         $this->startTransaction();
 
+        foreach ($this->deleteQueue AS $tableName => $deleteConditions) {
+            $deleteConditionsCombined = ['either' => $deleteConditions];
+            $this->delete($tableName, $deleteConditionsCombined);
+        }
+
         foreach ($this->updateQueue AS $tableName => $update) {
             foreach ($update AS $conditionArray => $dataArrays) {
                 $conditionArray = json_decode($conditionArray, true);
@@ -1889,15 +1894,8 @@ LIMIT
             }
         }
 
-
-        foreach ($this->deleteQueue AS $tableName => $deleteConditions) {
-            $deleteConditionsCombined = ['either' => $deleteConditions];
-            $this->delete($tableName, $deleteConditionsCombined);
-        }
-
-
         foreach ($this->insertQueue AS $tableName => $dataArrays) {
-            foreach ($dataArray AS $dataArray) {
+            foreach ($dataArrays AS $dataArray) {
                 $this->insert($tableName, $dataArray);
             }
         }
