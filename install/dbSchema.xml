@@ -616,6 +616,8 @@
             <column name="fileSize" type="int" maxlen="8" default="0" comment="The total size of all files stored on the server by this user." />
             <column name="ownedRoomIds" type="string" maxlen="10000" comment="Total number of rooms owned by this user (may be used to place a limit on room creation.)" />
             <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
+
+            <!-- List Caches -->
             <column name="favRoomIds" type="string" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
             <column name="watchRoomIds" type="string" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
             <column name="ignoredUserIds" type="string" maxlen="10000" comment="A CSV cache of users ignored by this user." />

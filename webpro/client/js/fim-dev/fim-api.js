@@ -589,6 +589,7 @@ fimApi.prototype.editUserStatus = function(params, requestSettings) {
 }
 
 
+
 fimApi.prototype.ping = function(roomId, requestSettings) {
     this.editUserStatus({
         'roomIds' : [roomId]

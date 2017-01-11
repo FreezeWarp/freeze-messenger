@@ -81,7 +81,9 @@ $oauthRequest = OAuth2\Request::createFromGlobals();
 /* If $ignoreLogin is set, we run things without processing any logins. */
 if ($ignoreLogin) {
 
-} /* If grant_type is not set, we granting a token, not evaluating. */
+}
+
+/* If grant_type is not set, we granting a token, not evaluating. */
 else if (isset($_REQUEST['grant_type'])) {
     /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
     switch ($_REQUEST['grant_type']) {
@@ -104,6 +106,8 @@ else if (isset($_REQUEST['grant_type'])) {
 
     if ($oauthResponse->getStatusCode() === 200) {
         /* Send Data to API */
+        $user->resolveAll();
+
         $apiData = new apiData();
         $apiData->replaceData(array(
             'login' => array(

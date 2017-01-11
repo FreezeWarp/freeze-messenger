@@ -1026,8 +1026,10 @@ class databaseResult
             else { // No index is present, generate a two-dimensional array (key => value, key being the column name, value being the corrosponding value).
                 $return = $this->functionMap('fetchAsArray', $this->queryData);
 
-                foreach ($return AS $columnName => &$columnValue) {
-                    $columnValue = $this->applyColumnTransformation($columnName, $columnValue);
+                if ($return) {
+                    foreach ($return AS $columnName => &$columnValue) {
+                        $columnValue = $this->applyColumnTransformation($columnName, $columnValue);
+                    }
                 }
 
                 return (!$return ? array() : $return);

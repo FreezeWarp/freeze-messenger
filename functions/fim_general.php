@@ -411,11 +411,9 @@ function fim_sanitizeGPC($type, $data) {
 
 
     /* Store/Parse Request Body */
+    $requestBody = [];
     if ($_SERVER['REQUEST_METHOD'] === 'PUT' && in_array($type, array('p', 'post'))) {
         parse_str(file_get_contents('php://input'), $requestBody);
-    }
-    else {
-        $requestBody = [];
     }
 
     switch ($type) { // Set the GLOBAL to a local var for processing.
@@ -504,7 +502,7 @@ function fim_sanitizeGPC($type, $data) {
                 if (isset($activeGlobal[$indexName], $indexMetaData['valid'])) {
                     if (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'list') {
                         if (count(array_diff($activeGlobal[$indexName], $indexMetaData['valid'])) > 0)
-                            throw new Exception("Invalid value(s) for '$indexName': " . implode(',', array_diff($activeGlobal[$indexName], $indexMetaData['valid'])));
+                            throw new Exception("Invalid value(s) for '$indexName': " . implode(', ', array_diff($activeGlobal[$indexName], $indexMetaData['valid'])));
                     }
                     elseif (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'dict')
                         throw new Exception("A 'valid' parameter was specified for '$indexName', but the 'dict' cast type does not support this parameter.");

@@ -1886,7 +1886,6 @@ LIMIT
 
         foreach ($this->deleteQueue AS $tableName => $deleteConditions) {
             $deleteConditionsCombined = ['either' => $deleteConditions];
-
             $this->delete($tableName, $deleteConditionsCombined);
         }
 
