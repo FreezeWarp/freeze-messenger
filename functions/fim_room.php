@@ -63,10 +63,11 @@ class fimRoom {
     );
 
     private static $roomDataPullGroups = array(
-        'roomId, roomName',
-        'defaultPermissions, options',
-        'roomParentalFlags,roomParentalAge,roomTopic',
-        'lastMessageTime,lastMessageId,messageCount,flags'
+        ['roomId','roomName'],
+        ['defaultPermissions','options'],
+        ['roomParentalFlags','roomParentalAge','roomTopic'],
+        ['lastMessageTime','lastMessageId','messageCount','flags'],
+        ['watchedBy']
     );
 
     private $generalCache;
@@ -275,14 +276,19 @@ class fimRoom {
 
                 else {
                     // Find selection group
-                    if (isset(array_flip(fimRoom::$roomDataConversion)[$property])) {
-                        $needle = array_flip(fimRoom::$roomDataConversion)[$property];
-                        $selectionGroup = array_values(array_filter($this->roomDataPullGroups, function ($var) use ($needle) {
-                            return strpos($var, $needle) !== false;
-                        }))[0];
+                    $flip = array_flip(fimRoom::$roomDataConversion);
+                    if (isset($flip[$property])) {
+                        $needle = $flip[$property];
+                        $groupPointer = false;
 
-                        if ($selectionGroup)
-                            $this->getColumns(explode(',', $selectionGroup));
+                        foreach (fimRoom::$roomDataPullGroups AS $group) {
+                            if (in_array($needle, $group)) {
+                                $groupPointer =& $group;
+                            }
+                        }
+
+                        if ($groupPointer)
+                            $this->getColumns($groupPointer);
                         else
                             throw new Exception("Selection group not found for '$property'");
                     }
