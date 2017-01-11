@@ -1736,6 +1736,9 @@ LIMIT
      */
     public function insert($table, $dataArray, $updateArray = false)
     {
+        if ($this->autoQueue)
+            return $this->queueInsert($table, $dataArray);
+
         if ($updateArray) throw new exception('Removed.'); // TODO
 
         $columns = array_keys($dataArray);
