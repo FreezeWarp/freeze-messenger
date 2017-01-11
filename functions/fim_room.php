@@ -40,6 +40,7 @@ class fimRoom {
     private $messageCount;
     private $flags;
     private $encodedId;
+    private $watchedBy;
 
     protected $roomData;
 
@@ -57,6 +58,7 @@ class fimRoom {
         'lastMessageTime' => 'lastMessageTime',
         'lastMessageId' => 'lastMessageTime',
         'messageCount' => 'messageCount',
+        'watchedBy' => 'watchedBy',
         'flags' => 'flags'
     );
 
@@ -320,7 +322,7 @@ class fimRoom {
 
             // Parental Flags: Convert CSV to Array, or empty if disabled
             if ($property === 'parentalFlags') {
-                if ($config['parentalEnabled']) $this->parentalFlags = (is_array($value) ? $value : explode(',', $value));
+                if ($config['parentalEnabled']) $this->parentalFlags = fim_emptyExplode(',', $value);
                 else                            $this->parentalFlags = array();
             }
 
