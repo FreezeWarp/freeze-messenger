@@ -1296,7 +1296,7 @@ class fimDatabase extends databaseSQL
         if ($action === 'delete') {
             foreach ($rooms AS $roomId => $room) {
                 $this->delete($table, array(
-                    'userId' => $userData['userId'],
+                    'userId' => $userData->id,
                     'roomId' => $roomId,
                 ));
             }
@@ -1305,7 +1305,7 @@ class fimDatabase extends databaseSQL
         if ($action === 'edit') {
             foreach ($rooms AS $roomId => $room) {
                 $this->delete($table, array(
-                    'userId' => $userData['userId'],
+                    'userId' => $userData->id,
                 ));
             }
         }
@@ -1386,7 +1386,7 @@ class fimDatabase extends databaseSQL
 
 
 
-    public function editListCache(string $listName, fimRoom $user, array $itemIds, $action = 'create') {
+    public function editListCache(string $listName, fimUser $user, array $itemIds, $action = 'create') {
         $userColNames = [
             'favRooms' => 'favRoomIds',
             'watchRooms' => 'watchRoomIds',
@@ -1421,7 +1421,7 @@ class fimDatabase extends databaseSQL
             sort($listEntries);
 
             $this->update($this->sqlPrefix . 'users', [
-                $this->sqlPrefix . $userColNames[$listName] => implode(',', $listEntries)
+                $userColNames[$listName] => implode(',', $listEntries)
             ], [
                 'userId' => $user->id,
             ]);
