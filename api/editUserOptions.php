@@ -22,56 +22,79 @@
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2014
  *
- * =POST Parameters=
-These parameteres are, where applicable, documented in the SQL documentation.
-
- * @param int defaultRoomId
- * @param uri avatar
- * @param uri profile
- * @param array[r,g,b] defaultColor - A comma-seperated list of the three chroma values, corresponding to red, green, and blue. The range of these chroma values is [0,255], where 0 is no color, and 255 is full color.
- * @param array[r,g,b] defaultHighlight - Same as defaultColor.
- * @param string defaultFontface
- * @param int defaultFormatting
- * @param csv watchRooms - A comma-seperated list comma-seperated list of room IDs that will be watched. When a new message is made in these rooms, the user will be notified.
- * @param int parentalAge - The parental age corresponding to the room.
- * @param csv parentalFlags - A comma-separated list of parental flags that apply to the room.
+ * =GET Parameters=
+ * @param string["edit", "delete", "create"] _action - The action parameter is used here for watchRooms, favRooms, friendsList, and ignoreList. If "edit," then those lists will be replaced with the list specified. If create, then those lists will be appended by the lists specified. If "delete," then those lists will have all items in the specified list deleted.
+ *
+ * =PUT Parameters=
+These parameters are, where applicable, documented in the SQL documentation.
+ * @param int defaultRoomId - The ID of the room that the user would like loaded when they login to FreezeMessenger.
+ * @param uri avatar - (Vanilla logins only.) A file pointing to the user's avatar.
+ * @param uri profile - (Vanilla logins only.) A url pointing to the user's profile.
+ * @param csv[r,g,b] defaultColor - A comma-seperated list of the three chroma values, corresponding to red, green, and blue. The range of these chroma values is [0,255], where 0 is no color, and 255 is full color.
+ * @param csv[r,g,b] defaultHighlight - Same as defaultColor.
+ * @param string defaultFontface - A fontface name corresponding with the table returned by getServerStatus. It should be the name, and not the full font-family list.
+ * @param list['bold', 'italic'] defaultFormatting - A list of default formatting styles to apply to all of the user's messages. Supports "bold" and "italic."
+ * @param int parentalAge - The age-appropriateness of content the user has indicated they are willing to view. Increasing this will allow more mature content, and decreasing it will disallow such content.
+ * @param list[parentalFlags] parentalFlags - A list of parental flags that the user has indicated they are willing to see. Valid entries are returned by getServerStatus.
+ *
+ * =POST/PUT/DELETE Parameters=
+ * @param list[roomIds] watchRooms - A list of room IDs corresponding to rooms the user is watching. When a new message is made in these rooms, the user will be notified.
+ * @param list[roomIds] favRooms - A list of room IDs corresponding to rooms the user has favourited. This exists to help synchronise different clients -- internally, the list is ignored.
+ * @param list[userIds] friendsList - (Vanilla logins only.) A list of user IDs corresponding to users the user has friended. They may restrict private messages to this list. Additionally, future functionality is planned, but not currently supported.
+ * @param list[userIds] ignoreList - A list of user IDs corresponding to users the user does not want to interact with. These users will not be able to initiate a private message with the user.
  *
  * =Errors=
  * Error codes are listed by the parent node they appear under:
- *
- * ==editUserOptions==
- * No error codes are thrown.
  *
  * ==avatar==
  * @throw smallSize - The avatar's dimensions are below the server minimum. This may also occur if a valid image was not sent.
  * @throw bigSize - The avatar's dimensions exceed the server maximum.
  * @throw badType - The avatar's filetype is not supported.
- * @throw bannedFile - The file has been been blocked by a server regex blacklist. [[TODO.]]
+ * @throw bannedFile - The file has been been blockzed by a server regex blacklist/whitelist.
+ * @throw noUrl - The URL provided did not seem to be a URL.
+ * @throw badUrl - The URL provided could not be resolved (didn't exist).
+ * @throw avatarDisabled - Avatars are not supported by the FreezeMessenger server (typically because it is integrated with a seperate login system).
 
  * ==profile==
  * @throw noUrl - A valid URL was not provided.
- * @throw bannedUrl - The URL has been blocked by a server regex blacklist. [[TODO.]]
+ * @throw badUrl - The URL provided could not be resolved (didn't exist).
+ * @throw bannedUrl - The URL has been blocked by a server regex blacklist.
+ * @throw profileDisabled - Profiles are not supported by the FreezeMessenger server (typically because it is integrated with a seperate login system).
 
  * ==defaultRoom==
+ * @throw invalidRoom - The room specified does not exist.
  * @throw noPerm - The user is not allowed to view the room specified.
 
  * ==defaultHighlight, defaultColor==
+ * @throw disabled - Default highlight/color is disabled by the FreezeMessenger server.
  * @throw outOfRange1 - The first color value, red, is out of the [0,255] range.
  * @throw outOfRange2 - The second color value, green, is out of the [0,255] range.
  * @throw outOfRange3 - The second color value, blue, is out of the [0,255] range.
  * @throw badFormat - Too few, or too many, chroma values were specified.
 
  * ==defaultFontface==
+ * @throw disabled - Default fonts are disabled by the FreezeMessenger server.
  * @throw noFont - The font specified does not exist.
-
+ *
+ * ==defaultFormatting==
+ * No errors are thrown by defaultFormatting, however specifying an invalid value will cause an exception. If a parameter is disabled, it will simply not be applied.
+ *
  * ==parentalAge==
  * @throw badAge - The parental age specified is not valid.
  *
+ * ==parentalFlags==
+ * No errors are thrown by parentalFlags, however specifying an invalid value will cause an exception.
  *
+ *
+ * =PUT/POST/DELETE Examples=
+ * Note that when using PUT, every directive is supported. When using POST and DELETE, only the four lists are supported.
  *
  * PUT editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == replaces the list of watch rooms with the new list, [1,2,3]
- * DELETE editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == removes rooms 1, 2, and 3 from the watch rooms list
+ * PUT editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3&defaultHighlight=0,0,0 == replaces the list of watch rooms with the new list, [1,2,3]. Sets the default highlight color to black.
  * POST editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == adds rooms 1, 2, and 3 from the watch rooms list
+ * POST editUserOptions.php watchRooms[]=1&favRooms[]=2&friendsLists[]=3 == adds room 1 to the watch rooms, room 2 to the favourite rooms, and user 3 to the friends list.
+ * POST editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3&defaultHighlight=0,0,0 == adds room 1 to the watch rooms, room 2 to the favourite rooms, and user 3 to the friends list. Though defaultHighlight is specified, this is a POST request, and it will thus be ignored.
+ * DELETE editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == removes rooms 1, 2, and 3 from the watch rooms list
  */
 
 $apiRequest = true;
@@ -170,9 +193,19 @@ if ($requestHead['_action'] === 'edit') {
         /************************************
          ************ Avatar ****************
          ************************************/
-        if (isset($request['avatar'])) { // TODO: Add regex policy.
-            if ($badRegex) // TODO
+        if (isset($request['avatar'])) {
+            if ($request['avatar'] === '')
+                $updateArray['avatar'] = $request['avatar'];
+
+            elseif (($config['profileMustMatchRegex'] && !preg_match($config['profileMustMatchRegex'], $request['avatar']))
+                || ($config['profileMustNotMatchRegex'] && preg_match($config['profileMustNotMatchRegex'], $request['avatar'])))
                 $xmlData['editUserOptions']['avatar'] = (new fimError('bannedFile', 'The avatar specified is not allowed.', null, true));
+
+            elseif (filter_var($request['avatar'], FILTER_VALIDATE_URL) === FALSE)
+                $xmlData['editUserOptions']['avatar'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->value();
+
+            elseif (!curlRequest::exists($request['avatar']))
+                $xmlData['editUserOptions']['avatar'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->value();
 
             else {
                 $imageData = getimagesize($request['avatar']);
@@ -197,25 +230,21 @@ if ($requestHead['_action'] === 'edit') {
          ************** Profile *************
          ************************************/
         if (isset($request['profile'])) { // TODO: Add regex policy.
-            if ($request['profile'] === '') {
-                // Really, do nothing for now. Could have a hook here later if we want to.
-            }
+            if ($request['profile'] === '')
+                $updateArray['profile'] = $request['profile'];
 
-            elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === FALSE) {
+            elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === FALSE)
                 $xmlData['editUserOptions']['profile'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->value();
-            }
 
-            else {
-                if (($config['profileMustMatchRegex'] && !preg_match($config['profileMustMatchRegex'], $request['profile']))
-                    || ($config['profileMustNotMatchRegex'] && preg_match($config['profileMustNotMatchRegex'], $request['profile'])))
-                    $xmlData['editUserOptions']['profile'] = (new fimError('bannedUrl', 'The URL specified is not allowed.', null, true))->value();
+            elseif (($config['profileMustMatchRegex'] && !preg_match($config['profileMustMatchRegex'], $request['profile']))
+                || ($config['profileMustNotMatchRegex'] && preg_match($config['profileMustNotMatchRegex'], $request['profile'])))
+                $xmlData['editUserOptions']['profile'] = (new fimError('bannedUrl', 'The URL specified is not allowed.', null, true))->value();
 
-                elseif (!curlRequest::exists($request['profile']))
-                    $xmlData['editUserOptions']['profile'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->value();
+            elseif (!curlRequest::exists($request['profile']))
+                $xmlData['editUserOptions']['profile'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->value();
 
-                else
-                    $updateArray['profile'] = $request['profile'];
-            }
+            else
+                $updateArray['profile'] = $request['profile'];
         }
 
     }

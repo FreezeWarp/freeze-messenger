@@ -36,6 +36,9 @@ $defaultConfig = array(
     'avatarMinimumWidth' => 10,
     'avatarMinimumHeight' => 10,
 
+    'avatarMustMatchRegex' => false,
+    'avatarMustNotMatchRegex' => false,
+
     'avatarDefault' => '',
 
     'profileMustMatchRegex' => false,
