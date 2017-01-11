@@ -52,6 +52,9 @@ abstract class database
     protected $deleteQueue = array();
     protected $insertQueue = array();
 
+    public $encode = [];
+    public $encodeCopy = [];
+
     public $sqlPrefix;
 
 
@@ -848,6 +851,20 @@ abstract class database
         return $this->type('column', $value, $comp);
     }
 
+
+    /**
+     * Define a value as being an equation.
+     *
+     * @param $value
+     *
+     * @return special - Returns a special representation of a column value only for use in database functions.
+     *
+     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+     */
+    public function equation($value) {
+        return $this->type('equation', $value);
+    }
+
     /*********************************************************
      ************************* END ***************************
      **************** Type-Casting Functions *****************
@@ -898,12 +915,12 @@ abstract class database
      *
      * @param mixed $queryData - Typically the object associated with a query to a database using a certain driver.
      * @param mixed $sourceQuery - Typically a string or array containing the data used to make the query to the driver that resulted in $queryData. Generally used for debugging.
-     * @param array $driver - The driver used to make the query.
+     * @param database $database - The database instance that created the result.
      *
      * @return databaseResult
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    abstract protected function databaseResultPipe($queryData, $reverseAlias, $query, $driver);
+    abstract protected function databaseResultPipe($queryData, $reverseAlias, $query, $database);
 }
 
 class databaseResult
@@ -916,12 +933,12 @@ class databaseResult
      * @return void
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function __construct($queryData, $reverseAlias, $sourceQuery, $language)
+    public function __construct($queryData, $reverseAlias, $sourceQuery, $database)
     {
         $this->queryData = $queryData;
         $this->reverseAlias = $reverseAlias;
         $this->sourceQuery = $sourceQuery;
-        $this->driver = $language;
+        $this->database = $database;
     }
 
 
@@ -934,7 +951,7 @@ class databaseResult
     public function functionMap($operation)
     {
         $args = func_get_args();
-        switch ($this->driver) {
+        switch ($this->database->driver) {
             case 'mysql':
                 switch ($operation) {
                     case 'fetchAsArray' :
@@ -1078,13 +1095,15 @@ class databaseResult
 
 
     public function applyColumnTransformation($column, $value) {
-        $tableName = $this->reverseAlias[$column][0];
+        $tableName = $this->reverseAlias[$column][0];//var_dump($tableName); var_dump($this->database->encode[$tableName]);
 
-        if (isset($this->encode[$tableName][$column]))
-            return call_user_func($this->encode[$tableName][$column][2], $value);
+        if (isset($this->database->encode[$tableName][$column])) {//var_dump(true);
+            return call_user_func($this->database->encode[$tableName][$column][2], $value);
+        }
 
-        else
+        else {//var_dump(false);
             return $value;
+        }
     }
 
 

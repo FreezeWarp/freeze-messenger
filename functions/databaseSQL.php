@@ -125,9 +125,6 @@ class databaseSQL extends database
 
     protected $dbLink = false;
 
-    protected $encode = [];
-    protected $encodeCopy = [];
-
     /*********************************************************
      ************************ START **************************
      ******************* General Functions *******************
@@ -990,7 +987,7 @@ class databaseSQL extends database
                 $this->newQuery($query, microtime(true) - $start);
 
                 if ($queryData === true) return true; // Insert, Update, Delete, etc.
-                else return $this->databaseResultPipe($queryData, $reverseAlias, $query, $this->driver); // Select, etc.
+                else return $this->databaseResultPipe($queryData, $reverseAlias, $query, $this); // Select, etc.
             }
 
             else {

@@ -2195,8 +2195,8 @@ class fimDatabase extends databaseSQL
      * OVERRIDE
      * Overrides the normal function to use fimDatabaseResult instead.
      */
-    protected function databaseResultPipe($queryData, $reverseAlias, $query, $driver) {
-        return new fimDatabaseResult($queryData, $reverseAlias, $query, $driver);
+    protected function databaseResultPipe($queryData, $reverseAlias, $query, $database) {
+        return new fimDatabaseResult($queryData, $reverseAlias, $query, $database);
     }
 }
 
