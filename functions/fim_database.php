@@ -1082,13 +1082,18 @@ class fimDatabase extends databaseSQL
     }
 
 
+    /**
+     * Gets the entries from the watchRooms table corresponding with a single roomId. fimRoom($roomId)->watchRooms should generally be used instead, since it implements additional caching.
+     *
+     * @param $roomId
+     * @return mixed
+     * @throws Exception
+     */
     public function getWatchRoomUsers($roomId) {
         $watchRoomIds = $this->select(array(
             $this->sqlPrefix . 'watchRooms' => 'userId, roomId'
         ), array(
-            'both' => array(
-                'roomId' => $this->int($roomId)
-            )
+            'roomId' => $this->int($roomId)
         ))->getColumnValues('userId');
 
         return $watchRoomIds;
@@ -1476,34 +1481,28 @@ class fimDatabase extends databaseSQL
             'friendsList' => 'friendedUserIds'
         ];
 
-        $roomColNames = [
-            'watchRooms' => 'watchedBy',
-        ];
-
-        /* Process room caches */
-        if (isset($roomColNames[$listName])) {
-
-        }
-
         /* Process user caches */
         if (isset($userColNames[$listName])) {
-            $listEntries = $user->__get($listName);
 
             if ($action === 'edit')
                 $listEntries = $itemIds;
 
-            elseif ($action === 'delete')
-                $listEntries = array_diff($listEntries, $itemIds);
+            else {
+                $listEntries = $user->__get($listName);
 
-            elseif ($action === 'create')
-                foreach ($itemIds AS $item) $listEntries[] = $item;
+                if ($action === 'delete')
+                    $listEntries = array_diff($listEntries, $itemIds);
+
+                elseif ($action === 'create')
+                    foreach ($itemIds AS $item) $listEntries[] = $item;
+            }
 
 
             $listEntries = array_unique($listEntries);
             sort($listEntries);
 
             $this->update($this->sqlPrefix . 'users', [
-                $userColNames[$listName] => implode(',', $listEntries)
+                $userColNames[$listName] => $listEntries
             ], [
                 'userId' => $user->id,
             ]);
