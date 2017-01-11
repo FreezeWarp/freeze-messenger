@@ -701,6 +701,9 @@ popup = {
                         },
                         'end' : function() {
                             dia.info('Your settings have been updated successfully.');
+
+                            $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+                            $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
                         },
                         'error' : function(errors) {
                             errorsList = [];
@@ -711,9 +714,6 @@ popup = {
                             dia.error('Some of your settings have been updated. However, the following values were unable to be processed:<ul>' + errorsList.join() + '</ul>')
                         }
                     });
-
-                    $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-                    $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
 
                     return false; // Don't submit the form.
                 });
