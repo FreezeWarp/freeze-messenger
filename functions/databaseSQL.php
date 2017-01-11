@@ -1799,11 +1799,22 @@ LIMIT
     }
 
 
-    public function upsert($table, $conditionArray, $dataArray)
+    /**
+     * If a row matching $conditionArray already exists, it will be updated to reflect $dataArray. If it does not exist, a row will be inserted that is a composite of $conditionArray, $dataArray, and $dataArrayOnInsert.
+     * On systems that support OnDuplicateKey, this will NOT test the existence of $conditionArray, relying instead on the table's keys to do so. Thus, this function's $conditionArray should always match the table's own keys.
+     *
+     * @param $table
+     * @param $conditionArray
+     * @param $dataArray
+     * @param $dataArrayOnInsert
+     * @return bool|resource
+     * @throws Exception
+     */
+    public function upsert($table, $conditionArray, $dataArray, $dataArrayOnInsert = [])
     {
         switch ($this->language) {
             case 'mysql':
-                $allArray = array_merge($dataArray, $conditionArray);
+                $allArray = array_merge($dataArray, $dataArrayOnInsert, $conditionArray);
                 $allColumns = array_keys($allArray);
                 $allValues = array_values($allArray);
 
