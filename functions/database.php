@@ -169,6 +169,7 @@ abstract class database
      *  - 'function' - A function returns false. For instance, selectDB() fails because a database could not be found.
      *  - 'syntax' - A function can not complete due to a syntax error. Some drivers may not trigger this kind of error.
      *  - 'validation' - A function can not complete because the data specified does not validate, for instance a value is not recognised or is of the wrong type.
+     *  - 'validationFallback' - A function encountered a validation error, but will recover by making an assumption about the intended data.
      *  - 'connection' - A connection failed. For instance, connect() returns false or the MySQL server is down. The latter error may not always be detected.
      *  - 'logic' - A logic error in the function occured. (Honestly, you should probably throw an exception instead, but whatever.)
      * @param bool suppressErrors - Do not trigger an error. The error will still be logged, but it will not interupt the program flow.
@@ -181,28 +182,37 @@ abstract class database
             echo $errorMessage;
         }
 
-        if (!$suppressErrors) {
-            if ($this->errorFormatFunction && function_exists($this->errorFormatFunction)) {
-                throw new $this->errorFormatFunction('dbError', json_encode(array(
-                    "Message" => $errorMessage,
-                    "Database Error" => $this->getLastError(),
-                    "Error Data" => $errorData,
-                    "Query Log" => $this->queryLog,
-                    "Stack Trace" => debug_backtrace(false),
-                )));
-            }
-            else {
-                throw new Exception('A database error has occured (' . $this->getLastError() . '). Additional Data: "' . $errorData . '"');
-            }
-        }
-
         $this->newError($errorMessage . "\nAdditional Information:\n" . print_r($errorData, true));
 
+        if ($errorType === 'validationFallback') {
+            // TODO
+            // validation errors are warnings
+        }
+        else {
+            if (!$suppressErrors) {
+                if ($this->errorFormatFunction && function_exists($this->errorFormatFunction)) {
+                    throw new $this->errorFormatFunction('dbError', json_encode(array(
+                        "Message" => $errorMessage,
+                        "Database Error" => $this->getLastError(),
+                        "Error Data" => $errorData,
+                        "Query Log" => $this->queryLog,
+                        "Stack Trace" => debug_backtrace(false),
+                    )));
+                }
+                else {
+                    throw new Exception('A database error has occurred (' . $this->getLastError() . '). Additional Data: "' . $errorData . '"');
+                }
+            }
+            else {
+                throw new Exception('A database error has occured.');
+            }
 
-        // If transaction mode is active, then any error will result in a rollback and the closure of the connection. Once transaction mode is ended, errors no longer result in a connection closure.
-        if ($this->transaction) {
-            $this->rollbackTransaction();
-            $this->close();
+
+            // If transaction mode is active, then any error will result in a rollback and the closure of the connection. Once transaction mode is ended, errors no longer result in a connection closure.
+            if ($this->transaction) {
+                $this->rollbackTransaction();
+                $this->close();
+            }
         }
     }
 
@@ -726,7 +736,8 @@ abstract class database
                 break;
 
             case 'arr': case 'array':
-                if (count($value) === 0) $this->triggerError('Empty arrays can not be specified.', false, 'validation');
+                if (count($value) === 0)
+                    $this->triggerError('An empty array was specified.', false, 'validationFallback');
 
                 return new DatabaseType(DatabaseTypeType::arraylist, (array)$value, $typeComp);
                 break;

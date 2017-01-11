@@ -994,9 +994,7 @@ class databaseSQL extends database
             }
 
             else {
-                $this->errors[] = $this->functionMap('error');
-
-                $this->triggerError("badQuery", $query);
+                $this->triggerError($this->functionMap('error'), $query);
 
                 return false;
             }
@@ -1151,14 +1149,15 @@ class databaseSQL extends database
 
     public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes, $partitionColumn = false)
     {
-        if (isset($this->tableTypes[$engine])) {
-            $engineName = $this->tableTypes[$engine];
-        } else {
+        if (!isset($this->tableTypes[$engine])) {
             $this->triggerError("Unrecognised Table Engine", array(
                 'tableName' => $tableName,
                 'engine' => $engine
-            ), 'validation');
+            ), 'validationFallback');
+
+            $engine = 'general';
         }
+        $engineName = $this->tableTypes[$engine];
 
         $tableProperties = '';
         $triggers = [];
@@ -1255,7 +1254,8 @@ class databaseSQL extends database
                         'tableName' => $tableName,
                         'columnName' => $columnName,
                         'columnType' => $column['type'],
-                    ), 'validation');
+                    ), 'validationFallback');
+                    $typePiece = $this->dataTypes['string'];
                     break;
             }
 
@@ -1280,15 +1280,15 @@ class databaseSQL extends database
             $indexes = array();
 
             foreach ($tableIndexes AS $indexName => $index) {
-                if (isset($this->keyTypeConstants[$index['type']])) {
-                    $typePiece = $this->keyTypeConstants[$index['type']];
-                } else {
+                if (!isset($this->keyTypeConstants[$index['type']])) {
                     $this->triggerError("Unrecognised Index Type", array(
                         'tableName' => $tableName,
                         'indexName' => $indexName,
                         'indexType' => $index['type'],
-                    ), 'validation');
+                    ), 'validationFallback');
+                    $index['type'] = 'index';
                 }
+                $typePiece = $this->keyTypeConstants[$index['type']];
 
 
                 if (strpos($indexName, ',') !== false) {
@@ -1684,6 +1684,12 @@ LIMIT
                 elseif ($value->type === DatabaseTypeType::column)
                     $sideText['right'] = ($reverseAlias ? $this->formatValue('tableColumn', $reverseAlias[$value->value][0], $reverseAlias[$value->value][1]) : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
 
+                elseif ($value->type === DatabaseTypeType::arraylist && count($value->value) === 0) {
+                    $this->triggerError('Array nullified', false, 'validationFallback');
+                    $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any
+                    continue;
+                }
+
                 else {
                     // Apply transform function, if set
                     if (isset($reverseAlias[$column]) && isset($this->encode[$reverseAlias[$column][0]][$column])) {
@@ -1705,7 +1711,7 @@ LIMIT
                 else {
                     $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
-                    $this->triggerError('Query Nullified', array('Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validation'); // Dev, basically. TODO.
+                    $this->triggerError('Query Nullified', array('Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validationFallback');
                 }
             }
         }
