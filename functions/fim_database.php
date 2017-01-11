@@ -580,11 +580,10 @@ class fimDatabase extends databaseSQL
             'userId' => (int) $userId,
             'roomId' => (int) $roomId,
         ), array(
-                'length' => (int) $length,
-                'kickerId' => (int) $user['kickerId'],
-                'time' => $this->now(),
-            )
-        );
+            'length' => (int) $length,
+            'kickerId' => (int) $user['kickerId'],
+            'time' => $this->now(),
+        ));
     }
 
 
@@ -1339,7 +1338,7 @@ class fimDatabase extends databaseSQL
         $this->upsert($this->sqlPrefix . 'sessionLockout', array(
             'ip' => $_SERVER['REMOTE_ADDR'],
         ), array(
-            'attempts' => $this->type('equation', '$attempts + 1'),
+            'attempts' => $this->equation('$attempts + 1'),
             'expires' => $this->now($config['lockoutExpires']) // TOOD: Config
         ));
 
@@ -1794,7 +1793,7 @@ class fimDatabase extends databaseSQL
         $this->update($this->sqlPrefix . "rooms", array(
             'lastMessageTime' => $this->now(),
             'lastMessageId'   => $messageId,
-            'messageCount'    => $this->type('equation', '$messageCount + 1')
+            'messageCount'    => $this->equation('$messageCount + 1')
         ), array(
             'roomId' => $room->id,
         ));
@@ -1842,14 +1841,14 @@ class fimDatabase extends databaseSQL
                 'messages' => 1,
             ), array(
                 'ip' => $_SERVER['REMOTE_ADDR'],
-                'messages' => $this->type('equation', '$messages + 1'),
+                'messages' => $this->equation('$messages + 1'),
             ));
         }
 
 
         // Update user caches
         $this->update($this->sqlPrefix . "users", array(
-            'messageCount' => $this->type('equation', '$messageCount + 1'),
+            'messageCount' => $this->equation('$messageCount + 1'),
         ), array(
             'userId' => $user->id,
         ));
@@ -1859,9 +1858,8 @@ class fimDatabase extends databaseSQL
         $this->upsert($this->sqlPrefix . "roomStats", array(
             'userId'   => $user->id,
             'roomId'   => $room->id,
-            'messages' => 1,
         ), array(
-            'messages' => $this->type('equation', '$messages + 1')
+            'messages' => $this->equation('$messages + 1')
         ));
 
 
@@ -1984,7 +1982,10 @@ class fimDatabase extends databaseSQL
                 'senderNameFormat'  => $user->userNameFormat,
                 'roomName'          => $room->name,
                 'messageId'         => $messageId,
+                'otherMessages'     => 0,
+            ), array(
                 'time'              => $this->now(),
+                'otherMessages'     => $this->equation('$otherMessages + 1'),
             ));
         }
     }
@@ -2000,7 +2001,7 @@ class fimDatabase extends databaseSQL
     public function incrementCounter($counterName, $incrementValue = 1)
     {
         if ($this->update($this->sqlPrefix . "counters", array(
-            'counterValue' => $this->type('equation', '$counterValue + ' . (int) $incrementValue)
+            'counterValue' => $this->equation('$counterValue + ' . (int) $incrementValue)
         ), array(
             'counterName' => $counterName,
         ))) {
