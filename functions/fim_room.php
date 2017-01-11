@@ -312,7 +312,7 @@ class fimRoom {
 
         // If we've already processed the value once, it generally won't need to be reprocessed. Permissions, for instance, may be altered intentionally. We do make an exception for setting integers to what should be arrays -- we will reprocess in this case.
         if (!in_array($property, $this->resolved) ||
-            (($property === 'parentalFlags' || $property === 'socialGroupIds')
+            (($property === 'parentalFlags' || $property === 'watchedBy')
                 && gettype($value) === 'integer')
         ) {
             $this->resolved[] = $property;
@@ -328,6 +328,34 @@ class fimRoom {
             // Parental Age: Disable if feature is disabled.
             else if ($property === 'parentalAge' && !$config['parentalEnabled']) {
                 $this->parentalAge = 0;
+            }
+
+            elseif ($property === 'watchedBy') {
+                if (!$config['enableWatchRooms'])
+                    $this->watchedBy = [];
+
+                elseif ($value === fimDatabase::decodeError) {
+                    // TODO: regenerate and cache to APC
+                    global $database;
+                    $this->watchedBy = $database->getWatchRoomUsers($this->id);
+
+                    $database->update($database->sqlPrefix . "rooms", [
+                        "watchedBy" => $this->watchedBy
+                    ], [
+                        "roomId" => $this->id,
+                    ]);
+                }
+
+                elseif ($value === fimDatabase::decodeExpired) {
+                    global $database;
+                    $this->watchedBy = $database->getWatchRoomUsers($this->id);
+
+                    $database->update($database->sqlPrefix . "rooms", [
+                        "watchedBy" => $this->watchedBy
+                    ], [
+                        "roomId" => $this->id,
+                    ]);
+                }
             }
 
 

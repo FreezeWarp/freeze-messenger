@@ -33,6 +33,101 @@ class fimDatabase extends databaseSQL
     protected $config;
 
 
+    const decodeError = "CORRUPTED";
+    const decodeExpired = "EXPIRED";
+
+    /***
+     * Static String Manipulation
+     */
+
+    /**
+     * Converts a CSV list (e.g. "1,2,3") to a packed binary equivilent.
+     * As currently implemented, this should achieve the lowest possible size without performing compression. Numbers in the CSV list are converted to base-15, which are then packed to a hexadecimal string, with "f" being the delimiter.
+     * Thus, "1,2,3" (6  bytes) will convert to 0x1a2a3, which is 20 bits/2.5 bytes.
+     * For the purposes of ensuring a string is fully read back, however, it will start and end with "ff." (We could also specify the size of the string at the beginning, but the "ff" is marginally faster, and easier to encode.)
+     * @param string $csv
+     */
+    public static function packList(array $list) {
+        if (count($list) === 0) {
+            return pack("H*", 'ffff');
+        }
+        else {
+            $packString = '';
+
+            foreach ($list AS $int)
+                $packString .= 'f' . base_convert($int, 10, 15);
+
+            return pack("H*", 'f' . $packString . 'ff');
+        }
+    }
+
+
+    public static function unpackList($blob) {
+        if (strlen($blob) === 0)
+            return [];
+
+        else {
+            $decoded = rtrim(unpack("H*", $blob)[1], '0');
+
+            if (substr($decoded, -2) !== 'ff' || substr($decoded, 0, 2) !== 'ff')
+                return fimDatabase::decodeError;
+                //throw new Exception('Bad parity: ' . $decoded); // For development only
+
+            elseif (strlen($decoded) === 4)
+                return [];
+
+            else
+                return explode('f', substr($decoded, 2, -2));
+        }
+    }
+
+    /**
+     * This operates like fimDatabase::packCSV, except it also stores a cache expiration time as the first entry.
+     *
+     * @param string $csv
+     * @param int $cacheLength
+     */
+    public static function packListCache(array $list, int $cacheLength = 5 * 60) {
+        array_unshift($list, time() + $cacheLength);
+
+        return fimDatabase::packList($list);
+    }
+
+    public static function unpackListCache($blob) { //var_dump($blob); die(';7');
+        if (strlen($blob) === 0) { // Happens when uninitialised, generally, but could also happen as part of a cache cleanup -- the most efficient way to invalidate is simply to null.
+            return fimDatabase::decodeExpired;
+        }
+        else {
+            $list = fimDatabase::unpackList($blob);
+
+            if ($list === fimDatabase::decodeError)
+                return fimDatabase::decodeError;
+
+            elseif ($list[0] < time())
+                return fimDatabase::decodeExpired;
+
+            else {
+                unset($list[0]); // One imagines this is faster than array_slice
+                return $list;
+            }
+        }
+    }
+
+
+    public static function makeSearchable($string) {
+        global $config;
+
+        $string = str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $string); // Romanise.
+        $string = str_replace($config['searchWordPunctuation'], ' ', $string); // Get rid of punctuation.
+        $string = preg_replace('/\s+/', ' ', $string); // Get rid of extra spaces.
+        $string = strtolower($string); // Lowercase the string.
+
+        return $string;
+    }
+
+
+
+    /****** Utility Functions ******/
     public function argumentMerge($defaults, $args) {
         $returnArray = [];
 
@@ -46,19 +141,6 @@ class fimDatabase extends databaseSQL
         }
 
         return $returnArray;
-    }
-
-
-    /****** Helper Functions ******/
-    public static function makeSearchable($string) {
-        global $config;
-
-        $string = str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $string); // Romanise.
-        $string = str_replace($config['searchWordPunctuation'], ' ', $string); // Get rid of punctuation.
-        $string = preg_replace('/\s+/', ' ', $string); // Get rid of extra spaces.
-        $string = strtolower($string); // Lowercase the string.
-
-        return $string;
     }
 
 

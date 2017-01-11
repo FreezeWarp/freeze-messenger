@@ -410,7 +410,7 @@
             <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
             <!-- Caches -->
-            <column name="watchedBy" type="string" maxlen="50000" comment="A CSV cache of the users watching this room." />
+            <column name="watchedBy" type="blob" maxlen="50000" comment="A CSV cache of the users watching this room." />
 
 
             <key name="roomId" type="primary" />
@@ -618,10 +618,10 @@
             <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
 
             <!-- List Caches -->
-            <column name="favRoomIds" type="string" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
-            <column name="watchRoomIds" type="string" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
-            <column name="ignoredUserIds" type="string" maxlen="10000" comment="A CSV cache of users ignored by this user." />
-            <column name="friendedUserIds" type="string" maxlen="10000" comment="A CSV cache of users friended by this user." />
+            <column name="favRoomIds" type="blob" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
+            <column name="watchRoomIds" type="blob" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
+            <column name="ignoredUserIds" type="blob" maxlen="10000" comment="A CSV cache of users ignored by this user." />
+            <column name="friendedUserIds" type="blob" maxlen="10000" comment="A CSV cache of users friended by this user." />
 
             <!-- Parental Controls -->
             <column name="userParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />

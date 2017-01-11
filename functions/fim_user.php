@@ -199,10 +199,15 @@ class fimUser
 
 
             // Room and user lists: explode from CSV
-            // TODO: validation; if the entry doesn't end with a control character, regenerate the list
             elseif ($property === 'favRooms' || $property === 'watchRooms' || $property === 'friendsList' || $property === 'ignoreList') {
-                $this->$property = fim_emptyExplode(',', $value);
-        }
+                if (!$config['enableWatchRooms'] && $property === 'watchRooms') {
+                    $this->watchRooms = [];
+                }
+
+                elseif ($value === fimDatabase::decodeError) {
+                    // TODO
+                }
+            }
 
 
             // Priviledges: modify based on global permissions, inconsistencies, and superuser status.
