@@ -1651,10 +1651,17 @@ LIMIT
 
             if (strstr($key, ' ') !== false) list($key) = explode(' ', $key); // A space can be used to reference the same key twice in different contexts. It's basically a hack, but it's better than using further arrays.
 
+            /* Key is Combiner */
             if ($key === 'both' || $key === 'either' || $key === 'neither') { // TODO: neither?
                 $sideTextFull[$i] = $this->recurseBothEither($value, $reverseAlias, $key, $tableName);
             }
 
+            /* Key is List Index, Hopefully */
+            elseif (is_int($key)) {
+                $sideTextFull[$i] = $this->recurseBothEither($value, $reverseAlias, 'both', $tableName);
+            }
+
+            /* Key is Column */
             else {
                 // Defaults
                 $sideTextFull[$i] = '';
@@ -1864,7 +1871,7 @@ LIMIT
 
         foreach ($this->updateQueue AS $tableName => $update) {
             foreach ($update AS $conditionArray => $dataArrays) {
-                $conditionArray = json_decode($conditionArray);
+                $conditionArray = json_decode($conditionArray, true);
                 $mergedDataArray = [];
 
                 foreach ($dataArrays AS $dataArray) {
