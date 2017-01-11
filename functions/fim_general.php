@@ -807,7 +807,16 @@ function fim_naturalLanguageJoin(string $glue, array $list, string $conjunction 
 }
 
 
-
+/**
+ * Acts like PHP's explode, but will return an empty array ([] instead of [""]) if passed an empty string or otherwise falsey value.
+ *
+ * @param string $separator
+ * @param string $list
+ * @return array
+ */
+function fim_emptyExplode(string $separator, $list) {
+    return $list ? explode($separator, $list) : [];
+}
 
 
 

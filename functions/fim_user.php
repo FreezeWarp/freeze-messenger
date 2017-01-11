@@ -181,12 +181,12 @@ class fimUser
 
             // Social Group IDs: Convert CSV to Array
             if ($property === 'socialGroupIds')
-                $this->socialGroupIds = explode(',', $value);
+                $this->socialGroupIds = fim_emptyExplode(',', $value);
 
 
             // Parental Flags: Convert CSV to Array, or empty if disabled
             elseif ($property === 'parentalFlags') {
-                if ($config['parentalEnabled']) $this->parentalFlags = explode(',', $value);
+                if ($config['parentalEnabled']) fim_emptyExplode(',', $value);
                 else                            $this->parentalFlags = array();
             }
 
@@ -201,8 +201,8 @@ class fimUser
             // Room and user lists: explode from CSV
             // TODO: validation; if the entry doesn't end with a control character, regenerate the list
             elseif ($property === 'favRooms' || $property === 'watchRooms' || $property === 'friendsList' || $property === 'ignoreList') {
-                $this->$property = explode(',', $value);
-            }
+                $this->$property = fim_emptyExplode(',', $value);
+        }
 
 
             // Priviledges: modify based on global permissions, inconsistencies, and superuser status.
