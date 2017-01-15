@@ -1239,26 +1239,26 @@ class databaseSQL extends database
                     }
                 break;
 
-//        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
-                    break;
 
-                case 'bitfield':
-                    if ($this->nativeBitfield) {
+                case 'bitfield': case DatabaseTypeType::bitfield:
+                        if ($this->nativeBitfield) {
+                            $typePiece = 'BIT(' . $column['bits'] . ')';
+                        }
 
-                    } else {
-                        if ($column['bits']) {
-                            foreach ($this->dataTypes['columnBitLimits'] AS $bits => $type) {
-                                if ($column['bits'] <= $bits) {
-                                    $typePiece = $type;
-                                    break;
+                        else {
+                            if ($column['bits']) {
+                                foreach ($this->dataTypes['columnBitLimits'] AS $bits => $type) {
+                                    if ($column['bits'] <= $bits) {
+                                        $typePiece = $type;
+                                        break;
+                                    }
                                 }
                             }
-                        }
 
-                        if (!strlen($typePiece)) {
-                            $typePiece = $this->dataTypes['columnBitLimits']['default'];
+                            if (!strlen($typePiece)) {
+                                $typePiece = $this->dataTypes['columnBitLimits']['default'];
+                            }
                         }
-                    }
                     break;
 
                 case 'time':
