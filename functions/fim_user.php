@@ -1,4 +1,20 @@
 <?php
+define("USER_PRIV_VIEW", 0x1);
+define("USER_PRIV_POST", 0x2);
+define("USER_PRIV_TOPIC", 0x4);
+define("USER_PRIV_CREATE_ROOMS", 0x20);
+define("USER_PRIV_PRIVATE_FRIENDS", 0x40);
+define("USER_PRIV_PRIVATE_ALL", 0x80);
+define("USER_PRIV_ACTIVE_USERS", 0x400);
+define("USER_PRIV_POST_COUNTS", 0x800);
+
+define("ADMIN_GRANT", 0x10000);
+define("ADMIN_PROTECTED", 0x20000);
+define("ADMIN_ROOMS", 0x40000);
+define("ADMIN_VIEW_PRIVATE", 0x80000);
+define("ADMIN_USERS", 0x100000);
+define("ADMIN_FILES", 0x400000);
+define("ADMIN_CENSOR", 0x1000000);
 
 class fimUser
 {
