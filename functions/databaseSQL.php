@@ -158,14 +158,24 @@ class databaseSQL extends database
                 switch ($operation) {
                     case 'connect':
                         $this->connection = mysql_connect("$args[1]:$args[2]", $args[3], $args[4]);
-                        if ($this->getVersion) $this->version = $this->setDatabaseVersion(mysql_get_server_info($this->connection));
 
-                        return $this->connection;
+                        if (!$this->connection) {
+                            $this->triggerError('Connect Error: ' . $this->functionMap('error'), false, 'connection');
+                            return false;
+                        }
+
+                        else {
+                            if ($this->getVersion)
+                                $this->version = $this->setDatabaseVersion(mysql_get_server_info($this->connection));
+
+                            return $this->connection;
+                        }
                         break;
 
                     case 'error':
                         return mysql_error(isset($this->connection) ? $this->connection : null);
                         break;
+
                     case 'close':
                         if ($this->connection) {
                             $function = mysql_close($this->connection);
@@ -175,27 +185,35 @@ class databaseSQL extends database
                             return true;
                         }
                         break;
+
                     case 'selectdb':
                         return mysql_select_db($args[1], $this->connection);
                         break;
+
                     case 'escape':
                         return mysql_real_escape_string($args[1], $this->connection);
                         break;
+
                     case 'query':
                         return mysql_query($args[1], $this->connection);
                         break;
+
                     case 'insertId':
                         return mysql_insert_id($this->connection);
                         break;
+
                     case 'startTrans':
                         $this->rawQuery('START TRANSACTION');
                         break;
+
                     case 'endTrans':
                         $this->rawQuery('COMMIT');
                         break;
+
                     case 'rollbackTrans':
                         $this->rawQuery('ROLLBACK');
                         break;
+
                     default:
                         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation');
                         break;
@@ -209,10 +227,13 @@ class databaseSQL extends database
                         $this->connection = new mysqli($args[1], $args[3], $args[4], ($args[5] ? $args[5] : null), (int)$args[2]);
 
                         if ($this->connection->connect_error) {
-                            $this->newError('Connect Error (' . $this->connection->connect_errno . ') '
-                                . $this->connection->connect_error);
-                        } else {
-                            if ($this->getVersion) $this->version = $this->setDatabaseVersion($this->connection->server_info);
+                            $this->triggerError('Connect Error (' . $this->connection->connect_errno . '): ' . $this->connection->connect_error, false, 'connection');
+                            return false;
+                        }
+
+                        else {
+                            if ($this->getVersion)
+                                $this->version = $this->setDatabaseVersion($this->connection->server_info);
 
                             return $this->connection;
                         }
@@ -226,28 +247,36 @@ class databaseSQL extends database
                     case 'selectdb':
                         return $this->connection->select_db($args[1]);
                         break;
-                    case 'close':    /*return $this->connection->close();*/
+
+                    case 'close':    /*return $this->connection->close(); TODO? */
                         break;
+
                     case 'escape':
                         return $this->connection->real_escape_string($args[1]);
                         break;
+
                     case 'query':
                         return $this->connection->query($args[1]);
                         break;
+
                     case 'insertId':
                         return $this->connection->insert_id;
                         break;
+
                     case 'startTrans':
                         $this->connection->autocommit(false);
-                        break; // Use start_transaction in PHP 5.5
+                        break; // Use start_transaction in PHP 5.5 TODO
+
                     case 'endTrans':
                         $this->connection->commit();
                         $this->connection->autocommit(true);
                         break;
+
                     case 'rollbackTrans':
                         $this->connection->rollback();
                         $this->connection->autocommit(true);
                         break;
+
                     default:
                         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation');
                         break;
@@ -261,12 +290,12 @@ class databaseSQL extends database
                         try {
                             $this->connection = new PDO("mysql:dbname=$args[5];host=$args[1]:$args[2]", $args[3], $args[4]);
                         } catch (PDOException $e) {
-                            $this->connection->errorCode = $e->getFile();
-                            die($this->connection->errorCode);
+                            $this->connection->errorCode = $e->getMessage();
+                            $this->triggerError('Connect Error: ' . $this->connection->errorCode, false, 'connection');
                             return false;
                         }
 
-                        $this->version = $this->connection->getAttribute(PDO::ATTR_SERVER_VERSION);
+                        $this->version = $this->setDatabaseVersion($this->connection->getAttribute(PDO::ATTR_SERVER_VERSION));
                         $this->activeDatabase = $args[5];
 
                         return $this->connection;
@@ -279,10 +308,12 @@ class databaseSQL extends database
                     case 'selectdb':
                         return $this->rawQuery("USE " . $this->formatValue("database", $args[1]));
                         break; // TODO test
+
                     case 'close':
                         unset($this->connection);
                         return true;
                         break;
+
                     case 'escape':
                         switch ($args[2]) {
                             case 'string':
@@ -305,21 +336,27 @@ class databaseSQL extends database
                                 break;
                         }
                         break; // Note: long-term, we should implement this using prepared statements.
+
                     case 'query':
                         return $this->connection->query($args[1]);
                         break;
+
                     case 'insertId':
                         return $this->connection->lastInsertId();
                         break;
+
                     case 'startTrans':
                         $this->connection->beginTransaction();
                         break; // Use start_transaction in PHP 5.5
+
                     case 'endTrans':
                         $this->connection->commit();
                         break;
+
                     case 'rollbackTrans':
                         $this->connection->rollBack();
                         break;
+
                     default:
                         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation');
                         break;
@@ -330,26 +367,56 @@ class databaseSQL extends database
             case 'pgsql':
                 switch ($operation) {
                     case 'connect':
-                        return pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]");
+                        $this->connection = pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]");
+
+                        if (!$this->connection) {
+                            $this->triggerError('Connect Error: ' . $this->functionMap('error'), false, 'connection');
+                            return false;
+                        }
+                        else {
+                            if ($this->getVersion)
+                                $this->version = $this->setDatabaseVersion(pg_version($this->connection)['client']);
+
+                            return $this->connection;
+                        }
                         break;
+
                     case 'error':
-                        return pg_last_error($this->dbLink);
+                        return pg_last_error($this->connection);
                         break;
+
                     case 'close':
-                        return pg_close($this->dbLink);
+                        return pg_close($this->connection);
                         break;
+
                     case 'escape':
-                        return pg_escape_string($this->dbLink, $args[1]);
+                        return pg_escape_string($this->connection, $args[1]);
                         break;
+
                     case 'query':
-                        return pg_query($this->dbLink, $args[1]);
+                        return pg_query($this->connection, $args[1]);
                         break;
+
                     case 'insertId':
                         return $this->rawQuery('SELECT LASTVAL()')->getAsArray(false, false, 0);
                         break; // Note: Returning is by far the best solution, and should be considered in future versions. This would require defining the insertId column, which might be doable.
+
+                    case 'startTrans':
+                        $this->rawQuery('START TRANSACTION');
+                    break;
+
+                    case 'endTrans':
+                        $this->rawQuery('COMMIT');
+                    break;
+
+                    case 'rollbackTrans':
+                        $this->rawQuery('ROLLBACK');
+                    break;
+
                     case 'notify':
-                        return pg_get_notify($this->dbLink);
+                        return pg_get_notify($this->connection);
                         break;
+
                     default:
                         $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation');
                         break;
