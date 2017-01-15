@@ -49,6 +49,7 @@ define('OPTIONAL_INSTALL_ISSUE_MBSTRING', 4096);
 define('OPTIONAL_INSTALL_ISSUE_JSON', 16384);
 define('OPTIONAL_INSTALL_ISSUE_APC', 32768);
 define('OPTIONAL_INSTALL_ISSUE_CURL', 65536);
+define('OPTIONAL_INSTALL_ISSUE_TRANSLITERATOR', 131072);
 
 define('INSTALL_DB_MYSQL', 1);
 define('INSTALL_DB_MYSQLI', 2);
@@ -87,6 +88,8 @@ if (!extension_loaded('mcrypt')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE
 if (!extension_loaded('json')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_JSON;
 if (!extension_loaded('curl')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_CURL;
 if (!extension_loaded('apc')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_APC;
+
+if (!class_exists('Transliterator')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_TRANSLITERATOR;
 
 if (CRYPT_SHA256 !== 1) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_SHA256; // ...Will be removed, prolly.
 if (CRYPT_SHA512 !== 1) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_SHA512;
@@ -346,6 +349,13 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <td><?php echo phpversion('mbstring'); ?></td>
         <td><abbr title="Without MBString, certain localisations will not function correctly, and certain characters may not appear correctly. In addition, bugs may occur with non-latin characters in the database.">Foreign Language Support</abbr></td>
         <td>With PHP 5.2</td>
+      </tr>
+      <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_TRANSLITERATOR ? 'uninstalledFlag' : 'installedFlag'); ?>">
+          <td>Transliterator</td>
+          <td>n/a</td>
+          <td>n/a</td>
+          <td><abbr title="Without Transliteration, search indexing is not as effective.">Text Searching</abbr></td>
+          <td>With PHP 5.2</td>
       </tr>
     </tbody>
     <thead>
