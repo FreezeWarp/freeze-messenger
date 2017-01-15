@@ -148,8 +148,8 @@ class fimRoom {
         $packString = '';
 
         switch ($id[0]) {
-            case 'p': $packString .= 'a'; break;
-            case 'o': $packString .= 'b'; break;
+            case 'p': $packString .= 'f'; break;
+            case 'o': $packString .= 'ff'; break;
         }
 
         if ($packString) {
@@ -157,10 +157,10 @@ class fimRoom {
             sort($ids, SORT_NUMERIC);
 
             foreach ($ids AS $id)
-                $packString .= "a$id";
+                $packString .= base_convert($id, 10, 15) . 'f';
         }
         else {
-            $packString = $id;
+            $packString = base_convert($id, 10, 15) . 'f';
         }
 
         return pack("H*", $packString);
@@ -170,18 +170,27 @@ class fimRoom {
     public static function decodeId($id) {
         $unpackString = '';
 
-        $decoded = unpack("H*", $id);
+        $decoded = rtrim(unpack("H*", $id)[1], '0');
 
-        switch ($decoded[0]) {
-            case 'a': $unpackString .= 'p'; break;
-            case 'b': $unpackString .= 'o'; break;
+        if (isset($decoded[0])) {
+            if ($decoded[0] === 'f') {
+                if ($decoded[1] === 'f')
+                    $unpackString .= 'o';
+                else
+                    $unpackString .= 'p';
+
+                $array = array_map(function($value) {
+                    return base_convert($value, 15, 10);
+                }, explode('f', trim($decoded, 'f')));
+
+                return $unpackString . implode(',', $array);
+            }
+            else {
+                return base_convert(rtrim($decoded, 'f'), 15, 10);
+            }
         }
 
-        if ($unpackString) {
-            return $unpackString . str_replace(',', 'a', substr($decoded, 1));
-        }
-        else
-            return $decoded;
+        return "";
     }
 
 
