@@ -116,7 +116,8 @@ class databaseSQL extends database
         'pdo-pqsql' => 'pqsql',
     );
 
-    public $disableEnum = false;
+    public $enumMode = false;
+    public $nativeBitfield = false;
 
     public $returnQueryString = false;
 
@@ -880,7 +881,8 @@ class databaseSQL extends database
                     true => 1, false => 0,
                 );
 
-                $this->useCreateType = false;
+                $this->nativeBitfield = true;
+                $this->enumMode = 'useEnum';
                 break;
 
             case 'pgsql':
@@ -943,7 +945,8 @@ class databaseSQL extends database
                     true => 1, false => 0,
                 );
 
-                $this->useCreateType = true;
+                $this->nativeBitfield = true;
+                $this->enumMode = 'useCreateType';
                 break;
         }
 
@@ -1191,39 +1194,50 @@ class databaseSQL extends database
                     }
                     break;
 
-                case 'string':
-                case 'blob':
-                    if ($column['restrict'] && !$this->disableEnum) {
-                        $restrictValues = array();
-                        foreach ((array)$column['restrict'] AS $value) $restrictValues[] = $this->formatValue("string", $value);
 
-                        if ($this->useCreateType) {
-                            $this->rawQuery('CREATE TYPE ' . $columnName . ' AS ENUM(
-              ' . implode(',', $restrictValues) . '
-            )');
+                case 'string': case DatabaseTypeType::string:
+                case 'blob': case DatabaseTypeType::blob:
+                    $stringLimits = $this->dataTypes['column' . ($column['type'] === 'blob' || $column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === 'memory' ? 'Temp' : 'Perm') . 'Limits'];
 
-                            $typePiece = $columnName;
-                        } else {
-                            $typePiece = 'ENUM(' . implode(',', $restrictValues) . ')';
-                        }
-                    } else {
-                        $stringLimits = $this->dataTypes['column' . ($column['type'] === 'blob' ? 'Blob' : 'String') . ($engine === 'memory' ? 'Temp' : 'Perm') . 'Limits'];
+                    $typePiece = '';
 
-                        $typePiece = '';
+                    foreach ($stringLimits AS $length => $type) {
+                        if ($column['maxlen'] <= $length) {
+                            if (in_array($type, $this->dataTypes['columnStringNoLength'])) $typePiece = $type;
+                            else $typePiece = $type . '(' . $column['maxlen'] . ')';
 
-                        foreach ($stringLimits AS $length => $type) {
-                            if ($column['maxlen'] <= $length) {
-                                if (in_array($type, $this->dataTypes['columnStringNoLength'])) $typePiece = $type;
-                                else $typePiece = $type . '(' . $column['maxlen'] . ')';
-
-                                break;
-                            }
-                        }
-
-                        if (!strlen($typePiece)) {
-                            $typePiece = $this->dataTypes['columnStringNoLength']['default'];
+                            break;
                         }
                     }
+
+                    if (!strlen($typePiece)) {
+                        $typePiece = $this->dataTypes['columnStringNoLength']['default'];
+                    }
+
+                    //        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
+                        break;
+
+
+                case 'enum':
+                    switch ($this->enumMode) {
+                        case 'useCreateType':
+                            $this->rawQuery('CREATE TYPE ' . $this->formatValue('string', $tableName . '_' . $columnName) . ' AS ENUM' . $this->formatValue('array', $column['restrict']));
+                            $typePiece = $columnName;
+                            break;
+
+                        case 'useEnum':
+                            $typePiece = 'ENUM' . $this->formatValue('array', $column['restrict']);
+                            break;
+
+                        case 'useCheck':
+                            $lengths = array_map('strlen', $column['restrict']);
+                            $typePiece = 'VARCHAR(' . max($lengths) . ') NOT NULL CHECK (' . $this->formatValue('column', $columnName) . ' IN' . $this->formatValue('array', $column['restrict']);
+                            break;
+
+                        default: throw new Exception('Enums are unsupported in the active database driver.'); break;
+
+                    }
+                break;
 
 //        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
                     break;

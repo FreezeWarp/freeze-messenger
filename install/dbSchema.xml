@@ -20,7 +20,7 @@
         <table name="configuration" type="general" comment="Configuration directives.">
             <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
             <column name="value" type="string" maxlen="10000" comment="The current value of the configuration directive." />
-            <column name="type" type="string" restrict="integer,float,string,bool,array,associative" comment="A typecast to be applied to the value after being retrieved. Bool and array behave slightly different, however: bool converts 'true' and '1' to true but everything else to false, while array splits a string using an escape-capable string split function." />
+            <column name="type" type="enum" restrict="integer,float,string,bool,array,associative" comment="A typecast to be applied to the value after being retrieved. Bool and array behave slightly different, however: bool converts 'true' and '1' to true but everything else to false, while array splits a string using an escape-capable string split function." />
 
             <key name="directive" type="primary" />
         </table>
@@ -48,7 +48,7 @@
         <table name="censorBlackWhiteLists" type="general" comment="Room-defined censor list 'on/off'.">
             <column name="listId" type="int" maxlen="6" comment="The unique ID of the censor list being disabled/enabled." />
             <column name="roomId" type="int" maxlen="6" comment="The room ID the status is being applied to. Note that this cannot be a private roomId." />
-            <column name="status" type="string" restrict="block,unblock" comment="The status of the list in regards to the room - either explicit block or explicit unblock." />
+            <column name="status" type="enum" restrict="block,unblock" comment="The status of the list in regards to the room - either explicit block or explicit unblock." />
 
             <key name="listId,roomId" type="primary" />
         </table>
@@ -57,7 +57,7 @@
         <table name="censorLists" type="general" comment="Admin-defined text censor categories.">
             <column name="listId" type="int" maxlen="6" autoincrement="1" comment="The unique ID of the list." />
             <column name="listName" type="string" maxlen="40" comment="The name of the list. It is only used for user identification." />
-            <column name="listType" type="string" restrict="black,white" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
+            <column name="listType" type="enum" restrict="black,white" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
             <column name="options" type="bitfield" bits="6" default="3" comment="A bitfield of specific options for the list (6 bits are alotted, but only three are used by default)." />
 
             <key name="listId" type="primary" />
@@ -69,7 +69,7 @@
             <column name="wordId" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for the word." />
             <column name="listId" type="int" maxlen="6" comment="The ID of the list the word is filed under." />
             <column name="word" type="string" maxlen="100" comment="The word text." />
-            <column name="severity" type="string" restrict="replace,warn,confirm,block" default="replace" comment="The severity/type of word." />
+            <column name="severity" type="enum" restrict="replace,warn,confirm,block" default="replace" comment="The severity/type of word." />
             <column name="param" type="string" default="" maxlen="100" comment="The action data for the word, used in multiple ways based on the word's severity." />
 
             <key name="wordId" type="primary" />
@@ -374,7 +374,7 @@
             <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room." />
             <column name="time" type="time" default="__TIME__" comment="The time of the ping." />
-            <column name="status" type="string" restrict="away,busy,available,invisible,offline," comment="The user's status." />
+            <column name="status" type="enum" restrict="away,busy,available,invisible,offline," comment="The user's status." />
             <column name="typing" type="bool" default="0" comment="Whether or not the user is typing." />
 
             <key name="userId,roomId" type="primary" />
@@ -460,7 +460,7 @@
 
         <table name="roomPermissions" type="general" content="Groups and users who are granted access to rooms. It does not include private rooms.">
             <column name="roomId" type="int" maxlen="6" comment="The room ID." />
-            <column name="attribute" type="string" restrict="user,group" comment="Whether the param column corresponds to a user or group." />
+            <column name="attribute" type="enum" restrict="user,group" comment="Whether the param column corresponds to a user or group." />
             <column name="param" type="int" maxlen="8" comment="The user ID or group ID being affected." />
             <column name="permissions" type="bitfield" bits="16" comment="The permissions granted in the room to the affected user or group." />
 
@@ -547,7 +547,7 @@
         <table name="socialGroupMembers" type="general" comment="The members of groups, used with vanilla logins.">
             <column name="groupId" type="int" maxlen="6" fkey="socialGroups.groupId" comment="The group ID." />
             <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The member ID of the group." />
-            <column name="type" default="pending" restrict="member,moderator,pending,banned" type="string" comment="Whether a group member is a normal member, a moderator (able to add and remove other users from the group), or has been banned from the group (can not requested invitation)." />
+            <column name="type" type="enum" default="pending" restrict="member,moderator,pending,banned" comment="Whether a group member is a normal member, a moderator (able to add and remove other users from the group), or has been banned from the group (can not requested invitation)." />
 
             <key name="groupId,userId" type="primary" />
         </table>
@@ -587,7 +587,7 @@
             <!-- Note: The password section is rather verbose in an effort to ensure that it is easy to change algorithms. -->
             <column name="passwordHash" type="string" maxlen="2048" comment="The hashed password of the user. It is only used on vanilla logins." />
 
-            <column name="passwordFormat" type="string" restrict="vbmd5,phpass,plaintext" comment="The encryption format used for the password. This allows easy transition to safer formats, forcing people using the old format to reset their password. VBMD5 is the hashing format used by vBulletin, phpass is the portable PHP hashing format used by PHPBB and Vanilla. Plaintext signifies no encryption, mostly used with development." />
+            <column name="passwordFormat" type="enum" restrict="vbmd5,phpass,plaintext" comment="The encryption format used for the password. This allows easy transition to safer formats, forcing people using the old format to reset their password. VBMD5 is the hashing format used by vBulletin, phpass is the portable PHP hashing format used by PHPBB and Vanilla. Plaintext signifies no encryption, mostly used with development." />
             <column name="passwordResetNow" type="bool" default="0" comment="When set, the user is required to reset his or her password on next login. This, unfortunately, requires the co-operation of clients, and as such may in theory be delayed or ignored entirely. But, I mean, it's better than nothing." />
             <column name="passwordLastReset" type="time" comment="The last time the user reset his or her password.." />
 
@@ -666,7 +666,7 @@
         <table name="userFriendsList" type="general" comment="A list of user friends, with whom private contact may be restricted in some cases. Clients are encouraged to enable more advanced tagging and lists.">
             <column name="userId" type="int" maxlen="8" comment="The user ID." />
             <column name="subjectId" type="int" maxlen="8" comment="The user ID friended." />
-            <column name="status" type="string" restrict="friend,request,deny" default="request" comment="Whether the relationship is a friend connection, merely a request, or if the request has been denied permanently." />
+            <column name="status" type="enum" restrict="friend,request,deny" default="request" comment="Whether the relationship is a friend connection, merely a request, or if the request has been denied permanently." />
 
             <key name="userId,subjectId" type="primary" />
         </table>
