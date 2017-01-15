@@ -684,40 +684,6 @@ class databaseSQL extends database
         $this->setLanguage($driver);
         $this->sqlPrefix = $tablePrefix;
 
-        $this->encode = [
-            $this->sqlPrefix . 'files' => ['roomIdLink' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-            $this->sqlPrefix . 'messages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-            $this->sqlPrefix . 'messageIndex' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-            $this->sqlPrefix . 'ping' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-            $this->sqlPrefix . 'rooms' => [
-                'watchedBy'  => ['fimDatabase::packListCache', DatabaseTypeType::blob, 'fimDatabase::unpackListCache']
-            ],
-            $this->sqlPrefix . 'roomEvents' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-            $this->sqlPrefix . 'roomStats' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-            $this->sqlPrefix . 'searchMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-            $this->sqlPrefix . 'searchCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-            $this->sqlPrefix . 'unreadMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-            $this->sqlPrefix . 'users' => [
-                'defaultRoomId'   => ['fimRoom::encodeId',     DatabaseTypeType::blob, 'fimRoom::decodeId'],
-                'favRoomIds'      => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
-                'watchRoomIds'    => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
-                'friendedUserIds' => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
-                'ignoredUserIds'  => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList']
-            ],
-            $this->sqlPrefix . 'userFavRooms' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-        ];
-
-        $this->encodeCopy = [
-            $this->sqlPrefix . 'rooms' => [
-                'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'roomIdEncoded'],
-                'roomName' => ['fimDatabase::makeSearchable', false, 'roomNameSearchable']
-            ],
-        ];
-
-        $this->insertIdColumns = [
-            $this->sqlPrefix . 'rooms' => 'roomId',
-        ];
-
         switch ($driver) {
             case 'mysqli':
                 if (PHP_VERSION_ID < 50209) { // if PHP_VERSION_ID isn't defined with versions < 5.2.7, but this obviously isn't a problem here (it will eval to 0, which is indeed less than 50209).
@@ -744,6 +710,13 @@ class databaseSQL extends database
         }
 
         return true;
+    }
+
+
+    public function setTransformationParameters($encode, $encodeCopy, $insertIdColumns) {
+        $this->encode = $encode;
+        $this->encodeCopy = $encodeCopy;
+        $this->insertIdColumns = $insertIdColumns;
     }
 
 
