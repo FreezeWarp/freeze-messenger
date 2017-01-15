@@ -1156,7 +1156,7 @@ class databaseSQL extends database
      ******************* Table Functions *********************
      *********************************************************/
 
-    public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes, $partitionColumn = false)
+    public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes = [], $partitionColumn = false)
     {
         if (!isset($this->tableTypes[$engine])) {
             $this->triggerError("Unrecognised Table Engine", array(
@@ -1172,10 +1172,18 @@ class databaseSQL extends database
         $triggers = [];
 
         foreach ($tableColumns AS $columnName => $column) {
+            $column = array_merge([
+                'restrict' => false,
+                'maxlen' => 10,
+                'autoincrement' => false,
+                'default' => null,
+                'comment' => '',
+            ], $column);
             $typePiece = '';
 
+
             switch ($column['type']) {
-                case 'int':
+                case 'int': case DatabaseTypeType::integer:
                     if (isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement']) $intLimits = $this->dataTypes['columnSerialLimits'];
                     else $intLimits = $this->dataTypes['columnIntLimits'];
 
@@ -1188,9 +1196,15 @@ class databaseSQL extends database
 
                     if (!strlen($typePiece)) $typePiece = $intLimits['default'];
 
-                    if (!isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement']) {
+                    if (!isset($this->columnSerialLimits) && $column['autoincrement']) {
                         $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
                         $tableProperties .= ' AUTO_INCREMENT = ' . (int)$column['autoincrement'];
+
+                        if (!isset($tableIndexes[$columnName])) {
+                            $tableIndexes[$columnName] = [
+                                'type' => 'index',
+                            ];
+                        }
                     }
                     break;
 
@@ -1261,13 +1275,16 @@ class databaseSQL extends database
                         }
                     break;
 
-                case 'time':
+
+                case 'time': case DatabaseTypeType::timestamp:
                     $typePiece = $this->dataTypes['time']; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
                     break;
 
-                case 'bool':
+
+                case 'bool': case DatabaseTypeType::bool:
                     $typePiece = $this->dataTypes['bool'];
                     break;
+
 
                 default:
                     $this->triggerError("Unrecognised Column Type", array(
@@ -1943,5 +1960,4 @@ LIMIT
      *********************************************************/
 
 }
-
 ?>
