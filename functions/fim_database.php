@@ -1869,24 +1869,20 @@ class fimDatabase extends databaseSQL
 
         // Delete old messages from the cache, based on the maximum allowed rows.
         if ($messageId2 > $config['cacheTableMaxRows']) {
-            $this->delete($this->sqlPrefix . "messagesCached" . ($room->isPrivateRoom() ? 'Private' : ''),
-                array('id' => array(
-                    'cond'  => 'lte',
-                    'value' => (int) ($messageId2 - $config['cacheTableMaxRows'])
-                )
-                ));
+            $this->delete($this->sqlPrefix . "messagesCached" . ($room->isPrivateRoom() ? 'Private' : ''), [
+                'id' => $this->int($messageId2 - $config['cacheTableMaxRows'], 'lte')
+            ]);
         }
 
 
         // If the contact is a private communication, create an event and add to the message unread table.
         if ($room->isPrivateRoom()) {
-            /*TODO foreach (fim_reversePrivateRoomAlias($room->alias) AS $sendToUserId) { // Todo: use roomAlias.
-                if ($sendToUserId == $user['userId']) {
+            foreach (($room->getPrivateRoomMemberIds()) AS $sendToUserId) {
+                if ($sendToUserId == $user->id)
                     continue;
-                } else {
-                    createUnreadMessage($sendToUserId, $user, $room, $messageId);
-                }
-            }*/
+                else
+                    $this->createUnreadMessage($sendToUserId, $user, $room, $messageId);
+            }
         }
         else {
             foreach ($room->watchedBy AS $sendToUserId) {
@@ -1967,7 +1963,7 @@ class fimDatabase extends databaseSQL
 
 
 
-    public function createUnreadMessage($sendToUserId, $user, $room, $messageId) {
+    public function createUnreadMessage($sendToUserId, fimUser $user, fimRoom $room, $messageId) {
         global $config;
 
         $this->createUserEvent('missedMessage', $sendToUserId, $room->id, $messageId);
