@@ -149,9 +149,10 @@ $defaultConfig = array(
     'searchWordMinimum' => 4, // int The minimum length a string must be to be added to the "phrase" table.
     'searchWordMaximum' => 12, // int The maximum length a string can be to be added to the "phrase" table.
     'searchWordOmissions' => array('that','them','then','than','thus','have','with','will','would','there','their','what','about','when','make','like','also','think','over','into','time','year','just','know','take','which','about','back','after','well','even','want','because','these','most'), // array Words that are not wll be ommitted from the "phrase" table.
+    'searchTransliteration' => 'Any-Latin; Latin-ASCII; [\u0080-\u7fff] remove; Lower();', // string The transliteration code that will be used if Transliterator is installed.
+    'searchIconV' => 'us-ascii//TRANSLIT', // The transliteration code that will be used by iconv if Transliterator is not installed.
+    'searchWhiteList' => 'a-zA-Z ', //
     'searchWordPunctuation' => array(',','.',';',':','-','"','\'','=','?','\\','/','[',']','^','&','#','@','!','%','*','(',')','‘','’','¡','¿','¦'), // array Punctuation marks that are not included in phrases.
-    'searchWordConvertsFind' => array('é','É','ë','Ë','ó','Ó','ö','Ö','ø','Ø','í','Í','ï','Ï','ú','Ú','ü','Ü','ñ','？','！','。','、','；','：','／','｜','＠','＃','＄','％','＾','＆','＊','（','）','「','」','｛','｝','＜','＞'), // array An array of characters that will be replaced in the "phrase" table. Not that the "romanisation" configuration rules are applied to phrases as well, so you should not include these.
-    'searchWordConvertsReplace' => array('e','E','e','E','o','O','o','O','o','O','i','I','i','I','u','U','u','U','n','?','!','.','\',',';',':','/','|','@','#','$','%','^','&','*','(',')','[',']','{','}','<','>'), // array See "searchWordConvertsFind"
 
 
     /* Active Users */
@@ -372,7 +373,30 @@ $defaultConfig = array(
         'þ' => 'th', 'Þ' => 'TH',
         'ñ' => 'n',
         'µ' => 'mu',
-        'œ' => 'oe',
+        'œ' => 'oe',/*
+        '？' => '?',
+        '！' => '!',
+        '。' => '.',
+        '、' => ',',
+        '；' => ';',
+        '：' => ':',
+        '／' => '/',
+        '｜' => '|',
+        '＠' => '@',
+        '＃' => '#',
+        '＄' => '$',
+        '％' => '%',
+        '＾' => '^',
+        '＆' => '&',
+        '＊' => '*',
+        '（' => '(',
+        '）' => ')',
+        '「' => '[',
+        '」' => ']',
+        '｛' => '{',
+        '｝' => '}',
+        '＜' => '<',
+        '＞' => '>',*/ // array An array of characters that will be replaced in the "phrase" table. Not that the "romanisation" configuration rules are applied to phrases as well, so you should not include these.
     ),
 
 

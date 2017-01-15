@@ -117,10 +117,24 @@ class fimDatabase extends databaseSQL
     public static function makeSearchable($string) {
         global $config;
 
-        $string = str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $string); // Romanise.
-        $string = str_replace($config['searchWordPunctuation'], ' ', $string); // Get rid of punctuation.
-        $string = preg_replace('/\s+/', ' ', $string); // Get rid of extra spaces.
-        $string = strtolower($string); // Lowercase the string.
+        // Romanise first, to allow us to apply custom replacements before letting the built-in functions do their job
+        $string = str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $string);
+
+        // Apply the built-in functions, if available
+        if (function_exists('transliterator_transliterate'))
+            $string = transliterator_transliterate($config['searchTransliteration'], $string);
+        elseif (function_exists('iconv'))
+            $string = strtolower(iconv('utf-8', 'us-ascii//TRANSLIT', $string));
+
+        // Replace punctuation with space (e.g. "a.b" should be treated as "a b" not "ab").
+        $string = str_replace($config['searchWordPunctuation'], ' ', $string);
+
+        // If searchWhiteList is set, then we remove any characters not in the whitelist. By default, it is simply a-zA-Z
+        if ($config['searchWhiteList'])
+            $string = preg_replace('/[^' . $config['searchWhiteList'] . ']/', '', $string);
+
+        // Get rid of extra spaces.
+        $string = preg_replace('/\s+/', ' ', $string);
 
         return $string;
     }
@@ -612,8 +626,8 @@ class fimDatabase extends databaseSQL
         $searchArray = array();
         foreach (explode(',', $options['messageTextSearch']) AS $searchVal) {
             $searchArray[] = str_replace(
-                $config['searchWordConvertsFind'],
-                $config['searchWordConvertsReplace'],
+                array_keys($config['romanisation']),
+                array_values($config['romanisation']),
                 $searchVal
             );
         }
@@ -2228,7 +2242,7 @@ class fimDatabase extends databaseSQL
         foreach ($stringPieces AS $piece) {
             if (strlen($piece) >= $config['searchWordMinimum'] &&
                 strlen($piece) <= $config['searchWordMaximum'] &&
-                !in_array($piece, $config['searchWordOmissions'])) $stringPiecesAdd[] = str_replace($config['searchWordConvertsFind'], $config['searchWordConvertsReplace'], $piece);
+                !in_array($piece, $config['searchWordOmissions'])) $stringPiecesAdd[] = $piece;
         }
 
         if (count($stringPiecesAdd) > 0) {
