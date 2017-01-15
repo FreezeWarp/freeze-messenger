@@ -76,8 +76,13 @@ class fimDatabase extends databaseSQL
             elseif (strlen($decoded) === 4)
                 return [];
 
-            else
-                return explode('f', substr($decoded, 2, -2));
+            else {
+                $array = explode('f', substr($decoded, 2, -2));
+
+                return array_map(function($value) {
+                    return base_convert($value, 15, 10);
+                }, $array);
+            }
         }
     }
 
