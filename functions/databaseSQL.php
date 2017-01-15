@@ -729,6 +729,8 @@ class databaseSQL extends database
                 $this->sortOrderDesc = 'DESC';
                 $this->tableAliasDivider = ' AS ';
                 $this->columnAliasDivider = ' AS ';
+                $this->indexQuoteStart = '';
+                $this->indexQuoteEnd = '';
                 break;
 
             case 'pdo':
@@ -760,6 +762,8 @@ class databaseSQL extends database
                 $this->sortOrderDesc = 'DESC';
                 $this->tableAliasDivider = ' AS ';
                 $this->columnAliasDivider = ' AS ';
+                $this->indexQuoteStart = '';
+                $this->indexQuoteEnd = '';
                 break;
 
             case 'pgsql':
@@ -791,6 +795,8 @@ class databaseSQL extends database
                 $this->sortOrderDesc = 'DESC';
                 $this->tableAliasDivider = ' AS ';
                 $this->columnAliasDivider = ' AS ';
+                $this->indexQuoteStart = '';
+                $this->indexQuoteEnd = '';
                 break;
         }
 
