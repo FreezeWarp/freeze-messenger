@@ -147,7 +147,7 @@ if (!$database->connect($dbConnect['core']['host'],
   $dbConnect['core']['database'],
   $dbConnect['core']['driver'],
   $dbConfig['vanilla']['tablePrefix'])) {
-  die('Could not connect to the database: ' . $database->error . '; the application has exitted.'); // Die to prevent further execution.
+  die('Could not connect to the database: ' . $database->getLastError() . '; the application has exitted.'); // Die to prevent further execution.
 }
 
 
