@@ -766,11 +766,9 @@ autoEntry.prototype = {
         else if (typeof string === 'string' && string.length > 0) { entryList = string.split(','); } // String is a string and not empty.
         else { entryList = []; }
 
-        names = this.options.resolve(entryList);
+        names = this.options.resolve(entryList); console.log(["names", names]);
 
-        for (i = 0; i < entryList.length; i += 1) {
-            if (!entryList[i]) { continue; }
-
+        for (i in entryList) { console.log(["entry", names, entryList[i], names[entryList[i]]]);
             this.addEntry(entryList[i], names[entryList[i]]);
         }
     },

@@ -45,17 +45,18 @@ message - send message, edit message (could implement singular message select, b
     PUT /message/2/44 messageContent - update message 4 in room 2 with new messageContent
 
 
-Current Plan:
-1. APIs
-2. WebPro(?) - maybe from scratch, but will probably copy some of the dialogues (like the edit user one)
-3. Sockets?
-4. PostGres, Memcahced (both should be semi-easy, though memcached will be heavy beta initially)
-5. Code review: caching 
-6. WebLite, possibly using Node.js
-7. Desktop client, probably Java
-8. Windows client, probably C#
-9. Linux client, probably C++
-10. CLI client, python
+Current Plan, In Rough Order of Interest:
+1. APIs (getting there!)
+a. Verify file uploads are mostly working
+b. Private/group rooms
+c. Watch rooms (incl. room lists)
+d. Kicks
+2. Object store for messages/split messages into their own databases with their own ID counts.
+3. PostGres, Memcahced (both should be semi-easy, though memcached will be heavy beta initially)
+4. Java Message Intermediary
+5. Caching Enhancements
+6. Desktop Client (C# or Java, probably)
+7. Linux client (C++)
 
 Current Considerations:
 1.) Rooms should now be considered self-contained - you can't get messages from across rooms. The current database implementation doesn't respect this, but future ones might act differently: for instance, a different table for each room.

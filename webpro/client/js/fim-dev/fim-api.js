@@ -627,7 +627,7 @@ fimApi.prototype.resolveRooms = function(ids, names, callback) {
 
     fimApi.getRooms({'roomIds' : ids, 'roomNames' : names}, {
         'each': function(room) {
-            returnData[room.userId] = room.roomName;
+            returnData[room.roomId] = room.roomName;
         },
         'end' : function() {
             if (callback)

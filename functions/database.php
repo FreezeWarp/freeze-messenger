@@ -1148,6 +1148,7 @@ class DatabaseTypeType {
     const column = 6;
     const equation = 7;
     const blob = 8;
+    const bitfield = 9;
 }
 
 class DatabaseTypeComparison {

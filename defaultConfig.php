@@ -77,8 +77,13 @@ $defaultConfig = array(
     'userRoomMaximumPerYear' => 50, // int The maximum number of rooms a single user can create times the number of years the user has been registered. TODO
 
     'hiddenRooms' => true,
-    'officialRooms' => true,
+    'officialRooms' => true, // TODO/remove
     'defaultRoomId' => 1,
+
+    'userMaxFavRooms' => 100,
+    'userMaxWatchRooms' => 10,
+    'userMaxFriends' => 100,
+    'userMaxIgnored' => 100,
 
 
     /* Private & OTR Rooms */
