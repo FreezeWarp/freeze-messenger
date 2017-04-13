@@ -151,33 +151,33 @@ if (!$database->connect($dbConnect['core']['host'],
 }
 else {
     $database->setTransformationParameters([
-        $this->sqlPrefix . 'files' => ['roomIdLink' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-        $this->sqlPrefix . 'messages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-        $this->sqlPrefix . 'messageIndex' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-        $this->sqlPrefix . 'ping' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-        $this->sqlPrefix . 'rooms' => [
+        $database->sqlPrefix . 'files' => ['roomIdLink' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+        $database->sqlPrefix . 'messages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+        $database->sqlPrefix . 'messageIndex' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+        $database->sqlPrefix . 'ping' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+        $database->sqlPrefix . 'rooms' => [
             'watchedBy'  => ['fimDatabase::packListCache', DatabaseTypeType::blob, 'fimDatabase::unpackListCache']
         ],
-        $this->sqlPrefix . 'roomEvents' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-        $this->sqlPrefix . 'roomStats' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-        $this->sqlPrefix . 'searchMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-        $this->sqlPrefix . 'searchCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-        $this->sqlPrefix . 'unreadMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
-        $this->sqlPrefix . 'users' => [
+        $database->sqlPrefix . 'roomEvents' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+        $database->sqlPrefix . 'roomStats' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+        $database->sqlPrefix . 'searchMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+        $database->sqlPrefix . 'searchCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+        $database->sqlPrefix . 'unreadMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+        $database->sqlPrefix . 'users' => [
             'defaultRoomId'   => ['fimRoom::encodeId',     DatabaseTypeType::blob, 'fimRoom::decodeId'],
             'favRoomIds'      => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
             'watchRoomIds'    => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
             'friendedUserIds' => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
             'ignoredUserIds'  => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList']
         ],
-        $this->sqlPrefix . 'userFavRooms' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
+        $database->sqlPrefix . 'userFavRooms' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     ], [
-        $this->sqlPrefix . 'rooms' => [
+        $database->sqlPrefix . 'rooms' => [
             'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'roomIdEncoded'],
             'roomName' => ['fimDatabase::makeSearchable', false, 'roomNameSearchable']
         ],
     ], [
-        $this->sqlPrefix . 'rooms' => 'roomId',
+        $database->sqlPrefix . 'rooms' => 'roomId',
     ]);
 }
 
