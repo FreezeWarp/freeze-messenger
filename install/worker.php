@@ -23,7 +23,6 @@ require('../functions/fim_database.php'); // ""
 require('../functions/fim_user.php'); // ""
 require('../functions/fim_room.php'); // ""
 require('../defaultConfig.php');
-
 $config = $defaultConfig;
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
@@ -67,7 +66,11 @@ switch ($_REQUEST['phase']) {
 //    die('PostGreSQL is unable to create databases. Please manually create the database before you continue.');
 //  }
 //  else {
-        $database->connect($host, $port, $userName, $password, $createdb ? false : $databaseName, $driver, $prefix);
+        try {
+            $database->connect($host, $port, $userName, $password, $createdb ? false : $databaseName, $driver, $prefix);
+        } catch (Exception $exception) {
+            die($exception->getMessage());
+        }
 
 
         if ($database->getLastError()) {
@@ -244,16 +247,20 @@ switch ($_REQUEST['phase']) {
         $base = file_get_contents('config.base.php');
 
         if ($forum == 'vanilla') {
-            $database = new fimDatabase($host, $port, $userName, $password, $databaseName, $driver, $prefix);
-            $generalCache = new fimCache(null, 'none', $database);
+            try {
+                $database = new fimDatabase($host, $port, $userName, $password, $databaseName, $driver, $prefix);
+                $generalCache = new fimCache(null, 'none', $database);
 
-            $user = new fimUser(1);
-            if (!$user->setDatabase(array(
-                'userName' => $adminUsername,
-                'password' => $adminPassword,
-                'privs' => 0x7FFFFFFF,
-            ))) {
-                die("Could not create user.");
+                $user = new fimUser(1);
+                if (!$user->setDatabase(array(
+                    'userName' => $adminUsername,
+                    'password' => $adminPassword,
+                    'privs' => 0x7FFFFFFF,
+                ))) {
+                    die("Could not create user.");
+                }
+            } catch(Exception $ex) {
+                die($ex->getMessage());
             }
         }
 
