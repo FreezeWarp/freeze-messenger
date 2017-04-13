@@ -439,7 +439,10 @@ class databaseSQL extends database
 
         switch ($type) {
             case 'detect':
-                if (!$this->isTypeObject($values[1])) $values[1] = $this->str($values[1]);
+                if (!$this->isTypeObject($values[1])) {
+                    if (ctype_digit($values[1])) $values[1] = $this->int($values[1]);
+                    else $values[1] = $this->str($values[1]);
+                }
 
                 return $this->formatValue($values[1]->type, $values[1]->value);
                 break;
@@ -1359,7 +1362,7 @@ class databaseSQL extends database
                 else if (isset($this->defaultPhrases[$column['default']]))
                     $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
                 else
-                    $typePiece .= ' DEFAULT ' . $this->formatValue('string', $column['default']); // TODO: non-string?
+                    $typePiece .= ' DEFAULT ' . $this->formatValue('detect', $column['default']); // TODO: non-string?
             }
 
             $columns[] = $this->formatValue('column', $columnName) . ' ' . $typePiece . ' COMMENT ' . $this->formatValue('string', $column['comment']);
