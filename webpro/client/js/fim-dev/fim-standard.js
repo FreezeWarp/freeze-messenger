@@ -346,7 +346,9 @@ standard.prototype.populateMessages = function(roomId) {
 
         standard.getMessages();
 
-        clearInterval(intervalPing);
+        if (typeof intervalPing !== "undefined")
+            clearInterval(intervalPing);
+
         fimApi.ping(roomId);
         intervalPing = window.setInterval(function() {
             fimApi.ping(roomId)

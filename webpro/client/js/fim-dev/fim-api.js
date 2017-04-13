@@ -392,7 +392,12 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
     }
 
 
-    if (requestSettings.close) clearInterval(fimApi.timers['getActiveUsers_' + requestSettings.timerId]);
+    if (!window.sessionHash)
+        console.log("Get active users called without window.sessionHash being set. Please retry once set.");
+
+    else if (requestSettings.close)
+        clearInterval(fimApi.timers['getActiveUsers_' + requestSettings.timerId]);
+
     else {
         getActiveUsers_query();
         if (requestSettings.refresh > -1) fimApi.timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
