@@ -749,7 +749,7 @@ function updateVids(searchPhrase) {
             num += 1;
 
             if (num % 3 === 1) { html += '<tr>'; }
-            html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 120px; height: 90px;" /><br /><small><a href="javascript: false(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
+            html += '<td><img src="http://i2.ytimg.com/vi/' + video.videoId + '/default.jpg" style="width: 120px; height: 90px;" /><br /><small><a href="javascript: void(0);" onclick="youtubeSend(&apos;' + video.videoId + '&apos;)">' + video.title + '</a></small></td>';
             if (num % 3 === 0) { html += '</tr>'; }
         }
 
@@ -818,7 +818,7 @@ autoEntry.prototype = {
             $("#" + this.options.name).val($("#" + this.options.name).val() + "," + id);
 
             $("#" + this.options.name + "List").append("<span id=\"" + this.options.name + "SubList" + id + "\">" + name + ' (<span class="close"></span>), </span>');
-            $("#" + this.options.name + "List .close").html($('<a href="javascript:false(0);">×</a>').click(function() {
+            $("#" + this.options.name + "List .close").html($('<a href="javascript:void(0);">×</a>').click(function() {
                 _this.removeEntry(id)
             }));
 
@@ -829,12 +829,16 @@ autoEntry.prototype = {
     },
 
     removeEntry : function(id) {
+        var options = this.options;
+
         $("#" + this.options.name).val($("#" + this.options.name).val().replace(new RegExp("(^|,)" + id + "(,|$)"), "$1$2").replace(/^,|(,),|,$/,'$1'));
 
         $("#" + this.options.name + "SubList" + id).fadeOut(500, function() {
             $(this).remove();
 
-            this.options.onRemove(id);
+            if (typeof options.onRemove === 'function') {
+                options.onRemove(id);
+            }
         });
     },
 

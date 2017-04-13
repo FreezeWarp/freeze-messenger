@@ -1068,7 +1068,7 @@ popup = {
             title : 'Manage/View Kicked Users',
             width : 1000,
             oF : function() {
-                getKicks({
+                fimApi.getKicks({
                     'roomIds': ('roomId' in params ? params.roomId : [0]),
                     'userIds': ('userId' in params ? params.userId : [0])
                 }, {
