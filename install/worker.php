@@ -14,7 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-error_reporting(E_ALL ^ E_NOTICE); // Report All Potential Errors
+error_reporting(E_ALL ^ E_NOTICE); // Report All Potential Errors\
+ini_set('display_errors', 1);
 
 require('../functions/xml.php'); // For reading the db*.xml files
 require('../functions/database.php'); // DB Operations
