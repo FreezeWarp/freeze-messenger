@@ -78,15 +78,13 @@ function fim_decrypt($message, $index = array('text')) {
                     throw new Exception('Index not found: ' . $index2);
                 }
 
-                $message[$index2] = rtrim( // Remove \0 bytes from the end.
-                    mcrypt_decrypt( // Decrypt the data.
-                        MCRYPT_3DES, // Decrypt the data using 3DES/Triple DES (see http://en.wikipedia.org/wiki/Triple_DES).
-                        $salt, // Use the salt we found above.
-                        base64_decode($message[$index2]), // Base64-decode the data first, since we store it encoded.
-                        MCRYPT_MODE_CBC, // Use Mcrypt CBC mode (see http://php.net/manual/en/function.mcrypt-cbc.php and http://www.php.net/manual/en/mcrypt.constants.php).
-                        base64_decode($message['iv']) // Uses the decoded IV (we store it using base64 encoding).
-                    ),
-                    "\0");
+                $message[$index2] = openssl_decrypt( // Decrypt the data.
+                    $message,
+                    'AES-256-CTR',
+                    $salt, // Use the salt we found above.
+                    OPENSSL_ZERO_PADDING,
+                    $message['iv']
+                );
             }
         }
     }
@@ -110,35 +108,25 @@ function fim_encrypt($data) {
     $salt = str_pad(end($salts), 24, "."); // Move the file pointer to the last entry in the array (and return its value)
     $saltNum = key($salts); // Get the key/id of the corrosponding salt.
 
-    $iv_size = mcrypt_get_iv_size(MCRYPT_3DES, MCRYPT_MODE_CBC); // Get the length of the IV for the method used
-    $iv = base64_encode( // Encode the IV using Base64 encoding (to avoid any datastore headaches).
-        mcrypt_create_iv($iv_size, MCRYPT_RAND) // Generate an encryption Initilization Vector (see http://en.wikipedia.org/wiki/Initialization_vector)
-    );
+    $iv_size = openssl_cipher_iv_length("AES-256-CTR"); // Get the length of the IV for the method used
+    $iv = random_bytes($iv_size);
 
     if (is_array($data)) { // If $data is an array, we will encrypt each value, and retain the key->value structure.
         $newData = array(); // Create the array, since we will be adding key=>value pairs to it briefly.
 
         foreach ($data AS $key => $value) { // Run through the data array...
-            $newData[$key] = base64_encode( // Encode the data as Base64.
-                rtrim( // Trim \0 bytes from the _right_ of the encrypted value (see http://php.net/rtrim).
-                    mcrypt_encrypt( // Encrypt the $value.
-                        MCRYPT_3DES, // Encrypt the data using 3DES/Triple DES (see http://en.wikipedia.org/wiki/Triple_DES).
-                        $salt, // The salt we obtained from the system configuration earlier...
-                        $value, // Our value to encrypt.
-                        MCRYPT_MODE_CBC, // Use Mcrypt CBC mode (see http://php.net/manual/en/function.mcrypt-cbc.php and http://www.php.net/manual/en/mcrypt.constants.php).
-                        base64_decode($iv) // We need to use the raw IV, so we decode the earlier encoded value.
-                    ),
-                    "\0")
+            $newData[$key] = openssl_encrypt( // Encrypt the $value.
+                $value, // The value we're encrypting.
+                'AES-256-CTR', // This one is pretttty strong.
+                $salt, // We use our config-file stored salts as a key.
+                OPENSSL_ZERO_PADDING, // No padding, please,
+                $iv // We need to use the raw IV, so we decode the earlier encoded value.
             );
         }
     }
     else {
-        $newData = base64_encode( // See comments above.
-            rtrim(
-                mcrypt_encrypt(
-                    MCRYPT_3DES, $salt, $data, MCRYPT_MODE_CBC, base64_decode($iv)
-                ),"\0"
-            )
+        $newData = openssl_encrypt(
+            $data, 'AES-256-CTR', $salt, OPENSSL_ZERO_PADDING, $iv
         );
     }
 

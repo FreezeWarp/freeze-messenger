@@ -1756,10 +1756,10 @@ class fimDatabase extends databaseSQL
             $this->insert($this->sqlPrefix . "messages", array(
                 'roomId'   => $room->id,
                 'userId'   => $user->id,
-                'text'     => $messageTextEncrypted,
+                'text'     => $this->blob($messageTextEncrypted),
                 'textSha1' => sha1($messageText),
                 'salt'     => $encryptSalt,
-                'iv'       => $encryptIV,
+                'iv'       => $this->blob($encryptIV),
                 'ip'       => $_SERVER['REMOTE_ADDR'],
                 'flag'     => $messageFlag,
                 'time'     => $this->now(),
