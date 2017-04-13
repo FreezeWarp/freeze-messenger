@@ -138,9 +138,6 @@ function fim_encrypt($data) {
 
 
 
-
-
-
 /********************************************************
  ************************ START **************************
  *********************** Wrappers ************************
@@ -492,8 +489,10 @@ function fim_sanitizeGPC($type, $data) {
                         if (count(array_diff($activeGlobal[$indexName], $indexMetaData['valid'])) > 0)
                             throw new Exception("Invalid value(s) for '$indexName': " . implode(', ', array_diff($activeGlobal[$indexName], $indexMetaData['valid'])));
                     }
+
                     elseif (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'dict')
                         throw new Exception("A 'valid' parameter was specified for '$indexName', but the 'dict' cast type does not support this parameter.");
+
                     elseif (!in_array($activeGlobal[$indexName], $indexMetaData['valid']))
                         throw new Exception("Invalid value for '$indexName': {$activeGlobal[$indexName]}");
                 }

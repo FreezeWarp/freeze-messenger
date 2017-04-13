@@ -295,7 +295,7 @@ case 'edit': case 'create':
             $database->insert("{$sqlPrefix}fileVersions", array(
                 'fileId' => $fileId,
                 'sha256hash' => $sha256hash,
-                'salt' => $saltNum,
+                'salt' => $database->int($saltNum),
                 'iv' => $iv,
                 'size' => $rawSize,
                 'contents' => $contentsEncrypted,

@@ -596,7 +596,7 @@ class fimUser
                     "options" => (int) $existingUserData['options'],
                     "userParentalAge" => (int) $existingUserData['userParentalAge'],
                     "userParentalFlags" => $existingUserData['userParentalFlags'],
-                    "privs" => $existingUserData['privs']
+                    "privs" => (int) $existingUserData['privs']
                 ]);
             }
 
