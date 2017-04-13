@@ -205,10 +205,13 @@ function fim_messageFormat(json, format) {
 
     text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
     text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {
-        return ($1 + "&" + $.param({
-            'parentalAge' : window.activeLogin.userData.parentalAge ? window.activeLogin.userData.parentalAge : null,
-            'parentalFlags' : window.activeLogin.userData.parentalFlags
-        }));
+        // The usage of mergeDefaults here is a somewhat lazy way of unsetting the attributes if they are null (thus, not sending them at all, as opposed to sending them empty).
+        return ($1 + "&" + $.param(fimApi.mergeDefaults({},
+            {
+                'parentalAge' : window.activeLogin.userData.parentalAge ? window.activeLogin.userData.parentalAge : null,
+                'parentalFlags' : window.activeLogin.userData.parentalFlags ? window.activeLogin.userData.parentalFlags : null
+            }
+        )));
 
     });
 
@@ -343,7 +346,7 @@ function fim_messageFormat(json, format) {
                     'data-time' : messageTime,
                     'tabindex' : 1000,
                     'contenteditable' : (window.userId == userId ? "true" : "false"),
-                })
+                }).html(text)
             );
             break;
     }
