@@ -127,7 +127,6 @@ switch ($_REQUEST['phase']) {
             $xmlData2 = $xmlData2['dbData']; // Get the contents of the root node
 
 
-
             // Check file versions.
             if ((float) $xmlData['@version'] != 3) { // It's possible people have an unsynced directory (or similar), so make sure we're working with the correct version of the file.
                 die('The XML data source appears to be out of date. Reinstall FreezeMessenger and try again.');
@@ -196,7 +195,7 @@ switch ($_REQUEST['phase']) {
                     $insertData = array();
 
                     foreach ($table['column'] AS $column) {
-                        $insertData[$column['@name']] = $column['@value'];
+                        $insertData[$column['@name']] = (ctype_digit($column['@value']) ? (int) $column['@value'] : $column['@value']); // This is a bit silly, but deals with cases where MySQL mangles putting strings into integer-like columns (mostly bitfields).
                     }
 
                     if (!$database->insert($prefix . $table['@name'], $insertData)) {
