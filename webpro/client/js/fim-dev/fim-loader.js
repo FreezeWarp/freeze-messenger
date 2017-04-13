@@ -284,12 +284,67 @@ function fim_messageFormat(json, format) {
     /* Format for Table/List Display */
     switch (format) {
         case 'table':
-            data = '<tr id="archiveMessage' + messageId + '" style="word-wrap: break-word;"><td><span class="userName userNameTable" style="' + userNameFormat + '" data-userId="' + userId + '">' + userName + '</span></td><td>' + messageTime + '</td><td style="' + style + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '" class="' + (window.userId == userId ? 'editable' : '') + '">' + text + '</td><td><a href="javascript:void(0);" data-messageId="' + messageId + '"  class="updateArchiveHere">Show</a></td></tr>';
+            data = $('<tr style="word-wrap: break-word;">').attr({
+                'id' : "archiveMessage' + messageId + '"
+            }).append(
+                $('<td>').append(
+                    $('<span class="userName userNameTable">').attr({
+                        'style': userNameFormat,
+                        'data-userId': userId,
+                    }).text(userName)
+                )
+            ).append(
+                $('<td>').text(messageTime)
+            ).append(
+                $('<td>').attr({
+                    'style' : style,
+                    'data-messageId' : messageId,
+                    'data-roomId' : roomId,
+                    'data-avatar' : avatar,
+                    'class' : window.userId == userId ? 'editable' : ''
+                }).html(text)
+            ).append(
+                $('<td>').append(
+                    $('<a href="javascript:void(0); class="updateArchiveHere"">').attr({'data-messageId' : messageId}).text('Show')
+                )
+            );
             break;
 
         case 'list':
-            if (settings.showAvatars) data = '<span id="message' + messageId + '" class="messageLine messageLineAvatar"><span class="userName userNameAvatar" data-userId="' + userId + '" tabindex="1000"><img alt="' + userName + '" src="' + avatar + '" /></span><span style="' + style + '" class="messageText' + (window.userId == userId ? ' editable' : '') + '" data-messageId="' + messageId + '" data-roomId="' + roomId + '" data-time="' + messageTime + '" tabindex="1000" ' + (window.userId == userId ? ' contenteditable="true"' : '') + '>' + text + '</span><br />';
-            else data = '<span id="message' + messageId + '" class="messageLine"><span class="userName userNameTable" style="' + userNameFormat + '" data-userId="' + userId + '" tabindex="1000">' + userName + '</span> @ <em>' + messageTime + '</em>: <span style="' + style + '" class="messageText' + (window.userId == userId ? ' editable' : '') + '" data-messageid="' + messageId + '" data-roomId="' + roomId + '" tabindex="1000">' + text + '</span><br />';
+            data = $('<span>').attr({
+                'id' : 'message' + messageId,
+                'class' : 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
+            }).append(
+                $('<span>').attr({
+                    'class' : 'userName ' + (settings.showAvatars ? 'userNameAvatar' : 'userNameTable'),
+                    'style' : (!settings.showAvatars ? userNameFormat : ''),
+                    'data-userId' : userId,
+                    'data-userName' : userName,
+                    'data-avatar' : avatar,
+                    'tabindex' : 1000
+                }).append(
+                    settings.showAvatars ?
+                    $('<img>').attr({
+                        'alt' : userName,
+                        'src' : avatar
+                    }) :
+                    $('<span>').text(userName)
+                )
+            ).append(
+                !settings.showAvatars ?
+                $('<span>').text('@ ').append($('<em>').text(messageTime)) :
+                ''
+            ).append(
+                $('<span>').attr({
+                    'style' : style,
+                    'class' : 'messageText' + (window.userId == userId ? ' editable' : ''),
+                    'data-messageId' : messageId,
+                    'data-roomId' : roomId,
+                    'data-time' : messageTime,
+                    'tabindex' : 1000,
+                    'contenteditable' : (window.userId == userId ? "true" : "false"),
+                })
+            );
             break;
     }
 
@@ -373,12 +428,34 @@ function fim_newMessage(messageText, messageId) {
     $('.userName').ezpz_tooltip({
         contentId: 'tooltext',
         beforeShow: function(content, el) {
-            var userId = $(el).attr('data-userId');
+            var userId = $(el).attr('data-userId'),
+                userName = $(el).attr('data-userName'),
+                avatar = $(el).attr('data-avatar');
 
             if (userId != $('#tooltext').attr('data-lastuserId')) {
                 $('#tooltext').attr('data-lastuserId', userId);
 
-                content.html('<div style="width: 400px;">' + (userData[userId].avatar.length > 0 ? '<img alt="" src="' + userData[userId].avatar + '" style="float: left; max-height: 200px; max-width: 200px;" />' : '') + '<span class="userName" data-userId="' + userId + '">' + userData[userId].startTag + userData[userId].userName + userData[userId].endTag + '</span>' + (userData[userId].userTitle.length > 0 ? '<br />' + userData[userId].userTitle : '') + '<br /><em>Posts</em>: ' + userData[userId].posts + '<br /><em>Member Since</em>: ' + userData[userId].joinDate + '</div>');
+                content.html("");
+                content.append(
+                    $('<div style="width: 400px;">').append(
+                        avatar.length > 0 ? $('<img style="float: left; max-height: 200px; max-width: 200px;">').attr('src', avatar) : ''
+                    ).append(
+                        $('<span class="userName">').attr({'data-userId' : userId, 'style' : ''}).text(userName)
+                    )
+                );
+
+                fimApi.getUsers({
+                    'userIds' : [userId]
+                }, {'each' : function(userData) {
+                    if (userData.userTitle)
+                        content.append($('<br>').append($('<span>').text(userData.userTitle)))
+
+                    if (userData.posts)
+                        content.append($('<br><em>Posts</em>: ').append($('<span>').text(userData.posts)));
+
+                    if (userData.memberSince)
+                        content.append($('<br><em>Member Since</em>: ').append($('<span>').text(userData.memberSince)));
+                }});
             }
         }
     });
