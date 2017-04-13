@@ -929,6 +929,7 @@ class databaseSQL extends database
                     ),
 
                     'bool' => 'TINYINT(1) UNSIGNED',
+                    'float' => 'REAL',
                     'time' => 'INTEGER UNSIGNED',
                     'binary' => 'BLOB',
                 );
@@ -992,6 +993,7 @@ class databaseSQL extends database
                         127 => 'NUMERIC(40,0)', // Approximately -- maybe TODO
                         'default' => 'INTEGER',
                     ),
+                    'float' => 'REAL',
                     'bool' => 'SMALLINT', // Note: ENUM(1,2) AS BOOLENUM better.
                     'time' => 'INTEGER',
                     'binary' => 'BYTEA',
@@ -1339,6 +1341,11 @@ class databaseSQL extends database
 
                 case 'bool': case DatabaseTypeType::bool:
                     $typePiece = $this->dataTypes['bool'];
+                    break;
+
+
+                case 'float':case DatabaseTypeType::float:
+                    $typePiece = $this->dataTypes['float'];
                     break;
 
 
