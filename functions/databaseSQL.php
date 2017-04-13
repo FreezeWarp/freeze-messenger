@@ -575,8 +575,15 @@ class databaseSQL extends database
 
             // Values
             foreach ($values[3] AS &$item) {
-                if (!$this->isTypeObject($item))
-                    $item = $this->str($item);
+                if (!$this->isTypeObject($item)) {
+                    // TODO: reuse
+                    if (is_int($item)) {
+                        $item = $this->int($item);
+                    }
+                    else {
+                        $item = $this->str($item);
+                    }
+                }
 
                 $item = $this->formatValue($item->type, $item->value);
             }
