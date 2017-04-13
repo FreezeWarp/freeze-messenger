@@ -928,8 +928,8 @@ class databaseSQL extends database
                         'default' => 'INTEGER UNSIGNED',
                     ),
 
-                    'bool' => 'TINYINT(1) UNSIGNED',
                     'float' => 'REAL',
+                    'bool' => 'BIT(1)',
                     'time' => 'INTEGER UNSIGNED',
                     'binary' => 'BLOB',
                 );
