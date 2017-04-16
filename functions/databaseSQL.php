@@ -467,6 +467,10 @@ class databaseSQL extends database
                 return $this->intQuoteStart . (int)$this->escape($values[1], 'integer') . $this->intQuoteEnd;
                 break;
 
+            case 'float': case DatabaseTypeType::float:
+                return $this->floatQuoteStart . (float) $this->escape($values[1], 'integer') . $this->floatQuoteEnd;
+            break;
+
             case 'timestamp': case DatabaseTypeType::timestamp:
                 return $this->timestampQuoteStart . (int)$this->escape($values[1], 'timestamp') . $this->timestampQuoteEnd;
                 break;
@@ -773,6 +777,8 @@ class databaseSQL extends database
                 $this->statementSeperator = ', ';
                 $this->intQuoteStart = '';
                 $this->intQuoteEnd = '';
+                $this->floatQuoteStart = '';
+                $this->floatQuoteEnd = '';
                 $this->tableColumnDivider = '.';
                 $this->databaseTableDivider = '.';
                 $this->sortOrderAsc = 'ASC';
@@ -806,6 +812,8 @@ class databaseSQL extends database
                 $this->statementSeperator = ', ';
                 $this->intQuoteStart = '';
                 $this->intQuoteEnd = '';
+                $this->floatQuoteStart = '';
+                $this->floatQuoteEnd = '';
                 $this->tableColumnDivider = '.';
                 $this->databaseTableDivider = '.';
                 $this->sortOrderAsc = 'ASC';
@@ -839,6 +847,8 @@ class databaseSQL extends database
                 $this->statementSeperator = ', ';
                 $this->intQuoteStart = '';
                 $this->intQuoteEnd = '';
+                $this->floatQuoteStart = '';
+                $this->floatQuoteEnd = '';
                 $this->tableColumnDivider = '.';
                 $this->databaseTableDivider = '.';
                 $this->sortOrderAsc = 'ASC';

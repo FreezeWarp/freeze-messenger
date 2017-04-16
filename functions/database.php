@@ -19,8 +19,8 @@
 
 
 /**** TODO ****/
-/* "float" support
- * triggers (e.g. a watch() function)
+/*
+ * insert triggers (e.g. a watch() function)
  */
 
 abstract class database
@@ -717,8 +717,7 @@ abstract class database
             return new DatabaseType(DatabaseTypeType::column, (string)$value, $typeComp);
                 break;
 
-            case 'flt': case 'float':
-                throw new Exception('Float is currently unimplemented.');
+            case 'float':
                 return new DatabaseType(DatabaseTypeType::float, (string)$value, $typeComp);
                 break;
 
@@ -789,6 +788,22 @@ abstract class database
     public function int($value, $comp = 'e')
     {
         return $this->type('int', $value, $comp);
+    }
+
+
+    /**
+     * Define a value as being a floating point for database operations.
+     *
+     * @param mixed $value - The value to cast.
+     * @param mixed $comp - How the value will be compared to the data present as an index.
+     *
+     * @return special - Returns a special representation of a column int only for use in database functions.
+     *
+     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+     */
+    public function float($value, $comp = 'e')
+    {
+        return $this->type('float', $value, $comp);
     }
 
 
@@ -1149,6 +1164,7 @@ class DatabaseTypeType {
     const equation = 7;
     const blob = 8;
     const bitfield = 9;
+    const float = 10;
 }
 
 class DatabaseTypeComparison {
