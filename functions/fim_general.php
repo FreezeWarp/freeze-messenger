@@ -181,7 +181,7 @@ function fim_rand($min, $max) {
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_inArray($needle, $haystack, $all = false) {
+function fim_inArray(array $needle, array $haystack, $all = false) {
     if (!$haystack) return false; // If the haystack is not valid, return false.
     elseif (!$needle) return false; // If the needle is not valid, return false.
     else {

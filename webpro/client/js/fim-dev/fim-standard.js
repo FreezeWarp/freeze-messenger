@@ -114,7 +114,7 @@ standard.prototype.login = function(options) {
 
             if (!anonId) {
                 $.cookie('webpro_username', options.username, { expires : 14 });
-                $.cookie('webpro_password', options.password, { expires : 14 }); // We will encrypt this in B3 or later -- it isn't a priority for now. (TODO)
+                $.cookie('webpro_password', options.password, { expires : 14 });
             }
 
 

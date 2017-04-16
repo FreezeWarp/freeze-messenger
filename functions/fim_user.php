@@ -580,7 +580,7 @@ class fimUser
         if ($this->id) {
             $database->startTransaction();
 
-            if (fim_inArray(array_keys($databaseFields), $database->userHistoryColumns)) {
+            if (fim_inArray(array_keys($databaseFields), explode(', ', $database->userHistoryColumns))) {
                 if ($existingUserData = $database->getUsers(array(
                     'userIds' => array($this->id),
                     'columns' => $database->userHistoryColumns,
@@ -594,7 +594,7 @@ class fimUser
                         "avatar" => $existingUserData['avatar'],
                         "userGroupId" => $existingUserData['userGroupId'],
                         "socialGroupIds" => $existingUserData['socialGroupIds'],
-                        "messag6eFormatting" => $existingUserData['messageFormatting'],
+                        "messageFormatting" => $existingUserData['messageFormatting'],
                         "options" => (int)$existingUserData['options'],
                         "userParentalAge" => (int)$existingUserData['userParentalAge'],
                         "userParentalFlags" => $existingUserData['userParentalFlags'],

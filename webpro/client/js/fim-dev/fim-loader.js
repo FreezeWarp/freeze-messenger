@@ -179,7 +179,7 @@ function fim_formatAsImage(imageUrl) {
             : $('<img style="max-width: 250px; max-height: 250px;" />').attr('src', imageUrl + "&" + $.param({
                     'thumbnailWidth' : 250,
                     'thumbnailHeight' : 250,
-                }))
+                })) // todo: only for files on installI
     ).prop('outerHTML');
 }
 
@@ -221,7 +221,7 @@ function fim_messageFormat(json, format) {
         return ($1 + "&" + $.param(fimApi.mergeDefaults({},
             {
                 'parentalAge' : window.activeLogin.userData.parentalAge ? window.activeLogin.userData.parentalAge : null,
-                'parentalFlags' : window.activeLogin.userData.parentalFlags ? window.activeLogin.userData.parentalFlags : null
+                'parentalFlags' : window.activeLogin.userData.parentalFlags ? window.activeLogin.userData.parentalFlags : null,
             }
         )));
 

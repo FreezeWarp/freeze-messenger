@@ -358,7 +358,7 @@
         </table>
 
 
-        <table name="messageFlood" partitionBy="userId" type="general" comment="A counter for the messages submitted by a user in individual rooms and sitewide for every minute.">
+        <table name="messageFlood" type="memory" comment="A counter for the messages submitted by a user in individual rooms and sitewide for every minute.">
             <column name="userId" type="int" maxlen="8" comment="The user ID." />
             <column name="roomId" type="blob" maxlen="23" comment="The room ID, or 0 if side-wide." />
             <column name="time" type="time" comment="The time the action was performed on." />
@@ -551,6 +551,8 @@
             <column name="options" type="int" maxlen="6" comment="Group options." />
             <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to any users that have this group as their primary, if they have not specified their own." />
 
+            <column name="memberUserIds" type="blob" maxlen="50000" comment="A CSV cache of the users who are part of this group." />
+
             <key name="groupId" type="primary" />
         </table>
 
@@ -633,6 +635,7 @@
             <column name="watchRoomIds" type="blob" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
             <column name="ignoredUserIds" type="blob" maxlen="10000" comment="A CSV cache of users ignored by this user." />
             <column name="friendedUserIds" type="blob" maxlen="10000" comment="A CSV cache of users friended by this user." />
+            <column name="memberOfGroupIds" type="blob" maxlen="10000" comment="A CSV cache of the groups this user is a part of." />
 
             <!-- Parental Controls -->
             <column name="userParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
