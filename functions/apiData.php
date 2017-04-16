@@ -133,13 +133,22 @@ class apiData {
                 return '[]';
             }
         }
-        elseif (is_object($value)) return $this->formatJsonValue(get_object_vars($value));
-        elseif ($value === true)   return 'true';
-        elseif ($value === false)  return 'false';
-        elseif (is_string($value)) return json_encode($value);
-        elseif (is_int($value) || is_float($value)) return $value;
-        elseif ($value == '')      return '""';
-        else die('Unrecognised value type:' . gettype($value)); // We die() instead of throwing here in order to avoid recursion with the stacktrace.
+        elseif (is_object($value))
+            return $this->formatJsonValue(get_object_vars($value));
+        elseif ($value === true)
+            return 'true';
+        elseif ($value === false)
+            return 'false';
+        elseif (is_string($value)) {
+            // mb_convert_encoding removes non-UTF8 characters, ensuring that json_encode doesn't fail.
+            return json_encode(function_exists("mb_convert_encoding") ? mb_convert_encoding($value, "UTF-8", "UTF-8") : $value, JSON_PARTIAL_OUTPUT_ON_ERROR);
+        }
+        elseif (is_int($value) || is_float($value))
+            return $value;
+        elseif ($value == '')
+            return '""';
+        else
+            die('Unrecognised value type:' . gettype($value)); // We die() instead of throwing here in order to avoid recursion with the stacktrace.
     }
 
 
