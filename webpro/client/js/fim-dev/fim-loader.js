@@ -423,7 +423,7 @@ function fim_newMessage(messageText, messageId) {
         if (settings.audioDing) snd.play();
 
         window.clearInterval(timers.t3);
-        timers.t3 = window.setInterval(faviconFlash, 1000);
+        timers.t3 = window.setInterval(fim_faviconFlash, 1000);
 
         if (typeof window.external === 'object') {
             if (typeof window.external.msIsSiteMode !== 'undefined' && typeof window.external.msSiteModeActivate !== 'undefined') {
