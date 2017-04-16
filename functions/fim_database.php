@@ -2015,7 +2015,10 @@ class fimDatabase extends databaseSQL
         if (in_array($file->extension, $config['imageTypes'])) {
             list($width, $height) = getimagesizefromstring($file->contents);
 
-            if (!$imageOriginal = imagecreatefromstring($file->contents)) {
+            if ($width > $config['imageResizeMaxWidth'] || $height > $config['imageResizeMaxHeight']) {
+
+            }
+            elseif (!$imageOriginal = imagecreatefromstring($file->contents)) {
                 throw new fimError('resizeFailed', 'The image could not be thumbnailed. The file was still uploaded.');
             }
             else {

@@ -750,7 +750,29 @@ popup = {
                         if (active.parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + active.parentalFlags[i])); // Yes, this is a very weird line.
                     }
 
-                    $('#viewUploadsBody').append('<tr><td align="center"><img src="' + directory + 'file.php?sha256hash=' + active.sha256hash + '&fim3_sessionHash=' + sessionHash + '&fim3_userId=' + userId + '&fim3_format=json" style="max-width: 200px; max-height: 200px;" /><br />' + active.fileName + '</td><td align="center">' + active.fileSizeFormatted + '</td><td align="center">' + $l('parentalAges.' + active.parentalAge) + '<br />' + parentalFlagsFormatted.join(', ') + '</td><td align="center"><button onclick="standard.changeAvatar(\'' + active.sha256hash + '\')">Set to Avatar</button></td></tr>');
+                    $('#viewUploadsBody').append(
+                        $('<tr>').append(
+                            $('<td align="center">').append(
+                                $('<img style="max-width: 200px; max-height: 200px;" />').attr('src', directory + 'file.php?' + $.param({
+                                        'sha256hash': active.sha256hash,
+                                        'thumbnailWidth': 200,
+                                        'thumbnailHeight': 200
+                                    }))
+                            ).append('<br />').append($('<span>').text(active.fileName))
+                        ).append(
+                            $('<td align="center">').text(active.fileSizeFormatted)
+                        ).append(
+                            $('<td align="center">').text($l('parentalAges.' + active.parentalAge))
+                                .append('<br />')
+                                .append(parentalFlagsFormatted.join(', '))
+                        ).append(
+                            $('<td align="center">').append(
+                                $('<button>').click(function() {
+                                    standard.changeAvatar(active.sha256hash)
+                                }).text('Set to Avatar')
+                            )
+                        )
+                    );
                 }});
             }
         });

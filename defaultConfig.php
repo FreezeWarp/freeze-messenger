@@ -210,6 +210,8 @@ $defaultConfig = array(
     ),
     'imageTypes' => array('gif', 'png', 'jpg'),
     'imageThumbnails' => array(.1, .25, .5), // When an image is uploaded, thumbnails will be automatically created.
+    'imageResizeMaxHeight' => 10000,
+    'imageResizeMaxWidth' => 10000,
     'allowedExtensions' => array('gif', 'png', 'jpg', 'txt', 'ogg', 'mp3', 'flac'),
     'uploadMimes' => array( // We transfer a file with a specific mimetype. Obviously, certain types are more prone to viruses than others.
         'txt' => 'text/plain',

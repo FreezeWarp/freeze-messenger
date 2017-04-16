@@ -72,19 +72,40 @@ $file = $database->getFiles(array(
 if ($includeThumbnails) {
     $filesIndexed = [];
 
-    /* This algorithm is probably imperfect. It still could use someone to give it a lookover. */
-    foreach ($file AS $index => $f) {
-        $score = ($request['thumbnailWidth'] ? abs($request['thumbnailWidth'] - $f['width']) / $f['width'] : 1) * ($request['thumbnailHeight'] ? abs($request['thumbnailHeight'] - $f['height']) / $f['height'] : 1);
-
-        $filesIndexed[$score * 1000] = $index;
+    // If this has happened, the thumbnail most likely didn't finish resizing/uploading at the time the file was requested. Retry for the full-version instead.
+    if (count($file) === 0) {
+        $file = $database->getFiles(array(
+            'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
+            'fileIds' => $request['fileId'] ? array($request['fileId']) : array(),
+            'vfileIds' => $request['vfileId'] ? array($request['vfileId']) : array(),
+            'includeContent' => true,
+        ))->getAsArray(false);
     }
-    ksort($filesIndexed);
 
-    $file = $file[array_values($filesIndexed)[0]];
+    else {
+        // Only one file found. Somewhat common, if only one thumbnail has generated so far.
+        if (count($file) === 1) {
+            $file = $file[0];
+        }
 
-    $thumbnail = $database->select([$database->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents, iv, salt"], ["versionId" => $file['versionId'], "scaleFactor" => $file['scaleFactor']])->getAsArray(false);
-    $file['contents'] = fim_decrypt($thumbnail['contents'], $thumbnail['salt'], $thumbnail['iv']);
+        // Sort between the multiple thumbnails, trying to find the one with the closest match. This algorithm is probably imperfect. It still could use someone to give it a lookover.
+        else {
+            foreach ($file AS $index => $f) {
+                $score = ($request['thumbnailWidth'] ? abs($request['thumbnailWidth'] - $f['width']) / $f['width'] : 1) * ($request['thumbnailHeight'] ? abs($request['thumbnailHeight'] - $f['height']) / $f['height'] : 1);
+
+                $filesIndexed[$score * 1000] = $index;
+            }
+            ksort($filesIndexed);
+
+            $file = $file[array_values($filesIndexed)[0]];
+        }
+
+        $thumbnail = $database->select([$database->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents, iv, salt"], ["versionId" => $file['versionId'], "scaleFactor" => $file['scaleFactor']])->getAsArray(false);
+        $file['contents'] = fim_decrypt($thumbnail['contents'], $thumbnail['salt'], $thumbnail['iv']);
+        $file['fileType'] = 'image/jpeg';
+    }
 }
+
 
 
 /* Set File Security Controls */
