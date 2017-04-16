@@ -71,6 +71,13 @@ abstract class database
      * Database drivers are not required to support.
      */
     public $hardPartitions = [];
+
+    /**
+     * @var array Configuration data that tells the driver to store data aggregates in more performant locations.
+     * Database drivers are required to support.
+     */
+    public $collectionTriggers = [];
+
     public $sqlPrefix;
 
 
@@ -1134,9 +1141,9 @@ class databaseResult
 
 
     public function applyColumnTransformation($column, $value) {
-        $tableName = $this->reverseAlias[$column][0];//var_dump($tableName); var_dump($this->database->encode[$tableName]);
+        $tableName = $this->reverseAlias[$column][0];
 
-        if (isset($this->database->encode[$tableName][$column])) {//var_dump(true);
+        if (isset($this->database->encode[$tableName][$column])) {
             return call_user_func($this->database->encode[$tableName][$column][2], $value);
         }
 

@@ -866,15 +866,19 @@ autoEntry.prototype = {
     },
 
     displayEntries : function(string) {
+        var entryList;
+
         if (typeof string === 'object') { entryList = string; }
         else if (typeof string === 'string' && string.length > 0) { entryList = string.split(','); } // String is a string and not empty.
         else { entryList = []; }
 
-        names = this.options.resolve(entryList); console.log(["names", names]);
+        var this2 = this;
 
-        for (i in entryList) { console.log(["entry", names, entryList[i], names[entryList[i]]]);
-            this.addEntry(entryList[i], names[entryList[i]]);
-        }
+        this.options.resolve(entryList, null, function(names) {
+            for (i in entryList) {
+                this2.addEntry(entryList[i], names[entryList[i]]);
+            }
+        });
     },
 
     getList : function() {

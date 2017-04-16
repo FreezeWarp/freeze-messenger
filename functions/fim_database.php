@@ -799,7 +799,6 @@ class fimDatabase extends databaseSQL
 
 
         $messages = $this->select($columns, $conditions, $sort, $options['messageHardLimit'], $options['page']);
-//echo ($messages->sourceQuery); die();
 
         return $messages;
     }
@@ -1403,7 +1402,7 @@ class fimDatabase extends databaseSQL
         ))->getAsRooms();
 
 
-        $table = $this->sqlPrefix . ($roomListName === 'favRooms' ? 'user' : '') . $roomListName;
+        $table = $this->sqlPrefix . ($roomListName === 'favRooms' ? 'userFavRooms' : $roomListName);
 
 
         if ($action === 'delete') {
@@ -1433,8 +1432,6 @@ class fimDatabase extends databaseSQL
                 }
             }
         }
-
-        $this->editListCache($roomListName, $userData, $roomIds, $action);
     }
 
 
@@ -1491,10 +1488,6 @@ class fimDatabase extends databaseSQL
                 //    $this->createUserEvent('friendRequest', $userId, $user->id);
             }
         }
-
-
-        /* Update any caches */
-        $this->editListCache($userListName, $user, $userIds, $action);
     }
 
 
@@ -2379,10 +2372,50 @@ class fimDatabase extends databaseSQL
         return fim_encrypt($messageText);
     }
 
+
+
+
+    /****** TRIGGERS ******/
+    public function triggerUserFavRoomIds($set, $dataChanges) {
+        $this->triggerUserListCache($set, "favRooms", $dataChanges);
+    }
+    public function triggerUserWatchedRoomIds($set, $dataChanges) {
+        $this->triggerUserListCache($set, "watchRooms", $dataChanges);
+    }
+    public function triggerUserIgnoredUserIds($set, $dataChanges) {
+        $this->triggerUserListCache($set, "ignoreList", $dataChanges);
+    }
+    public function triggerUserFriendedUserIds($set, $dataChanges) {
+        $this->triggerUserListCache($set, "friendsList", $dataChanges);
+    }
+
+    public function triggerUserListCache($userId, $cacheColumn, $dataChanges) {
+        $userColNames = [
+            'favRooms' => 'favRoomIds',
+            'watchRooms' => 'watchRoomIds',
+            'ignoreList' => 'ignoredUserIds',
+            'friendsList' => 'friendedUserIds'
+        ];
+
+        $user = new fimUser($userId);
+        $listEntries = $user->__get($cacheColumn);
+
+        foreach ($dataChanges AS $operation => $values) {
+            switch ($operation) {
+                case 'delete':
+                    $listEntries = is_string($values) && $values === '*' ? [] : array_diff($listEntries, $values);
+                    break;
+                case 'insert':
+                    $listEntries = array_merge($listEntries, $values);
+                    break;
+            }
         }
 
-        return array($messageTextEncrypted, $iv, $saltNum);
+        $user->setDatabase([
+            $userColNames[$cacheColumn] => $listEntries
+        ]);
     }
+
 
 
 

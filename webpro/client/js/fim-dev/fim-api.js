@@ -646,17 +646,18 @@ fimApi.prototype.resolveRooms = function(ids, names, callback) {
 
 
 fimApi.prototype.mergeDefaults = function(object, defaults) {
-    var returnObject = (object === undefined ? {} : Object.create(object));
+    var returnObject = {};
 
-    for (var i in defaults) {
-        if (!(i in returnObject) && defaults[i] !== null) returnObject[i] = defaults[i];
-    }
-
-    /*** START STRICT CODE -- NOT NECCESSARY IN PRODUCTION ***/
-    for (var i in returnObject) {
+    for (var i in object) {
         if (!(i in defaults)) {
             throw 'Invalid data in object call: ' + i;
         }
+
+        if (object[i] !== null) returnObject[i] = object[i];
+    }
+
+    for (var i in defaults) {
+        if (!(i in returnObject) && defaults[i] !== null) returnObject[i] = defaults[i];
     }
 
     /* Debug Data */

@@ -737,6 +737,12 @@ class databaseSQL extends database
     public function setHardPartitions($partitions) {
         $this->hardPartitions = $partitions;
     }
+
+    public function setCollectionTriggers($triggers) {
+        $this->collectionTriggers = $triggers;
+    }
+
+
     public function close()
     {
         return $this->functionMap('close');
@@ -1877,18 +1883,36 @@ LIMIT
             return $this->queueInsert($this->getTableNameTransformation($tableName, $dataArray), $dataArray);
         }
 
+        else {
+            /* Collection Trigger */
+            if (isset($this->collectionTriggers[$tableName])) {
+                foreach ($this->collectionTriggers[$tableName] AS $params) {
+                    list($triggerColumn, $aggregateColumn, $function) = $params;
+                    if (isset($dataArray[$triggerColumn], $dataArray[$aggregateColumn])) {
+                        call_user_func($function, $dataArray[$triggerColumn], ['insert' => [$dataArray[$aggregateColumn]]]);
+                    }
+                }
+            }
 
+            $this->insertCore($tableName, $dataArray);
+        }
+    }
+
+
+    public function insertCore($tableName, $dataArray) {
+        /* Actual Insert */
         $columns = array_keys($dataArray);
         $values = array_values($dataArray);
 
-        $query = 'INSERT INTO' . $this->formatValue('table', $table) . ' ' .
-            $this->formatValue('tableColumnValues', $table, $columns, $values);
+        $query = 'INSERT INTO' . $this->formatValue('table', $this->getTableNameTransformation($tableName, $dataArray)) . ' ' .
+            $this->formatValue('tableColumnValues', $tableName, $columns, $values);
 
         if ($queryData = $this->rawQuery($query)) {
-            $this->insertIdCallback($table, $this->functionMap('insertId'));
+            $this->insertIdCallback($tableName, $this->functionMap('insertId'));
 
             return $queryData;
-        } else {
+        }
+        else {
             return false;
         }
     }
@@ -1918,6 +1942,16 @@ LIMIT
 
         if ($this->autoQueue)
             return $this->queueDelete($tableName, $conditionArray);
+        /*else {
+            $triggerColumns = array_keys($conditionArray);
+
+            if (isset($this->collectionTriggers[$tableName])) {
+                $deletedRows = $this->select([$tableName => array_merge($triggerColumns, array_values($conditionArray))], $conditionArray)->getColumnValues();
+            }
+
+            list ($func, $value) = $this->collectionTrigger('insert', $tableName, $dataArray);
+            call_user_func($func, ['insert' => $value]);
+        }*/
 
         else
             return $this->rawQuery(
@@ -2016,6 +2050,16 @@ LIMIT
         }
 
     }
+
+    public function collectionTrigger($operation, $table, $dataArray) {
+        if (isset($this->collectionTriggers[$table])) {
+            $matches = array_intersect(array_keys($dataArray), array_keys($this->collectionTriggers[$table]));
+
+            foreach ($matches AS $match) {
+                return [$this->collectionTriggers[$table][$match], $dataArray[$match]];
+            }
+        }
+    }
     /*********************************************************
      ************************* END ***************************
      ******************** Row Functions **********************
@@ -2054,7 +2098,41 @@ LIMIT
     public function processQueue() {
         $this->startTransaction();
 
+        $triggerCallbacks = [];
+
         foreach ($this->deleteQueue AS $tableName => $deleteConditions) {
+            // This table has a collection trigger.
+            if (isset($this->collectionTriggers[$tableName])) {
+
+                foreach ($this->collectionTriggers[$tableName] AS $entry => $params) {
+                    list($triggerColumn, $aggregateColumn, $function) = $params;
+
+                    foreach ($deleteConditions AS $deleteCondition) {
+                        // Trigger column present -- that is, we are deleting data belonging to a specific list.
+                        if (isset($deleteCondition[$triggerColumn])) {
+                            // Don't try to add entries if the whole list has been marked for deletion.
+                            if ($triggerCallbacks[$tableName][$entry]['delete'] === '*')
+                                continue;
+
+                            // Aggregate column present -- we will be narrowly deleting a pair of [triggerColumn, aggregateColumn]
+                            elseif (isset($deleteCondition[$aggregateColumn])) {
+                                $triggerCallbacks[$tableName][$entry]['delete'][] = $deleteCondition[$aggregateColumn];
+                            }
+
+                            // Aggregate column NOT present -- we will be deleting the entire collection belonging to triggerColumn. Mark it for de
+                            else {
+                                $triggerCallbacks[$tableName][$entry]['delete'] = '*';
+                            }
+                        }
+
+                        // Trigger column not present, but the table has a collection trigger. As this is a deletion, this is too unpredictable, and we throw an error.
+                        else {
+                            $this->triggerError("Cannot perform deletion on " . $tableName . ", as it has a collection trigger, and you have not specified a condition for the trigger column, " . $triggerColumn);
+                        }
+                    }
+                }
+            }
+
             $deleteConditionsCombined = ['either' => $deleteConditions];
             $this->delete($tableName, $deleteConditionsCombined);
         }
@@ -2074,8 +2152,30 @@ LIMIT
         }
 
         foreach ($this->insertQueue AS $tableName => $dataArrays) {
+            // The table has a collection trigger
+            if (isset($this->collectionTriggers[$tableName])) {
+                foreach ($this->collectionTriggers[$tableName] AS $entry => $params) {
+                    list($triggerColumn, $aggregateColumn, $function) = $params;
+
+                    foreach ($dataArrays AS $dataArray) {
+                        // We are inserting a specific value (aggregateColumn) into the collection (triggerColumn)
+                        if (isset($dataArray[$triggerColumn], $dataArray[$aggregateColumn])) {
+                            $triggerCallbacks[$tableName][$entry]['insert'][] = $dataArray[$aggregateColumn];
+                        }
+                    }
+                }
+            }
+
             foreach ($dataArrays AS $dataArray) {
-                $this->insert($tableName, $dataArray);
+                $this->insertCore($tableName, $dataArray);
+            }
+        }
+
+        foreach ($triggerCallbacks AS $table => $collectionTriggers) {
+            foreach ($collectionTriggers AS $entry => $dataOperations) {
+                list($triggerColumn, $aggregateColumn, $function) = $this->collectionTriggers[$tableName][$entry];
+
+                call_user_func($function, $dataArray[$triggerColumn], $dataOperations);
             }
         }
 

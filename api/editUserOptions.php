@@ -100,6 +100,7 @@ These parameters are, where applicable, documented in the SQL documentation.
 $apiRequest = true;
 
 require('../global.php');
+require('../functions/fim_curl.php');
 
 
 
@@ -407,14 +408,14 @@ if (count($request['favRooms'])) {
 
 /* Ignore List */
 if (count($request['ignoreList'])) {
-    $database->editUserLists('ignoreList', $user, $request['ignoreList'], $requestHead['_action']);
+    $database->editUserList('ignoreList', $user, $request['ignoreList'], $requestHead['_action']);
 }
 
 
 
 /* Friends List */
 if (count($request['friendsList'])) {
-    $database->editUserLists('friendsList', $user, $request['friendsList'], $requestHead['_action']);
+    $database->editUserList('friendsList', $user, $request['friendsList'], $requestHead['_action']);
 }
 
 $database->autoQueue(false);
