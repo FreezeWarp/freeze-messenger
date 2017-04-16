@@ -72,13 +72,25 @@ function fim_decrypt($content, $keyNum, $iv) {
  * @return array - list($data, $iv, $saltNum)
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_encrypt($data) {
-    global $salts, $config;
+define('FIM_ENCRYPT_MESSAGETEXT', 1);
+define('FIM_ENCRYPT_FILECONTENT', 2);
+
+function fim_encrypt($data, $type = FIM_ENCRYPT_MESSAGETEXT) {
+    global $salts, $encrypt, $encryptUploads;
+
+    $cipher = "AES-256-CTR";
+
+    if ($type === FIM_ENCRYPT_MESSAGETEXT && !$encrypt
+        || $type === FIM_ENCRYPT_FILECONTENT && !$encryptUploads
+        || !function_exists('openssl_encrypt')
+        || !in_array($cipher, openssl_get_cipher_methods()))
+        return [$data, '', -1];
+
 
     $key = str_pad(end($salts), 256, "."); // Move the file pointer to the last entry in the array (and return its value)
     $keyNum = key($salts); // Get the key/id of the corrosponding salt.
 
-    $iv_size = openssl_cipher_iv_length("AES-256-CTR"); // Get the length of the IV for the method used
+    $iv_size = openssl_cipher_iv_length($cipher); // Get the length of the IV for the method used
     $iv = random_bytes($iv_size);
 
     if (is_array($data)) { // If $data is an array, we will encrypt each value, and retain the key->value structure.
@@ -87,7 +99,7 @@ function fim_encrypt($data) {
         foreach ($data AS $key => $value) { // Run through the data array...
             $newData[$key] = openssl_encrypt( // Encrypt the $value.
                 $value, // The value we're encrypting.
-                'AES-256-CTR', // This one is pretttty strong.
+                $cipher, // This one is pretttty strong.
                 $key, // We use our config-file stored salts as a key.
                 OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, // No padding, please,
                 $iv // We need to use the raw IV, so we decode the earlier encoded value.
@@ -96,7 +108,7 @@ function fim_encrypt($data) {
     }
     else {
         $newData = openssl_encrypt(
-            $data, 'AES-256-CTR', $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $iv
+            $data, $cipher, $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $iv
         );
     }
 

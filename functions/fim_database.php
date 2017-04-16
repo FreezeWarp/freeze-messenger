@@ -1970,16 +1970,9 @@ class fimDatabase extends databaseSQL
 
 
     public function storeFile(fimFile $file, fimUser $user, fimRoom $room) {
-        global $encryptUploads, $config;
+        global $config;
 
-        if ($encryptUploads) {
-            list($contentsEncrypted, $iv, $saltNum) = fim_encrypt($file->contents);
-        }
-        else {
-            $contentsEncrypted = $file->contents;
-            $iv = '';
-            $saltNum = -1;
-        }
+        list($contentsEncrypted, $iv, $saltNum) = fim_encrypt($file->contents, FIM_ENCRYPT_FILECONTENT);
 
         $this->startTransaction();
 
@@ -2042,14 +2035,7 @@ class fimDatabase extends databaseSQL
                     imagejpeg($imageThumb);
                     $thumbnail = ob_get_clean();
 
-                    if ($encryptUploads) {
-                        list($thumbnailEncrypted, $iv, $keyNum) = fim_encrypt($thumbnail);
-                    }
-                    else {
-                        $thumbnailEncrypted = $file->contents;
-                        $iv = '';
-                        $keyNum = -1;
-                    }
+                    list($thumbnailEncrypted, $iv, $keyNum) = fim_encrypt($thumbnail, FIM_ENCRYPT_FILECONTENT);
 
                     $this->insert($this->sqlPrefix . "fileVersionThumbnails", array(
                         'versionId' => $fileId,
@@ -2331,7 +2317,7 @@ class fimDatabase extends databaseSQL
      *
      */
     public function getEncrypted($messageText) {
-        return fim_encrypt($messageText);
+        return fim_encrypt($messageText, FIM_ENCRYPT_MESSAGETEXT);
     }
 
 
