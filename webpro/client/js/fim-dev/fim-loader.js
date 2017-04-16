@@ -173,6 +173,18 @@ function fim_youtubeParse($1) {
 
 
 
+function fim_formatAsImage(imageUrl) {
+    return $('<a target="_BLANK" class="imglink">').attr('href', imageUrl).append(
+        settings.disableImage ? $('span').text('[IMAGE]')
+            : $('<img style="max-width: 250px; max-height: 250px;" />').attr('src', imageUrl + "&" + $.param({
+                    'thumbnailWidth' : 250,
+                    'thumbnailHeight' : 250,
+                }))
+    ).prop('outerHTML');
+}
+
+
+
 /**
  * Formats received message data for display in either the message list or message table.
  *
@@ -221,7 +233,7 @@ function fim_messageFormat(json, format) {
     else {
         switch (flag) {
             case 'source': text = text.replace(regexs.url, fim_youtubeParse) || '[Unrecognised Source]'; break; // Youtube, etc.
-            case 'image': text = '<a href="' + fim_eXMLAttr(text) + '" class="imglink" target="_BLANK">' + (settings.disableImage ? '[Image]' : '<img src="' + fim_eXMLAttr(text) + '" style="max-width: 250px; max-height: 250px;" />') + '</a>'; break; // // Image; We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
+            case 'image': text = fim_formatAsImage(text); break; // // Image; We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
             case 'video': text = (settings.disableVideo ? '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>' : '<video src="' + fim_eXMLAttr(text) + '" controls></video>'); break; // Video
             case 'audio': text = (settings.disableVideo ? '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>' : '<audio src="' + fim_eXMLAttr(text) + '" controls></audio>'); break; // Audio
             case 'email': text = '<a href="mailto: ' + fim_eXMLAttr(text) + '" target="_BLANK">' + text + '</a>'; break; // Email Link
@@ -245,8 +257,16 @@ function fim_messageFormat(json, format) {
                     }
 
                     if (youtubeCode = fim_youtubeParse($1)) return youtubeCode; // Youtube Autoparse
-                    else if ($1.match(regexs.image)) { return '<a href="' + $1 + '" target="_BLANK" class="imglink">' + (settings.disableImage ? '[IMAGE]' : '<img src="' + $1 + '" style="max-width: 250px; max-height: 250px;" />') + '</a>' + $2; } // Image Autoparse
-                    else { return '<a href="' + $1 + '" target="_BLANK">' + $1 + '</a>' + $2; } // Normal URL
+
+                    // Image Autoparse
+                    else if ($1.match(regexs.image)) {
+                        return fim_formatAsImage($1) + $2
+                    }
+
+                    // Normal URL
+                    else {
+                        return $('<a target="_BLANK">').attr('href', $1).text($1).prop('outerHTML') + $2;
+                    }
                 });
 
                 // "/me" parse
