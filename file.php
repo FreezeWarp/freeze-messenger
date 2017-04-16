@@ -75,8 +75,7 @@ if ($parentalBlock) {
     echo $file['contents'];
 }
 else {
-    if ($file['salt']) $file = fim_decrypt($file,'contents');
-    else $file['contents'] = base64_decode($file['contents']);
+    $file['contents'] = fim_decrypt($file['contents'], $file['salt'], $file['iv']);
 
     header('Content-Type: ' . $file['fileType']);
     echo $file['contents'];

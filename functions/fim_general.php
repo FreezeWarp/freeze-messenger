@@ -58,38 +58,43 @@ function fim_getMessageRange($roomId, $startId, $endId, $startDate, $endDate) {
 /**
  * Decrypts data.
  *
- * @param array $message - An array containing the message data; must include an "iv" index.
- * @param mixed $index - An array or string corrosponding to which indexes in the $message should be decrypted.
+ * @param mixed $content - The content to decrypt.
+ * @param int $keyNum - The key index used during encryption.
+ * @param int $iv - The IV used during encryption.
+ *
  * @global array $salts - Key-value pairs used for encryption.
- * @return array
+ * @return mixed
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function fim_decrypt($message, $index = array('text')) {
+function fim_decrypt($content, $keyNum, $iv) {
     global $salts, $config;
 
-    if (!isset($message['salt'], $message['iv'])) throw new Exception('fim_decrypt requires message[salt] and message[iv]'); // Make sure the proper indexes exist (just in case).
+    if ($keyNum && $iv) { // Make sure both the salt and the IV are non-false.
+        $key = str_pad($salts[$keyNum], 256, "."); // Get the proper salt.
 
-    if ($message['salt'] && $message['iv']) { // Make sure both the salt and the IV are non-false.
-        $salt = str_pad($salts[$message['salt']], 24, "."); // Get the proper salt.
-
-        if ($index) { // If indexes are specified...
-            foreach ((array) $index AS $index2) { // Run through each index. If the specified index variable is a string instead of an array, we will cast it as an array ("example" becomes array("example")).
-                if (!isset($message[$index2])) { // If the index is not in the message, throw an exception.
-                    throw new Exception('Index not found: ' . $index2);
-                }
-
-                $message[$index2] = openssl_decrypt( // Decrypt the data.
-                    $message[$index2],
+        if (is_array($content)) {
+            foreach ((array) $content AS &$contentEntry) { // Run through each element in the content.
+                $contentEntry = openssl_decrypt( // Decrypt the data.
+                    $contentEntry,
                     'AES-256-CTR',
-                    $salt, // Use the salt we found above.
+                    $key, // Use the salt we found above.
                     OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
-                    $message['iv']
+                    $iv
                 );
             }
         }
+        else {
+            $content = openssl_decrypt( // Decrypt the data.
+                $content,
+                'AES-256-CTR',
+                $key, // Use the salt we found above.
+                OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
+                $iv
+            );
+        }
     }
 
-    return $message; // Return the original array with the specified indexes unencrypted.
+    return $content; // Return the original array with the specified indexes unencrypted.
 }
 
 
@@ -105,8 +110,8 @@ function fim_decrypt($message, $index = array('text')) {
 function fim_encrypt($data) {
     global $salts, $config;
 
-    $salt = str_pad(end($salts), 24, "."); // Move the file pointer to the last entry in the array (and return its value)
-    $saltNum = key($salts); // Get the key/id of the corrosponding salt.
+    $key = str_pad(end($salts), 256, "."); // Move the file pointer to the last entry in the array (and return its value)
+    $keyNum = key($salts); // Get the key/id of the corrosponding salt.
 
     $iv_size = openssl_cipher_iv_length("AES-256-CTR"); // Get the length of the IV for the method used
     $iv = random_bytes($iv_size);
@@ -118,7 +123,7 @@ function fim_encrypt($data) {
             $newData[$key] = openssl_encrypt( // Encrypt the $value.
                 $value, // The value we're encrypting.
                 'AES-256-CTR', // This one is pretttty strong.
-                $salt, // We use our config-file stored salts as a key.
+                $key, // We use our config-file stored salts as a key.
                 OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, // No padding, please,
                 $iv // We need to use the raw IV, so we decode the earlier encoded value.
             );
@@ -126,13 +131,12 @@ function fim_encrypt($data) {
     }
     else {
         $newData = openssl_encrypt(
-            $data, 'AES-256-CTR', $salt, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $iv
+            $data, 'AES-256-CTR', $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $iv
         );
     }
 
-    return array($newData, $iv, $saltNum); // Return the data.
+    return array($newData, $iv, $keyNum); // Return the data.
 }
-
 
 
 
