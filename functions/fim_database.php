@@ -1151,13 +1151,18 @@ class fimDatabase extends databaseSQL
             )
         ))->getAsArray('attribute');
 
-        $groupBitfield = 0;
-        foreach ($permissions AS $permission) {
-            if ($permission['attribute'] === 'user') return $permission['permissions']; // If a user permission exists, then it overrides group permissions.
-            else $groupBitfield &= $permission['permissions']; // Group permissions, on the other hand, stack. If one group has ['view', 'post'], and another has ['view', 'moderate'], then a user in both groups has all three.
+        if (!count($permissions)) {
+            return -1;
         }
+        else {
+            $groupBitfield = 0;
+            foreach ($permissions AS $permission) {
+                if ($permission['attribute'] === 'user') return $permission['permissions']; // If a user permission exists, then it overrides group permissions.
+                else $groupBitfield &= $permission['permissions']; // Group permissions, on the other hand, stack. If one group has ['view', 'post'], and another has ['view', 'moderate'], then a user in both groups has all three.
+            }
 
-        return $groupBitfield;
+            return $groupBitfield;
+        }
     }
 
 
@@ -1243,24 +1248,21 @@ class fimDatabase extends databaseSQL
             }
         }
         else {
-            $permissionsCached = $this->getPermissionCache($room->id, $user->id);
-            if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
+//            $permissionsCached = $this->getPermissionCache($room->id, $user->id);
+//            if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
 
             if (!$user->resolve(array('socialGroupIds', 'parentalAge', 'parentalFlags'))) throw new Exception('hasPermission was called without a valid user.'); // Make sure we know the room type and alias in addition to ID.
-
-
 
             /* Obtain Data from roomPermissions Table
              * This table is seen as the "final word" on matters. */
             $permissionsBitfield = $this->getPermissionsField($room->id, $user->id, $user->socialGroupIds);
-
 
             /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
             if ($user->hasPriv('modRooms')) $returnBitfield = 65535; // Super moderators have all permissions.
             elseif (in_array($user->groupId, $config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
             elseif ($room->ownerId === $user->id) $returnBitfield = 65535; // Owners have all permissions.
             elseif ($room->parentalAge > $user->parentalAge
-                || fim_inArray($user->parentalFlags, $room->parentalFlags)
+                //|| fim_inArray($user->parentalFlags, $room->parentalFlags)
                 || ($kicks = $this->getKicks(array(
                         'userIds' => array($user->id),
                         'roomIds' => array($room->id)

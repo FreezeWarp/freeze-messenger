@@ -207,7 +207,7 @@ class fimUser
 
             // Parental Flags: Convert CSV to Array, or empty if disabled
             elseif ($property === 'parentalFlags') {
-                if ($config['parentalEnabled']) fim_emptyExplode(',', $value);
+                if ($config['parentalEnabled']) $this->parentalFlags = fim_emptyExplode(',', $value);
                 else                            $this->parentalFlags = array();
             }
 

@@ -67,7 +67,7 @@ class fimRoom {
 
     private static $roomDataPullGroups = array(
         ['roomId','roomName'],
-        ['defaultPermissions','options'],
+        ['defaultPermissions','options','ownerId'],
         ['roomParentalFlags','roomParentalAge','roomTopic'],
         ['lastMessageTime','lastMessageId','messageCount','flags'],
         ['watchedByUserIds']
@@ -284,7 +284,7 @@ class fimRoom {
                         throw new Exception("Unhandled property '$property' in fimRoom.");
                         break;
                     }
-                }
+                 }
 
                 else {
                     // Find selection group
@@ -294,13 +294,16 @@ class fimRoom {
                         $groupPointer = false;
 
                         foreach (fimRoom::$roomDataPullGroups AS $group) {
+                            //var_dump(["get-1", $needle, $group, in_array($needle, $group)]);
                             if (in_array($needle, $group)) {
                                 $groupPointer =& $group;
+                                break;
                             }
                         }
 
-                        if ($groupPointer)
+                        if ($groupPointer) {// var_dump(["get", $groupPointer]);
                             $this->getColumns($groupPointer);
+                        }
                         else
                             throw new Exception("Selection group not found for '$property'");
                     }
@@ -308,7 +311,7 @@ class fimRoom {
             }
         }
 
-        return $this->$property;
+        return $this->{$property};
     }
 
 
