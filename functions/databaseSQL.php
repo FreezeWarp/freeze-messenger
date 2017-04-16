@@ -1899,7 +1899,7 @@ LIMIT
     }
 
 
-    public function insertCore($tableName, $dataArray) {
+    private function insertCore($tableName, $dataArray) {
         /* Actual Insert */
         $columns = array_keys($dataArray);
         $values = array_values($dataArray);
@@ -1942,23 +1942,46 @@ LIMIT
 
         if ($this->autoQueue)
             return $this->queueDelete($tableName, $conditionArray);
-        /*else {
-            $triggerColumns = array_keys($conditionArray);
 
+        else {
+            // This table has a collection trigger.
             if (isset($this->collectionTriggers[$tableName])) {
-                $deletedRows = $this->select([$tableName => array_merge($triggerColumns, array_values($conditionArray))], $conditionArray)->getColumnValues();
+
+                foreach ($this->collectionTriggers[$tableName] AS $entry => $params) {
+                    list($triggerColumn, $aggregateColumn, $function) = $params;
+
+                    // Trigger column present -- that is, we are deleting data belonging to a specific list.
+                    if (isset($conditionArray[$triggerColumn])) {
+                        // Aggregate column present -- we will be narrowly deleting a pair of [triggerColumn, aggregateColumn]
+                        if (isset($conditionArray[$aggregateColumn])) {
+                            call_user_func($function, $conditionArray[$triggerColumn], ['delete' => [$conditionArray[$aggregateColumn]]]);
+                        }
+
+                        // Aggregate column NOT present -- we will be deleting the entire collection belonging to triggerColumn. Mark it for de
+                        else {
+                            call_user_func($function, $conditionArray[$triggerColumn], ['delete' => '*']);
+                        }
+                    }
+
+                    // Trigger column not present, but the table has a collection trigger. As this is a deletion, this is too unpredictable, and we throw an error.
+                    else {
+                        $this->triggerError("Cannot perform deletion on " . $tableName . ", as it has a collection trigger, and you have not specified a condition for the trigger column, " . $triggerColumn);
+                    }
+                }
             }
 
-            list ($func, $value) = $this->collectionTrigger('insert', $tableName, $dataArray);
-            call_user_func($func, ['insert' => $value]);
-        }*/
-
-        else
-            return $this->rawQuery(
-                'DELETE FROM ' . $this->formatValue('table', $tableName) .
-                ' WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, false, 'both', $tableName) : 'TRUE')
-            );
+            $this->deleteCore($tableName, $conditionArray);
+        }
     }
+
+
+    private function deleteCore($tableName, $conditionArray = false) {
+        return $this->rawQuery(
+            'DELETE FROM ' . $this->formatValue('table', $tableName) .
+            ' WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, false, 'both', $tableName) : 'TRUE')
+        );
+    }
+
 
     public function getTableNameTransformation($tableName, $dataArray) {
         if (isset($this->hardPartitions[$tableName])) {
@@ -2049,16 +2072,6 @@ LIMIT
             ]);
         }
 
-    }
-
-    public function collectionTrigger($operation, $table, $dataArray) {
-        if (isset($this->collectionTriggers[$table])) {
-            $matches = array_intersect(array_keys($dataArray), array_keys($this->collectionTriggers[$table]));
-
-            foreach ($matches AS $match) {
-                return [$this->collectionTriggers[$table][$match], $dataArray[$match]];
-            }
-        }
     }
     /*********************************************************
      ************************* END ***************************

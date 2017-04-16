@@ -1492,44 +1492,6 @@ class fimDatabase extends databaseSQL
 
 
 
-    public function editListCache(string $listName, fimUser $user, array $itemIds, $action = 'create') {
-        $userColNames = [
-            'favRooms' => 'favRoomIds',
-            'watchRooms' => 'watchRoomIds',
-            'ignoreList' => 'ignoredUserIds',
-            'friendsList' => 'friendedUserIds'
-        ];
-
-        /* Process user caches */
-        if (isset($userColNames[$listName])) {
-
-            if ($action === 'edit')
-                $listEntries = $itemIds;
-
-            else {
-                $listEntries = $user->__get($listName);
-
-                if ($action === 'delete')
-                    $listEntries = array_diff($listEntries, $itemIds);
-
-                elseif ($action === 'create')
-                    foreach ($itemIds AS $item) $listEntries[] = $item;
-            }
-
-
-            $listEntries = array_unique($listEntries);
-            sort($listEntries);
-
-            $this->update($this->sqlPrefix . 'users', [
-                $userColNames[$listName] => $listEntries
-            ], [
-                'userId' => $user->id,
-            ]);
-        }
-    }
-
-
-
     /**
      * @param $action string - Either 'friend' or 'deny'.
      * @param $userId
