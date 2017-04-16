@@ -79,10 +79,10 @@ function fim_decrypt($message, $index = array('text')) {
                 }
 
                 $message[$index2] = openssl_decrypt( // Decrypt the data.
-                    $message,
+                    $message[$index2],
                     'AES-256-CTR',
                     $salt, // Use the salt we found above.
-                    OPENSSL_ZERO_PADDING,
+                    OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
                     $message['iv']
                 );
             }
@@ -119,14 +119,14 @@ function fim_encrypt($data) {
                 $value, // The value we're encrypting.
                 'AES-256-CTR', // This one is pretttty strong.
                 $salt, // We use our config-file stored salts as a key.
-                OPENSSL_ZERO_PADDING, // No padding, please,
+                OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, // No padding, please,
                 $iv // We need to use the raw IV, so we decode the earlier encoded value.
             );
         }
     }
     else {
         $newData = openssl_encrypt(
-            $data, 'AES-256-CTR', $salt, OPENSSL_ZERO_PADDING, $iv
+            $data, 'AES-256-CTR', $salt, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $iv
         );
     }
 
