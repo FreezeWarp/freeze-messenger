@@ -1368,7 +1368,7 @@ class databaseSQL extends database
                         'columnName' => $columnName,
                         'columnType' => $column['type'],
                     ), 'validationFallback');
-                    $typePiece = $this->dataTypes['string'];
+                    $typePiece = $this->dataTypes['columnStringNoLength']['default'];
                     break;
             }
 

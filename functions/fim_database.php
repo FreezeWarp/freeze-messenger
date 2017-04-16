@@ -2376,16 +2376,9 @@ class fimDatabase extends databaseSQL
      *
      */
     public function getEncrypted($messageText) {
-        global $salts, $encrypt;
+        return fim_encrypt($messageText);
+    }
 
-        // Encrypt Message Text
-        if ($salts && $encrypt) { // Only encrypt if we have both set salts and encrypt is enabled.
-            list($messageTextEncrypted, $iv, $saltNum) = fim_encrypt($messageText); // Encrypt the values and return the new data, IV, and saltNum.
-        }
-        else { // No encyption
-            $messageTextEncrypted = $messageText;
-            $iv = ''; // Use an empty IV - it will be ignored by the decryptor.
-            $saltNum = 0; // Same as with the IV, salt keys of "0" are ignored.
         }
 
         return array($messageTextEncrypted, $iv, $saltNum);
