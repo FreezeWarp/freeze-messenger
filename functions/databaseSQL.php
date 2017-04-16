@@ -460,7 +460,8 @@ class databaseSQL extends database
                 break;
 
             case 'blob': case DatabaseTypeType::blob:
-                return 'FROM_BASE64("' . base64_encode($values[1]) . '")';
+                //return 'FROM_BASE64("' . base64_encode($values[1]) . '")';
+                return '"' . $this->escape($values[1]) . '"';
                 break;
 
             case 'integer': case DatabaseTypeType::integer:
@@ -1387,8 +1388,15 @@ class databaseSQL extends database
                 }
                 else if (isset($this->defaultPhrases[$column['default']]))
                     $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
-                else
-                    $typePiece .= ' DEFAULT ' . $this->formatValue('detect', $column['default']); // TODO: non-string?
+                else {
+                    if (@isset($this->encode[$tableName][$columnName])) {
+                        list($function, $typeOverride) = $this->encode[$tableName][$columnName];
+
+                        $column['default'] = $this->applyTransformFunction($function, $column['default'], $typeOverride);
+                    }
+
+                    $typePiece .= ' DEFAULT ' . $this->formatValue('detect', $column['default']);
+                }
             }
 
             $columns[] = $this->formatValue('column', $columnName) . ' ' . $typePiece . ' COMMENT ' . $this->formatValue('string', $column['comment']);
@@ -1894,7 +1902,7 @@ LIMIT
                 }
             }
 
-            $this->insertCore($tableName, $dataArray);
+            return $this->insertCore($tableName, $dataArray);
         }
     }
 
@@ -1983,7 +1991,7 @@ LIMIT
     }
 
 
-    public function getTableNameTransformation($tableName, $dataArray) {
+    private function getTableNameTransformation($tableName, $dataArray) {
         if (isset($this->hardPartitions[$tableName])) {
             return $tableName . "__part" . $dataArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
         }

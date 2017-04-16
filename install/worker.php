@@ -33,7 +33,7 @@ if(!ini_get('safe_mode')) {
 }
 
 if (file_exists('../config.php')) { // Make sure that config doesn't exist. TODO: Is this secure?
-    die('Error.');
+    die('Config file exists -- can\'t continue.');
 }
 
 switch ($_REQUEST['phase']) {
@@ -78,6 +78,8 @@ switch ($_REQUEST['phase']) {
             die("Connection Error.\n" . $database->getLastError());
         }
         else {
+            require('../databaseParameters.php');
+
             if ($driver === 'mysql' || $driver === 'mysqli') {
                 if ($database->versionPrimary <= 4) { // MySQL 4 is a no-go.
                     die('You have attempted to connect to a MySQL version ' . $database->version . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
@@ -183,8 +185,6 @@ switch ($_REQUEST['phase']) {
 
 
 
-
-
                 /* Part 3: Insert Predefined Data */
 
                 $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
@@ -199,7 +199,7 @@ switch ($_REQUEST['phase']) {
                     }
 
                     if (!$database->insert($prefix . $table['@name'], $insertData)) {
-                        die("Could not run query.\n" . $database->getLastError());
+                        die("Failed to insert data into {$prefix}{$table['@name']}.\n" . print_r($database->queryLog, true));
                     }
                 }
             }
