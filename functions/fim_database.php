@@ -2004,6 +2004,103 @@ class fimDatabase extends databaseSQL
     }
 
 
+    public function storeFile(fimFile $file, fimUser $user, fimRoom $room) {
+        global $encryptUploads, $config;
+
+        if ($encryptUploads) {
+            list($contentsEncrypted, $iv, $saltNum) = fim_encrypt($file->contents);
+        }
+        else {
+            $contentsEncrypted = $file->contents;
+            $iv = '';
+            $saltNum = -1;
+        }
+
+        $this->startTransaction();
+
+        $this->insert($this->sqlPrefix . "files", array(
+            'userId' => $user->id,
+            'roomIdLink' => $room->id,
+            'fileName' => $file->name,
+            'fileType' => $file->mime,
+            'fileParentalAge' => $file->parentalAge,
+            'fileParentalFlags' => implode(',', $file->parentalFlags),
+            'creationTime' => time(),
+            'fileSize' => $file->size,
+        ));
+        $fileId = $this->insertId;
+
+        $this->insert($this->sqlPrefix . "fileVersions", array(
+            'fileId' => $fileId,
+            'sha256hash' => $file->sha256hash,
+            'salt' => $this->int($saltNum),
+            'iv' => $this->blob($iv),
+            'size' => $file->size,
+            'contents' => $this->blob($contentsEncrypted),
+            'time' => time(),
+        ));
+        $versionId = $this->insertId;
+
+        $this->update($this->sqlPrefix . "users", array(
+            'fileCount' => $this->type('equation', '$fileCount + 1'),
+            'fileSize' => $this->type('equation', '$fileSize + ' . (int) $file->size),
+        ), array(
+            'userId' => $user->id,
+        ));
+
+        $this->incrementCounter('uploads');
+        $this->incrementCounter('uploadSize', $file->size);
+
+        if ($room->id)
+            $this->storeMessage($file->webLocation, $file->container, $user, $room);
+
+        if (in_array($file->extension, $config['imageTypes'])) {
+            list($width, $height) = getimagesizefromstring($file->contents);
+
+            if (!$imageOriginal = imagecreatefromstring($file->contents)) {
+                throw new fimError('resizeFailed', 'The image could not be thumbnailed. The file was still uploaded.');
+            }
+            else {
+                foreach ($config['imageThumbnails'] AS $resizeFactor) {
+                    if ($resizeFactor < 0 || $resizeFactor > 1) {
+                        $this->rollbackTransaction();
+                        throw new fimError('badServerConfigImageThumbnails', 'The server is configured with an incorrect thumbnail factor, ' . $resizeFactor . '. Image file uploads will be disabled until this issue is rectified.');
+                    }
+
+                    $newWidth = $resizeFactor * $width;
+                    $newHeight = $resizeFactor * $height;
+
+                    $imageThumb = imagecreatetruecolor($newWidth, $newHeight);
+                    imagecopyresampled($imageThumb, $imageOriginal, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+                    ob_start();
+                    imagejpeg($imageThumb);
+                    $thumbnail = ob_get_clean();
+
+                    if ($encryptUploads) {
+                        list($thumbnailEncrypted, $iv, $keyNum) = fim_encrypt($thumbnail);
+                    }
+                    else {
+                        $thumbnailEncrypted = $file->contents;
+                        $iv = '';
+                        $keyNum = -1;
+                    }
+
+                    $this->insert($this->sqlPrefix . "fileVersionThumbnails", array(
+                        'versionId' => $fileId,
+                        'scaleFactor' => $this->float($resizeFactor),
+                        'width' => $newWidth,
+                        'height' => $newHeight,
+                        'salt' => $keyNum,
+                        'iv' => $iv,
+                        'contents' => $thumbnailEncrypted
+                    ));
+                }
+            }
+        }
+    }
+
+
 
     /**
      * @param     $counterName

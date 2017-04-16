@@ -71,6 +71,7 @@
 $apiRequest = true;
 
 require('../global.php');
+require('../functions/fim_file.php');
 
 /* Get Request Data */
 $requestHead = fim_sanitizeGPC('g', array(
@@ -201,123 +202,74 @@ case 'edit': case 'create':
             default:      throw new Exception('badEncoding');      break;
         }
 
-        $rawSize = strlen($rawData);
+
+        /* Verify Against Empty Data */
+        if (!strlen($request['fileName']))
+            throw new fimError('badName', 'The filename is not valid.'); // This error may be expanded in the future.
+        if (!strlen($request['fileData']))
+            throw new fimError('emptyData', 'No file contents were received.');
+
+
+        /* Create the File Object */
+        $file = new fimFile($request['fileName'], $rawData);
+        $file->parentalAge = $request['parentalAge'];
+        $file->parentalFlags = $request['parentalFlags'];
+
+
+        /* Verify Basic File Object Parameters */
+        if (!$file->extension)
+            throw new fimError('noFileExtension', 'The uploaded file did not have a file extension.');
 
 
         /* Verify the file's contents against any sent hashes. */
-        if (isset($request['md5hash']) && md5($rawData) != $request['md5hash'])
+        if (isset($request['md5hash']) && $file->md5hash != $request['md5hash'])
             throw new fimError('badMd5Hash', 'The uploaded file\'s contents did not match those of its sent MD5 hash.');
 
-        if (isset($request['sha256hash']) && hash('sha256', $rawData) != $request['sha256hash'])
+        if (isset($request['sha256hash']) && $file->sha256hash != $request['sha256hash'])
             throw new fimError('badSha256Hash', 'The uploaded file\'s contents did not match those of its sent SHA256 hash.');
 
-        if (isset($request['crc32bhash']) && hash('crc32bhash', $rawData) != $request['crc32bhash'])
+        if (isset($request['crc32bhash']) && $file->crc32bhash != $request['crc32bhash'])
             throw new fimError('badCrc32BHash', 'The uploaded file\'s contents did not match those of its sent CRC32B hash.');
 
-        if (isset($request['fileSize']) && $rawSize != $request['fileSize'])
+        if (isset($request['fileSize']) && $file->size != $request['fileSize'])
             throw new fimError('badSize', 'The uploaded file\'s contents did not match those of its sent filesize.');
-
-        if (!strlen($request['fileName']))
-            throw new fimError('badName', 'The filename is not valid.'); // This error may be expanded in the future.
 
 
         /* File Type Restrictions */
-        $fileNameParts = explode('.', $request['fileName']);
+        if (isset($config['extensionChanges'][$file->extension])) // Certain extensions are considered to be equivalent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
+            $file->extension = $config['extensionChanges'][$fileNameParts[1]];
 
-        if (count($fileNameParts) != 2)
-            throw new fimError('badNameParts', 'Filenames must have a single name and a single extension, e.g. a.tgz, not a.tar.gz. Periods are not allowed in uploaded filenames except to separate the filename. (Personally, I don\'t think this is great design, but it makes it easier for administrators to restrict files based on type.)');
-
-        if (isset($config['extensionChanges'][$fileNameParts[1]])) // Certain extensions are considered to be equivalent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
-            $fileNameParts[1] = $config['extensionChanges'][$fileNameParts[1]];
-
-        if (!isset($config['uploadMimes'][$fileNameParts[1]]))
+        if (!isset($config['uploadMimes'][$file->extension]))
             throw new fimError('unrecExt', 'The filetype is unrecognised, and thus the file cannot be uploaded.'); // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
 
-        if (!in_array($fileNameParts[1], $config['allowedExtensions']))
+        if (!in_array($file->extension, $config['allowedExtensions']))
             throw new fimError('badExt', 'The filetype is forbidden, and thus the file cannot be uploaded.'); // Not allowed...
 
 
         /* Derived from File Type */
-        $mime = ($config['uploadMimes'][$fileNameParts[1]] ? $config['uploadMimes'][$fileNameParts[1]] : 'application/octet-stream');
-        $container = ($config['fileContainers'][$fileNameParts[1]] ? $config['fileContainers'][$fileNameParts[1]] : 'other');
-        $maxSize = ($config['uploadSizeLimits'][$fileNameParts[1]] ? $config['uploadSizeLimits'][$fileNameParts[1]] : 0);
+        $maxSize = ($config['uploadSizeLimits'][$file->extension] ? $config['uploadSizeLimits'][$file->extension] : 0);
 
 
         /* File Size Restrictions */
-        if ((!$rawData || $rawSize === 0) && !$config['allowEmptyFiles'])
-            throw new fimError('emptyFile', "Empty files cannot be uploaded on this server.");
-        if ($rawSize > $maxSize)
-            throw new Exception('tooLarge', 'The file is too large to upload; the maximum size is ' . $maxSize . 'B, and the file you uploaded was ' . $rawSize . '.'); // Note: Data is stored as base64 because its easier to handle; thus, the data will be about 33% larger than the normal (thus, if a limit is normally 400KB the file must be smaller than 300KB).
-
-
-        /* Hashing and Encryption */
-        $sha256hash = hash('sha256', $rawData);
-
-        if ($encryptUploads) {
-            list($contentsEncrypted, $iv, $saltNum) = fim_encrypt($rawData);
-            $saltNum = intval($saltNum);
-        }
-        else {
-            $contentsEncrypted = base64_encode($rawData);
-            $iv = '';
-            $saltNum = '';
-        }
+        if ($file->size > $maxSize)
+            throw new Exception('tooLarge', 'The file is too large to upload; the maximum size is ' . $maxSize . 'B, and the file you uploaded was ' . $file->size . '.');
 
 
         /* Get Files with Existing, Matching Sha256 */
         $prefile = $database->getFiles(array(
-            'sha256hashes' => array($sha256hash)
+            'sha256hashes' => array($file->sha256hash)
         ))->getAsArray(false);
 
 
         /* Upload or Redirect, if Sha256 Match Found */
         if (count($prefile) > 0) { // The odds of a collision are astronomically low unless the server is handling an absolutely massive number of files. ...We could make the effort to detect the collision by actually comparing file contents, but it hardly seems worth the processing power.
-            $webLocation = "{$installUrl}file.php?sha256hash={$prefile['sha256hash']}";
-
-            if ($roomData) $database->storeMessage($webLocation, $container, $user, $roomData);
+            if ($roomData) $database->storeMessage($file->webLocation, $file->container, $user, $roomData);
         }
         else {
-            /* TODO: move to DB */
-            $database->insert("{$sqlPrefix}files", array(
-                'userId' => $user->id,
-                'roomIdLink' => $room->id,
-                'fileName' => $request['fileName'],
-                'fileType' => $mime,
-                'fileParentalAge' => $request['parentalAge'],
-                'fileParentalFlags' => implode(',', $request['parentalFlags']),
-                'creationTime' => time(),
-                'fileSize' => $rawSize,
-            ));
-
-            $fileId = $database->insertId;
-            $parentalFileId = $fileId;
-
-            $database->insert("{$sqlPrefix}fileVersions", array(
-                'fileId' => $fileId,
-                'sha256hash' => $sha256hash,
-                'salt' => $database->int($saltNum),
-                'iv' => $iv,
-                'size' => $rawSize,
-                'contents' => $contentsEncrypted,
-                'time' => time(),
-            ));
-
-            $database->update("{$sqlPrefix}users", array(
-                'fileCount' => $database->type('equation', '$fileCount + 1'),
-                'fileSize' => $database->type('equation', '$fileSize + ' . (int) $rawSize),
-            ), array(
-                'userId' => $user->id,
-            ));
-
-            $database->incrementCounter('uploads');
-            $database->incrementCounter('uploadSize', $rawSize);
-
-            $webLocation = "{$installUrl}file.php?sha256hash={$sha256hash}";
-
-            if ($roomData) $database->storeMessage($webLocation, $container, $user, $roomData);
+            $database->storeFile($file, $user, $roomData);
         }
 
-        $xmlData['response']['webLocation'] = $webLocation;
+        $xmlData['response']['webLocation'] = $file->webLocation;
     }
     elseif ($requestHead['_action'] === 'edit') {
         /*      $fileData = $database->getFile($request['fileId']);

@@ -175,7 +175,6 @@ $defaultConfig = array(
     'uploadMaxUserFiles' => -1,
     'uploadMaxSpace' => -1,
     'uploadMaxUserSpace' => -1,
-    'allowEmptyFiles' => false,
     'allowOrphanFiles' => false,
     'extensionChanges' => array(
         'jpe' => 'jpg',
@@ -209,7 +208,8 @@ $defaultConfig = array(
 
         'zip' => 'archive', 'rar' => 'archive', '7z' => 'archive', 'tgz' => 'archive', 'tbz2' => 'archive',
     ),
-    'imageTypes' => array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG),
+    'imageTypes' => array('gif', 'png', 'jpg'),
+    'imageThumbnails' => array(.1, .25, .5), // When an image is uploaded, thumbnails will be automatically created.
     'allowedExtensions' => array('gif', 'png', 'jpg', 'txt', 'ogg', 'mp3', 'flac'),
     'uploadMimes' => array( // We transfer a file with a specific mimetype. Obviously, certain types are more prone to viruses than others.
         'txt' => 'text/plain',
