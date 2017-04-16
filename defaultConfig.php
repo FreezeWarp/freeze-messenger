@@ -425,9 +425,9 @@ $defaultConfig = array(
 
     'messageCacheTableMaxRows' => 500, // int The maximum number of rows to be stored in the MessagesCached table. If hard partioning is enabled (as is default), the effective size of the table will be many times of this, but spread across the memory.
 
-    'enableUnreadMessages' => true,
-    'enableWatchRooms' => true,
-    'enableEvents' => true,
+    'enableUnreadMessages' => true, // bool Set this to false to disable unread messages functionality. Can be useful if that functionality is causing database overload, though this is rare.
+    'enableWatchRooms' => true, // bool Set this to false to disable watch rooms functionality. Can be useful if that functionality is causing database overload, though this is rare.
+    'enableEvents' => true, // bool Set this to false to disable events. You probably shouldn't.
 
     /* XML Output */
     'encodeXmlEntitiesFind' => array('&', '\'', '<', '>', '"'),
@@ -456,7 +456,7 @@ $defaultConfig = array(
 
 
     /*** PHP Functions ***/
-    'jsonDecodeRecursionLimit' => 6, // Places a limit on the maximum recursion depth for json_decode when handling user input. The software generally expects a depth of around 3 to be available, but greater depths may be provided for for plugins, etc.
+    'jsonDecodeRecursionLimit' => 6, // Places a limit on the maximum recursion depth for json_decode when handling user input. The software generally expects a depth of around 3 to be available, but greater depths may be provided for for plugins, exceptions, etc.
 
     'curlUA' => 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
 
