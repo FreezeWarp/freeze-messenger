@@ -1437,6 +1437,14 @@ class fimDatabase extends databaseSQL
 
 
     public function editUserList(string $userListName, fimUser $user, array $userIds, string $action = 'create') {
+        $tableNames = [
+            'favRooms' => 'userFavRooms',
+            'watchRooms' => 'watchRoom',
+            'ignoreList' => 'userIgnoreList',
+            'friendsList' => 'userFriendsList'
+        ];
+
+
         /* Get the user data corresponding with $userIds
          * This will filter out any non-existing userIds, as well. */
         $userIds = $this->getUsers(array(
@@ -1445,7 +1453,7 @@ class fimDatabase extends databaseSQL
         ))->getColumnValues('userId');
 
 
-        $table = $this->sqlPrefix . 'user' . $userListName;
+        $table = $this->sqlPrefix . $tableNames[$userListName];
 
 
         /* If the action is delete, delete users in $userIds */

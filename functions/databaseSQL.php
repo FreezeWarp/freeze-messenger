@@ -2155,7 +2155,7 @@ LIMIT
             }
 
             $deleteConditionsCombined = ['either' => $deleteConditions];
-            $this->delete($tableName, $deleteConditionsCombined);
+            $this->deleteCore($tableName, $deleteConditionsCombined);
         }
 
         foreach ($this->updateQueue AS $tableName => $update) {
