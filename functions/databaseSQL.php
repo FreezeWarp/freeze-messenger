@@ -1561,7 +1561,23 @@ class databaseSQL extends database
             }
 
             else {
-                $finalQuery['tables'][] = $this->formatValue('table', $tableName); // Identify the table as [tableName]; note: may be removed if the table is part of a join.
+                if (isset($this->hardPartitions[$tableName])) { // This should be used with the above stuff too, but that would really require a partial rewrite at this point, and I'm too close to release to want to do that.
+                    list($column, $partitionCount) = $this->hardPartitions[$tableName];
+
+                    if (isset($conditionArray[$column]))
+                        $found = $conditionArray[$column];
+                    elseif (isset($conditionArray['both'][$column]))
+                        $found = $conditionArray['both'][$column];
+                    else
+                        $this->triggerError("Selecting from a hard partioned table, " . $tableName . ", without the partition column, " . $column . " at the top level is unsupported. It likely won't ever be supported, since any boolean logic is likely to require cross-partition selection, which is far too complicated a feature for this DAL. Use native RDBMS partioning for that if you can.");
+
+                    // I'm not a fan of this hack at all, but I'd really have to rewrite to
+                    $finalQuery['tables'][] = $this->formatValue('tableAlias', $tableName . "__part" . $found % $partitionCount, $tableName);
+                }
+                else {
+                    $finalQuery['tables'][] = $this->formatValue('table', $tableName); // Identify the table as [tableName]; note: may be removed if the table is part of a join.
+                }
+
             }
 
 
@@ -1856,14 +1872,11 @@ LIMIT
      */
     public function insert($tableName, $dataArray)
     {
-        /* Partitioning */
-        if (isset($this->hardPartitions[$tableName])) {
-            $tableName .= "__part" . $dataArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+        /* Query Queueing */
+        if ($this->autoQueue) {
+            return $this->queueInsert($this->getTableNameTransformation($tableName, $dataArray), $dataArray);
         }
-        if ($this->autoQueue)
-            return $this->queueInsert($table, $dataArray);
 
-        if ($updateArray) throw new exception('Removed.'); // TODO
 
         $columns = array_keys($dataArray);
         $values = array_values($dataArray);
@@ -1911,6 +1924,14 @@ LIMIT
                 'DELETE FROM ' . $this->formatValue('table', $tableName) .
                 ' WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, false, 'both', $tableName) : 'TRUE')
             );
+    }
+
+    public function getTableNameTransformation($tableName, $dataArray) {
+        if (isset($this->hardPartitions[$tableName])) {
+            return $tableName . "__part" . $dataArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+        }
+
+        return $tableName;
     }
 
 
