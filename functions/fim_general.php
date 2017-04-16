@@ -14,41 +14,6 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-
-
-/********************************************************
- ************************ START **************************
- ******************** IM Functions ***********************
- *********************************************************/
-
-
-
-/*
-* messageRange
-* 1 = {
-*   0 :
-*   100 :
-*   200 :
-*   300 :
-* }
-*
-* timeRange
-* 0 = 0
-* 1 = 400
-*
-*/
-function fim_getMessageRange($roomId, $startId, $endId, $startDate, $endDate) {
-
-}
-
-
-
-
-
-
-
-
-
 /********************************************************
  ************************ START **************************
  **************** Encoding & Encryption ******************
@@ -194,21 +159,6 @@ function fim_rand($min, $max) {
  ************************ START **************************
  ******************** Misc Functions *********************
  *********************************************************/
-
-
-/**
- * A function equvilent to obtaining the index value of an array.
- *
- * @param array $array
- * @param mixed $index
- * @return mixed
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_indexValue($array, $index) {
-    return $array[$index];
-}
-
-
 /**
  * Determines if any value in an array is found in a seperate array.
  *
@@ -245,58 +195,6 @@ function fim_inArray($needle, $haystack, $all = false) {
 
 
 /**
- * Determines if an array contains an array.
- *
- * @param array $array
- * @return bool - True if the array contains array, false otherwise.
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_hasArray($array) {
-    global $config;
-
-    foreach ($array AS $key => $value) { // Run through each entry of the array.
-        if (is_array($value)) return true; // If the value is an array, return true.
-    }
-
-    return false; // Since we haven't already found an array, return false.
-}
-
-
-/**
- * Implements PHP's explode with support for escaped delimeters. You can not use as a delimiter or escape character 'µ', 'ñ', or 'ø' (which are used in place of '&', '#', ';' to free up those characters).
- * If the escaepChar occurs twice in a row, it will be understood as having been twice-escaped, and handled accordingly.
- *
- * @param string delimiter
- * @param string string
- * @param string escapeChar - The character that escapes the string.
- * @return string
- */
-function fim_explodeEscaped($delimiter, $string, $escapeChar = '\\') {
-    $string = str_replace($escapeChar . $escapeChar, fim_encodeEntities($escapeChar), $string);
-    $string = str_replace($escapeChar . $delimiter, fim_encodeEntities($delimiter), $string);
-    return array_map('fim_decodeEntities', explode($delimiter, $string));
-}
-
-
-/**
- * A function equvilent to an IF-statement that returns a true or false value. It is similar to the function in most spreadsheets (EXCEL, LibreOffice CALC).
- * Note that this function is DEPRECATED for all internal commands, since it really doesn't serve any purpose, but it will be kept for 3rd party plugins to use as documented.
- *
- * @param string $condition - The condition that will be evaluated. It must be a string.
- * @param string $true - A string to return if the above condition evals to true.
- * @param string $false - A string to return if the above condition evals to false.
- * @return bool - true on success, false on failure
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_iif($condition, $true, $false) {
-    global $config;
-
-    if (eval('return ' . stripslashes($condition) . ';')) return $true; // If the string evals to true, return the true string.
-    else return $false; // Return the false string.
-}
-
-
-/**
  * Converts a date of birth to age.
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
@@ -324,32 +222,6 @@ function fim_formatSize($size) {
     }
 
     return round($size, 2) . $config['fileSuffixes'][$suffix];
-}
-
-
-/**
- * Encode entities using a custom format.
- *
- * @param string string - String to encode.
- * @param array find - An array of characters to replace in the entity string (in most cases, should include only "&", "#", ";").
- * @param array replace - An array of characters to replace with in the entity string (in most cases, this should include characters that would rarely be used for exploding a string).
- * @return string
- */
-function fim_encodeEntities($string, $find = array('&', '#', ';'), $replace = array('µ', 'ñ', 'ó')) {
-    return str_replace($find, $replace, mb_encode_numericentity($string, array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8"));
-}
-
-
-/**
- * Decode entities using a custom format.
- *
- * @param string string - String to encode.
- * @param array replace - An array of characters to replace in the entity string (in most cases, should include only "&", "#", ";").
- * @param array find - An array of characters to replace with in the entity string (in most cases, this should include characters that would rarely be used for exploding a string).
- * @return string
- */
-function fim_decodeEntities($string, $replace = array('µ', 'ñ', 'ó'), $find = array('&', '#', ';')) {
-    return mb_decode_numericentity(str_replace($replace, $find, $string), array(0x0, 0x10ffff, 0, 0xffffff), "UTF-8");
 }
 
 function fim_startsWith($haystack, $needle) {
