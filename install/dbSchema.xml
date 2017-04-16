@@ -421,7 +421,7 @@
             <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
             <!-- Caches -->
-            <column name="watchedBy" type="blob" maxlen="50000" comment="A CSV cache of the users watching this room." />
+            <column name="watchedByUserIds" type="blob" maxlen="50000" comment="A CSV cache of the users watching this room." />
 
 
             <key name="roomId" type="primary" />

@@ -61,7 +61,7 @@ class fimRoom {
         'lastMessageTime' => 'lastMessageTime',
         'lastMessageId' => 'lastMessageTime',
         'messageCount' => 'messageCount',
-        'watchedBy' => 'watchedBy',
+        'watchedByUserIds' => 'watchedBy',
         'flags' => 'flags'
     );
 
@@ -70,7 +70,7 @@ class fimRoom {
         ['defaultPermissions','options'],
         ['roomParentalFlags','roomParentalAge','roomTopic'],
         ['lastMessageTime','lastMessageId','messageCount','flags'],
-        ['watchedBy']
+        ['watchedByUserIds']
     );
 
     private $generalCache;
@@ -360,7 +360,7 @@ class fimRoom {
                     $this->watchedBy = $database->getWatchRoomUsers($this->id);
 
                     $database->update($database->sqlPrefix . "rooms", [
-                        "watchedBy" => $this->watchedBy
+                        "watchedByUserIds" => $this->watchedBy
                     ], [
                         "roomId" => $this->id,
                     ]);
@@ -371,7 +371,7 @@ class fimRoom {
                     $this->watchedBy = $database->getWatchRoomUsers($this->id);
 
                     $database->update($database->sqlPrefix . "rooms", [
-                        "watchedBy" => $this->watchedBy
+                        "watchedByUserIds" => $this->watchedBy
                     ], [
                         "roomId" => $this->id,
                     ]);
