@@ -470,6 +470,7 @@ class fimDatabase extends databaseSQL
             'parentalAgeMin'  => 0,
             'parentalAgeMax'  => 0,
             'includeContent'  => false,
+            'includeThumbnails'=> false,
         ), $options);
 
 
@@ -513,6 +514,15 @@ class fimDatabase extends databaseSQL
 
         if ($options['sizeMin'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'gte');
         if ($options['sizeMax'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'lte');
+
+
+        // Get Thumbnails, if Requested
+        if ($options['includeThumbnails']) {
+            $columns[$this->sqlPrefix . 'fileVersions'] .= ', versionId';
+            $columns[$this->sqlPrefix . 'fileVersionThumbnails'] = 'versionId tversionId, scaleFactor, width, height';
+
+            $conditions['both']['versionId'] = $this->col('tversionId');
+        }
 
 
         return $this->select($columns, $conditions, $sort);

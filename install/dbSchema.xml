@@ -140,12 +140,13 @@
         <table name="fileVersionThumbnails" type="general" comment="Thumbnails of files. Can be recreated from fileVersions. (TODO/USE)">
             <column name="versionId" fkey="fileVersions.versionId" type="int" maxlen="6" comment="A unique identifier for all file versions, regardless of each file." />
             <column name="scaleFactor" type="float" comment="The size of this thumbnail relative to the full image (e.g. a scale factor of .5 results in an image of half height and width.)" />
+            <column name="width" type="int" maxlen="6" comment="The width of the thumbnail." />
+            <column name="height" type="int" maxlen="6" comment="The height of the thumbnail." />
             <column name="salt" type="int" maxlen="6" comment="The salt number (stored in the product configuration) used for encryption." />
             <column name="iv" type="blob" maxlen="255" comment="The IV used for encryption." />
             <column name="contents" type="blob" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
 
-            <key name="versionId" type="primary" />
-            <key name="scaleFactor" type="index" />
+            <key name="versionId,scaleFactor" type="primary" />
         </table>
 
 

@@ -49,20 +49,50 @@ $request = fim_sanitizeGPC('g', array(
         'valid' => $config['parentalFlags'],
         'default' => $config['parentalFlagsDefault'],
     ),
-));
 
+    'thumbnailWidth' => array(
+        'cast' => 'int',
+    ),
+
+    'thumbnailHeight' => array(
+        'cast' => 'int',
+    ),
+));
+$includeThumbnails = $request['thumbnailHeight'] || $request['thumbnailWidth'];
 
 
 $file = $database->getFiles(array(
     'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
     'fileIds' => $request['fileId'] ? array($request['fileId']) : array(),
     'vfileIds' => $request['vfileId'] ? array($request['vfileId']) : array(),
-    'includeContent' => true
-))->getAsArray(false);
+    'includeContent' => ($includeThumbnails ? false : true),
+    'includeThumbnails' => ($includeThumbnails ? true : false),
+))->getAsArray($includeThumbnails ? true : false);
+
+if ($includeThumbnails) {
+    $filesIndexed = [];
+
+    /* This algorithm is probably imperfect. It still could use someone to give it a lookover. */
+    foreach ($file AS $index => $f) {
+        $score = ($request['thumbnailWidth'] ? abs($request['thumbnailWidth'] - $f['width']) / $f['width'] : 1) * ($request['thumbnailHeight'] ? abs($request['thumbnailHeight'] - $f['height']) / $f['height'] : 1);
+
+        $filesIndexed[$score * 1000] = $index;
+    }
+    ksort($filesIndexed);
+
+    $file = $file[array_values($filesIndexed)[0]];
+
+    $thumbnail = $database->select([$database->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents, iv, salt"], ["versionId" => $file['versionId'], "scaleFactor" => $file['scaleFactor']])->getAsArray(false);
+    $file['contents'] = fim_decrypt($thumbnail['contents'], $thumbnail['salt'], $thumbnail['iv']);
+}
+
+
 
 
 
 /* Start Processing */
+
+
 if ($config['parentalEnabled']) {
     if ($file['parentalAge'] > $request['parentalAge']) $parentalBlock = true;
     elseif (fim_inArray($request['parentalFlags'], explode(',', $file['parentalFlags']))) $parentalBlock = true;
