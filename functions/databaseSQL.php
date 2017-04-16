@@ -1854,7 +1854,7 @@ LIMIT
      * @return bool|resource
      * @throws exception
      */
-    public function insert($table, $dataArray, $updateArray = false)
+    public function insert($tableName, $dataArray)
     {
         /* Partitioning */
         if (isset($this->hardPartitions[$tableName])) {

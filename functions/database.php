@@ -568,7 +568,7 @@ abstract class database
      * @return bool - True on success, false on failure.s
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    abstract public function insert($table, $dataArray, $updateArray = false);
+    abstract public function insert($table, $dataArray);
 
 
     /**
