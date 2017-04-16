@@ -379,14 +379,6 @@ $.when(
         $('#showFewerRooms').bind('click', function() { $('#roomListLong').slideUp(); $('#roomListShort').slideDown(); });
 
 
-        /*** Youtube Videos for Uploads ***/
-        jQTubeUtil.init({
-            key: 'AI39si5_Dbv6rqUPbSe8e4RZyXkDM3X0MAAtOgCuqxg_dvGTWCPzrtN_JLh9HlTaoC01hCLZCxeEDOaxsjhnH5p7HhZVnah2iQ',
-            orderby: 'relevance',  // *optional -- 'viewCount' is set by default
-            maxResults: 40   // *optional -- defined as 10 results by default
-        });
-
-
         /*** Send Messages, Yay! ***/
         $('#sendForm').bind('submit', function() {
             var message = $('textarea#messageInput').val();
