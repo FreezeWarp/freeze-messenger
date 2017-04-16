@@ -1,3 +1,4 @@
+<?php $ignoreLogin = true; ?>
 <!DOCTYPE HTML>
 <!-- Original Source Code Copyright © 2014 Joseph T. Parsons. -->
 <!-- TODO: Localisation for Dates -->
@@ -54,7 +55,6 @@
 
   <script src="../webpro/client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
   <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
-  <script src="../webpro/client/js/encrypt.js" type="text/javascript"></script>
 
   <script>
   function windowDraw() {
@@ -165,7 +165,6 @@
 
       $crA = array(
         'apiVersion' => '3',
-        'passwordEncrypt' => 'sha256',
         'userName' => $_POST['userName'],
         'email' => $_POST['email'],
         'password' => $_POST['password'],
@@ -187,8 +186,7 @@
         echo '<form action="" onsubmit="window.history.back(); return false;" action="./index.php?stage=2">Error "' . $result['sendUser']['errStr'] . '": ' . $result['sendUser']['errDesc'] . '<br /><br /><input type="submit" value="Go back." /></form>';
       }
       else {
-        var_dump(!isset($result['sendUser'])); var_dump($result); die();
-        echo 'You are now registered as "' . $result['sendUser']['activeUser']['userName'] . '".<br /><br /><a href="../">Return to chat interface.</a>';
+        echo 'You are now registered as "' . $request['userName'] . '".<br /><br /><a href="../">Return to chat interface.</a>';
       }
     }
 

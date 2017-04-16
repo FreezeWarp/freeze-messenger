@@ -27,7 +27,6 @@ $defaultConfig = array(
     /* Vanilla Users */
     'ageRequired' => true,
     'ageMinimum' => 13,
-    'ageMaximum' => 100,
 
     'emailRequired' => false, // The vanilla subsystem can function without email, and in truth, its not even used for anything in FIMv3 (where Vanilla is very IRC-like).
 
@@ -278,7 +277,7 @@ $defaultConfig = array(
         'tgz' => 'application/x-compressed-tar',
         'tbz2' => 'application/x-compressed-tar',
     ),
-    'uploadMimeProof' => array( // When uploading files, we don't normally ensure a file is what it says (that's kinda hard). The mimetypes in uploadMimes will be checked against the detected mime type, however, if you include it here.
+    'uploadMimeProof' => array( // When uploading files, we don't normally ensure a file is what it says (that's kinda hard). The mimetypes in uploadMimes will be checked against the PHP-detected mime type, however, if you include it here.
         'gif', 'jpg', 'png',
     ),
     'uploadSizeLimits' => array(

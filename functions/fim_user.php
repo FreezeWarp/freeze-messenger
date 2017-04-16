@@ -34,8 +34,10 @@ class fimUser
     private $defaultRoomId;
     private $profile;
     private $options;
+    private $email;
 
     private $joinDate;
+    private $birthDate = 0;
 
     private $favRooms = [];
     private $watchRooms = [];
@@ -62,6 +64,8 @@ class fimUser
         'userName' => 'name',
         'userNameFormat' => 'userNameFormat',
         'joinDate' => 'joinDate',
+        'birthDate' => 'birthDate',
+        'email' => 'email',
 
         'userGroupId' => 'mainGroupId',
         'socialGroupIds' => 'socialGroupIds',
@@ -97,12 +101,13 @@ class fimUser
 
     private static $userDataPullGroups = array(
         'userId,userName,privs,lastSync',
-        'userGroupId,socialGroupIds,userParentalFlags,userParentalAge',
+        'userGroupId,socialGroupIds,userParentalFlags,userParentalAge,birthdate',
         'joinDate,messageFormatting,profile,avatar,userNameFormat',
         'options,defaultRoomId',
         'passwordHash,passwordFormat',
         'fileCount,fileSize',
-        'favRoomIds,watchRoomIds,ignoredUserIds,friendedUserIds'
+        'favRoomIds,watchRoomIds,ignoredUserIds,friendedUserIds',
+        'email'
     );
 
 
