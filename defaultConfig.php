@@ -344,6 +344,7 @@ $defaultConfig = array(
         'tgz' => 50 * 1024 * 1024, // 50MB
         'tbz2' => 50 * 1024 * 1024, // 50MB
     ),
+    'blockFrames' => true, // bool This controls whether we attempt to block uploaded files from being used in HTML frames, in effect blocking HTML files from being embedded. It relies on HTTP headers, and thus is not perfect.
 
 
     /* Parental Controls */
