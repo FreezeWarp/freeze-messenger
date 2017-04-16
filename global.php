@@ -179,6 +179,12 @@ else {
     ], [
         $database->sqlPrefix . 'rooms' => 'roomId',
     ]);
+
+    /* These manipulate how data is partioned in a database. */
+    $database->setHardPartitions([
+        $database->sqlPrefix . 'messages' => ['roomId', 10],
+        $database->sqlPrefix . 'messagesCached' => ['roomId', 10],
+    ]);
 }
 
 

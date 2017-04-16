@@ -734,6 +734,9 @@ class databaseSQL extends database
     }
 
 
+    public function setHardPartitions($partitions) {
+        $this->hardPartitions = $partitions;
+    }
     public function close()
     {
         return $this->functionMap('close');
@@ -1224,7 +1227,7 @@ class databaseSQL extends database
      ******************* Table Functions *********************
      *********************************************************/
 
-    public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes = [], $partitionColumn = false)
+    public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes = [], $partitionColumn = false, $hardPartitionCount = 1)
     {
         if (!isset($this->tableTypes[$engine])) {
             $this->triggerError("Unrecognised Table Engine", array(
@@ -1373,8 +1376,8 @@ class databaseSQL extends database
             if ($column['default'] !== null) {
                 // We use triggers here when the SQL implementation is otherwise stubborn, but FreezeMessenger is designed to only do this when it would otherwise be tedious. Manual setting of values is preferred in most cases.
                 if ($column['default'] === '__TIME__') {
-                    $triggers[] = "DROP TRIGGER IF EXISTS {$tableName}_{$columnName}__TIME__;";
-                    $triggers[] = "CREATE TRIGGER {$tableName}_{$columnName}__TIME__ BEFORE INSERT ON $tableName FOR EACH ROW SET NEW.{$columnName} = IF(NEW.{$columnName}, NEW.{$columnName}, UNIX_TIMESTAMP(NOW()));";
+                    $triggers[] = "DROP TRIGGER IF EXISTS {TABLENAME}_{$columnName}__TIME__;";
+                    $triggers[] = "CREATE TRIGGER {TABLENAME}_{$columnName}__TIME__ BEFORE INSERT ON {TABLENAME} FOR EACH ROW SET NEW.{$columnName} = IF(NEW.{$columnName}, NEW.{$columnName}, UNIX_TIMESTAMP(NOW()));";
                 }
                 else if (isset($this->defaultPhrases[$column['default']]))
                     $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
@@ -1418,17 +1421,21 @@ class databaseSQL extends database
 
         $this->startTransaction();
 
-        $return = $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue('table', $tableName) . ' (
-' . implode(",\n  ", $columns) . (isset($indexes) ? ',
-' . implode(",\n  ", $indexes) : '') . '
-)'
-            . ($this->language === 'mysql' ? ' ENGINE=' . $this->formatValue('string', $engineName) : '')
-            . ' COMMENT=' . $this->formatValue('string', $tableComment)
-            . ' DEFAULT CHARSET=' . $this->formatValue('string', 'utf8') . $tableProperties
-            . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue('column', $partitionColumn) . ') PARTITIONS 100' : ''));
+        for ($i = 0; $i < $hardPartitionCount; $i++) {
+            $tableNameI = $tableName . ($hardPartitionCount > 1 ? "__part$i" : '');
 
-        foreach ($triggers AS $trigger) {
-            $return = $this->rawQuery($trigger) && $return; // Make $return false if any query return false.
+            $return = $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue('table', $tableNameI) . ' (
+    ' . implode(",\n  ", $columns) . (isset($indexes) ? ',
+    ' . implode(",\n  ", $indexes) : '') . '
+    )'
+                . ($this->language === 'mysql' ? ' ENGINE=' . $this->formatValue('string', $engineName) : '')
+                . ' COMMENT=' . $this->formatValue('string', $tableComment)
+                . ' DEFAULT CHARSET=' . $this->formatValue('string', 'utf8') . $tableProperties
+                . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue('column', $partitionColumn) . ') PARTITIONS 100' : ''));
+
+            foreach ($triggers AS $trigger) {
+                $return = $this->rawQuery(str_replace('{TABLENAME}', $tableNameI, $trigger)) && $return; // Make $return false if any query return false.
+            }
         }
 
         $this->endTransaction();
@@ -1849,6 +1856,10 @@ LIMIT
      */
     public function insert($table, $dataArray, $updateArray = false)
     {
+        /* Partitioning */
+        if (isset($this->hardPartitions[$tableName])) {
+            $tableName .= "__part" . $dataArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+        }
         if ($this->autoQueue)
             return $this->queueInsert($table, $dataArray);
 
@@ -1880,6 +1891,18 @@ LIMIT
      */
     public function delete($tableName, $conditionArray = false)
     {
+        if (isset($this->hardPartitions[$tableName])) {
+            $partitionAt = array_merge($this->partitionAt, $conditionArray);
+
+            if (!isset($partitionAt[$this->hardPartitions[$tableName][0]])) {
+                $this->triggerError("The table $tableName is partitoned. To delete from it, you _must_ specify the column " . $this->hardPartitions[$tableName][0] . ". Note that you may instead use partitionAt() if you know _any_ column that would apply to the partition (for instance, if you wish to delete the last row from a table before inserting a new one, you can specify the relevant condition using partitionAt().)");
+            }
+
+            $tableName .= "__part" . $partitionAt[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+        }
+
+        $this->partitionAt = [];
+
         if ($this->autoQueue)
             return $this->queueDelete($tableName, $conditionArray);
 
@@ -1900,6 +1923,17 @@ LIMIT
      */
     public function update($tableName, $dataArray, $conditionArray = false)
     {
+        if (isset($this->hardPartitions[$tableName])) {
+            if (!isset($conditionArray[$this->hardPartitions[$tableName][0]])) {
+                $this->triggerError("The table $tableName is partitoned. To update it, you _must_ specify the column " . $this->hardPartitions[$tableName][0]);
+            }
+            elseif (!isset($conditionArray[$this->hardPartitions[$tableName][0]])) {
+                $this->triggerError("The table $tableName is partitoned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
+            }
+
+            $tableName .= "__part" . $conditionArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+        }
+
         if ($this->autoQueue)
             return $this->queueUpdate($tableName, $dataArray, $conditionArray);
 

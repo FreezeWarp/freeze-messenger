@@ -47,14 +47,30 @@ abstract class database
     protected $sortArray = array();
     protected $limitArray = array();
 
+    protected $partitonAt = array();
+
     protected $autoQueue = false;
     protected $updateQueue = array();
     protected $deleteQueue = array();
     protected $insertQueue = array();
 
+    /**
+     * @var array Configuration data that modifies how data is stored on the way to the database, and on return.
+     * Database drivers are encourage to support, but not required to if they can natively process all core PHP datatypes, including arrays.
+     */
     public $encode = [];
+
+    /**
+     * @var array Configuration data that allows data to be manipulated (like above) and then copied to secondary columns.
+     * Database drivers are required to support.
+     */
     public $encodeCopy = [];
 
+    /**
+     * @var array Configuration data to allow individual rows to be partioned to seperate (but identical) tables for performance reasons
+     * Database drivers are not required to support.
+     */
+    public $hardPartitions = [];
     public $sqlPrefix;
 
 
@@ -493,6 +509,14 @@ abstract class database
 
         return $this;
     }
+
+    public function partitionAt($conditionArray)
+    {
+        $this->partitionAt = $conditionArray;
+
+        return $this;
+    }
+
 
 
     /**

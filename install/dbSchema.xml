@@ -250,7 +250,7 @@
         </table>
 
         <!-- partitionBy=roomId would be nice here, but doesn't work with strings. -->
-        <table name="messages" type="general" comment="User-created messages.">
+        <table name="messages" hardPartitions="10" type="general" comment="User-created messages.">
             <column name="messageId" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
             <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
@@ -289,7 +289,7 @@
 
 
         <!-- Longterm, we'll almost certainly be partioning these in a different way, I'm just not exactly sure what that is yet. This old method will still be useful for those that don't have support for the more efficient method. -->
-        <table name="messagesCached" type="memory" comment="A cache of user-created messages for scalibility.">
+        <table name="messagesCached" type="memory" hardPartitions="10" comment="A cache of user-created messages for scalibility.">
             <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique (temporary) ID for the message cache entry." />
             <column name="messageId" type="int" maxlen="9" />
             <column name="roomId" type="int" maxlen="6" />

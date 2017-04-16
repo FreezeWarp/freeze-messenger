@@ -1895,9 +1895,9 @@ class fimDatabase extends databaseSQL
 
 
         // Delete old messages from the cache, based on the maximum allowed rows.
-        if ($messageId2 > $config['cacheTableMaxRows']) {
-            $this->delete($this->sqlPrefix . "messagesCached" . ($room->isPrivateRoom() ? 'Private' : ''), [
-                'id' => $this->int($messageId2 - $config['cacheTableMaxRows'], 'lte')
+        if ($messageId2 > $config['messageCacheTableMaxRows']) { echo $messageId2; echo ' '; echo $config['messageCacheTableMaxRows']; die('huh?');
+            $this->partitionAt(['roomId' => $room->id])->delete($this->sqlPrefix . "messagesCached" . ($room->isPrivateRoom() ? 'Private' : ''), [
+                'id' => $this->int($messageId2 - $config['messageCacheTableMaxRows'], 'lte')
             ]);
         }
 
