@@ -87,6 +87,21 @@ if ($includeThumbnails) {
 }
 
 
+/* Set File Security Controls */
+// Our mimetype should be considered authoritative. We do this to allow flexibility in controlling file uploads; as we use mimetypes to define content controls, being able to subvert a mimetype would substantially weaken our assumptions.
+// (For instance, when a user uploads a .jpg file, we don't test to see if it is, in-fact, a JPEG file. This would be very difficult to do for all files, of-course, and we want to allow administrators flexibility in deciding what filetypes can be uploaded. Instead, we just assume that it is, in-fact, a JPEG file, and send it with the JPEG mimetype (as defined by the administrator). The client sees this mimetype and knows that it should load it as a JPEG. If it assumes that it is, instead, a textfile, then the filesize limit on textfiles could be ignored by disguising them as JPEGs. If it assumes that it is an EXE, then users could upload viruses disguised as JPEG files.)
+header('X-Content-Type-Options: nosniff');
+
+// Some extra protection to prevent our files from being used in XSS.
+header("X-XSS-Protection: 1; mode=block");
+
+// We don't really want our files to be used for rendering HTML pages.
+if ($config['blockFrames']) header("X-Frame-Options: DENY");
+
+
+/* Set File Caching Controls */
+// Because we identify files by their SHA hashes, and internally expect no collisions to occur, tell the browsers that files should never have to be revalidated.
+header("Cache-Control: public, max-age=365000000, immutable");
 
 
 
