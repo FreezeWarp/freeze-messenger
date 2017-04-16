@@ -3,14 +3,14 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head>
-    <title data-contextLabel="brandingTitle">FreezeLinux</title>
+    <title data-contextLabel="brandingTitle">The Frigid Messenger</title>
 
     <meta http-equiv="Content-type" value="text/html; charset=utf-8" />
     <meta http-equiv="Encoding" content="utf-8">
     <meta name="robots" content="index, follow" />
     <meta name="author" content="Joseph Parsons" />
     <meta name="keywords" content="im, instant messenger, awesomeness" />
-    <meta name="description" content="Awesomenss provided by FreezeMessenger: we're awesome[ness]." />
+    <meta name="description" content="Frozen in time, frozen in space, and will probably crash on you a lot." />
 
     <link rel="icon" id="favicon" type="image/x-icon" href="images/favicon.ico" />
 
