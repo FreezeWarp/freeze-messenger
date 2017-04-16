@@ -207,7 +207,7 @@ else {
         }
 
         foreach ($messages AS $id => $message) {
-            $message['text'] = fim_decrypt($message['text'], $message['salt'], $message['iv']);var_dump($message);
+            $message['text'] = fim_decrypt($message['text'], $message['salt'], $message['iv']);
 
             switch ($request['encode']) {
             case 'plaintext': break; // All Good
