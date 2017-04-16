@@ -421,9 +421,9 @@ $defaultConfig = array(
     'messageIndexCounter' => 1000, // If changed, rebuild the messageIndex table!
     'messageTimesCounter' => 60 * 60 * 24, // If changed, rebuild the messageTimes table!
 
-    'apiPause' => .125,
+    'apiPause' => 0, // float Delays all API requests by a fixed amount. Good for preventing overloading in some cases, but in practice better served by limiting number of connections by a single IP. (Which is up to you to do in your webserver configuration.)
 
-    'cacheTableMaxRows' => 100,
+    'messageCacheTableMaxRows' => 500, // int The maximum number of rows to be stored in the MessagesCached table. If hard partioning is enabled (as is default), the effective size of the table will be many times of this, but spread across the memory.
 
     'enableUnreadMessages' => true,
     'enableWatchRooms' => true,
