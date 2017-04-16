@@ -580,24 +580,27 @@ class fimUser
         if ($this->id) {
             $database->startTransaction();
 
-            if ($existingUserData = $database->getUsers(array(
-                'userIds' => array($this->id),
-                'columns' => $database->userHistoryColumns,
-            ))->getAsArray(false)) {
-                $database->insert($database->sqlPrefix . "userHistory", [
-                    "userId" => $existingUserData['userId'],
-                    "userName" => $existingUserData['userName'],
-                    "userNameFormat" => $existingUserData['userNameFormat'],
-                    "profile" => $existingUserData['profile'],
-                    "avatar" => $existingUserData['avatar'],
-                    "userGroupId" => $existingUserData['userGroupId'],
-                    "socialGroupIds" => $existingUserData['socialGroupIds'],
-                    "messageFormatting" => $existingUserData['messageFormatting'],
-                    "options" => (int) $existingUserData['options'],
-                    "userParentalAge" => (int) $existingUserData['userParentalAge'],
-                    "userParentalFlags" => $existingUserData['userParentalFlags'],
-                    "privs" => (int) $existingUserData['privs']
-                ]);
+            if (fim_inArray(array_keys($databaseFields), $database->userHistoryColumns)) {
+                if ($existingUserData = $database->getUsers(array(
+                    'userIds' => array($this->id),
+                    'columns' => $database->userHistoryColumns,
+                ))->getAsArray(false)
+                ) {
+                    $database->insert($database->sqlPrefix . "userHistory", [
+                        "userId" => $existingUserData['userId'],
+                        "userName" => $existingUserData['userName'],
+                        "userNameFormat" => $existingUserData['userNameFormat'],
+                        "profile" => $existingUserData['profile'],
+                        "avatar" => $existingUserData['avatar'],
+                        "userGroupId" => $existingUserData['userGroupId'],
+                        "socialGroupIds" => $existingUserData['socialGroupIds'],
+                        "messag6eFormatting" => $existingUserData['messageFormatting'],
+                        "options" => (int)$existingUserData['options'],
+                        "userParentalAge" => (int)$existingUserData['userParentalAge'],
+                        "userParentalFlags" => $existingUserData['userParentalFlags'],
+                        "privs" => (int)$existingUserData['privs']
+                    ]);
+                }
             }
 
             $return = $database->upsert($database->sqlPrefix . "users", array(
