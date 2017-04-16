@@ -302,7 +302,7 @@
             <column name="userNameFormat" type="string" maxlen="100" comment="CSS-formatting to be applied to the user's name." />
             <column name="messageFormatting" type="string" maxlen="300" />
             <column name="time" default="__TIME__" type="time" />
-            <column name="text" type="blob" maxlen="5000" />
+            <column name="text" type="string" maxlen="1000" />
             <column name="flag" type="string" maxlen="10" />
 
             <trigger lang="postgres" comment="A trigger that watches the messagesCached table, returning results in JSON. By default the returned JSON _cannot_ be greater than 8,000 bytes.">
