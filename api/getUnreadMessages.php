@@ -21,7 +21,7 @@
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2014
-*/
+ */
 
 $apiRequest = true;
 
@@ -33,67 +33,67 @@ require('../global.php');
 
 /* Data Predefine */
 $xmlData = array(
-  'getUnreadMessages' => array(
-    'unreadMessages' => array(),
-  ),
+    'getUnreadMessages' => array(
+        'unreadMessages' => array(),
+    ),
 );
 
 $queryParts['unreadMessages']['columns'] = array(
-  "{$sqlPrefix}unreadMessages" => array(
-    'userId' => 'userId',
-    'senderId' => 'senderId',
-    'roomId' => 'roomId',
-    'messageId' => 'messageId',
-  ),
+    "{$sqlPrefix}unreadMessages" => array(
+        'userId' => 'userId',
+        'senderId' => 'senderId',
+        'roomId' => 'roomId',
+        'messageId' => 'messageId',
+    ),
 );
 $queryParts['unreadMessages']['conditions'] = array(
-  'both' => array(
-    array(
-      'type' => 'e',
-      'left' => array(
-        'type' => 'column',
-        'value' => 'userId',
-      ),
-      'right' => array(
-        'type' => 'int',
-        'value' => $user['userId'],
-      )
+    'both' => array(
+        array(
+            'type' => 'e',
+            'left' => array(
+                'type' => 'column',
+                'value' => 'userId',
+            ),
+            'right' => array(
+                'type' => 'int',
+                'value' => $user['userId'],
+            )
+        )
     )
-  )
 );
 $queryParts['unreadMessages']['sort'] = array(
-  'messageId' => 'asc',
+    'messageId' => 'asc',
 );
 
 
 
 /* Get Unread Messages from Database */
 if (!$user['userId']) {
-  $errStr = 'loginRequired';
-  $errDesc = 'You must be logged in to get your unread messages.';
+    $errStr = 'loginRequired';
+    $errDesc = 'You must be logged in to get your unread messages.';
 }
 elseif ($continue) {
-  $unreadMessages = $database->select($queryParts['unreadMessages']['columns'],
-    $queryParts['unreadMessages']['conditions'],
-    $queryParts['unreadMessages']['sort']);
-  $unreadMessages = $unreadMessages->getAsArray('messageId');
+    $unreadMessages = $database->select($queryParts['unreadMessages']['columns'],
+                                        $queryParts['unreadMessages']['conditions'],
+                                        $queryParts['unreadMessages']['sort']);
+    $unreadMessages = $unreadMessages->getAsArray('messageId');
 }
 
 
 
 /* Start Processing */
 if ($continue) {
-  if (is_array($unreadMessages)) {
-    if (count($unreadMessages) > 0) {
-      foreach ($unreadMessages AS $unreadMessage) {
-        $xmlData['getUnreadMessages']['unreadMessages']['unreadMessage ' . $unreadMessage['messageId']] = array(
-          'messageId' => (int) $unreadMessage['messageId'],
-          'senderId' => (int) $unreadMessage['senderId'],
-          'roomId' => (int) $unreadMessage['roomId'],
-        );
-      }
+    if (is_array($unreadMessages)) {
+        if (count($unreadMessages) > 0) {
+            foreach ($unreadMessages AS $unreadMessage) {
+                $xmlData['getUnreadMessages']['unreadMessages']['unreadMessage ' . $unreadMessage['messageId']] = array(
+                    'messageId' => (int) $unreadMessage['messageId'],
+                    'senderId' => (int) $unreadMessage['senderId'],
+                    'roomId' => (int) $unreadMessage['roomId'],
+                );
+            }
+        }
     }
-  }
 }
 
 
