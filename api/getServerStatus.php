@@ -114,7 +114,6 @@ $apiData = new apiData(array(
       'registrationPolicies' => array(
         'ageRequired' => (bool) $config['ageRequired'],
         'ageMinimum' => (int) $config['ageMinimum'],
-        'ageMaximum' => (int) $config['ageMaximum'],
         'emailRequired' => (bool) $config['emailRequired'],
       ),
 
@@ -124,13 +123,12 @@ $apiData = new apiData(array(
         'maxAll' => (int) $config['uploadMaxFiles'],
         'maxUser' => (int) $config['uploadMaxUserFiles'],
         'chunkSize' => (int) $config['fileUploadChunkSize'],
-        'emptyFiles' => (bool) $config['allowEmptyFiles'],
         'orphanFiles' => (bool) $config['allowOrphanFiles'],
         'allowedExtensions' => new apiOutputList($config['allowedExtensions']),
         'mimes' => new apiOutputList($config['uploadMimes']),
         'extensionChanges' => $config['extensionChanges'],
         'fileContainers' => $config['fileContainers'],
-        'mimeProofs' => $config['uploadMimeTypes'],
+        'fileProofs' => $config['uploadMimeProof'],
         'sizeLimits' => $config['uploadSizeLimits'],
       ),
 
@@ -158,8 +156,8 @@ $apiData = new apiData(array(
         'emoticons' => $smilies2,
       ),
 
-      'outputBuffer' => array(
-        'comressOutput' => (bool) $config['compressOutput'],
+      'cacheDelays' => array(
+        'censorLists' => $config['censorBlackWhiteListsCacheRefresh'],
       ),
 
       'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk. We will, however, display the base version.

@@ -177,7 +177,7 @@ class fimCache extends generalCache {
     }
 
 
-    public function getCensorListsNew($listIndex, $roomIndex) {    global $sqlPrefix;
+    public function getCensorListsNew($listIndex, $roomIndex) {
         if ($this->issetMemory('fim_censorLists')) {
             $censorLists = $this->getMemory('fim_censorLists');
         }
@@ -416,6 +416,11 @@ class fimConfig extends fimCache implements ArrayAccess {
 
 
             $this->storeMemory('fim_config', $config, $config['configCacheRefresh']);
+        }
+
+        // sure, we'd get this same error if notices were on, but I'm an idiot who has too many notices to be able to do that.
+        if ($index && !isset($this->container[$index])) {
+            throw new Exception('Invalid config entry requested: ' . $index);
         }
 
         return $this->container[$index];

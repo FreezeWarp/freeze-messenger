@@ -112,7 +112,7 @@ else {
     $request = fim_sanitizeGPC('g', array(
         'queryId' => array(
             'require' => true,
-            'cast' => 'int',
+            'cast' => 'roomId',
             'evaltrue' => true,
         ),
         'streamType' => array(
