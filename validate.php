@@ -137,7 +137,9 @@ else if (isset($_REQUEST['grant_type'])) {
     }
 
     die();
-} /* If access_token has been passed, then we are evaluating a token. */
+}
+
+/* If access_token has been passed, then we are evaluating a token. */
 elseif (isset($_REQUEST['access_token'])) {
     if (!$attempt = $oauthServer->verifyResourceRequest($oauthRequest)) {
         $oauthServer->getResponse()->send();
@@ -148,10 +150,12 @@ elseif (isset($_REQUEST['access_token'])) {
         $user = new fimUser((int) $oauthServer->getResourceController()->getToken()['user_id']);
     }
 }
+
 else {
     new fimError('noLogin', 'Please specify login credentials.');
 }
 
 
+$database->registerUser($user);
 define('FIM_LOGINRUN', true);
 ?>

@@ -238,6 +238,7 @@ $generalCache = new fimCache($cacheConnect['servers'], $cacheConnect['driver'], 
 
 // Get Configuration Data
 $config = new fimConfig($cacheConnect['servers'], $cacheConnect['driver'], $database, $slaveDatabase);
+$database->registerConfig($config);
 $database->queryLogToFile = ($config['logQueries'] ? $config['logQueriesFile'] : false);
 
 
