@@ -218,7 +218,7 @@ class fimRoom {
     public function roomExists() {
         global $database;
 
-        return (count($database->getRooms([
+        return $this->isPrivateRoom() || (count($database->getRooms([
             'roomIds' => $this->id,
         ])->getAsArray(false)) > 0);
     }

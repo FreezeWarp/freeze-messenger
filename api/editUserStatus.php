@@ -33,7 +33,7 @@ require('../global.php');
 $request = fim_sanitizeGPC('p', array(
     'roomIds' => array(
         'cast' => 'list',
-        'filter' => 'int',
+        'filter' => 'roomId',
         'require' => true,
     ),
 
@@ -49,23 +49,16 @@ $request = fim_sanitizeGPC('p', array(
 
 
 /* Get Room Data */
-$rooms = $slaveDatabase->getRooms(array(
-    'roomIds' => $request['roomIds'],
-))->getAsRooms();
+foreach ($request['roomIds'] AS $roomId) {
+    $room = new fimRoom($roomId);
 
-
-
-if (!count($rooms)) new fimError('invalidRooms', 'The rooms specified do not exist.');
-else {
-    foreach ($rooms AS $room) {
-        if ($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW)
-            $database->setUserStatus($room->id);
-    }
+    if ($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW)
+        $database->setUserStatus($room->id, $request['status'],  $request['typing']);
 }
 
 
 $xmlData = array(
-    'reponse' => array(),
+    'response' => array(),
 );
 
 
