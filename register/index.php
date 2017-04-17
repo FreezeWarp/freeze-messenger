@@ -141,7 +141,8 @@
               <select id="birthyear" name="birthyear">
                 <option value="0"></option>';
 
-                for ($year = (intval(date('Y')) - ($config['ageMaximum'] + 1)); $year <= (intval(date('Y')) - $config['ageMinimum']); $year++) {
+                // 150 years into the future seems... reasonable.
+                for ($year = (intval(date('Y')) + 150); $year <= (intval(date('Y')) - $config['ageMinimum']); $year++) {
                   echo '<option value=' . $year . '>' . $year . '</option>';
                 }
 
