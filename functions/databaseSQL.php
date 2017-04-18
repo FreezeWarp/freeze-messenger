@@ -1986,8 +1986,17 @@ LIMIT
     private function deleteCore($tableName, $conditionArray = false) {
         return $this->rawQuery(
             'DELETE FROM ' . $this->formatValue('table', $tableName) .
-            ' WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, false, 'both', $tableName) : 'TRUE')
+            ' WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, $this->reverseAliasFromConditionArray($tableName, $conditionArray), 'both', $tableName) : 'TRUE')
         );
+    }
+
+
+    private function reverseAliasFromConditionArray($tableName, $conditionArray) {
+        $reverseAlias = [];
+        foreach ($conditionArray AS $column => $value) {
+            $reverseAlias[$column] = [$tableName, $column];
+        }
+        return $reverseAlias;
     }
 
 
@@ -2027,7 +2036,7 @@ LIMIT
             return $this->rawQuery(
                 'UPDATE ' . $this->formatValue('table', $tableName) .
                 ' SET ' . $this->formatValue('tableUpdateArray', $tableName, $dataArray) .
-                ' WHERE ' . $this->recurseBothEither($conditionArray, false, 'both', $tableName)
+                ' WHERE ' . $this->recurseBothEither($conditionArray, $this->reverseAliasFromConditionArray($tableName, $conditionArray), 'both', $tableName)
             );
     }
 
