@@ -15,7 +15,9 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Get the Active User's Unread Messages
+ * Get the Active User's Unread Messages.
+ * An "unread message" is created whenever a message is inserted into a room watched by a user, or a private room that that user is a part of, and the user does not appear to be online (according to the ping table/database->getActiveUsers()).
+ * If a user is online, new messages in *private* rooms will instead be sent to the user's event stream. Due to possible backend limitations, messages in *watched* rooms that the user is not in (but is online) will still be recorded here. As a result, having a poll of getUnreadMessages.php, and a stream from events.php?user=x is recommended, the two attempt to be mutually exclusive. If the client does not support event streaming, there will be no way to query new messages to private rooms; they are not logged here, to avoid concerns with managing duplication.
  *
  * @package fim3
  * @version 3.0

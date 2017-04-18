@@ -25,9 +25,10 @@
 
  * Primary Directives:
  * @param string roomId - The ID of the room to fetch messages from.
+ * @param bool archive - Whether to query from the archive. Note that by design, the returned messages when not querying the archive will typically only be around ~10s old; if you are querying less than every ~10s, using the archive for every query may be ideal. (However, the archive is slower and harder on the server; you should try to query less than every 10s if at all possible, and only use the archive for initial requests and for viewing past messages.)
  * @param int [messageLimit=1000] - The maximum number of posts to receive, defaulting to the internal limit of (in most cases) 1000. This should be high, as all other conditions (roomId, deleted, etc.) are applied after this limit.
  * @param int [messageHardLimit=40] - An alternative, generally lower limit applied once all messages are obtained from the server (or via the LIMIT clause of applicable). In other words, this limits the number of results AFTER roomId, etc. restrictions have been applied.
- * @param timestamp [messageDateMin=null] - Thearliest a post could have been made. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
+ * @param timestamp [messageDateMin=null] - The earliest a post could have been made. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
  * @param timestamp [messageDateMax=null] - The latest a post could have been made. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
  * @param int [messageIdMin=null] - All posts must be after this ID. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
  * @param int [messageIdMax=null] - All posts must before this ID. Use of messageDateMax only makesense with no messageLimit. Do not specify to prevent checking.
@@ -39,7 +40,7 @@
  * @param string [encode=plaintext] - Thencoding of messages to be used on retrieval. "plaintext" is the only accepted format currently.
 
  * Filters:
- * @param bool [showDeleted=false] - Whether or noto show deleted messages. You will need to be a roomoderator. This directive only has an effect on the archive, as the cache does not retain deleted messages.
+ * @param bool [showDeleted=false] - Whether or not to show deleted messages. You will need to be a room moderator. This directive only has an effect on the archive, as the cache does not retain deleted messages.
  * @param string [search=null] - A keyword that can be used for searching through the archive. It will overwrite messages.
  * @param string [messages=null] - A comma seperated list of message IDs thathe results will be limited to. It is only intended for use withe archive, and will be over-written withe results of the search directive if specified.
  * @param string users - A comma seperated list of users to restrict message retrieval to. This most useful for archive scanning, though can in theory be used withe message cache as well.
