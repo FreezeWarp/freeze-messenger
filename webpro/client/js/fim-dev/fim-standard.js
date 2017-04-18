@@ -22,10 +22,15 @@ standard.prototype.archive = {
 
         $('#searchText, #resultLimit, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
 
-        $('#searchText, #resultLimit, #searchUser').bind('change', function() {
+        $('#searchText, #resultLimit').bind('change', function() {
             standard.archive.update($(this).attr('id'), $(this).val());
             standard.archive.retrieve();
         });
+
+        $('#searchUser').bind('change', function() {
+            standard.archive.update($(this).attr('id'), $(this).attr('data-id'));
+            standard.archive.retrieve();
+        })
 
         $('#archiveNext').bind('click', function() {
             standard.archive.nextPage();
@@ -80,7 +85,7 @@ standard.prototype.archive = {
     },
 
     update : function (option, value) {
-        standard.archive. options[option] = value;
+        standard.archive.options[option] = value;
     }
 };
 
@@ -132,7 +137,6 @@ standard.prototype.login = function(options) {
                 /*** A Hack of Sorts to Open Dialogs onLoad ***/
                 if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
             }
-
             return false;
         },
         error: function(data) {

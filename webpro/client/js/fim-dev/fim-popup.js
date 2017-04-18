@@ -1170,7 +1170,10 @@ popup = {
             title : 'Archive',
             id : 'archiveDialogue',
             position : 'top',
-            width : 1000
+            width : 1000,
+            oF : function() {
+                $('#searchUser').autocompleteHelper('users')
+            }
         });
 
         standard.archive.init({

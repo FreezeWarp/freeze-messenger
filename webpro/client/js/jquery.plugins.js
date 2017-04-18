@@ -930,7 +930,7 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
  */
 (function($) {
     /** jGrowl Wrapper - Establish a base jGrowl Container for compatibility with older releases. **/
-    $.jGrowl = function( m , o ) {
+        $.jGrowl = function( m , o ) {
         // To maintain compatibility with older version that only supported one instance we'll create the base container.
         if ( $('#jGrowl').size() == 0 )
             $('<div id="jGrowl"></div>').addClass( (o && o.position) ? o.position : $.jGrowl.defaults.position ).appendTo('body');
@@ -1163,15 +1163,23 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
 
 
 jQuery.fn.extend({autocompleteHelper : function(resourceName) {
+    var lastValue;
+
     this.autocomplete({
         source: fimApi.acHelper(resourceName),
         select: function (event, ui) {
+            lastValue = ui.item.label;
+
             $(event.target).val(ui.item.label);
             $(event.target).attr('data-id', ui.item.value);
 
             return false;
+        },
+        change : function(event) {
+            $(event.target).attr('data-id', '');
         }
     });
+
 
     return this;
 }});
