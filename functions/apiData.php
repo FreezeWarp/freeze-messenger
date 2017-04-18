@@ -6,6 +6,7 @@ class apiData {
     private $xmlEntitiesReplace;
     private $xmlAttrEntitiesFind;
     private $xmlAttrEntitiesReplace;
+    public $jsonDepthLimit = 15;
 
 
     public function __construct($data = false, $format = false) {
@@ -44,10 +45,6 @@ class apiData {
         }
     }
 
-    public function s() {
-        return this.__toString();
-    }
-
 
     /**
      * Encodes a string as specifically-formatted XML data, converting "&", "'", '"', "<", and ">" to their equivilent values.
@@ -81,41 +78,48 @@ class apiData {
      * @return string
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    private function outputJson($array) {
+    private function outputJson($array, $depth = 0) {
+        if ($depth > $this->jsonDepthLimit) return '"<<cut>>"';
+
         $data = array();
 
         foreach ($array AS $key => $value) {
-            $data[] = '"' . $key . '":' . $this->formatJsonValue($value);
+            $data[] = '"' . $key . '":' . $this->formatJsonValue($value, $depth++);
         }
 
         return '{'. implode(",", $data) . '}';
     }
 
 
-    private function outputJsonArray($array) {
+    private function outputJsonArray($array, $depth = 0) {
+        if ($depth > $this->jsonDepthLimit) return '"<<cut>>"';
+
         $data = array();
 
         foreach ($array AS $value)
-            $data[] = $this->formatJsonValue($value);
+            $data[] = $this->formatJsonValue($value, $depth++);
 
         return '['. implode(",", $data) . ']';
     }
 
 
-    function formatJsonValue($value) {
+    function formatJsonValue($value, $depth = 0) {
+        if ($depth > $this->jsonDepthLimit) return '"<<cut>>"';
+
         if (is_array($value)) {
             // http://stackoverflow.com/a/5969617
             for (reset($value); is_int(key($value)); next($value));
             if (is_null(key($value))) // The array is not associative (well, doesn't have non-numeric keys)
-                return $this->outputJsonArray($value);
+                return $this->outputJsonArray($value, $depth++);
             else
-                return $this->outputJson($value);
+                return $this->outputJson($value, $depth++);
         }
+
         elseif (is_object($value) && get_class($value) === 'apiOutputDict') {
             $values = $value->getArray();
 
             if (count($values)) {
-                foreach ($values AS $key => &$v) $v = "\"$key\": " . $this->formatJsonValue($v);
+                foreach ($values AS $key => &$v) $v = "\"$key\": " . $this->formatJsonValue($v, $depth++);
                 return '{' . implode(',', $values) . '}';
             }
             else {
@@ -126,7 +130,7 @@ class apiData {
             $values = $value->getArray();
 
             if (count($values)) {
-                foreach ($values AS &$v) $v = $this->formatJsonValue($v);
+                foreach ($values AS &$v) $v = $this->formatJsonValue($v, $depth++);
                 return '[' . implode(',', $values) . ']';
             }
             else {
@@ -134,21 +138,21 @@ class apiData {
             }
         }
         elseif (is_object($value))
-            return $this->formatJsonValue(get_object_vars($value));
+            return $this->formatJsonValue(get_object_vars($value), $depth++);
         elseif ($value === true)
             return 'true';
         elseif ($value === false)
             return 'false';
         elseif (is_string($value)) {
             // mb_convert_encoding removes non-UTF8 characters, ensuring that json_encode doesn't fail.
-            return json_encode(function_exists("mb_convert_encoding") ? mb_convert_encoding($value, "UTF-8", "UTF-8") : $value, JSON_PARTIAL_OUTPUT_ON_ERROR);
+            return json_encode(function_exists("mb_convert_encoding") ? mb_convert_encoding($value, "UTF-8", "UTF-8") : $value, JSON_PARTIAL_OUTPUT_ON_ERROR, 1);
         }
         elseif (is_int($value) || is_float($value))
             return $value;
         elseif ($value == '')
             return '""';
-        else
-            die('Unrecognised value type:' . gettype($value)); // We die() instead of throwing here in order to avoid recursion with the stacktrace.
+        //else
+        //    die('Unrecognised value type:' . gettype($value)); // We die() instead of throwing here in order to avoid recursion with the stacktrace.
     }
 
 
