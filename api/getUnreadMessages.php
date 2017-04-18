@@ -35,75 +35,21 @@ require('../global.php');
 
 /* Data Predefine */
 $xmlData = array(
-    'getUnreadMessages' => array(
-        'unreadMessages' => array(),
-    ),
-);
-
-$queryParts['unreadMessages']['columns'] = array(
-    "{$sqlPrefix}unreadMessages" => array(
-        'userId' => 'userId',
-        'senderId' => 'senderId',
-        'roomId' => 'roomId',
-        'messageId' => 'messageId',
-    ),
-);
-$queryParts['unreadMessages']['conditions'] = array(
-    'both' => array(
-        array(
-            'type' => 'e',
-            'left' => array(
-                'type' => 'column',
-                'value' => 'userId',
-            ),
-            'right' => array(
-                'type' => 'int',
-                'value' => $user['userId'],
-            )
-        )
-    )
-);
-$queryParts['unreadMessages']['sort'] = array(
-    'messageId' => 'asc',
+    'unreadMessages' => array(),
 );
 
 
 
 /* Get Unread Messages from Database */
-if (!$user['userId']) {
-    $errStr = 'loginRequired';
-    $errDesc = 'You must be logged in to get your unread messages.';
+if (!$user->isValid() || $user->isAnonymousUser())
+    throw new fimError('loginRequired', 'You must be logged in to get your unread messages.');
+
+
+$unreadMessages = $database->getUnreadMessages()->getAsArray(true);
+
+foreach ($unreadMessages AS $unreadMessage) {
+    $xmlData['unreadMessages']['unreadMessage ' . $unreadMessage['messageId']] = $unreadMessage;
 }
-elseif ($continue) {
-    $unreadMessages = $database->select($queryParts['unreadMessages']['columns'],
-                                        $queryParts['unreadMessages']['conditions'],
-                                        $queryParts['unreadMessages']['sort']);
-    $unreadMessages = $unreadMessages->getAsArray('messageId');
-}
-
-
-
-/* Start Processing */
-if ($continue) {
-    if (is_array($unreadMessages)) {
-        if (count($unreadMessages) > 0) {
-            foreach ($unreadMessages AS $unreadMessage) {
-                $xmlData['getUnreadMessages']['unreadMessages']['unreadMessage ' . $unreadMessage['messageId']] = array(
-                    'messageId' => (int) $unreadMessage['messageId'],
-                    'senderId' => (int) $unreadMessage['senderId'],
-                    'roomId' => (int) $unreadMessage['roomId'],
-                );
-            }
-        }
-    }
-}
-
-
-
-/* Update Data for Errors */
-$xmlData['getMessages']['errStr'] = (string) $errStr;
-$xmlData['getMessages']['errDesc'] = (string) $errDesc;
-
 
 
 /* Output Data */

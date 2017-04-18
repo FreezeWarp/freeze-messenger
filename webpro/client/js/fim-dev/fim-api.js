@@ -251,6 +251,35 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
 };
 
 
+fimApi.prototype.getUnreadMessages = function(params, requestSettings) {
+    var params = fimApi.mergeDefaults(params, {
+        'access_token' : window.sessionHash,
+        'fim3_format' : 'json',
+        'timeout' : 60000,
+        'refresh' : 60000,
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    function getUnreadMessages_query() {
+        $.ajax({
+            type: 'get',
+            url: directory + 'api/getUnreadMessages.php',
+            data: params,
+            timeout: requestSettings.timeout,
+            cache: requestSettings.cache
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }
+
+
+    if (requestSettings.close) clearInterval(fimApi.timers['getUnreadMessages_' + requestSettings.timerId]);
+    else {
+        getUnreadMessages_query();
+        if (requestSettings.refresh > -1) fimApi.timers['getUnreadMessages_' + requestSettings.timerId] = setInterval(getUnreadMessages_query, requestSettings.refresh);
+    }
+};
+
+
 
 fimApi.prototype.getFiles = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {

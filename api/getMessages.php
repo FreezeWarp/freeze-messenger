@@ -171,7 +171,6 @@ $xmlData = array(
     'messages' => array(),
 );
 
-
 if (!$room->roomExists())
     new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
 
@@ -180,8 +179,11 @@ elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW))
 
 else {
     /* Process Ping */
-    if (!$request['noping']) $database->setUserStatus($room->id);
+    if (!$request['noping'])
+        $database->setUserStatus($room->id);
 
+    if (!$request['archive'])
+        $database->markMessageRead($room->id, $user->id);
 
     /* Get Messages from Database */
     $messages = $database->getMessages(array(

@@ -115,6 +115,11 @@ standard.prototype.login = function(options) {
             if (!anonId) {
                 $.cookie('webpro_username', options.username, { expires : 14 });
                 $.cookie('webpro_password', options.password, { expires : 14 });
+
+                // As soon as we have a valid login, we start polling getUnreadMessages.
+                fimApi.getUnreadMessages(null, {'each' : function(message) {
+                    fim_showMissedMessage(message);
+                }});
             }
 
 
@@ -142,6 +147,9 @@ standard.prototype.login = function(options) {
 standard.prototype.logout = function() {
     $.cookie('webpro_username', null);
     $.cookie('webpro_password', null);
+
+    fimApi.getMessages(null, {close : true}); // TODO: others
+    fimApi.getUnreadMessages(null, {close : true});
 
     popup.login();
 };

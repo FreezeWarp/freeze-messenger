@@ -43,47 +43,54 @@ function stream_event($streamSource, $queryId, $lastEvent) {
 
 
 function stream_messages($roomId, $lastEvent) {
-    global $database;
+    global $database, $user;
 
-    $messages = $database->getMessages(array(
-        'room' => new fimRoom($roomId),
-        'messageIdStart' => $lastEvent + 1,
-    ), array('messageId' => 'asc'))->getAsArray('messageId');
+    if (!($database->hasPermission($user, new fimRoom($roomId)) & ROOM_PERMISSION_VIEW))
+        new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
+
+    else {
+        $database->markMessageRead($roomId, $user->id);
+
+        $messages = $database->getMessages(array(
+            'room' => new fimRoom($roomId),
+            'messageIdStart' => $lastEvent + 1,
+        ), array('messageId' => 'asc'))->getAsArray('messageId');
 
 
-    foreach ($messages AS $messageId => $message) {
-        if ($messageId > $lastEvent) $lastEvent = $messageId;
+        foreach ($messages AS $messageId => $message) {
+            if ($messageId > $lastEvent) $lastEvent = $messageId;
 
-        echo "\nid: " . (int) $message['messageId'] . "\n";
-        echo "event: message\n";
-        echo "data: " . json_encode(array(
-                'messageData' => array(
-                    'roomId' => (int) $message['roomId'],
-                    'messageId' => (int) $message['messageId'],
-                    'messageTime' => (int) $message['time'],
-                    'messageText' => $message['text'],
-                    'flags' => ($message['flag']),
-                ),
-                'userData' => array(
-                    'userName' => ($message['userName']),
-                    'userId' => (int) $message['userId'],
-                    'userGroup' => (int) $message['userGroup'],
-                    'avatar' => ($message['avatar']),
-                    'socialGroups' => ($message['socialGroups']),
-                    'userNameFormat' => ($message['userNameFormat']),
-                    'defaultFormatting' => array(
-                        'color' => ($message['defaultColor']),
-                        'highlight' => ($message['defaultHighlight']),
-                        'fontface' => ($message['defaultFontface']),
-                        'general' => (int) $message['defaultFormatting']
+            echo "\nid: " . (int) $message['messageId'] . "\n";
+            echo "event: message\n";
+            echo "data: " . json_encode(array(
+                    'messageData' => array(
+                        'roomId' => (int) $message['roomId'],
+                        'messageId' => (int) $message['messageId'],
+                        'messageTime' => (int) $message['time'],
+                        'messageText' => $message['text'],
+                        'flags' => ($message['flag']),
                     ),
-                )
-            )) . "\n\n";
+                    'userData' => array(
+                        'userName' => ($message['userName']),
+                        'userId' => (int) $message['userId'],
+                        'userGroup' => (int) $message['userGroup'],
+                        'avatar' => ($message['avatar']),
+                        'socialGroups' => ($message['socialGroups']),
+                        'userNameFormat' => ($message['userNameFormat']),
+                        'defaultFormatting' => array(
+                            'color' => ($message['defaultColor']),
+                            'highlight' => ($message['defaultHighlight']),
+                            'fontface' => ($message['defaultFontface']),
+                            'general' => (int) $message['defaultFormatting']
+                        ),
+                    )
+                )) . "\n\n";
 
-        fim_flush(); // Force the server to flush.
+            fim_flush(); // Force the server to flush.
+        }
+
+        unset($messages); // Free memory.
     }
-
-    unset($messages); // Free memory.
 
     return $lastEvent;
 }

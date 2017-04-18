@@ -183,6 +183,26 @@ function fim_formatAsImage(imageUrl) {
     ).prop('outerHTML');
 }
 
+function fim_showMissedMessage(message) { console.log(window.roomId)
+    if (message.roomId == window.roomId) {
+        // we'll eventually probably want to do something fancy here, like offering to scroll to the last-viewed message.
+    }
+    else {
+        $.jGrowl($('<span id="jg7">').text('New message from ')
+            .append(
+                $('<strong>').attr('style', message.senderNameFormat).text(message.senderName)
+            )
+            .append(' has been made in ')
+            .append(
+                $('<a style="font-weight: bold">').attr('href', '#room=' + message.roomId).text(message.roomName).click(function () {
+                    // admittedly, I really should change plugins, but it's worked for me so far, and this _does_ work
+                    $(this).parent().parent().parent().parent().find('.jGrowl-close').click()
+                })
+            )
+            .append((message.missedMessages ? $('<span>').text('(Total unread messages: ' + message.missedMessages + ')') : ''))
+        );
+    }
+}
 
 
 /**
