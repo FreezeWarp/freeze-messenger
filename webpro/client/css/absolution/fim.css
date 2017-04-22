@@ -1,3 +1,27 @@
+/* Absolution-only fix */
+.ui-accordion .ui-accordion-header a {
+    padding-left: 1.5em !important;
+}
+.ui-dialog-titlebar-close {
+    top: .4em !important;
+    right: .5em !important;
+}
+.ui-dialog .ui-dialog-titlebar-close {
+    width: 22px !important;
+}
+.ui-dialog .ui-dialog-titlebar-close span {
+    margin: 0px !important;
+}
+button.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-icon-only.ui-dialog-titlebar-close span.ui-button-icon-primary.ui-icon.ui-icon-closethick {
+    top: 4px;
+    left: 2px;
+}
+.ui-tabs-anchor {
+    color: black !important;
+    font-weight: bold;
+}
+
+
 .ui-dialog-titlebar-close {
   height: 24px !important; 
 }

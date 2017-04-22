@@ -570,3 +570,10 @@ div.jGrowl div.jGrowl-closer {
   margin-top: -6px;
   margin-left: -7px;
 }
+
+
+
+.ui-dialog-titlebar-close {
+    top: 1.5em;
+    right: 1em;
+}

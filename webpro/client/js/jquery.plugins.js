@@ -1203,7 +1203,7 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
     // Create the Tabbed Dialogue
     var tabul = this.find('ul:first');
     this.parent().addClass('ui-tabs').prepend(tabul).draggable('option', 'handle', tabul);
-    tabul.append($('.ui-dialog-titlebar-close').css({'top': '1.5em', 'right': '1em'}));
+    tabul.append($('.ui-dialog-titlebar-close'));
     this.prev().remove();
     tabul.addClass('ui-dialog-titlebar-tabbed');
 
