@@ -128,6 +128,29 @@ standard.prototype.login = function(options) {
             }
 
 
+            // As soon as we have a token, populate active users.
+            fimApi.getActiveUsers({
+                'roomIds' : [1]
+            }, {
+                'refresh' : 15000,
+                'exception' : function(exception) { console.log(exception);
+                    // noLogin exceptions will commonly happen if the user is switching logins. We could either surpress the errors, as we do here, or disable the refresh until the user relogins in, which is more trouble than it's really worth.
+                    if (exception.string !== 'noLogin') {
+                        fimApi.getDefaultExceptionHandler(exception);
+                    }
+                },
+                'begin' : function() {
+                    $('#activeUsers').html('<ul></ul>');
+                },
+                'each' : function(user) {
+                    $('#activeUsers > ul').append('<li><span class="userName" data-userId="' + user.userData.userId + '" style=""' + user.userData.userNameFormat + '"">' + user.userData.userName + '</span></li>');
+                },
+                'end' : function() {
+                    contextMenuParseUser('#activeUsers');
+                }
+            });
+
+
             if (options.finish) options.finish();
 
 

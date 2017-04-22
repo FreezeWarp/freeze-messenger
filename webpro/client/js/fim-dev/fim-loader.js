@@ -492,7 +492,7 @@ function fim_newMessage(messageText, messageId) {
                 content.html("");
                 content.append(
                     $('<div style="width: 400px;">').append(
-                        avatar.length > 0 ? $('<img style="float: left; max-height: 200px; max-width: 200px;">').attr('src', avatar) : ''
+                        (typeof avatar !== "undefined" && avatar.length > 0) ? $('<img style="float: left; max-height: 200px; max-width: 200px;">').attr('src', avatar) : ''
                     ).append(
                         $('<span class="userName">').attr({'data-userId' : userId, 'style' : ''}).text(userName)
                     )
