@@ -1,11 +1,12 @@
-========FreezeMessenger========
->>Copyright (c) 2011 Joseph T. Parsons <josephtparsons@gmail.com>
->>Licensed under the GPLv3 (see LICENSE)
->>We Love Money (and it really helps, seriously): https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=YL7K2CY59P9S6&item_name=FreezeMessenger%20Development&item_number=freezemessenger&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted
+#FreezeMessenger
+Copyright (c) 2011 Joseph T. Parsons <josephtparsons@gmail.com>
+Licensed under the GPLv3 (see LICENSE)
 
->>PHP 5.2, a capable server (Apache, nginx), MySQL required.
->>PHP's MCrypt, Hash, MBString, MySQL Libraries Required
+##Requirements
+- PHP 5.6, a capable server (Apache, nginx), MySQL required
+-- PHP 7 may be required in nightlies. The null coalescing operator and scalar type declarations may be used; these can be removed/replaced with a post-processor.
+- PHP's MCrypt, Hash, MBString, MySQL Libraries Required
 
->>To upload, use FTP or another means of uploading the files here.
->>To install, navigate to the directory install/ and proceed from there.
->>To get further help, navigate to the docs/ directory, which contains extensive help.
+##Installation
+1. To upload, use FTP or another means of uploading the files here.
+2. To install, navigate to the directory install/ and proceed from there.

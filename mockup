@@ -47,16 +47,17 @@ message - send message, edit message (could implement singular message select, b
 
 Current Plan, In Rough Order of Interest:
 1. APIs (getting there!)
-a. Verify file uploads are mostly working
-b. Private/group rooms
-c. Watch rooms (incl. room lists)
-d. Kicks
-2. Object store for messages/split messages into their own databases with their own ID counts.
-3. PostGres, Memcahced (both should be semi-easy, though memcached will be heavy beta initially)
-4. Java Message Intermediary
-5. Caching Enhancements
-6. Desktop Client (C# or Java, probably)
-7. Linux client (C++)
+a. Private/group rooms (test more than 2 private room members, otr)
+b. Censor (test others, implement confirm)
+c. Kicks
+2. Login Sync
+a. vBulletin
+b. PHPBB
+c. Google/OpenID
+3. PostGres
+4. Redis/Caching Enhancements
+5. Desktop Client (C# or Java, probably)
+6. Linux client (C++)
 
 Current Considerations:
 1.) Rooms should now be considered self-contained - you can't get messages from across rooms. The current database implementation doesn't respect this, but future ones might act differently: for instance, a different table for each room.
