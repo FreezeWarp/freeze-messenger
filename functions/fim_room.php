@@ -262,6 +262,9 @@ class fimRoom {
      * @throws Exception
      */
     public function __get($property) {
+        if (!property_exists($this, $property))
+            throw new Exception("Invalid property accessed in fimRoom: $property");
+
         if ($this->id && !in_array($property, $this->resolved)) {
             if ($property === 'encodeId') {
                 $this->__set('encodedId', $this->encodeId($this->id));

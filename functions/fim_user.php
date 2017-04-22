@@ -101,7 +101,7 @@ class fimUser
 
     private static $userDataPullGroups = array(
         'userId,userName,privs,lastSync',
-        'userGroupId,socialGroupIds,userParentalFlags,userParentalAge,birthdate',
+        'userGroupId,socialGroupIds,userParentalFlags,userParentalAge,birthDate',
         'joinDate,messageFormatting,profile,avatar,userNameFormat',
         'options,defaultRoomId',
         'passwordHash,passwordFormat',
@@ -126,8 +126,9 @@ class fimUser
 
 
 
-        if (is_int($userData))
+        if (is_int($userData)) {
             $this->id = $userData;
+        }
 
         elseif (is_array($userData))
             $this->populateFromArray($userData); // TODO: test contents
@@ -139,13 +140,14 @@ class fimUser
             throw new fimError('fimUserInvalidConstruct', 'Invalid user data specified -- must either be an associative array corresponding to a table row, a user ID, or false (to create a user, etc.)');
 
         $this->userData = $userData;
-
-        return $this;
     }
 
 
     public function __get($property) {
         global $loginConfig, $integrationDatabase;
+
+        if (!property_exists($this, $property))
+            throw new Exception("Invalid property accessed in fimUser: $property");
 
         if ($this->id && !in_array($property, $this->resolved)) {
             if ($property === 'passwordSalt') {
