@@ -25,7 +25,7 @@
  * @param string action
  * @param integer userId
  * @param integer roomId
-*/
+ */
 
 $apiRequest = true;
 
@@ -35,106 +35,106 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-  'action' => array(
-    'valid' => array(
-      'kickUser', 'unkickUser',
-      'favRoom', 'unfavRoom',
-      'banUser', 'unbanUser',
-      'markMessageRead',
+    'action' => array(
+        'valid' => array(
+            'kickUser', 'unkickUser',
+            'favRoom', 'unfavRoom',
+            'banUser', 'unbanUser',
+            'markMessageRead',
+        ),
     ),
-  ),
 
-  'roomId' => array(
-    'default' => 0,
-    'cast' => 'int',
-  ),
+    'roomId' => array(
+        'default' => 0,
+        'cast' => 'int',
+    ),
 
-  'userId' => array(
-    'default' => 0,
-    'cast' => 'int',
-  ),
+    'userId' => array(
+        'default' => 0,
+        'cast' => 'int',
+    ),
 
-  'listId' => array(
-    'default' => 0,
-    'cast' => 'int',
-  ),
+    'listId' => array(
+        'default' => 0,
+        'cast' => 'int',
+    ),
 
-  'length' => array(
-    'default' => 0,
-    'cast' => 'int',
-  ),
+    'length' => array(
+        'default' => 0,
+        'cast' => 'int',
+    ),
 
-  'quiet' => array(
-    'default' => false,
-    'cast' => 'bool',
-  ),
+    'quiet' => array(
+        'default' => false,
+        'cast' => 'bool',
+    ),
 ));
 
 
 
 /* Data Predefine */
 $xmlData = array(
-  'moderate' => array(
-    'response' => array(),
-  ),
+    'moderate' => array(
+        'response' => array(),
+    ),
 );
 
 
 
 /* Start Processing */
 switch ($request['action']) {
-  case 'kickUser':
-  $userData = $slaveDatabase->getUser($request['userId']);
-  $roomData = $slaveDatabase->getRoom($request['roomId']);
+    case 'kickUser':
+        $userData = $slaveDatabase->getUser($request['userId']);
+        $roomData = $slaveDatabase->getRoom($request['roomId']);
 
-  foreach ($database->getRooms()->getAsRooms() AS $objectRoom) {
-    if ($objectRoom->hasPermission($userId))
+        foreach ($database->getRooms()->getAsRooms() AS $objectRoom) {
+            if ($objectRoom->hasPermission($userId))
   }
 
-  $database->getRoom()->hasPermission();
-  $database->getRoom()->ownerId;
+        $database->getRoom()->hasPermission();
+        $database->getRoom()->ownerId;
 
-  if (!count($userData)) throw new Exception('badUserId');
-  elseif (!count($roomData)) throw new Exception('badRoomId');
-  elseif ($database->hasPermission($roomData, $userData) >= ROOM_PERMISSION_MODERATE) throw new Exception('noKickUser'); // You can't kick other moderators.
-  elseif ($database->hasPermission($roomData, $user) < ROOM_PERMISSION_MODERATE) throw new Exception('noPerm'); // You have to be a mod yourself.
-  else {
-    $database->kickUser($userData['userId'], $roomData['roomId'], $request['length']);
+        if (!count($userData)) throw new Exception('badUserId');
+        elseif (!count($roomData)) throw new Exception('badRoomId');
+        elseif ($database->hasPermission($roomData, $userData) >= ROOM_PERMISSION_MODERATE) throw new Exception('noKickUser'); // You can't kick other moderators.
+        elseif ($database->hasPermission($roomData, $user) < ROOM_PERMISSION_MODERATE) throw new Exception('noPerm'); // You have to be a mod yourself.
+        else {
+            $database->kickUser($userData['userId'], $roomData['roomId'], $request['length']);
 
-    $database->storeMessage('/me kicked ' . $userData['userName'], '', $user, $roomData);
-  }
-  break;
+            $database->storeMessage('/me kicked ' . $userData['userName'], '', $user, $roomData);
+        }
+        break;
 
-  case 'unkickUser':
-  $userData = $slaveDatabase->getUser($request['userId']);
-  $roomData = $slaveDatabase->getRoom($request['roomId']);
+    case 'unkickUser':
+        $userData = $slaveDatabase->getUser($request['userId']);
+        $roomData = $slaveDatabase->getRoom($request['roomId']);
 
-  if (!count($userData)) throw new Exception('badUserId');
-  elseif (!count($roomData)) throw new Exception('badRoomId');
-  elseif ($database->hasPermission($roomData, $user) < ROOM_PERMISSION_MODERATE) throw new Exception('noPerm'); // You have to be a mod.
-  else {
-    $this->unkickUser($userData['userId'], $roomData['roomId']);
+        if (!count($userData)) throw new Exception('badUserId');
+        elseif (!count($roomData)) throw new Exception('badRoomId');
+        elseif ($database->hasPermission($roomData, $user) < ROOM_PERMISSION_MODERATE) throw new Exception('noPerm'); // You have to be a mod.
+        else {
+            $this->unkickUser($userData['userId'], $roomData['roomId']);
 
-    $database->storeMessage('/me unkicked ' . $userData['userName'], '', $user, $roomData);
+            $database->storeMessage('/me unkicked ' . $userData['userName'], '', $user, $roomData);
 
-    $xmlData['moderate']['response']['success'] = true;
-  }
-  break;
+            $xmlData['moderate']['response']['success'] = true;
+        }
+        break;
 
-  case 'markMessageRead':
-  if ($database->markMessageRead($request['messageId'], $user['userId'])) {
-    $xmlData['moderate']['response']['success'] = true;
-  }
-  else {
-    $xmlData['moderate']['response']['success'] = false;
-  }
-  break;
+    case 'markMessageRead':
+        if ($database->markMessageRead($request['messageId'], $user['userId'])) {
+            $xmlData['moderate']['response']['success'] = true;
+        }
+        else {
+            $xmlData['moderate']['response']['success'] = false;
+        }
+        break;
 
-  default:
-  $errStr = 'noAction';
+    default:
+        $errStr = 'noAction';
 
-  $xmlData['moderate']['response']['success'] = false;
-  break;
+        $xmlData['moderate']['response']['success'] = false;
+        break;
 }
 
 
