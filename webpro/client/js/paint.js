@@ -365,8 +365,8 @@ $.when(
         $('#logout').bind('click', function() { standard.logout(); }); // Logout
         $('a#kick').bind('click', function() { popup.kick(); }); // Kick
         $('a#privateRoom').bind('click', function() { popup.privateRoom(); }); // Private Room
-        $('a#manageKick').bind('click', function() { popup.manageKicks({'roomIds' : [window.roomId]}); }); // Manage Kicks
-        $('a#myKicks').bind('click', function() { popup.manageKicks({'userIds' : [window.userId]}); }); // Manage Kicks
+        $('a#manageKick').bind('click', function() { popup.manageKicks({'roomId' : window.roomId}); }); // Manage Kicks
+        $('a#myKicks').bind('click', function() { popup.manageKicks({'userId' : window.userId}); }); // Manage Kicks
         $('a#online').bind('click', function() { popup.online(); }); // Online
         $('a#createRoom').bind('click', function() { popup.editRoom();}); // Create Room
         $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room

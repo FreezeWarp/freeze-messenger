@@ -626,8 +626,8 @@ class fimDatabase extends databaseSQL
         $this->modLog('unkickUser', "$userId,$roomId");
 
         $this->delete($this->sqlPrefix . "kicks", array(
-            'userId' => $userId,
-            'roomId' => $roomId,
+            'userId' => (int) $userId,
+            'roomId' => (int) $roomId,
         ));
     }
 

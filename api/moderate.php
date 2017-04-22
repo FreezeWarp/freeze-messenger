@@ -45,22 +45,18 @@ $request = fim_sanitizeGPC('p', array(
     ),
 
     'roomId' => array(
-        'default' => 0,
-        'cast' => 'int',
+        'cast' => 'roomId',
     ),
 
     'userId' => array(
-        'default' => 0,
         'cast' => 'int',
     ),
 
     'listId' => array(
-        'default' => 0,
         'cast' => 'int',
     ),
 
     'length' => array(
-        'default' => 0,
         'cast' => 'int',
     ),
 
@@ -82,67 +78,55 @@ $xmlData = array(
 
 
 /* Start Processing */
-switch ($request['action']) {
-    case 'kickUser':
-        $userData = $slaveDatabase->getUser($request['userId']);
-        $roomData = $slaveDatabase->getRoom($request['roomId']);
+if ($request['action'] === 'kickUser' || $request['action'] === 'unkickUser') {
+    if (!isset($request['userId']))
+        throw new fimError('noUserId');
 
-        foreach ($database->getRooms()->getAsRooms() AS $objectRoom) {
-            if ($objectRoom->hasPermission($userId))
-  }
+    elseif (!isset($request['roomId']))
+        throw new fimError('noRoomId');
 
-        $database->getRoom()->hasPermission();
-        $database->getRoom()->ownerId;
+    $kickUser = $database->getUser($request['userId']);
+    $room = $database->getRoom($request['roomId']);
 
-        if (!count($userData)) throw new Exception('badUserId');
-        elseif (!count($roomData)) throw new Exception('badRoomId');
-        elseif ($database->hasPermission($roomData, $userData) >= ROOM_PERMISSION_MODERATE) throw new Exception('noKickUser'); // You can't kick other moderators.
-        elseif ($database->hasPermission($roomData, $user) < ROOM_PERMISSION_MODERATE) throw new Exception('noPerm'); // You have to be a mod yourself.
+    if (!$user->id)
+        throw new fimError('badUserId');
+
+    elseif (!$room->id)
+        throw new fimError('badRoomId');
+
+    elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE))
+        throw new fimError('noPerm'); // You have to be a mod yourself.
+
+
+    if ($request['action'] === 'kickUser') {
+        if ($request['length'] < 10)
+            throw new fimError('tooShortKick', 'The kick length specified is too short.');
+
+        elseif ($database->hasPermission($kickUser, $room) & ROOM_PERMISSION_MODERATE)
+            throw new fimError('noKickUser', 'Other room moderators may not be kicked.');
+
         else {
-            $database->kickUser($userData['userId'], $roomData['roomId'], $request['length']);
+            $database->kickUser($kickUser->id, $room->id, $request['length']);
 
-            $database->storeMessage('/me kicked ' . $userData['userName'], '', $user, $roomData);
+
+            if ($config['kickSendMessage'])
+                $database->storeMessage('/me kicked ' . $kickUser->name, '', $user, $room);
         }
-        break;
+    }
+    elseif ($request['action'] === 'unkickUser') {
+        $database->unkickUser($kickUser->id, $room->id);
 
-    case 'unkickUser':
-        $userData = $slaveDatabase->getUser($request['userId']);
-        $roomData = $slaveDatabase->getRoom($request['roomId']);
-
-        if (!count($userData)) throw new Exception('badUserId');
-        elseif (!count($roomData)) throw new Exception('badRoomId');
-        elseif ($database->hasPermission($roomData, $user) < ROOM_PERMISSION_MODERATE) throw new Exception('noPerm'); // You have to be a mod.
-        else {
-            $this->unkickUser($userData['userId'], $roomData['roomId']);
-
-            $database->storeMessage('/me unkicked ' . $userData['userName'], '', $user, $roomData);
-
-            $xmlData['moderate']['response']['success'] = true;
-        }
-        break;
-
-    case 'markMessageRead':
-        if ($database->markMessageRead($request['messageId'], $user['userId'])) {
-            $xmlData['moderate']['response']['success'] = true;
-        }
-        else {
-            $xmlData['moderate']['response']['success'] = false;
-        }
-        break;
-
-    default:
-        $errStr = 'noAction';
-
-        $xmlData['moderate']['response']['success'] = false;
-        break;
+        if ($config['unkickSendMessage'])
+            $database->storeMessage('/me unkicked ' . $kickUser->name, '', $user, $room);
+    }
+    else {
+        throw new Exception('Defensive login error.');
+    }
 }
 
-
-
-/* Update Data for Errors */
-$xmlData['moderate']['errStr'] = ($errStr);
-$xmlData['moderate']['errDesc'] = ($errDesc);
-
+else {
+    new fimError('badAction');
+}
 
 
 /* Output Data */

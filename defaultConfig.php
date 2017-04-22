@@ -91,6 +91,10 @@ $defaultConfig = array(
     'privateRoomMaxUsers' => 5, // int The maximum number of users who can join a private room. If this is increased, then all string roomId fields in the database must be adjusted accordingly, according to the pack format ("H*", "A99999999"), with A99999999 appearing for the number of max users.
 
 
+    /* Kick Functionality */
+    'kickSendMessage' => true, // bool If true, whenever a user is kicked a message will be sent by the kicking moderator informing the room of the action.
+    'unkickSendMessage' => true, // bool If true, whenever a user is unkicked a message will be sent by the unkicking moderator informing the room of the action.
+
     /* Default Formatting
      * Altering any of these values will not automatically disable existing formatting preferences. */
     'defaultFormattingColor' => true,
@@ -175,6 +179,7 @@ $defaultConfig = array(
     'uploadMaxUserFiles' => -1,
     'uploadMaxSpace' => -1,
     'uploadMaxUserSpace' => -1,
+    'uploadUseFilesystem' => false,
     'allowOrphanFiles' => false,
     'extensionChanges' => array(
         'jpe' => 'jpg',

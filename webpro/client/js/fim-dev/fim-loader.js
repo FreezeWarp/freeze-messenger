@@ -224,7 +224,7 @@ function fim_messageFormat(json, format) {
         if (ujson.userName != null)
             var userName = ujson.userName;
         else
-            var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId], null).then(function(pairs) {
+            var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId]).then(function(pairs) {
                 userName = pairs[userId].userName;
             }));
 

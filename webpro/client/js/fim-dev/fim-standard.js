@@ -150,7 +150,7 @@ standard.prototype.login = function(options) {
                 'exception' : function(exception) { console.log(exception);
                     // noLogin exceptions will commonly happen if the user is switching logins. We could either surpress the errors, as we do here, or disable the refresh until the user relogins in, which is more trouble than it's really worth.
                     if (exception.string !== 'noLogin') {
-                        fimApi.getDefaultExceptionHandler(exception);
+                        fimApi.getDefaultExceptionHandler()(exception);
                     }
                 },
                 'begin' : function() {
@@ -446,38 +446,44 @@ standard.prototype.unfavRoom = function(roomIdLocal) {
     });
 };
 
-standard.prototype.kick = function(userLocalId, roomId, length) {
-    $.post(directory + 'api/moderate.php', 'action=kickUser&userId=' + userLocalId + '&roomId=' + roomId + '&length=' + length + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
-        var errStr = json.moderaate.errStr,
-            errDesc = json.moderaate.errDesc;
-
-        switch (errStr    ) {
-            case '': dia.info('The user has been kicked.', 'Success'); $("#kickUserDialogue").dialog('close'); break;
-            case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
-            case 'nokickuser': dia.error('That user may not be kicked!'); break;
-            case 'baduser': dia.error('The user specified does not exist.'); break;
-            case 'badroom': dia.error('The room specified does not exist.'); break;
+standard.prototype.kick = function(userId, roomId, length) {
+    fimApi.kickUser(userId, roomId, length, {
+        'exception' : function(exception) {
+            switch (exception.string) {
+                case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
+                case 'nokickuser': dia.error('That user may not be kicked!'); break;
+                case 'baduser': dia.error('The user specified does not exist.'); break;
+                case 'badroom': dia.error('The room specified does not exist.'); break;
+                default:
+                    fimApi.getDefaultExceptionHandler()(exception);
+                break;
+            }
+        },
+        'end' : function() {
+            dia.info('The user has been kicked.', 'Success');
+            $("#kickUserDialogue").dialog('close');
         }
-
-        return false;
-    }); // Send the form data     via AJAX.
+    });
 
     return false;
 };
 
 standard.prototype.unkick = function(userId, roomId) {
-    $.post(directory + 'api/moderate.php', 'action=unkickUser&userId=' + userId + '&roomId=' + roomId + '&access_token=' + sessionHash, function(    json) {
-        var errStr = json.moderaate.errStr,
-            errDesc = json.moderaate.errDesc;
-
-        switch (errStr) {
-            case '': dia.info('The user has been unkicked.', 'Success'); $("#kickUserDialogue").dialog('close'); break;
-            case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
-            case 'baduser': case 'badroom': dia.error('Odd error: the user or room sent do not seem to exist.'); break;
+    fimApi.unkickUser(userId, roomId, {
+        'exception' : function(exception) {
+            switch (exception.string) {
+                case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
+                case 'baduser': case 'badroom': dia.error('Odd error: the user or room sent do not seem to exist.'); break;
+                default:
+                    fimApi.getDefaultExceptionHandler()(exception);
+                    break;
+            }
+        },
+        'end' : function() {
+            dia.info('The user has been unkicked.', 'Success');
+            $("#kickUserDialogue").dialog('close');
         }
-
-        return false;
-    }); // Send the form data via AJAX.
+    });
 
     return false;
 };

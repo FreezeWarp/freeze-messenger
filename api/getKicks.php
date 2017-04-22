@@ -36,15 +36,15 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'rooms' => array(
-    'default' => '',
+  'roomIds' => array(
+    'default' => [],
     'cast' => 'list',
-    'filter' => 'int',
+    'filter' => 'roomId',
     'evaltrue' => true,
   ),
 
-  'users' => array(
-    'default' => '',
+  'userIds' => array(
+    'default' => [],
     'cast' => 'list',
     'filter' => 'int',
     'evaltrue' => true,
@@ -55,55 +55,42 @@ $request = fim_sanitizeGPC('g', array(
 
 /* Data Predefine */
 $xmlData = array(
-  'getKicks' => array(
     'kicks' => array(),
-  ),
 );
 
 
 /* Get Kicks from Database */
 $kicks = $database->getKicks(array(
-  'userIds' => $request['users'],
-  'roomIds' => $request['rooms']
+  'userIds' => $request['userIds'],
+  'roomIds' => $request['roomIds']
 ))->getAsArray(true);
 
 
 /* Start Processing */
 foreach ($kicks AS $kick) {
-  $kick['parentalAge'] = 100; // Over-ride parentalAge/parentalFlags; TODO: needed?
-  $kick['parentalFlags'] = '';
+    if ($kick['userId'] == $user->id || $database->hasPermission($user, new fimRoom((int) $kick['roomId'])) & ROOM_PERMISSION_MODERATE) { // The user is allowed to know of all kicks they are subject to, and of all kicks in any rooms they moderate.
+        $xmlData['kicks']['kick ' . $kick['kickId']] = [
+            'roomData'   => [
+                'roomId'   => (int)$kick['roomId'],
+                'roomName' => (string)$kick['roomName'],
+            ],
+            'userData'   => [
+                'userId'         => (int)$kick['userId'],
+                'userName'       => (string)$kick['userName'],
+                'userNameFormat' => (string)$kick['userNameFormat'],
+            ],
+            'kickerData' => [
+                'userId'         => (int)$kick['kickerId'],
+                'userName'       => (string)$kick['kickerName'],
+                'userNameFormat' => (string)$kick['userNameFormat'],
+            ],
+            'length'     => (int)$kick['klength'],
 
-  if (fim_hasPermission($kick, $user, 'moderate') || $kick['userId'] == $user['userId']) { // The user is allowed to know of all kicks they are subject to, and of all kicks in any rooms they moderate.
-    $xmlData['getKicks']['kicks']['kick ' . $kick['kickId']] = array(
-      'roomData' => array(
-        'roomId' => (int) $kick['roomId'],
-        'roomName' => (string) $kick['roomName'],
-      ),
-      'userData' => array(
-        'userId' => (int) $kick['userId'],
-        'userName' => (string) $kick['userName'],
-        'userNameFormat' => (string) $kick['userNameFormat'],
-      ),
-      'kickerData' => array(
-        'userId' => (int) $kick['kickerId'],
-        'userName' => (string) $kick['kickerName'],
-        'userNameFormat' => (string) $kick['userNameFormat'],
-      ),
-      'length' => (int) $kick['klength'],
-
-      'set' => (int) $kick['ktime'],
-      'expires' => (int) ($kick['ktime'] + $kick['klength']),
-    );
-  }
+            'set'     => (int)$kick['time'],
+            'expires' => (int)($kick['time'] + $kick['length']),
+        ];
+    }
 }
-
-
-
-/* Update Data for Errors */
-$xmlData['getKicks']['errStr'] = (string) $errStr;
-$xmlData['getKicks']['errDesc'] = (string) $errDesc;
-if ($config['dev']) $xmlData['request'] = $request;
-
 
 
 /* Output Data */

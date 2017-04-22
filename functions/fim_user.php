@@ -148,7 +148,7 @@ class fimUser
         elseif (is_array($userData))
             $this->populateFromArray($userData); // TODO: test contents
 
-        elseif ($userData === false)
+        elseif ($userData === false || $userData === null)
             $this->id = false;
 
         else

@@ -1100,11 +1100,31 @@ popup = {
             width : 1000,
             oF : function() {
                 fimApi.getKicks({
-                    'roomIds': ('roomId' in params ? params.roomId : [0]),
-                    'userIds': ('userId' in params ? params.userId : [0])
+                    'roomIds': ('roomId' in params ? [params.roomId] : null),
+                    'userIds': ('userId' in params ? [params.userId] : null)
                 }, {
-                    'each' : function(kick) {
-                        $('#kickedUsers').append('<tr><td>' + kick.userData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.userData.userId + '">' + kick.userData.userName + '</span>' + kick.userData.userFormatEnd + '</td><td>' + kick.kickerData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.kickerData.userId + '">' + kick.kickerData.userName + '</span>' + kick.kickerData.userFormatEnd + '</td><td>' + fim_dateFormat(kick.set, dateOptions) + '</td><td>' + fim_dateFormat(kick.expires, dateOptions) + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>');
+                    'each' : function(kick) { console.log(kick);
+                        $('#kickedUsers').append(
+                            $('<tr>').append(
+                                $('<td>').append(
+                                    $('<span class="userName userNameTable">').attr({'data-userId' : kick.userData.userId, 'style' : kick.userData.userNameFormat}).text(kick.userData.userName)
+                                )
+                            ).append(
+                                $('<td>').append(
+                                    $('<span class="userName userNameTable">').attr({'data-userId' : kick.kickerData.userId, 'style' : kick.kickerData.userNameFormat}).text(kick.kickerData.userName)
+                                )
+                            ).append(
+                                $('<td>').text(fim_dateFormat(kick.set, dateOptions))
+                            ).append(
+                                $('<td>').text(fim_dateFormat(kick.expires, dateOptions))
+                            ).append(
+                                $('<td>').append(
+                                    $('<button>').click(function() {
+                                        standard.unkick(kick.userData.userId, kick.roomData.roomId)
+                                    }).text('Unkick')
+                                )
+                            )
+                        );
                     }
                 });
             }
@@ -1125,17 +1145,20 @@ popup = {
             id : 'kickUserDialogue',
             width : 1000,
             oF : function() {
-                $("#kickUserForm").submit(function() {
-                    var roomNameKick = $('#roomNameKick').val(),
-//            roomId = roomRef[roomNameKick], TODO
-                        userName = $('#userName').val(),
-                        length = Math.floor(Number($('#time').val() * Number($('#interval > option:selected').attr('value'))));
+                $('#userName').autocompleteHelper('users');
+                $('#roomNameKick').autocompleteHelper('rooms');
 
-                    fimApi.getUsers({
-                        'userNames' : [userName]
-                    }, {'each' : function(userData) {
-                        standard.kick(userData.userId, roomId, length);
-                    }});
+                $("#kickUserForm").submit(function() {
+                    var userName = $('#userName').val();
+                    var roomName = $('#roomNameKick').val();
+                    var length = Math.floor(Number($('#time').val() * Number($('#interval > option:selected').attr('value'))));
+
+                    $.when(
+                        Resolver.resolveUsersFromNames([userName]),
+                        Resolver.resolveRoomsFromNames([roomName])
+                    ).then(function(userPairs, roomPairs) { console.log(["pairs", userPairs, roomPairs]);
+                        standard.kick(userPairs[userName].userId, roomPairs[roomName].roomId, length);
+                    });
 
                     return false; // Don't submit the form.
                 });

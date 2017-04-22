@@ -345,8 +345,8 @@ fimApi.prototype.getKicks = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
-            'roomIds' : '',
-            'userIds' : ''
+            'roomIds' : null,
+            'userIds' : null
         });
 
         var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
@@ -479,6 +479,49 @@ fimApi.prototype.sendMessage = function(params, requestSettings) {
             timeout: requestSettings.timeout,
             cache: requestSettings.cache,
         }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+};
+
+
+fimApi.prototype.kickUser = function(userId, roomId, length, requestSettings) {
+    var params = {
+        'access_token' : window.sessionHash,
+        'fim3_format' : 'json',
+        'roomId' : roomId,
+        'userId' : userId,
+        'length' : length,
+        'action' : 'kickUser',
+    };
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        url: directory + 'api/moderate.php',
+        type: 'POST',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache,
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+};
+
+
+fimApi.prototype.unkickUser = function(userId, roomId, requestSettings) {
+    var params = {
+        'access_token' : window.sessionHash,
+        'fim3_format' : 'json',
+        'roomId' : roomId,
+        'userId' : userId,
+        'action' : 'unkickUser',
+    };
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        url: directory + 'api/moderate.php',
+        type: 'POST',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache,
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
 };
 
 
