@@ -38,7 +38,7 @@ else {
 
   $config = json_decode(file_get_contents('client/data/config.json'), true);
 
-  if ($user['adminDefs']['modTemplates']) {
+  if ($user->hasPriv('modPrivs')) {
     switch ($request['do2']) {
       case 'lang':
       case false:
