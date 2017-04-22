@@ -9,7 +9,6 @@ standard.prototype.archive = {
         searchText : '',
         resultLimit : 40,
         searchUser : 0,
-//            lastMessage : 0,
         firstMessage : 0,
         page : 0,
         roomId : 0
@@ -18,6 +17,7 @@ standard.prototype.archive = {
     messageData : {},
 
     init : function(options) {
+        var _this = this;
         for (i in options) standard.archive.options[i] = options[i];
 
         $('#searchText, #resultLimit, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
@@ -42,7 +42,7 @@ standard.prototype.archive = {
 
         $('#archiveDialogue > table').on('click', '.updateArchiveHere', function() {
             standard.archive.options.firstMessage = $(this).attr('data-messageId');
-            this.options.lastMessage = 0;
+            window.location.hash = '#room=' + _this.options.roomId + '#message=' + $(this).attr('data-messageId');
 
             standard.archive.retrieve();
         });
@@ -60,26 +60,51 @@ standard.prototype.archive = {
             'roomId' : standard.archive.options.roomId,
             'userIds' : [standard.archive.options.searchUser],
             'search' : standard.archive.options.searchText,
-//                'messageIdEnd' : standard.archive.options.lastMessage,
-//                'messageIdStart' : standard.archive.options.firstMessage,
+            'messageIdStart' : standard.archive.options.firstMessage,
             'messageHardLimit' : $('#resultLimit option:selected').val(),
             'archive' : 1,
             'sortOrder' : 'desc',
             'page' : standard.archive.options.page
-        }, {'each' : function(messageData) {
-            $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
-            standard.archive.messageData[messageData.messageId] = messageData;
-        }});
+        }, {
+            'each' : function(messageData) {
+                $.when(fim_messageFormat(messageData, 'table')).then(function(messageText) {
+                    $('#archiveMessageList').append(messageText);
+                    standard.archive.messageData[messageData.messageId] = messageData;
+                });
+            },
+            'end' : function(messages) {
+                if (!Object.keys(messages).length) {
+                    $('#archiveNext').button({ disabled : true });
+                }
+                else {
+                    $('#archiveNext').button({ disabled : false });
+                }
+            }
+        });
     },
 
     nextPage : function () {
-        this.options.page++;
+        $('#archivePrev').button({ disabled : false });
+
+        if (this.options.firstMessage) {
+            this.options.firstMessage -= this.options.searchLimit;
+        }
+        else {
+            this.options.page++;
+        }
 
         this.retrieve();
     },
 
     prevPage : function () {
-        if (this.options.page !== 0) this.options.page--;
+        if (this.options.firstMessage) {
+            this.options.firstMessage += this.options.searchLimit;
+        }
+        else if (this.options.page !== 0) this.options.page--;
+
+        if (this.options.page <= 0) {
+            $('#archivePrev').button({ disabled : true });
+        }
 
         this.retrieve();
     },

@@ -347,7 +347,7 @@ function fim_messageFormat(json, format) {
                     }).html(text)
                 ).append(
                     $('<td>').append(
-                        $('<a href="javascript:void(0); class="updateArchiveHere"">').attr({'data-messageId': messageId}).text('Show')
+                        $('<a href="javascript:void(0);" class="updateArchiveHere">').attr({'data-messageId': messageId}).text('Show')
                     )
                 );
                 break;
@@ -565,12 +565,15 @@ function fim_hashParse(options) {
         }
     }
 
+    if (roomIdLocal && messageId)
+        page = 'archive';
+
     switch (page) {
         case 'archive':
             prepopup = function() {
                 popup.archive({
                     'roomId' : roomIdLocal,
-                    'idMin' : messageId - 1
+                    'firstMessage' : messageId - 1
                 });
             };
             break;

@@ -1160,7 +1160,7 @@ popup = {
 
     /*** START Archive ***/
 
-    archive : function(options) { console.log(options);
+    archive : function(options) {
         dia.full({
             content : $t('archive'),
             title : 'Archive',
@@ -1174,7 +1174,7 @@ popup = {
 
         standard.archive.init({
             roomId: options.roomId,
-            firstMessage: options.idMin
+            firstMessage: options.firstMessage
         });
 
         standard.archive.retrieve();
