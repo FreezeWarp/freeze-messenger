@@ -101,10 +101,27 @@ table#fileUploadInfo td {
 }
 
 #activeUsers {
-  min-height: 20px;
+/*  min-height: 20px;
   max-height: 250px;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: auto;*/
+}
+
+#activeUsers > ul {
+    display: inline;
+    list-style: none;
+}
+
+#activeUsers > ul > li {
+    display: inline;
+}
+
+#activeUsers > ul > li:after {
+    content: ", ";
+}
+
+#activeUsers > ul > li:last-child:after {
+    content: "";
 }
 
 #title {
@@ -121,7 +138,8 @@ table#fileUploadInfo td {
 }
 #messageList {
   height: 440px;
-  overflow: auto;
+  overflow-y: auto;
+    overflow-x: hidden;
 
     /* Prevents overflows */
     word-break:break-all;
