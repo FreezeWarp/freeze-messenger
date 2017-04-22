@@ -84,6 +84,7 @@ if ($ignoreLogin) {
 
 /* If grant_type is not set, we granting a token, not evaluating. */
 else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_token') {
+    $database->cleanSessions();
     /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
     switch ($_REQUEST['grant_type']) {
         case 'password': // User authentication

@@ -113,6 +113,8 @@ class FIMDatabaseOAuth implements
     {
         global $anonId;
 
+        // TODO: if a user has more than x tokens, delete the oldest.
+
         return $this->db->upsert($this->config['access_token_table'], array(
             'access_token' => $access_token
         ), array(
