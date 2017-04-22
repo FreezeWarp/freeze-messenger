@@ -1,5 +1,5 @@
 <?php
-/* FreezeMessenger Copyright © 2014 Joseph Todd Parsons
+/* FreezeMessenger Copyright © 2017 Joseph Todd Parsons
 
  * This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

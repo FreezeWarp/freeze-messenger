@@ -1,5 +1,5 @@
 <?php
-/* FreezeMessenger Copyright © 2014 Joseph Todd Parsons
+/* FreezeMessenger Copyright © 2017 Joseph Todd Parsons
 
  * This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -142,9 +142,14 @@ foreach ($users AS $userId => $userData) {
     $xmlData['users']['user ' . $userId]['profile'] = $userData->profile;
     $xmlData['users']['user ' . $userId]['userNameFormat'] = $userData->userNameFormat;
     $xmlData['users']['user ' . $userId]['messageFormatting'] = $userData->messageFormatting;
-//    $xmlData['users']['user ' . $userId]['postCount'] = (int) (isset($userDataForums[$userId]['posts']) ? $userDataForums[$userId]['posts'] : 0); TODO
-//    $xmlData['users']['user ' . $userId]['joinDate'] = (int) (isset($userDataForums[$userId]['joinDate']) ? $userDataForums[$userId]['joinDate'] : 0);
-//    $xmlData['users']['user ' . $userId]['userTitle'] = (isset($userDataForums[$userId]['userTitle']) ? $userDataForums[$userId]['userTitle'] : (isset($config['defaultUserTitle']) ? $config['defaultUserTitle'] :  ''));
+
+    if (isset($userDataForums[$userId]['posts'])) // TODO
+        $xmlData['users']['user ' . $userId]['postCount'] = $userDataForums[$userId]['posts'];
+
+    if (isset($userDataForums[$userId]['userTitle']))
+        $xmlData['users']['user ' . $userId]['userTitle'] = $userDataForums[$userId]['userTitle'];
+
+    $xmlData['users']['user ' . $userId]['joinDate'] = (int) (isset($userDataForums[$userId]['joinDate']) ? $userDataForums[$userId]['joinDate'] : $user->joinDate);
   }
 
   if (in_array('groups', $request['info'])) {
@@ -152,9 +157,8 @@ foreach ($users AS $userId => $userData) {
     $xmlData['users']['user ' . $userId]['socialGroupIds'] = new apiOutputList($userData->socialGroupIds);
   }
 
-  if ($userId === $user->id
+  if ((int) $userId === (int) $user->id
     && in_array('self', $request['info'])) {
-
     $xmlData['users']['user ' . $userId]['defaultRoomId'] = $userData->defaultRoomId;
     $xmlData['users']['user ' . $userId]['options'] = $userData->options;
     $xmlData['users']['user ' . $userId]['parentalAge'] = $userData->parentalAge;
