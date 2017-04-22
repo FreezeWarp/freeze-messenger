@@ -1994,6 +1994,11 @@ LIMIT
     private function reverseAliasFromConditionArray($tableName, $conditionArray) {
         $reverseAlias = [];
         foreach ($conditionArray AS $column => $value) {
+            if ($column === 'either' || $column === 'both') {
+                foreach ($value AS $subValue) {
+                    $reverseAlias = array_merge($reverseAlias, $this->reverseAliasFromConditionArray($tableName, $subValue));
+                }
+            }
             $reverseAlias[$column] = [$tableName, $column];
         }
         return $reverseAlias;
@@ -2203,7 +2208,7 @@ LIMIT
 
         foreach ($triggerCallbacks AS $table => $collectionTriggers) {
             foreach ($collectionTriggers AS $entry => $dataOperations) {
-                list($triggerColumn, $aggregateColumn, $function) = $this->collectionTriggers[$tableName][$entry];
+                list($triggerColumn, $aggregateColumn, $function) = $this->collectionTriggers[$table][$entry];
 
                 call_user_func($function, $dataArray[$triggerColumn], $dataOperations);
             }
