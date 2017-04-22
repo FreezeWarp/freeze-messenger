@@ -15,10 +15,10 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 if (!defined('WEBPRO_INMOD')) {
-  die();
+    die();
 }
 else {
-  echo container('<h1>FreezeMessenger and WebPro Copyright and License</h1>', 'FreezeMessenger is Copyright &copy; 2011 by Joseph T. Parsons. It is distributed under the GNU General Public License, version 3:
+    echo container('<h1>FreezeMessenger and WebPro Copyright and License</h1>', 'FreezeMessenger is Copyright &copy; 2011 by Joseph T. Parsons. It is distributed under the GNU General Public License, version 3:
 <blockquote>This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br /><br />
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.<br /><br />You should have received a copy of the GNU General Public License along with this program.  If not, see <a href="http://www.gnu.org/licenses/">&lt;http://www.gnu.org/licenses/&gt;</a>.</blockquote><br /><br />
 

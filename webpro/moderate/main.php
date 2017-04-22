@@ -15,10 +15,10 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 if (!defined('WEBPRO_INMOD')) {
-  die();
+    die();
 }
 else {
-  echo container('Welcome','Welcome to the FreezeMessenger control panel. Here you, as one of our well-served grandé and spectacular administrative staff, can perform every task needed to you during normal operation. Still, be careful: you can mess things up here!<br /><br />
+    echo container('Welcome','Welcome to the FreezeMessenger control panel. Here you, as one of our well-served grandé and spectacular administrative staff, can perform every task needed to you during normal operation. Still, be careful: you can mess things up here!<br /><br />
 
 To perform an action, click a link on the sidebar. Further instructions can be found in the documentation.<br /><br />
 
