@@ -903,13 +903,22 @@ autoEntry.prototype = {
             if (!id) {
                 dia.error("Invalid entry.");
             }
+            else if ($("span #" + _this.options.name + "SubList" + id).length) {
+                console.log("autoEntry: attempted to add duplicate");
+            }
             else {
                 $("#" + _this.options.name).val($("#" + _this.options.name).val() + "," + id);
 
-                $("#" + _this.options.name + "List").append("<span id=\"" + _this.options.name + "SubList" + id + "\">" + name + ' (<span class="close"></span>), </span>');
-                $("#" + _this.options.name + "List .close").html($('<a href="javascript:void(0);">×</a>').click(function () {
-                    _this.removeEntry(id)
-                }));
+                $("#" + _this.options.name + "List").append(
+                    $("<span>").attr('id', _this.options.name + "SubList" + id).text(
+                        ($("#" + _this.options.name + "List > span").length > 0 ? ', ' : '') +
+                        name + ' '
+                    ).append(
+                        $('<span class="close">(<a href="javascript:void(0);">×</a>)</span>').click(function () {
+                            _this.removeEntry(id)
+                        })
+                    )
+                )
 
                 $("#" + _this.options.name + "Bridge").val('');
 
@@ -919,6 +928,8 @@ autoEntry.prototype = {
     },
 
     removeEntry : function(id) {
+        console.log(["autoEntry: remove entry", id]);
+
         var options = this.options;
 
         $("#" + this.options.name).val($("#" + this.options.name).val().replace(new RegExp("(^|,)" + id + "(,|$)"), "$1$2").replace(/^,|(,),|,$/,'$1'));
