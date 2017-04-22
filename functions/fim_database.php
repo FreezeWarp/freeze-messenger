@@ -802,6 +802,8 @@ class fimDatabase extends databaseSQL
         if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
 
 
+
+        /* Perform Select */
         $messages = $this->select($columns, $conditions, $sort, $options['messageHardLimit'], $options['page']);
 
         return $messages;
@@ -833,6 +835,22 @@ class fimDatabase extends databaseSQL
         );
 
         $this->select($columns, null, $sort, $limit, $page);
+    }
+
+
+
+    function getUnreadMessages() {
+        $columns = [$this->sqlPrefix . 'unreadMessages' => 'userId, senderId, senderName, senderNameFormat, roomId, roomName, messageId, time, otherMessages'];
+
+        $conditions = [
+            'userId' => $this->user->id,
+        ];
+
+        $sort = [
+            'messageId' => 'asc',
+        ];
+
+        return $this->select($columns, $conditions, $sort);
     }
 
 
@@ -1258,7 +1276,7 @@ class fimDatabase extends databaseSQL
 
             /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
             if ($user->hasPriv('modRooms')) $returnBitfield = 65535; // Super moderators have all permissions.
-            elseif (in_array($user->groupId, $this->config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
+            elseif (in_array($user->mainGroupId, $this->config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
             elseif ($room->ownerId === $user->id) $returnBitfield = 65535; // Owners have all permissions.
             elseif ($room->parentalAge > $user->parentalAge
                 //|| fim_inArray($user->parentalFlags, $room->parentalFlags)
@@ -1627,11 +1645,11 @@ class fimDatabase extends databaseSQL
 
 
 
-    public function markMessageRead($messageId, $userId)
+    public function markMessageRead($roomId, $userId)
     {
         if ($this->config['enableUnreadMessages']) {
             $this->delete($this->sqlPrefix . "unreadMessages", array(
-                'messageId' => $messageId,
+                'roomId'    => $roomId,
                 'userId'    => $userId
             ));
         }
@@ -1946,9 +1964,10 @@ class fimDatabase extends databaseSQL
 
 
     public function createUnreadMessage($sendToUserId, fimUser $user, fimRoom $room, $messageId) {
-        $this->createUserEvent('missedMessage', $sendToUserId, $room->id, $messageId);
-
         if ($this->config['enableUnreadMessages']) {
+            if ($room->isPrivateRoom()) // If watched rooms created events, our event log may quickly run out of space, causing missed events.
+                $this->createUserEvent('missedMessage', $sendToUserId, $room->id, $messageId);
+
             $this->upsert($this->sqlPrefix . "unreadMessages", array(
                 'userId'            => $sendToUserId,
                 'roomId'            => $room->id
@@ -2334,7 +2353,7 @@ class fimDatabase extends databaseSQL
             'friendsList' => 'friendedUserIds'
         ];
 
-        $user = new fimUser($userId);
+        $user = new fimUser((int) $userId);
         $listEntries = $user->__get($cacheColumn);
 
         foreach ($dataChanges AS $operation => $values) {

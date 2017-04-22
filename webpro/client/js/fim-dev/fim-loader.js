@@ -208,8 +208,17 @@ function fim_showMissedMessage(message) { console.log(window.roomId)
     if (message.roomId == window.roomId) {
         // we'll eventually probably want to do something fancy here, like offering to scroll to the last-viewed message.
     }
+    else if ($("#missedMessage" + message.roomId + "_" + message.messageId).length) { // We already have a box for this shown
+        // Do nothing
+    }
     else {
-        $.jGrowl($('<span id="jg7">').text('New message from ')
+        $('.missedMessage').find('[data-roomId=' + message.roomId + ']').find('.jGrowl-close').click(); // Close missed messages that are from the same room.
+
+        $.jGrowl($('<span>').attr({
+            'class': 'missedMessage',
+            'id': "missedMessage" + message.roomId + "_" + message.messageId,
+            'data-roomId': message.roomId
+        }).text('New message from ')
             .append(
                 $('<strong>').attr('style', message.senderNameFormat).text(message.senderName)
             )
@@ -220,8 +229,11 @@ function fim_showMissedMessage(message) { console.log(window.roomId)
                     $(this).parent().parent().parent().parent().find('.jGrowl-close').click()
                 })
             )
-            .append((message.missedMessages ? $('<span>').text('(Total unread messages: ' + message.missedMessages + ')') : ''))
-        );
+            .append((message.missedMessages ? $('<span>').text('(Total unread messages: ' + message.missedMessages + ')') : '')),
+        {
+            sticky : true,
+            close : function() { fimApi.markMessageRead(message.roomId) }
+        });
     }
 }
 

@@ -255,11 +255,12 @@ fimApi.prototype.getUnreadMessages = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
         'access_token' : window.sessionHash,
         'fim3_format' : 'json',
-        'timeout' : 60000,
-        'refresh' : 60000,
     });
 
-    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.mergeDefaults({
+        'timeout': 30000,
+        'refresh': 30000,
+    }, fimApi.requestDefaults));
 
     function getUnreadMessages_query() {
         $.ajax({
@@ -477,10 +478,27 @@ fimApi.prototype.sendMessage = function(params, requestSettings) {
             data: params,
             timeout: requestSettings.timeout,
             cache: requestSettings.cache,
-        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));;
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
 };
 
 
+fimApi.prototype.markMessageRead = function(roomId, requestSettings) {
+    var params = {
+        'access_token' : window.sessionHash,
+        'fim3_format' : 'json',
+        'roomId' : roomId,
+    };
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        url: directory + 'api/markMessageRead.php',
+        type: 'POST',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache,
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+};
 
 fimApi.prototype.editUserOptions = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
