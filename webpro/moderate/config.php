@@ -37,7 +37,7 @@ else {
     ),
   ));
 
-  if ($user['adminDefs']['modPrivs']) {
+  if ($user->hasPriv('modPrivs')) {
     switch ($_GET['do2']) {
       case 'view':
       case false:
