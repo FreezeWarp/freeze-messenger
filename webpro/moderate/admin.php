@@ -24,26 +24,24 @@ else {
     ),
   ));
 
-  if ($user['adminDefs']['modPrivs']) {
+  if ($user->hasPriv('modPrivs')) {
     switch ($request['do2']) {
       case 'view': case false:
         $users = $database->getUsers(array(
-          'hasAdminPrivs' => array(1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192),
-        ))->getAsArray('userId');
+          'hasPrivs' => array(ADMIN_CENSOR, ADMIN_FILES, ADMIN_GRANT, ADMIN_PROTECTED, ADMIN_ROOMS, ADMIN_USERS, ADMIN_VIEW_PRIVATE),
+        ))->getAsUsers();
 
         foreach ($users AS $user2) {
           $adminPrivs = array();
 
-          if ($user2['adminPrivs'] & ADMIN_GRANT)   $adminPrivs[] = 'Grant';
-          if ($user2['adminPrivs'] & ADMIN_PROTECTED)    $adminPrivs[] = '<abbr title="This user cannot be altered by any user other than themself and the site owner.">Protected</abbr>';
-          if ($user2['adminPrivs'] & ADMIN_ROOMS)    $adminPrivs[] = 'Global Room Moderator';
-          if ($user2['adminPrivs'] & ADMIN_USERS)  $adminPrivs[] = 'Global Ban Ability';
-          if ($user2['adminPrivs'] & ADMIN_FILES)  $adminPrivs[] = 'Global Files Control';
-          if ($user2['adminPrivs'] & ADMIN_CENSOR)  $adminPrivs[] = 'Censor Control';
-          if ($user2['adminPrivs'] & ADMIN_PLUGINS)  $adminPrivs[] = 'Plugins Control';
-          if ($user2['adminPrivs'] & ADMIN_INTERFACES)  $adminPrivs[] = 'Interface Control';
+          if ($user2->hasPriv('modPrivs'))   $adminPrivs[] = 'Grant';
+          if ($user2->hasPriv('protected'))  $adminPrivs[] = '<abbr title="This user cannot be altered by any user other than themself and the site owner.">Protected</abbr>';
+          if ($user2->hasPriv('modRooms'))   $adminPrivs[] = 'Global Room Moderator';
+          if ($user2->hasPriv('modUsers'))   $adminPrivs[] = 'Global Ban Ability';
+          if ($user2->hasPriv('modFiles'))   $adminPrivs[] = 'Global Files Control';
+          if ($user2->hasPriv('modCensor'))  $adminPrivs[] = 'Censor Control';
 
-          $rows .= "<tr><td>$user2[userId]</td><td>$user2[userName]</td><td>" . implode(', ', $adminPrivs) . "</td><td><a href=\"./moderate.php?do=admin&do2=edit&user=$user2[userId]\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
+          $rows .= "<tr><td>{$user2->id}</td><td>{$user2->name}</td><td>" . implode(', ', $adminPrivs) . "</td><td><a href=\"./moderate.php?do=admin&do2=edit&user={$user2->id}\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
         }
 
       echo container('Administrators<a href="./moderate.php?do=admin&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
@@ -60,7 +58,6 @@ else {
   </tbody>
 </table>');
       break;
-
     }
   }
   else {
