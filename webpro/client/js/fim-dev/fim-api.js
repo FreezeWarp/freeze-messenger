@@ -639,24 +639,72 @@ fimApi.prototype.changeAvatar = function(avatarHash, requestSettings) {
 };
 
 
-
+/**
+ * Resolves userids from usernames and [username, avatar, profile] from userids. Uses cache if available.
+ *
+ * @param ids
+ * @param names
+ * @param callback
+ * @returns {*}
+ */
 fimApi.prototype.resolveUsers = function(ids, names, callback) {
-    var returnData = {};
+    var deferred = $.Deferred();
 
-    fimApi.getUsers({'userIds' : ids, 'userNames' : names}, {
-        'each': function(user) {
-            returnData[user.userId] = user.userName;
-        },
-        'end' : function() {
-            if (callback)
-                callback(returnData)
-        }
-    });
+    var returnData = {},
+        ids2 = [],
+        names2 = [],
+        getIds;
+
+    if (ids !== null) {
+        getIds = false;
+        ids.forEach(function (id) {
+            if (id in window.userIdToData)
+                returnData[id] = window.userIdToData[id];
+            else
+                ids2.push(id);
+        });
+    }
+
+    else if (names !== null) {
+        getIds = true;
+
+        names.forEach(function (name) {
+            if (name in window.userNameToId)
+                returnData[window.userNameToId[name]] = name;
+            else
+                names2.push(name);
+        });
+    }
+
+    if (ids2.length || names2.length) {
+        fimApi.getUsers({'userIds': ids2, 'userNames': names2}, {
+            'each': function (user) {
+                window.userIdToData[user.userId] = user;
+                window.userNameToId[user.userName] = user.userId;
+
+                if (getIds) {
+                    returnData[user.userName] = userId;
+                }
+                else {
+                    returnData[user.userId] = user;
+                }
+            },
+            'end': function () {
+                deferred.resolve(returnData);
+            }
+        })
+    }
+    else {
+        deferred.resolve(returnData);
+    }
+
+    return deferred.promise();
 };
 
 
 
 fimApi.prototype.resolveRooms = function(ids, names, callback) {
+    var deferred = $.Deferred();
     var returnData = {};
 
     fimApi.getRooms({'roomIds' : ids, 'roomNames' : names}, {
@@ -664,12 +712,11 @@ fimApi.prototype.resolveRooms = function(ids, names, callback) {
             returnData[room.roomId] = room.roomName;
         },
         'end' : function() {
-            if (callback)
-                callback(returnData)
+            deferred.resolve(returnData);
         }
     });
 
-    return returnData;
+    return deferred.promise();
 };
 
 

@@ -178,7 +178,9 @@ standard.prototype.getMessages = function() {console.log("Getting messages from 
 
                 console.log('Event (New Message): ' + Number(active.messageData.messageId));
 
-                fim_newMessage(fim_messageFormat(JSON.parse(e.data), 'list'), Number(active.messageData.messageId));
+                $.when(fim_messageFormat(JSON.parse(e.data), 'list')).then(function(messageText) {
+                    fim_newMessage(messageText, Number(active.messageData.messageId));
+                });
 
                 return false;
             }, false);
@@ -208,7 +210,7 @@ standard.prototype.getMessages = function() {console.log("Getting messages from 
             /*        eventSource.addEventListener('missedMessage', function(e)     {
              var active = JSON.parse(e.data)    ;
 
-             requestSettings.lastEvent = active.eventI    d;
+             requestSettings.lastEvent = active.eventId;
              $.jGrowl('Missed Message', 'New messages have been made in:<br /><br /><a href="#room=' + active.roomId + '">' + active.roomName + '</a>'    );
              console.log('Event (Missed Message): ' + active.messageId)    ;
 
@@ -225,7 +227,9 @@ standard.prototype.getMessages = function() {console.log("Getting messages from 
                     'messageIdStart': requestSettings.lastMessage + 1,
                 }, {
                     'each': function (messageData) {
-                        fim_newMessage(fim_messageFormat(messageData, 'list'), Number(messageData.messageData.messageId));
+                        $.when(fim_messageFormat(messageData, 'list')).then(function(messageText) {
+                            fim_newMessage(messageText, Number(messageData.messageData.messageId));
+                        });
                     },
                     'end': function () {
                         if (requestSettings.firstRequest) requestSettings.firstRequest = false;
@@ -245,7 +249,7 @@ standard.prototype.getMessages = function() {console.log("Getting messages from 
         }
     }
     else {
-        console.log('Not requesting messages; room un    defined.');
+        console.log('Not requesting messages; room undefined.');
     }
 
     return false;

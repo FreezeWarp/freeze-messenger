@@ -265,6 +265,10 @@ $.when(
         dataType: 'script'
     }),
     $.ajax({
+        url: 'client/js/fim-dev/fim-apiHelper.js',
+        dataType: 'script'
+    }),
+    $.ajax({
         url: 'client/js/fim-dev/fim-standard.js',
         dataType: 'script'
     }),

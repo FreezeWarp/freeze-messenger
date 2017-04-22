@@ -449,14 +449,16 @@ popup = {
                         'name' : 'ignoreList',
                         'default' : active.ignoreList,
                         'list' : 'users',
-                        'resolve' : fimApi.resolveUsers
+                        'resolveFromIds' : Resolver.resolveUsersFromIds,
+                        'resolveFromNames' : Resolver.resolveUsersFromNames
                     });
 
                     var watchRooms = new autoEntry($("#watchRoomsContainer"), {
                         'name' : 'watchRooms',
                         'default' : active.watchRooms,
                         'list' : 'rooms',
-                        'resolve' : fimApi.resolveRooms
+                        'resolveFromIds' : Resolver.resolveRoomsFromIds,
+                        'resolveFromNames' : Resolver.resolveRoomsFromNames
                     });
 
                     defaultFormatting = active.messageFormatting.split(';');
@@ -687,7 +689,7 @@ popup = {
                     fimApi.editUserOptions({
                         "defaultFontface" : $('#defaultFace option:selected').val(),
                         "defaultFormatting" : defaultFormatting,
-                        "defaultHighlight" : $('#fontPreview').css('background-color').slice(4,-1),
+                        "defaultHighlight" : ($('#fontPreview').css('background-color') === 'rgba(0, 0, 0, 0)' ? null : $('#fontPreview').css('background-color').slice(4,-1)),
                         "defaultColor" : $('#fontPreview').css('color').slice(4,-1),
                         "defaultRoomId" : $('#defaultRoom').attr('data-id'),
                         "watchRooms" : $('#watchRooms').val().split(','),
@@ -767,9 +769,7 @@ popup = {
                                 .append(parentalFlagsFormatted.join(', '))
                         ).append(
                             $('<td align="center">').append(
-                                $('<button>').click(function() {
-                                    standard.changeAvatar(active.sha256hash)
-                                }).text('Set to Avatar')
+                                $('<button>').click(function() {standard.changeAvatar(active.sha256hash) }).text('Set to Avatar')
                             )
                         )
                     );
@@ -807,7 +807,8 @@ popup = {
                     'onRemove' : function(id) {
                         if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"])
                     },
-                    'resolve' : fimApi.resolveUsers
+                    'resolveFromIds' : Resolver.resolveUsersFromIds,
+                    'resolveFromNames' : Resolver.resolveUsersFromNames
                 });
 
                 allowedUsersList = new autoEntry($("#allowedUsersContainer"), {
@@ -819,7 +820,8 @@ popup = {
                     'onRemove' : function(id) {
                         if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, [])
                     },
-                    'resolve' : fimApi.resolveUsers
+                    'resolveFromIds' : Resolver.resolveUsersFromIds,
+                    'resolveFromNames' : Resolver.resolveUsersFromNames
                 });
 
                 allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
@@ -831,16 +833,8 @@ popup = {
                     'onRemove' : function(id) {
                         if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, [])
                     },
-                    'resolve' : function(ids, names) {
-                        var returnData;
-
-                        fimApi.getGroups({'groupIds' : ids, 'groupNames' : names}, {
-                            'each': function(group) {
-                                returnData[group.groupId] = group.groupName;
-                            }
-                        });
-                        return returnData;
-                    }
+                    'resolveFromIds' : Resolver.resolveGroupsFromIds,
+                    'resolveFromNames' : Resolver.resolveGroupsFromNames
                 });
 
                 $('#allowPosting').change(function() {

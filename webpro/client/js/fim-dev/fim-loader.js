@@ -175,12 +175,33 @@ function fim_youtubeParse($1) {
 
 function fim_formatAsImage(imageUrl) {
     return $('<a target="_BLANK" class="imglink">').attr('href', imageUrl).append(
-        settings.disableImage ? $('span').text('[IMAGE]')
+        settings.disableImage ? $('<span>').text('[IMAGE]')
             : $('<img style="max-width: 250px; max-height: 250px;" />').attr('src', imageUrl + "&" + $.param({
                     'thumbnailWidth' : 250,
                     'thumbnailHeight' : 250,
                 })) // todo: only for files on installI
     ).prop('outerHTML');
+}
+
+function fim_formatAsVideo(videoUrl) {
+    return settings.disableVideo ? $('<a target="_BLANK">[Video]</a>').attr('href', videoUrl)
+                                 : $('<video controls>').attr('src', videoUrl);
+}
+
+function fim_formatAsAudio(audioUrl) {
+    return settings.disableVideo ? $('<a target="_BLANK">[Audio]</a>').attr('href', audioUrl)
+                                 : $('<audio controls>').attr('src', audioUrl);
+}
+
+function fim_formatAsEmail(email) {
+    return $('<a target="_BLANK">').attr('href', 'mailto:' . email).text(email);
+}
+
+function fim_formatAsUrl(url) {
+    if (url.match(/^(http|https|ftp|data|gopher|sftp|ssh)\:/)) // Certain protocols (e.g. "javascript:") could be malicious. Thus, we use a whitelist of trusted protocols instead.
+        return $('<a target="_BLANK">').attr('href', url).text(url);
+    else
+        return $('<span>').text('[Broken Link: ' + url + ']');
 }
 
 function fim_showMissedMessage(message) { console.log(window.roomId)
@@ -215,16 +236,23 @@ function fim_showMissedMessage(message) { console.log(window.roomId)
  * @copyright Joseph T. Parsons 2014
  */
 function fim_messageFormat(json, format) {
+    console.log(["message format", format, json]);
     var mjson = json.messageData,
         ujson = json.userData,
         data,
         text = mjson.messageText,
         messageTime = fim_dateFormat(mjson.messageTime),
         messageId = mjson.messageId,
+        userId = ujson.userId;
 
-        userName = ujson.userName,
-        userId = ujson.userId,
-        userNameFormat = ujson.userNameFormat,
+        if (ujson.userName != null)
+            var userName = ujson.userName;
+        else
+            var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId], null).then(function(pairs) {
+                userName = pairs[userId].userName;
+            }));
+
+        var userNameFormat = ujson.userNameFormat,
         avatar = ujson.avatar,
 
         styleColor = ujson.defaultFormatting.color,
@@ -235,17 +263,16 @@ function fim_messageFormat(json, format) {
 
         flag = mjson.flags;
 
-    text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
-    text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {
-        // The usage of mergeDefaults here is a somewhat lazy way of unsetting the attributes if they are null (thus, not sending them at all, as opposed to sending them empty).
-        return ($1 + "&" + $.param(fimApi.mergeDefaults({},
-            {
-                'parentalAge' : window.activeLogin.userData.parentalAge ? window.activeLogin.userData.parentalAge : null,
-                'parentalFlags' : window.activeLogin.userData.parentalFlags ? window.activeLogin.userData.parentalFlags : null,
-            }
-        )));
-
-    });
+        text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
+        text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {
+            // The usage of mergeDefaults here is a somewhat lazy way of unsetting the attributes if they are null (thus, not sending them at all, as opposed to sending them empty).
+            return ($1 + "&" + $.param(fimApi.mergeDefaults({},
+                {
+                    'parentalAge' : window.activeLogin.userData.parentalAge ? window.activeLogin.userData.parentalAge : null,
+                    'parentalFlags' : window.activeLogin.userData.parentalFlags ? window.activeLogin.userData.parentalFlags : null,
+                }
+            )));
+        });
 
     if (text.length > 1000) { /* TODO */
         text = '[Message Too Long]';
@@ -254,14 +281,13 @@ function fim_messageFormat(json, format) {
         switch (flag) {
             case 'source': text = text.replace(regexs.url, fim_youtubeParse) || '[Unrecognised Source]'; break; // Youtube, etc.
             case 'image': text = fim_formatAsImage(text); break; // // Image; We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
-            case 'video': text = (settings.disableVideo ? '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>' : '<video src="' + fim_eXMLAttr(text) + '" controls></video>'); break; // Video
-            case 'audio': text = (settings.disableVideo ? '<a href="' + fim_eXMLAttr(text) + '" target="_BLANK">[Video]</a>' : '<audio src="' + fim_eXMLAttr(text) + '" controls></audio>'); break; // Audio
-            case 'email': text = '<a href="mailto: ' + fim_eXMLAttr(text) + '" target="_BLANK">' + text + '</a>'; break; // Email Link
+            case 'video': text = fim_formatAsVideo(text) ; break; // Video
+            case 'audio': text = fim_formatAsAudio(text); break; // Audio
+            case 'email': text = fim_formatAsEmail(text); break; // Email Link
 
             // Various Files and URLs
             case 'url': case 'text': case 'html': case 'archive': case 'other':
-            if (text.match(/^(http|https|ftp|data|gopher|sftp|ssh)/)) text = '<a href="' + text + '" target="_BLANK">' + text + '</a>'; // Certain protocols (e.g. "javascript:") could be malicious. Thus, we use a whitelist of trusted protocols instead.
-            else text = '[Undisplayable Link]';
+
             break;
 
             // Unspecified
@@ -293,8 +319,7 @@ function fim_messageFormat(json, format) {
                 if (/^\/me/.test(text)) {
                     text = text.replace(/^\/me/,'');
 
-                    if (settings.disableFormatting) { text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>'; }
-                    else { text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' ' + text + '</span>'; }
+                    text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + userName + ' ' + text).prop('outerHTML');
                 }
 
                 // "/topic" parse
@@ -303,8 +328,7 @@ function fim_messageFormat(json, format) {
 
                     $('#topic').html(text);
 
-                    if (settings.disableFormatting) { text = '<span style="padding: 10px;">* ' + userName + ' ' + text + '</span>'; }
-                    else { text = '<span style="color: red; padding: 10px; font-weight: bold;">* ' + userName + ' changed the topic to "' + text + '".</span>'; }
+                    text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + userName + ' changed the topic to "' + text + '".').prop('outerHTML');
                 }
 
                 // Default Formatting
@@ -323,75 +347,83 @@ function fim_messageFormat(json, format) {
         }
     }
 
-
-    /* Format for Table/List Display */
-    switch (format) {
-        case 'table':
-            data = $('<tr style="word-wrap: break-word;">').attr({
-                'id' : "archiveMessage' + messageId + '"
-            }).append(
-                $('<td>').append(
-                    $('<span class="userName userNameTable">').attr({
-                        'style': userNameFormat,
-                        'data-userId': userId,
-                    }).text(userName)
-                )
-            ).append(
-                $('<td>').text(messageTime)
-            ).append(
-                $('<td>').attr({
-                    'style' : style,
-                    'data-messageId' : messageId,
-                    'data-roomId' : roomId,
-                    'data-avatar' : avatar,
-                    'class' : window.userId == userId ? 'editable' : ''
-                }).html(text)
-            ).append(
-                $('<td>').append(
-                    $('<a href="javascript:void(0); class="updateArchiveHere"">').attr({'data-messageId' : messageId}).text('Show')
-                )
-            );
-            break;
-
-        case 'list':
-            data = $('<span>').attr({
-                'id' : 'message' + messageId,
-                'class' : 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
-            }).append(
-                $('<span>').attr({
-                    'class' : 'userName ' + (settings.showAvatars ? 'userNameAvatar' : 'userNameTable'),
-                    'style' : (!settings.showAvatars ? userNameFormat : ''),
-                    'data-userId' : userId,
-                    'data-userName' : userName,
-                    'data-avatar' : avatar,
-                    'tabindex' : 1000
+    function whenUserNameAvailable() {
+        switch (format) {
+            case 'table':
+                data = $('<tr style="word-wrap: break-word;">').attr({
+                    'id': "archiveMessage' + messageId + '"
                 }).append(
-                    settings.showAvatars ?
-                    $('<img>').attr({
-                        'alt' : userName,
-                        'src' : avatar
-                    }) :
-                    $('<span>').text(userName)
-                )
-            ).append(
-                !settings.showAvatars ?
-                $('<span>').text('@ ').append($('<em>').text(messageTime)) :
-                ''
-            ).append(
-                $('<span>').attr({
-                    'style' : style,
-                    'class' : 'messageText' + (window.userId == userId ? ' editable' : ''),
-                    'data-messageId' : messageId,
-                    'data-roomId' : roomId,
-                    'data-time' : messageTime,
-                    'tabindex' : 1000,
-                    'contenteditable' : (window.userId == userId ? "true" : "false"),
-                }).html(text)
-            );
-            break;
+                    $('<td>').append(
+                        $('<span class="userName userNameTable">').attr({
+                            'style': userNameFormat,
+                            'data-userId': userId,
+                        }).text(userName)
+                    )
+                ).append(
+                    $('<td>').text(messageTime)
+                ).append(
+                    $('<td>').attr({
+                        'style': style,
+                        'data-messageId': messageId,
+                        'data-roomId': roomId,
+                        'data-avatar': avatar,
+                        'class': window.userId == userId ? 'editable' : ''
+                    }).html(text)
+                ).append(
+                    $('<td>').append(
+                        $('<a href="javascript:void(0); class="updateArchiveHere"">').attr({'data-messageId': messageId}).text('Show')
+                    )
+                );
+                break;
+
+            case 'list':
+                data = $('<span>').attr({
+                    'id': 'message' + messageId,
+                    'class': 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
+                }).append(
+                    $('<span>').attr({
+                        'class': 'userName ' + (settings.showAvatars ? 'userNameAvatar' : 'userNameTable'),
+                        'style': (!settings.showAvatars ? userNameFormat : ''),
+                        'data-userId': userId,
+                        'data-userName': userName,
+                        'data-avatar': avatar,
+                        'tabindex': 1000
+                    }).append(
+                        settings.showAvatars ?
+                            $('<img>').attr({
+                                'alt': userName,
+                                'src': avatar
+                            }) :
+                            $('<span>').text(userName)
+                    )
+                ).append(
+                    !settings.showAvatars ?
+                        $('<span>').text('@ ').append($('<em>').text(messageTime)) :
+                        ''
+                ).append(
+                    $('<span>').attr({
+                        'style': style,
+                        'class': 'messageText' + (window.userId == userId ? ' editable' : ''),
+                        'data-messageId': messageId,
+                        'data-roomId': roomId,
+                        'data-time': messageTime,
+                        'tabindex': 1000,
+                        'contenteditable': (window.userId == userId ? "true" : "false"),
+                    }).html(text)
+                );
+                break;
+        }
+
+        return data;
     }
 
-    return data;
+    /* Format for Table/List Display */
+    if (typeof userName === "undefined") {
+        return $.when(userNameDeferred).then(whenUserNameAvailable);
+    }
+    else {
+        return $.when(whenUserNameAvailable);
+    }
 }
 
 
@@ -424,7 +456,8 @@ function fim_messagePreview(container, content) {
  */
 function fim_newMessage(messageText, messageId) {
     if ($.inArray(messageId, messageIndex) > -1) { return; } // Double post hack
-    if (messageId > requestSettings.lastMessage) requestSettings.lastMessage = messageId; // Update the interal lastMessage.
+
+    if (messageId > requestSettings.lastMessage) requestSettings.lastMessage = messageId; // Update the internal lastMessage.
 
     if (settings.reversePostOrder) $('#messageList').append(messageText); // Put the data at the end of the list if reversePostOrder.
     else $('#messageList').prepend(messageText); // Otherwise, put it at top.
@@ -489,15 +522,18 @@ function fim_newMessage(messageText, messageId) {
 
                 fimApi.getUsers({
                     'userIds' : [userId]
-                }, {'each' : function(userData) {
+                }, {'each' : function(userData) { console.log(userData);
                     if (userData.userTitle)
                         content.append($('<br>').append($('<span>').text(userData.userTitle)))
 
                     if (userData.posts)
-                        content.append($('<br><em>Posts</em>: ').append($('<span>').text(userData.posts)));
+                        content.append($('<span><br><em>Posts</em>: </span>').append($('<span>').text(userData.posts)));
 
-                    if (userData.memberSince)
-                        content.append($('<br><em>Member Since</em>: ').append($('<span>').text(userData.memberSince)));
+                    if (userData.profile)
+                        content.append($('<span><br><em>Profile</em>: </span>').append($('<a>').attr('href', userData.profile).text(userData.profile)));
+
+                    if (userData.joinDate)
+                        content.append($('<span><br><em>Member Since</em>: </span>').append($('<span>').text(fim_dateFormat(userData.joinDate, true)))); // TODO:just date
                 }});
             }
         }
@@ -661,6 +697,8 @@ var regexs = {
         ")$", "i")
 }
 
+var userNameToId = {};
+var userIdToData = {};
 /*********************************************************
  ************************* END ***************************
  ******************* Variable Setting ********************
@@ -839,36 +877,45 @@ autoEntry.prototype = {
     },
 
     addEntry : function(id, name) {
+        console.log(["autoEntry: add entry", id, name]);
+
         var _this = this;
         var id = id;
+        var name = name;
 
         if (!id && name) {
-            this.options.resolve(null, [name], function(data) {
-                id = Object.keys(data)[0];
+            var resolver = $.when(this.options.resolveFromNames([name])).then(function(data) {
+                id = data[name][_this.options.list.slice(0, -1) + "Id"];
+
+                console.log(["autoEntry: resolved id", id]);
             });
         }
 
         else if (!name && id) {
-            this.options.resolve([id], null, function(data) {
-                name = Object.values(data)[0];
-            });
-        }
+            var resolver = $.when(this.options.resolveFromIds([id]).then(function(data) {
+                name = data[id][_this.options.list.slice(0, -1) + "Name"];
 
-        if (!id) {
-            dia.error("Invalid user.");
-        }
-        else {
-            $("#" + this.options.name).val($("#" + this.options.name).val() + "," + id);
-
-            $("#" + this.options.name + "List").append("<span id=\"" + this.options.name + "SubList" + id + "\">" + name + ' (<span class="close"></span>), </span>');
-            $("#" + this.options.name + "List .close").html($('<a href="javascript:void(0);">×</a>').click(function() {
-                _this.removeEntry(id)
+                console.log(["autoEntry: resolved name", name]);
             }));
-
-            $("#" + this.options.name + "Bridge").val('');
-
-            if (this.options.onAdd) this.options.onAdd(id);
         }
+
+        $.when(resolver).then(function() {
+            if (!id) {
+                dia.error("Invalid entry.");
+            }
+            else {
+                $("#" + _this.options.name).val($("#" + _this.options.name).val() + "," + id);
+
+                $("#" + _this.options.name + "List").append("<span id=\"" + _this.options.name + "SubList" + id + "\">" + name + ' (<span class="close"></span>), </span>');
+                $("#" + _this.options.name + "List .close").html($('<a href="javascript:void(0);">×</a>').click(function () {
+                    _this.removeEntry(id)
+                }));
+
+                $("#" + _this.options.name + "Bridge").val('');
+
+                if (_this.options.onAdd) _this.options.onAdd(id);
+            }
+        });
     },
 
     removeEntry : function(id) {
@@ -892,11 +939,10 @@ autoEntry.prototype = {
         else if (typeof string === 'string' && string.length > 0) { entryList = string.split(','); } // String is a string and not empty.
         else { entryList = []; }
 
-        var this2 = this;
-
-        this.options.resolve(entryList, null, function(names) {
+        var _this = this;
+        $.when(this.options.resolveFromIds(entryList)).then(function(entries) {
             for (i in entryList) {
-                this2.addEntry(entryList[i], names[entryList[i]]);
+                _this.addEntry(entryList[i], entries[entryList[i]][_this.options.list.slice(0, -1) + "Name"]);
             }
         });
     },
