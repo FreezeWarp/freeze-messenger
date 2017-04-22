@@ -21,7 +21,11 @@
 define('WEBPRO_INMOD', true); // Security to prevent loading of base moderate pages.
 
 /* This below bit hooks into the validate.php script to facilitate a seperate login. It is a bit cooky, though, and will need to be further tested. */
-if (isset($_POST['webproModerate_userName'])) {
+if ($_GET['do'] === 'logout') {
+    setcookie('webproModerate_accessToken', false);
+    $ignoreLogin = true;
+}
+elseif (isset($_POST['webproModerate_userName'])) {
     $hookLogin['userName'] = $_POST['webproModerate_userName'];
     $hookLogin['password'] = $_POST['webproModerate_password'];
 }
@@ -242,6 +246,7 @@ require('moderateFunctions.php'); // Functions that are used solely by the moder
     <ul>
       <li><a href="moderate.php?do=main">Home</a></li>
       <li><a href="moderate.php?do=copyright">Copyright</a></li>
+        <li><a href="moderate.php?do=logout">Logout</a></li>
     </ul>
 
     <?php if ($user->hasPriv('modPrivs')) { ?>
