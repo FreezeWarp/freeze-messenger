@@ -1362,10 +1362,9 @@ var dia = {
         });
     },
 
-    confirm: function (options) {
-        $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 20px 0px;"></span>' + options.text + '</div>').dialog({
-            resizable: false,
-            height: 240,
+    confirm: function (options, title) {
+        $('<div id="dialog-confirm"><span class="ui-icon ui-icon-alert" style="float: left; margin: 0px 7px 10px 0px;"></span>' + options.text + '</div>').dialog({
+            title: title,
             modal: true,
             hide: "puff",
             buttons: {

@@ -270,6 +270,12 @@ standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
                 'flag' : (flag ? flag : '')
             },
             {
+                'end' : function (message) {
+                    if ("censor" in message && message.censor) {
+                        console.log("censor match.");
+                        dia.info(Object.values(message.censor).join('<br /><br />'), "Censor warning: " + Object.keys(message.censor).join(', '));
+                    }
+                },
                 'exception' : function(exception) {
                     if (exception.string === 'confirmCensor')
                         dia.confirm({
@@ -277,7 +283,7 @@ standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
                             'true' : function() {
                                 standard.sendMessage(message, 1, flag);
                             }
-                        });
+                        }, "Censor Warning");
                     else if (exception.string === 'spaceMessage') {
                         dia.error("Too... many... spaces!")
                     }
