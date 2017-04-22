@@ -194,16 +194,16 @@ $('<link>', {
     href: 'client/css/' + window.webproDisplay.theme + '/jquery-ui-1.8.16.custom.css'
 }).appendTo('head');
 $('<link>', {
-    id: 'stylesVIM',
-    rel: 'stylesheet',
-    type: 'text/css',
-    href: 'client/css/' + window.webproDisplay.theme + '/fim.css'
-}).appendTo('head');
-$('<link>', {
     id: 'stylesv2',
     rel: 'stylesheet',
     type: 'text/css',
     href: "client/css/stylesv2.css"
+}).appendTo('head');
+$('<link>', {
+    id: 'stylesVIM',
+    rel: 'stylesheet',
+    type: 'text/css',
+    href: 'client/css/' + window.webproDisplay.theme + '/fim.css'
 }).appendTo('head');
 
 
