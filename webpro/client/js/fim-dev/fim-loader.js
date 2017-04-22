@@ -97,61 +97,25 @@ function fim_messagePopup(data) {
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2014
  */
-function fim_dateFormat(timestamp, full) {
-    // This pads zeros to the start of time values.
-    _zeropad = function (number, newLength) {
-        var numberString = number + '';
-
-        for (var i = numberString.length; i < newLength; i++) { number = '0' + number; }
-
-        return number;
-    }
-
-
+function fim_dateFormat(timestamp, options) {
     // Create the date object; set it to the specified timestamp.
     var jsdate = new Date;
-
-    // Create the string we will eventually return.
-    var timeString = '';
-
     jsdate.setTime(timestamp * 1000);
 
+    if (typeof options === "undefined") {
+        var options = {hour: "numeric", minute: "numeric", second: "numeric"};
 
-    // Time-part object -- this makes the below formats a bit more readable (...and writable).
-    _timepart = {
-        seconds: function () { return _zeropad(jsdate.getSeconds(), 2); }, // Seconds
-        minutes: function () { return _zeropad(jsdate.getMinutes(), 2); }, // Minutes
-        hours: function () { return _zeropad((jsdate.getHours() % 12 || 12), 2); }, // 12-Hours
-        hours24: function () { return _zeropad(jsdate.getHours(), 2); }, // 24-Hours
-        days: function () { return _zeropad(jsdate.getDate(), 2); }, // Days
-        months: function () { return _zeropad(jsdate.getMonth() + 1, 2); }, // Month
-        years: function () { return jsdate.getFullYear(); } // Year
-    };
-
-
-    // If the message as sent on the previous day, we will force the full code.
-    if (!full) {
         var today = new Date;
         var lastMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0).getTime() / 1000; // Finds the date of the last midnight as a timestamp.
 
-        if (timestamp < lastMidnight) { full = true; } // If the current time is before the last midnight...
+        if (timestamp < lastMidnight) {
+            options.day = "numeric";
+            options.month = "numeric";
+            options.year = "2-digit";
+        }
     }
 
-
-    // Format String
-    if (full) { // Include the full code.
-        timeString += ((settings.usTime ?
-            (_timepart.months() + '-' + _timepart.days() + '-' + _timepart.years()) :
-            (_timepart.days() + '-' + _timepart.months() + '-' + _timepart.years())) +
-        ' ');
-    }
-
-    timeString += (settings.twelveHourTime ?
-            _timepart.hours() :
-            _timepart.hours24()) +
-        ':' + _timepart.minutes() + ':' + _timepart.seconds();
-
-    return timeString;
+    return jsdate.toLocaleString(undefined, options);
 }
 
 
@@ -410,8 +374,8 @@ function fim_messageFormat(json, format) {
                     )
                 ).append(
                     !settings.showAvatars ?
-                        $('<span>').text('@ ').append($('<em>').text(messageTime)) :
-                        ''
+                        $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(messageTime))
+                        : ''
                 ).append(
                     $('<span>').attr({
                         'style': style,
@@ -545,7 +509,7 @@ function fim_newMessage(messageText, messageId) {
                         content.append($('<span><br><em>Profile</em>: </span>').append($('<a>').attr('href', userData.profile).text(userData.profile)));
 
                     if (userData.joinDate)
-                        content.append($('<span><br><em>Member Since</em>: </span>').append($('<span>').text(fim_dateFormat(userData.joinDate, true)))); // TODO:just date
+                        content.append($('<span><br><em>Member Since</em>: </span>').append($('<span>').text(fim_dateFormat(userData.joinDate, {year : "numeric", month : "numeric", day : "numeric"})))); // TODO:just date
                 }});
             }
         }

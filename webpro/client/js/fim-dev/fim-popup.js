@@ -1079,6 +1079,8 @@ popup = {
     /*** START Kick Manager ***/
 
     manageKicks : function(params) {
+        var dateOptions = {year : "numeric", month : "numeric", day : "numeric", hour: "numeric", minute: "numeric", second: "numeric"};
+
         dia.full({
             content : $t('manageKicks'),
             title : 'Manage/View Kicked Users',
@@ -1089,7 +1091,7 @@ popup = {
                     'userIds': ('userId' in params ? params.userId : [0])
                 }, {
                     'each' : function(kick) {
-                        $('#kickedUsers').append('<tr><td>' + kick.userData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.userData.userId + '">' + kick.userData.userName + '</span>' + kick.userData.userFormatEnd + '</td><td>' + kick.kickerData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.kickerData.userId + '">' + kick.kickerData.userName + '</span>' + kick.kickerData.userFormatEnd + '</td><td>' + fim_dateFormat(kick.set, true) + '</td><td>' + fim_dateFormat(kick.expires, true) + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>');
+                        $('#kickedUsers').append('<tr><td>' + kick.userData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.userData.userId + '">' + kick.userData.userName + '</span>' + kick.userData.userFormatEnd + '</td><td>' + kick.kickerData.userFormatStart + '<span class="userName userNameTable" data-userId="' + kick.kickerData.userId + '">' + kick.kickerData.userName + '</span>' + kick.kickerData.userFormatEnd + '</td><td>' + fim_dateFormat(kick.set, dateOptions) + '</td><td>' + fim_dateFormat(kick.expires, dateOptions) + '</td><td><button onclick="standard.unkick(' + userId + ', ' + roomId + ')">Unkick</button></td></tr>');
                     }
                 });
             }
