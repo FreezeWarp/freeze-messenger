@@ -15,49 +15,49 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 if (!defined('WEBPRO_INMOD')) {
-  die();
+    die();
 }
 else {
-  $request = fim_sanitizeGPC('r', array(
-    'tool' => array(
-      'cast' => 'string'
-    ),
-  ));
+    $request = fim_sanitizeGPC('r', array(
+        'tool' => array(
+            'cast' => 'string'
+        ),
+    ));
 
-  if ($user->hasPriv('modPrivs')) {
-    switch($_GET['tool']) {
-      case false:
-      echo container('Please Choose a Tool','<ul><li><a href="./moderate.php?do=tools&tool=viewcache">View Cache</a></li><li><a href="./moderate.php?do=tools&tool=clearcache">Clear Cache</a></li></ul>');
-      break;
-      
-      case 'viewcache':
-      foreach (array('fim_config', 'fim_kicksCache', 'fim_permissionsCache', 'fim_watchRoomsCache', 'fim_censorListsCache', 'fim_censorWordsCache', 'fim_roomListNamesCache') AS $cache) {
-        $formattedCache = '';
-        
-        foreach ($generalCache->get($cache) AS $key => $value) {
-          if (is_array($value)) {
-            $value = print_r($value, true);
-          }
-          
-          $formattedCache .= '<tr><td>' . $key . '</td><td>' . $value . '</td></tr>';
+    if ($user->hasPriv('modPrivs')) {
+        switch($_GET['tool']) {
+            case false:
+                echo container('Please Choose a Tool','<ul><li><a href="./moderate.php?do=tools&tool=viewcache">View Cache</a></li><li><a href="./moderate.php?do=tools&tool=clearcache">Clear Cache</a></li></ul>');
+                break;
+
+            case 'viewcache':
+                foreach (array('fim_config', 'fim_kicksCache', 'fim_permissionsCache', 'fim_watchRoomsCache', 'fim_censorListsCache', 'fim_censorWordsCache', 'fim_roomListNamesCache') AS $cache) {
+                    $formattedCache = '';
+
+                    foreach ($generalCache->get($cache) AS $key => $value) {
+                        if (is_array($value)) {
+                            $value = print_r($value, true);
+                        }
+
+                        $formattedCache .= '<tr><td>' . $key . '</td><td>' . $value . '</td></tr>';
+                    }
+
+                    echo container('Cache Entries: ' . $cache, '<table class="page ui-widget ui-widget-content" border="1">' . $formattedCache . '</table>');
+                }
+                break;
+
+            case 'clearcache':
+                if ($generalCache->clearAll()) {
+                    echo container('Cache Cleared','The cache has been cleared.<br /><br /><form action="moderate.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
+                }
+                else {
+                    echo container('Failed','The clear was unsuccessful.<form action="moderate.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
+                }
+                break;
         }
-
-        echo container('Cache Entries: ' . $cache, '<table class="page ui-widget ui-widget-content" border="1">' . $formattedCache . '</table>');
-      }
-      break;
-      
-      case 'clearcache':
-      if ($generalCache->clearAll()) {
-        echo container('Cache Cleared','The cache has been cleared.<br /><br /><form action="moderate.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
-      }
-      else {
-        echo container('Failed','The clear was unsuccessful.<form action="moderate.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
-      }
-      break;
     }
-  }
-  else {
-    echo 'You do not have permission to use the tools.';
-  }
+    else {
+        echo 'You do not have permission to use the tools.';
+    }
 }
 ?>
