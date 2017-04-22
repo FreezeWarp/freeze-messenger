@@ -18,16 +18,36 @@
  * This is WebPro's means of configuring FIM's data. The pages for individual actions are stored in the moderate/ directory.
 */
 
-define('WEBPRO_INMOD', true); // Security to prevent loading of base moderate pages.
+// Security to prevent loading of base moderate pages.
+define('WEBPRO_INMOD', true);
+
+require('moderateFunctions.php'); // Functions that are used solely by the moderate interfaces.
+require('../functions/fim_curl.php');
+require('../config.php');
 
 /* This below bit hooks into the validate.php script to facilitate a seperate login. It is a bit cooky, though, and will need to be further tested. */
-if ($_GET['do'] === 'logout') {
+if (isset($_GET['do']) && $_GET['do'] === 'logout') {
     setcookie('webproModerate_accessToken', false);
     $ignoreLogin = true;
 }
 elseif (isset($_POST['webproModerate_userName'])) {
-    $hookLogin['userName'] = $_POST['webproModerate_userName'];
-    $hookLogin['password'] = $_POST['webproModerate_password'];
+    $cr = new curlRequest(['client_id' => 'WebProAdmin', 'grant_type' => 'password', 'username' => $_POST['webproModerate_userName'], 'password' => $_POST['webproModerate_password']], '/validate.php');
+
+    if (!$cr->execute()) {
+        die('The request could not be completed (Server Error). Its response is below: ' . $cr->response);
+    }
+    elseif ($result = $cr->getAsJson()) {
+        if (isset($result['exception'])) {
+            var_dump($result); die('fail');
+        }
+        else {
+            setcookie('webproModerate_accessToken', $result['login']['access_token']);
+            $hookLogin['accessToken'] = $result['login']['access_token'];
+        }
+    }
+    else {
+        die('The response could not be parsed. It is below: ' . $cr->response);
+    }
 }
 elseif (isset($_COOKIE['webproModerate_accessToken'])) {
     $hookLogin['accessToken'] = $_COOKIE['webproModerate_accessToken'];
@@ -36,23 +56,16 @@ else {
     $ignoreLogin = true;
 }
 
+require('../global.php');
+/*if (isset($_REQUEST['grant_type'])) {
+    if ($user->id && $apiData['login']['access_token']) {
+    }
+    else {
+        $message = 'Invalid login.';
+    }
+}*/
 
 /* Here we require the backend. */
-try {
-  require('../global.php');
-
-  if (isset($_REQUEST['grant_type'])) {
-      if ($user->id && $apiData['login']['access_token']) {
-          setcookie('webproModerate_accessToken', $apiData['login']['access_token']);
-      }
-      else {
-          $message = 'Invalid login.';
-      }
-  }
-} catch (Exception $e) {
-  $message = $e->getMessage();
-}
-require('moderateFunctions.php'); // Functions that are used solely by the moderate interfaces.
 ?><!DOCTYPE HTML>
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
 <html xmlns="http://www.w3.org/1999/xhtml">

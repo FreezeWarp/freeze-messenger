@@ -62,27 +62,9 @@ $loginDefs['syncMethods'] = array('phpbb', 'vbulletin3', 'vbulletin4');
 $user = new fimUser(0);
 
 /* If a username and password have been passed to the PHP directly, use them for OAuth authentication. */
-if (is_array($hookLogin)) {
-    $_REQUEST['client_id'] = 'HookLogin';
-    $_POST['client_id'] = 'HookLogin';
-
-    if (isset($hookLogin['userName'], $hookLogin['password'])) {
-        $_REQUEST['grant_type'] = 'password';
-        $_POST['grant_type'] = 'password';
-        $_REQUEST['username'] = $hookLogin['userName'];
-        $_POST['username'] = $hookLogin['userName'];
-        $_REQUEST['password'] = $hookLogin['password'];
-        $_POST['password'] = $hookLogin['password'];
-    }
-    elseif (isset($hookLogin['accessToken'])) {
-        $_REQUEST['grant_type'] = 'access_token';
-        $_POST['grant_type'] = 'access_token';
-        $_REQUEST['access_token'] = $hookLogin['accessToken'];
-        $_GET['access_token'] = $hookLogin['accessToken'];
-    }
-    else {
-        throw new Exception('Invalid hookLogin.');
-    }
+if (is_array($hookLogin) && isset($hookLogin['accessToken'])) {
+    $_REQUEST['access_token'] = $hookLogin['accessToken'];
+    $_GET['access_token'] = $hookLogin['accessToken'];
 }
 
 
@@ -148,7 +130,7 @@ else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_t
     }
 
     else {
-        new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
+        throw new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
     }
 
     if (!$hookLogin)
@@ -168,7 +150,7 @@ elseif (isset($_REQUEST['access_token'])) {
 }
 
 else {
-    new fimError('noLogin', 'Please specify login credentials.');
+    throw new fimError('noLogin', 'Please specify login credentials.');
 }
 
 

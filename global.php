@@ -80,18 +80,18 @@ elseif ($phpVersion <= 5.3) { // Removed outright in 5.4, may as well save a CPU
 
 
 /* Require Libraries */
-require(dirname(__FILE__) . '/config.php'); // Configuration Variables
-require(dirname(__FILE__) . '/functions/cache.php'); // APC Wrapper (may use for alteratives like memcached later)
-require(dirname(__FILE__) . '/functions/apiData.php'); // API Data output wrapper.
-require(dirname(__FILE__) . '/functions/database.php'); // Database
-require(dirname(__FILE__) . '/functions/databaseSQL.php'); // Database (SQL)
-require(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extensions
-require(dirname(__FILE__) . '/functions/fim_databaseUAC.php'); // FIM-specific Extensions, UAC (it gets its own file because it might be shipped seperately to support additional intgration methods.)
-require(dirname(__FILE__) . '/functions/fim_user.php'); // FIM-specific Extensions
-require(dirname(__FILE__) . '/functions/fim_room.php'); // FIM-specific Extensions
-require(dirname(__FILE__) . '/functions/fim_cache.php'); // FIM-specific Extension to APC Wrapper
-require(dirname(__FILE__) . '/functions/fim_error.php'); // FIM Custom Error Class
-require(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
+require_once(dirname(__FILE__) . '/config.php'); // Configuration Variables
+require_once(dirname(__FILE__) . '/functions/cache.php'); // APC Wrapper (may use for alteratives like memcached later)
+require_once(dirname(__FILE__) . '/functions/apiData.php'); // API Data output wrapper.
+require_once(dirname(__FILE__) . '/functions/database.php'); // Database
+require_once(dirname(__FILE__) . '/functions/databaseSQL.php'); // Database (SQL)
+require_once(dirname(__FILE__) . '/functions/fim_database.php'); // FIM-specific Extensions
+require_once(dirname(__FILE__) . '/functions/fim_databaseUAC.php'); // FIM-specific Extensions, UAC (it gets its own file because it might be shipped seperately to support additional intgration methods.)
+require_once(dirname(__FILE__) . '/functions/fim_user.php'); // FIM-specific Extensions
+require_once(dirname(__FILE__) . '/functions/fim_room.php'); // FIM-specific Extensions
+require_once(dirname(__FILE__) . '/functions/fim_cache.php'); // FIM-specific Extension to APC Wrapper
+require_once(dirname(__FILE__) . '/functions/fim_error.php'); // FIM Custom Error Class
+require_once(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
 
 
 
