@@ -84,7 +84,7 @@ class apiData {
         $data = array();
 
         foreach ($array AS $key => $value) {
-            $data[] = '"' . $key . '":' . $this->formatJsonValue($value, $depth++);
+            $data[] = '"' . $key . '":' . $this->formatJsonValue($value, $depth + 1);
         }
 
         return '{'. implode(",", $data) . '}';
@@ -97,7 +97,7 @@ class apiData {
         $data = array();
 
         foreach ($array AS $value)
-            $data[] = $this->formatJsonValue($value, $depth++);
+            $data[] = $this->formatJsonValue($value, $depth + 1);
 
         return '['. implode(",", $data) . ']';
     }
@@ -110,16 +110,16 @@ class apiData {
             // http://stackoverflow.com/a/5969617
             for (reset($value); is_int(key($value)); next($value));
             if (is_null(key($value))) // The array is not associative (well, doesn't have non-numeric keys)
-                return $this->outputJsonArray($value, $depth++);
+                return $this->outputJsonArray($value, $depth + 1);
             else
-                return $this->outputJson($value, $depth++);
+                return $this->outputJson($value, $depth + 1);
         }
 
         elseif (is_object($value) && get_class($value) === 'apiOutputDict') {
             $values = $value->getArray();
 
             if (count($values)) {
-                foreach ($values AS $key => &$v) $v = "\"$key\": " . $this->formatJsonValue($v, $depth++);
+                foreach ($values AS $key => &$v) $v = "\"$key\": " . $this->formatJsonValue($v, $depth + 1);
                 return '{' . implode(',', $values) . '}';
             }
             else {
@@ -130,7 +130,7 @@ class apiData {
             $values = $value->getArray();
 
             if (count($values)) {
-                foreach ($values AS &$v) $v = $this->formatJsonValue($v, $depth++);
+                foreach ($values AS &$v) $v = $this->formatJsonValue($v, $depth + 1);
                 return '[' . implode(',', $values) . ']';
             }
             else {
@@ -138,7 +138,7 @@ class apiData {
             }
         }
         elseif (is_object($value))
-            return $this->formatJsonValue(get_object_vars($value), $depth++);
+            return $this->formatJsonValue(get_object_vars($value), $depth + 1);
         elseif ($value === true)
             return 'true';
         elseif ($value === false)
