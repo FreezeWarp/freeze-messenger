@@ -357,25 +357,27 @@ function fim_messageFormat(json, format) {
                     'id': 'message' + messageId,
                     'class': 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
                 }).append(
-                    $('<span>').attr({
-                        'class': 'userName ' + (settings.showAvatars ? 'userNameAvatar' : 'userNameTable'),
-                        'style': (!settings.showAvatars ? userNameFormat : ''),
-                        'data-userId': userId,
-                        'data-userName': userName,
-                        'data-avatar': avatar,
-                        'tabindex': 1000
-                    }).append(
-                        settings.showAvatars ?
-                            $('<img>').attr({
-                                'alt': userName,
-                                'src': avatar
-                            }) :
-                            $('<span>').text(userName)
+                    $('<span class="usernameDate">').append(
+                        $('<span>').attr({
+                            'class': 'userName ' + (settings.showAvatars ? 'userNameAvatar' : 'userNameTable'),
+                            'style': (!settings.showAvatars ? userNameFormat : ''),
+                            'data-userId': userId,
+                            'data-userName': userName,
+                            'data-avatar': avatar,
+                            'tabindex': 1000
+                        }).append(
+                            settings.showAvatars ?
+                                $('<img>').attr({
+                                    'alt': userName,
+                                    'src': avatar
+                                }) :
+                                $('<span>').text(userName)
+                        )
+                    ).append(
+                        !settings.showAvatars ?
+                            $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(messageTime))
+                            : ''
                     )
-                ).append(
-                    !settings.showAvatars ?
-                        $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(messageTime))
-                        : ''
                 ).append(
                     $('<span>').attr({
                         'style': style,
@@ -709,7 +711,9 @@ function windowResize() {
         $('#messageList').parents().eq(4).children('thead').height() -
         50)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
     $('#menuParent').css('height', windowHeight - 30); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
-    $('#messageList').css('max-width', ((windowWidth - 20) * .75)); // Prevent box-stretching. This is common on... many chats.
+
+    // should be fixed, need browser test
+    //$('#messageList').css('max-width', ((windowWidth - 40) * (windowWidth < 600 ? 1 : .75))); // Prevent box-stretching. This is common on... many chats.
 
     if ($("#menu").hasClass("ui-accordion")) $("#menu").accordion("refresh");
 

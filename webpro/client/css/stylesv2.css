@@ -122,6 +122,10 @@ table#fileUploadInfo td {
 #messageList {
   height: 440px;
   overflow: auto;
+
+    /* Prevents overflows */
+    word-break:break-all;
+    width: 100%;
 }
 
 #status {
@@ -225,6 +229,11 @@ table.page {
 .messageText {
   padding: 2px;
   word-wrap: break-word;
+  hyphens: auto;
+}
+
+.date {
+    white-space: nowrap;
 }
 
 .messageTable {
@@ -284,7 +293,17 @@ button.small.ui-widget .ui-icon {
 
 
 /*** Mobile Screen Layout ***/
-@media screen and (max-width: 800px) {
+@media screen and (min-width: 601px) and (max-width: 800px) {
+  .ui-accordion .ui-accordion-content ul {
+      list-style-type: none;
+      padding-left: .5em !important;
+  }
+    .ui-accordion .ui-accordion-content li {
+        padding-bottom: 3px;
+      margin-bottom: 3px;
+    }
+}
+@media screen and (max-width: 600px) {
   #menuParent, #content {
     clear: both;
     float: none;
@@ -294,6 +313,36 @@ button.small.ui-widget .ui-icon {
   .u  i-tabs .ui-tabs-nav li {
     font-size: .8em;
   }
+}
+@media screen and (max-width: 400px) {
+
+    .usernameDate {
+        display: block;
+        font-weight: bold;
+    }
+    .messageLine {
+        padding-bottom: 10px;
+    }
+    .userNameTable {
+        width: auto;
+        padding-right: 10px;
+        display: inline;
+    }
+}
+@media screen and (max-width: 800px) and (min-width: 600px) {
+
+    .usernameDate {
+        display: block;
+        font-weight: bold;
+    }
+    .messageLine {
+        padding-bottom: 10px;
+    }
+    .userNameTable {
+        width: auto;
+        padding-right: 10px;
+        display: inline;
+    }
 }
 
 
