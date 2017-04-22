@@ -18,7 +18,7 @@ if (!defined('WEBPRO_INMOD')) {
   die();
 }
 else {
-  if ($user['adminDefs']['modPrivs']) {
+  if ($user->hasPriv('modPrivs')) {
     if (function_exists('phpinfo')) {
       ob_start();
 
