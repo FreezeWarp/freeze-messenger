@@ -24,23 +24,22 @@ else {
         )
     ));
 
-    if ($user['adminDefs']['modPrivs']) {
+    if ($user->hasPriv('modPrivs')) {
         switch ($request['do2']) {
             case 'view': case false:
-            $sessions = $database->getSessions()->getAsArray('userId');
+            $sessions = $database->getSessions()->getAsArray(true);
 
             foreach ($sessions as $session) {
-                $rows .= "<tr><td>$session[userId]-$session[anonId] ($session[userName])</td><td>$session[sessionId]</td><td>" . chunk_split($session['sessionHash'], 10,  ' ') . "</td><td>" . date('r', $session['sessionTime']) . "</td><td>$session[sessionIp]</td><td>$session[sessionBrowser]</td></tr>";
+                $rows .= "<tr><td>$session[userId]-$session[anonId] ($session[userName])</td><td>" . date('r', $session['expires']) . "</td><td>$session[sessionIp]</td><td>$session[clientId]</td><td>$session[userAgent]</td></tr>";
             }
 
             echo container('Sessions','<table class="page rowHover">
   <thead>
     <tr class="ui-widget-header">
       <td>UID-AID (Username)</td>
-      <td>Session ID</td>
-      <td>Session Hash</td>
-      <td>Session Time</td>
+      <td>Expires</td>
       <td>IP Address</td>
+      <td>Client</td>
       <td>Useragent</td>
     </tr>
   </thead>
@@ -50,6 +49,9 @@ else {
 </table>');
             break;
         }
+    }
+    else {
+        echo 'Permission denied.';
     }
 }
 ?>

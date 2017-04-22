@@ -1046,11 +1046,10 @@ class fimDatabase extends databaseSQL
 
 
 
-    public function getSessions($options = array(), $sort = array('sessionId' => 'asc'), $limit = 0, $pagination = 1)
+    public function getSessions($options = array(), $sort = array('expires' => 'desc'), $limit = 0, $pagination = 1)
     {
         $options = $this->argumentMerge(array(
             'sessionIds' => array(),
-            'sessionHashes'        => array(),
             'userIds'      => array(),
             'ips' => array(),
             'combineUserData' => true,
@@ -1058,7 +1057,7 @@ class fimDatabase extends databaseSQL
 
 
         $columns = array(
-            $this->sqlPrefix . "sessions" => 'sessionId, anonId, sessionHash, userId suserId, sessionTime, sessionIp, userAgent',
+            $this->sqlPrefix . "oauth_access_tokens" => 'access_token, client_id clientId, user_id suserId, anon_id anonId, expires, scope, ip_address sessionIp, http_user_agent userAgent',
         );
 
         $conditions = array();
@@ -1068,9 +1067,7 @@ class fimDatabase extends databaseSQL
             $conditions['both']['userId'] = $this->col('suserId');
         }
 
-        if (count($options['userIds']) > 0) $conditions['both']['either']['userId'] = $this->in($options['userIds']);
-        if (count($options['sessionIds']) > 0) $conditions['both']['either']['sessionId'] = $this->in($options['sessionIds']);
-        if (count($options['sessionHashes']) > 0) $conditions['both']['either']['sessionHash'] = $this->in($options['sessionHashes']);
+        if (count($options['userIds']) > 0) $conditions['both']['either']['suserId'] = $this->in($options['userIds']);
         if (count($options['ips']) > 0) $conditions['both']['either']['sessionIp'] = $this->in($options['ips']);
 
         return $this->select($columns, $conditions, $sort);
