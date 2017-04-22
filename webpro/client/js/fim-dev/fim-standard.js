@@ -115,17 +115,6 @@ standard.prototype.archive = {
 };
 
 
-standard.prototype.changeAvatar = function(avatarHash) {
-    fimApi.editUserOptions({
-        'avatarHash': avatarHash,
-    }, {
-        'end' : function() {
-            dia.info('Your avatar has been updated. It will not appear in your old messages.');
-        }
-    });
-}
-
-
 /* Trigger a login using provided data. This will open a login form if neccessary. */
 standard.prototype.login = function(options) {
     if (options.start) options.start();

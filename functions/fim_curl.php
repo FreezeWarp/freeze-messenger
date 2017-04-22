@@ -193,6 +193,11 @@ class curlRequest {
 
             return $retcode === 200;
         }
+        else {
+            /* TODO: redirect handling (borrow from MirrorReader) */
+            $file_headers = @get_headers($file);
+            return ($file_headers && $file_headers[0] !== 'HTTP/1.1 404 Not Found');
+        }
     }
 
 

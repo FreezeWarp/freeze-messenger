@@ -209,6 +209,7 @@ $defaultConfig = array(
         'zip' => 'archive', 'rar' => 'archive', '7z' => 'archive', 'tgz' => 'archive', 'tbz2' => 'archive',
     ),
     'imageTypes' => array('gif', 'png', 'jpg'),
+    'imageTypesAvatar' => array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG), // Avatars will be checked against this array.
     'imageThumbnails' => array(.1, .25, .5), // When an image is uploaded, thumbnails will be automatically created.
     'imageResizeMaxHeight' => 10000,
     'imageResizeMaxWidth' => 10000,

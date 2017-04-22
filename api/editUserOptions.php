@@ -198,8 +198,8 @@ if ($requestHead['_action'] === 'edit') {
             if ($request['avatar'] === '')
                 $updateArray['avatar'] = $request['avatar'];
 
-            elseif (($config['profileMustMatchRegex'] && !preg_match($config['profileMustMatchRegex'], $request['avatar']))
-                || ($config['profileMustNotMatchRegex'] && preg_match($config['profileMustNotMatchRegex'], $request['avatar'])))
+            elseif (($config['avatarMustMatchRegex'] && !preg_match($config['avatarMustMatchRegex'], $request['avatar']))
+                || ($config['avatarMustNotMatchRegex'] && preg_match($config['avatarMustNotMatchRegex'], $request['avatar'])))
                 $xmlData['editUserOptions']['avatar'] = (new fimError('bannedFile', 'The avatar specified is not allowed.', null, true));
 
             elseif (filter_var($request['avatar'], FILTER_VALIDATE_URL) === FALSE)
@@ -217,7 +217,7 @@ if ($requestHead['_action'] === 'edit') {
                 elseif ($imageData[0] >= $config['avatarMaximumWidth'] || $imageData[1] >= $config['avatarMaximumHeight'])
                     $xmlData['editUserOptions']['avatar'] = (new fimError('bigSize', 'The avatar specified is too large.', null, true));
 
-                elseif (!in_array($imageData[2], $config['imageType']))
+                elseif (!in_array($imageData[2], $config['imageTypesAvatar']))
                     $xmlData['editUserOptions']['avatar'] = (new fimError('badType', 'The avatar is not a valid image type.', null, true))->value();
 
                 else

@@ -515,6 +515,7 @@ fimApi.prototype.editUserOptions = function(params, requestSettings) {
         'defaultFontface': null,
         'parentalAge': null,
         'parentalFlags': null,
+        'avatar' : null,
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);

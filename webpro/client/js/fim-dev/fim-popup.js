@@ -769,7 +769,20 @@ popup = {
                                 .append(parentalFlagsFormatted.join(', '))
                         ).append(
                             $('<td align="center">').append(
-                                $('<button>').click(function() {standard.changeAvatar(active.sha256hash) }).text('Set to Avatar')
+                                $('<button>').click(function() {
+                                    fimApi.editUserOptions({
+                                        'avatar': serverSettings.installUrl + "file.php?sha256hash=" + active.sha256hash + '&thumbnailWidth=200&thumbnailHeight=200',
+                                    }, {
+                                        'end' : function(response) {
+                                            if ("avatar" in response) {
+                                                dia.error(response.avatar.string);
+                                            }
+                                            else {
+                                                dia.info('Your avatar has been updated. It will not appear in your old messages.');
+                                            }
+                                        }
+                                    });
+                                }).text('Set to Avatar')
                             )
                         )
                     );
