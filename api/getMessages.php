@@ -219,7 +219,6 @@ else {
 
             $xmlData['messages'][] = array(
                 'messageData' => array(
-                    'roomId' => (int) $room->id,
                     'messageId' => (int) $message['messageId'],
                     'messageTime' => (int) $message['time'],
                     'messageText' => $message['text'],
