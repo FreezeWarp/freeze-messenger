@@ -15,34 +15,34 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 if (!defined('WEBPRO_INMOD')) {
-  die();
+    die();
 }
 else {
-  $request = fim_sanitizeGPC('r', array(
-    'templateName' => array(
-      'cast' => 'string',
-    ),
+    $request = fim_sanitizeGPC('r', array(
+        'templateName' => array(
+            'cast' => 'string',
+        ),
 
-    'data' => array(
-      'cast' => 'string',
-    ),
+        'data' => array(
+            'cast' => 'string',
+        ),
 
-    'do2' => array(
-      'cast' => 'string',
-    ),
-  ));
+        'do2' => array(
+            'cast' => 'string',
+        ),
+    ));
 
-  $json = json_decode(file_get_contents('client/data/templates.json'), true);
+    $json = json_decode(file_get_contents('client/data/templates.json'), true);
 
-  if ($user->hasPriv('modPrivs')) {
-    switch ($request['do2']) {
-      case 'view':
-      case false:
-      foreach (array_keys($json) AS $template) {
-        $rows .= "<tr><td>$template</td><td><a href=\"./moderate.php?do=templates&do2=edit&templateName=$template\"><img src=\"./images/document-edit.png\" alt=\"Edit\" /></td></tr>";
-      }
+    if ($user->hasPriv('modPrivs')) {
+        switch ($request['do2']) {
+            case 'view':
+            case false:
+                foreach (array_keys($json) AS $template) {
+                    $rows .= "<tr><td>$template</td><td><a href=\"./moderate.php?do=templates&do2=edit&templateName=$template\"><img src=\"./images/document-edit.png\" alt=\"Edit\" /></td></tr>";
+                }
 
-      echo container('Edit Templates','<table class="page rowHover">
+                echo container('Edit Templates','<table class="page rowHover">
   <thead>
     <tr class="ui-widget-header">
       <td width="80%">Template</td>
@@ -53,39 +53,39 @@ else {
 ' . $rows . '
   </tbody>
 </table>');
-      break;
+                break;
 
-      case 'edit':
-      $template = $json[$request['templateName']];
-      $template = str_replace(array('<', '>'), array('&lt;', '&gt;'), formatXmlString($template));
-      $template = preg_replace('/template\.([A-Z])/e', '"template." . lcfirst($1)', $template);
+            case 'edit':
+                $template = $json[$request['templateName']];
+                $template = str_replace(array('<', '>'), array('&lt;', '&gt;'), formatXmlString($template));
+                $template = preg_replace('/template\.([A-Z])/e', '"template." . lcfirst($1)', $template);
 
-      echo container("Edit Template \"$request[templateName]\"","<form action=\"./moderate.php?do=templates&do2=edit2&templateName=$request[templateName]\" method=\"post\">
+                echo container("Edit Template \"$request[templateName]\"","<form action=\"./moderate.php?do=templates&do2=edit2&templateName=$request[templateName]\" method=\"post\">
 
   <label for=\"data\">New Value:</label><br />
   <textarea name=\"data\" id=\"textXml\" style=\"width: 100%; height: 300px;\">$template</textarea><br /><br />
 
   <button type=\"submit\">Update</button>
 </form>");
-      break;
+                break;
 
-      case 'edit2':
-      $template = $request['data'];
-      $template = str_replace(array("\r","\n","\r\n"), '', $template); // Remove new lines (required for JSON).
-      $template = preg_replace("/\>(\ +)/", ">", $template); // Remove extra space between  (looks better).
-      $json[$request['templateName']] = $template; // Update the JSON object with the new template data.
+            case 'edit2':
+                $template = $request['data'];
+                $template = str_replace(array("\r","\n","\r\n"), '', $template); // Remove new lines (required for JSON).
+                $template = preg_replace("/\>(\ +)/", ">", $template); // Remove extra space between  (looks better).
+                $json[$request['templateName']] = $template; // Update the JSON object with the new template data.
 
-      file_put_contents('client/data/templates.json', json_encode($json)) or die('Unable to write'); // Send the new JSON data to the server.
+                file_put_contents('client/data/templates.json', json_encode($json)) or die('Unable to write'); // Send the new JSON data to the server.
 
-      $database->modLog('templateEdit',$template['templateName'] . '-' . $template['interfaceId']);
-      $database->fullLog('templateEdit',array('template' => $template));
+                $database->modLog('templateEdit',$template['templateName'] . '-' . $template['interfaceId']);
+                $database->fullLog('templateEdit',array('template' => $template));
 
-      echo container('Template "' . $request['templateName'] . '" Updated','The template has been updated.<br /><br /><form action="./moderate.php?do=templates&do2=view" method="POST"><button type="submit">Return</button></form>');
-      break;
+                echo container('Template "' . $request['templateName'] . '" Updated','The template has been updated.<br /><br /><form action="./moderate.php?do=templates&do2=view" method="POST"><button type="submit">Return</button></form>');
+                break;
+        }
     }
-  }
-  else {
-    echo 'You do not have permission to modify templates.';
-  }
+    else {
+        echo 'You do not have permission to modify templates.';
+    }
 }
 ?>
