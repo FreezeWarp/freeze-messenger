@@ -1265,8 +1265,8 @@ class fimDatabase extends databaseSQL
             }
         }
         else {
-//            $permissionsCached = $this->getPermissionCache($room->id, $user->id);
-//            if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
+            $permissionsCached = $this->getPermissionCache($room->id, $user->id);
+            if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
 
             if (!$user->resolve(array('socialGroupIds', 'parentalAge', 'parentalFlags'))) throw new Exception('hasPermission was called without a valid user.'); // Make sure we know the room type and alias in addition to ID.
 
