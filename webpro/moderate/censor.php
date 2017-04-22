@@ -15,78 +15,78 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 if (!defined('WEBPRO_INMOD')) {
-  die();
+    die();
 }
 else {
-  $request = fim_sanitizeGPC('r', array(
-    'listId' => array(
-      'cast' => 'int',
-    ),
+    $request = fim_sanitizeGPC('r', array(
+        'listId' => array(
+            'cast' => 'int',
+        ),
 
-    'wordId' => array(
-      'cast' => 'int',
-    ),
+        'wordId' => array(
+            'cast' => 'int',
+        ),
 
-    'word' => array(
-      'cast' => 'string',
-    ),
+        'word' => array(
+            'cast' => 'string',
+        ),
 
-    'param' => array(
-      'cast' => 'string',
-    ),
+        'param' => array(
+            'cast' => 'string',
+        ),
 
-    'severity' => array(
-      'valid' => array('replace', 'warn', 'confirm', 'block'),
-      'default' => 'replace',
-    ),
+        'severity' => array(
+            'valid' => array('replace', 'warn', 'confirm', 'block'),
+            'default' => 'replace',
+        ),
 
-    'options' => array(
-      'cast' => 'int',
-    ),
+        'options' => array(
+            'cast' => 'int',
+        ),
 
-    'listName' => array(
-      'cast' => 'string',
-    ),
+        'listName' => array(
+            'cast' => 'string',
+        ),
 
-    'listType' => array(
-      'valid' => array('black', 'white'),
-      'default' => 'white',
-    ),
+        'listType' => array(
+            'valid' => array('black', 'white'),
+            'default' => 'white',
+        ),
 
-    'candis' => array(
-      'cast' => 'bool',
-    ),
+        'candis' => array(
+            'cast' => 'bool',
+        ),
 
-    'privdis' => array(
-      'cast' => 'bool',
-    ),
+        'privdis' => array(
+            'cast' => 'bool',
+        ),
 
-    'mature' => array(
-      'cast' => 'bool',
-    ),
-  ));
+        'mature' => array(
+            'cast' => 'bool',
+        ),
+    ));
 
-  if ($user->hasPriv('modCensor')) {
-    switch($_GET['do2']) {
+    if ($user->hasPriv('modCensor')) {
+        switch($_GET['do2']) {
 
-      case false:
-      case 'viewLists':
-      $lists = $database->getCensorLists(array('includeStatus' => false))->getAsArray(true);
+            case false:
+            case 'viewLists':
+                $lists = $database->getCensorLists(array('includeStatus' => false))->getAsArray(true);
 
-      foreach ($lists AS $list) {
-        $options = array();
+                foreach ($lists AS $list) {
+                    $options = array();
 
-        if (!$list['options'] & 1)   $options[] = "Inactive";
-        if ($list['options'] & 2)    $options[] = "Disableable";
-        if ($list['options'] & 4)    $options[] = "Hidden";
-        if ($list['options'] & 256)  $options[] = "Disabled in Private";
+                    if (!$list['options'] & 1)   $options[] = "Inactive";
+                    if ($list['options'] & 2)    $options[] = "Disableable";
+                    if ($list['options'] & 4)    $options[] = "Hidden";
+                    if ($list['options'] & 256)  $options[] = "Disabled in Private";
 //        if ($list['options'] & 8) $options[] = "Mature";
 
-        $rows .= '    <tr><td>' . $list['listName'] . '</td><td>' . ($list['listType'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td><a href="./moderate.php?do=censor&do2=deleteList&listId=' . $list['listId'] . '"><img src="./images/document-close.png" /></a><a href="./moderate.php?do=censor&do2=editList&listId=' . $list['listId'] . '"><img src="./images/document-edit.png" /></a><a href="./moderate.php?do=censor&do2=viewWords&listId=' . $list['listId'] . '"><img src="./images/view-list-details.png" /></a></td></tr>
+                    $rows .= '    <tr><td>' . $list['listName'] . '</td><td>' . ($list['listType'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td><a href="./moderate.php?do=censor&do2=deleteList&listId=' . $list['listId'] . '"><img src="./images/document-close.png" /></a><a href="./moderate.php?do=censor&do2=editList&listId=' . $list['listId'] . '"><img src="./images/document-edit.png" /></a><a href="./moderate.php?do=censor&do2=viewWords&listId=' . $list['listId'] . '"><img src="./images/view-list-details.png" /></a></td></tr>
   ';
-      }
+                }
 
-      echo container('Current Lists<a href="./moderate.php?do=censor&do2=editList"><img src="./images/document-new.png" style="float: right;" /></a>', '<table class="page rowHover">
+                echo container('Current Lists<a href="./moderate.php?do=censor&do2=editList"><img src="./images/document-new.png" style="float: right;" /></a>', '<table class="page rowHover">
   <thead>
     <tr class="ui-widget-header">
       <td>List Name</td>
@@ -99,26 +99,26 @@ else {
 ' . $rows . '
   </tbody>
 </table>');
-      break;
+                break;
 
-      case 'editList':
-      if ($request['listId']) {
-        $list = $database->getCensorList($request['listId']);
+            case 'editList':
+                if ($request['listId']) {
+                    $list = $database->getCensorList($request['listId']);
 
-        $title = 'Edit Censor List "' . $list['listName'] . '"';
-      }
-      else {
-        $list = array(
-          'listId' => 0,
-          'listName' => '',
-          'listType' => 'white',
-          'options' => 0,
-        );
+                    $title = 'Edit Censor List "' . $list['listName'] . '"';
+                }
+                else {
+                    $list = array(
+                        'listId' => 0,
+                        'listName' => '',
+                        'listType' => 'white',
+                        'options' => 0,
+                    );
 
-        $title = 'Add New Censor List';
-      }
+                    $title = 'Add New Censor List';
+                }
 
-      echo container($title, '<form action="./moderate.php?do=censor&do2=editList2&listId=' . $list['listId'] . '" method="post">
+                echo container($title, '<form action="./moderate.php?do=censor&do2=editList2&listId=' . $list['listId'] . '" method="post">
   <table class="page ui-widget">
     <tr>
 
@@ -129,9 +129,9 @@ else {
       <td>Type:</td>
       <td>
         ' . fimHtml_buildSelect('listType', array(
-          'black' => 'black',
-          'white' => 'white',
-        ), $list['listType']) . '
+                                         'black' => 'black',
+                                         'white' => 'white',
+                                     ), $list['listType']) . '
       </td>
     </tr>
     <tr>
@@ -154,76 +154,76 @@ else {
 
   <button type="submit">Submit</button><button type="reset">Reset</button>
 </form>');
-      break;
+                break;
 
-      case 'editList2':
-      $listOptions = (!$request['inactive'] ? 1 : 0) + ($request['candis'] ? 2 : 0) + ($request['hidden'] ? 4 : 0) + ($request['privdis'] ? 256 : 0);
+            case 'editList2':
+                $listOptions = (!$request['inactive'] ? 1 : 0) + ($request['candis'] ? 2 : 0) + ($request['hidden'] ? 4 : 0) + ($request['privdis'] ? 256 : 0);
 
-      if ($request['listId']) {
-        $list = $database->getCensorList($request['listId']);
-        $newList = array(
-          'listName' => $request['listName'],
-          'listType' => $request['listType'],
-          'options' => $listOptions,
-        );
+                if ($request['listId']) {
+                    $list = $database->getCensorList($request['listId']);
+                    $newList = array(
+                        'listName' => $request['listName'],
+                        'listType' => $request['listType'],
+                        'options' => $listOptions,
+                    );
 
-        $database->update("{$sqlPrefix}censorLists", $newList, array(
-          'listId' => $request['listId'],
-        ));
+                    $database->update("{$sqlPrefix}censorLists", $newList, array(
+                        'listId' => $request['listId'],
+                    ));
 
-        $database->modLog('changeCensorList', $list['listId']);
-        $database->fullLog('changeCensorList', array('list' => $list, 'newList' => $newList));
+                    $database->modLog('changeCensorList', $list['listId']);
+                    $database->fullLog('changeCensorList', array('list' => $list, 'newList' => $newList));
 
-        echo container('List "' . $list['listName'] . '" Updated', 'The list has been updated.<br /><br /><form action="moderate.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
-      }
-      else {
-        $list = array(
-          'listName' => $request['listName'],
-          'listType' => $request['listType'],
-          'options' => $listOptions,
-        );
+                    echo container('List "' . $list['listName'] . '" Updated', 'The list has been updated.<br /><br /><form action="moderate.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
+                }
+                else {
+                    $list = array(
+                        'listName' => $request['listName'],
+                        'listType' => $request['listType'],
+                        'options' => $listOptions,
+                    );
 
-        $database->insert("{$sqlPrefix}censorLists", $list);
-        $list['listId'] = $database->insertId;
+                    $database->insert("{$sqlPrefix}censorLists", $list);
+                    $list['listId'] = $database->insertId;
 
-        $database->modLog('addCensorList', $list['listId']);
-        $database->fullLog('addCensorList', array('list' => $list));
+                    $database->modLog('addCensorList', $list['listId']);
+                    $database->fullLog('addCensorList', array('list' => $list));
 
-        echo container('List "' . $list['listName'] . '" Added', 'The list has been added.<br /><br /><form action="moderate.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
-      }
-      break;
+                    echo container('List "' . $list['listName'] . '" Added', 'The list has been added.<br /><br /><form action="moderate.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
+                }
+                break;
 
-      case 'deleteList':
-      $list = $database->getCensorList($request['listid']);
-      $words = $database->getCensorWords(array('listIds' => array($request['listIds'])))->getAsArray(true);
+            case 'deleteList':
+                $list = $database->getCensorList($request['listid']);
+                $words = $database->getCensorWords(array('listIds' => array($request['listIds'])))->getAsArray(true);
 
-      $database->modLog('deleteCensorList', $list['listId']);
-      $database->fullLog('deleteCensorList', array('list' => $list, 'words' => $words));
+                $database->modLog('deleteCensorList', $list['listId']);
+                $database->fullLog('deleteCensorList', array('list' => $list, 'words' => $words));
 
-      $database->delete("{$sqlPrefix}censorLists", array(
-        'listId' => $request['listId'],
-      ));
-      $database->delete("{$sqlPrefix}censorWords", array(
-        'listId' => $request['listId'],
-      ));
+                $database->delete("{$sqlPrefix}censorLists", array(
+                    'listId' => $request['listId'],
+                ));
+                $database->delete("{$sqlPrefix}censorWords", array(
+                    'listId' => $request['listId'],
+                ));
 
-      echo container('List Deleted','The list and its words have been deleted.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewLists"><button type="submit">Return to Viewing Words</button></form>');
-      break;
+                echo container('List Deleted','The list and its words have been deleted.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewLists"><button type="submit">Return to Viewing Words</button></form>');
+                break;
 
-      case 'viewWords':
-      $words = $database->getCensorWords(array('listIds' => array($request['listId'])))->getAsArray(true);
+            case 'viewWords':
+                $words = $database->getCensorWords(array('listIds' => array($request['listId'])))->getAsArray(true);
 
-      if (count($words) > 0) {
-        foreach ($words AS $word) {
-          $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./moderate.php?do=censor&do2=deleteWord&wordId=' . $word['wordId'] . '"><img src="./images/document-close.png" /></a><a href="./moderate.php?do=censor&do2=editWord&wordId=' . $word['wordId'] . '"><img src="./images/document-edit.png" /></a></td></tr>
+                if (count($words) > 0) {
+                    foreach ($words AS $word) {
+                        $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./moderate.php?do=censor&do2=deleteWord&wordId=' . $word['wordId'] . '"><img src="./images/document-close.png" /></a><a href="./moderate.php?do=censor&do2=editWord&wordId=' . $word['wordId'] . '"><img src="./images/document-edit.png" /></a></td></tr>
     ';
-        }
-      }
-      else {
-        $rows = '<tr><td colspan="4">No words have been added.</td></tr>';
-      }
+                    }
+                }
+                else {
+                    $rows = '<tr><td colspan="4">No words have been added.</td></tr>';
+                }
 
-      echo container('Current Words<a href="./moderate.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
+                echo container('Current Words<a href="./moderate.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>Word</td>
@@ -236,44 +236,44 @@ else {
 ' . $rows . '
   </tbody>
 </table>');
-      break;
+                break;
 
-      case 'editWord':
-      if ($request['wordId']) { // We are editing a word.
-        $word = $database->getCensorWord($request['wordId']);
-        $list = $database->getCensorList($word['listId']);
+            case 'editWord':
+                if ($request['wordId']) { // We are editing a word.
+                    $word = $database->getCensorWord($request['wordId']);
+                    $list = $database->getCensorList($word['listId']);
 
-        if (!$word) die('Invalid Word');
-        if (!$list) die('Invalid List');
+                    if (!$word) die('Invalid Word');
+                    if (!$list) die('Invalid List');
 
-        $title = 'Edit Censor Word "' . $word['word'] . '"';
-      }
-      elseif ($request['listId']) { // We are adding a word to a list.
-        $list = $database->getCensorList($request['listId']);
+                    $title = 'Edit Censor Word "' . $word['word'] . '"';
+                }
+                elseif ($request['listId']) { // We are adding a word to a list.
+                    $list = $database->getCensorList($request['listId']);
 
-        if (!$list) die('Invalid List');
+                    if (!$list) die('Invalid List');
 
-        $word = array(
-          'word' => '',
-          'wordId' => 0,
-          'severity' => 'replace',
-          'replacement' => '',
-        );
+                    $word = array(
+                        'word' => '',
+                        'wordId' => 0,
+                        'severity' => 'replace',
+                        'replacement' => '',
+                    );
 
-        $title = 'Add Censor Word to "' . $list['listName'] . '"';
-      }
-      else {
-        die('Invalid params specified.');
-      }
+                    $title = 'Add Censor Word to "' . $list['listName'] . '"';
+                }
+                else {
+                    die('Invalid params specified.');
+                }
 
-      $selectBlock = fimHtml_buildSelect('severity', array(
-        'replace' => 'replace',
-        'warn' => 'warn',
-        'confirm' => 'confirm',
-        'block' => 'block',
-      ), $word['severity']);
+                $selectBlock = fimHtml_buildSelect('severity', array(
+                    'replace' => 'replace',
+                    'warn' => 'warn',
+                    'confirm' => 'confirm',
+                    'block' => 'block',
+                ), $word['severity']);
 
-      echo container($title, '<form action="./moderate.php?do=censor&do2=editWord2" method="post">
+                echo container($title, '<form action="./moderate.php?do=censor&do2=editWord2" method="post">
   <table class="page ui-widget">
     <tr>
       <td>Text</td>
@@ -302,65 +302,65 @@ else {
   <button type="submit">Submit</button>
   <button type="reset">Reset</button>
 </form>');
-      break;
+                break;
 
-      case 'editWord2':
-      if ($request['wordId']) { // We are editing a word.
-        $word = $database->getCensorWord($request['wordId']);
-        $list = $database->getCensorList($word['listId']);
+            case 'editWord2':
+                if ($request['wordId']) { // We are editing a word.
+                    $word = $database->getCensorWord($request['wordId']);
+                    $list = $database->getCensorList($word['listId']);
 
-        $database->modLog('editCensorWord', $request['wordId']);
-        $database->fullLog('editCensorWord', array('word' => $word, 'list' => $list));
+                    $database->modLog('editCensorWord', $request['wordId']);
+                    $database->fullLog('editCensorWord', array('word' => $word, 'list' => $list));
 
-        $database->update("{$sqlPrefix}censorWords", array(
-          'word' => $request['word'],
-          'severity' => $request['severity'],
-          'param' => $request['param'],
-        ), array(
-          'wordId' => $request['wordId']
-        ));
+                    $database->update("{$sqlPrefix}censorWords", array(
+                        'word' => $request['word'],
+                        'severity' => $request['severity'],
+                        'param' => $request['param'],
+                    ), array(
+                                          'wordId' => $request['wordId']
+                                      ));
 
-        echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
-      }
-      elseif ($request['listId']) { // We are adding a word to a list.
-        $list = $database->getCensorList($request['listId']);
-        $word = array(
-          'word' => $request['word'],
-          'severity' => $request['severity'],
-          'param' => $request['param'],
-          'listId' => $request['listId'],
-        );
+                    echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
+                }
+                elseif ($request['listId']) { // We are adding a word to a list.
+                    $list = $database->getCensorList($request['listId']);
+                    $word = array(
+                        'word' => $request['word'],
+                        'severity' => $request['severity'],
+                        'param' => $request['param'],
+                        'listId' => $request['listId'],
+                    );
 
-        $database->insert("{$sqlPrefix}censorWords", $word);
-        $word['wordId'] = $database->insertId;
+                    $database->insert("{$sqlPrefix}censorWords", $word);
+                    $word['wordId'] = $database->insertId;
 
-        $database->modLog('addCensorWord', $request['listId'] . ',' . $database->insertId);
-        $database->fullLog('addCensorWord', array('word' => $word, 'list' => $list));
+                    $database->modLog('addCensorWord', $request['listId'] . ',' . $database->insertId);
+                    $database->fullLog('addCensorWord', array('word' => $word, 'list' => $list));
 
-        echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
-      }
-      else {
-        die('Invalid params specified.');
-      }
-      break;
+                    echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
+                }
+                else {
+                    die('Invalid params specified.');
+                }
+                break;
 
-      case 'deleteWord':
-      $word = $database->getCensorWord($request['wordId']);
-      $list = $database->getCensorList($word['listId']);
+            case 'deleteWord':
+                $word = $database->getCensorWord($request['wordId']);
+                $list = $database->getCensorList($word['listId']);
 
-      $database->delete("{$sqlPrefix}censorWords", array(
-        'wordId' => $request['wordId'],
-      ));
+                $database->delete("{$sqlPrefix}censorWords", array(
+                    'wordId' => $request['wordId'],
+                ));
 
-      $database->modLog('deleteCensorWord', $request['wordId']);
-      $database->fullLog('deleteCensorWord', array('word' => $word, 'list' => $list));
+                $database->modLog('deleteCensorWord', $request['wordId']);
+                $database->fullLog('deleteCensorWord', array('word' => $word, 'list' => $list));
 
-      echo container('Word Deleted','The word has been removed.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button type="submit">Return to Viewing Words</button></form>');
-      break;
+                echo container('Word Deleted','The word has been removed.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button type="submit">Return to Viewing Words</button></form>');
+                break;
+        }
     }
-  }
-  else {
-    echo 'You do not have permission to modify the censor.';
-  }
+    else {
+        echo 'You do not have permission to modify the censor.';
+    }
 }
 ?>
