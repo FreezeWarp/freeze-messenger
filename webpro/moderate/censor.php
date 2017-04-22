@@ -66,7 +66,7 @@ else {
     ),
   ));
 
-  if ($user['adminDefs']['modCensor']) {
+  if ($user->hasPriv('modCensor')) {
     switch($_GET['do2']) {
 
       case false:
@@ -355,7 +355,7 @@ else {
       $database->modLog('deleteCensorWord', $request['wordId']);
       $database->fullLog('deleteCensorWord', array('word' => $word, 'list' => $list));
 
-      echo container('Word Deleted','The word has been removed.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewWords"><button type="submit">Return to Viewing Words</button></form>');
+      echo container('Word Deleted','The word has been removed.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button type="submit">Return to Viewing Words</button></form>');
       break;
     }
   }
