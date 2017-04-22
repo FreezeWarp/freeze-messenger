@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-class apiData {
+class apiData implements ArrayAccess {
     private $format;
     private $data;
     private $xmlEntitiesFind;
@@ -22,6 +22,24 @@ class apiData {
     private $xmlAttrEntitiesFind;
     private $xmlAttrEntitiesReplace;
     public $jsonDepthLimit = 15;
+
+    /* ArrayAccess Interface */
+    public function offsetSet($offset, $value) {
+        $this->data[$offset] = $value;
+    }
+
+    public function offsetExists($offset) {
+        return isset($this->data[$offset]);
+    }
+
+    public function offsetUnset($offset) {
+        unset($this->data[$offset]);
+    }
+
+    public function offsetGet($offset) {
+        return $this->data[$offset];
+    }
+
 
 
     public function __construct($data = false, $format = false) {

@@ -62,10 +62,27 @@ $loginDefs['syncMethods'] = array('phpbb', 'vbulletin3', 'vbulletin4');
 $user = new fimUser(0);
 
 /* If a username and password have been passed to the PHP directly, use them for OAuth authentication. */
-if (is_array($hookLogin) && isset($hookLogin['userName'], $hookLogin['password'])) {
-    $_POST['grant_type'] = 'client_credentials';
-    $_POST['username'] = $hookLogin['userName'];
-    $_POST['password'] = $hookLogin['password'];
+if (is_array($hookLogin)) {
+    $_REQUEST['client_id'] = 'HookLogin';
+    $_POST['client_id'] = 'HookLogin';
+
+    if (isset($hookLogin['userName'], $hookLogin['password'])) {
+        $_REQUEST['grant_type'] = 'password';
+        $_POST['grant_type'] = 'password';
+        $_REQUEST['username'] = $hookLogin['userName'];
+        $_POST['username'] = $hookLogin['userName'];
+        $_REQUEST['password'] = $hookLogin['password'];
+        $_POST['password'] = $hookLogin['password'];
+    }
+    elseif (isset($hookLogin['accessToken'])) {
+        $_REQUEST['grant_type'] = 'access_token';
+        $_POST['grant_type'] = 'access_token';
+        $_REQUEST['access_token'] = $hookLogin['accessToken'];
+        $_GET['access_token'] = $hookLogin['accessToken'];
+    }
+    else {
+        throw new Exception('Invalid hookLogin.');
+    }
 }
 
 
@@ -84,15 +101,11 @@ if ($ignoreLogin) {
 }
 
 /* If grant_type is not set, we granting a token, not evaluating. */
-else if (isset($_REQUEST['grant_type'])) {
+else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_token') {
     /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
     switch ($_REQUEST['grant_type']) {
         case 'password': // User authentication
             $oauthServer->addGrantType($userC = new OAuth2\GrantType\UserCredentials($oauthStorage));
-            break;
-
-        case 'client_credentials':
-            $oauthServer->addGrantType($userC = new OAuth2\GrantType\ClientCredentials($oauthStorage));
             break;
 
         case 'anonymous':
@@ -129,14 +142,17 @@ else if (isset($_REQUEST['grant_type'])) {
                 'permissions' => $user->getPermissionsArray()
             ),
         ));
-        echo $apiData;
+
+        if (!$hookLogin)
+            echo $apiData;
     }
 
     else {
         new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
     }
 
-    die();
+    if (!$hookLogin)
+        die();
 }
 
 /* If access_token has been passed, then we are evaluating a token. */

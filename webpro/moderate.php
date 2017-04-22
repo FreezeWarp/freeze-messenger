@@ -18,38 +18,37 @@
  * This is WebPro's means of configuring FIM's data. The pages for individual actions are stored in the moderate/ directory.
 */
 
-
 define('WEBPRO_INMOD', true); // Security to prevent loading of base moderate pages.
 
 /* This below bit hooks into the validate.php script to facilitate a seperate login. It is a bit cooky, though, and will need to be further tested. */
 if (isset($_POST['webproModerate_userName'])) {
-  $hookLogin['userName'] = $_POST['webproModerate_userName'];
-  $hookLogin['password'] = $_POST['webproModerate_password'];
+    $hookLogin['userName'] = $_POST['webproModerate_userName'];
+    $hookLogin['password'] = $_POST['webproModerate_password'];
 }
-elseif (isset($_COOKIE['webproModerate_sessionHash'])) {
-  $hookLogin['sessionHash'] = $_COOKIE['webproModerate_sessionHash'];
-  $hookLogin['userId'] = $_COOKIE['webproModerate_userId'];
+elseif (isset($_COOKIE['webproModerate_accessToken'])) {
+    $hookLogin['accessToken'] = $_COOKIE['webproModerate_accessToken'];
 }
 else {
-  $ignoreLogin = true;
+    $ignoreLogin = true;
 }
 
 
 /* Here we require the backend. */
-
 try {
   require('../global.php');
+
+  if (isset($_REQUEST['grant_type'])) {
+      if ($user->id && $apiData['login']['access_token']) {
+          setcookie('webproModerate_accessToken', $apiData['login']['access_token']);
+      }
+      else {
+          $message = 'Invalid login.';
+      }
+  }
 } catch (Exception $e) {
   $message = $e->getMessage();
 }
 require('moderateFunctions.php'); // Functions that are used solely by the moderate interfaces.
-
-
-/* This sets the cookie with the session hash if possible (sessionHash will be set in validate.php). */
-if (isset($sessionHash) && strlen($sessionHash) > 0) {
-  setcookie('webproModerate_sessionHash', $sessionHash);
-  setcookie('webproModerate_userId', $user['userId']);
-}
 ?><!DOCTYPE HTML>
 <!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -245,7 +244,7 @@ if (isset($sessionHash) && strlen($sessionHash) > 0) {
       <li><a href="moderate.php?do=copyright">Copyright</a></li>
     </ul>
 
-    <?php if ($user['adminDefs']['modTemplates']) { ?>
+    <?php if ($user->hasPriv('modPrivs')) { ?>
     <h3><a href="#" data-itemId="2">WebPro</a></h3>
     <ul>
       <li><a href="moderate.php?do=phrases">Modify Phrases</a></li>
@@ -255,20 +254,20 @@ if (isset($sessionHash) && strlen($sessionHash) > 0) {
 
     <h3><a href="#" data-itemId="3">Engines</a></h3>
     <ul>
-      <?php echo ($user['adminDefs']['modCensor'] ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modEmotes'] ? '<li><a href="moderate.php?do=emoticons">Modify Emoticons</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modPlugins'] && false ? '<li><a href="moderate.php?do=plugins">Modify Plugins</a></li>' : ''); ?>
+      <?php echo ($user->hasPriv('modCensor') ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : ''); ?>
+      <?php echo ($user->hasPriv('modPrivs') ? '<li><a href="moderate.php?do=emoticons">Modify Emoticons</a></li>' : ''); ?>
+      <?php echo ($user->hasPriv('modPrivs') && false ? '<li><a href="moderate.php?do=plugins">Modify Plugins</a></li>' : ''); ?>
     </ul>
 
     <h3><a href="#" data-itemId="4">Moderation</a></h3>
     <ul>
-      <?php echo ($user['adminDefs']['modUsers'] ? '<li><a href="moderate.php?do=users">Manage Users</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modRooms'] ? '<li><a href="moderate.php?do=rooms">Manage Rooms</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modPrivate'] ? '<li><a href="moderate.php?do=private">Manage Private</a></li>' : ''); ?>
-      <?php echo ($user['adminDefs']['modFiles'] ? '<li><a href="moderate.php?do=files">Manage Files</a></li>' : ''); ?>
+      <?php echo ($user->hasPriv('modUsers') ? '<li><a href="moderate.php?do=users">Manage Users</a></li>' : ''); ?>
+      <?php echo ($user->hasPriv('modRooms') ? '<li><a href="moderate.php?do=rooms">Manage Rooms</a></li>' : ''); ?>
+      <?php echo ($user->hasPriv('modPrivate') ? '<li><a href="moderate.php?do=private">Manage Private</a></li>' : ''); ?>
+      <?php echo ($user->hasPriv('modFiles') ? '<li><a href="moderate.php?do=files">Manage Files</a></li>' : ''); ?>
     </ul>
 
-    <?php if ($user['adminDefs']['modPrivs']) { ?>
+    <?php if ($user->hasPriv('modPrivs')) { ?>
     <h3><a href="#" data-itemId="5">Advanced</a></h3>
     <ul>
       <li><a href="moderate.php?do=admin">Admin Permissions</a></li>
@@ -284,7 +283,7 @@ if (isset($sessionHash) && strlen($sessionHash) > 0) {
 <div id="moderateRight" class="ui-widget">
 
 <?php
-if (!$user['userId']) {
+if (!$user->id) {
   echo container('Please Login',($message ? $message : 'You have not logged in. Please login:') . '<br /><br />
 
   <form action="moderate.php" method="post">
@@ -303,7 +302,7 @@ if (!$user['userId']) {
     </table>
   </form>');
 }
-elseif ($user['adminDefs']) { // Check that the user is an admin.
+else {
   switch ($_GET['do']) {
     case 'phrases': require('./moderate/phrases.php'); break;
     case 'templates': require('./moderate/templates.php'); break;
@@ -327,9 +326,6 @@ elseif ($user['adminDefs']) { // Check that the user is an admin.
     case 'copyright': require('./moderate/copyright.php'); break;
     default: require('./moderate/main.php'); break;
   }
-}
-else {
-  trigger_error('You do not have permission to access this page. Please login on the main chat and refresh.',E_USER_ERROR);
 }
 ?>
 </div>

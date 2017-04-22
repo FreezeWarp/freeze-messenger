@@ -32,11 +32,15 @@ To perform an action, click a link on the sidebar. Further instructions can be f
   <tbody>
     <tr>
       <td>Active User</td>
-      <td>' . $user['userName'] . '</td>
+      <td>' . $user->name . '</td>
     </tr>
     <tr>
-      <td>FIM Release</td>
-      <td>FIMv3.0 ("Bad Wolf")</td>
+      <td>FreezeMessenger Release</td>
+      <td>' . FIM_VERSION . '</td>
+    </tr>
+    <tr>
+      <td>FreezeMessenger Internal Language</td>
+      <td>' . FIM_LANGUAGE . '</td>
     </tr>
   </tbody>
 </table>');
