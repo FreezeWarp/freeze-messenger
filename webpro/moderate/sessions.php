@@ -15,25 +15,25 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 if (!defined('WEBPRO_INMOD')) {
-  die();
+    die();
 }
 else {
-  $request = fim_sanitizeGPC('r', array(
-    'do2' => array(
-      'cast' => 'string',
-    )
-  ));
+    $request = fim_sanitizeGPC('r', array(
+        'do2' => array(
+            'cast' => 'string',
+        )
+    ));
 
-  if ($user['adminDefs']['modPrivs']) {
-    switch ($request['do2']) {
-      case 'view': case false:
-      $sessions = $database->getSessions()->getAsArray('userId');
+    if ($user['adminDefs']['modPrivs']) {
+        switch ($request['do2']) {
+            case 'view': case false:
+            $sessions = $database->getSessions()->getAsArray('userId');
 
-      foreach ($sessions as $session) {
-        $rows .= "<tr><td>$session[userId]-$session[anonId] ($session[userName])</td><td>$session[sessionId]</td><td>" . chunk_split($session['sessionHash'], 10,  ' ') . "</td><td>" . date('r', $session['sessionTime']) . "</td><td>$session[sessionIp]</td><td>$session[sessionBrowser]</td></tr>";
-      }
+            foreach ($sessions as $session) {
+                $rows .= "<tr><td>$session[userId]-$session[anonId] ($session[userName])</td><td>$session[sessionId]</td><td>" . chunk_split($session['sessionHash'], 10,  ' ') . "</td><td>" . date('r', $session['sessionTime']) . "</td><td>$session[sessionIp]</td><td>$session[sessionBrowser]</td></tr>";
+            }
 
-      echo container('Sessions','<table class="page rowHover">
+            echo container('Sessions','<table class="page rowHover">
   <thead>
     <tr class="ui-widget-header">
       <td>UID-AID (Username)</td>
@@ -48,8 +48,8 @@ else {
 ' . $rows . '
   </tbody>
 </table>');
-      break;
+            break;
+        }
     }
-  }
 }
 ?>
