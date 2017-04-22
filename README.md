@@ -1,6 +1,6 @@
 FreezeMessenger
 ====================
-Copyright (c) 2011 Joseph T. Parsons <josephtparsons@gmail.com>
+Copyright © 2017 Joseph T. Parsons <josephtparsons@gmail.com>
 
 Licensed under the GPLv3 (see LICENSE)
 
