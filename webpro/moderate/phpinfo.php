@@ -15,29 +15,29 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 if (!defined('WEBPRO_INMOD')) {
-  die();
+    die();
 }
 else {
-  if ($user->hasPriv('modPrivs')) {
-    if (function_exists('phpinfo')) {
-      ob_start();
+    if ($user->hasPriv('modPrivs')) {
+        if (function_exists('phpinfo')) {
+            ob_start();
 
-      phpinfo();
+            phpinfo();
 
-      $phpinfo = ob_get_clean();
+            $phpinfo = ob_get_clean();
 
-      $phpinfo = str_replace(array('<body>','<html>','</html>','</body>'), '', $phpinfo);
-      $phpinfo = preg_replace(array('/<\!DOCTYPE(.*?)>/', '/\<head\>(.*)\<\/head\>/ism'), '', $phpinfo);
-      $phpinfo = str_replace(array('<table','<h1','class="p"','class="e"','class="h"','class="v"','class="r"'), array('<table class="page ui-widget ui-widget-content" border="1"','<h1 class="ui-widget-header"','class="ui-widget-header"','','class="ui-widget-header"','',''), $phpinfo);
+            $phpinfo = str_replace(array('<body>','<html>','</html>','</body>'), '', $phpinfo);
+            $phpinfo = preg_replace(array('/<\!DOCTYPE(.*?)>/', '/\<head\>(.*)\<\/head\>/ism'), '', $phpinfo);
+            $phpinfo = str_replace(array('<table','<h1','class="p"','class="e"','class="h"','class="v"','class="r"'), array('<table class="page ui-widget ui-widget-content" border="1"','<h1 class="ui-widget-header"','class="ui-widget-header"','','class="ui-widget-header"','',''), $phpinfo);
 
-      echo $phpinfo;
+            echo $phpinfo;
+        }
+        else {
+            echo container('Well, I Never!', 'I, for one, am apalled that you have disabled the most prestine function in all of the PHP binary. If you find it a security risk, you know nothing of security. ...Or perhaps it is I that knows nothing. Shall we enjoy a fine lager and discuss?');
+        }
     }
     else {
-      echo container('Well, I Never!', 'I, for one, am apalled that you have disabled the most prestine function in all of the PHP binary. If you find it a security risk, you know nothing of security. ...Or perhaps it is I that knows nothing. Shall we enjoy a fine lager and discuss?');
+        echo 'You do not have permission to view PHP info.';
     }
-  }
-  else {
-    echo 'You do not have permission to view PHP info.';
-  }
 }
 ?>
