@@ -506,8 +506,9 @@
             <column name="userId" type="int" maxlen="8" comment="The user who made the above post." />
             <column name="roomId" type="blob" maxlen="23" comment="The room the above post is contained in." />
 
-            <key name="messageId,phraseId" type="primary" />
+            <key name="messageId,roomId,phraseId" type="primary" />
             <key name="roomId" type="index" />
+            <key name="userId" type="index" />
         </table>
 
 
