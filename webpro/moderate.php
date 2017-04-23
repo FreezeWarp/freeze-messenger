@@ -258,6 +258,7 @@ require('../global.php');
         <h3><a href="#" data-itemId="1">General Information</a></h3>
         <ul>
             <li><a href="moderate.php?do=main">Home</a></li>
+            <?php echo ($user->hasPriv('modPrivs') ? '<li><a href="moderate.php?do=log">View Logs</a></li>' : ''); ?>
             <li><a href="moderate.php?do=copyright">Copyright</a></li>
             <li><a href="moderate.php?do=logout">Logout</a></li>
         </ul>
@@ -335,6 +336,7 @@ require('../global.php');
             case 'files': require('./moderate/files.php'); break;
 
             case 'admin': require('./moderate/admin.php'); break;
+            case 'log': require('./moderate/log.php'); break;
             case 'sessions': require('./moderate/sessions.php'); break;
             case 'config': require('./moderate/config.php'); break;
             case 'sys': require('./moderate/status.php'); break;

@@ -3,17 +3,22 @@
 <dbSchema version="3.0">
     <database name="__CORE__" charset="utf8">
         <table name="accessLog" type="general" comment="Log of all API calls, meant mostly for analytics purposes.">
+            <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
             <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
             <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session.." />
             <column name="action" type="string" maxlen="64" comment="The action performed." />
-            <column name="info" type="int" maxlen="8" comment="Information pertaining to action." />
-            <column name="time" type="time" default="__TIME__" comment="Time of access in milliseconds." />
-            <column name="executionTime" type="int" maxlen="10" comment="Milliseconds required to perform action." />
+            <column name="data" type="string" maxlen="4096" comment="Information pertaining to action." />
+            <column name="time" type="float" comment="Time of access in seconds (with decimal)." />
+            <column name="executionTime" type="float" comment="Time required to perform action in seconds (with decimal)." />
             <column name="userAgent" type="string" maxlen="1000" comment="The environment the agent is running under, usually a web browser or operating system identifer." />
-            <column name="clientCode" type="string" maxlen="10" comment="A code the client identifies itself as, aside from the userAgent (really just meant for browsers, since we can't control those)." />
-            <column name="ipAddress" type="string" maxlen="100" comment="The Internet Protocol address used to make the request." />
+            <column name="clientCode" type="string" maxlen="50" comment="A code the client identifies itself as, aside from the userAgent (really just meant for browsers, since we can't control those)." />
+            <column name="ip" type="string" maxlen="100" comment="The Internet Protocol address used to make the request." />
 
-            <key name="userId,time" type="primary" />
+            <key name="id" type="primary" />
+            <key name="userId" type="index" />
+            <key name="action" type="index" />
+            <key name="ip" type="index" />
+            <key name="sessionHash" type="index" />
         </table>
 
 
@@ -152,13 +157,18 @@
 
         <table name="fullLog" type="general" comment="A log of moderator actions that document all update(), insert(), and delete() calls.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID   for the log entry." />
-            <column name="user" type="int" maxlen="8" comment="The JSON-encoded $user data." />
+            <column name="userId" type="int" maxlen="8" comment="The user ID." />
             <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
-            <column name="server" type="string" maxlen="128" comment="The JSON encoding of the $_SERVER variable." />
-            <column name="action" type="string" maxlen="100" comment="The action performed." />
-            <column name="data" type="string" maxlen="100" comment="The associated data of the action, encoded using JSON." />
+            <column name="ip" type="string" maxlen="128" comment="The IP of the user when the action was performed." />
+            <column name="server" type="string" maxlen="1048576" comment="The JSON encoding of the $_SERVER variable." />
+            <column name="action" type="string" maxlen="1048576" comment="The action performed." />
+            <column name="data" type="string" maxlen="1024" comment="The associated data of the action, encoded using JSON." />
 
             <key name="id" type="primary" />
+            <key name="userId" type="index" />
+            <key name="action" type="index" />
+            <key name="ip" type="index" />
+            <key name="sessionHash" type="index" />
         </table>
 
 
@@ -369,7 +379,7 @@
         </table>
 
 
-        <table name="modlog" type="general" comment="A log of moderator actions.">
+        <table name="modLog" type="general" comment="A log of moderator actions.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
             <column name="userId" type="int" maxlen="8" comment="The user ID who performed the action." />
             <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
@@ -378,6 +388,10 @@
             <column name="data" type="string" maxlen="100" comment="The associated data of the action." />
 
             <key name="id" type="primary" />
+            <key name="userId" type="index" />
+            <key name="action" type="index" />
+            <key name="ip" type="index" />
+            <key name="sessionHash" type="index" />
         </table>
 
 

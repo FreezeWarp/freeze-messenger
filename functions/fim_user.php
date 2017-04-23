@@ -35,6 +35,9 @@ class fimUser
 {
     const ANONYMOUS_USER_ID = -1;
 
+    private $sessionHash;
+    private $clientCode;
+
     public $id = 0;
     private $name = "MISSINGno.";
     private $socialGroupIds;

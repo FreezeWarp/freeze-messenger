@@ -820,22 +820,31 @@ class fimDatabase extends databaseSQL
 
 
 
-    public function getModLog($options, $sort = array('time' => 'asc'), $limit = 0, $page = 1) {
-
+    public function getModLog($options, $sort = array('time' => 'desc'), $limit = 0, $page = 1) {
         $options = $this->argumentMerge(array(
+            'log' => 'mod',
             'userIds' => array(),
             'ips' => array(),
-            'timeMin' => 0,
-            'timeMax' => 0,
+            'combineUserData' => true,
             'actions' => array(),
         ), $options);
 
         $columns = array(
-            $this->sqlPrefix => 'id, userId, time, ip, action, data'
+             $this->sqlPrefix . $options['log'] . 'Log' => 'userId luserId, time, ip, action, data' . ($options['log'] === 'full' ? ', server' : '') . ($options['log'] === 'access' ? ', userAgent, clientCode' : '')
         );
 
-        $this->select($columns, null, $sort, $limit, $page);
+        if ($options['combineUserData']) {
+            $columns[$this->sqlPrefix . "users"] = $this->userColumns;
+            $conditions['both']['userId'] = $this->col('luserId');
+        }
+
+        if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
+        if (count($options['ips']) > 0) $conditions['both']['ip'] = $this->in($options['ips']);
+        if (count($options['actions']) > 0) $conditions['both']['action'] = $this->in($options['actions']);
+
+        return $this->select($columns, $conditions, $sort, $limit, $page);
     }
+
 
 
 
@@ -2217,8 +2226,8 @@ class fimDatabase extends databaseSQL
     public function fullLog($action, $data)
     {
         if ($this->insert($this->sqlPrefix . "fullLog", array(
-            'user'   => json_encode($this->user),
-            'server' => json_encode($_SERVER),
+            'user'   => $this->user->id,
+            'server' => json_encode(array_intersect_key($_SERVER,array_flip($this->config['fullLogServerDirectives']))),
             'action' => $action,
             'time'   => $this->now(),
             'data'   => json_encode($data),
@@ -2243,19 +2252,19 @@ class fimDatabase extends databaseSQL
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
 
-    public function accessLog($action, $info)
+    public function accessLog($action, $data)
     {
-        global $globalTime; // TODO
-
         if ($this->config['accessLogEnabled']) {
             if ($this->insert($this->sqlPrefix . "accessLog", array(
-                'userId' => $this->user['userId'],
+                'userId' => $this->user->id,
+                'sessionHash' => $this->user->sessionHash,
                 'action' => $action,
-                'info ' => json_encode($info),
-                'time'   => $globalTime,
-                'executionTime' => $globalTime - time(),
+                'data' => json_encode($data),
+                'time' => $_SERVER['REQUEST_TIME_FLOAT'],
+                'executionTime' => microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
                 'userAgent' => $_SERVER['HTTP_USER_AGENT'],
-                'ipAddress' => $_SERVER['REMOTE_ADDR'],
+                'clientCode' => $this->user->clientCode,
+                'ip' => $_SERVER['REMOTE_ADDR'],
             ))
             ) {
                 return true;

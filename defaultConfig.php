@@ -461,6 +461,7 @@ $defaultConfig = array(
     'accessLogEnabled' => true,
     'modLogEnabled' => true,
     'fullLogEnabled' => true,
+    'fullLogServerDirectives' => ["HTTP_HOST", "HTTP_ORIGIN", "HTTP_REFERER", "SERVER_SIGNATURE", "SERVER_SOFTWARE", "SERVER_NAME", "SERVER_ADDR", "SERVER_PORT", "REMOTE_ADDR", "DOCUMENT_ROOT", "REQUEST_SCHEME", "SCRIPT_FILENAME", "REMOTE_PORT", "GATEWAY_INTERFACE", "SERVER_PROTOCOL", "QUERY_STRING"],
 
 
 

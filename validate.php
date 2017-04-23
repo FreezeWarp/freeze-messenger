@@ -99,6 +99,8 @@ else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_t
 
     $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
     $user = new fimUser((int) $userC->getUserId());
+    $user->sessionHash = $oauthResponse->getParameter('access_token');
+    $user->clientCode = $oauthResponse->getParameter('client_id');
 
     if ($oauthResponse->getStatusCode() === 200) {
         /* Send Data to API */
@@ -107,7 +109,7 @@ else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_t
         $apiData = new apiData();
         $apiData->replaceData(array(
             'login' => array(
-                'access_token' => $oauthResponse->getParameter('access_token'),
+                'access_token' => $user->sessionHash,
                 'anonId' => $user->anonId,
                 'defaultRoomId' => $user->defaultRoomId,
                 'userData' => array(
