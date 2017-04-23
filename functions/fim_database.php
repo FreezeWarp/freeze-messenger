@@ -960,47 +960,6 @@ class fimDatabase extends databaseSQL
 
 
 
-    /**
-     * Run a query to obtain room lists.
-     * Use of groupBy _highly_ recommended.
-     *
-     * @param       $options
-     * @param array $sort
-     * @param int   $limit
-     * @param int   $pagination
-     *
-     * @return bool|object|resource
-     */
-    public function getRoomLists($options, $sort = array('listId' => 'asc'), $limit = 0, $pagination = 1)
-    {
-        $options = $this->argumentMerge(array(
-            'userIds'     => array(),
-            'roomIds'     => array(),
-            'roomListIds' => array(),
-        ), $options);
-
-        $columns = array(
-            $this->sqlPrefix . "roomLists"     => 'listId, userId, listName, options',
-            $this->sqlPrefix . "roomListRooms" => 'listId llistId, roomId lroomid',
-        );
-
-
-        $conditions['both'] = array(
-            'llistId' => $this->col('listId'),
-        );
-
-
-        if (count($options['roomListIds']) > 0) $conditions['both']['listId'] = $this->in($options['roomListIds']);
-
-        if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
-        if (count($options['roomIds']) > 0) $conditions['both']['lroomId'] = $this->in($options['userIds']);
-
-
-        return $this->select($columns, $conditions, $sort);
-    }
-
-
-
     public function getUsers($options = array(), $sort = array('userId' => 'asc'), $limit = 0, $pagination = 1)
     {
         $options = $this->argumentMerge(array(
