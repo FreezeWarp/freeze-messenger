@@ -1008,6 +1008,7 @@ class fimDatabase extends databaseSQL
             'userNames'      => array(),
             'userNameSearch' => false,
             'bannedStatus'   => false,
+            'hasPrivs' => [],
             'columns' => $this->userColumns, // csvstring a list of columns to include in the return; if not specified, this will default to almost everything except passwords
             'includePasswords' => false, // bool shorthand to add password fields -- whatever they are -- to the otherwise specified columns
         ), $options);
@@ -1028,8 +1029,8 @@ class fimDatabase extends databaseSQL
             $conditions['both']['options'] = $this->int(1, 'bAnd'); // TODO: Test!
 
 
-        if (isset($options['hasAdminPrivs']) && count($options['hasAdminPrivs']) > 0) {
-            foreach ($options['hasAdminPrivs'] AS $adminPriv) $conditions['both']['adminPrivs'] = $this->int($adminPriv, 'bAnd');
+        if (count($options['hasPrivs']) > 0) {
+            foreach ($options['hasPrivs'] AS $adminPriv) $conditions['both']['either']["privs $adminPriv"] = $this->int($adminPriv, 'bAnd');
         }
 
 
