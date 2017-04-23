@@ -48,6 +48,7 @@ $request = fim_sanitizeGPC('p', array(
         'cast' => 'bool',
     )
 ));
+$database->accessLog('editUserStatus', $request);
 
 
 

@@ -54,6 +54,7 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'int',
     ),
 ));
+$database->accessLog('getStats', $request);
 
 
 

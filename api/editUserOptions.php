@@ -172,6 +172,8 @@ $request = fim_sanitizeGPC('p', array(
         'evaltrue' => true,
     )
 ));
+$database->accessLog('editUserOptions', $request);
+
 
 /* Data Predefine */
 $xmlData = array(
@@ -234,15 +236,15 @@ if ($requestHead['_action'] === 'edit') {
             if ($request['profile'] === '')
                 $updateArray['profile'] = $request['profile'];
 
-            elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === FALSE)
+            elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === false)
                 $xmlData['editUserOptions']['profile'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->value();
 
             elseif (($config['profileMustMatchRegex'] && !preg_match($config['profileMustMatchRegex'], $request['profile']))
                 || ($config['profileMustNotMatchRegex'] && preg_match($config['profileMustNotMatchRegex'], $request['profile'])))
                 $xmlData['editUserOptions']['profile'] = (new fimError('bannedUrl', 'The URL specified is not allowed.', null, true))->value();
 
-            elseif (!curlRequest::exists($request['profile']))
-                $xmlData['editUserOptions']['profile'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->value();
+//            elseif (!curlRequest::exists($request['profile']))
+//                $xmlData['editUserOptions']['profile'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->value();
 
             else
                 $updateArray['profile'] = $request['profile'];
@@ -393,6 +395,7 @@ if (count($updateArray) > 0) {
 $database->autoQueue(true);
 
 /* Watch Rooms (used for notifications of new messages, which are placed in unreadMessages) */
+
 if (count($request['watchRooms'])) {
     $database->editRoomList('watchRooms', $user, $request['watchRooms'], $requestHead['_action']);
 }

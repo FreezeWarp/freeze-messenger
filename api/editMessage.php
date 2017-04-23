@@ -48,6 +48,7 @@ $request = fim_sanitizeGPC('p', array(
         'cast' => 'int',
     ),
 ));
+$database->accessLog('editMessage', $request);
 
 
 

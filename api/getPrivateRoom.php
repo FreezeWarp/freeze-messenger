@@ -51,6 +51,7 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'bool',
     )
 ));
+$database->accessLog('getPrivateRoom', $request);
 
 
 

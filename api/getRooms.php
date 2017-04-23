@@ -77,6 +77,8 @@ $request = fim_sanitizeGPC('g', array(
         'default' => false,
     ),
 ));
+$database->accessLog('getRooms', $request);
+
 
 /* Data Predefine */
 $xmlData = array(

@@ -143,6 +143,7 @@ $request = fim_sanitizeGPC(
         ),
     )
 );
+$database->accessLog('editFile', $request);
 
 
 

@@ -160,6 +160,7 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'int',
     ),
 ));
+$database->accessLog('getMessages', $request);
 
 
 /* Get the roomdata. */

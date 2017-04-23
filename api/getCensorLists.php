@@ -52,6 +52,7 @@ $request = fim_sanitizeGPC('g', array(
     'filter' => 'bool',
   ),
 ));
+$database->accessLog('getCensorLists', $request);
 //; die($censorLists->sourceQuery); //
 
 /* Data Predefine */

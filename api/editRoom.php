@@ -183,8 +183,9 @@ $request = fim_sanitizeGPC('p', array(
         ]
     ),
 ));
+$database->accessLog('editRoom', $request);
 
-//var_dump($request); die();
+
 
 /* Data Predefine */
 $xmlData = array(

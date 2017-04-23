@@ -24,6 +24,7 @@ $request = fim_sanitizeGPC('p', array(
         'cast' => 'roomId',
     ),
 ));
+$database->accessLog('markMessageRead', $request);
 
 
 /* Data Predefine */

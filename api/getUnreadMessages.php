@@ -30,6 +30,7 @@
 $apiRequest = true;
 
 require('../global.php');
+$database->accessLog('getUnreadMessages', []);
 
 
 

@@ -58,6 +58,8 @@ $request = fim_sanitizeGPC('p', [
         'cast' => 'int',
     ],
 ]);
+$database->accessLog('sendUser', $request);
+
 
 $userAge = fim_dobToAge($request['birthdate']); // Generate the age in years of the user.
 

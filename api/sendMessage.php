@@ -53,8 +53,7 @@ $request = fim_sanitizeGPC('p', array(
         'cast' => 'bool',
     ),
 ));
-$ip = $_SERVER['REMOTE_ADDR']; // Get the IP address of the user.
-
+$database->accessLog('sendMessage', $request);
 
 
 /* Get Room for DB */

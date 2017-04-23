@@ -41,6 +41,7 @@ $request = fim_sanitizeGPC('g', array(
     'evaltrue' => true,
   ),
 ));
+$database->accessLog('getGroups', $request);
 
 
 

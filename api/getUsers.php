@@ -65,6 +65,7 @@ $request = fim_sanitizeGPC('g', array(
     'default' => ["profile", "groups", "self"],
   ),
 ));
+$database->accessLog('getUsers', $request);
 
 
 

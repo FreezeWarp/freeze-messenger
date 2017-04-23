@@ -56,6 +56,7 @@ $request = fim_sanitizeGPC('g', array(
         'evaltrue' => true,
     ),
 ));
+$database->accessLog('getActiveUsers', $request);
 
 
 /* Request Data Extra Processing */
