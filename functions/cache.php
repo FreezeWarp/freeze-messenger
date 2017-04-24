@@ -44,11 +44,14 @@ class generalCache {
         $this->method = $method;
 
         // Basically, use APC if we can, unless told not to. If we can't, use disk.
-        if ($method !== 'apc' && $method !== 'disk') {
+        if ($method !== 'apcu' && $method !== 'apc' && $method !== 'disk') {
+            if (extension_loaded('apcu')) $this->method = 'apcu';
             if (extension_loaded('apc')) $this->method = 'apc';
             else $this->method = 'disk';
         }
+        elseif ($method === 'apc' && extension_loaded('apcu')) $this->method = 'apcu';
         elseif ($method === 'apc' && !extension_loaded('apc')) $this->method = 'disk';
+        elseif ($method === 'apcu' && !extension_loaded('apcu')) $this->method = 'disk';
 
         if ($this->method === 'disk') {
             require_once('fileCache.php');
@@ -83,6 +86,7 @@ class generalCache {
         case 'none': return $this->data[$index]; break;
         case 'disk': return $this->fileCache->get($index); break;
         case 'apc': return apc_fetch($index); break;
+        case 'apcu': return apcu_fetch($index); break;
         case 'memcache': break;
         default: throw new Exception('Unknown cache method.'); break;
         }
@@ -103,6 +107,7 @@ class generalCache {
         case 'none': $this->data[$index] = $variable; break;
         case 'disk': $this->fileCache->set($index, $variable, $ttl); break;
         case 'apc': apc_delete($index); apc_store($index, $variable, $ttl); break;
+        case 'apcu': apcu_delete($index); apcu_store($index, $variable, $ttl); break;
         case 'memcache':  break;
         default: throw new Exception('Unknown cache method.'); break;
         }
@@ -121,6 +126,7 @@ class generalCache {
         case 'none': return isset($this->data[$index]); break;
         case 'disk': $this->fileCache->exists($index); break;
         case 'apc': return apc_exists($index); break;
+        case 'apcu': return apcu_exists($index); break;
         case 'memcache': break;
         default: throw new Exception('Unknown cache method.'); break;
         }
@@ -141,6 +147,11 @@ class generalCache {
 
         case 'apc':
             if (apc_clear_cache() && apc_clear_cache('user') && apc_clear_cache('opcode')) return true;
+            else return false;
+        break;
+
+        case 'apcu':
+            if (apcu_clear_cache()) return true;
             else return false;
         break;
 
