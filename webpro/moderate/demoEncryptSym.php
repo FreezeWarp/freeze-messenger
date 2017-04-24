@@ -10,8 +10,7 @@ if ($_POST['encryptText']) {
         OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
         $iv // A randomly generated init. vector
     );
-    echo base64_encode($encrypted);
-
+    
     echo container("Symmetric Encryption Demo: Your Encrypted Text", '<textarea style="width: 100%" rows="10">' . base64_encode($encrypted . $iv) . '</textarea>');
 }
 else {

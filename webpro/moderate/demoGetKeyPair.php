@@ -1,6 +1,6 @@
 <?php
 // Generate a key pair.
-$resource = openssl_pkey_new(["private_key_bits" => ($_GET['bits'] ? (int) $_GET['bits'] : 4096)]);
+$resource = openssl_pkey_new(["private_key_bits" => ($_GET['bits'] ? (int) $_GET['bits'] : 1024)]);
 
 // Extract $privKey from $res
 openssl_pkey_export($resource, $privateKey);
