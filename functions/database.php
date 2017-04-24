@@ -1116,16 +1116,22 @@ class databaseResult
     }
 
 
-    public function getColumnValues($column, $columnKey = false)
+    public function getColumnValues($columns, $columnKey = false)
     {
         $columnValues = array();
+        $columns = (array) $columns;
 
         while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
+            $ref =& $columnValues;
+            for ($i = 1; $i < count($columns); $i++) {
+                $ref =& $ref[$row[$columns[$i - 1]]];
+            }
+
             if ($columnKey)
-                $columnValues[$this->applyColumnTransformation($columnKey, $row[$columnKey])] = $this->applyColumnTransformation($column, $row[$column]);
+                $ref[$this->applyColumnTransformation($columnKey, $row[$columnKey])] = $this->applyColumnTransformation(end($columns), $row[end($columns)]);
 
             else
-                $columnValues[] = $this->applyColumnTransformation($column, $row[$column]);
+                $ref[] = $this->applyColumnTransformation(end($columns), $row[end($columns)]);
         }
 
         return $columnValues;

@@ -1482,6 +1482,19 @@ class databaseSQL extends database
         return $tables;
     }
 
+
+    public function getTableColumnsAsArray()
+    {
+        switch ($this->language) {
+            case 'mysql':
+            case 'postgresql':
+                $columns = $this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'COLUMNS') . ' WHERE TABLE_SCHEMA = ' . $this->formatValue('string', $this->activeDatabase))->getColumnValues(['TABLE_NAME', 'COLUMN_NAME']);
+                break;
+        }
+
+        return $columns;
+    }
+
     /*********************************************************
      ************************* END ***************************
      ******************* Table Functions *********************
