@@ -32,6 +32,7 @@ $request = fim_sanitizeGPC('g', array(
     'require' => true,
   ),
 ));
+$database->accessLog('acHelper', $request);
 
 
 switch ($request['list']) {

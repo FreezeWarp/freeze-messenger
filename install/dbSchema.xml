@@ -22,6 +22,19 @@
         </table>
 
 
+        <table name="accessFlood" type="memory" comment="Counter of all API calls, meant for flood detection.">
+            <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
+            <column name="action" type="string" maxlen="20" comment="The action performed." />
+            <column name="period" type="time" comment="The time of accesses modulated as a period." />
+            <column name="expires" type="time" comment="The next period, to allow deletion of all expired entries at once." />
+            <column name="ip" type="string" maxlen="45" comment="The Internet Protocol address used to make the request." />
+            <column name="count" type="int" maxlen="6" comment="The number of hits in the period." />
+
+            <key name="ip,action,period" type="primary" />
+            <key name="expires" type="index" />
+        </table>
+
+
         <table name="configuration" type="general" comment="Configuration directives.">
             <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
             <column name="value" type="string" maxlen="10000" comment="The current value of the configuration directive." />

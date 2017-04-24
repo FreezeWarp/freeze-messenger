@@ -20,7 +20,7 @@
  * Note: fimError can not be caught. It is intended to display data to the API.
  */
 class fimError extends Exception {
-    public function __construct($code = false, $string = false, $context = array(), $return = false) {
+    public function __construct($code = false, $string = false, $context = array(), $return = false, $httpError = 'HTTP/1.1 403 Forbidden') {
         global $config;
 
         $this->email = $config['email'];
@@ -28,13 +28,13 @@ class fimError extends Exception {
         $this->code = $code;
         $this->string = $string;
 
-        if ($this->code && !$return) $this->trigger();
+        if ($this->code && !$return) $this->trigger(false, $httpError);
     }
 
 
-    public function trigger($return = false) {
+    public function trigger($return = false, $httpError = 'HTTP/1.1 403 Forbidden') {
         ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
-        header('HTTP/1.1 403 Forbidden'); // FimError is invoked when the user did something wrong, not us. (At least, it should be. I've been a little inconsistent.)
+        header($httpError); // FimError is invoked when the user did something wrong, not us. (At least, it should be. I've been a little inconsistent.)
 
         $errorData = array_merge((array) $this->context, array(
             'string' => $this->code,

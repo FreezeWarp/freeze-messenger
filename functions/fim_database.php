@@ -2214,6 +2214,36 @@ class fimDatabase extends databaseSQL
 
     public function accessLog($action, $data)
     {
+        if ($this->config['floodDetectionGlobal']) {
+            $time = time();
+            $minute = $time - ($time % 60);
+
+            $floodCount = $this->select([
+                  $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
+            ], [
+                'action' => $action,
+                'ip' => $_SERVER['REMOTE_ADDR'],
+                'period' => $this->ts($minute),
+            ])->getColumnValue('count');
+
+            if ($floodCount > $this->config['floodDetectionGlobal.' . $action . '.perMinute'] && !$this->user->hasPriv('modPrivs')) {
+                throw new fimError("flood", "Your IP has sent too many $action requests ($floodCount observed).", null, null, "HTTP/1.1 429 Too Many Requests");
+            }
+            else {
+                $this->upsert($this->sqlPrefix . "accessFlood", [
+                    'action'  => $action,
+                    'ip'      => $_SERVER['REMOTE_ADDR'],
+                    'period'  => $this->ts($minute),
+                ], [
+                    'userId' => $this->user->id,
+                    'count'  => $this->equation('$count + 1'),
+                    'expires' => $this->ts($minute + 60),
+                ], [
+                    'count' => 1,
+                ]);
+            }
+        }
+
         if ($this->config['accessLogEnabled']) {
             if ($this->insert($this->sqlPrefix . "accessLog", array(
                 'userId' => $this->user->id,

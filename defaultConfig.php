@@ -56,7 +56,27 @@ $defaultConfig = array(
 
     /*** FIM Features ***/
     /* Posting Restrictions */
-    'floodDetection' => true, // TODO, big time
+    'floodDetectionGlobal' => true,
+    'floodDetectionGlobal.editFile.perMinute' => 5,
+    'floodDetectionGlobal.editMessage.perMinute' => 120, // Note that message sends (which are also tracked by floodRoomLimitPerMinute and floodSiteLimitPerMinute) count against this as well.
+    'floodDetectionGlobal.editUserOptions.perMinute' => 10,
+    'floodDetectionGlobal.editUserStatus.perMinute' => 15,
+    'floodDetectionGlobal.getActiveUsers.perMinute' => 10,
+    'floodDetectionGlobal.getCensorLists.perMinute' => 10,
+    'floodDetectionGlobal.getFiles.perMinute' => 10,
+    'floodDetectionGlobal.getGroups.perMinute' => 10,
+    'floodDetectionGlobal.getKicks.perMinute' => 10,
+    'floodDetectionGlobal.getMessages.perMinute' => 10,
+    'floodDetectionGlobal.getPrivateRoom.perMinute' => 10,
+    'floodDetectionGlobal.getRooms.perMinute' => 10,
+    'floodDetectionGlobal.getStats.perMinute' => 10,
+    'floodDetectionGlobal.getUnreadMessages.perMinute' => 10,
+    'floodDetectionGlobal.getUsers.perMinute' => 10,
+    'floodDetectionGlobal.markMessageRead.perMinute' => 10,
+    'floodDetectionGlobal.moderate.perMinute' => 10,
+    'floodDetectionGlobal.sendMessage.perMinute' => 120,
+    'floodDetectionGlobal.sendUser.perMinute' => 1,
+
     'floodRoomLimitPerMinute' => 30,
     'floodSiteLimitPerMinute' => 60,
 
