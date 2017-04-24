@@ -343,11 +343,11 @@ require('../global.php');
             case 'tools': require('./moderate/tools.php'); break;
             case 'phpinfo': require('./moderate/phpinfo.php'); break;
 
-            case 'demoGetKeyPair': require('./moderate/demoGetKeyPair.php'); break;
-            case 'demoEncrypt': require('./moderate/demoEncrypt.php'); break;
-            case 'demoDecrypt': require('./moderate/demoDecrypt.php'); break;
-            case 'demoEncryptSym': require('./moderate/demoEncryptSym.php'); break;
-            case 'demoDecryptSym': require('./moderate/demoDecryptSym.php'); break;
+            case 'demoGetKeyPair': require('./moderate/encryptionDemo/demoGetKeyPair.php'); break;
+            case 'demoEncrypt': require('./moderate/encryptionDemo/demoEncrypt.php'); break;
+            case 'demoDecrypt': require('./moderate/encryptionDemo/demoDecrypt.php'); break;
+            case 'demoEncryptSym': require('./moderate/encryptionDemo/demoEncryptSym.php'); break;
+            case 'demoDecryptSym': require('./moderate/encryptionDemo/demoDecryptSym.php'); break;
 
             case 'copyright': require('./moderate/copyright.php'); break;
             default: require('./moderate/main.php'); break;
