@@ -57,6 +57,7 @@ $defaultConfig = array(
     /*** FIM Features ***/
     /* Posting Restrictions */
     'floodDetectionGlobal' => true,
+    'floodDetectionGlobal.acHelper.perMinute' => 60,
     'floodDetectionGlobal.editFile.perMinute' => 5,
     'floodDetectionGlobal.editMessage.perMinute' => 120, // Note that message sends (which are also tracked by floodRoomLimitPerMinute and floodSiteLimitPerMinute) count against this as well.
     'floodDetectionGlobal.editUserOptions.perMinute' => 10,
@@ -475,7 +476,7 @@ $defaultConfig = array(
     'email' => '',
     'displayBacktrace' => false,
     'logQueries' => false,
-    'logQueriesFile' => 'U:\wamp\www\freeze-messenger\querylog',
+    'logQueriesFile' => '/var/www/html/freeze-messenger/querylog',
 
     /* Advanced Logging */
     'accessLogEnabled' => true,
