@@ -159,5 +159,21 @@ class generalCache {
         default: throw new Exception('Unknown cache method.'); break;
         }
     }
+
+    public function dump() {
+        switch ($this->method) {
+            case 'apc':
+                return apc_cache_info();
+                break;
+
+            case 'apcu':
+                return apcu_cache_info();
+                break;
+
+            default:
+                return [];
+                break;
+        }
+    }
 }
 ?>

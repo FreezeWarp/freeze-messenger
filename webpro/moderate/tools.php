@@ -48,6 +48,9 @@ else {
 
                     echo container('Cache Entries: ' . $cache, '<table class="page ui-widget ui-widget-content" border="1">' . $formattedCache . '</table>');
                 }
+
+                echo container('All Cache Info', '<pre>' . print_r($generalCache->dump(), true) . '</pre>');
+                echo container('Contents of fim_fimUser_1 Cache Entry', '<pre>' . print_r($generalCache->get('fim_fimUser_1'), true) . '</pre>');
                 break;
 
             case 'clearCache':
