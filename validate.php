@@ -148,7 +148,7 @@ elseif (isset($_REQUEST['access_token'])) {
     }
 
     else {
-        $user = new fimUser((int) $oauthServer->getResourceController()->getToken()['user_id']);
+        $user = fimUserFactory::getFromId((int) $oauthServer->getResourceController()->getToken()['user_id']);
     }
 }
 
