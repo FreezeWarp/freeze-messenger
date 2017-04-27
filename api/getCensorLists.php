@@ -25,7 +25,7 @@
  * @param string lists - A comma-seperated list of list IDs to filter by. If not specified all lists will be retrieved.
  *
  * @todo Implement room status.
-*/
+ */
 
 $apiRequest = true;
 
@@ -35,19 +35,19 @@ require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-  'listIds' => array(
-    'default' => [],
-    'cast' => 'list',
-    'filter' => 'int',
-    'evaltrue' => true,
-  ),
-  'roomId' => array(
-    'cast' => 'roomId',
-  ),
-  'includeWords' => array(
-    'default' => false,
-    'filter' => 'bool',
-  ),
+    'listIds' => array(
+        'default' => [],
+        'cast' => 'list',
+        'filter' => 'int',
+        'evaltrue' => true,
+    ),
+    'roomId' => array(
+        'cast' => 'roomId',
+    ),
+    'includeWords' => array(
+        'default' => false,
+        'filter' => 'bool',
+    ),
 ));
 $database->accessLog('getCensorLists', $request);
 
@@ -61,14 +61,14 @@ $xmlData = array(
 
 /* Get Censor Lists from Slave Database */
 $censorLists = $slaveDatabase->getCensorLists(array(
-  'listIds' => $request['listIds'],
-  'includeStatus' => $request['roomId'],
+    'listIds' => $request['listIds'],
+    'includeStatus' => $request['roomId'],
 ))->getAsArray(array('listId'));
 
 if ($request['includeWords']) {
-  $censorWords = $slaveDatabase->getCensorWords(array(
-    'listIds' => array_keys($censorLists),
-  ))->getAsArray(array('listId', 'wordId'));
+    $censorWords = $slaveDatabase->getCensorWords(array(
+        'listIds' => array_keys($censorLists),
+    ))->getAsArray(array('listId', 'wordId'));
 }
 
 
@@ -76,25 +76,25 @@ if ($request['includeWords']) {
 /* Start Processing */
 foreach ($censorLists AS $listId => $list) { // Run through each censor list retrieved.
     if (!isset($xmlData['lists'][$list['listId']])) {
-      $xmlData['lists'][$list['listId']] = array(
-        'listId' => (int) $list['listId'],
-        'listName' => ($list['listName']),
-        'listType' => ($list['listType']),
-        'listOptions' => (int) $list['options'],
-        'words' => array(),
-        'status' => $list['status'],
-      );
+        $xmlData['lists'][$list['listId']] = array(
+            'listId' => (int) $list['listId'],
+            'listName' => ($list['listName']),
+            'listType' => ($list['listType']),
+            'listOptions' => (int) $list['options'],
+            'words' => array(),
+            'status' => $list['status'],
+        );
 
-      if ($request['includeWords']) {
-        foreach($censorWords[$list['listId']] AS $wordId => $censorListWord) {
-          $xmlData['lists'][$list['listId']]['words'][$censorListWord['wordId']] = array(
-            'wordId' => $censorListWord['wordId'],
-            'word' => $censorListWord['word'],
-            'severity' => $censorListWord['severity'],
-            'param' => $censorListWord['param'],
-          );
+        if ($request['includeWords']) {
+            foreach($censorWords[$list['listId']] AS $wordId => $censorListWord) {
+                $xmlData['lists'][$list['listId']]['words'][$censorListWord['wordId']] = array(
+                    'wordId' => $censorListWord['wordId'],
+                    'word' => $censorListWord['word'],
+                    'severity' => $censorListWord['severity'],
+                    'param' => $censorListWord['param'],
+                );
+            }
         }
-      }
     }
 }
 
