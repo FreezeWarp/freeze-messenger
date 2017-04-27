@@ -36,7 +36,7 @@
  * Hash is present in all versions since PHP 5.1.2; MHash is present in all versions since PHP4
  */
 foreach (array('json', 'mbstring', 'mcrypt', 'pcre', 'dom') AS $module) { // Check that each extension has been loaded.
-  if (!extension_loaded($module)) die("The module <strong>$module</strong> could not be found. Please install PHP <strong>$module</strong> compatibility. See the documentation for help.");
+    if (!extension_loaded($module)) die("The module <strong>$module</strong> could not be found. Please install PHP <strong>$module</strong> compatibility. See the documentation for help.");
 }
 
 /*
@@ -48,7 +48,7 @@ if (!extension_loaded('hash') && !extension_loaded('mhash')) die("Neither the <s
 */
 
 if ((bool) ini_get('allow_url_fopen') === false) {
-  die('FOpen functionality is disable. Please enable allow_url_fopen in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen">PHP manual</a>, and in the documentation.');
+    die('FOpen functionality is disable. Please enable allow_url_fopen in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen">PHP manual</a>, and in the documentation.');
 }
 
 
@@ -58,24 +58,24 @@ error_reporting(~E_NOTICE & ~E_USER_NOTICE); // There's no shortage of warnings 
 
 $phpVersion = floatval(PHP_VERSION);
 if ($phpVersion < 5.2) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
-  die('The installed version of PHP is out of date. Only PHP versions 5.2 and above are supported. Contact your server host for more information if possible.');
+    die('The installed version of PHP is out of date. Only PHP versions 5.2 and above are supported. Contact your server host for more information if possible.');
 }
 elseif ($phpVersion <= 5.3) { // Removed outright in 5.4, may as well save a CPU cycle or two.
-  if (function_exists('get_magic_quotes_runtime')) { // Really, in the future, even this function will be removed as well, but it is still there in 5.4 for all the good scripts that use it to disable 'em.
-    if (get_magic_quotes_runtime()) { // Note: We should consider removing the set_magic_quotes_runtime to false; it is deprecated in 5.3, so if we make that the baseline in version 4 we will do it then.
-      if (!set_magic_quotes_runtime(false)) {
-        die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>, and in the documentation.');
-      }
+    if (function_exists('get_magic_quotes_runtime')) { // Really, in the future, even this function will be removed as well, but it is still there in 5.4 for all the good scripts that use it to disable 'em.
+        if (get_magic_quotes_runtime()) { // Note: We should consider removing the set_magic_quotes_runtime to false; it is deprecated in 5.3, so if we make that the baseline in version 4 we will do it then.
+            if (!set_magic_quotes_runtime(false)) {
+                die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>, and in the documentation.');
+            }
+        }
+
+        if (get_magic_quotes_gpc()) { // Note: We will also assume the above function_exists counts for this one.
+            die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>, and in the documentation.'); // In theory, we could just strip the globals, but is it really worth the CPU cycles?
+        }
     }
 
-    if (get_magic_quotes_gpc()) { // Note: We will also assume the above function_exists counts for this one.
-      die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>, and in the documentation.'); // In theory, we could just strip the globals, but is it really worth the CPU cycles?
+    if ((bool) ini_get('register_globals') === true) { // Note: This can not be altered with ini_set, so... we won't even bother. We will remove it in the next version most likely, as no one really uses it anyway.
+        die('Register Globals is enabled. Please disable register_globals in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/security.globals.php">PHP manual</a>, and in the documentation.');
     }
-  }
-
-  if ((bool) ini_get('register_globals') === true) { // Note: This can not be altered with ini_set, so... we won't even bother. We will remove it in the next version most likely, as no one really uses it anyway.
-    die('Register Globals is enabled. Please disable register_globals in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/security.globals.php">PHP manual</a>, and in the documentation.');
-  }
 }
 
 
@@ -126,7 +126,7 @@ $sqlPrefix = $dbConfig['vanilla']['tablePrefix']; // It's more sane this way...
  * The defaultLanguage flag was created with the WebPro interface in mind, however it's a good one for all people to have (as with the template and phrase tables). Likewise, it could even be used in the API in theory, but... meh. Anyway, even if set to anything other than en, don't expect much (so far as the WebPro interface goes).
  * Sadly, the entire language backend more or less is broken in FIMv3. */
 if (!isset($defaultLanguage)) {
-  $defaultLanguage = 'en';
+    $defaultLanguage = 'en';
 }
 
 
@@ -141,13 +141,13 @@ set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
 /* Connect to the Main Database */
 $database = new fimDatabaseUAC;
 if (!$database->connect($dbConnect['core']['host'],
-  $dbConnect['core']['port'],
-  $dbConnect['core']['username'],
-  $dbConnect['core']['password'],
-  $dbConnect['core']['database'],
-  $dbConnect['core']['driver'],
-  $dbConfig['vanilla']['tablePrefix'])) {
-  die('Could not connect to the database: ' . $database->getLastError() . '; the application has exitted.'); // Die to prevent further execution.
+    $dbConnect['core']['port'],
+    $dbConnect['core']['username'],
+    $dbConnect['core']['password'],
+    $dbConnect['core']['database'],
+    $dbConnect['core']['driver'],
+    $dbConfig['vanilla']['tablePrefix'])) {
+    die('Could not connect to the database: ' . $database->getLastError() . '; the application has exitted.'); // Die to prevent further execution.
 }
 else {
     require('databaseParameters.php');
@@ -185,20 +185,20 @@ else {
 /* Connect to the Integration DB
  * On the whole, the product was designed such that all tables are in one database, but for the advanced users out there... */
 if ($dbConnect['core'] != $dbConnect['integration']) {
-  $integrationDatabase = new fimDatabaseUAC;
+    $integrationDatabase = new fimDatabaseUAC;
 
-  if (!$database->connect($dbConnect['integration']['host'],
-    $dbConnect['integration']['port'],
-    $dbConnect['integration']['username'],
-    $dbConnect['integration']['password'],
-    $dbConnect['integration']['database'],
-    $dbConnect['integration']['driver'],
-    $dbConfig['integration']['tablePrefix'])) { // Connect to MySQL
-    die('Could not connect to the integration database: ' . $database->error . '; the application has exitted.');
-  }
+    if (!$database->connect($dbConnect['integration']['host'],
+        $dbConnect['integration']['port'],
+        $dbConnect['integration']['username'],
+        $dbConnect['integration']['password'],
+        $dbConnect['integration']['database'],
+        $dbConnect['integration']['driver'],
+        $dbConfig['integration']['tablePrefix'])) { // Connect to MySQL
+        die('Could not connect to the integration database: ' . $database->error . '; the application has exitted.');
+    }
 }
 else {
-  $integrationDatabase = $database;
+    $integrationDatabase = $database;
 }
 
 
@@ -208,20 +208,20 @@ else {
  * NOTE:
  ** Slave Database should be used, at least in the future, to referrence values that can have high latency. For instance, kicks, which can change within the minute, require relatively low latency, but roomData can have high latency. Thus, when trying to obtain a value for roomData, we should generally use the slave, while if we are trying to obtain kick information, we should use the slave. */
 if ($dbConnect['core'] != $dbConnect['slave']) {
-  $slaveDatabase = new fimDatabase;
+    $slaveDatabase = new fimDatabase;
 
-  if (!$database->connect($dbConnect['slave']['host'],
-    $dbConnect['slave']['port'],
-    $dbConnect['slave']['username'],
-    $dbConnect['slave']['password'],
-    $dbConnect['slave']['database'],
-    $dbConnect['slave']['driver'],
-    $dbConfig['vanilla']['tablePrefix'])) { // Connect to MySQL
-    die('Could not connect to the slave database: ' . $database->error . '; the application has exitted.');
-  }
+    if (!$database->connect($dbConnect['slave']['host'],
+        $dbConnect['slave']['port'],
+        $dbConnect['slave']['username'],
+        $dbConnect['slave']['password'],
+        $dbConnect['slave']['database'],
+        $dbConnect['slave']['driver'],
+        $dbConfig['vanilla']['tablePrefix'])) { // Connect to MySQL
+        die('Could not connect to the slave database: ' . $database->error . '; the application has exitted.');
+    }
 }
 else {
-  $slaveDatabase = $database;
+    $slaveDatabase = $database;
 }
 
 
