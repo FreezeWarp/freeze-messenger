@@ -120,6 +120,12 @@ class fimDatabase extends databaseSQL
     }
 
 
+    /**
+     * Encodes a text string to be easily searched, such as through romanisation and transliteration, removing punctuation, and switch to lowercase.
+     *
+     * @param $string string The string to encode.
+     * @return string The encoded string.
+     */
     public function makeSearchable($string) {
         // Romanise first, to allow us to apply custom replacements before letting the built-in functions do their job
         $string = str_replace(array_keys($this->config['romanisation']), array_values($this->config['romanisation']), $string);
@@ -146,7 +152,15 @@ class fimDatabase extends databaseSQL
 
 
     /****** Utility Functions ******/
-    public function argumentMerge($defaults, $args) {
+    /**
+     * Combines a set of default arguments with a set of passed arguments, through an error if a passed argument is not "present" in the default arguments.
+     *
+     * @param $defaults array The argument defaults.
+     * @param $args array The new arguments; all must have a corresponding entry in $defaults.
+     * @return array The two sets of arguments combined.
+     * @throws Exception If an argument in $args isn't present in $defaults.
+     */
+    private function argumentMerge($defaults, $args) {
         $returnArray = [];
 
         foreach ($args AS $name => $arg) {
@@ -164,10 +178,21 @@ class fimDatabase extends databaseSQL
 
 
     /****** Setters *******/
+    /**
+     * Associates $user with the database instance, such as for auditing.
+     *
+     * @param fimUser $user
+     */
     public function registerUser(fimUser $user) {
         $this->user = $user;
     }
 
+
+    /**
+     * Associates $config (used to specify many defaults, limits, and so-on) with the database instance.
+     *
+     * @param fimConfig $config
+     */
     public function registerConfig(fimConfig $config) {
         $this->config = $config;
     }
@@ -175,26 +200,28 @@ class fimDatabase extends databaseSQL
 
 
     /****** Get Functions *****/
-
-
     /**
-     * Run a query to obtain users who appear "active."
-     * Scans table `ping`, and links in tables `rooms` and `users`, particularly for use in hasPermission().
+     * Return a list of users who are actively using the instant messenger.
+     * Scans table `ping`, and links in tables `rooms` and `users`, mainly for use in hasPermission(): TODO
      * Returns columns ping[status, typing, ptime, proomId, puserId], rooms[roomId, roomName, roomTopic, owner, defaultPermissions, roomParentalAge, roomParentalFlags, options], and users[userId, userName, userNameFormat, userGroupId, socialGroupIds, status]
      *
-     * @param       $options
-     *              int ['onlineThreshold']
-     *              array ['roomIds']
-     *              array ['userIds']
-     *              bool ['typing']
-     *              array ['statuses']
-     * @param array $sort
-     * @param bool  $limit
-     * @param bool  $pagination
+     * @param array $options {
+     *      An array of options to filter by.
      *
-     * @return bool|object|resource
+     *      @param array ['userIds']         Filter by a list of user IDs.
+     *      @param array ['roomIds']         Filter by the list of room IDs a user is active in. (Matches any -- if a user is active in any of the specified rooms, they will be in the returned resultset.)
+     *      @param array ['statuses']        Filter by a list of user statuses, any of (from ping.status) "away", "busy", "available", "invisible", "offline"
+     *      @param bool  ['typing']          Filter by whether or not the user is typing.
+     *      @param int   ['onlineThreshold'] The period of time that may elapse before a user should no longer be conisdered "active." Defaults to a site-configurable threshold, typically 15 minutes.
+     * }
+     *
+     * @param array $sort  Sort columns (see standard definition).
+     * @param int   $limit The maximum number of returned rows (with 0 being unlimited).
+     * @param int   $page  The page of the resultset to return.
+     *
+     * @return databaseResult
      */
-    public function getActiveUsers($options, $sort = array('userName' => 'asc'), $limit = false, $pagination = false)
+    public function getActiveUsers($options, $sort = array('userName' => 'asc'), $limit = false, $page = false)
     {
         $options = $this->argumentMerge(array(
             'onlineThreshold' => $this->config['defaultOnlineThreshold'],
@@ -226,25 +253,46 @@ class fimDatabase extends databaseSQL
         );
 
 
-        return $this->select($columns, $conditions, $sort);
+        return $this->select($columns, $conditions, $sort, $limit, $page);
     }
 
 
 
     /**
-     * Note: Censor active status is calculated outside of the database, and thus can not be selected.
-     * Note: This will multiple duplicate censorList columns for each matching censorBlackWhiteList entry. If a matching roomId is found for a listId, it should be used. Otherwise, any matching listId can be used, ignoring the associated room data.
+     * Gets the censor list rows, filtered by $options, and optionally with the "on"/"off" status associated with a given roomId.
+     * Scans table `censorLists`. Also joins `censorBlackWhiteLists` if $options['includeStatus'] is set.
+     *
+     * @param array $options {
+     *     Options to filter by.
+     *
+     *     @var array  ['listIds']        An array of listIds to match.
+     *     @var string ['listNameSearch'] A string for listName to match search-wise.
+     *     @var int    ['includeStatus']  A roomId for whom the list's status should be included.
+     *
+     *     The following are not fully supported:
+     *     @var string ['activeStatus']   Restrict to active or inactive lists. An inactive list is "disabled" -- that is, it does not apply to rooms, but rooms remember whether they enabled the list if it is turned back on. (Values: "active"|"inactive")
+     *     @var string ['forcedStatus']   Restrict to forced or unforced lists. A forced list cannot be disabled. (Values: "forced"|"unforced")
+     *     @var string ['hiddenStatus']   Restrict to hidden or unhidden lists. A hidden list is not made visible to room moderators when editing rooms. (Values: "hidden"|"unhidden")
+     *     @var string ['privateStatus']  Restrict to private or normal lists. A private list only applies to private rooms. (Values: "private"|"normal")
+     * }
+     * @param array $sort  Sort columns (see standard definition).
+     * @param int   $limit The maximum number of results.
+     * @param int   $page  The page for the selected resultset.
+     *
+     * @return databaseResult
+     *
+     * Note: Censor active status is calculated outside of the database, and thus can not be selected for. Use getCensorListsActive for this purpose, which returns an array of active censor lists instead of a databaseResult.
      */
-    public function getCensorLists($options = array(), $sort = array('listId' => 'asc'), $limit = false, $pagination = false)
+    public function getCensorLists($options = array(), $sort = array('listId' => 'asc'), $limit = false, $page = false)
     {
         $options = $this->argumentMerge(array(
             'listIds'        => array(),
             'listNameSearch' => '',
+            'includeStatus'  => false,
             'activeStatus'   => '',
             'forcedStatus'   => '',
             'hiddenStatus'   => '',
             'privateStatus'  => '',
-            'includeStatus'  => false,
         ), $options);
 
 
@@ -272,7 +320,6 @@ class fimDatabase extends databaseSQL
         }
 
 
-
         /* Modify Query Data for Directives */
         if (count($options['listIds']) > 0) $conditions['both']['listId'] = $this->in((array) $options['listIds']);
         if ($options['listNameSearch']) $conditions['both']['listName'] = $this->type('string', $options['listNameSearch'], 'search');
@@ -281,14 +328,20 @@ class fimDatabase extends databaseSQL
         elseif ($options['activeStatus'] === 'inactive') $conditions['both']['!options'] = $this->int(1, 'bAnd'); // TODO: Test!
 
         if ($options['forcedStatus'] === 'forced') $conditions['both']['!options'] = $this->int(2, 'bAnd'); // TODO: Test!
-        elseif ($options['forcedStatus'] === 'notforced') $conditions['both']['options'] = $this->int(2, 'bAnd'); // TODO: Test!
+        elseif ($options['forcedStatus'] === 'unforced') $conditions['both']['options'] = $this->int(2, 'bAnd'); // TODO: Test!
 
         if ($options['hiddenStatus'] === 'hidden') $conditions['both']['options'] = $this->int(4, 'bAnd'); // TODO: Test!
         elseif ($options['hiddenStatus'] === 'unhidden') $conditions['both']['!options'] = $this->int(4, 'bAnd'); // TODO: Test!
 
-        return $this->select($columns, $conditions, $sort);
+        return $this->select($columns, $conditions, $sort, $limit, $page);
     }
 
+    /**
+     * Retrieves a single censor list row corresponding with $censorListId.
+     *
+     * @param int $censorListId The listId's row retrieve.
+     * @return array The list properties.
+     */
     public function getCensorList($censorListId)
     {
         return $this->getCensorLists(array(
@@ -297,6 +350,12 @@ class fimDatabase extends databaseSQL
     }
 
 
+    /**
+     * Retrieves all censor lists active in $roomId.
+     *
+     * @param int $roomId The roomId whose active lists are being retrieved.
+     * @return array[listId] A list of censor lists.
+     */
     public function getCensorListsActive($roomId) {
         $censorListsReturn = array();
 
@@ -314,7 +373,26 @@ class fimDatabase extends databaseSQL
     }
 
 
-    public function getCensorWords($options = array(), $sort = array('listId' => 'asc', 'word' => 'asc'), $limit = 0, $pagination = 1)
+    /**
+     * Gets the censor word rows, filtered by $options.
+     * Scans table `censorWords`.
+     *
+     * @param array $options {
+     *      An array of options to filter the resultset by.
+     *
+     *      @var array  ['listIds']     An array of list IDs to filter by. Only words in these lists will be returned.
+     *      @var array  ['wordIds']     An array of word IDs to filter by. Only words with these IDs will be returned.
+     *      @var string ['wordSearch']  A search phrase for words; only words containing this phrase will be returned.
+     *      @var array  ['severities']  A list of severities to include; only words with these severities will be returned.
+     *      @var string ['paramSearch'] A search phrase for the word parameter; only parameters containing this phrase will be returned.
+     * }
+     * @param array $sort  Sort columns (see standard definition).
+     * @param int   $limit The maximum number of returned rows (with 0 being unlimited).
+     * @param int   $page  The page of the resultset to return.
+     *
+     * @return databaseResult The resultset corresponding with the matched censorWords.
+     */
+    public function getCensorWords($options = array(), $sort = array('listId' => 'asc', 'word' => 'asc'), $limit = false, $page = false)
     {
         $options = $this->argumentMerge(array(
             'listIds'     => array(),
@@ -336,9 +414,15 @@ class fimDatabase extends databaseSQL
         if (count($options['severities']) > 0) $conditions['both']['severity'] = $this->in($options['severities']);
         if ($options['paramSearch']) $conditions['both']['param'] = $this->type('string', $options['paramSearch'], 'search');
 
-        return $this->select($columns, $conditions, $sort);
+        return $this->select($columns, $conditions, $sort, $limit, $page);
     }
 
+    /**
+     * Retrieves a single censorWord row corresponding with $censorWordId.
+     *
+     * @param $censorWordId The word to return.
+     * @return array The word properties.
+     */
     public function getCensorWord($censorWordId)
     {
         return $this->getCensorWords(array(
@@ -347,15 +431,36 @@ class fimDatabase extends databaseSQL
     }
 
 
-    public function getCensorWordsActive($roomId, $types = []) {
+    /**
+     * Retrieves all censor words active in $roomId. Use getCensorListsActive() to retrieve lists instead.
+     *
+     * @param int   $roomId     The roomId whose active words are being retrieved.
+     * @param array $severities If specified, only fetches results with a matching severity (valid values, as defined for censorWord.severity: "replace", "warn", "confirm", "block")
+     *
+     * @return databaseResult The resultset corresponding with all censor words active in $roomId.
+     */
+    public function getCensorWordsActive($roomId, $severities = []) {
         return $this->getCensorWords(array(
             'listIds' => array_keys($this->getCensorListsActive($roomId)),
-            'severities' => $types
+            'severities' => $severities
         ));
     }
 
 
 
+    /**
+     * Retrieves all configuration directives matching $options.
+     * Use the global $config (or the fimConfig class) for viewing the values of configuration directives during normal operation.
+     *
+     * @param array $options {
+     *      An array of options to filter the resultset by.
+     *
+     *      @var array ['directives'] A list of configuration directives to select.
+     * }
+     * @param array $sort Sort columns (see standard definition).
+     *
+     * @return databaseResult The resultset corresponding with the matched configuration directives.
+     */
     public function getConfigurations($options = array(), $sort = array('directive' => 'asc'))
     {
         $options = $this->argumentMerge(array(
@@ -375,6 +480,13 @@ class fimDatabase extends databaseSQL
 
 
 
+    /**
+     * Retrieves a single configuration directive.
+     * Use the global $config (or the fimConfig class) for viewing the values of configuration directives during normal operation.
+     *
+     * @param string $directive The directive to return.
+     * @return array The directive's properties.
+     */
     public function getConfiguration($directive)
     {
         return $this->getConfigurations(array(
@@ -384,69 +496,66 @@ class fimDatabase extends databaseSQL
 
 
 
+    /**
+     * Retrieves a single global counter value.
+     *
+     * @param string $counterName THe name of the counter to retreive.
+     * @return int The counter's current value.
+     */
     public function getCounterValue($counterName)
     {
-        $queryParts['counterSelect']['columns'] = array(
-            $this->sqlPrefix . "counters" => 'counterName, counterValue',
-        );
-        $queryParts['counterSelect']['conditions'] = array(
-            'both' => array(
-                'counterName' => $this->str($counterName),
-            ),
-        );
+        $queryParts['columns']    = [$this->sqlPrefix . "counters" => 'counterName, counterValue'];
+        $queryParts['conditions'] = ['counterName' => $this->str($counterName), ];
 
-        $counterData = $this->select(
-            $queryParts['counterSelect']['columns'],
-            $queryParts['counterSelect']['conditions'],
-            false,
-            1);
-        $counterData = $counterData->getAsArray(false);
+        $counterData = $this->select($queryParts['columns'], $queryParts['conditions'], false, 1)->getAsArray(false);
 
         return $counterData['counterValue'];
     }
 
 
 
-    /** Run a query to obtain files.
+    /**
+     * Retrieves files matching the given conditions.
+     *
      * Scans tables `files` and `fileVersions`. These two tables cannot be queried individually using fimDatabase.
+     *
      * Returns columns files.fileId, files.fileName, files.fileType, files.creationTime, files.userId, files.parentalAge, files.parentalFlags, files.roomIdLink, files.fileId, fileVersions.vfileId (= files.fileId), fileVersions.md5hash, fileVersions.sha256hash, fileVersions.size.
+     *
      * Optimisation notes: If an index is kept on the number of files posted in a given room, or to a given user, then this index can be used to see if it can be used to quickly narrow down results. Of-course, if such an index results in hundreds of results, no efficiency gain is likely to be made from doing such an elimination first. Similar optimisations might be doable wwith age, creationTime, fileTypes, etc., but these should wait for now.
      *
-     * @param array $users            An array of userIDs corresponding with file ownership.
-     * @param array $files            An array of fileIDs.
-     * @param array $fileParams       An associative array of additional file parameters, which may be added to in the future. Valid keys include:
-     *                                array  ['usrIds']       Array of user IDs corresponding to the file uploader.
-     *                                array  ['roomIds']       Array of room IDs, corresponding to the room uploaded to (if provided).
-     *                                array  ['fileIds']       Array of file IDs.
-     *                                array  ['vfileIds']       Array of version IDs.
-     *                                array  ['md5hashes']       Array of MD5 hashes.
-     *                                array  ['sha256hashes']       Array of SHA256 hashes.
-     *                                array  ['fileTypes']       Array of file extensions (e.g. jpg).
-     *                                int    ['creationTimeMin'] File's creation time must be after.
-     *                                int    ['creationTimeMax'] File's creation time must be before.
-     *                                string ['fileNameSearch']    String that must appear within the fileName.
-     *                                int    ['parentalAgeMin']
-     *                                int    ['parentalAgeMax']
-     *                                bool    ['includeContent'] If true, will also select the file's content. _This should not be set if it will not be used._
-     * @param array $rooms            An array of roomIDs corresponding with where a file was posted. Some files do not have a corresponding roomId
-     * @param array $parentalParams   An associative array of additional parental control parameters, which may be added to in the future. Valid keys include:
-     *                                int ['ageMin']
-     *                                int ['ageMax']
-     * @param array $sort             A standard sort array.
-     * @param int   $limit            Maximum number of results (or 0 for no limit).
-     * @param int   $pagination       Result page if limit exceeded, starting at 1.
+     * @param array $options {
+     *      An array of options to filter by.
      *
-     * @return bool|object|resource
+     *      @param array ['userIds']         An array of userIds corresponding with file ownership to filter by.
+     *      @param array ['roomIds']         An array of roomIds corresponding with room origin to filter by.
+     *      @param array ['fileIds']         An array of fileIds to filter by.
+     *      @param array ['versionIds']      An array of file version IDs to filter by.
+     *      @param array ['sha256hashes']    An array of SHA256 hashes to filter by. (As files are identified by these, this will generally be the fastest way to select individual files.)
+     *      @param array ['fileTypes']       An array of MIME file types (as detected at upload time) to filter by.
+     *      @param array ['creationTimeMax'] An upper-range for original upload time to filter by.
+     *      @param array ['creationTimeMin'] A lower-range for original upload time to filter by.
+     *      @param array ['fileNameSearch']  A string that filenames should contain.
+     *      @param array ['parentalAgeMax']  An upper-rangefor the file's marked "parental age" (or maturity rating) to filter by.
+     *      @param array ['parentalAgeMin']  A lower-range for the file's marked "parental age" (or maturity rating) to filter by.
+     *      @param bool  ['includeContent']  If true, a file's entire contents (and encryption keys/IVs) will be returned. This is very slow, and should be avoided unless the file is being shown. (TODO) If file content is stored to the filesystem, it will be retrieved through the filesystem instead.
+     *      @param bool ['includeThumbnails'] If true, a record will be returned for each available file thumbnail. Thumbnail contents can only be retrieved separately.
+     * }
+     *
+     * @param array $sort  Sort columns (see standard definition).
+     * @param int   $limit The maximum number of returned rows (with 0 being unlimited).
+     * @param int   $page  The page of the resultset to return.
+     *
+     * @return databaseResult
      *
      * @TODO: Test filters for other file properties.
      */
-    public function getFiles($options = array(), $sort = array('fileId' => 'asc'), $limit = 0, $pagination = 1)
+    public function getFiles($options = array(), $sort = array('fileId' => 'asc'), $limit = false, $page = false)
     {
         $options = $this->argumentMerge(array(
             'userIds'         => array(),
             'roomIds'         => array(),
             'fileIds'         => array(),
-            'vfileIds'        => array(),
+            'versionIds'      => array(),
             'sha256hashes'    => array(),
             'fileTypes'       => array(),
             'creationTimeMax' => 0,
@@ -510,7 +619,7 @@ class fimDatabase extends databaseSQL
         }
 
 
-        return $this->select($columns, $conditions, $sort);
+        return $this->select($columns, $conditions, $sort, $limit, $page);
     }
 
 
