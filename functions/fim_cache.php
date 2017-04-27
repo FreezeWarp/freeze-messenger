@@ -130,106 +130,48 @@ class fimCache extends generalCache {
 
         return $text;
     }
+}
 
-
-    public function getConfig($defaultConfigFile) {
-        global $disableConfig;
-
-        if ($this->exists('fim_config') && !$disableConfig) {
-            return $this->get('fim_config');
+class fimConfigFactory {
+    public static function init() {
+        if (apc_exists('fim_cache')) {
+            return apc_fetch('fim_cache');
         }
-
         else {
-            $defaultConfig = array();
-            require_once($defaultConfigFile); // Not exactly best practice, but the best option for reducing resources. (The alternative is to parse it with JSON, but really, why?). This should provide $defaultConfig.
-
-            $config = array();
+            global $disableConfig, $slaveDatabase;
+            require_once('fim_config.php');
+            $config = new fimConfig();
 
             if (!$disableConfig) {
-                $configDatabase = $this->slaveDatabase->getConfigurations()->getAsArray(true);
+                foreach ($slaveDatabase->getConfigurations()->getAsArray(true) AS $configDatabaseRow) {
+                    switch ($configDatabaseRow['type']) {
+                        case 'int':
+                            $config->{$configDatabaseRow['directive']} = (int)$configDatabaseRow['value'];
+                            break;
 
-                if (is_array($configDatabase) && count($configDatabase) > 0) {
-                    foreach ($configDatabase AS $configDatabaseRow) {
-                        switch ($configDatabaseRow['type']) {
-                            case 'int':    $config[$configDatabaseRow['directive']] = (int) $configDatabaseRow['value']; break;
-                            case 'string': $config[$configDatabaseRow['directive']] = (string) $configDatabaseRow['value']; break;
-                            case 'array':
-                            case 'associative': $config[$configDatabaseRow['directive']] = (array) json_decode($configDatabaseRow['value']); break;
-                            case 'bool':
-                                if (in_array($configDatabaseRow['value'], array('true', '1', true, 1), true)) $config[$configDatabaseRow['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
-                                else $config[$configDatabaseRow['directive']] = false;
-                                break;
-                            case 'float':  $config[$configDatabaseRow['directive']] = (float) $configDatabaseRow['value']; break;
-                        }
+                        case 'string':
+                            $config->{$configDatabaseRow['directive']} = (string)$configDatabaseRow['value'];
+                            break;
+
+                        case 'array':
+                        case 'associative':
+                            $config->{$configDatabaseRow['directive']} = (array)json_decode($configDatabaseRow['value']);
+                            break;
+
+                        case 'bool':
+                            if (in_array($configDatabaseRow['value'], ['true', '1', true, 1], true)) $config->{$configDatabaseRow['directive']} = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
+                            else $config->{$configDatabaseRow['directive']} = false;
+                            break;
+
+                        case 'float':
+                            $config->{$configDatabaseRow['directive']} = (float)$configDatabaseRow['value'];
+                            break;
                     }
                 }
             }
-
-            foreach ($defaultConfig AS $key => $value) {
-                if (!isset($config[$key])) $config[$key] = $value;
-            }
-
-            $this->set('fim_config', $config, $config['configCacheRefresh']);
-
-            return $config;
-        }
-    }
-}
-
-
-/**
- * The fimConfig class is used to reference all configuration variables. It is not currently optimised, but we may eventually cache config variables seperately, lowering the memory footprint.
- */
-class fimConfig implements ArrayAccess {
-    private $cache;
-    private $container = [];
-    private $defaultConfigFile;
-
-    public function __construct($cache) {
-        $this->cache = $cache;
-        $this->defaultConfigFile = dirname(dirname(__FILE__)) . '/defaultConfig.php';
-        $this->container = $this->cache->getConfig($this->defaultConfigFile);
-    }
-
-    /**
-     * Retrieve and store configuration data into cache.
-     * The database is stored as $config[index].
-     *
-     * @param mixed index -- If false, all configuration information will be returned. Otherwise, will return the value of the index specified.
-     *
-     * @global bool disableConfig - If true, only the default cache will be used (note that the configuration will not be cahced so long as disableConfig is in effect -- it will need to be disabled ASAP). This I picked up from vBulletin, and it makes it possible to disable the database-stored configuration if something goes horribly wrong.
-     *
-     * @return mixed -- The config array if no index is specified, otherwise the formatted config value corresponding to the index (this may be an array, but due to the nature of $config, we will not support going two levels in).
-     *
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    public function getConfig($index = null) {
-        // sure, we'd get this same error if notices were on, but I'm an idiot who has too many notices to be able to do that.
-        if ($index && !isset($this->container[$index])) {
-            throw new Exception('Invalid config entry requested: ' . $index);
         }
 
-        return $this->container[$index];
-    }
-
-
-
-
-    public function offsetSet($offset, $value) {
-        throw new Exception('Configuration directives may not be set.');
-    }
-
-    public function offsetExists($offset) {
-        return isset($this->container[$offset]);
-    }
-
-    public function offsetUnset($offset) {
-        unset($this->container[$offset]);
-    }
-
-    public function offsetGet($offset) {
-        return isset($this->container[$offset]) ? $this->container[$offset] : $this->getConfig($offset);
+        return $config;
     }
 }
-
 ?>

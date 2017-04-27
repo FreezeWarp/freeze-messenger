@@ -240,7 +240,7 @@ foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
 }
 
 // Get Configuration Data
-$config = new fimConfig($generalCache);
+$config = fimConfigFactory::init();
 
 
 $database->registerConfig($config);

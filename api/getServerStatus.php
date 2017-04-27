@@ -94,9 +94,7 @@ echo new apiData(
 
             'parentalControls' => array(
                 'parentalEnabled' => $config['parentalEnabled'],
-                'parentalForced' => $config['parentalForced'],
                 'parentalAgeChangeable' => $config['parentalAgeChangeable'],
-                'parentalRegistrationAge' => $config['parentalRegistrationAge'],
                 'parentalFlags' => new apiOutputList($config['parentalFlags']),
                 'parentalAges' => new apiOutputList($config['parentalAges']),
                 'enableCensor' => $config['censorEnabled'],
@@ -137,19 +135,7 @@ echo new apiData(
                 'roomLengthMinimum' => (int) $config['roomLengthMinimum'],
                 'roomLengthMaximum' => (int) $config['roomLengthMaximum'],
                 'disableTopic' => (bool) $config['disableTopic'],
-                'officialRooms' => (bool) $config['officialRooms'],
                 'hiddenRooms' => (bool) $config['hiddenRooms'],
-            ),
-
-            'defaultFormatting' => array(
-                'color' => $config['defaultFormattingColor'],
-                'font' => $config['defaultFormattingFont'],
-                'highlight' => $config['defaultFormattingHighlight'],
-                'bold' => $config['defaultFormattingBold'],
-                'italics' => $config['defaultFormattingItalics'],
-                'underline' => $config['defaultFormattingUnderline'],
-                'strikethrough' => $config['defaultFormattingStrikethrough'],
-                'overline' => $config['defaultFormattingOverline'],
             ),
 
             'formatting' => array(
