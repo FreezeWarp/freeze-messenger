@@ -50,7 +50,10 @@ else {
                     echo '<br />';
                 }
 
-                echo container('All Cache Info', '<pre>' . print_r($generalCache->dump(), true) . '</pre>');
+                foreach ($generalCache->methods AS $method) {
+                    echo container('Cache Dump: ' . $method, '<pre>' . print_r($generalCache->dump($method), true) . '</pre>');
+                }
+
                 echo '<br />';
                 echo container('Contents of fim_fimUser_1 Cache Entry', '<pre>' . print_r($generalCache->get('fim_fimUser_1'), true) . '</pre>');
                 echo '<br />';

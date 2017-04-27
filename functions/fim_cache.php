@@ -38,10 +38,8 @@ class fimCache extends generalCache {
      * @param object database - A fimDatabase object to use for queries.
      * @param object slaveDatabase - A fimData object to use for slave-enabled queries.
      */
-    function __construct($servers, $method = '', $database, $slaveDatabase = false) {
+    function __construct($method, $servers, $database, $slaveDatabase = false) {
         parent::__construct($method, $servers);
-
-
 
         if (!$database) {
             throw new Exception('No database provided');
@@ -132,21 +130,65 @@ class fimCache extends generalCache {
 
         return $text;
     }
+
+
+    public function getConfig($defaultConfigFile) {
+        global $disableConfig;
+
+        if ($this->exists('fim_config') && !$disableConfig) {
+            return $this->get('fim_config');
+        }
+
+        else {
+            $defaultConfig = array();
+            require_once($defaultConfigFile); // Not exactly best practice, but the best option for reducing resources. (The alternative is to parse it with JSON, but really, why?). This should provide $defaultConfig.
+
+            $config = array();
+
+            if (!$disableConfig) {
+                $configDatabase = $this->slaveDatabase->getConfigurations()->getAsArray(true);
+
+                if (is_array($configDatabase) && count($configDatabase) > 0) {
+                    foreach ($configDatabase AS $configDatabaseRow) {
+                        switch ($configDatabaseRow['type']) {
+                            case 'int':    $config[$configDatabaseRow['directive']] = (int) $configDatabaseRow['value']; break;
+                            case 'string': $config[$configDatabaseRow['directive']] = (string) $configDatabaseRow['value']; break;
+                            case 'array':
+                            case 'associative': $config[$configDatabaseRow['directive']] = (array) json_decode($configDatabaseRow['value']); break;
+                            case 'bool':
+                                if (in_array($configDatabaseRow['value'], array('true', '1', true, 1), true)) $config[$configDatabaseRow['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
+                                else $config[$configDatabaseRow['directive']] = false;
+                                break;
+                            case 'float':  $config[$configDatabaseRow['directive']] = (float) $configDatabaseRow['value']; break;
+                        }
+                    }
+                }
+            }
+
+            foreach ($defaultConfig AS $key => $value) {
+                if (!isset($config[$key])) $config[$key] = $value;
+            }
+
+            $this->set('fim_config', $config, $config['configCacheRefresh']);
+
+            return $config;
+        }
+    }
 }
 
 
 /**
  * The fimConfig class is used to reference all configuration variables. It is not currently optimised, but we may eventually cache config variables seperately, lowering the memory footprint.
  */
-class fimConfig extends fimCache implements ArrayAccess {
+class fimConfig implements ArrayAccess {
+    private $cache;
     private $container = [];
     private $defaultConfigFile;
 
-    public function __construct($servers, $method, $database, $slaveDatabase) {
-        parent::__construct($servers, $method, $database, $slaveDatabase);
-
+    public function __construct($cache) {
+        $this->cache = $cache;
         $this->defaultConfigFile = dirname(dirname(__FILE__)) . '/defaultConfig.php';
-        $this->container = $this->getConfig();
+        $this->container = $this->cache->getConfig($this->defaultConfigFile);
     }
 
     /**
@@ -162,46 +204,6 @@ class fimConfig extends fimCache implements ArrayAccess {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function getConfig($index = null) {
-        global $disableConfig;
-
-        if ($this->exists('fim_config') && !$disableConfig) {
-            $this->container = $this->get('fim_config');
-        }
-
-        else {
-            $defaultConfig = array();
-            require_once($this->defaultConfigFile); // Not exactly best practice, but the best option for reducing resources. (The alternative is to parse it with JSON, but really, why?). This should provide $defaultConfig.
-
-            $config = array();
-
-            if (!$disableConfig) {
-                $configDatabase = $this->slaveDatabase->getConfigurations()->getAsArray(true);
-
-                if (is_array($configDatabase) && count($configDatabase) > 0) {
-                    foreach ($configDatabase AS $configDatabaseRow) {
-                        switch ($configDatabaseRow['type']) {
-                        case 'int':    $config[$configDatabaseRow['directive']] = (int) $configDatabaseRow['value']; break;
-                        case 'string': $config[$configDatabaseRow['directive']] = (string) $configDatabaseRow['value']; break;
-                        case 'array':
-                        case 'associative': $config[$configDatabaseRow['directive']] = (array) json_decode($configDatabaseRow['value']); break;
-                        case 'bool':
-                            if (in_array($configDatabaseRow['value'], array('true', '1', true, 1), true)) $config[$configDatabaseRow['directive']] = true; // We include the non-string counterparts here on the off-chance the database driver supports returning non-strings. The third parameter in the in_array makes it a strict comparison.
-                            else $config[$configDatabaseRow['directive']] = false;
-                        break;
-                        case 'float':  $config[$configDatabaseRow['directive']] = (float) $configDatabaseRow['value']; break;
-                        }
-                    }
-                }
-            }
-
-            foreach ($defaultConfig AS $key => $value) {
-                if (!isset($config[$key])) $config[$key] = $value;
-            }
-
-
-            $this->set('fim_config', $config, $config['configCacheRefresh']);
-        }
-
         // sure, we'd get this same error if notices were on, but I'm an idiot who has too many notices to be able to do that.
         if ($index && !isset($this->container[$index])) {
             throw new Exception('Invalid config entry requested: ' . $index);

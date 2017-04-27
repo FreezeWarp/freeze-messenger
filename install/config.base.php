@@ -70,26 +70,40 @@ $dbConfig['integration']['tablePrefix'] = '';
 
 
 
-////* Cache Server *////
-/* $cacheConnect['driver']
- * Defines the driver to use for caching.
- * "apc" and "memcache" are both acceptable.
- * Because APC does not require any advanced set-up, it is default. However, memcache is a must for large installations. */
-$cacheConnect['driver'] = '';
+////* Cache Servers *////
+/* $cacheConnectMethods['apc']
+ * If specified, this will enable APC caching, where applicable. */
+$cacheConnectMethods['apc'] = [
 
-/* $cacheConnect['servers']
- * For memcache, this is the list of servers to use in the connection pool.
- * If using APC, this directive is ignored. */
-$cacheConnect['servers'] = array(
-  0 => array(
+];
+
+/* $cacheConnectMethods['apc']
+ * If specified, this will enable disk caching, where applicable. */
+$cacheConnectMethods['disk'] = [
+    //'directory' => '', // If omitted, defaults to $tmpDir from below.
+];
+
+/* $cacheConnectMethods['redis']
+ * If specified, this will enable Redis caching. */
+$cacheConnectMethods['redis'] = [
     'host' => '127.0.0.1',
-    'port' => 11211,
-    'persistent' => true,
-    'weight' => 1,
-    'timeout' => 1,
-    'retry_interval' => 15,
-  ),
-);
+    'port' => 6379,
+    'timeout' => 0,
+    'password' => false,
+];
+
+/* $cacheConnectMethods['memcached']
+ * If specified, this will enable memcached with the attached list of servers to use in the connection pool. */
+/* $cacheConnectMethods['memcached'] = array(
+    0 => array(
+        'host' => '127.0.0.1',
+        'port' => 11211,
+        'persistent' => true,
+        'weight' => 1,
+        'timeout' => 1,
+        'retry_interval' => 15,
+    ),
+); */
 
 
 

@@ -234,10 +234,15 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 /* Only small tables are cached this way. */
 
 // Initiate cache object.
-$generalCache = new fimCache($cacheConnect['servers'], $cacheConnect['driver'], $database, $slaveDatabase);
+$generalCache = new fimCache(null, null, $database, $slaveDatabase);
+foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
+    $generalCache->addMethod($cacheConnectName, $cacheConnectParams);
+}
 
 // Get Configuration Data
-$config = new fimConfig($cacheConnect['servers'], $cacheConnect['driver'], $database, $slaveDatabase);
+$config = new fimConfig($generalCache);
+
+
 $database->registerConfig($config);
 $database->queryLogToFile = ($config['logQueries'] ? $config['logQueriesFile'] : false);
 
