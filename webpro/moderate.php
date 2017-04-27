@@ -25,33 +25,41 @@ require('moderateFunctions.php'); // Functions that are used solely by the moder
 require('../functions/fim_curl.php');
 require('../config.php');
 
+
 /* This below bit hooks into the validate.php script to facilitate a seperate login. It is a bit cooky, though, and will need to be further tested. */
 if (isset($_GET['do']) && $_GET['do'] === 'logout') {
     setcookie('webproModerate_accessToken', false);
     $ignoreLogin = true;
 }
+
 elseif (isset($_POST['webproModerate_userName'])) {
     $cr = new curlRequest(['client_id' => 'WebProAdmin', 'grant_type' => 'password', 'username' => $_POST['webproModerate_userName'], 'password' => $_POST['webproModerate_password']], '/validate.php');
 
     if (!$cr->execute()) {
         die('The request could not be completed (Server Error). Its response is below: ' . $cr->response);
     }
+
     elseif ($result = $cr->getAsJson()) {
         if (isset($result['exception'])) {
-            var_dump($result); die('fail');
+            var_dump($result);
+            die('fail');
         }
+
         else {
-            setcookie('webproModerate_accessToken', $result['login']['access_token']);
+            setcookie('webproModerate_accessToken', $result['login']['access_token'], time() + (int) $result['login']['expires'] - 10);
             $hookLogin['accessToken'] = $result['login']['access_token'];
         }
     }
+
     else {
         die('The response could not be parsed. It is below: ' . $cr->response);
     }
 }
+
 elseif (isset($_COOKIE['webproModerate_accessToken'])) {
     $hookLogin['accessToken'] = $_COOKIE['webproModerate_accessToken'];
 }
+
 else {
     $ignoreLogin = true;
 }

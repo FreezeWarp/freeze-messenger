@@ -110,6 +110,7 @@ else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_t
         $apiData->replaceData(array(
             'login' => array(
                 'access_token' => $user->sessionHash,
+                'expires' => $oauthResponse->getParameter('expires_in'),
                 'anonId' => $user->anonId,
                 'defaultRoomId' => $user->defaultRoomId,
                 'userData' => array(
