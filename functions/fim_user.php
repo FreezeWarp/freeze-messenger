@@ -272,7 +272,7 @@ class fimUser
             }
 
             elseif ($property === 'avatar') {
-                if (!$this->defaultRoomId) $this->defaultRoomId = $config['avatar'];
+                if (!$this->defaultRoomId) $this->defaultRoomId = $config['avatarDefault'];
             }
 
             elseif ($property === 'defaultRoomId') {
@@ -647,40 +647,36 @@ class fimUser
     }
 
     public function __destruct() {
-        global $generalCache, $config;
-
-        $generalCache->set('fim_fimUser_' . $this->id, $this, $config['cacheUserObjectsTimeout']);
+        if (function_exists('apc_set')) apc_set('fim_fimUser_' . $this->id, $this, 500);
     }
 }
 
 
 /**
  * Class fimUserFactory
- * TODO: only cache to APC
  */
 class fimUserFactory {
     public static function getFromId(int $userId) {
-        global $generalCache;
-
-        if ($generalCache->exists('fim_fimUser_' . $userId)) {
-            return $generalCache->get('fim_fimUser_' . $userId);
+        if (function_exists('apc_get') && apc_exists('fim_fimUser_' . $userId)) {
+            return apc_get('fim_fimUser_' . $userId);
         }
+
         else {
             return new fimUser($userId);
         }
     }
 
     public static function getFromData(array $userData) : fimUser {
-        global $generalCache;
-
         if (!isset($userData['userId'])) {
             throw new Exception('Userdata must contain userId');
         }
-        elseif ($generalCache->exists('fim_fimUser_' . $userData['userId'])) {
-            $user = $generalCache->get('fim_fimUser_' . $userData['userId']);
+
+        elseif (function_exists('apc_get') && apc_exists('fim_fimUser_' . $userData['userId'])) {
+            $user = apc_get('fim_fimUser_' . $userData['userId']);
             $user->populateFromArray($userData);
             return $user;
         }
+
         else {
             return new fimUser($userData);
         }
