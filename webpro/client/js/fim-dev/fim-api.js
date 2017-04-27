@@ -375,7 +375,7 @@ fimApi.prototype.getCensorLists = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
-            'roomIds' : null,
+            'roomId' : null,
             'listIds' : null,
             'includeWords' : 1 // true
         });

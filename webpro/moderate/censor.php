@@ -71,7 +71,7 @@ else {
 
             case false:
             case 'viewLists':
-                $lists = $database->getCensorLists(array('includeStatus' => false))->getAsArray(true);
+                $lists = $database->getCensorLists()->getAsArray(true);
 
                 foreach ($lists AS $list) {
                     $options = array();

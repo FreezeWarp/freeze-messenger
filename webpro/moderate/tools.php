@@ -35,22 +35,26 @@ else {
                 break;
 
             case 'viewCache':
-                foreach (array('fim_config', 'fim_kicksCache', 'fim_permissionsCache', 'fim_watchRoomsCache', 'fim_censorListsCache', 'fim_censorWordsCache', 'fim_roomListNamesCache') AS $cache) {
+                foreach (array('fim_config') AS $cache) {
                     $formattedCache = '';
 
-                    foreach ($generalCache->get($cache) AS $key => $value) {
+                    foreach ((array) $generalCache->get($cache) AS $key => $value) {
                         if (is_array($value)) {
                             $value = print_r($value, true);
                         }
 
-                        $formattedCache .= '<tr><td>' . $key . '</td><td>' . $value . '</td></tr>';
+                        $formattedCache .= '<tr><td>' . $key . '</td><td><pre>' . $value . '</pre></td></tr>';
                     }
 
                     echo container('Cache Entries: ' . $cache, '<table class="page ui-widget ui-widget-content" border="1">' . $formattedCache . '</table>');
+                    echo '<br />';
                 }
 
                 echo container('All Cache Info', '<pre>' . print_r($generalCache->dump(), true) . '</pre>');
+                echo '<br />';
                 echo container('Contents of fim_fimUser_1 Cache Entry', '<pre>' . print_r($generalCache->get('fim_fimUser_1'), true) . '</pre>');
+                echo '<br />';
+                echo container('Contents of fim_activeCensorWords_1 Cache Entry', '<pre>' . print_r($generalCache->get('fim_activeCensorWords_1'), true) . '</pre>');
                 break;
 
             case 'clearCache':

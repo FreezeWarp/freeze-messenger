@@ -882,13 +882,13 @@ popup = {
 
                 /* Censor Lists */
                 fimApi.getCensorLists({
-                    'roomIds' : roomIdLocal ? [roomIdLocal] : [0],
+                    'roomId' : roomIdLocal ? roomIdLocal : 0,
                     'includeWords' : 0,
                 }, {
                     'each' : function(listData) {
                         var listStatus;
 
-                        if (roomIdLocal in listData.roomStatuses) listStatus = listData.roomStatuses['roomStatus ' + roomIdLocal.listId].status;
+                        if (listData.status) listStatus = listData.status;
                         else if (listData.listType === 'white') listStatus = 'block';
                         else if (listData.listType === 'black') listStatus = 'unblock';
                         else throw 'Bad logic.';

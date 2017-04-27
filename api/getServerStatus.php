@@ -158,7 +158,7 @@ echo new apiData(
             ),
 
             'cacheDelays' => array(
-                'censorLists' => $config['censorBlackWhiteListsCacheRefresh'],
+                'censorWords' => $config['censorWordsCacheRefresh'],
             ),
 
             'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk. We will, however, display the base version.

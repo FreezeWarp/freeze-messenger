@@ -76,125 +76,19 @@ class fimCache extends generalCache {
 
 
 
-    ////* Censor Lists *////
-    ////* Caches Entire Table as censorLists[listId] = [listId, listName, listType, options] *////
-    public function getCensorLists($listIndex = null) {
-        global $config;
-
-        if ($this->exists('fim_censorLists')) {
-            $censorLists = $this->get('fim_censorLists');
-        }
-
-        else {
-            $censorListsDatabase = $this->slaveDatabase->getCensorLists()->getAsArray(true);
-
-            foreach ($censorListsDatabase AS $censorList) {
-                $censorLists['byListId'][$censorList['listId']] = $censorList;
-            }
-
-            $this->set('fim_censorLists', $censorLists, $config['censorListsCacheRefresh']);
-        }
-
-        return $this->returnValue($censorLists, $listIndex);
-    }
-
-
-
-
-    ////* Censor Words *////
-    ////* Caches Entire Table as censorWords[word] = [listId, word, severity, param] *////
-    public function getCensorWords($listIndex = null) {
-        global $config;
-
-        if ($this->exists('fim_censorWords')) {
-            $censorWords = $this->get('fim_censorWords');
-        }
-
-        else {
-            $censorWordsDatabase = $this->database->getCensorWords()->getAsArray(true);
-            $censorWords = array();
-
-            foreach ($censorWordsDatabase AS $censorWord) {
-                $censorWords[$censorWord['listId']][$censorWord['word']] = $censorWord;
-            }
-
-            $this->set('fim_censorWords', $censorWords, $config['censorWordsCacheRefresh']);
-        }
-
-        return $this->returnValue($censorWords, $listIndex);
-    }
-
-
-
-    public function getCensorBlackWhiteLists($roomIndex, $listIndex = null) {
-        global $sqlPrefix, $config;
-
-        if ($this->exists('fim_censorBlackWhiteLists')) {
-            $censorBlackWhiteLists = $this->get('fim_censorBlackWhiteLists');
-        }
-
-        else {
-            $censorBlackWhiteLists = array();
-
-            $queryParts['censorBlackWhiteListsCacheSelect']['columns'] = array(
-                "{$sqlPrefix}censorBlackWhiteLists" => 'listId, roomId, status',
-            );
-
-            $censorBlackWhiteListsDatabase = $this->slaveDatabase->select($queryParts['censorBlackWhiteListsCacheSelect']['columns']);
-            $censorBlackWhiteListsDatabase = $censorBlackWhiteListsDatabase->getAsArray(true);
-
-            foreach ($censorBlackWhiteListsDatabase AS $censorBlackWhiteList) {
-                $censorBlackWhiteLists[$censorBlackWhiteList['roomId']][$censorBlackWhiteList['listId']] = $censorBlackWhiteList;
-            }
-
-            $this->set('fim_censorBlackWhiteLists', $censorBlackWhiteLists, $config['censorBlackWhiteListsCacheRefresh']);
-        }
-
-        return $this->returnValue($censorBlackWhiteLists, $roomIndex, $listIndex);
-    }
-
-
-
-    public function getActiveCensorLists($roomId) {
-        $censorLists = $this->getCensorLists();
-        $censorBlackWhiteLists = (array) $this->getCensorBlackWhiteLists($roomId);
-        $activeCensorLists = array();
-
-        foreach ($censorLists['byListId'] AS $censorList) {
-            if ($censorList['listType'] === 'black' && in_array($censorList['listId'], array_keys($censorBlackWhiteLists))) {
-                $activeCensorLists[] = $censorList;
-            }
-
-            elseif ($censorList['listType'] === 'white' && !in_array($censorList['listId'], array_keys($censorBlackWhiteLists))) {
-                $activeCensorLists[] = $censorList;
-            }
-        }
-
-        return $activeCensorLists;
-    }
-
-
-
     public function getActiveCensorWords($roomId) {
         global $config;
 
-        if ($this->exists('fim_activeCensorWords')) {
-            $activeCensorWords = $this->get('fim_activeCensorWords');
+        if ($this->exists('fim_activeCensorWords_' . $roomId)) {
+            $activeCensorWords = $this->get('fim_activeCensorWords' . $roomId);
         }
         else {
-            $activeCensorWords = array();
+            $activeCensorWords = $this->slaveDatabase->getCensorWordsActive($roomId)->getAsArray(true);
 
-            foreach ((array) $this->getActiveCensorLists($roomId) AS $list) {
-                foreach ((array) $this->getCensorWords($list['listId']) AS $word) {
-                    $activeCensorWords[] = $word;
-                }
-            }
-
-            $this->set('fim_activeCensorWords', $activeCensorWords, $config['censorWordsCacheRefresh']);
-
+            $this->set('fim_activeCensorWords_' . $roomId, $activeCensorWords, $config['censorWordsCacheRefresh']);
         }
 
-        return $this->returnValue($activeCensorWords);
+        return $activeCensorWords;
     }
 
 
@@ -209,7 +103,6 @@ class fimCache extends generalCache {
      */
     public function censorScan($text, $roomId = null, $dontAsk = false, &$matches) {
         foreach ($this->getActiveCensorWords($roomId) AS $word) {
-
             if ($dontAsk && $word['severity'] === 'confirm') continue;
 
             if (stripos($text, $word['word']) !== FALSE) {

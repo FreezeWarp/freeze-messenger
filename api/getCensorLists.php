@@ -41,11 +41,8 @@ $request = fim_sanitizeGPC('g', array(
     'filter' => 'int',
     'evaltrue' => true,
   ),
-  'roomIds' => array(
-    'default' => [],
-    'cast' => 'list',
-    'filter' => 'int',
-    'evaltrue' => true,
+  'roomId' => array(
+    'cast' => 'roomId',
   ),
   'includeWords' => array(
     'default' => false,
@@ -53,7 +50,7 @@ $request = fim_sanitizeGPC('g', array(
   ),
 ));
 $database->accessLog('getCensorLists', $request);
-//; die($censorLists->sourceQuery); //
+
 
 /* Data Predefine */
 $xmlData = array(
@@ -65,21 +62,19 @@ $xmlData = array(
 /* Get Censor Lists from Slave Database */
 $censorLists = $slaveDatabase->getCensorLists(array(
   'listIds' => $request['listIds'],
-  'roomIds' => $request['roomIds'],
-))->getAsArray(array('listId', 'roomId'));
-
+  'includeStatus' => $request['roomId'],
+))->getAsArray(array('listId'));
 
 if ($request['includeWords']) {
   $censorWords = $slaveDatabase->getCensorWords(array(
-    'listIds' => $request['listIds'],
+    'listIds' => array_keys($censorLists),
   ))->getAsArray(array('listId', 'wordId'));
 }
 
 
 
 /* Start Processing */
-foreach ($censorLists AS $listId => $lists) { // Run through each censor list retrieved.
-  foreach ($lists AS $roomId => $list) {
+foreach ($censorLists AS $listId => $list) { // Run through each censor list retrieved.
     if (!isset($xmlData['lists'][$list['listId']])) {
       $xmlData['lists'][$list['listId']] = array(
         'listId' => (int) $list['listId'],
@@ -87,7 +82,7 @@ foreach ($censorLists AS $listId => $lists) { // Run through each censor list re
         'listType' => ($list['listType']),
         'listOptions' => (int) $list['options'],
         'words' => array(),
-        'roomStatuses' => array(),
+        'status' => $list['status'],
       );
 
       if ($request['includeWords']) {
@@ -101,18 +96,7 @@ foreach ($censorLists AS $listId => $lists) { // Run through each censor list re
         }
       }
     }
-
-    $xmlData['lists'][$list['listId']]['roomStatuses'][$roomId] = array(
-      'roomId' => $roomId,
-      'status' => $list['status'],
-    );
-  }
 }
-
-
-
-/* Update Data for Errors */
-$xmlData['errStr'] = ($errStr);
 
 
 

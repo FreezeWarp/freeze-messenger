@@ -233,20 +233,18 @@ class fimDatabase extends databaseSQL
 
     /**
      * Note: Censor active status is calculated outside of the database, and thus can not be selected.
-     * Note: Due to database limitations, it is not possible to restrict by roomId.
      * Note: This will multiple duplicate censorList columns for each matching censorBlackWhiteList entry. If a matching roomId is found for a listId, it should be used. Otherwise, any matching listId can be used, ignoring the associated room data.
      */
     public function getCensorLists($options = array(), $sort = array('listId' => 'asc'), $limit = false, $pagination = false)
     {
         $options = $this->argumentMerge(array(
             'listIds'        => array(),
-            'roomIds'        => array(),
             'listNameSearch' => '',
             'activeStatus'   => '',
             'forcedStatus'   => '',
             'hiddenStatus'   => '',
             'privateStatus'  => '',
-            'includeStatus'  => true,
+            'includeStatus'  => false,
         ), $options);
 
 
@@ -254,37 +252,24 @@ class fimDatabase extends databaseSQL
             $this->sqlPrefix . "censorLists" => 'listId, listName, listType, options',
         );
 
-
         if ($options['includeStatus']) {
-            /*      $columns[$this->sqlPrefix . "censorBlackWhiteLists"] = array(
-                    'listId' => array(
-                      'alias'  => 'bwListId',
-                      'joinOn' => 'listId',
-                      ),
-                      'roomId',
-                      'status',
-                    );*/
-
-
-
-            $subColumns = array(
+            $subColumns = [
                 $this->sqlPrefix . 'censorBlackWhiteLists' => 'listId, roomId, status'
-            );
-            $subConditions = array();
-            if (count($options['roomIds']) > 0) $subConditions['both']['roomId'] = $this->in($options['roomIds']);
+            ];
+            $subConditions = [];
+            if ($options['includeStatus']) $subConditions['both']['roomId'] = $options['includeStatus'];
 
             $columns['sub ' . $this->sqlPrefix . "censorBlackWhiteLists"] = $this->subSelect($subColumns, $subConditions);
 
-            $columns[$this->sqlPrefix . "censorBlackWhiteLists"] = array(
-                'listId' => array(
+            $columns[$this->sqlPrefix . "censorBlackWhiteLists"] = [
+                'listId' => [
                     'alias'  => 'bwListId',
                     'joinOn' => 'listId',
-                ),
+                ],
                 'roomId',
                 'status',
-            );
+            ];
         }
-
 
 
 
@@ -301,29 +286,8 @@ class fimDatabase extends databaseSQL
         if ($options['hiddenStatus'] === 'hidden') $conditions['both']['options'] = $this->int(4, 'bAnd'); // TODO: Test!
         elseif ($options['hiddenStatus'] === 'unhidden') $conditions['both']['!options'] = $this->int(4, 'bAnd'); // TODO: Test!
 
-
         return $this->select($columns, $conditions, $sort);
     }
-
-
-
-    public function getCensorListsActive($roomId) {
-        $censorListsReturn = array();
-
-        $censorLists = $this->getCensorLists(array(
-            'roomIds' => array($roomId),
-        ))->getAsArray(array('listId'));
-
-        foreach ($censorLists AS $listId => $list) { // Run through each censor list retrieved.
-            if ($list['status'] === 'unblock' || $list['listType'] === 'black') continue;
-
-            $censorListsReturn[$list['listId']] = $list;
-        }
-
-        return $censorListsReturn;
-    }
-
-
 
     public function getCensorList($censorListId)
     {
@@ -332,6 +296,22 @@ class fimDatabase extends databaseSQL
         ))->getAsArray(false);
     }
 
+
+    public function getCensorListsActive($roomId) {
+        $censorListsReturn = array();
+
+        $censorLists = $this->getCensorLists(array(
+            'includeStatus' => $roomId,
+        ))->getAsArray(array('listId'));
+
+        foreach ($censorLists AS $listId => $list) { // Run through each censor list retrieved.
+            if ($list['status'] === 'unblock' || ($list['listType'] === 'black' && $list['status'] !== 'block')) continue;
+
+            $censorListsReturn[$list['listId']] = $list;
+        }
+
+        return $censorListsReturn;
+    }
 
 
     public function getCensorWords($options = array(), $sort = array('listId' => 'asc', 'word' => 'asc'), $limit = 0, $pagination = 1)
@@ -359,8 +339,6 @@ class fimDatabase extends databaseSQL
         return $this->select($columns, $conditions, $sort);
     }
 
-
-
     public function getCensorWord($censorWordId)
     {
         return $this->getCensorWords(array(
@@ -369,8 +347,7 @@ class fimDatabase extends databaseSQL
     }
 
 
-
-    public function getCensorWordsActive($roomId, $types = array('replace')) {
+    public function getCensorWordsActive($roomId, $types = []) {
         return $this->getCensorWords(array(
             'listIds' => array_keys($this->getCensorListsActive($roomId)),
             'severities' => $types
@@ -1614,11 +1591,13 @@ class fimDatabase extends databaseSQL
     public function markMessageRead($roomId, $userId)
     {
         if ($this->config['enableUnreadMessages']) {
-            $this->delete($this->sqlPrefix . "unreadMessages", array(
+            return $this->delete($this->sqlPrefix . "unreadMessages", array(
                 'roomId'    => $roomId,
                 'userId'    => $userId
             ));
         }
+
+        return false;
     }
 
 
@@ -1782,8 +1761,8 @@ class fimDatabase extends databaseSQL
         }
 
 
-        // Update the messageDates if appropriate
-        $lastDayCache = (int) $generalCache->get('fim3_lastDayCache');
+        // Update the messageDates if appropriate (TODO: should be on a per-room basis)
+        /*$lastDayCache = (int) $generalCache->get('fim3_lastDayCache');
 
         $currentTime = time();
         $lastMidnight = $currentTime - ($currentTime % $this->config['messageTimesCounter']); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight reference point.
@@ -1795,7 +1774,7 @@ class fimDatabase extends databaseSQL
                 'time'      => $lastMidnight,
                 'messageId' => $messageId
             ));
-        }
+        }*/
 
 
         // Update Flood Counter
