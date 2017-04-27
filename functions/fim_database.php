@@ -2349,7 +2349,7 @@ class fimDatabase extends databaseSQL
             'friendsList' => 'friendedUserIds'
         ];
 
-        $user = new fimUser((int) $userId);
+        $user = fimUserFactory::getFromId((int) $userId);
         $listEntries = $user->__get($cacheColumn);
 
         foreach ($dataChanges AS $operation => $values) {
@@ -2409,7 +2409,7 @@ class fimDatabaseResult extends databaseResult {
         $return = array();
 
         foreach ($users AS $userId => $user) {
-            $return[$userId] = new fimUser($user);
+            $return[$userId] = fimUserFactory::getFromData($user);
         }
 
         return $return;
@@ -2428,7 +2428,7 @@ class fimDatabaseResult extends databaseResult {
      * @return fimUser
      */
     function getAsUser() : fimUser {
-        return new fimUser($this->getAsArray(false));
+        return fimUserFactory::getFromData($this->getAsArray(false));
     }
 
 }

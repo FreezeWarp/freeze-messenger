@@ -447,6 +447,8 @@ $defaultConfig = array(
     'roomPermissionsCacheAutoUpdate' => true, // bool If true, permissions changes will automatically update in the table. May be disabled if too many queries are being made to the table.
     'roomPermissionsCacheExpires' => 60 * 60 * 24 * 7, // int Time after which a cache entry will no longer be considered valid. A low value will keep the cache table small (which may be required in some installations), while a high value will cause the greatest speed-up. However, a high value should _only_ be used if roomPermissionsCacheAutoUpdate is true; otherwise, a low value should be used.
 
+    'cacheUserObjectsTimeout' => 300, // int The time in seconds that a user object is considered valid for in the cache.
+
     'messageIndexCounter' => 1000, // If changed, rebuild the messageIndex table!
     'messageTimesCounter' => 60 * 60 * 24, // If changed, rebuild the messageTimes table!
 

@@ -98,7 +98,7 @@ else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_t
     }
 
     $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
-    $user = new fimUser((int) $userC->getUserId());
+    $user = fimUserFactory::getFromId((int) $userC->getUserId());
     $user->sessionHash = $oauthResponse->getParameter('access_token');
     $user->clientCode = $oauthResponse->getParameter('client_id');
 

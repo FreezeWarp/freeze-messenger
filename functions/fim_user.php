@@ -31,6 +31,7 @@ define("ADMIN_USERS", 0x100000);
 define("ADMIN_FILES", 0x400000);
 define("ADMIN_CENSOR", 0x1000000);
 
+
 class fimUser
 {
     const ANONYMOUS_USER_ID = -1;
@@ -135,15 +136,6 @@ class fimUser
      */
     public function __construct($userData)
     {
-        global $generalCache, $config;
-        $this->generalCache = $generalCache;
-
-        $this->avatar = $config['avatarDefault'];
-//        $this->userNameFormat = '';
-        $this->defaultRoomId = $config['defaultRoomId'];
-
-
-
         if (is_int($userData)) {
             $this->id = $userData;
         }
@@ -277,6 +269,14 @@ class fimUser
                 if ($this->id === $config['anonymousUserId']) {
                     $this->name .= $this->anonId;
                 }
+            }
+
+            elseif ($property === 'avatar') {
+                if (!$this->defaultRoomId) $this->defaultRoomId = $config['avatar'];
+            }
+
+            elseif ($property === 'defaultRoomId') {
+                if (!$this->defaultRoomId) $this->defaultRoomId = $config['defaultRoomId'];
             }
         }
     }
@@ -531,10 +531,10 @@ class fimUser
      * @return bool Returns false if userData is empty, true otherwise.
      * @throws fimError
      */
-    private function populateFromArray(array $userData) : bool
+    public function populateFromArray(array $userData, bool $overwrite = false) : bool
     {
         if ($userData) {
-            $this->resolved = array_diff($this->resolved, array_values($userData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
+            if ($overwrite) $this->resolved = array_diff($this->resolved, array_values($userData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
 
             foreach ($userData AS $attribute => $value) {
                 if (!isset(fimUser::$userDataConversion[$attribute]))
@@ -645,6 +645,45 @@ class fimUser
             return $database->insert($database->sqlPrefix . "users", $databaseFields);
         }
     }
+
+    public function __destruct() {
+        global $generalCache, $config;
+
+        $generalCache->set('fim_fimUser_' . $this->id, $this, $config['cacheUserObjectsTimeout']);
+    }
 }
 
+
+/**
+ * Class fimUserFactory
+ * TODO: only cache to APC
+ */
+class fimUserFactory {
+    public static function getFromId(int $userId) {
+        global $generalCache;
+
+        if ($generalCache->exists('fim_fimUser_' . $userId)) {
+            return $generalCache->get('fim_fimUser_' . $userId);
+        }
+        else {
+            return new fimUser($userId);
+        }
+    }
+
+    public static function getFromData(array $userData) : fimUser {
+        global $generalCache;
+
+        if (!isset($userData['userId'])) {
+            throw new Exception('Userdata must contain userId');
+        }
+        elseif ($generalCache->exists('fim_fimUser_' . $userData['userId'])) {
+            $user = $generalCache->get('fim_fimUser_' . $userData['userId']);
+            $user->populateFromArray($userData);
+            return $user;
+        }
+        else {
+            return new fimUser($userData);
+        }
+    }
+}
 ?>
