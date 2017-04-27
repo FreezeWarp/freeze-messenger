@@ -647,7 +647,7 @@ class fimUser
     }
 
     public function __destruct() {
-        if (function_exists('apc_set')) apc_set('fim_fimUser_' . $this->id, $this, 500);
+        if ($this->id !== 0 && function_exists('apc_store')) apc_store('fim_fimUser_' . $this->id, $this, 500);
     }
 }
 
@@ -657,8 +657,8 @@ class fimUser
  */
 class fimUserFactory {
     public static function getFromId(int $userId) {
-        if (function_exists('apc_get') && apc_exists('fim_fimUser_' . $userId)) {
-            return apc_get('fim_fimUser_' . $userId);
+        if (function_exists('apc_fetch') && apc_exists('fim_fimUser_' . $userId)) {
+            return apc_fetch('fim_fimUser_' . $userId);
         }
 
         else {
@@ -671,8 +671,8 @@ class fimUserFactory {
             throw new Exception('Userdata must contain userId');
         }
 
-        elseif (function_exists('apc_get') && apc_exists('fim_fimUser_' . $userData['userId'])) {
-            $user = apc_get('fim_fimUser_' . $userData['userId']);
+        elseif (function_exists('apc_fetch') && apc_exists('fim_fimUser_' . $userData['userId'])) {
+            $user = apc_fetch('fim_fimUser_' . $userData['userId']);
             $user->populateFromArray($userData);
             return $user;
         }
