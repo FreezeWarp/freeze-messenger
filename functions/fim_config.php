@@ -599,6 +599,11 @@ class fimConfig implements ArrayAccess {
     public $curlUA = 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)';
 
 
+    /*** Caching Methods ***/
+    /** @var bool When true, database collection caching will be disabled. You should not enable this unless a an alternative collection cache (like Redis) is available, in which case it will perform _all_ collection caches (by default, it only performs collection caches when the database field runs out of space.) */
+    public $databaseCollectionMaxEntries = false;
+
+
 
     /*** MISC ***/
     /** @var bool Whether "dev mode" is enabled. */

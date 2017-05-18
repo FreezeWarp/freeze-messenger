@@ -49,9 +49,9 @@ class fimDatabase extends databaseSQL
      * @param string $csv
      */
     public static function packList(array $list) {
-        if (count($list) === 0) {
+        if (count($list) === 0)
             return pack("H*", 'ffff');
-        }
+
         else {
             $packString = '';
 
@@ -72,7 +72,6 @@ class fimDatabase extends databaseSQL
 
             if (substr($decoded, -2) !== 'ff' || substr($decoded, 0, 2) !== 'ff')
                 return fimDatabase::decodeError;
-                //throw new Exception('Bad parity: ' . $decoded); // For development only
 
             elseif (strlen($decoded) === 4)
                 return [];
@@ -2557,6 +2556,8 @@ class fimDatabase extends databaseSQL
     }
 
     public function triggerUserListCache($userId, $cacheColumn, $dataChanges) {
+        global $generalCache, $config;
+
         $userColNames = [
             'favRooms' => 'favRoomIds',
             'watchRooms' => 'watchRoomIds',
@@ -2567,7 +2568,7 @@ class fimDatabase extends databaseSQL
         $user = fimUserFactory::getFromId((int) $userId);
         $listEntries = $user->__get($cacheColumn);
 
-        if (count($listEntries) > 1) {
+        if (count($listEntries) > $config['databaseCollectionMaxEntries']) {
             $cacheIndex = 'fim_' . $cacheColumn . '_' . $userId;
 
             if (!$generalCache->exists($cacheIndex, 'redis')) {

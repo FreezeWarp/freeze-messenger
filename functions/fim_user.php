@@ -241,9 +241,11 @@ class fimUser
                         $this->{$property} = $generalCache->get($cacheIndex, 'redis');
                     }
                     else {
-                        throw new Exception('User data corrupted: ' . $cacheIndex . '; fallback refused. (Note: this error is for development purposes. A fallback is available, we\'re just not using it.');
-
                         $this->{$property} = call_user_func([$database, 'getUser' . ucfirst($property)], $this->id);
+
+                        throw new Exception('User data corrupted: ' . $cacheIndex . '; fallback refused. (Note: this error is for development purposes. A fallback is available, we\'re just not using it. Recovery data found as: ' + print_r($this->{$property}, true));
+
+                        $generalCache->setAdd($cacheIndex, $this->{$property});
                     }
                 }
 
