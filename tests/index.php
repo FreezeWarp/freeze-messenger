@@ -47,11 +47,10 @@ class databaseSQLTests
 echo "Requiring Core Classes...<br />";
 require_once('../functions/fim_user.php');
 require_once('../functions/fim_room.php');
+require_once('../functions/fim_cache.php');
 
 echo "Requiring Core Configuration...<br />";
-require_once('../config.php');
-require_once('../defaultConfig.php');
-$config = $defaultConfig;
+$config = fimConfigFactory::init();
 $config['dev'] = true;
 
 echo "Requiring Database Files...<br />";

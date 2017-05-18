@@ -14,10 +14,6 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/* Configuration File
- * Core MySQLLogin, Cookie/etc. Salt, and Site Data is stored here. */
-
-
 ////* PREREQUISITES *////
 
 /* Make Sure Required PHP Extensions are Present
