@@ -137,6 +137,8 @@ class fimConfig implements ArrayAccess {
 
     /** @var bool Whether hidden rooms are enabled. Disable this if the functionality is deemed too confusing. */
     public $hiddenRooms = true;
+    /** @var bool Whether rooms should can be marked as "official." It may make sense to disable this if user room creation is disabled. */
+    public $officialRooms = true;
 
     /** @var int The room that new users will enter by default. */
     public $defaultRoomId = 1;

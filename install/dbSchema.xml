@@ -573,9 +573,8 @@
         <table name="socialGroups" type="general" comment="The members of user groups.">
             <column name="groupId" type="int" maxlen="6" comment="The group ID." />
             <column name="groupName" type="string" maxlen="50" comment="The group name." />
-            <column name="creatorId" type="int" maxlen="8" fkey="users.userId" comment="The creator userID of the group." />
+            <column name="ownerId" type="int" maxlen="8" fkey="users.userId" comment="The owner userID of the group." />
             <column name="creationTime" type="time" default="__TIME__" comment="Time the group was created." />
-            <column name="leaderId" type="int" maxlen="8" fkey="users.userId" comment="The current leader of the group. Allowed to set group options and remove members." />
             <column name="options" type="int" maxlen="6" comment="Group options." />
             <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to any users that have this group as their primary, if they have not specified their own." />
 
@@ -615,7 +614,6 @@
             <column name="userId" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
             <column name="userName" type="string" maxlen="50" comment="The user's name." />
             <column name="userGroupId" type="int" maxlen="6" default="1" comment="The admin-set socialGroup ID of the user." />
-            <column name="socialGroupIds" type="string" maxlen="1000" comment="A comma-seperated list of the IDs of all groups the user has joined." />
             <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
             <column name="joinDate" type="time" default="__TIME__" comment="The date the user joined." />
             <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
@@ -663,7 +661,8 @@
             <column name="watchRoomIds" type="blob" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
             <column name="ignoredUserIds" type="blob" maxlen="10000" comment="A CSV cache of users ignored by this user." />
             <column name="friendedUserIds" type="blob" maxlen="10000" comment="A CSV cache of users friended by this user." />
-            <column name="memberOfGroupIds" type="blob" maxlen="10000" comment="A CSV cache of the groups this user is a part of." />
+            <column name="socialGroupIds" type="blob" maxlen="10000" comment="A CSV cache of the IDs of all groups the user has joined." />
+
 
             <!-- Parental Controls -->
             <column name="userParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />

@@ -186,6 +186,10 @@ class fimUser
                 else
                     throw new Exception("Selection group not found for '$property'");
             }
+
+            else {
+                throw new Exception("Conversion not found for '$property'");
+            }
         }
 
         return $this->$property;
@@ -197,7 +201,7 @@ class fimUser
      */
     public function __set($property, $value)
     {
-        global $config, $loginConfig;
+        global $config, $loginConfig, $database, $generalCache;
 
         if (property_exists($this, $property))
             $this->{$property} = $value;
@@ -205,20 +209,12 @@ class fimUser
             throw new fimError("fimUserBadProperty", "fimUser does not have property '$property'");
 
         // If we've already processed the value once, it generally won't need to be reprocessed. Permissions, for instance, may be altered intentionally. We do make an exception for setting integers to what should be arrays -- we will reprocess in this case.
-        if (!in_array($property, $this->resolved) ||
-            (($property === 'parentalFlags' || $property === 'socialGroupIds')
-            && gettype($value) === 'integer')
-        ) {
+        if (!in_array($property, $this->resolved)) {
             $this->resolved[] = $property;
 
 
-            // Social Group IDs: Convert CSV to Array
-            if ($property === 'socialGroupIds')
-                $this->socialGroupIds = fim_emptyExplode(',', $value);
-
-
             // Parental Flags: Convert CSV to Array, or empty if disabled
-            elseif ($property === 'parentalFlags') {
+            if ($property === 'parentalFlags') {
                 if ($config['parentalEnabled']) $this->parentalFlags = fim_emptyExplode(',', $value);
                 else                            $this->parentalFlags = array();
             }
@@ -232,14 +228,27 @@ class fimUser
 
 
             // Room and user lists: explode from CSV
-            elseif ($property === 'favRooms' || $property === 'watchRooms' || $property === 'friendsList' || $property === 'ignoreList') {
-                if (!$config['enableWatchRooms'] && $property === 'watchRooms') {
+            elseif ($property === 'socialGroupIds' || $property === 'favRooms' || $property === 'watchRooms' || $property === 'friendsList' || $property === 'ignoreList') {
+                if (!$config['enableWatchRooms'] && $property === 'watchRooms')
                     $this->watchRooms = [];
-                }
 
                 elseif ($value === fimDatabase::decodeError) {
-                    // TODO
+                    $cacheIndex = 'fim_' . $property . '_' . $this->id;
+
+                    if ($generalCache->exists($cacheIndex, 'redis')) {
+                        throw new Exception('Redis activated.');
+
+                        $this->{$property} = $generalCache->get($cacheIndex, 'redis');
+                    }
+                    else {
+                        throw new Exception('User data corrupted: ' . $cacheIndex . '; fallback refused. (Note: this error is for development purposes. A fallback is available, we\'re just not using it.');
+
+                        $this->{$property} = call_user_func([$database, 'getUser' . ucfirst($property)], $this->id);
+                    }
                 }
+
+                elseif (!is_array($value))
+                    throw new fimError("fimUserBadList", "The following list was passed as something other than an array to fimUser:" . $property);
             }
 
 

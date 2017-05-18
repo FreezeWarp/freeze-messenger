@@ -42,7 +42,7 @@ class fimDatabase extends databaseSQL
      */
 
     /**
-     * Converts a CSV list (e.g. "1,2,3") to a packed binary equivilent.
+     * Converts an array list of integers to a packed binary equivilent.
      * As currently implemented, this should achieve the lowest possible size without performing compression. Numbers in the CSV list are converted to base-15, which are then packed to a hexadecimal string, with "f" being the delimiter.
      * Thus, "1,2,3" (6  bytes) will convert to 0x1a2a3, which is 20 bits/2.5 bytes.
      * For the purposes of ensuring a string is fully read back, however, it will start and end with "ff." (We could also specify the size of the string at the beginning, but the "ff" is marginally faster, and easier to encode.)
@@ -705,6 +705,8 @@ class fimDatabase extends databaseSQL
             'kickerId' => (int) $this->user->id,
             'time' => $this->now(),
         ));
+
+        $this->deletePermissionCache($roomId, $userId);
     }
 
 
@@ -715,6 +717,8 @@ class fimDatabase extends databaseSQL
             'userId' => (int) $userId,
             'roomId' => (int) $roomId,
         ));
+
+        $this->deletePermissionCache($roomId, $userId);
     }
 
 
@@ -1182,102 +1186,9 @@ class fimDatabase extends databaseSQL
     }
 
 
-    /**
-     * Gets the entries from the watchRooms table corresponding with a single roomId. fimRoom($roomId)->watchRooms should generally be used instead, since it implements additional caching.
-     *
-     * @param $roomId
-     * @return mixed
-     * @throws Exception
-     */
-    public function getWatchRoomUsers($roomId) {
-        $watchRoomIds = $this->select(array(
-            $this->sqlPrefix . 'watchRooms' => 'userId, roomId'
-        ), array(
-            'roomId' => $this->int($roomId)
-        ))->getColumnValues('userId');
-
-        return $watchRoomIds;
-    }
-
-
-    /**
-     * This is a bit of a silly function that obtains all rows that correspond either with a userId, a list of groups, or both, and returns a bitfield such that, if a user permission exist, it overrides all groups, or, alternatively, an OR of all group permissions. Thus, it can be used to only query the permission of a single group or a single user, or can be used with both a user and all groups the user belongs to.
-     *
-     * @param $roomId
-     * @param $attribute
-     * @param $param
-     */
-    public function getPermissionsField($roomId, $userId, $groups = array()) {
-        $permissions = $this->select(array(
-            $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
-        ), array(
-            'roomId' => $this->int($roomId),
-            'either' => array(
-                'both 1' => array(
-                    'attribute' => 'user',
-                    'param' => $this->int($userId)
-                ),
-                'both 2' => array(
-                    'attribute' => 'group',
-                    'param' => $this->in($groups)
-                )
-            )
-        ))->getAsArray('attribute');
-
-        if (!count($permissions)) {
-            return -1;
-        }
-        else {
-            $groupBitfield = 0;
-            foreach ($permissions AS $permission) {
-                if ($permission['attribute'] === 'user') return $permission['permissions']; // If a user permission exists, then it overrides group permissions.
-                else $groupBitfield &= $permission['permissions']; // Group permissions, on the other hand, stack. If one group has ['view', 'post'], and another has ['view', 'moderate'], then a user in both groups has all three.
-            }
-
-            return $groupBitfield;
-        }
-    }
-
-
-    public function getPermissionCache($roomId, $userId) {
-        if (!$this->config['roomPermissionsCacheEnabled']) return -1;
-        else {
-            $permissions = $this->select(array(
-                $this->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'
-            ), array(
-                'roomId' => $this->int($roomId),
-                'userId' => $this->int($userId)
-            ))->getAsArray(false);
-
-            if (!count($permissions)) return -1;
-            elseif (time() > $permissions['expires']) return -1;
-            else return (int) $permissions['permissions'];
-        }
-    }
-
-
-
-    /* todo: cache calls */
-    /**
-     * @param array $rooms
-     * @param bool $attribute enum("user", "group")
-     * @param array $params
-     * @return mixed
-     * @throws Exception
-     */
-    public function getRoomPermissions($rooms = array(), $attribute = false, $params = array())
-    {
-        // Modify Query Data for Directives (First for Performance)
-        $columns = array(
-            $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
-        );
-
-        if (count($rooms) > 0) $conditions['both']['roomId'] = $this->in((array) $rooms);
-        if ($attribute) $conditions['both']['attribute'] = $this->str($attribute);
-        if (count($params) > 0) $conditions['both']['param'] = $this->in((array) $params);
-
-        return $this->select($columns, $conditions);
-    }
+    /********************************************************
+     ******************* PERMISSIONS ************************
+     ********************************************************/
 
 
     /**
@@ -1362,6 +1273,102 @@ class fimDatabase extends databaseSQL
     }
 
 
+    /**
+     * Gets all permission entries in one or more rooms.
+     *
+     * @param array $roomIds
+     * @param string $attribute enum("user", "group")
+     * @param array $params
+     * @todo cache calls
+     *
+     * @return databaseResult
+     */
+    public function getRoomPermissions($roomIds = array(), $attribute = false, $params = array())
+    {
+        // Modify Query Data for Directives (First for Performance)
+        $columns = array(
+            $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
+        );
+
+        if (count($rooms) > 0) $conditions['both']['roomId'] = $this->in((array) $roomIds);
+        if ($attribute) $conditions['both']['attribute'] = $this->str($attribute);
+        if (count($params) > 0) $conditions['both']['param'] = $this->in((array) $params);
+
+        return $this->select($columns, $conditions);
+    }
+
+
+    /**
+     * This is a bit of a silly function that obtains all rows that correspond either with a userId, a list of groups, or both, and returns a bitfield such that, if a user permission exist, it overrides all groups, or, alternatively, an OR of all group permissions. Thus, it can be used to only query the permission of a single group or a single user, or can be used with both a user and all groups the user belongs to.
+     *
+     * @param $roomId
+     * @param $attribute
+     * @param $param
+     */
+    public function getPermissionsField($roomId, $userId, $groups = array()) {
+        $permissions = $this->select(array(
+            $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
+        ), array(
+            'roomId' => $this->int($roomId),
+            'either' => array(
+                'both 1' => array(
+                    'attribute' => 'user',
+                    'param' => $this->int($userId)
+                ),
+                'both 2' => array(
+                    'attribute' => 'group',
+                    'param' => $this->in($groups)
+                )
+            )
+        ))->getAsArray('attribute');
+
+        if (!count($permissions)) {
+            return -1;
+        }
+        else {
+            $groupBitfield = 0;
+            foreach ($permissions AS $permission) {
+                if ($permission['attribute'] === 'user') return $permission['permissions']; // If a user permission exists, then it overrides group permissions.
+                else $groupBitfield &= $permission['permissions']; // Group permissions, on the other hand, stack. If one group has ['view', 'post'], and another has ['view', 'moderate'], then a user in both groups has all three.
+            }
+
+            return $groupBitfield;
+        }
+    }
+
+
+    /**
+     * Gets the a user's cached permission bitfield for a room, or -1 if none/expired.
+     *
+     * @param int $roomId The room the permission applies in.
+     * @param int $userId The user the permission applies to.
+     *
+     * @return int A permission bitfield, or -1 if none/expired.
+     */
+    public function getPermissionCache($roomId, $userId) {
+        if (!$this->config['roomPermissionsCacheEnabled']) return -1;
+        else {
+            $permissions = $this->select(array(
+                $this->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'
+            ), array(
+                'roomId' => $this->int($roomId),
+                'userId' => $this->int($userId)
+            ))->getAsArray(false);
+
+            if (!count($permissions)) return -1;
+            elseif (time() > $permissions['expires']) return -1;
+            else return (int) $permissions['permissions'];
+        }
+    }
+
+    /**
+     * Updates an entry in the room permissions cache. When a permission change occurs, this or deletePermissionCache should be called.
+     *
+     * @param int $roomId The room ID a permission change has occured in.
+     * @param int $userId The user ID for whom a permission has changed.
+     * @param int $permissions The new permissions bitfield.
+     * @param bool $isKicked Whether the permission cache is because of a kick (this is not generally used internally, but can be used to indicate to a user that they have been denied permission because of a kick)
+     */
     public function updatePermissionsCache($roomId, $userId, $permissions, $isKicked = false) {
         if ($this->config['roomPermissionsCacheEnabled']) {
             $this->upsert($this->sqlPrefix . 'roomPermissionsCache', array(
@@ -1375,9 +1382,59 @@ class fimDatabase extends databaseSQL
         }
     }
 
+    /**
+     * Deleletes an entry in the room permissions cache. When a permission change occurs, this or updatePermissionCache should be called.
+     *
+     * @param int $roomId The room ID a permission change has occured in.
+     * @param int $userId The user ID for whom a permission has changed.
+     * @param int $permissions The new permissions bitfield.
+     * @param bool $isKicked Whether the permission cache is because of a kick (this is not generally used internally, but can be used to indicate to a user that they have been denied permission because of a kick)
+     */
+    public function deletePermissionCache($roomId, $userId) {
+        if ($this->config['roomPermissionsCacheEnabled']) {
+            $this->delete($this->prefix . 'roomPermissionsCache', array(
+                'roomId' => $roomId,
+                'userId' => $userId
+            ));
+        }
+    }
+
+
+    /**
+     * Deletes a permission cache based on a change to a room permission entry -- and thus able to resolve social group members, etc.
+     *
+     * @param int $roomId
+     * @param string $attribute
+     * @param int $param The new permission.
+     *
+     * @todo still a work in progress
+     */
+    public function deletePermissionCacheFromEntry($roomId, $attribute, $param) {
+        switch ($attribute) {
+            case 'user':
+                $users = array($param);
+            break;
+
+            case 'group':
+                $users = $this->getSocialGroupMembers(array(
+                    'groupIds' => array($param),
+                    'type' => array('member', 'moderator')
+                ))->getColumnValues('userId');
+            break;
+        }
+
+        $this->delete($this->prefix . 'roomPermissionsCache', array(
+            'roomId' => $roomId,
+            'userId' => $this->in($users)
+        ));
+    }
 
 
     /****** Insert/Update Functions *******/
+
+    /********************************************************
+     ******************* SESSIONS ***************************
+     ********************************************************/
 
     public function createSession($user) {
         // TODO: implement using database.php
@@ -1454,6 +1511,11 @@ class fimDatabase extends databaseSQL
     public function updateUserCaches() {
     }
 
+
+
+    /********************************************************
+     ******************* LISTS ******************************
+     ********************************************************/
 
     /**
      * @param        $roomList - Either 'watchRooms' or 'userFavRooms' (representing those tables)
@@ -1563,6 +1625,94 @@ class fimDatabase extends databaseSQL
         }
     }
 
+    /**
+     * Gets an array list of all room IDs a user has favorited.
+     *
+     * @param int $userId The user to filter by.
+     * @return int[]
+     */
+    public function getUserFavRooms($userId) {
+        return $this->select([
+            $this->sqlPrefix . 'userFavRooms' => 'userId, roomId'
+        ], [
+            'userId' => $userId
+        ])->getColumnValues('roomId');
+    }
+
+    /**
+     * Gets an array list of all room IDs a user has favorited.
+     *
+     * @param int $userId The user to filter by.
+     * @return int[]
+     */
+    public function getUserFriendsList($userId) {
+        return $this->select([
+            $this->sqlPrefix . 'userFriendsList' => 'userId, subjectId, status'
+        ], [
+            'userId' => $userId,
+            'status' => 'friend',
+        ])->getColumnValues('subjectId');
+    }
+
+    /**
+     * Gets an array list of all room IDs a user has favorited.
+     *
+     * @param int $userId The user to filter by.
+     * @return int[]
+     */
+    public function getUserIgnoreList($userId) {
+        return $this->select([
+            $this->sqlPrefix . 'userIgnoreList' => 'userId, subjectId'
+        ], [
+            'userId' => $userId,
+        ])->getColumnValues('subjectId');
+    }
+
+    /**
+     * Gets an array list of all room IDs a user has favorited.
+     *
+     * @param int $userId The user to filter by.
+     * @return int[]
+     */
+    public function getUserWatchRoom($userId) {
+        return $this->select([
+            $this->sqlPrefix . 'watchRooms' => 'userId, roomId'
+        ], [
+            'userId' => $userId
+        ])->getColumns('roomId');
+    }
+
+    /**
+     * Gets an array list of all social group IDs a user has joined.
+     *
+     * @param int $userId The user to filter by.
+     * @return int[]
+     */
+    public function getUserSocialGroupIds($userId) {
+        return $this->select([
+            $this->sqlPrefix . 'socialGroupMembers' => 'groupId, userId, type'
+        ], [
+            'userId' => $userId,
+            'type' => $this->in(['member', 'moderator'])
+        ])->getColumns('roomId');
+    }
+
+
+    /**
+     * Gets the entries from the watchRooms table corresponding with a single roomId. fimRoom($roomId)->watchRooms should generally be used instead, since it implements additional caching.
+     *
+     * @param $roomId
+     * @return mixed
+     * @throws Exception
+     */
+    public function getWatchRoomUsers($roomId) {
+        return $watchRoomIds = $this->select([
+            $this->sqlPrefix . 'watchRooms' => 'userId, roomId'
+        ], [
+            'roomId' => $this->int($roomId)
+        ])->getColumnValues('userId');
+    }
+
 
 
     /**
@@ -1670,29 +1820,6 @@ class fimDatabase extends databaseSQL
         $this->deletePermissionCache($roomId, $attribute, $param);
 
         $this->endTransaction();
-    }
-
-
-    public function deletePermissionCache($roomId, $attribute, $param) {
-        /* Delete Relevant Cached Entries, Forcing Cache Regeneration When Next Needed */
-        /* TODO (obviously) */
-        switch ($attribute) {
-        case 'user':
-            $users = array($param);
-        break;
-
-        case 'group':
-            $users = $this->getSocialGroupMembers(array(
-                'groupIds' => array($param),
-                'type' => array('member', 'moderator')
-            ))->getColumnValues('userId');
-        break;
-        }
-
-        $this->delete($this->prefix . 'roomPermissionsCache', array(
-            'roomId' => $roomId,
-            'userId' => $this->in($users)
-        ));
     }
 
 
@@ -2245,7 +2372,7 @@ class fimDatabase extends databaseSQL
     {
         if (!isset($this->user->id)) throw new Exception('database->modLog requires user->id');
 
-        if ($this->insert($this->sqlPrefix . "modlog", array(
+        if ($this->insert($this->sqlPrefix . "modLog", array(
             'userId' => (int) $this->user->id,
             'ip'     => $_SERVER['REMOTE_ADDR'],
             'action' => $action,
@@ -2440,14 +2567,40 @@ class fimDatabase extends databaseSQL
         $user = fimUserFactory::getFromId((int) $userId);
         $listEntries = $user->__get($cacheColumn);
 
-        foreach ($dataChanges AS $operation => $values) {
-            switch ($operation) {
+        if (count($listEntries) > 1) {
+            $cacheIndex = 'fim_' . $cacheColumn . '_' . $userId;
+
+            if (!$generalCache->exists($cacheIndex, 'redis')) {
+                $generalCache->setAdd($cacheIndex, $listEntries);
+            }
+
+            foreach ($dataChanges AS $operation => $values) {
+                switch ($operation) {
+                case 'delete':
+                    if (is_string($values) && $values === '*')
+                        $generalCache->clear($cacheIndex, 'redis');
+
+                    else
+                        $generalCache->setRemove($cacheIndex, $listEntries);
+                break;
+
+                case 'insert':
+                    $generalCache->setAdd($cacheIndex, $values);
+                break;
+                }
+            }
+        }
+
+        else { // Use database
+            foreach ($dataChanges AS $operation => $values) {
+                switch ($operation) {
                 case 'delete':
                     $listEntries = is_string($values) && $values === '*' ? [] : array_diff($listEntries, $values);
-                    break;
+                break;
                 case 'insert':
                     $listEntries = array_merge($listEntries, $values);
-                    break;
+                break;
+                }
             }
         }
 
@@ -2505,6 +2658,21 @@ class fimDatabaseResult extends databaseResult {
 
 
     /**
+     * @return fimGroup[]
+     */
+    function getAsGroups() : array {
+        $groups = $this->getAsArray('groupId');
+        $return = array();
+
+        foreach ($groups AS $groupId => $group) {
+            $return[$groupId] = fimGroupFactory::getFromData($group);
+        }
+
+        return $return;
+    }
+
+
+    /**
      * @return fimRoom
      */
     function getAsRoom() : fimRoom {
@@ -2517,6 +2685,14 @@ class fimDatabaseResult extends databaseResult {
      */
     function getAsUser() : fimUser {
         return fimUserFactory::getFromData($this->getAsArray(false));
+    }
+
+
+    /**
+     * @return fimGroup
+     */
+    function getAsGroup() : fimGroup {
+        return fimGroupFactory::getFromData($this->getAsArray(false));
     }
 
 }
