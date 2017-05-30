@@ -147,34 +147,6 @@ if (!$database->connect($dbConnect['core']['host'],
 }
 else {
     require('databaseParameters.php');
-
-    /* These manipulate how data is partioned in a database. */
-    $database->setHardPartitions([
-        $database->sqlPrefix . 'messages' => ['roomId', 10],
-        $database->sqlPrefix . 'messagesCached' => ['roomId', 10],
-    ]);
-
-    /* These maintain collections. */
-    $database->setCollectionTriggers([
-        $database->sqlPrefix . 'userFavRooms' => [
-            ['userId', 'roomId', [$database, 'triggerUserFavRoomIds']],
-        ],
-        $database->sqlPrefix . 'watchRooms' => [
-            ['userId', 'roomId', [$database, 'triggerUserWatchedRoomIds']],
-//            ['roomId', 'userId', 'fimDatabase:triggerRoomWatchedByIds'],
-        ],
-        $database->sqlPrefix . 'userIgnoreList' => [
-            ['userId', 'subjectId', [$database, 'triggerUserIgnoredUserIds']],
-        ],
-        $database->sqlPrefix . 'userFriendsList' => [
-            ['userId', 'subjectId', [$database, 'triggerUserFriendedUserIds']],
-        ],
-        $database->sqlPrefix . 'socialGroupMembers' => [
-            ['userId', 'groupId', [$database, 'triggerUserMemberOfGroupIds']],
-//            ['groupId', 'userId', 'fimDatabase:triggerGroupMemberIds'],
-        ],
-    ]);
-
 }
 
 

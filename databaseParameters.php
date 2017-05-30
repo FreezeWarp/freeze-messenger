@@ -20,7 +20,8 @@ $database->setTransformationParameters([
         'favRoomIds'      => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
         'watchRoomIds'    => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
         'friendedUserIds' => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
-        'ignoredUserIds'  => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList']
+        'ignoredUserIds'  => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
+        'socialGroupIds'  => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
     ],
     $database->sqlPrefix . 'userFavRooms' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
 ], [
@@ -30,5 +31,34 @@ $database->setTransformationParameters([
     ],
 ], [
     $database->sqlPrefix . 'rooms' => 'roomId',
+]);
+
+
+/* These manipulate how data is partioned in a database. */
+$database->setHardPartitions([
+    $database->sqlPrefix . 'messages' => ['roomId', 10],
+    $database->sqlPrefix . 'messagesCached' => ['roomId', 10],
+]);
+
+
+/* These maintain collections. */
+$database->setCollectionTriggers([
+    $database->sqlPrefix . 'userFavRooms' => [
+        ['userId', 'roomId', [$database, 'triggerUserFavRoomIds']],
+    ],
+    $database->sqlPrefix . 'watchRooms' => [
+        ['userId', 'roomId', [$database, 'triggerUserWatchedRoomIds']],
+//            ['roomId', 'userId', 'fimDatabase:triggerRoomWatchedByIds'],
+    ],
+    $database->sqlPrefix . 'userIgnoreList' => [
+        ['userId', 'subjectId', [$database, 'triggerUserIgnoredUserIds']],
+    ],
+    $database->sqlPrefix . 'userFriendsList' => [
+        ['userId', 'subjectId', [$database, 'triggerUserFriendedUserIds']],
+    ],
+    $database->sqlPrefix . 'socialGroupMembers' => [
+        ['userId', 'groupId', [$database, 'triggerUserMemberOfGroupIds']],
+//            ['groupId', 'userId', 'fimDatabase:triggerGroupMemberIds'],
+    ],
 ]);
 ?>
