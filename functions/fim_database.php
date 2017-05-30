@@ -857,7 +857,7 @@ class fimDatabase extends databaseSQL
         /* Query via the Archive */
         if ($options['archive']) {
             $columns = array(
-                $this->sqlPrefix . "messages" => 'messageId, time, iv, salt, roomId, userId, deleted, flag, text',
+                $this->sqlPrefix . "messages" => 'messageId, time, iv, salt, roomId, userId, anonId, deleted, flag, text',
                 $this->sqlPrefix . "users"    => 'userId muserId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, messageFormatting'
             );
 

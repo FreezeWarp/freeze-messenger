@@ -8,12 +8,10 @@ use OAuth2\ResponseInterface;
 
 /**
  *
- * @author Brent Shaffer <bshafs at gmail dot com>
+ * @author Joseph T. Parsons
  */
 class Anonymous implements GrantTypeInterface
 {
-    const ANONYMOUS_USER_ID = -1; // TODO: get from fimUser
-
     private $userInfo;
     protected $storage;
 
@@ -40,7 +38,7 @@ class Anonymous implements GrantTypeInterface
         if ($cache->exists('fim_oauth2_anonymousUserArray'))
             $userInfo = $cache->get('fim_oauth2_anonymousUserArray');
         else
-            $cache->set('fim_oauth2_anonymousUserArray', $userInfo = $this->storage->getUserFromId(self::ANONYMOUS_USER_ID), 3600 * 24);
+            $cache->set('fim_oauth2_anonymousUserArray', $userInfo = $this->storage->getUserFromId(\fimUser::ANONYMOUS_USER_ID), 3600 * 24);
 
         /* Sanity checks */
         if (empty($userInfo)) {
@@ -65,7 +63,7 @@ class Anonymous implements GrantTypeInterface
 
     public function getUserId()
     {
-        return self::ANONYMOUS_USER_ID;
+        return \fimUser::ANONYMOUS_USER_ID;
     }
 
     public function getScope()

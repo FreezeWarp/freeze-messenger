@@ -82,7 +82,7 @@ if ($ignoreLogin) {
 
 }
 
-/* If grant_type is not set, we granting a token, not evaluating. */
+/* If grant_type is not set, we're granting a token, not evaluating. */
 else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_token') {
     $database->cleanSessions();
     /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
@@ -97,8 +97,11 @@ else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_t
             break;
     }
 
+    global $anonId;
+
     $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
     $user = fimUserFactory::getFromId((int) $userC->getUserId());
+    $user->anonId = $anonId;
     $user->sessionHash = $oauthResponse->getParameter('access_token');
     $user->clientCode = $oauthResponse->getParameter('client_id');
 
@@ -149,7 +152,12 @@ elseif (isset($_REQUEST['access_token'])) {
     }
 
     else {
-        $user = fimUserFactory::getFromId((int) $oauthServer->getResourceController()->getToken()['user_id']);
+        $token = $oauthServer->getResourceController()->getToken();
+
+        $user = fimUserFactory::getFromId((int) $token['user_id']);
+        $user->anonId = $token['anon_id'];
+        $user->sessionHash = $token['access_token'];
+        $user->clientCode = $token['client_id'];
     }
 }
 

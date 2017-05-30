@@ -111,6 +111,7 @@ class FIMDatabaseOAuth implements
 
     public function setAccessToken($access_token, $client_id, $user_id, $expires, $scope = null)
     {
+        // A lot simpler than modifying the method to pass it in.
         global $anonId;
 
         // TODO: if a user has more than x tokens, delete the oldest.
@@ -124,7 +125,7 @@ class FIMDatabaseOAuth implements
             'scope' => $scope,
             'http_user_agent' => $_SERVER['HTTP_USER_AGENT'],
             'ip_address' => $_SERVER['REMOTE_ADDR'],
-            'anon_id' => ($user_id === Anonymous::ANONYMOUS_USER_ID && $anonId > 0 ? $anonId : 0),
+            'anon_id' => ($user_id === \fimUser::ANONYMOUS_USER_ID ? $anonId : 0),
         ));
     }
 

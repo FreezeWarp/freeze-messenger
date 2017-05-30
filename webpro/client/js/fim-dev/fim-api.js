@@ -69,6 +69,9 @@ fimApi.prototype.login = function (params, requestSettings) {
             'client_id' : ''
         });
 
+        if (params.username == '' && params.password == '')
+            params.grant_type = 'anonymous';
+
         var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
         function login_query() {

@@ -36,8 +36,10 @@ class fimUser
 {
     const ANONYMOUS_USER_ID = -1;
 
+    // Set after initialisation, if set at all.
     private $sessionHash;
     private $clientCode;
+    private $anonId;
 
     public $id = 0;
     private $name = "MISSINGno.";
@@ -71,8 +73,6 @@ class fimUser
 
     private $fileCount;
     private $fileSize;
-
-    private $anonId;
 
     protected $generalCache;
     protected $userData;
@@ -156,6 +156,10 @@ class fimUser
     public function __get($property) {
         global $loginConfig, $integrationDatabase;
 
+        // Return a unique username for every anonymous user.
+        if ($this->isAnonymousUser() && $property === 'userName')
+            return $this->userName . $this->anonId;
+
         if (!property_exists($this, $property))
             throw new Exception("Invalid property accessed in fimUser: $property");
 
@@ -227,11 +231,14 @@ class fimUser
             }
 
 
-            // Room and user lists: explode from CSV
+            // Room and user lists
             elseif ($property === 'socialGroupIds' || $property === 'favRooms' || $property === 'watchRooms' || $property === 'friendsList' || $property === 'ignoreList') {
                 if (!$config['enableWatchRooms'] && $property === 'watchRooms')
                     $this->watchRooms = [];
 
+                /* The returned value was "incomplete," indicating that it was truncated by the database software.
+                 * We check to see if it exists in a database list cache (Redis), and then invoke the database wrapper's relevant method to retrieve it from the full table.
+                 * Performance note: I would argue that performing the Redis check first will typically be faster, but that would require a fairly large rearchitecture of the User class. */
                 elseif ($value === fimDatabase::decodeError) {
                     $cacheIndex = 'fim_' . $property . '_' . $this->id;
 
@@ -254,7 +261,7 @@ class fimUser
             }
 
 
-            // Priviledges: modify based on global permissions, inconsistencies, and superuser status.
+            // Privileges: modify based on global permissions, inconsistencies, and superuser status.
             elseif ($property === 'privs') {
                 // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
                 if (!$config['userRoomCreation'])
@@ -274,12 +281,6 @@ class fimUser
                     $this->privs = 0x7FFFFFFF;
                 elseif ($this->privs & ADMIN_ROOMS)
                     $this->privs |= (USER_PRIV_VIEW | USER_PRIV_POST | USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
-            }
-
-            elseif ($property === 'anonId') {
-                if ($this->id === $config['anonymousUserId']) {
-                    $this->name .= $this->anonId;
-                }
             }
 
             elseif ($property === 'avatar') {

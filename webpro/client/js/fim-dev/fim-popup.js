@@ -27,16 +27,6 @@ popup = {
             }
         }
 
-        function login_standard() {
-            standard.login({
-                username : $('#loginForm > #userName').val(),
-                password : $('#loginForm > #password').val(),
-                rememberMe : $('#loginForm > #rememberme').is('checked'),
-                finish : login_success,
-                error : login_fail
-            });
-        }
-
         dia.full({
             content : $t('login'),
             title : 'Login',
@@ -44,13 +34,28 @@ popup = {
             width : 600,
             oF : function() {
                 $("#loginForm").submit(function() {
-                    login_standard();
+                    var loginForm = $('#loginForm');
+                    standard.login({
+                        username : $('#userName', loginForm).val(),
+                        password : $('#password', loginForm).val(),
+                        rememberMe : $('#rememberme', loginForm).is('checked'),
+                        finish : login_success,
+                        error : login_fail
+                    });
+
                     return false;
                 });
             },
             cF : function() {
-                $('#loginForm input').val('');
-                if (!window.userId) login_standard();
+                if (!window.userId) {
+                    standard.login({
+                        username : '',
+                        password : '',
+                        rememberMe : false,
+                        finish : login_success,
+                        error : login_fail
+                    });
+                }
             }
         });
     },
