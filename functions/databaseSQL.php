@@ -124,7 +124,10 @@ class databaseSQL extends database
     protected $connection = false;
     protected $connectionResult = false;
 
-    protected $dbLink = false;
+    /**
+     * @var null A link to an instance of the current database driver, if enabled.
+     */
+    protected $dbLink = null;
 
     /*********************************************************
      ************************ START **************************
