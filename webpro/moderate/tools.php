@@ -28,9 +28,9 @@ else {
         switch($_GET['tool']) {
             case false:
                 echo container('Please Choose a Tool','<ul>
-                    <li><a href="./moderate.php?do=tools&tool=viewCache">View Cache</a></li>
-                    <li><a href="./moderate.php?do=tools&tool=clearCache">Clear Cache</a></li>
-                    <li><a href="./moderate.php?do=tools&tool=updateDatabaseSchema">Perform Database Schema Update</a></li>
+                    <li><a href="./moderate.php?do=tools&tool=viewCache">View Cache</a> - This shows all cache entries available to the current server. APC caches for other servers will not be displayed.</li>
+                    <li><a href="./moderate.php?do=tools&tool=clearCache">Clear Cache</a> - This clears all cache entries available to the current server. APC caches for other servers will not be cleared.</li>
+                    <li><a href="./moderate.php?do=tools&tool=updateDatabaseSchema">Perform Database Schema Update</a> - This will update your database schema to correspond with install/dbSchema.xml. It is primarily intended for development purposes (as updating to a new version should come with its own custom schema update procedure), but you also have the option of manually tweaking the DB schema in dbSchema.xml and then using this tool to have the changes take effect. Note that the tool is currently not fully tested, and will currently take a while, as it does not check if a column has changed before running the update command.</li>
                 </ul>');
                 break;
 
@@ -115,14 +115,14 @@ else {
                         }
 
                         if (in_array(strtolower($tableName), $showTables)) {
-                            echo 'Update: ' . $tableName . ' (Unimplemented)<br />';
+                            echo 'Update: ' . $tableName . ': ' . $database->alterTable($tableName, $table['comment'], $table['type']) . '<br />';
 
                             foreach ($tableColumns AS $name => $column) {
                                 if (in_array(strtolower($name), $showColumns[strtolower($tableName)])) {
-                                    echo 'Update: ' . $tableName . ',' . $name . ' (Unimplemented)<br />';
+                                    echo 'Update: ' . $tableName . ',' . $name . ': ' . $database->alterTableColumns($tableName, [$name => $column]) . '<br />';
                                 }
                                 else {
-                                    echo 'Create: ' . $tableName . ',' . $name . ' (Unimplemented)<br />';
+                                    echo 'Create: ' . $tableName . ',' . $name . ': ' . $database->createTableColumns($tableName, [$name => $column]) . '<br />';
                                 }
                             }
                         }
