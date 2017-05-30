@@ -1234,20 +1234,10 @@ class databaseSQL extends database
      ******************* Table Functions *********************
      *********************************************************/
 
-    public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes = [], $partitionColumn = false, $hardPartitionCount = 1)
-    {
-        if (!isset($this->tableTypes[$engine])) {
-            $this->triggerError("Unrecognised Table Engine", array(
-                'tableName' => $tableName,
-                'engine' => $engine
-            ), 'validationFallback');
 
-            $engine = 'general';
-        }
-        $engineName = $this->tableTypes[$engine];
 
+    private function parseTableColumns($tableName, $tableColumns) {
         $tableProperties = '';
-        $triggers = [];
 
         foreach ($tableColumns AS $columnName => $column) {
             $column = array_merge([
@@ -1261,122 +1251,122 @@ class databaseSQL extends database
 
 
             switch ($column['type']) {
-                case 'int': case DatabaseTypeType::integer:
-                    if (isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement']) $intLimits = $this->dataTypes['columnSerialLimits'];
-                    else $intLimits = $this->dataTypes['columnIntLimits'];
+            case 'int': case DatabaseTypeType::integer:
+                if (isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement']) $intLimits = $this->dataTypes['columnSerialLimits'];
+                else $intLimits = $this->dataTypes['columnIntLimits'];
 
-                    foreach ($intLimits AS $length => $type) {
-                        if ($column['maxlen'] <= $length) {
-                            $typePiece = $intLimits[$length];
-                            break;
-                        }
+                foreach ($intLimits AS $length => $type) {
+                    if ($column['maxlen'] <= $length) {
+                        $typePiece = $intLimits[$length];
+                        break;
                     }
+                }
 
-                    if (!strlen($typePiece)) $typePiece = $intLimits['default'];
+                if (!strlen($typePiece)) $typePiece = $intLimits['default'];
 
-                    if (!isset($this->columnSerialLimits) && $column['autoincrement']) {
-                        $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
-                        $tableProperties .= ' AUTO_INCREMENT = ' . (int)$column['autoincrement'];
+                if (!isset($this->columnSerialLimits) && $column['autoincrement']) {
+                    $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
+                    $tableProperties .= ' AUTO_INCREMENT = ' . (int)$column['autoincrement'];
 
-                        if (!isset($tableIndexes[$columnName])) {
-                            $tableIndexes[$columnName] = [
-                                'type' => 'index',
-                            ];
-                        }
+                    if (!isset($tableIndexes[$columnName])) {
+                        $tableIndexes[$columnName] = [
+                            'type' => 'index',
+                        ];
                     }
-                    break;
+                }
+            break;
 
 
-                case 'string': case DatabaseTypeType::string:
-                case 'blob': case DatabaseTypeType::blob:
-                    $stringLimits = $this->dataTypes['column' . ($column['type'] === 'blob' || $column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === 'memory' ? 'Temp' : 'Perm') . 'Limits'];
+            case 'string': case DatabaseTypeType::string:
+            case 'blob': case DatabaseTypeType::blob:
+                $stringLimits = $this->dataTypes['column' . ($column['type'] === 'blob' || $column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === 'memory' ? 'Temp' : 'Perm') . 'Limits'];
 
-                    $typePiece = '';
+                $typePiece = '';
 
-                    foreach ($stringLimits AS $length => $type) {
-                        if ($column['maxlen'] <= $length) {
-                            if (in_array($type, $this->dataTypes['columnStringNoLength'])) $typePiece = $type;
-                            else $typePiece = $type . '(' . $column['maxlen'] . ')';
+                foreach ($stringLimits AS $length => $type) {
+                    if ($column['maxlen'] <= $length) {
+                        if (in_array($type, $this->dataTypes['columnStringNoLength'])) $typePiece = $type;
+                        else $typePiece = $type . '(' . $column['maxlen'] . ')';
 
-                            break;
+                        break;
+                    }
+                }
+
+                if (!strlen($typePiece)) {
+                    $typePiece = $this->dataTypes['columnStringNoLength']['default'];
+                }
+
+                //        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
+            break;
+
+
+            case 'enum':
+                switch ($this->enumMode) {
+                case 'useCreateType':
+                    $this->rawQuery('CREATE TYPE ' . $this->formatValue('string', $tableName . '_' . $columnName) . ' AS ENUM' . $this->formatValue('array', $column['restrict']));
+                    $typePiece = $columnName;
+                break;
+
+                case 'useEnum':
+                    $typePiece = 'ENUM' . $this->formatValue('array', $column['restrict']);
+                break;
+
+                case 'useCheck':
+                    $lengths = array_map('strlen', $column['restrict']);
+                    $typePiece = 'VARCHAR(' . max($lengths) . ') NOT NULL CHECK (' . $this->formatValue('column', $columnName) . ' IN' . $this->formatValue('array', $column['restrict']);
+                break;
+
+                default: throw new Exception('Enums are unsupported in the active database driver.'); break;
+
+                }
+            break;
+
+
+            case 'bitfield': case DatabaseTypeType::bitfield:
+                if ($this->nativeBitfield) {
+                    $typePiece = 'BIT(' . $column['bits'] . ')';
+                }
+
+                else {
+                    if ($column['bits']) {
+                        foreach ($this->dataTypes['columnBitLimits'] AS $bits => $type) {
+                            if ($column['bits'] <= $bits) {
+                                $typePiece = $type;
+                                break;
+                            }
                         }
                     }
 
                     if (!strlen($typePiece)) {
-                        $typePiece = $this->dataTypes['columnStringNoLength']['default'];
+                        $typePiece = $this->dataTypes['columnBitLimits']['default'];
                     }
-
-                    //        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
-                        break;
-
-
-                case 'enum':
-                    switch ($this->enumMode) {
-                        case 'useCreateType':
-                            $this->rawQuery('CREATE TYPE ' . $this->formatValue('string', $tableName . '_' . $columnName) . ' AS ENUM' . $this->formatValue('array', $column['restrict']));
-                            $typePiece = $columnName;
-                            break;
-
-                        case 'useEnum':
-                            $typePiece = 'ENUM' . $this->formatValue('array', $column['restrict']);
-                            break;
-
-                        case 'useCheck':
-                            $lengths = array_map('strlen', $column['restrict']);
-                            $typePiece = 'VARCHAR(' . max($lengths) . ') NOT NULL CHECK (' . $this->formatValue('column', $columnName) . ' IN' . $this->formatValue('array', $column['restrict']);
-                            break;
-
-                        default: throw new Exception('Enums are unsupported in the active database driver.'); break;
-
-                    }
-                break;
+                }
+            break;
 
 
-                case 'bitfield': case DatabaseTypeType::bitfield:
-                        if ($this->nativeBitfield) {
-                            $typePiece = 'BIT(' . $column['bits'] . ')';
-                        }
-
-                        else {
-                            if ($column['bits']) {
-                                foreach ($this->dataTypes['columnBitLimits'] AS $bits => $type) {
-                                    if ($column['bits'] <= $bits) {
-                                        $typePiece = $type;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (!strlen($typePiece)) {
-                                $typePiece = $this->dataTypes['columnBitLimits']['default'];
-                            }
-                        }
-                    break;
+            case 'time': case DatabaseTypeType::timestamp:
+                $typePiece = $this->dataTypes['time']; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
+            break;
 
 
-                case 'time': case DatabaseTypeType::timestamp:
-                    $typePiece = $this->dataTypes['time']; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
-                    break;
+            case 'bool': case DatabaseTypeType::bool:
+                $typePiece = $this->dataTypes['bool'];
+            break;
 
 
-                case 'bool': case DatabaseTypeType::bool:
-                    $typePiece = $this->dataTypes['bool'];
-                    break;
+            case 'float':case DatabaseTypeType::float:
+                $typePiece = $this->dataTypes['float'];
+            break;
 
 
-                case 'float':case DatabaseTypeType::float:
-                    $typePiece = $this->dataTypes['float'];
-                    break;
-
-
-                default:
-                    $this->triggerError("Unrecognised Column Type", array(
-                        'tableName' => $tableName,
-                        'columnName' => $columnName,
-                        'columnType' => $column['type'],
-                    ), 'validationFallback');
-                    $typePiece = $this->dataTypes['columnStringNoLength']['default'];
-                    break;
+            default:
+                $this->triggerError("Unrecognised Column Type", array(
+                    'tableName' => $tableName,
+                    'columnName' => $columnName,
+                    'columnType' => $column['type'],
+                ), 'validationFallback');
+                $typePiece = $this->dataTypes['columnStringNoLength']['default'];
+            break;
             }
 
 
@@ -1402,10 +1392,32 @@ class databaseSQL extends database
             $columns[] = $this->formatValue('column', $columnName) . ' ' . $typePiece . ' COMMENT ' . $this->formatValue('string', $column['comment']);
         }
 
+        return [$columns, $triggers, $tableProperties];
+    }
 
+    private function parseEngine($tableName, $engine) {
+        if (!isset($this->tableTypes[$engine])) {
+            $this->triggerError("Unrecognised Table Engine", array(
+                'tableName' => $tableName,
+                'engine' => $engine
+            ), 'validationFallback');
+
+            $engine = 'general';
+        }
+        return $this->tableTypes[$engine];
+    }
+
+
+    public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes = [], $partitionColumn = false, $hardPartitionCount = 1)
+    {
+        $engineName = $this->parseEngine($tableName, $engine);
+
+
+        list($columns, $triggers, $tableProperties) = $this->parseTableColumns($tableName, $tableColumns);
+
+
+        $indexes = [];
         if (count($tableIndexes)) {
-            $indexes = array();
-
             foreach ($tableIndexes AS $indexName => $index) {
                 if (!isset($this->keyTypeConstants[$index['type']])) {
                     $this->triggerError("Unrecognised Index Type", array(
@@ -1447,9 +1459,8 @@ class databaseSQL extends database
                 . ' DEFAULT CHARSET=' . $this->formatValue('string', 'utf8') . $tableProperties
                 . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue('column', $partitionColumn) . ') PARTITIONS 100' : ''));
 
-            foreach ($triggers AS $trigger) {
-                $return = $this->rawQuery(str_replace('{TABLENAME}', $tableNameI, $trigger)) && $return; // Make $return false if any query return false.
-            }
+            $return = $return &&
+                $this->executeTriggers($tableNameI, $triggers);
         }
 
         $this->endTransaction();
@@ -1467,6 +1478,46 @@ class databaseSQL extends database
     public function renameTable($oldName, $newName)
     {
         return $this->rawQuery('RENAME TABLE ' . $this->formatValue('table', $oldName) . ' TO ' . $this->formatValue('table', $newName));
+    }
+
+    public function createTableColumns($tableName, $tableColumns) {
+        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns);
+
+        array_walk($columns, function(&$column) { $column = 'ADD ' . $column; });
+
+        return $this->rawQuery('ALTER TABLE ' . $this->formatValue('table', $tableName) . ' ' . implode($columns, ', '))
+            && $this->executeTriggers($tableName, $triggers);
+    }
+
+    public function alterTableColumns($tableName, $tableColumns) {
+        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns);
+
+        array_walk($columns, function(&$column) { $column = 'MODIFY ' . $column; });
+
+        return $this->rawQuery('ALTER TABLE ' . $this->formatValue('table', $tableName) . ' ' . implode($columns, ', '))
+            && $this->executeTriggers($tableName, $triggers);
+    }
+
+    public function executeTriggers($tableName, $triggers) {
+        $return = true;
+        foreach ($triggers AS $trigger) {
+            $return = $return
+                && $this->rawQuery(str_replace('{TABLENAME}', $tableName, $trigger)); // Make $return false if any query return false.
+        }
+        return $return;
+    }
+
+    public function createTableIndexes($tableName, $tableIndexes) {
+
+    }
+
+    public function alterTable($tableName, $tableComment, $engine, $partitionColumn) {
+        $engineName = $this->parseEngine($tableName, $engine);
+
+        return $this->rawQuery('ALTER TABLE ' . $this->formatValue('table', $tableName)
+            . (!is_null($engine) && $this->language === 'mysql' ? ' ENGINE=' . $this->formatValue('string', $engineName) : '')
+            . (!is_null($tableComment) ? ' COMMENT=' . $this->formatValue('string', $tableComment) : '')
+            . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue('column', $partitionColumn) . ') PARTITIONS 100' : ''));
     }
 
 

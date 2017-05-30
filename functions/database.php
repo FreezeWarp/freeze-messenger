@@ -464,6 +464,9 @@ abstract class database
      *
      * In this example, the table named "table1" will be deleted.
      * <code>
+    abstract public function alterTable($tableName, $tableComment, $storeType);
+    abstract public function createTableColumns($tableName, $tableColumns);
+    abstract public function alterTableColumns($tableName, $tableColumns);
      * $db = new database('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli');
      * $db->deleteTable('table1');
      * </code>
