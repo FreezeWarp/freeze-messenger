@@ -137,9 +137,9 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'int',
     ),
 
-    'messageHardLimit' => array(
-        'default' => $config['defaultMessageHardLimit'],
-        'max' => $config['maxMessageHardLimit'],
+    'messageLimit' => array(
+        'default' => $config['defaultMessageLimit'],
+        'max' => $config['maxMessageLimit'],
         'min' => 1,
         'cast' => 'int',
     ),
@@ -198,8 +198,6 @@ else {
         'archive' => $request['archive'],
         'userIds' => $request['userIds'],
         'messageIds' => $request['messageIds'],
-        'messageHardLimit' => $request['messageHardLimit'],
-        'page' => $request['page']
     ), array($request['sortBy'] => $request['sortOrder']), $request['messageLimit'], $request['page'])->getAsArray(true);// print($messages->sourceQuery); die('3');
 
 

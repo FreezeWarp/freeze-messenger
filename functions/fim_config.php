@@ -207,9 +207,9 @@ class fimConfig implements ArrayAccess {
 
     /* Message Retrieval */
     /** @var int The default number of messages that will be returned by api/getMessages.php. */
-    public $defaultMessageHardLimit = 50;
+    public $defaultMessageLimit = 50;
     /** @var int The maximum number of messages that will be returned by api/getMessages.php. */
-    public $maxMessageHardLimit = 500;
+    public $maxMessageLimit = 100;
 
     /** @var bool Whether to enable SSE. These are fairly stable; but some server configurations will still have problems with server sent events. Disable if you have issues. */
     public $serverSentEvents = true;
