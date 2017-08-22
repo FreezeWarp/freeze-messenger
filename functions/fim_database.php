@@ -23,30 +23,70 @@
  * @TODO Limit handling (OFFSET = limit * pagination).
  */
 
+
+/**
+ * FreezeMessenger-specific database functionality. Attempts to define a function for effectively every needed database call; most database calls, that is, will be through these methods instead of custom query logic.
+ * Current work-in-progress stuff:
+ *  - Limit handling is needed for most functions.
+ *
+ * @author Joseph T. Parsons <josephtparsons@gmail.com>
+ */
 class fimDatabase extends databaseSQL
 {
+    /**
+     * @var string The columns containing all user data.
+     */
     public $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs, lastSync';
+
+    /**
+     * @var string The columns containing all user login data.
+     */
     public $userPasswordColumns = 'passwordHash, passwordFormat, passwordResetNow, passwordLastReset';
+
+    /**
+     * @var string The columns containing all user data that is recorded in the user history.
+     */
     public $userHistoryColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, userParentalAge, userParentalFlags, privs';
+
+    /**
+     * @var string The columns containing all room data that is recorded in the room history.
+     */
     public $roomHistoryColumns = 'roomId, roomName, roomTopic, options, ownerId, defaultPermissions, roomParentalAge, roomParentalFlags';
+
+    /**
+     * @var string An error format function to be used when errors are encountered. Overrides {@link database:errorFormatFunction}
+     */
     public $errorFormatFunction = 'fimError';
+
+    /**
+     * @var fimConfig A pointer to the site configuration class.
+     */
     protected $config;
+
+    /**
+     * @var fimUser A pointer to the logged-in user.
+     */
     protected $user;
 
 
     const decodeError = "CORRUPTED";
     const decodeExpired = "EXPIRED";
 
-    /***
-     * Static String Manipulation
-     */
+
+
+    /*********************************************************
+     ************************ START **************************
+     ***************** List Packing Operations ***************
+     *********************************************************/
 
     /**
      * Converts an array list of integers to a packed binary equivilent.
      * As currently implemented, this should achieve the lowest possible size without performing compression. Numbers in the CSV list are converted to base-15, which are then packed to a hexadecimal string, with "f" being the delimiter.
      * Thus, "1,2,3" (6  bytes) will convert to 0x1a2a3, which is 20 bits/2.5 bytes.
      * For the purposes of ensuring a string is fully read back, however, it will start and end with "ff." (We could also specify the size of the string at the beginning, but the "ff" is marginally faster, and easier to encode.)
-     * @param string $csv
+     *
+     * @param array $list An array of integers to pack.
+     * @return string A binary string representation.
      */
     public static function packList(array $list) {
         if (count($list) === 0)
@@ -63,6 +103,12 @@ class fimDatabase extends databaseSQL
     }
 
 
+    /**
+     * Reverses the {@link fimDatabase::packList} procedure, converting a binary string into an array of integers.
+     *
+     * @param string $blob The binary blob to convert.
+     * @return array|mixed The array of integers that were packed, or fimDatabase::decodeError if unpacking failed.
+     */
     public static function unpackList($blob) {
         if (strlen($blob) === 0)
             return [];
@@ -87,10 +133,10 @@ class fimDatabase extends databaseSQL
     }
 
     /**
-     * This operates like fimDatabase::packCSV, except it also stores a cache expiration time as the first entry.
+     * This operates like {@link fimDatabase::packCSV}, except it also stores a cache expiration time as the first entry.
      *
-     * @param string $csv
-     * @param int $cacheLength
+     * @param array $list The list of integers to pack.
+     * @param int $cacheLength How long the binary string should be considered valid.
      */
     public static function packListCache(array $list, int $cacheLength = 5 * 60) {
         array_unshift($list, time() + $cacheLength);
@@ -98,6 +144,12 @@ class fimDatabase extends databaseSQL
         return fimDatabase::packList($list);
     }
 
+    /**
+     * The reverse of {@link fimDatabase:packListCache}, this unpacks a binary string, returning its contents or a constant if expired/corrupted.
+     *
+     * @param string $blob The binary string to unpack.
+     * @return array|string The unpacked list of integer values, or {@link fimDatabase::decodeError} if corrupted, or {@link fimDatabase::decodeExpired} if expired.
+     */
     public static function unpackListCache($blob) { //var_dump($blob); die(';7');
         if (strlen($blob) === 0) { // Happens when uninitialised, generally, but could also happen as part of a cache cleanup -- the most efficient way to invalidate is simply to null.
             return fimDatabase::decodeExpired;
@@ -118,12 +170,34 @@ class fimDatabase extends databaseSQL
         }
     }
 
+    /*********************************************************
+     ************************* END ***************************
+     ***************** List Packing Operations ***************
+     *********************************************************/
+
+
+
+
+
+
+    /*********************************************************
+     ************************ START **************************
+     ******************** String Operations ******************
+     *********************************************************/
 
     /**
      * Encodes a text string to be easily searched, such as through romanisation and transliteration, removing punctuation, and switch to lowercase.
+     * This works as follows:
+     *  - Always apply configuration-specified romanisation
+     *  - If PHP Transliterator exists, apply config-specified transliteration expression.
+     *  - If IconV is available, and PHP Transliterator is not, apply IconV's UTF-8 to Ascii transliteration.
+     *  - Remove punctuation, as specified in configuration.
+     *  - Remove all characters not specified by the searchWhiteList configuration regex range.
+     *  - Get rid of extra spaces, and convert all space characters to " "
      *
-     * @param $string string The string to encode.
-     * @return string The encoded string.
+     * @param string $string The string to make searchable.
+     *
+     * @return string The searchable string.
      */
     public function makeSearchable($string) {
         // Romanise first, to allow us to apply custom replacements before letting the built-in functions do their job
@@ -142,21 +216,36 @@ class fimDatabase extends databaseSQL
         if ($this->config['searchWhiteList'])
             $string = preg_replace('/[^' . $this->config['searchWhiteList'] . ']/', '', $string);
 
-        // Get rid of extra spaces.
+        // Get rid of extra spaces. (Also replaces all space characters with " ")
         $string = preg_replace('/\s+/', ' ', $string);
 
         return $string;
     }
 
+    /*********************************************************
+     ************************* END ***************************
+     ******************** String Operations ******************
+     *********************************************************/
 
+
+
+
+
+
+    /*********************************************************
+     ************************ START **************************
+     ******************** Utility Functions ******************
+     *********************************************************/
 
     /****** Utility Functions ******/
     /**
-     * Combines a set of default arguments with a set of passed arguments, through an error if a passed argument is not "present" in the default arguments.
+     * Combines a set of default arguments with a set of passed arguments, and throws an error if a passed argument is not "present" in the default arguments.
      *
-     * @param $defaults array The argument defaults.
-     * @param $args array The new arguments; all must have a corresponding entry in $defaults.
+     * @param array $defaults The argument defaults.
+     * @param array $args     The new arguments; all must have a corresponding entry in $defaults.
+     *
      * @return array The two sets of arguments combined.
+     *
      * @throws Exception If an argument in $args isn't present in $defaults.
      */
     private function argumentMerge($defaults, $args) {
@@ -174,9 +263,21 @@ class fimDatabase extends databaseSQL
         return $returnArray;
     }
 
+    /*********************************************************
+     ************************* END ***************************
+     ******************** Utility Functions ******************
+     *********************************************************/
 
 
-    /****** Setters *******/
+
+
+
+
+    /*********************************************************
+     ************************ START **************************
+     *********************** Setters *************************
+     *********************************************************/
+
     /**
      * Associates $user with the database instance, such as for auditing.
      *
@@ -196,9 +297,23 @@ class fimDatabase extends databaseSQL
         $this->config = $config;
     }
 
+    /*********************************************************
+     ************************* END ***************************
+     *********************** Setters *************************
+     *********************************************************/
 
 
-    /****** Get Functions *****/
+
+
+
+
+
+
+    /*********************************************************
+     ************************ START **************************
+     *********************** Getters *************************
+     *********************************************************/
+
     /**
      * Return a list of users who are actively using the instant messenger.
      * Scans table `ping`, and links in tables `rooms` and `users`, mainly for use in hasPermission(): TODO
@@ -257,9 +372,21 @@ class fimDatabase extends databaseSQL
 
 
 
+
+
+
+
+
+    /*********************************************************
+     ************************ START **************************
+     ******************** Censor Stuff ***********************
+     *********************************************************/
+
     /**
      * Gets the censor list rows, filtered by $options, and optionally with the "on"/"off" status associated with a given roomId.
      * Scans table `censorLists`. Also joins `censorBlackWhiteLists` if $options['includeStatus'] is set.
+     *
+     * Note: Censor active status is calculated outside of the database, and thus can not be selected for. Use getCensorListsActive for this purpose, which returns an array of active censor lists instead of a databaseResult.
      *
      * @param array $options {
      *     Options to filter by.
@@ -279,8 +406,6 @@ class fimDatabase extends databaseSQL
      * @param int   $page  The page for the selected resultset.
      *
      * @return databaseResult
-     *
-     * Note: Censor active status is calculated outside of the database, and thus can not be selected for. Use getCensorListsActive for this purpose, which returns an array of active censor lists instead of a databaseResult.
      */
     public function getCensorLists($options = array(), $sort = array('listId' => 'asc'), $limit = false, $page = false)
     {
@@ -339,6 +464,7 @@ class fimDatabase extends databaseSQL
      * Retrieves a single censor list row corresponding with $censorListId.
      *
      * @param int $censorListId The listId's row retrieve.
+     *
      * @return array The list properties.
      */
     public function getCensorList($censorListId)
@@ -353,7 +479,8 @@ class fimDatabase extends databaseSQL
      * Retrieves all censor lists active in $roomId.
      *
      * @param int $roomId The roomId whose active lists are being retrieved.
-     * @return array[listId] A list of censor lists.
+     *
+     * @return array[listId] A list of censor lists, keyed by the list ID.
      */
     public function getCensorListsActive($roomId) {
         $censorListsReturn = array();
@@ -419,7 +546,8 @@ class fimDatabase extends databaseSQL
     /**
      * Retrieves a single censorWord row corresponding with $censorWordId.
      *
-     * @param $censorWordId The word to return.
+     * @param int $censorWordId The word to return.
+     *
      * @return array The word properties.
      */
     public function getCensorWord($censorWordId)
@@ -444,6 +572,11 @@ class fimDatabase extends databaseSQL
             'severities' => $severities
         ));
     }
+
+    /*********************************************************
+     ************************* END ***************************
+     ******************** Censor Stuff ***********************
+     *********************************************************/
 
 
 
@@ -623,15 +756,39 @@ class fimDatabase extends databaseSQL
 
 
 
+
+
+
+    /*********************************************************
+     ************************ START **************************
+     ********************* Kick Stuff ************************
+     *********************************************************/
+
     /**
-     * Run a query to obtain current kicks.
+     * Retrieve current kicks from the database.
      *
-     * @param array $options
-     * @param array $sort
-     * @param int   $limit
-     * @param int   $pagination
+     * Scans table `kicks.` Optionally scans `users` and `rooms.`
+     * Returns columns kicks.kickerId, kicks.userId, kicks.roomId, kicks.length, kicks.time.
      *
-     * @return bool|object|resource
+     * @param array $options {
+     *      An array of options to filter by.
+     *
+     *      @param array ['userIds']           An array of userIds corresponding with the kick recipient to filter by.
+     *      @param array ['roomIds']           An array of roomIds corresponding with the kicked-from room to filter by.
+     *      @param array ['kickerIds']         An array of userIds corresponding with the kicking user (the moderator, that is) to filter by.
+     *      @param array ['lengthMax']         An upper-range for the duration of the kick to filter by.
+     *      @param array ['lengthMin']         A lower-range for duration of the kick to filter by.
+     *      @param array ['timeMax']           An upper-range for the time of the start of the kick to filter by.
+     *      @param array ['timeMin']           A lower-range for the time of the end of the kick to filter by.
+     *      @param bool  ['includeUserData']   Whether to include the userdata of the kickee: columns users.kuserId, users.userName, users.userNameFormat
+     *      @param bool  ['includeKickerData'] Whether to include the userdata of the kicker: columns users.kkickerId, users. kickerName, users.kickerNameFormat
+     *      @param bool  ['includeRoomData']   Whether to include the rooomdata of the room the kick occurred in: columns rooms.kroomId, rooms.roomName, rooms.ownerId, rooms.options, rooms.defaultPermissions, rooms.roomParentalFlags, rooms.roomParentalAge
+     * }
+     * @param array $sort        Sort columns (see standard definition).
+     * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
+     * @param int   $page        The page of the resultset to return.
+     *
+     * @return databaseResult
      */
     public function getKicks($options = array(), $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit = 0, $pagination = 1)
     {
@@ -692,7 +849,13 @@ class fimDatabase extends databaseSQL
     }
 
 
-
+    /**
+     * Kicks the user, userId, in the room, roomId.
+     *
+     * @param int $userId The ID of the user to kick.
+     * @param int $roomId The ID of the room for the kick to occur in.
+     * @param int $length The duration of the kick, in seconds.
+     */
     public function kickUser($userId, $roomId, $length) {
         $this->modLog('kickUser', "$userId,$roomId");
 
@@ -709,6 +872,12 @@ class fimDatabase extends databaseSQL
     }
 
 
+    /**
+     * Unlicks the user, userId, in the room, roomId.
+     *
+     * @param int $userId The ID of the user to unkick.
+     * @param int $roomId The ID of the room for the kick to be removed from.
+     */
     public function unkickUser($userId, $roomId) {
         $this->modLog('unkickUser', "$userId,$roomId");
 
@@ -720,8 +889,21 @@ class fimDatabase extends databaseSQL
         $this->deletePermissionCache($roomId, $userId);
     }
 
+    /*********************************************************
+     ************************* END ***************************
+     ********************* Kick Stuff ************************
+     *********************************************************/
 
 
+
+
+
+
+    /*********************************************************
+     ************************ START **************************
+     ****************** Message Retrieval ********************
+     *********************************************************/
+//TODO: matches any phrase, not all phrases
     public function getMessagesFromPhrases($options, $sort = array('messageId' => 'asc')) {
         $options = $this->argumentMerge(array(
             'roomIds'           => array(),
@@ -751,8 +933,8 @@ class fimDatabase extends databaseSQL
         if (count($options['users']) > 1) $conditions['both']['userId'] = $this->in((array) $options['users']);
 
 
-        /* Determine Whether to Use the Fast or Slow Algorithms */
         if (count($searchArray)) {
+            /* Determine Whether to Use the Fast or Slow Algorithms */
             if ($this->config['fullTextArchive']) // Slower Algorithm, uses subphrase searching (e.g. the sentence "a quick brown fox jumped over the lazy dog" will match every single individual letter, as well as, among others, "qu", "qui", "quic", "quick", "br", and so-on.)
                 foreach ($searchArray AS $phrase) $conditions['both']['either'][]['phraseName'] = $this->type('string', $phrase, 'search');
 
@@ -907,6 +1089,11 @@ class fimDatabase extends databaseSQL
         ));
     }
 
+    /*********************************************************
+     ************************* END ***************************
+     ****************** Message Retrieval ********************
+     *********************************************************/
+
 
 
     public function getModLog($options, $sort = array('time' => 'desc'), $limit = 0, $page = 1) {
@@ -957,7 +1144,7 @@ class fimDatabase extends databaseSQL
      * Run a query to obtain the number of posts made to a room by a user.
      * Use of groupBy highly recommended.
      *
-     * @param       $options
+     * @param array $options
      * @param array $sort
      * @param int   $limit
      * @param int   $pagination
