@@ -48,8 +48,7 @@ message - send message, edit message (could implement singular message select, b
 Current Plan, In Rough Order of Interest:
 1. APIs (getting there!)
 a. Private/group rooms (test more than 2 private room members, otr)
-b. Censor (test others, implement confirm)
-c. Kicks
+b. Kicks
 2. Login Sync
 a. vBulletin
 b. PHPBB

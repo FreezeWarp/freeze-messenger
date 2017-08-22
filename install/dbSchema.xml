@@ -551,7 +551,7 @@
 
         <table name="searchCache" type="general" comment="A cache of message searches. Note that this cache is most efficient when fulltext searching is enabled (which is otherwise quite slow), but that it will still have minor benefits when using searchPhrases instead.">
             <column name="phraseName" type="string" maxlen="50" comment="The phrase to search." />
-            <column name="userId" type="int" maxlen="8" comment="Limits the search results to this userId." />
+            <column name="userId"  type="int" maxlen="8" comment="Limits the search results to this userId." />
             <column name="roomId" type="blob" maxlen="23" comment="Limits the search results to this roomId." />
             <column name="resultPage" type="int" maxlen="6" comment="The result page this set corresponds with." />
             <column name="resultLimit" type="int" maxlen="6" comment="The result limit this set corresponds with." />
