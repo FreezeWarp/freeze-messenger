@@ -26,6 +26,7 @@ if (!isset($_POST['username'])) {
   <em>You should never enter your login information directly into a FreezeMessenger client. You can later revoke access to this application from ...</em>
 </form>');
 }
+//testing
 else {
   // Get the userId. In an effort to avoid introducing incompatabilities, we'll just pass the userId to the OAuth2 library, but our storage engine will use it to reobtain the full user table.
   //$userId = $database->resolveUser('');
