@@ -15,7 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 require_once('apiData.php');
-require_once('fim_error.php');
+require_once('fimError.php');
 
 /**
  * Performs a structured CURL request.

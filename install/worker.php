@@ -20,12 +20,12 @@ ini_set('display_errors', 1);
 require('../functions/xml.php'); // For reading the db*.xml files
 require('../functions/database.php'); // DB Operations
 require('../functions/databaseSQL.php'); // ""
-require('../functions/fim_database.php'); // ""
-require('../functions/fim_user.php'); // ""
-require('../functions/fim_room.php'); // ""
-require('../functions/cache.php');
-require('../functions/fim_cache.php');
-require('../functions/fim_config.php');
+require('../functions/fimDatabase.php'); // ""
+require('../functions/fimUser.php'); // ""
+require('../functions/fimRoom.php'); // ""
+require('../functions/generalCache.php');
+require('../functions/fimCache.php');
+require('../functions/fimConfig.php');
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!ini_get('safe_mode')) {

@@ -100,7 +100,7 @@ These parameters are, where applicable, documented in the SQL documentation.
 $apiRequest = true;
 
 require('../global.php');
-require('../functions/fim_curl.php');
+require('../functions/curlRequest.php');
 
 
 

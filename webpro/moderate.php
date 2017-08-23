@@ -22,7 +22,7 @@
 define('WEBPRO_INMOD', true);
 
 require('moderateFunctions.php'); // Functions that are used solely by the moderate interfaces.
-require('../functions/fim_curl.php');
+require('../functions/curlRequest.php');
 require('../config.php');
 
 

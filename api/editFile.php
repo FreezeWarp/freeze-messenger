@@ -71,7 +71,7 @@
 $apiRequest = true;
 
 require('../global.php');
-require('../functions/fim_file.php');
+require('../functions/fimFile.php');
 
 /* Get Request Data */
 $requestHead = fim_sanitizeGPC('g', array(

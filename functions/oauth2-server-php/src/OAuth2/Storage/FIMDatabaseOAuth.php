@@ -274,7 +274,7 @@ class FIMDatabaseOAuth implements
         //   if (fimUser($userArray['userId'])) update name, etc.
         //   else create user w/ name
 
-        require_once(__DIR__ . '/../../../../fim_user.php');
+        require_once(__DIR__ . '/../../../../fimUser.php');
 
         $userData = $this->db->getUsers(array(
             'userNames' => array($username),
