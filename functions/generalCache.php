@@ -60,7 +60,7 @@ class generalCache {
         }
 
         elseif ($method === 'disk') {
-            require_once('fileCache.php');
+            require_once('FileCache.php');
             $directory = (isset($servers['directory']) ? $servers['directory'] : $tmpDir);
 
             if (is_writable($tmpDir)) {

@@ -913,10 +913,12 @@ class fimDatabase extends databaseSQL
 
 
         $searchArray = [];
+        $searchResults = [];
         if ($options['messageTextSearch']) {
-            foreach (explode(',', $options['messageTextSearch']) AS $searchVal)
-                foreach (explode(' ', $this->makeSearchable($searchVal)) AS $searchPhrase)
-                    $searchArray[] = $searchPhrase;
+            foreach (explode(' ', $this->makeSearchable($options['messageTextSearch'])) AS $searchPhrase) {
+
+                $searchArray[] = $searchPhrase;
+            }
         }
 
 
@@ -944,16 +946,45 @@ class fimDatabase extends databaseSQL
 
 
         /* Run the Query */
-        return $this->select($columns, $conditions, $sort);
+        $matchedMessages = $this->select($columns, $conditions, $sort)->getAsArray('phraseId', true);
+        foreach ($matchedMessages AS $phraseId => $message) {
+
+        }
     }
 
 
 
+    /**
+     * Run a query to obtain messages based on query parameters.
+     *
+     * @param array $options {
+     *      An array of options to filter by.
+     *
+     *      @param fimRoom ['room']            The room to filter by. Required.
+     *      @param array ['messageIds']        An array of messageIds to filter by. Overrides other message ID filter parameters.
+     *      @param array ['userIds']           An array of sender userIds to filter the messages by.
+     *      @param array ['messageTextSearch'] Filter results by searching for this string in messageText.
+     *      @param bool  ['showDeleted']       Whether to include deleted messages. Default false.
+     *      @param bool  ['archive']           Whether to query the message archive instead of the main table. Default false. (On average, the main table only includes around 100 messages, so this must be true for archive viewing.)
+     *
+     *      The following are still being revised:
+     *      @param array ['messagesSince']
+     *      @param array ['messageIdStart']
+     *      @param array ['messageIdEnd']
+     *      @param array ['messageDateMax']
+     *      @param array ['messageDateMin']
+     * }
+     * @param array $sort        Sort columns (see standard definition).
+     * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
+     * @param int   $page        The page of the resultset to return.
+     *
+     * @return databaseResult
+     */
     public function getMessageIdsFromSearchCache($options, $limit, $page) {
         $options = $this->argumentMerge(array(
-            'roomIds'           => array(),
-            'userIds'           => array(),
-            'phraseNames' => array(),
+            'roomId'           => 0,
+            'userId'           => 0,
+            'phrases'          => array(),
         ), $options);
 
 
@@ -967,27 +998,52 @@ class fimDatabase extends databaseSQL
 
 
         /* Apply User and Room Filters */
-        if (count($options['roomIds']) > 1) $conditions['both']['roomId'] = $this->in((array) $options['roomIds']);
+        if (count($options['roomIds']) > 1)
+            $conditions['both']['roomId'] = $this->in((array) $options['roomIds']);
+        else
+            $conditions['both']['roomId'] = $this->int(0);
+
         if (count($options['userIds']) > 1) $conditions['both']['userId'] = $this->in((array) $options['userIds']);
 
 
         /* Run the Query */
-        $messageIds = implode(',', $this->select($columns, $conditions)->getColumnValues('messageIds'));
+        $cacheRow = $this->select($columns, $conditions)->getAsArray(false);
+        if (count($cacheRow) && $cacheRow['expires'] > time()) {
+            return explode(',', $cacheRow['messageIds']);
+        }
     }
+
 
 
 
     /**
      * Run a query to obtain messages.
-     * getMessages is by far the most advanced set of database calls in the whole application, and is still in need of much fine-tuning. The mesagEStream file uses its own query and must be teste seerately.
+     * getMessages is by far the most advanced set of database calls in the whole application, and is still in need of much fine-tuning. The message stream file uses its own query and must be tested seerately.
      *
-     * @param array $options
-     * @param array $sort
-     * @param bool  $limit
+     * @param array $options {
+     *      An array of options to filter by.
      *
-     * @return array|bool|object|resource
+     *      @param fimRoom ['room']            The room to filter by. Required.
+     *      @param array ['messageIds']        An array of messageIds to filter by. Overrides other message ID filter parameters.
+     *      @param array ['userIds']           An array of sender userIds to filter the messages by.
+     *      @param array ['messageTextSearch'] Filter results by searching for this string in messageText.
+     *      @param bool  ['showDeleted']       Whether to include deleted messages. Default false.
+     *      @param bool  ['archive']           Whether to query the message archive instead of the main table. Default false. (On average, the main table only includes around 100 messages, so this must be true for archive viewing.)
+     *
+     *      The following are still being revised:
+     *      @param array ['messagesSince']
+     *      @param array ['messageIdStart']
+     *      @param array ['messageIdEnd']
+     *      @param array ['messageDateMax']
+     *      @param array ['messageDateMin']
+     * }
+     * @param array $sort        Sort columns (see standard definition).
+     * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
+     * @param int   $page        The page of the resultset to return.
+     *
+     * @return databaseResult
      */
-    public function getMessages($options = array(), $sort = array('messageId' => 'asc'), $limit = false, $page = 0)
+    public function getMessages($options = array(), $sort = array('messageId' => 'asc'), $limit = 40, $page = 0)
     {
         $options = $this->argumentMerge(array(
             'room'              => false,
@@ -1000,8 +1056,6 @@ class fimDatabase extends databaseSQL
             'messageIdEnd'      => 0,
             'messageDateMax'    => 0,
             'messageDateMin'    => 0,
-            'messageHardLimit'  => 40,
-            'page'              => 0,
             'archive'           => false
         ), $options);
 
@@ -1016,6 +1070,12 @@ class fimDatabase extends databaseSQL
                 $this->triggerError('The "messageTextSearch" option in getMessages can only be used if "archive" is set to true.', array('Options' => $options), 'validation');
             } else {
                 /* Run the Query */
+                $searchMessageIds = $this->getMessagesFromPhrases(array(
+                    'roomIds' => [$options['room']->id],
+                    'userIds' => $options['userIds'],
+                    'messageTextSearch' => $options['messageTextSearch'],
+                ), null, $limit, $page)->getAsArray('messageId');
+
                 $searchMessageIds = $this->getMessagesFromPhrases(array(
                     'roomIds' => [$options['room']->id],
                     'userIds' => $options['userIds'],
@@ -1057,31 +1117,48 @@ class fimDatabase extends databaseSQL
 
         /* Modify Query Data for Directives
          * TODO: Remove messageIdStart and messageIdEnd, replacing with $limit and $pagination (combined with other operators). */
-        if ($options['messageDateMax'] > 0) $conditions['both']['time 1'] = $this->int($options['messageDateMax'], 'lte');
-        if ($options['messageDateMin'] > 0) $conditions['both']['time 2'] = $this->int($options['messageDateMin'], 'gte');
+        if ($options['messageDateMax'] > 0)
+            $conditions['both']['time 1'] = $this->int($options['messageDateMax'], 'lte');
+        if ($options['messageDateMin'] > 0)
+            $conditions['both']['time 2'] = $this->int($options['messageDateMin'], 'gte');
+
 
         if ($options['messageIdStart'] > 0) {
             $conditions['both']['messageId 3'] = $this->int($options['messageIdStart'], 'gte');
-            $conditions['both']['messageId 4'] = $this->int($options['messageIdStart'] + $options['messageHardLimit'], 'lt');
+            $conditions['both']['messageId 4'] = $this->int($options['messageIdStart'] + $limit, 'lt');
         } elseif ($options['messageIdEnd'] > 0) {
             $conditions['both']['messageId 3'] = $this->int($options['messageIdEnd'], 'lte');
-            $conditions['both']['messageId 4'] = $this->int($options['messageIdEnd'] - $options['messageHardLimit'], 'gt');
+            $conditions['both']['messageId 4'] = $this->int($options['messageIdEnd'] - $limit, 'gt');
         }
 
-        if ($options['showDeleted'] === false && $options['archive'] === true) $conditions['both']['deleted'] = $this->bool(false);
-        if (count($options['messageIds']) > 0) $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO
-        if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
+
+        if ($options['showDeleted'] === false && $options['archive'] === true)
+            $conditions['both']['deleted'] = $this->bool(false);
+
+        if (count($options['messageIds']) > 0)
+            $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO
+
+        if (count($options['userIds']) > 0)
+            $conditions['both']['userId'] = $this->in($options['userIds']);
 
 
 
         /* Perform Select */
-        $messages = $this->select($columns, $conditions, $sort, $options['messageHardLimit'], $options['page']);
+        $messages = $this->select($columns, $conditions, $sort, $limit, $page);
 
         return $messages;
     }
 
 
-    public function getMessage($room, $messageId) {
+    /**
+     * Gets a single message, identified by messageId, in the specified room.
+     *
+     * @param fimRoom $room      The room the message was made in.
+     * @param int     $messageId The ID given to the message.
+     *
+     * @return databaseResult
+     */
+    public function getMessage(fimRoom $room, $messageId) {
         return $this->getMessages(array(
             'room' => $room,
             'messageIds' => array($messageId),
@@ -1247,7 +1324,6 @@ class fimDatabase extends databaseSQL
             'columns' => $this->userColumns, // csvstring a list of columns to include in the return; if not specified, this will default to almost everything except passwords
             'includePasswords' => false, // bool shorthand to add password fields -- whatever they are -- to the otherwise specified columns
         ), $options);
-
 
         $columns = array(
             $this->sqlPrefix . "users" => $options['columns'] . ($options['includePasswords'] ? ', ' . $this->userPasswordColumns : '') // For this particular request, you can also access user password information using the includePasswords flag.
@@ -1476,7 +1552,7 @@ class fimDatabase extends databaseSQL
             $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
         );
 
-        if (count($rooms) > 0) $conditions['both']['roomId'] = $this->in((array) $roomIds);
+        if (count($roomIds) > 0) $conditions['both']['roomId'] = $this->in((array) $roomIds);
         if ($attribute) $conditions['both']['attribute'] = $this->str($attribute);
         if (count($params) > 0) $conditions['both']['param'] = $this->in((array) $params);
 
@@ -2688,7 +2764,7 @@ class fimDatabase extends databaseSQL
      * @return array - The keywords found.
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    // TODO: Shouldn't be part of fim_database.php.
+    // TODO: Shouldn't be part of fimDatabase.php.
     public function getKeyWordsFromText($text) {
         $string = $this->makeSearchable($text);
 
@@ -2801,88 +2877,13 @@ class fimDatabase extends databaseSQL
 
 
     /**
-     * OVERRIDE
      * Overrides the normal function to use fimDatabaseResult instead.
+     * @see database::databaseResultPipe()
      */
-    protected function databaseResultPipe($queryData, $reverseAlias, $query, $database) {
-        return new fimDatabaseResult($queryData, $reverseAlias, $query, $database);
+    protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, database $database, bool $paginated = false) {
+        return new fimDatabaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
     }
 }
 
-class fimDatabaseResult extends databaseResult {
-
-    /**
-     * @return fimRoom[]
-     *
-     * @internal This function may use too much memory. I'm not... exactly sure how to fix this.
-     */
-    function getAsRooms() : array {
-        $rooms = $this->getAsArray('roomId');
-        $return = array();
-
-        foreach ($rooms AS $roomId => $room) {
-            $return[$roomId] = new fimRoom($room);
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * @return fimUser[]
-     *
-     * @internal This function may use too much memory. I'm not... exactly sure how to fix this.
-     */
-    function getAsUsers() : array {
-        $users = $this->getAsArray('userId');
-        $return = array();
-
-        foreach ($users AS $userId => $user) {
-            $return[$userId] = fimUserFactory::getFromData($user);
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * @return fimGroup[]
-     */
-    function getAsGroups() : array {
-        $groups = $this->getAsArray('groupId');
-        $return = array();
-
-        foreach ($groups AS $groupId => $group) {
-            $return[$groupId] = fimGroupFactory::getFromData($group);
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * @return fimRoom
-     */
-    function getAsRoom() : fimRoom {
-        return new fimRoom($this->getAsArray(false));
-    }
-
-
-    /**
-     * @return fimUser
-     */
-    function getAsUser() : fimUser {
-        return fimUserFactory::getFromData($this->getAsArray(false));
-    }
-
-
-    /**
-     * @return fimGroup
-     */
-    function getAsGroup() : fimGroup {
-        return fimGroupFactory::getFromData($this->getAsArray(false));
-    }
-
-}
-
+require('fimDatabaseResult.php');
 ?>

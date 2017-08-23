@@ -230,27 +230,6 @@ class apiData implements ArrayAccess {
     }
 }
 
-class apiOutputList {
-    private $array;
-
-    function __construct($array) {
-        $this->array = $array;
-    }
-
-    function getArray() {
-        return $this->array;
-    }
-}
-
-class apiOutputDict {
-    private $array;
-
-    function __construct($array) {
-        $this->array = $array;
-    }
-
-    function getArray() {
-        return $this->array;
-    }
-}
+require('apiOutputList.php');
+require('apiOutputDict.php');
 ?>

@@ -45,18 +45,14 @@ class databaseSQLTests
 
 
 echo "Requiring Core Classes...<br />";
-require_once('../functions/fim_user.php');
-require_once('../functions/fim_room.php');
-require_once('../functions/fim_cache.php');
-
-echo "Requiring Core Configuration...<br />";
-$config = fimConfigFactory::init();
-$config['dev'] = true;
+require_once('../functions/fimUser.php');
+require_once('../functions/fimRoom.php');
+require_once('../functions/fimCache.php');
 
 echo "Requiring Database Files...<br />";
 require_once('../functions/database.php');
 require_once('../functions/databaseSQL.php');
-require_once('../functions/fim_database.php');
+require_once('../functions/fimDatabase.php');
 
 echo "Requiring Test Suites...<br />";
 require_once('./DatabaseSQL1.php');
@@ -73,6 +69,10 @@ $database->connect($dbConnect['core']['host'],
     $dbConnect['core']['database'],
     $dbConnect['core']['driver'],
     $dbConfig['vanilla']['tablePrefix']);
+
+echo "Requiring Core Configuration...<br />";
+$config = fimConfigFactory::init($database);
+$config['dev'] = true;
 
 $databaseTests = new databaseSQLTests($database);
 

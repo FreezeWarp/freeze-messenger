@@ -1093,17 +1093,11 @@ class databaseSQL extends database
 
 
     /**
-     * Creates a new database result from passed parameters.
-     *
-     * @param $queryData
-     * @param $query
-     * @param $driver
-     *
-     * @return databaseResult
+     * @see database::databaseResultPipe()
      */
-    protected function databaseResultPipe($queryData, $reverseAlias, $query, $driver)
+    protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, database $database, bool $paginated = false)
     {
-        return new databaseResult($queryData, $reverseAlias, $query, $driver);
+        return new databaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
     }
 
 
