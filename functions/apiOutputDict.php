@@ -1,4 +1,5 @@
 <?php
+<<<<<<< HEAD
 class apiOutputDict {
     private $array;
 
@@ -11,3 +12,11 @@ class apiOutputDict {
     }
 }
 ?>
+=======
+/**
+ * Created by PhpStorm.
+ * User: joseph
+ * Date: 22/08/17
+ * Time: 23:12
+ */
+>>>>>>> master
