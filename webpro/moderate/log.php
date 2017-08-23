@@ -22,7 +22,7 @@ else {
         'log' => array(
             'cast' => 'string',
             'default' => 'mod',
-            'valid' => ['mod', 'access', 'full']
+            'valid' => ['mod', 'access', 'full', 'query']
         ),
         'actions' => array(
             'cast' => 'list',
@@ -43,43 +43,59 @@ else {
          )
     ));
 
-    if ($user->hasPriv('modPrivs')) {
-        echo '<center><a href="./moderate.php?do=log&log=mod">Mod Log</a> <a href="./moderate.php?do=log&log=full">Full Log</a> <a href="./moderate.php?do=log&log=access">Access Log</a></center>'; // TODO
+    if ($user->hasPriv('modPrivs')) { // TODO: modLogs
+        echo '<center><a href="./moderate.php?do=log&log=mod">Mod Log</a> <a href="./moderate.php?do=log&log=full">Full Log</a> <a href="./moderate.php?do=log&log=access">Access Log</a> <a href="./moderate.php?do=log&log=query">Query Log</a></center>'; // TODO
 
+        if ($request['log'] === 'query') {
+            $file = fopen('../querylog', 'r') or die(container("Error", "Could not open query log file."));
 
-        $logs = $database->getModLog([
-            'actions' => $request['actions'],
-            'ips' => $request['ips'],
-            'log' => $request['log'],
-            'userIds' => $request['userIds'],
-         ], array('time' => 'desc'), 100, $request['page'])->getAsArray(true);
+            fseek($file, $request['page'] * 50000 - ($request['page'] > 0 ? 2500 : 0));
+            echo "<textarea style=\"width: 100%; height: 500px;\"'>" . fread($file, 52500) . "</textarea>";
 
-        foreach ($logs AS $log) {
-            $rows .= "<tr>
-                <td><a href=\"./moderate.php?do=log&log={$request['log']}&userIds[]={$log['userId']}\">{$log['userId']} ({$log['userName']})</a></td>
-                <td><a href=\"./moderate.php?do=log&log={$request['log']}&ips[]={$log['ip']}\">{$log['ip']}</a></td>
-                <td>" . date('r', $log['time']) . "</td>
-                " . ($request['log'] === 'full' ? '<td><pre style="white-space: pre-wrap; font-size: .8em;">' . json_encode(json_decode($log['server']), JSON_PRETTY_PRINT) . '</pre></td>' : '') . "
-                <td><a href=\"./moderate.php?do=log&log={$request['log']}&actions[]={$log['action']}\">{$log['action']}</a></td>
-                <td><pre style=\"white-space: pre-wrap; font-size: .8em;\">" . ($request['log'] !== 'mod' ? json_encode(json_decode($log['data']), JSON_PRETTY_PRINT) :  $log['data']) . "</pre></td>
-            </tr>";
+            $numPages = (int) (filesize('../querylog') / 50000);
+            if ($request['page'] > 0) echo "<a href=\"./moderate.php?do=log&log=query&page=" . ($request['page'] - 1) . "\">Previous Page</a> | ";
+            if ($request['page'] < $numPages) echo "<a href=\"./moderate.php?do=log&log=query&page=" . ($request['page'] + 1) . "\">Next Page</a> | ";
+            echo "Jump to Page: <form style=\"display: inline\"><select id=\"page\" onchange=\"window.location = './moderate.php?do=log&log=query&page=' + jQuery('#page option:selected').val();\">";
+            for ($page = 0; $page <= $numPages; $page++) {
+                echo "<option value=\"$page\"" . ($request['page'] == $page ? ' selected' : '') . ">$page</option>";
+            }
+            echo '</select>';
         }
+        else {
+            $logs = $database->getModLog([
+                'actions' => $request['actions'],
+                'ips' => $request['ips'],
+                'log' => $request['log'],
+                'userIds' => $request['userIds'],
+            ], array('time' => 'desc'), 100, $request['page'])->getAsArray(true);
 
-        echo container('Mod Log','<table class="page rowHover">
-  <thead>
-    <tr class="ui-widget-header">
-      <td>User ID (Username)</td>
-      <td>IP</td>
-      <td>Time</td>
-      ' . ($request['log'] === 'full' ? '<td>Server Data</td>' : '') . '
-      <td>Action</td>
-      <td>Data</td>
-    </tr>
-  </thead>
-  <tbody>
-' . $rows . '
-  </tbody>
-</table>');
+            foreach ($logs AS $log) {
+                $rows .= "<tr>
+                    <td><a href=\"./moderate.php?do=log&log={$request['log']}&userIds[]={$log['userId']}\">{$log['userId']} ({$log['userName']})</a></td>
+                    <td><a href=\"./moderate.php?do=log&log={$request['log']}&ips[]={$log['ip']}\">{$log['ip']}</a></td>
+                    <td>" . date('r', $log['time']) . "</td>
+                    " . ($request['log'] === 'full' ? '<td><pre style="white-space: pre-wrap; font-size: .8em;">' . json_encode(json_decode($log['server']), JSON_PRETTY_PRINT) . '</pre></td>' : '') . "
+                    <td><a href=\"./moderate.php?do=log&log={$request['log']}&actions[]={$log['action']}\">{$log['action']}</a></td>
+                    <td><pre style=\"white-space: pre-wrap; font-size: .8em;\">" . ($request['log'] !== 'mod' ? json_encode(json_decode($log['data']), JSON_PRETTY_PRINT) : $log['data']) . "</pre></td>
+                </tr>";
+            }
+
+            echo container('Mod Log', '<table class="page rowHover">
+      <thead>
+        <tr class="ui-widget-header">
+          <td>User ID (Username)</td>
+          <td>IP</td>
+          <td>Time</td>
+          ' . ($request['log'] === 'full' ? '<td>Server Data</td>' : '') . '
+          <td>Action</td>
+          <td>Data</td>
+        </tr>
+      </thead>
+      <tbody>
+    ' . $rows . '
+      </tbody>
+    </table>');
+        }
     }
     else {
         echo 'You do not have permission to view the logs.';
