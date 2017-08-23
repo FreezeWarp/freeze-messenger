@@ -2,7 +2,7 @@
 class databaseResult
 {
     /**
-     * @var object The query object created from the specific database driver, e.g. an instance of mysqli_result, that corresponds with this result. May not be set for all backends.
+     * @var array The result-set returned from the query.
      */
     public $queryData;
 
@@ -24,7 +24,12 @@ class databaseResult
     /**
      * @var bool Whether this result should be considered "paginated." If so, more results are available by simply incrementing the page used in the initial query.
      */
-    public $paginated;
+    public $paginated = false;
+
+    /**
+     * @var int The number of available results.
+     */
+    public $count = 0;
 
     /**
      * Construct
@@ -34,13 +39,20 @@ class databaseResult
      * @return void
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function __construct($queryData, $reverseAlias, $sourceQuery, database $database, bool $paginated = false)
+    public function __construct($queryData, $reverseAlias, $sourceQuery, database $database, int $resultLimit = 0)
     {
         $this->queryData = $queryData;
         $this->reverseAlias = $reverseAlias;
         $this->sourceQuery = $sourceQuery;
         $this->database = $database;
-        $this->paginated = $paginated;
+
+        if ($resultLimit > 1 && $this->functionMap('getCount', $this->queryData) > $resultLimit) {
+            $this->paginated = true;
+            $this->count = $resultLimit;
+        }
+        else {
+            $this->count = $this->functionMap('getCount');
+        }
     }
 
 
@@ -60,7 +72,7 @@ class databaseResult
                 return (($data = mysql_fetch_assoc($args[1])) === false ? false : $data);
             break;
             case 'getCount' :
-                return mysql_num_rows($args[1]);
+                return mysql_num_rows($this->queryData);
             break;
             }
         break;
@@ -71,7 +83,7 @@ class databaseResult
                 return (($data = $this->queryData->fetch_assoc()) === null ? false : $data);
             break;
             case 'getCount' :
-                return $args[1]->num_rows;
+                return $this->queryData->num_rows;
             break;
             }
         break;
@@ -102,7 +114,7 @@ class databaseResult
 
     public function getCount()
     {
-        return $this->functionMap('getCount', $this->queryData);
+        return $this->functionMap('getCount', $this->queryData); // Todo: this->count?
     }
 
 
@@ -116,12 +128,16 @@ class databaseResult
     public function getAsArray($index = true, $group = false)
     {
         $data = array();
+
+        $rowNumber = 0; // Count the number of results processed, ensuring we don't exceed $this->count.
         $indexV = 0;
 
         if ($this->queryData !== false) {
             if ($index) { // An index is specified, generate & return a multidimensional array. (index => [key => value], index being the value of the index for the row, key being the column name, and value being the corrosponding value).
                 while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
-                    if ($row === null || $row === false) break;
+                    if ($rowNumber++ > $this->count) break; // Don't go over the pagination limit. In general, there will only be one extra result, which indicates that more results are available.
+
+                    //if ($row === null || $row === false) break;
 
                     /* Decoding */
                     foreach ($row AS $columnName => &$columnValue) {

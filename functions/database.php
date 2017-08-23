@@ -1232,7 +1232,7 @@ abstract class database
      * @return databaseResult
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    abstract protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, database $database, bool $paginated = false);
+    abstract protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, database $database, int $paginated = 0);
 }
 
 require('DatabaseResult.php');

@@ -1069,18 +1069,23 @@ class databaseSQL extends database
      * @return resource|bool - The database resource returned by the query, or false on failure.
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    protected function rawQuery($query, $reverseAlias = false)
+    protected function rawQuery($query, $reverseAlias = false, int $paginate = 0)
     {
         if ($this->returnQueryString)
             return $query;
 
         else {
             $start = microtime(true);
+
             if ($queryData = $this->functionMap('query', $query)) {
                 $this->newQuery($query, microtime(true) - $start);
 
-                if ($queryData === true) return true; // Insert, Update, Delete, etc.
-                else return $this->databaseResultPipe($queryData, $reverseAlias, $query, $this); // Select, etc.
+                if ($queryData === true) { // Insert, Update, Delete, etc.
+                    return true;
+                }
+                else {
+                    return $this->databaseResultPipe($queryData, $reverseAlias, $query, $this, $paginate);
+                }
             }
 
             else {
@@ -1095,7 +1100,7 @@ class databaseSQL extends database
     /**
      * @see database::databaseResultPipe()
      */
-    protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, database $database, bool $paginated = false)
+    protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, database $database, int $paginated = 0)
     {
         return new databaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
     }
@@ -1810,10 +1815,10 @@ ORDER BY
   ' . $finalQuery['sort'] : '') . ($finalQuery['limit'] ? '
 LIMIT
  ' . $finalQuery['limit'] * $finalQuery['page'] . ',
-  ' . $finalQuery['limit'] : '');
+  ' . ($finalQuery['limit'] > 1 ? $finalQuery['limit'] + 1 : $finalQuery['limit']) : '');
 
         /* And Run the Query */
-        return $this->rawQuery($finalQueryText, $reverseAlias);
+        return $this->rawQuery($finalQueryText, $reverseAlias, $finalQuery['limit']);
     }
 
 

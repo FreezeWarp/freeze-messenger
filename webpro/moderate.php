@@ -360,6 +360,8 @@ require('../global.php');
             case 'copyright': require('./moderate/copyright.php'); break;
             default: require('./moderate/main.php'); break;
         }
+
+        $database->accessLog('moderate', $request);
     }
     ?>
 </div>

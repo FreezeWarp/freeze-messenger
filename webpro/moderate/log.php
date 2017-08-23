@@ -62,12 +62,13 @@ else {
             echo '</select>';
         }
         else {
-            $logs = $database->getModLog([
+            $logsResult = $database->getModLog([
                 'actions' => $request['actions'],
                 'ips' => $request['ips'],
                 'log' => $request['log'],
                 'userIds' => $request['userIds'],
-            ], array('time' => 'desc'), 100, $request['page'])->getAsArray(true);
+            ], array('time' => 'desc'), 100, $request['page']);
+            $logs = $logsResult->getAsArray(true);
 
             foreach ($logs AS $log) {
                 $rows .= "<tr>
@@ -80,7 +81,9 @@ else {
                 </tr>";
             }
 
-            echo container('Mod Log', '<table class="page rowHover">
+            echo container('Mod Log',
+                ($request['page'] > 0 ? "<div style=\"float: left;\"><a href=\"./moderate.php?do=log&log={$request['log']}&page=" . ($request['page'] - 1) . "\">Previous Page</a></div>" : "") .
+                ($logsResult->paginated ? "<div style=\"float: right;\"><a href=\"./moderate.php?do=log&log={$request['log']}&page=" . ($request['page'] + 1) . "\">Next Page</a></div>" : "") . '<table class="page rowHover">
       <thead>
         <tr class="ui-widget-header">
           <td>User ID (Username)</td>
