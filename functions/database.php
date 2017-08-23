@@ -541,7 +541,7 @@ abstract class database
      *
      * @return bool     True on success, false on failure.
      */
-    abstract public function alterTable($tableName, $tableComment, $storeType);
+    abstract public function alterTable($tableName, $tableComment, $storeType, $partitionColumn);
 
 
     /**
@@ -998,15 +998,15 @@ abstract class database
                 break;
 
             case 'ts': case 'timestamp': case DatabaseTypeType::timestamp:
-            return new DatabaseType(DatabaseTypeType::timestamp, (int)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::timestamp, (int)$value, $typeComp);
                 break;
 
             case 'str': case 'string': case DatabaseTypeType::string:
-            return new DatabaseType(DatabaseTypeType::string, (string)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::string, (string)$value, $typeComp);
                 break;
 
             case 'col': case 'column': case DatabaseTypeType::column:
-            return new DatabaseType(DatabaseTypeType::column, (string)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::column, (string)$value, $typeComp);
                 break;
 
             case 'float': case DatabaseTypeType::float:
@@ -1455,7 +1455,7 @@ class databaseResult
 class DatabaseTypeType {
     const __default = self::string;
 
-    const null = 0;
+    const null = -1;
     const string = 1;
     const integer = 2;
     const timestamp = 3;

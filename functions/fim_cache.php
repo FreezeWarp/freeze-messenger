@@ -133,17 +133,17 @@ class fimCache extends generalCache {
 }
 
 class fimConfigFactory {
-    public static function init() {
+    public static function init(fimDatabase $database) {
         if (apc_exists('fim_cache')) {
             return apc_fetch('fim_cache');
         }
         else {
-            global $disableConfig, $slaveDatabase;
+            global $disableConfig;
             require_once('fim_config.php');
             $config = new fimConfig();
 
             if (!$disableConfig) {
-                foreach ($slaveDatabase->getConfigurations()->getAsArray(true) AS $configDatabaseRow) {
+                foreach ($database->getConfigurations()->getAsArray(true) AS $configDatabaseRow) {
                     switch ($configDatabaseRow['type']) {
                         case 'int':
                             $config->{$configDatabaseRow['directive']} = (int)$configDatabaseRow['value'];

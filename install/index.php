@@ -610,7 +610,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <div style="height: 30px;">
             <form onsubmit="return false;">
                 <button style="float: left;" type="button" onclick="$('#part3').slideUp(); $('#part2').slideDown(); windowDraw();">&larr; Back</button>
-                <button style="float: right;" type="button" onclick="if($('#config_form')[0].checkValidity()) { if ($.get('./worker.php?phase=2', $('#db_connect_form').serialize() + '&' + $('#config_form').serialize(), function(data) { if (data == 'success') { $('#part3').slideUp(); $('#part4').slideDown(); } else { alert('Could not create configuration file. Is the server allowed to write to it?'); } } )) windowDraw(); } else { dia.error('Please fill in all required fields.'); }">Finish &rarr;</button>
+                <button style="float: right;" type="button" onclick="if($('#config_form')[0].checkValidity()) { if ($.get('./worker.php?phase=2', $('#db_connect_form').serialize() + '&' + $('#config_form').serialize(), function(data) { if (data == 'success') { $('#part3').slideUp(); $('#part4').slideDown(); } else { dia.error(data); } } )) windowDraw(); } else { dia.error('Please fill in all required fields.'); }">Finish &rarr;</button>
             </form>
         </div>
     </div>

@@ -1239,7 +1239,7 @@ class databaseSQL extends database
 
 
 
-    private function parseTableColumns($tableName, $tableColumns) {
+    private function parseTableColumns($tableName, $tableColumns, $engine) {
         $tableProperties = '';
 
         foreach ($tableColumns AS $columnName => $column) {
@@ -1415,8 +1415,7 @@ class databaseSQL extends database
     {
         $engineName = $this->parseEngine($tableName, $engine);
 
-
-        list($columns, $triggers, $tableProperties) = $this->parseTableColumns($tableName, $tableColumns);
+        list($columns, $triggers, $tableProperties) = $this->parseTableColumns($tableName, $tableColumns, $engine);
 
 
         $indexes = [];
@@ -1454,7 +1453,7 @@ class databaseSQL extends database
             $tableNameI = $tableName . ($hardPartitionCount > 1 ? "__part$i" : '');
 
             $return = $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue('table', $tableNameI) . ' (
-    ' . implode(",\n  ", $columns) . (isset($indexes) ? ',
+    ' . implode(",\n  ", $columns) . (count($indexes) > 0 ? ',
     ' . implode(",\n  ", $indexes) : '') . '
     )'
                 . ($this->language === 'mysql' ? ' ENGINE=' . $this->formatValue('string', $engineName) : '')
@@ -1484,7 +1483,7 @@ class databaseSQL extends database
     }
 
     public function createTableColumns($tableName, $tableColumns) {
-        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns);
+        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns, 'general'); // TODO: get table engine
 
         array_walk($columns, function(&$column) { $column = 'ADD ' . $column; });
 
@@ -1493,7 +1492,7 @@ class databaseSQL extends database
     }
 
     public function alterTableColumns($tableName, $tableColumns) {
-        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns);
+        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns, 'general'); // TODO: get table engine
 
         array_walk($columns, function(&$column) { $column = 'MODIFY ' . $column; });
 
@@ -1503,10 +1502,12 @@ class databaseSQL extends database
 
     public function executeTriggers($tableName, $triggers) {
         $return = true;
-        foreach ($triggers AS $trigger) {
+
+        foreach ((array) $triggers AS $trigger) {
             $return = $return
                 && $this->rawQuery(str_replace('{TABLENAME}', $tableName, $trigger)); // Make $return false if any query return false.
         }
+
         return $return;
     }
 

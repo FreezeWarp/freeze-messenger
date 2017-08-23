@@ -27,7 +27,7 @@ $database->setTransformationParameters([
 ], [
     $database->sqlPrefix . 'rooms' => [
         'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'roomIdEncoded'],
-        'roomName' => ['fimDatabase::makeSearchable', false, 'roomNameSearchable']
+        'roomName' => [[$database, 'makeSearchable'], false, 'roomNameSearchable']
     ],
 ], [
     $database->sqlPrefix . 'rooms' => 'roomId',

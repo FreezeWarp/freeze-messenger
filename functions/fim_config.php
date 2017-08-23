@@ -498,7 +498,7 @@ class fimConfig implements ArrayAccess {
     /** @var string The language that is default when a user has not specified one. 'en' is the only value supported by default. TODO */
     public $defaultLanguage = 'en';
 
-    /** @var array An array of characters that will be replaced in the "phrase" table. Not that the "romanisation" configuration rules are applied to phrases as well, so you should not include these. */
+    /** @var array An array of characters that will be replaced in the "phrase" table. Note that the "romanisation" configuration rules are applied to phrases as well, so you should not include these. */
     public $romanisation = array(
         'á' => 'a', 'ä' => 'a', 'å' => 'a', 'Á' => 'A', 'Ä' => 'A', 'Å' => 'A',
         'é' => 'e', 'ë' => 'e', 'É' => 'E', 'Ë' => 'E',
@@ -662,6 +662,17 @@ class fimConfig implements ArrayAccess {
             throw new Exception('Invalid config entry requested: ' . $offset);
 
         return $this->{$offset};
+    }
+}
+
+
+class fimDatabaseAndConfigFactory {
+    public static function init($host, $port, $userName, $password, $databaseName, $driver, $prefix) {
+        $database = new fimDatabase($host, $port, $userName, $password, $databaseName, $driver, $prefix);
+        $config = fimConfigFactory::init($database);
+        $database->registerConfig($config);
+
+        return [$database, $config];
     }
 }
 ?>

@@ -208,7 +208,7 @@ foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
 }
 
 // Get Configuration Data
-$config = fimConfigFactory::init();
+$config = fimConfigFactory::init($slaveDatabase);
 
 
 $database->registerConfig($config);

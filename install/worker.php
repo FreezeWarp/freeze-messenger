@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-error_reporting(E_ALL ^ E_NOTICE); // Report All Potential Errors\
+error_reporting(E_ALL ^ E_NOTICE); // Report All Potential Errors
 ini_set('display_errors', 1);
 
 require('../functions/xml.php'); // For reading the db*.xml files
@@ -23,8 +23,9 @@ require('../functions/databaseSQL.php'); // ""
 require('../functions/fim_database.php'); // ""
 require('../functions/fim_user.php'); // ""
 require('../functions/fim_room.php'); // ""
+require('../functions/cache.php');
 require('../functions/fim_cache.php');
-$config = fimConfigFactory::init();
+require('../functions/fim_config.php');
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!ini_get('safe_mode')) {
@@ -72,6 +73,8 @@ switch ($_REQUEST['phase']) {
         } catch (Exception $exception) {
             die($exception->getMessage());
         }
+
+        $database->registerConfig(new fimConfig());
 
 
         if ($database->getLastError()) {
@@ -215,8 +218,6 @@ switch ($_REQUEST['phase']) {
 
     case 2: // Config File
         require('../functions/fim_general.php');
-        require('../functions/cache.php');
-        require('../functions/fim_cache.php'); // Cache (minimally used at this stage, but could be used more in the future)
 
         // Note: This writes a file to the server, which is a very sensitive action (and for a reason is never done elsewhere). This is NOT secure, but should only be used by users wishing to install the product.
 //var_dump($_GET); die();
@@ -248,7 +249,7 @@ switch ($_REQUEST['phase']) {
 
         if ($forum == 'vanilla') {
             try {
-                $database = new fimDatabase($host, $port, $userName, $password, $databaseName, $driver, $prefix);
+                list ($database, $config) = fimDatabaseAndConfigFactory::init($host, $port, $userName, $password, $databaseName, $driver, $prefix);
                 $generalCache = new fimCache(null, 'none', $database);
 
                 $user = new fimUser(1);

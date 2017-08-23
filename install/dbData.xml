@@ -210,7 +210,10 @@
 
     <table name="oauth_clients">
       <column name="client_id" value="WebPro" />
-      <column name="client_id" value="WebProAdmin" />
+    </table>
+
+    <table name="oauth_clients">
+        <column name="client_id" value="WebProAdmin" />
     </table>
 
 
@@ -273,8 +276,6 @@
     <table name="users" mode="dev">
       <column name="userId" value="3" />
       <column name="userName" value="Test Bot 1" />
-      <column name="userGroupId" value="3" />
-      <column name="socialGroupIds" value="3,4,5,6" />
       <column name="birthDate" value="1175052655" />
       <column name="passwordHash" value="pass1" /><!-- Unhashed passwords are only used for testing. -->
       <column name="passwordFormat" value="plaintext" />

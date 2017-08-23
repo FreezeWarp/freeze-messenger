@@ -5,7 +5,7 @@
         <table name="accessLog" type="general" comment="Log of all API calls, meant mostly for analytics purposes.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
             <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
-            <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session.." />
+            <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session." />
             <column name="action" type="string" maxlen="64" comment="The action performed." />
             <column name="data" type="string" maxlen="4096" comment="Information pertaining to action." />
             <column name="time" type="float" comment="Time of access in seconds (with decimal)." />
@@ -171,10 +171,11 @@
         <table name="fullLog" type="general" comment="A log of moderator actions that document all update(), insert(), and delete() calls.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID   for the log entry." />
             <column name="userId" type="int" maxlen="8" comment="The user ID." />
+            <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session." />
             <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user when the action was performed." />
             <column name="server" type="string" maxlen="1048576" comment="The JSON encoding of the $_SERVER variable." />
-            <column name="action" type="string" maxlen="1048576" comment="The action performed." />
+            <column name="action" type="string" maxlen="100" comment="The action performed." />
             <column name="data" type="string" maxlen="1024" comment="The associated data of the action, encoded using JSON." />
 
             <key name="id" type="primary" />
@@ -396,6 +397,7 @@
         <table name="modLog" type="general" comment="A log of moderator actions.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
             <column name="userId" type="int" maxlen="8" comment="The user ID who performed the action." />
+            <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session." />
             <column name="time" type="time" default="__TIME__" comment="The time the action was performed on." />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user when the action was performed." />
             <column name="action" type="string" maxlen="100" comment="The action performed." />
