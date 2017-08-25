@@ -1,8 +1,11 @@
 <?php
 class fimConfigFactory {
     public static function init(fimDatabase $database) {
-        if (apc_exists('fim_cache')) {
+        if (function_exists('apc_exists') && apc_exists('fim_cache')) {
             return apc_fetch('fim_cache');
+        }
+        else if (function_exists('apcu_exists') && apcu_exists('fim_cache')) {
+            return apcu_fetch('fim_cache');
         }
         else {
             global $disableConfig;
