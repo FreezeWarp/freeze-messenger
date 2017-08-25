@@ -575,7 +575,7 @@ class fimConfig implements ArrayAccess {
     public $logQueries = false;
 
     /** @var string The database will write all queries (and the time they took) to this file, if $logQueries is true. */
-    public $logQueriesFile = '/var/www/html/freeze-messenger/querylog';
+    public $logQueriesFile = false;
 
     /** @var bool When true, ALL API accesses will be logged to a table. This table will quickly become VERY large, so such functionality is generally ill-advised unless your server is optimised for it. (Currently only defaults to true for testing.) */
     public $accessLogEnabled = true;
