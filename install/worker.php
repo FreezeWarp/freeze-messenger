@@ -266,12 +266,24 @@ switch ($_REQUEST['phase']) {
         }
 
         $find = array(
-            "\$dbConnect['core']['driver'] = 'mysqli';\n\$dbConnect['slave']['driver'] = 'mysqli';\n\$dbConnect['integration']['driver'] = 'mysqli';",
-            "\$dbConnect['core']['host'] = 'localhost';\n\$dbConnect['slave']['host'] = 'localhost';\n\$dbConnect['integration']['host'] = 'localhost';",
-            "\$dbConnect['core']['port'] = 3306;\n\$dbConnect['slave']['port'] = 3306;\n\$dbConnect['integration']['port'] = 3306;",
-            "\$dbConnect['core']['username'] = '';\n\$dbConnect['slave']['username'] = '';\n\$dbConnect['integration']['username'] = '';",
-            "\$dbConnect['core']['password'] = '';\n\$dbConnect['slave']['password'] = '';\n\$dbConnect['integration']['password'] = '';",
-            "\$dbConnect['core']['database'] = '';\n\$dbConnect['slave']['database'] = '';\n\$dbConnect['integration']['database'] = '';",
+            "\$dbConnect['core']['driver'] = 'mysqli';
+\$dbConnect['slave']['driver'] = 'mysqli';
+\$dbConnect['integration']['driver'] = 'mysqli';",
+            "\$dbConnect['core']['host'] = 'localhost';
+\$dbConnect['slave']['host'] = 'localhost';
+\$dbConnect['integration']['host'] = 'localhost';",
+            "\$dbConnect['core']['port'] = 3306;
+\$dbConnect['slave']['port'] = 3306;
+\$dbConnect['integration']['port'] = 3306;",
+            "\$dbConnect['core']['username'] = '';
+\$dbConnect['slave']['username'] = '';
+\$dbConnect['integration']['username'] = '';",
+            "\$dbConnect['core']['password'] = '';
+\$dbConnect['slave']['password'] = '';
+\$dbConnect['integration']['password'] = '';",
+            "\$dbConnect['core']['database'] = '';
+\$dbConnect['slave']['database'] = '';
+\$dbConnect['integration']['database'] = '';",
             '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'\';',
             '$dbConfig[\'integration\'][\'tablePrefix\'] = \'\';',
             '$cacheConnect[\'driver\'] = \'\';',
