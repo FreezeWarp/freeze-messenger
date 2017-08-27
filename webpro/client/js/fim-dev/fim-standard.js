@@ -300,43 +300,41 @@ standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
     else {
         ignoreBlock = (ignoreBlock === 1 ? 1 : '');
 
-        fimApi.sendMessage({
-                'roomId' : window.roomId,
-                'ignoreBlock' : ignoreBlock,
-                'message' : message,
-                'flag' : (flag ? flag : '')
-            },
-            {
-                'end' : function (message) {
-                    if ("censor" in message && message.censor) {
-                        console.log("censor match.");
-                        dia.info(Object.values(message.censor).join('<br /><br />'), "Censor warning: " + Object.keys(message.censor).join(', '));
-                    }
-                },
-                'exception' : function(exception) {
-                    if (exception.string === 'confirmCensor')
-                        dia.confirm({
-                            'text' : exception.details,
-                            'true' : function() {
-                                standard.sendMessage(message, 1, flag);
-                            }
-                        }, "Censor Warning");
-                    else if (exception.string === 'spaceMessage') {
-                        dia.error("Too... many... spaces!")
-                    }
-                    else { fimApi.getDefaultExceptionHandler()(exception); }
-                },
-                'error' : function(request) {
-                    if (settings.reversePostOrder)
-                        $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
-                    else
-                        $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
-
-                    window.setTimeout(function() { standard.sendMessage(message) }, 5000);
-
-                    return false;
+        fimApi.sendMessage(window.roomId, {
+            'ignoreBlock' : ignoreBlock,
+            'message' : message,
+            'flag' : (flag ? flag : '')
+        }, {
+            'end' : function (message) {
+                if ("censor" in message && message.censor) {
+                    console.log("censor match.");
+                    dia.info(Object.values(message.censor).join('<br /><br />'), "Censor warning: " + Object.keys(message.censor).join(', '));
                 }
-            });
+            },
+            'exception' : function(exception) {
+                if (exception.string === 'confirmCensor')
+                    dia.confirm({
+                        'text' : exception.details,
+                        'true' : function() {
+                            standard.sendMessage(message, 1, flag);
+                        }
+                    }, "Censor Warning");
+                else if (exception.string === 'spaceMessage') {
+                    dia.error("Too... many... spaces!")
+                }
+                else { fimApi.getDefaultExceptionHandler()(exception); }
+            },
+            'error' : function(request) {
+                if (settings.reversePostOrder)
+                    $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
+                else
+                    $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
+
+                window.setTimeout(function() { standard.sendMessage(message) }, 5000);
+
+                return false;
+            }
+        });
     }
 };
 
@@ -490,7 +488,7 @@ standard.prototype.unkick = function(userId, roomId) {
 
 
 standard.prototype.deleteMessage = function(messageId) {
-    fimApi.editMessage({
+    fimApi.deleteMessage({
         'messageId' : messageId,
         'action' : 'delete'
     }, {

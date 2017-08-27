@@ -63,25 +63,14 @@
  */
 
 
-$apiRequest = true;
+/* Prevent Direct Access of File */
+if (!defined('API_INMESSAGE'))
+    die();
 
-require('../global.php');
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-    'roomId' => array(
-        'cast' => 'roomId',
-        'require' => true,
-    ),
-
     'userIds' => array(
-        'default' => [],
-        'cast' => 'list',
-        'filter' => 'int',
-        'evaltrue' => true,
-    ),
-
-    'messageIds' => array(
         'default' => [],
         'cast' => 'list',
         'filter' => 'int',
@@ -164,7 +153,7 @@ $database->accessLog('getMessages', $request);
 
 
 /* Get the roomdata. */
-$room = new fimRoom($request['roomId']);
+$room = new fimRoom($requestHead['roomId']);
 
 
 /* Data Predefine */
@@ -197,8 +186,8 @@ else {
         'messageTextSearch' => $request['search'],
         'archive' => $request['archive'],
         'userIds' => $request['userIds'],
-        'messageIds' => $request['messageIds'],
-    ), array($request['sortBy'] => $request['sortOrder']), $request['messageLimit'], $request['page'])->getAsArray(true);// print($messages->sourceQuery); die('3');
+        'messageIds' => (array) $requestHead['id'],
+    ), array($request['sortBy'] => $request['sortOrder']), $request['messageLimit'], $request['page'])->getAsArray(true);
 
 
     /* Process Messages */

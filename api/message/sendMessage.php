@@ -29,40 +29,35 @@
  * @param bool ignoreBlock - If true, the system will ignore censor warnings. You must pass this to resend a message that was denied because of a censor warning.
  */
 
-$apiRequest = true;
 
-require('../global.php');
-
+/* Prevent Direct Access of File */
+if (!defined('API_INMESSAGE'))
+    die();
 
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-    'roomId' => array(
-        'require' => true,
-        'cast' => 'roomId',
-    ),
+    'message' => [],
 
-    'message' => array(),
+    'flag' => [
+        'valid' => ['image', 'video', 'url', 'email', 'html', 'audio', 'text', 'source', ''],
+    ],
 
-    'flag' => array(
-        'valid' => array('image', 'video', 'url', 'email', 'html', 'audio', 'text', 'source', ''),
-    ),
-
-    'ignoreBlock' => array(
+    'ignoreBlock' => [
         'default' => false,
         'cast' => 'bool',
-    ),
+    ],
 ));
+
+
+/* Logging */
 $database->accessLog('sendMessage', $request);
 
 
-/* Get Room for DB */
-$room = new fimRoom($request['roomId']);
-
 
 /* Start Processing */
-if (!$room->id)
-    new fimError('badRoom'); // Room doesn't exist.
+if (!($room = new fimRoom($requestHead['roomId']))->roomExists())
+    new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
 
 elseif (strlen($request['message']) < $config['messageMinLength'] || strlen($request['message']) > $config['messageMaxLength'])
     new fimError('messageLength', 'Minimum: ' . $config['messageMinLength'] . ', Maximum: ' . $config['messageMaxLength']); // Too short/long.

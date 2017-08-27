@@ -208,13 +208,12 @@ fimApi.prototype.getPrivateRoom = function(params, requestSettings) {
      else {
      */
 
+/* Messages */
 fimApi.prototype.getMessages = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
-            'fim3_format' : 'json',
             'roomId' : null,
             'userIds' : null,
-            'messageIds' : null,
             'messageIdEnd' : null,
             'messageIdStart' : null,
             'page' : null,
@@ -238,7 +237,7 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
         function getMessages_query() {
             $.ajax({
                 type: 'get',
-                url: directory + 'api/getMessages.php',
+                url: directory + 'api/message.php',
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
@@ -253,6 +252,73 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
         }
 };
 
+
+
+fimApi.prototype.sendMessage = function(roomId, params, requestSettings) {
+    var params = fimApi.mergeDefaults(params, {
+        'ignoreBlock' : false, // TODO
+        'message' : null,
+        'flag' : null
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        url: directory + 'api/message.php?' + $.param({
+            'access_token' : window.sessionHash,
+            'roomId' : roomId
+        }),
+        type: 'PUT',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+};
+
+
+
+fimApi.prototype.editMessage = function(roomId, messageId, params, requestSettings) {
+    var params = fimApi.mergeDefaults(params, {
+        'ignoreBlock' : false, // TODO
+        'message' : null,
+        'flag' : null
+    });
+
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        url: directory + 'api/message.php?' + $.param({
+            'access_token': window.sessionHash,
+            'id' : messageId,
+            'roomId' : roomId
+        }),
+        type: 'POST',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache,
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+}
+
+
+fimApi.prototype.deleteMessage = function(roomId, messageId, requestSettings) {
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        url: directory + 'api/message.php?' + $.param({
+            'access_token': window.sessionHash,
+            'id' : messageId,
+            'roomId' : roomId
+        }),
+        type: 'DELETE',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+}
+
+
+
+/* Unread Messages */
 
 fimApi.prototype.getUnreadMessages = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
@@ -463,28 +529,6 @@ fimApi.prototype.acHelper = function(list) {
 };
 
 
-fimApi.prototype.sendMessage = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(params, {
-            'access_token' : window.sessionHash,
-            'fim3_format' : 'json',
-            'roomId' : null,
-            'ignoreBlock' : false, // TODO
-            'message' : null,
-            'flag' : null
-        });
-
-        var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
-
-        $.ajax({
-            url: directory + 'api/sendMessage.php',
-            type: 'POST',
-            data: params,
-            timeout: requestSettings.timeout,
-            cache: requestSettings.cache,
-        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
-};
-
-
 fimApi.prototype.kickUser = function(userId, roomId, length, requestSettings) {
     var params = {
         'access_token' : window.sessionHash,
@@ -641,29 +685,6 @@ fimApi.prototype.editRoomPermissionGroup = function(roomId, groupId, permissions
         'roomId' : roomId,
         'groupPermissions' : permissionsObj
     });
-}
-
-
-
-fimApi.prototype.editMessage = function(params, requestSettings) {
-    var params = fimApi.mergeDefaults(params, {
-        'access_token': window.sessionHash,
-        'fim3_format': 'json',
-        'messageId' : null,
-        'action': null,
-        'text': null,
-        'flag': null,
-    });
-
-    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
-
-    $.ajax({
-        url: directory + 'api/editMessage.php',
-        type: 'POST',
-        data: params,
-        timeout: requestSettings.timeout,
-        cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
 }
 
 

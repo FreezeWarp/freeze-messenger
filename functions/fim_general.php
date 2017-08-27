@@ -308,6 +308,7 @@ function fim_sanitizeGPC($type, $data) {
         if ($indexName === '_action') {
             if (!isset($activeGlobal[$indexName])) {
                 switch ($_SERVER['REQUEST_METHOD']) {
+                    case 'GET':    $newData[$indexName] = 'get';    break;
                     case 'POST':   $newData[$indexName] = 'edit';   break;
                     case 'PUT':    $newData[$indexName] = 'create'; break;
                     case 'DELETE': $newData[$indexName] = 'delete'; break;
