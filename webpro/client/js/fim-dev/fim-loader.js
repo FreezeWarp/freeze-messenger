@@ -213,6 +213,7 @@ function fim_showMissedMessage(message) { console.log(window.roomId)
  */
 function fim_messageFormat(json, format) {
     console.log(["message format", format, json]);
+
     var mjson = json.messageData,
         ujson = json.userData,
         data,
@@ -221,34 +222,28 @@ function fim_messageFormat(json, format) {
         messageId = mjson.messageId,
         userId = ujson.userId;
 
-        if (ujson.userName != null)
-            var userName = ujson.userName;
-        else
-            var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId]).then(function(pairs) {
-                userName = pairs[userId].userName;
-            }));
+    if (ujson.userName != null)
+        var userName = ujson.userName;
+    else
+        var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId]).then(function(pairs) {
+            userName = pairs[userId].userName;
+        }));
 
-        var userNameFormat = ujson.userNameFormat,
+    var userNameFormat = ujson.userNameFormat,
         avatar = ujson.avatar,
-
-        styleColor = ujson.defaultFormatting.color,
-        styleHighlight = ujson.defaultFormatting.highlight,
-        styleFontface = ujson.defaultFormatting.fontface,
-        styleGeneral = ujson.defaultFormatting.general,
-        style = '',
-
+        style = (settings.disableFormatting ? "" : mjson.messageFormatting),
         flag = mjson.flags;
 
-        text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
-        text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {
-            // The usage of mergeDefaults here is a somewhat lazy way of unsetting the attributes if they are null (thus, not sending them at all, as opposed to sending them empty).
-            return ($1 + "&" + $.param(fimApi.mergeDefaults({},
-                {
-                    'parentalAge' : window.activeLogin.userData.parentalAge ? window.activeLogin.userData.parentalAge : null,
-                    'parentalFlags' : window.activeLogin.userData.parentalFlags ? window.activeLogin.userData.parentalFlags : null,
-                }
-            )));
-        });
+    text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
+    text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {
+        // The usage of mergeDefaults here is a somewhat lazy way of unsetting the attributes if they are null (thus, not sending them at all, as opposed to sending them empty).
+        return ($1 + "&" + $.param(fimApi.mergeDefaults({},
+            {
+                'parentalAge' : window.activeLogin.userData.parentalAge ? window.activeLogin.userData.parentalAge : null,
+                'parentalFlags' : window.activeLogin.userData.parentalFlags ? window.activeLogin.userData.parentalFlags : null,
+            }
+        )));
+    });
 
     if (text.length > 1000) { /* TODO */
         text = '[Message Too Long]';
@@ -305,19 +300,6 @@ function fim_messageFormat(json, format) {
                     $('#topic').html(text);
 
                     text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + userName + ' changed the topic to "' + text + '".').prop('outerHTML');
-                }
-
-                // Default Formatting
-                if (!settings.disableFormatting) {
-                    if (styleColor) style += 'color: rgb(' + styleColor + ');';
-                    if (styleHighlight) style += 'background: rgb(' + styleHighlight + ');'
-                    if (styleFontface) style += 'font-family: ' + window.serverSettings.formatting.fonts[styleFontface] + ';';
-
-                    if (styleGeneral & 256) style += 'font-weight: bold;';
-                    if (styleGeneral & 512) style += 'font-style: oblique;';
-                    if (styleGeneral & 1024) style += 'text-decoration: underline;';
-                    if (styleGeneral & 2048) style += 'text-decoration: line-through;';
-                    if (styleGeneral & 4096) style += 'text-decoration: overline;';
                 }
                 break;
         }
