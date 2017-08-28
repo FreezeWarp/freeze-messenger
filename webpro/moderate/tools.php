@@ -115,14 +115,14 @@ else {
                         }
 
                         if (in_array(strtolower($tableName), $showTables)) {
-                            echo 'Update: ' . $tableName . ': ' . $database->alterTable($tableName, $table['comment'], $table['type']) . '<br />';
+                            echo 'Update: ' . $tableName . ': ' . $database->alterTable($tableName, $table['@comment'], $table['@type']) . '<br />';
 
                             foreach ($tableColumns AS $name => $column) {
                                 if (in_array(strtolower($name), $showColumns[strtolower($tableName)])) {
-                                    echo 'Update: ' . $tableName . ',' . $name . ': ' . $database->alterTableColumns($tableName, [$name => $column]) . '<br />';
+                                    echo 'Update: ' . $tableName . ',' . $name . ': ' . $database->alterTableColumns($tableName, [$name => $column], $table['@type']) . '<br />';
                                 }
                                 else {
-                                    echo 'Create: ' . $tableName . ',' . $name . ': ' . $database->createTableColumns($tableName, [$name => $column]) . '<br />';
+                                    echo 'Create: ' . $tableName . ',' . $name . ': ' . $database->createTableColumns($tableName, [$name => $column], $table['@type']) . '<br />';
                                 }
                             }
                         }

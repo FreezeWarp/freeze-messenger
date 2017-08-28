@@ -1481,8 +1481,8 @@ class databaseSQL extends database
         return $this->rawQuery('RENAME TABLE ' . $this->formatValue('table', $oldName) . ' TO ' . $this->formatValue('table', $newName));
     }
 
-    public function createTableColumns($tableName, $tableColumns) {
-        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns, 'general'); // TODO: get table engine
+    public function createTableColumns($tableName, $tableColumns, $engine = 'general') {
+        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns, $engine);
 
         array_walk($columns, function(&$column) { $column = 'ADD ' . $column; });
 
@@ -1490,8 +1490,8 @@ class databaseSQL extends database
             && $this->executeTriggers($tableName, $triggers);
     }
 
-    public function alterTableColumns($tableName, $tableColumns) {
-        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns, 'general'); // TODO: get table engine
+    public function alterTableColumns($tableName, $tableColumns, $engine = 'general') {
+        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns, $engine);
 
         array_walk($columns, function(&$column) { $column = 'MODIFY ' . $column; });
 
