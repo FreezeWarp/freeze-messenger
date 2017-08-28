@@ -1906,10 +1906,15 @@ LIMIT
 
                 else {
                     // Apply transform function, if set
-                    if (isset($reverseAlias[$column]) && isset($this->encode[$reverseAlias[$column][0]][$column])) {
-                        list($function, $typeOverride) = $this->encode[$reverseAlias[$column][0]][$column];
 
-                        $value = $this->applyTransformFunction($function, $value->value, $typeOverride);
+                    if (isset($reverseAlias[$column])) { // If we have reverse alias data for the column...
+                        $transformTableName = $reverseAlias[$column][2] ?? $reverseAlias[$column][0]; // If the second index is set, it is storing the "original" table name, in case of a partition. Otherwise, the 0th index, containing the regular table name, is used.
+
+                        if (isset($this->encode[$transformTableName][$column])) { // Do we have conversion data available?
+                            list($function, $typeOverride) = $this->encode[$transformTableName][$column]; // Fetch the function used for transformation, and the type override if available.
+
+                            $value = $this->applyTransformFunction($function, $value->value, $typeOverride); // Apply the transformation to the value for usage in our query.
+                        }
                     }
 
                     // Build rvalue
@@ -1974,7 +1979,7 @@ LIMIT
     }
 
 
-    private function insertCore($tableName, $dataArray) {
+    private function insertCore($tableName, $dataArray, $originalTableName = false) {
         /* Actual Insert */
         $columns = array_keys($dataArray);
         $values = array_values($dataArray);
@@ -2003,6 +2008,8 @@ LIMIT
      */
     public function delete($tableName, $conditionArray = false)
     {
+        $originalTableName = $tableName;
+
         if (isset($this->hardPartitions[$tableName])) {
             $partitionAt = array_merge($this->partitionAt, $conditionArray);
 
@@ -2045,20 +2052,20 @@ LIMIT
                 }
             }
 
-            $this->deleteCore($tableName, $conditionArray);
+            $this->deleteCore($tableName, $conditionArray, $originalTableName);
         }
     }
 
 
-    private function deleteCore($tableName, $conditionArray = false) {
+    private function deleteCore($tableName, $conditionArray = false, $originalTableName = false) {
         return $this->rawQuery(
             'DELETE FROM ' . $this->formatValue('table', $tableName) .
-            ' WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, $this->reverseAliasFromConditionArray($tableName, $conditionArray), 'both', $tableName) : 'TRUE')
+            ' WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, $this->reverseAliasFromConditionArray($tableName, $conditionArray, $originalTableName), 'both', $tableName) : 'TRUE')
         );
     }
 
 
-    private function reverseAliasFromConditionArray($tableName, $conditionArray) {
+    private function reverseAliasFromConditionArray($tableName, $conditionArray, $originalTableName = false) {
         $reverseAlias = [];
         foreach ($conditionArray AS $column => $value) {
             if ($column === 'either' || $column === 'both') {
@@ -2067,6 +2074,10 @@ LIMIT
                 }
             }
             $reverseAlias[$column] = [$tableName, $column];
+
+            // We also keep track of the original table name if it's been renamed through hard partioning, and will use it to determine triggers.
+            if ($originalTableName)
+                $reverseAlias[$column][] = $originalTableName;
         }
         return $reverseAlias;
     }
@@ -2090,6 +2101,8 @@ LIMIT
      */
     public function update($tableName, $dataArray, $conditionArray = false)
     {
+        $originalTableName = $tableName;
+
         if (isset($this->hardPartitions[$tableName])) {
             if (!isset($conditionArray[$this->hardPartitions[$tableName][0]])) {
                 $this->triggerError("The table $tableName is partitoned. To update it, you _must_ specify the column " . $this->hardPartitions[$tableName][0]);
@@ -2101,14 +2114,14 @@ LIMIT
             $tableName .= "__part" . $conditionArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
         }
 
+
         if ($this->autoQueue)
             return $this->queueUpdate($tableName, $dataArray, $conditionArray);
-
         else
             return $this->rawQuery(
                 'UPDATE ' . $this->formatValue('table', $tableName) .
                 ' SET ' . $this->formatValue('tableUpdateArray', $tableName, $dataArray) .
-                ' WHERE ' . $this->recurseBothEither($conditionArray, $this->reverseAliasFromConditionArray($tableName, $conditionArray), 'both', $tableName)
+                ' WHERE ' . $this->recurseBothEither($conditionArray, $this->reverseAliasFromConditionArray($tableName, $conditionArray, $originalTableName), 'both', $tableName)
             );
     }
 
@@ -2184,6 +2197,7 @@ LIMIT
     /*********************************************************
      ************************ START **************************
      ******************** Queue Functions ********************
+     * TODO: queue functions do not currently support simultaneous partitioning and transformations.
      *********************************************************/
 
     public function autoQueue(bool $on) {
