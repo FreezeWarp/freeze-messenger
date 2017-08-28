@@ -2094,7 +2094,7 @@ LIMIT
             if (!isset($conditionArray[$this->hardPartitions[$tableName][0]])) {
                 $this->triggerError("The table $tableName is partitoned. To update it, you _must_ specify the column " . $this->hardPartitions[$tableName][0]);
             }
-            elseif (!isset($conditionArray[$this->hardPartitions[$tableName][0]])) {
+            elseif (isset($dataArray[$this->hardPartitions[$tableName][0]])) {
                 $this->triggerError("The table $tableName is partitoned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
             }
 
@@ -2117,27 +2117,38 @@ LIMIT
      * If a row matching $conditionArray already exists, it will be updated to reflect $dataArray. If it does not exist, a row will be inserted that is a composite of $conditionArray, $dataArray, and $dataArrayOnInsert.
      * On systems that support OnDuplicateKey, this will NOT test the existence of $conditionArray, relying instead on the table's keys to do so. Thus, this function's $conditionArray should always match the table's own keys.
      *
-     * @param $table
+     * @param $tableName
      * @param $conditionArray
      * @param $dataArray
      * @param $dataArrayOnInsert
      * @return bool|resource
      * @throws Exception
      */
-    public function upsert($table, $conditionArray, $dataArray, $dataArrayOnInsert = [])
+    public function upsert($tableName, $conditionArray, $dataArray, $dataArrayOnInsert = [])
     {
+        if (isset($this->hardPartitions[$tableName])) {
+            if (!isset($conditionArray[$this->hardPartitions[$tableName][0]])) {
+                $this->triggerError("The table $tableName is partitoned. To update it, you _must_ specify the column " . $this->hardPartitions[$tableName][0]);
+            }
+            elseif (isset($dataArray[$this->hardPartitions[$tableName][0]])) {
+                $this->triggerError("The table $tableName is partitoned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
+            }
+
+            $tableName .= "__part" . $conditionArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+        }
+
         switch ($this->language) {
             case 'mysql':
                 $allArray = array_merge($dataArray, $dataArrayOnInsert, $conditionArray);
                 $allColumns = array_keys($allArray);
                 $allValues = array_values($allArray);
 
-                $query = 'INSERT INTO ' . $this->formatValue('table', $table) . '
-        ' . $this->formatValue('tableColumnValues', $table, $allColumns, $allValues) . '
-        ON DUPLICATE KEY UPDATE ' . $this->formatValue('tableUpdateArray', $table, $dataArray);
+                $query = 'INSERT INTO ' . $this->formatValue('table', $tableName) . '
+        ' . $this->formatValue('tableColumnValues', $tableName, $allColumns, $allValues) . '
+        ON DUPLICATE KEY UPDATE ' . $this->formatValue('tableUpdateArray', $tableName, $dataArray);
 
                 if ($queryData = $this->rawQuery($query)) {
-                    $this->insertIdCallback($table, $this->functionMap('insertId'));
+                    $this->insertIdCallback($tableName, $this->functionMap('insertId'));
 
                     return $queryData;
                 }

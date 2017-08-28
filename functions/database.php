@@ -818,14 +818,14 @@ abstract class database
      * ));
      * ```
      *
-     * @param string $table                 The table to upsert into.
+     * @param string $tableName                 The table to upsert into.
      * @param array  $conditionArray        The conditions of the update. This does not support database type objects (those returned by the type() function) or combiners; that is, it can only be a one-level associative array of column-value pairs.
      * @param array  $dataArray             The data to update. This must be an associative array of column-value pairs.
      * @param array  $dataArrayOnInsert     Extra data to add only on insert. This must be an associative array of column-value pairs.
      *
      * @return bool     True on success, false on failure.
      */
-    public function upsert($table, $conditionArray, $dataArray, $dataArrayOnInsert = [])
+    public function upsert($tableName, $conditionArray, $dataArray, $dataArrayOnInsert = [])
     {
         switch ($this->language) {
         case 'mysql':
@@ -833,12 +833,12 @@ abstract class database
             $allColumns = array_keys($allArray);
             $allValues = array_values($allArray);
 
-            $query = 'INSERT INTO ' . $this->formatValue('table', $table) . '
-        ' . $this->formatValue('tableColumnValues', $table, $allColumns, $allValues) . '
-        ON DUPLICATE KEY UPDATE ' . $this->formatValue('tableUpdateArray', $table, $dataArray);
+            $query = 'INSERT INTO ' . $this->formatValue('table', $tableName) . '
+        ' . $this->formatValue('tableColumnValues', $tableName, $allColumns, $allValues) . '
+        ON DUPLICATE KEY UPDATE ' . $this->formatValue('tableUpdateArray', $tableName, $dataArray);
 
             if ($queryData = $this->rawQuery($query)) {
-                $this->insertIdCallback($table, $this->functionMap('insertId'));
+                $this->insertIdCallback($tableName, $this->functionMap('insertId'));
 
                 return $queryData;
             }
