@@ -34,13 +34,13 @@ class curlRequest {
      *
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function __construct($data = array(), $apiFile = '') {
-        if (count($data) > 0) {
-            $this->setRequestData($data);
+    public function __construct($apiFile = '', $dataHead = array(), $dataBody = array()) {
+        if (count($dataBody) > 0) {
+            $this->setRequestData($dataBody);
         }
 
         if (strlen($apiFile) > 0) {
-            $this->setRequestFile($apiFile);
+            $this->setRequestFile($apiFile . '?' . http_build_query($dataHead));
         }
     }
 
@@ -97,13 +97,15 @@ class curlRequest {
      *
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function execute() {
+    public function execute($method = 'post') {
         global $installUrl;
 
         if (function_exists('curl_init')) {
-            $ch = curl_init($installUrl . $this->requestFile); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
-            curl_setopt($ch, CURLOPT_POST, TRUE);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->requestData);
+            $ch = curl_init($this->requestFile); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
+            if ($method == 'post') {
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $this->requestData);
+            }
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); /* obey redirects */
             curl_setopt($ch, CURLOPT_HEADER, FALSE);  /* No HTTP headers */
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);  /* return the data */
@@ -137,7 +139,12 @@ class curlRequest {
 
             if ($fp) {
                 // send the request headers:
-                fputs($fp, "POST " . $urlData['path'] . " HTTP/1.1\r\n");
+                if ($method === 'post')
+                    fputs($fp, "POST " . $urlData['path'] . " HTTP/1.1\r\n");
+
+                else if ($method === 'get')
+                    fputs($fp, "GET " . $urlData['path'] . " HTTP/1.1\r\n");
+
                 fputs($fp, "Host: " . $urlData['host'] . "\r\n");
 
                 fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
@@ -174,6 +181,28 @@ class curlRequest {
         }
     }
 
+    /**
+     * Executes the cURL request.
+     *
+     * @return mixed - cURL response on success, false on failure.
+     *
+     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+     */
+    public function executePOST() {
+        execute();
+    }
+
+    /**
+     * Executes the cURL request.
+     *
+     * @return mixed - cURL response on success, false on failure.
+     *
+     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+     */
+    public function executeGET() {
+        execute("get");
+    }
+
 
     /**
      * Verify whether a given resource exists or not.
@@ -201,6 +230,23 @@ class curlRequest {
     }
 
 
+    public static function quickRunPOST($apiFile, $dataHead, $dataBody) {
+        $curl = new curlRequest($apiFile, $dataHead, $dataBody);
+        $curl->execute();
+        return $curl->getAsJson();
+    }
+
+
+    public static function quickRunGET($apiFile, $data) {
+        $curl = new curlRequest($apiFile, $data);
+        $curl->execute();
+        return $curl->getAsJson();
+    }
+
+
+    /**
+     * Verify whether a given resource exists or not.
+     */
     function getAsJson() {
         $json = json_decode($this->response, true);
 
@@ -208,8 +254,8 @@ class curlRequest {
             return $json;
         }
         else {
+            new fimError("cURLBadJson", "Invalid JSON from cURL: " . $this->response);
             return false;
-            // throw new fimError("cURLBadJson", "Invalid JSON from cURL (Error: '" . json_last_error() . "')'")
         }
     }
 }
