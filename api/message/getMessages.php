@@ -187,7 +187,7 @@ else {
         'archive' => $request['archive'],
         'userIds' => $request['userIds'],
         'messageIds' => (array) $requestHead['id'],
-    ), array($request['sortBy'] => $request['sortOrder']), $request['messageLimit'], $request['page'])->getAsArray(true);
+    ), array($request['sortBy'] => $request['sortOrder']), $request['messageLimit'], $request['page'])->getAsMessages();
 
 
     /* Process Messages */
@@ -198,33 +198,21 @@ else {
         }
 
         foreach ($messages AS $id => $message) {
-            $message['text'] = fim_decrypt($message['text'], $message['salt'], $message['iv']);
-
-            switch ($request['encode']) {
-            case 'plaintext': break; // All Good
-            case 'base64': $message['text'] = base64_encode($message['text']); break;
-            }
-
             $xmlData['messages'][] = array(
                 'messageData' => array(
-                    'messageId' => (int) $message['messageId'],
-                    'messageTime' => (int) $message['time'],
-                    'messageText' => $message['text'],
-                    'flags' => ($message['flag']),
+                    'messageId' => (int) $message->id,
+                    'messageTime' => (int) $message->time,
+                    'messageText' => ($request['encode'] == 'base64' ? base64_encode($message->text) : $message->text),
+                    'messageFormatting' => $message->formatting,
+                    'flags' => ($message->flag),
                 ),
                 'userData' => array(
-                    'userName' => ($message['userName']),
-                    'userId' => (int) $message['userId'],
-                    'userGroup' => (int) $message['userGroup'],
-                    'avatar' => ($message['avatar']),
-                    'socialGroups' => ($message['socialGroups']),
-                    'userNameFormat' => ($message['userNameFormat']),
-                    'defaultFormatting' => array(
-                        'color' => ($message['defaultColor']),
-                        'highlight' => ($message['defaultHighlight']),
-                        'fontface' => ($message['defaultFontface']),
-                        'general' => (int) $message['defaultFormatting']
-                    ),
+                    'userName' => $message->user->name,
+                    'userId' => $message->user->id,
+                    'userGroup' => $message->user->mainGroupId,
+                    'avatar' => $message->user->avatar,
+                    'socialGroups' => $message->user->socialGroupIds,
+                    'userNameFormat' => $message->user->userNameFormat,
                 ),
             );
         }

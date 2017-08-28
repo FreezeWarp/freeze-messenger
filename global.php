@@ -85,6 +85,7 @@ require_once(dirname(__FILE__) . '/functions/fimDatabase.php'); // FIM-specific 
 require_once(dirname(__FILE__) . '/functions/fimDatabaseUAC.php'); // FIM-specific Extensions, UAC (it gets its own file because it might be shipped seperately to support additional intgration methods.)
 require_once(dirname(__FILE__) . '/functions/fimUser.php'); // FIM-specific Extensions
 require_once(dirname(__FILE__) . '/functions/fimRoom.php'); // FIM-specific Extensions
+require_once(dirname(__FILE__) . '/functions/fimMessage.php'); // FIM-specific Extensions
 require_once(dirname(__FILE__) . '/functions/fimCache.php'); // FIM-specific Extension to APC Wrapper
 require_once(dirname(__FILE__) . '/functions/fimError.php'); // FIM Custom Error Class
 require_once(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions

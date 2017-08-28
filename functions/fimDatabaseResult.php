@@ -16,6 +16,13 @@ class fimDatabaseResult extends databaseResult {
         return $return;
     }
 
+    /**
+     * @return fimRoom
+     */
+    function getAsRoom() : fimRoom {
+        return new fimRoom($this->getAsArray(false));
+    }
+
 
     /**
      * @return fimUser[]
@@ -33,6 +40,13 @@ class fimDatabaseResult extends databaseResult {
         return $return;
     }
 
+    /**
+     * @return fimUser
+     */
+    function getAsUser() : fimUser {
+        return fimUserFactory::getFromData($this->getAsArray(false));
+    }
+
 
     /**
      * @return fimGroup[]
@@ -48,28 +62,33 @@ class fimDatabaseResult extends databaseResult {
         return $return;
     }
 
-
-    /**
-     * @return fimRoom
-     */
-    function getAsRoom() : fimRoom {
-        return new fimRoom($this->getAsArray(false));
-    }
-
-
-    /**
-     * @return fimUser
-     */
-    function getAsUser() : fimUser {
-        return fimUserFactory::getFromData($this->getAsArray(false));
-    }
-
-
     /**
      * @return fimGroup
      */
     function getAsGroup() : fimGroup {
         return fimGroupFactory::getFromData($this->getAsArray(false));
+    }
+
+
+    /**
+     * @return fimMessage[]
+     */
+    function getAsMessages() : array {
+        $messages = $this->getAsArray('messageId');
+        $return = array();
+
+        foreach ($messages AS $messageId => $message) {
+            $return[$messageId] = new fimMessage($message);
+        }
+
+        return $return;
+    }
+
+    /**
+     * @return fimMessage
+     */
+    function getAsMessage() : fimMessage {
+        return new fimMessage($this->getAsArray(false));
     }
 
 }

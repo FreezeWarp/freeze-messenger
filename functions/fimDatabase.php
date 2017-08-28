@@ -1163,7 +1163,7 @@ class fimDatabase extends databaseSQL
             'room' => $room,
             'messageIds' => array($messageId),
             'archive' => true,
-        ));
+        ))->getAsMessage();
     }
 
     /*********************************************************
@@ -2345,16 +2345,14 @@ class fimDatabase extends databaseSQL
 
 
     /* TODO: require roomId */
-    public function editMessage(int $roomId, int $messageId, $options) {
+    public function editMessage(fimRoom $room, int $messageId, $options) {
         $options = $this->argumentMerge(array(
             'deleted' => null,
             'text'    => null,
             'flag'    => null,
         ), $options);
 
-        $oldMessage = $this->getMessage($messageId)->getAsArray(false);
-        $room = new fimRoom((int) $oldMessage['roomId']);
-
+        $oldMessage = $this->getMessage($room, $messageId)->getAsArray(false);
 
         $this->startTransaction();
 

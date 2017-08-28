@@ -588,5 +588,10 @@ class fimRoom {
             return $this->id = $database->insertId;
         }
     }
+
+
+    public function __destruct() {
+        if ($this->id !== 0 && function_exists('apc_store')) apc_store('fim_fimRoom_' . $this->id, $this, 500);
+    }
 }
 ?>
