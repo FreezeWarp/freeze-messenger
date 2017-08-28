@@ -1158,7 +1158,7 @@ class fimDatabase extends databaseSQL
      *
      * @return databaseResult
      */
-    public function getMessage(fimRoom $room, $messageId) {
+    public function getMessage(fimRoom $room, $messageId) : fimMessage {
         return $this->getMessages(array(
             'room' => $room,
             'messageIds' => array($messageId),
@@ -2128,11 +2128,8 @@ class fimDatabase extends databaseSQL
     /*
      * Store message does not check for permissions. Make sure that all permissions are cleared before calling storeMessage.
      */
-    public function storeMessage($messageText, $messageFlag, fimUser $user, fimRoom $room, $ignoreBlock = false, &$censorMatches = array())
+    public function storeMessage(fimMessage $message)
     {
-        global $generalCache; // TODO
-
-
         /**
          * Flood limit check.
          * As this is... pretty important to ensure, we perform this check at the last possible moment, here in storeMessage.
@@ -2142,12 +2139,12 @@ class fimDatabase extends databaseSQL
         $messageFlood = $this->select([
             $this->sqlPrefix . 'messageFlood' => 'userId, roomId, messages, time'
         ], [
-            'userId' => $user->id,
-            'roomId' => $this->in([$room->id, 0]),
+            'userId' => $message->user->id,
+            'roomId' => $this->in([$message->room->id, 0]),
             'time' => $minute,
         ])->getAsArray('roomId');
 
-        if ($messageFlood[$room->id]['messages'] >= $this->config['floodRoomLimitPerMinute'])
+        if ($messageFlood[$message->room->id]['messages'] >= $this->config['floodRoomLimitPerMinute'])
             new fimError('roomFlood', 'Room flood limit breached.');
 
         if ($messageFlood[0]['messages'] >= $this->config['floodSiteLimitPerMinute'])
@@ -2156,16 +2153,8 @@ class fimDatabase extends databaseSQL
 
 
         /* Preemptively resolve all needed $user properties */
-        $user->resolve(array("messageFormatting", "userNameFormat", "profile", "avatar", "mainGroupId", "name"));
+        $message->user->resolve(array("messageFormatting", "userNameFormat", "profile", "avatar", "mainGroupId", "name"));
 
-
-
-        /* Format Message Text */
-        if (!in_array($messageFlag, array('image', 'video', 'url', 'email', 'html', 'audio', 'text'))) {
-            $messageText = $generalCache->censorScan($messageText, $room->id, $ignoreBlock, $censorMatches);
-        }
-
-        list($messageTextEncrypted, $encryptIV, $encryptSalt) = $this->getEncrypted($messageText);
 
 
         $this->startTransaction();
@@ -2174,22 +2163,22 @@ class fimDatabase extends databaseSQL
 
         /* Insert Message Data */
         // Insert into permanent datastore, unless it's an off-the-record room (since that's the only way it's different from a normal private room), in which case we just try to get an autoincremented messageId, storing nothing else.
-        if ($room->type === 'otr') {
+        if ($message->room->type === 'otr') {
             $this->insert($this->sqlPrefix . "messages", array(
-                'roomId'   => $room->id,
+                'roomId'   => $message->room->id,
             ));
             $messageId = $this->insertId;
         }
         else {
             $this->insert($this->sqlPrefix . "messages", array(
-                'roomId'   => $room->id,
-                'userId'   => $user->id,
-                'text'     => $this->blob($messageTextEncrypted),
-                'textSha1' => sha1($messageText),
-                'salt'     => $encryptSalt,
-                'iv'       => $this->blob($encryptIV),
+                'roomId'   => $message->room->id,
+                'userId'   => $message->user->id,
+                'text'     => $this->blob($message->textEncrypted),
+                'textSha1' => sha1($message->text),
+                'salt'     => $message->salt,
+                'iv'       => $this->blob($message->iv),
                 'ip'       => $_SERVER['REMOTE_ADDR'],
-                'flag'     => $messageFlag,
+                'flag'     => $message->flag,
                 'time'     => $this->now(),
             ));
             $messageId = $this->insertId;
@@ -2197,29 +2186,29 @@ class fimDatabase extends databaseSQL
 
 
         // Insert into cache/memory datastore.
-        if ($room->isPrivateRoom()) {
+        if ($message->room->isPrivateRoom()) {
             $this->insert($this->sqlPrefix . "messagesCachedPrivate", array(
                 'messageId'         => $messageId,
-                'roomId'            => $room->id,
-                'userId'            => $user->id,
-                'text'              => $messageText,
-                'flag'              => $messageFlag,
+                'roomId'            => $message->room->id,
+                'userId'            => $message->user->id,
+                'text'              => $message->text,
+                'flag'              => $message->flag,
                 'time'              => $this->now(),
             ));
         }
         else {
             $this->insert($this->sqlPrefix . "messagesCached", array(
                 'messageId'         => $messageId,
-                'roomId'            => $room->id,
-                'userId'            => $user->id,
-                'userName'          => $user->name,
-                'userGroupId'       => $user->mainGroupId,
-                'avatar'            => $user->avatar,
-                'profile'           => $user->profile,
-                'userNameFormat'    => $user->userNameFormat,
-                'messageFormatting' => $user->messageFormatting,
-                'text'              => $messageText,
-                'flag'              => $messageFlag,
+                'roomId'            => $message->room->id,
+                'userId'            => $message->user->id,
+                'userName'          => $message->user->name,
+                'userGroupId'       => $message->user->mainGroupId,
+                'avatar'            => $message->user->avatar,
+                'profile'           => $message->user->profile,
+                'userNameFormat'    => $message->user->userNameFormat,
+                'messageFormatting' => $message->user->messageFormatting,
+                'text'              => $message->text,
+                'flag'              => $message->flag,
                 'time'              => $this->now(),
             ));
         }
@@ -2227,9 +2216,9 @@ class fimDatabase extends databaseSQL
 
 
         // Generate (and Insert) Key Words, Unless an Off-the-Record Room
-        if ($room->type !== 'otr') {
-            $keyWords = $this->getKeyWordsFromText($messageText);
-            $this->storeKeyWords($keyWords, $messageId, $user->id, $room->id);
+        if ($message->room->type !== 'otr') {
+            $keyWords = $this->getKeyWordsFromText($message->text);
+            $this->storeKeyWords($keyWords, $messageId, $message->user->id, $message->room->id);
         }
 
 
@@ -2241,18 +2230,18 @@ class fimDatabase extends databaseSQL
             'lastMessageId'   => $messageId,
             'messageCount'    => $this->equation('$messageCount + 1')
         ), array(
-            'roomId' => $room->id,
+            'roomId' => $message->room->id,
         ));
 
 
         // Update the messageIndex if appropriate
-        if (!$room->isPrivateRoom()) {
-            $room = $this->getRoom($room->id); // Get the new room data. (TODO: UPDATE ... RETURNING for PostGreSQL)
+        if (!$message->room->isPrivateRoom()) {
+            $room = $this->getRoom($message->room->id); // Get the new room data. (TODO: UPDATE ... RETURNING for PostGreSQL)
 
-            if ($room->messageCount % $this->config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical). Postgres would avoid this issue, once implemented.
+            if ($message->room->messageCount % $this->config['messageIndexCounter'] === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical). Postgres would avoid this issue, once implemented.
                 $this->insert($this->sqlPrefix . "messageIndex", array(
-                    'roomId'    => $room->id,
-                    'interval'  => $room->messageCount,
+                    'roomId'    => $message->room->id,
+                    'interval'  => $message->room->messageCount,
                     'messageId' => $messageId
                 ));
             }
@@ -2278,9 +2267,9 @@ class fimDatabase extends databaseSQL
         // Update Flood Counter
         $time = time();
         $minute = $this->ts($time - ($time % 60));
-        foreach ([$room->id, 0] AS $roomId) {
+        foreach ([$message->room->id, 0] AS $roomId) {
             $this->upsert($this->sqlPrefix . "messageFlood", array(
-                'userId' => $user->id,
+                'userId' => $message->user->id,
                 'roomId' => $roomId,
                 'time' => $minute,
                 'messages' => 1,
@@ -2295,14 +2284,14 @@ class fimDatabase extends databaseSQL
         $this->update($this->sqlPrefix . "users", array(
             'messageCount' => $this->equation('$messageCount + 1'),
         ), array(
-            'userId' => $user->id,
+            'userId' => $message->user->id,
         ));
 
 
         // Insert or update a user's room stats.
         $this->upsert($this->sqlPrefix . "roomStats", array(
-            'userId'   => $user->id,
-            'roomId'   => $room->id,
+            'userId'   => $message->user->id,
+            'roomId'   => $message->room->id,
         ), array(
             'messages' => $this->equation('$messages + 1')
         ));
@@ -2314,24 +2303,24 @@ class fimDatabase extends databaseSQL
 
         // Delete old messages from the cache, based on the maximum allowed rows. (TODO: test)
         if ($messageId2 > $this->config['messageCacheTableMaxRows']) {
-            $this->partitionAt(['roomId' => $room->id])->delete($this->sqlPrefix . "messagesCached" . ($room->isPrivateRoom() ? 'Private' : ''), [
+            $this->partitionAt(['roomId' => $message->room->id])->delete($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? 'Private' : ''), [
                 'id' => $this->int($messageId2 - $this->config['messageCacheTableMaxRows'], 'lte')
             ]);
         }
 
 
         // If the contact is a private communication, create an event and add to the message unread table.
-        if ($room->isPrivateRoom()) {
-            foreach (($room->getPrivateRoomMemberIds()) AS $sendToUserId) {
-                if ($sendToUserId == $user->id)
+        if ($message->room->isPrivateRoom()) {
+            foreach (($message->room->getPrivateRoomMemberIds()) AS $sendToUserId) {
+                if ($sendToUserId == $message->user->id)
                     continue;
                 else
-                    $this->createUnreadMessage($sendToUserId, $user, $room, $messageId);
+                    $this->createUnreadMessage($sendToUserId, $message->user, $message->room, $messageId);
             }
         }
         else {
-            foreach ($room->watchedBy AS $sendToUserId) {
-                $this->createUnreadMessage($sendToUserId, $user, $room, $messageId);
+            foreach ($message->room->watchedBy AS $sendToUserId) {
+                $this->createUnreadMessage($sendToUserId, $message->user, $message->room, $messageId);
             }
         }
 
@@ -2344,62 +2333,78 @@ class fimDatabase extends databaseSQL
     }
 
 
-    /* TODO: require roomId */
-    public function editMessage(fimRoom $room, int $messageId, $options) {
-        $options = $this->argumentMerge(array(
-            'deleted' => null,
-            'text'    => null,
-            'flag'    => null,
-        ), $options);
-
-        $oldMessage = $this->getMessage($room, $messageId)->getAsArray(false);
+    /**
+     * Updates the database representation of an object to match its state as an object.
+     *
+     * @param fimMessage $message The message object, as currently stored.
+     */
+    public function updateMessage(fimMessage $message) {
+        if (!$message->id)
+            new fimError('badUpdateMessage', 'Update message must operate on a message with a valid ID.');
 
         $this->startTransaction();
 
-        $this->modLog('editMessage', $messageId);
+        // Get the old message, for the edit history log.
+        $oldMessage = $this->getMessage($message->room, $message->id);
 
-        if ($options['text']) {
-            list($messageTextEncrypted, $encryptIV, $encryptSalt) = $this->getEncrypted($options['text']);
+        // Create logs of edit
+        $this->modLog('editMessage', $message->id);
 
-            $this->insert($this->sqlPrefix . "messageEditHistory", array(
-                'messageId' => $messageId,
-                'user' => $this->user->id,
-                'oldText' => $oldMessage['text'],
-                'newText' => $messageTextEncrypted,
-                'iv1' => $oldMessage['iv'],
-                'iv2' => $encryptIV,
-                'salt1' => $oldMessage['salt'],
-                'salt2' => $encryptSalt,
-                'ip' => $_SERVER['REMOTE_ADDR'],
-            ));
+        $this->insert($this->sqlPrefix . "messageEditHistory", array(
+            'messageId' => $message->id,
+            'userId' => $message->user->id,
+            'roomId' => $message->room->id,
+            'oldText' => $oldMessage->textEncrypted,
+            'newText' => $message->textEncrypted,
+            'iv1' => $oldMessage->iv,
+            'iv2' => $message->iv,
+            'salt1' => $oldMessage->salt,
+            'salt2' => $message->salt,
+            'ip' => $_SERVER['REMOTE_ADDR'],
+        ));
 
-            $options = $this->argumentMerge($options, array(
-                'text' => $messageTextEncrypted,
-                'salt' => $encryptSalt,
-                'iv' => $encryptIV,
-            ));
+        // Update keywords for searching
+        $this->dropKeyWords($message->id);
+        $keyWords = $this->getKeyWordsFromText($message->text);
+        $this->storeKeyWords($keyWords, $message->id, $this->user->id, $message->room->id);
 
-            $this->dropKeyWords($messageId);
-            $keyWords = $this->getKeyWordsFromText($options['text']);
-            $this->storeKeyWords($keyWords, $messageId, $this->user->id, $room->id);
+        // Update message entry itself
+        $this->update($this->sqlPrefix . "messages", [
+            'text' => $message->textEncrypted,
+            'iv' => $message->iv,
+            'salt' => $message->salt,
+            'flag' => $message->flag
+        ], array(
+            'roomId' => $message->room->id,
+            'messageId' => $message->id,
+        ));
+
+        // Update message caches
+        if ($message->deleted) {
+            $this->delete($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? "Private" : ""), [
+                "messageId" => $message->id
+            ]);
+        }
+        else {
+            // TODO: doesn't currently work with MySQL if a message is being undeleted
+            $this->upsert($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? "Private" : ""), [
+                'roomId' => $message->room->id,
+                'messageId' => $message->id,
+            ], [
+                'text' => $message->text,
+            ]);
         }
 
-        $this->update($this->sqlPrefix . "messages", $options, array(
-            "messageId" => (int) $messageId
-        ));
-
-        $this->delete($this->sqlPrefix . "messagesCached", array(
-            "messageId" => $messageId
-        ));
-
-        $this->delete($this->sqlPrefix . "messagesCachedPrivate", array(
-            "messageId" => $messageId
-        ));
-
-        $this->createEvent('editedMessage', $this->user->id, false, $messageId, false, false, false); // name, user, room, message, p1, p2, p3
+        // Create event to prompt update in existing message displays.
+        $this->createEvent('editedMessage', $message->user->id, $message->room->id, $message->id, false, false, false);
 
         $this->endTransaction();
     }
+
+
+
+
+
 
 
 
@@ -2784,21 +2789,6 @@ class fimDatabase extends databaseSQL
             return array();
         }
     }
-
-
-
-    /**
-     * Retrieve an encrypted version of text.
-     *
-     * @param $messageText
-     *
-     * @return [$messageTextEncrypted, $iv, $saltNum]
-     *
-     */
-    public function getEncrypted($messageText) {
-        return fim_encrypt($messageText, FIM_ENCRYPT_MESSAGETEXT);
-    }
-
 
 
 

@@ -76,23 +76,60 @@ elseif ($request['flag'] === 'email'
     && !filter_var($request['message'], FILTER_VALIDATE_EMAIL))
     new fimError('badUrl'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 
-elseif (strpos($request['message'], '/kick') === 0) { // TODO
-    $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2',$request['message']);
-    $kickData = explode(',',$kickData);
-
-    $userData = $database->getUsers(array(
-        'userNames' => array($kickData[0])
-    ))->getAsUser();
-
-    $userData->kick($kickData[1]);
-}
-
 else {
-    if (strpos($request['message'], '/topic') === 0 && ($database->hasPermission($user, $room) & ROOM_PERMISSION_TOPIC)) {
-        $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $request['message']));
-    }
+    switch ($requestHead['_action']) {
+        case 'edit':
+            $message = $database->getMessage($room, $requestHead['id']);
 
-    $database->storeMessage($request['message'], $request['flag'], $user, $room, $request['ignoreBlock'], $censorMatches);
+            if (!$message->id)
+                new fimError('invalidMessage', 'The message specified is invalid.');
+            else {
+                if ($message->text == $request['message'])
+                    new fimError('noChange', 'Your edited message is unchanged.');
+
+                else if ($message->user->id = $user->id && $user->hasPriv('editOwnPosts')) {
+                    $message->setText($request['message']);
+                    $message->setFlag($request['flag']);
+                    $database->updateMessage($message);
+                }
+
+                else
+                    new fimError('noPerm', 'You are not allowed to edit this message.');
+            }
+        break;
+
+        case 'create':
+            // if /kick starts the message, the user is using a shorthand to kick a user. We don't actually create a new message, but we do attempt to kick the user given.
+            if (strpos($request['message'], '/kick') === 0) { // TODO
+                $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2', $request['message']);
+                $kickData = explode(',',$kickData);
+
+                $userData = $database->getUsers(array(
+                    'userNames' => array($kickData[0])
+                ))->getAsUser();
+
+                $userData->kick($kickData[1]);
+            }
+
+            // if /topic starts the message, the user is trying to change the topic.
+            // todo: this probably shouldn't create a message either, and we should make it possible through editRoom.php
+            else {
+                $message = new fimMessage([
+                    'room' => $room,
+                    'user' => $user,
+                    'text' => $request['message'],
+                    'flag' => $request['flag'],
+                    'ignoreBlock' => $request['ignoreBlock']
+                ]);
+
+                if (strpos($message->text, '/topic') === 0 && ($database->hasPermission($user, $room) & ROOM_PERMISSION_TOPIC)) {
+                    $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $message->text));
+                }
+
+                $database->storeMessage($message);
+            }
+        break;
+    }
 }
 
 
@@ -102,7 +139,7 @@ else {
 /* Data Define */
 $xmlData = array(
     'sendMessage' => array(
-        'censor' => $censorMatches
+        'censor' => $message->censorMatches
     ),
 );
 

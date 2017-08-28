@@ -325,7 +325,8 @@ function fim_messageFormat(json, format) {
                         'data-messageId': messageId,
                         'data-roomId': roomId,
                         'data-avatar': avatar,
-                        'class': window.userId == userId ? 'editable' : ''
+                        'class': window.userId == userId && window.permissions.editOwnPosts ? 'editable' : '',
+                        'contenteditable': (window.userId == userId && window.permissions.editOwnPosts ? "true" : "false")
                     }).html(text)
                 ).append(
                     $('<td>').append(
@@ -363,12 +364,16 @@ function fim_messageFormat(json, format) {
                 ).append(
                     $('<span>').attr({
                         'style': style,
-                        'class': 'messageText' + (window.userId == userId ? ' editable' : ''),
+                        'class': 'messageText' + (window.userId == userId && window.permissions.editOwnPosts ? ' editable' : ''),
                         'data-messageId': messageId,
                         'data-roomId': roomId,
                         'data-time': messageTime,
                         'tabindex': 1000,
-                        'contenteditable': (window.userId == userId ? "true" : "false"),
+                        'contenteditable': (window.userId == userId && window.permissions.editOwnPosts ? "true" : "false"),
+                    }).blur(function() {
+                        fimApi.editMessage(roomId, messageId, {
+                            'message' : $(this).text(),
+                        });
                     }).html(text)
                 );
                 break;

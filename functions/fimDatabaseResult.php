@@ -74,11 +74,11 @@ class fimDatabaseResult extends databaseResult {
      * @return fimMessage[]
      */
     function getAsMessages() : array {
-        $messages = $this->getAsArray('messageId');
         $return = array();
 
-        foreach ($messages AS $messageId => $message) {
-            $return[$messageId] = new fimMessage($message);
+        for ($i = 0; $i < $this->count; $i++) {
+            $message = new fimMessage($this);
+            $return[$message->id] = $message;
         }
 
         return $return;
@@ -88,7 +88,7 @@ class fimDatabaseResult extends databaseResult {
      * @return fimMessage
      */
     function getAsMessage() : fimMessage {
-        return new fimMessage($this->getAsArray(false));
+        return new fimMessage($this);
     }
 
 }

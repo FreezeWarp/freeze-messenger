@@ -344,9 +344,8 @@
                 CREATE TRIGGER notifyMessage AFTER UPDATE ON messagesCached FOR EACH ROW EXECUTE PROCEDURE notifyMessage();
             </trigger>
 
-            <key name="id" type="primary" />
-            <key name="messageId" type="index" />
-            <key name="roomId" type="index" />
+            <key name="messageId,roomId" type="primary" />
+            <key name="id" type="index" />
             <key name="time" type="index" />
         </table>
 
@@ -370,14 +369,15 @@
         <table name="messageEditHistory" type="general" comment="A history of editted messages.">
             <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
             <column name="userId" type="int" maxlen="8" comment="The user who editted the message." />
-            <column name="oldText" type="string" maxlen="5000" comment="The old raw text of the message." />
-            <column name="newText" type="string" maxlen="5000" comment="The new raw text of the message." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
+            <column name="oldText" type="blob" maxlen="5000" comment="The old raw text of the message." />
+            <column name="newText" type="blob" maxlen="5000" comment="The new raw text of the message." />
             <column name="time" type="time" default="__TIME__" comment="The time of the change." />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user during the change." />
             <column name="salt1" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
             <column name="salt2" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
-            <column name="iv1" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
-            <column name="iv2" type="string" maxlen="15" comment="The base64-encoded IV used for encryption." />
+            <column name="iv1" type="blob" maxlen="255" comment="The base64-encoded IV used for encryption." />
+            <column name="iv2" type="blob" maxlen="255" comment="The base64-encoded IV used for encryption." />
 
             <key name="messageId,time" type="primary" />
         </table>

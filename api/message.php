@@ -30,11 +30,20 @@ $requestHead = fim_sanitizeGPC('g', [
 
 /* Load the correct file to perform the action */
 switch ($requestHead['_action']) {
-    case 'edit': case 'delete': case 'undelete':
-        require('message/editMessage.php');
+    case 'delete':
+    case 'undelete':
+        if (!$messageData = $database->getMessage($room, $requestHead['id'])->getAsArray(false))
+            new fimError('invalidMessage', 'The message specified is invalid.');
+
+        else if (($messageData['userId'] = $user->id && $user->hasPriv('editOwnPosts'))
+            || ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE))
+            $database->editMessage($messageData['roomId'], $messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
+
+        else
+            new fimError('noPerm', 'You are not allowed to delete this message.');
     break;
 
-    case 'create':
+    case 'edit': case 'create':
         require('message/sendMessage.php');
     break;
 
