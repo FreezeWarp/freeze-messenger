@@ -23,7 +23,20 @@ require_once('fimError.php');
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 class curlRequest {
+    /**
+     * @var string The response populated after a request.
+     */
     public $response;
+
+    /**
+     * @var string The file to request. Includes domain.
+     */
+    public $requestFile = '';
+
+    /**
+     * @var array An array of request body parameters for the request.
+     */
+    public $requestData = '';
 
     /**
      * Initialises class.
@@ -133,24 +146,31 @@ class curlRequest {
             $errno = false;
             $errstr = false;
 
-            $urlData = parse_url($installUrl . $this->requestFile); // parse the given URL
+            $urlData = parse_url($this->requestFile); // parse the given URL
 
             $fp = fsockopen($urlData['host'], 80, $errno, $errstr); // open a socket connection on port 80
 
             if ($fp) {
                 // send the request headers:
                 if ($method === 'post')
-                    fputs($fp, "POST " . $urlData['path'] . " HTTP/1.1\r\n");
-
+                    fputs($fp, "POST " . $urlData['path'] . (isset($urlData['query']) ? '?' . $urlData['query'] : '') . " HTTP/1.1\r\n");
                 else if ($method === 'get')
-                    fputs($fp, "GET " . $urlData['path'] . " HTTP/1.1\r\n");
+                    fputs($fp, "GET " . $urlData['path'] . (isset($urlData['query']) ? '?' . $urlData['query'] : '') . " HTTP/1.1\r\n");
+                else
+                    throw new Exception('Invalid request method.');
 
                 fputs($fp, "Host: " . $urlData['host'] . "\r\n");
 
-                fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
-                fputs($fp, "Content-length: ". strlen($this->requestData) ."\r\n");
+                if ($this->requestData) {
+                    fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
+                    fputs($fp, "Content-length: " . strlen($this->requestData) . "\r\n");;
+                }
+
                 fputs($fp, "Connection: close\r\n\r\n");
-                fputs($fp, $this->requestData);
+
+                if ($this->requestData) {
+                    fputs($fp, $this->requestData);
+                }
 
                 $result = '';
 
@@ -189,7 +209,7 @@ class curlRequest {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function executePOST() {
-        execute();
+        $this->execute();
     }
 
     /**
@@ -200,7 +220,7 @@ class curlRequest {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function executeGET() {
-        execute("get");
+        $this->execute("get");
     }
 
 
@@ -239,7 +259,7 @@ class curlRequest {
 
     public static function quickRunGET($apiFile, $data) {
         $curl = new curlRequest($apiFile, $data);
-        $curl->execute();
+        $curl->executeGET();
         return $curl->getAsJson();
     }
 

@@ -1163,6 +1163,7 @@ class fimDatabase extends databaseSQL
             'room' => $room,
             'messageIds' => array($messageId),
             'archive' => true,
+            'showDeleted' => true,
         ))->getAsMessage();
     }
 
@@ -2347,33 +2348,39 @@ class fimDatabase extends databaseSQL
         // Get the old message, for the edit history log.
         $oldMessage = $this->getMessage($message->room, $message->id);
 
-        // Create logs of edit
-        $this->modLog('editMessage', $message->id);
+        if ($oldMessage->text != $message->text) {
+            // Create logs of edit
+            $this->modLog('editMessage', $message->id);
 
-        $this->insert($this->sqlPrefix . "messageEditHistory", array(
-            'messageId' => $message->id,
-            'userId' => $message->user->id,
-            'roomId' => $message->room->id,
-            'oldText' => $oldMessage->textEncrypted,
-            'newText' => $message->textEncrypted,
-            'iv1' => $oldMessage->iv,
-            'iv2' => $message->iv,
-            'salt1' => $oldMessage->salt,
-            'salt2' => $message->salt,
-            'ip' => $_SERVER['REMOTE_ADDR'],
-        ));
+            $this->insert($this->sqlPrefix . "messageEditHistory", array(
+                'messageId' => $message->id,
+                'userId' => $message->user->id,
+                'roomId' => $message->room->id,
+                'oldText' => $oldMessage->textEncrypted,
+                'newText' => $message->textEncrypted,
+                'iv1' => $oldMessage->iv,
+                'iv2' => $message->iv,
+                'salt1' => $oldMessage->salt,
+                'salt2' => $message->salt,
+                'ip' => $_SERVER['REMOTE_ADDR'],
+            ));
 
-        // Update keywords for searching
-        $this->dropKeyWords($message->id);
-        $keyWords = $this->getKeyWordsFromText($message->text);
-        $this->storeKeyWords($keyWords, $message->id, $this->user->id, $message->room->id);
+            // Update keywords for searching
+            $this->dropKeyWords($message->id);
+            $keyWords = $this->getKeyWordsFromText($message->text);
+            $this->storeKeyWords($keyWords, $message->id, $this->user->id, $message->room->id);
+
+            // Create event to prompt update in existing message displays.
+            $this->createEvent('editedMessage', $message->user->id, $message->room->id, $message->id, false, false, false);
+        }
 
         // Update message entry itself
         $this->update($this->sqlPrefix . "messages", [
             'text' => $message->textEncrypted,
             'iv' => $message->iv,
             'salt' => $message->salt,
-            'flag' => $message->flag
+            'flag' => $message->flag,
+            'deleted' => $this->bool($message->deleted)
         ], array(
             'roomId' => $message->room->id,
             'messageId' => $message->id,
@@ -2382,21 +2389,19 @@ class fimDatabase extends databaseSQL
         // Update message caches
         if ($message->deleted) {
             $this->delete($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? "Private" : ""), [
+                "roomId" => $message->room->id,
                 "messageId" => $message->id
             ]);
         }
         else {
-            // TODO: doesn't currently work with MySQL if a message is being undeleted
-            $this->upsert($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? "Private" : ""), [
+            // Note: this does mean that undeleting a message will not put it back into the message cache.
+            $this->update($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? "Private" : ""), [
+                'text' => $message->text,
+            ], [
                 'roomId' => $message->room->id,
                 'messageId' => $message->id,
-            ], [
-                'text' => $message->text,
             ]);
         }
-
-        // Create event to prompt update in existing message displays.
-        $this->createEvent('editedMessage', $message->user->id, $message->room->id, $message->id, false, false, false);
 
         $this->endTransaction();
     }

@@ -394,7 +394,7 @@ function fim_sanitizeGPC($type, $data) {
 
                 // Finally, if the global is thus-far unprovided...
                 if (!isset($activeGlobal[$indexName])) {
-                    if ($indexMetaData['require']) throw new Exception('Required data not present (index ' . $indexName . ').'); // And required, throw an exception.
+                    if ($indexMetaData['require']) new fimError('missing' . ucfirst($indexName), 'Required data not present (index ' . $indexName . ').'); // And required, throw an exception.
                     else continue; // And not required, just ignore this global and move on to the next one.
                 }
             }

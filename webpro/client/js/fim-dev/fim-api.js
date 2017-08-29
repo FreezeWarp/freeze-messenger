@@ -220,15 +220,12 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
             'search' : null,
             'archive' : false,
             'messageHardLimit' : 25,
-            'sortOrder' : 'asc',
             'initialRequest' : false,
         });
 
         var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
         if (params.initialRequest) {
-            requestSettings.reverseEach = true;
-            params.sortOrder = 'desc';
             params.archive = 1;
             params.messageIdEnd = 0;
             params.messageIdStart = 0;

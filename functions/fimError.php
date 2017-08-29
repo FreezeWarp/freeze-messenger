@@ -27,6 +27,7 @@ class fimError extends Exception {
         $this->displayBacktrace = $config['displayBacktrace'];
         $this->code = $code;
         $this->string = $string;
+        $this->context = $context;
 
         if ($this->code && !$return) $this->trigger(false, $httpError);
     }

@@ -14,7 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-class fimMessage {
+class fimMessage
+{
     /**
      * @var fimRoom The room the message is in.
      */
@@ -83,15 +84,16 @@ class fimMessage {
 
     /**
      * @param $messageData mixed The source of message data. Should be a fimDatabaseResult if from the database, or an associative array with the following indexes:
-     *      @param fimRoom ['room']             The room of the message.
-     *      @param fimUser ['user']             The user of the message.
-     *      @param string ['text']              An array of messageIds to filter by. Overrides other message ID filter parameters.
-     *      @param string ['flag']              A valid message flag, see fimMessage::flag.
-     *      @param string ['messageFormatting'] See fimMessage::messageFormatting.
-     *      @param bool ['ignoreBlock']         Whether to ignore censor prompts. Defaults false.
-     *      @param bool  ['archive']           Whether to query the message archive instead of the main table. Default false. (On average, the main table only includes around 100 messages, so this must be true for archive viewing.)
+     * @param fimRoom ['room']             The room of the message.
+     * @param fimUser ['user']             The user of the message.
+     * @param string ['text']              An array of messageIds to filter by. Overrides other message ID filter parameters.
+     * @param string ['flag']              A valid message flag, see fimMessage::flag.
+     * @param string ['messageFormatting'] See fimMessage::messageFormatting.
+     * @param bool ['ignoreBlock']         Whether to ignore censor prompts. Defaults false.
+     * @param bool ['archive']           Whether to query the message archive instead of the main table. Default false. (On average, the main table only includes around 100 messages, so this must be true for archive viewing.)
      */
-    function __construct($messageData) {
+    function __construct($messageData)
+    {
         global $generalCache;
         $this->generalCache = $generalCache;
 
@@ -100,8 +102,8 @@ class fimMessage {
             $messageData = $messageData->getAsArray(false);
 
             $this->id = $messageData['messageId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have id column.');
-            $this->user = fimUserFactory::getFromId((int) ($messageData['userId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have userId column.')));
-            $this->room = new fimRoom((int) ($messageData['roomId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have roomId column.')));
+            $this->user = fimUserFactory::getFromId((int)($messageData['userId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have userId column.')));
+            $this->room = new fimRoom((int)($messageData['roomId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have roomId column.')));
 
             if (isset($messageData['salt'], $messageData['iv'])) { // Typically when in permanent store.
                 $this->textEncrypted = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have text column.');
@@ -112,8 +114,7 @@ class fimMessage {
                     $this->salt,
                     $this->iv
                 );
-            }
-            else { // Typically when in caches.
+            } else { // Typically when in caches.
                 $this->text = $messageData['text'];
                 list($this->textEncrypted, $this->iv, $this->salt) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
             }
@@ -121,13 +122,11 @@ class fimMessage {
             $this->flag = $messageData['flag'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have flag column.');
             $this->time = $messageData['time'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');
             $this->formatting = $messageData['messageFormatting'];// todo: ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have messageFormatting column.');
-        }
-
-        // When creating a new message.
+        } // When creating a new message.
         else if (is_array($messageData)) {
-            $this->user = $messageData['user'] ?? fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain user.');
-            $this->room = $messageData['room'] ?? fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain room.');
-            $this->text = $messageData['text'] ?? fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain text.');
+            $this->user = $messageData['user'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain user.');
+            $this->room = $messageData['room'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain room.');
+            $this->text = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain text.');
             $this->flag = $messageData['flag'] ?? '';
             $this->formatting = $messageData['messageFormatting'] ?? '';
             $this->time = time();
@@ -137,8 +136,7 @@ class fimMessage {
             }
 
             list($this->textEncrypted, $this->iv, $this->salt) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
-        }
-        elseif ($messageData !== null) {
+        } elseif ($messageData !== null) {
             throw new Exception('Invalid message data specified -- must be an associative array corresponding to a table row. Passed: ' . print_r($messageData, true));
         }
     }
@@ -150,7 +148,8 @@ class fimMessage {
      * @return mixed The value of the property.
      * @throws Exception If property is invalid.
      */
-    public function __get($property) {
+    public function __get($property)
+    {
         if (!property_exists($this, $property))
             throw new Exception("Invalid property accessed in fimMessage: $property");
 
@@ -168,7 +167,8 @@ class fimMessage {
      * @param $text string New message text.
      * @param $ignoreBlock bool True if a censor prompt should be ignored.
      */
-    public function setText($text, $ignoreBlock) {
+    public function setText($text, $ignoreBlock)
+    {
         $this->text = $this->generalCache->censorScan($text, $this->room->id, $ignoreBlock, $this->censorMatches);
         list($this->textEncrypted, $this->iv, $this->salt) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
     }
@@ -178,8 +178,19 @@ class fimMessage {
      *
      * @param $flag string See fimMessage::flag.
      */
-    public function setFlag($flag) {
+    public function setFlag($flag)
+    {
         $this->flag = $flag;
+    }
+
+    /**
+     * After running, make sure to run $database->updateMessage() on this message object.
+     *
+     * @param $deleted bool Whether or not the message is deleted.
+     */
+    public function setDeleted($deleted)
+    {
+        $this->deleted = $deleted;
     }
 }
 ?>

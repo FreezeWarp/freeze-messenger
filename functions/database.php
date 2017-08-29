@@ -94,7 +94,7 @@ abstract class database
     /**
      * @var array An array of data instructing how to perform hard partitioning on a query if that information is not otherwise available. See {@link database::partitionAt()} for more.
      */
-    protected $partitonAt = array();
+    protected $partitionAt = array();
 
     /**
      * @var bool Whether or not to queue new query operations. Turned on and off by {@link databased::autoQueue()}.

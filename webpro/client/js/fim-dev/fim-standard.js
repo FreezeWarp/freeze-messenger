@@ -63,9 +63,9 @@ standard.prototype.archive = {
             'messageIdStart' : standard.archive.options.firstMessage,
             'messageHardLimit' : $('#resultLimit option:selected').val(),
             'archive' : 1,
-            'sortOrder' : 'desc',
             'page' : standard.archive.options.page
         }, {
+            'reverseEach' : true,
             'each' : function(messageData) {
                 $.when(fim_messageFormat(messageData, 'table')).then(function(messageText) {
                     $('#archiveMessageList').append(messageText);
