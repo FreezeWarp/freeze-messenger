@@ -21,10 +21,13 @@ define('API_INMESSAGE', true);
 
 /* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
 $requestHead = fim_sanitizeGPC('g', [
-    'roomId' => ['cast' => 'roomId'],
+    'roomId' => ['cast' => 'roomId', 'require' => true],
     'id' => [ 'cast' => 'int' ],
     '_action' => [],
 ]);
+
+if (!($room = new fimRoom($requestHead['roomId']))->roomExists())
+    new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
 
 
 
@@ -32,15 +35,27 @@ $requestHead = fim_sanitizeGPC('g', [
 switch ($requestHead['_action']) {
     case 'delete':
     case 'undelete':
-        if (!$messageData = $database->getMessage($room, $requestHead['id'])->getAsArray(false))
+        $message = $database->getMessage($room, $requestHead['id']);
+
+        if (!$message->id)
             new fimError('invalidMessage', 'The message specified is invalid.');
 
-        else if (($messageData['userId'] = $user->id && $user->hasPriv('editOwnPosts'))
-            || ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE))
-            $database->editMessage($messageData['roomId'], $messageData['messageId'], array('deleted' => ($request['action'] === 'delete' ? true : false)));
+        else if (($message->user->id = $user->id && $user->hasPriv('editOwnPosts'))
+            || ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE)) {
+
+            if ($requestHead['_action'] == 'delete')
+                $message->setDeleted(true);
+            else
+                $message->setDeleted(false);
+
+            $database->updateMessage($message);
+
+        }
 
         else
             new fimError('noPerm', 'You are not allowed to delete this message.');
+
+        echo new apiData();
     break;
 
     case 'edit': case 'create':

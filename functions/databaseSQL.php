@@ -2014,7 +2014,7 @@ LIMIT
             $partitionAt = array_merge($this->partitionAt, $conditionArray);
 
             if (!isset($partitionAt[$this->hardPartitions[$tableName][0]])) {
-                $this->triggerError("The table $tableName is partitoned. To delete from it, you _must_ specify the column " . $this->hardPartitions[$tableName][0] . ". Note that you may instead use partitionAt() if you know _any_ column that would apply to the partition (for instance, if you wish to delete the last row from a table before inserting a new one, you can specify the relevant condition using partitionAt().)");
+                $this->triggerError("The table $tableName is partitoned. To delete from it, you _must_ specify the column " . $this->hardPartitions[$tableName][0] . ". Note that you may instead use partitionAt() if you know _any_ column that would apply to the partition (for instance, if you wish to delete the last row from a table before inserting a new one, you can specify the relevant condition using partitionAt().)" . print_r($partitionAt, true));
             }
 
             $tableName .= "__part" . $partitionAt[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
@@ -2105,7 +2105,7 @@ LIMIT
 
         if (isset($this->hardPartitions[$tableName])) {
             if (!isset($conditionArray[$this->hardPartitions[$tableName][0]])) {
-                $this->triggerError("The table $tableName is partitoned. To update it, you _must_ specify the column " . $this->hardPartitions[$tableName][0]);
+                $this->triggerError("The table $tableName is partitoned. To update it, you _must_ specify the column " . $this->hardPartitions[$tableName][0] . ' ' . print_r($conditionArray, true));
             }
             elseif (isset($dataArray[$this->hardPartitions[$tableName][0]])) {
                 $this->triggerError("The table $tableName is partitoned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");

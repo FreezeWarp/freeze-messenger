@@ -56,10 +56,7 @@ $database->accessLog('sendMessage', $request);
 
 
 /* Start Processing */
-if (!($room = new fimRoom($requestHead['roomId']))->roomExists())
-    new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
-
-elseif (strlen($request['message']) < $config['messageMinLength'] || strlen($request['message']) > $config['messageMaxLength'])
+if (strlen($request['message']) < $config['messageMinLength'] || strlen($request['message']) > $config['messageMaxLength'])
     new fimError('messageLength', 'Minimum: ' . $config['messageMinLength'] . ', Maximum: ' . $config['messageMaxLength']); // Too short/long.
 
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))

@@ -116,7 +116,7 @@ class fimRoom {
         elseif ($roomData === false)
             $this->id = false;
         else
-            throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.) Passed: ' . print_r($roomData, true));
+            new fimError('invalidRoom', 'Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.) Passed: ' . print_r($roomData, true));
 
         $this->roomData = $roomData;
     }

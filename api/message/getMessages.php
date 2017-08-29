@@ -77,20 +77,6 @@ $request = fim_sanitizeGPC('g', array(
         'evaltrue' => true,
     ),
 
-    'sortBy' => array(
-        'valid' => array(
-            'messageId',
-        ),
-        'default' => 'messageId',
-    ),
-
-    'sortOrder' => array(
-        'valid' => array(
-            'desc', 'asc'
-        ),
-        'default' => 'asc'
-    ),
-
     'showDeleted' => array(
         'default' => false,
         'cast' => 'bool',
@@ -149,11 +135,11 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'int',
     ),
 ));
+
+if (!$request['archive'] && $request['showDeleted'])
+    new fimError('incompatibleParams', 'archive and showDeleted cannot be used together.');
+
 $database->accessLog('getMessages', $request);
-
-
-/* Get the roomdata. */
-$room = new fimRoom($requestHead['roomId']);
 
 
 /* Data Predefine */
@@ -161,10 +147,7 @@ $xmlData = array(
     'messages' => array(),
 );
 
-if (!$room->roomExists())
-    new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
-
-elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW))
+if (!($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW))
     new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
 else {
@@ -187,7 +170,7 @@ else {
         'archive' => $request['archive'],
         'userIds' => $request['userIds'],
         'messageIds' => (array) $requestHead['id'],
-    ), array($request['sortBy'] => $request['sortOrder']), $request['messageLimit'], $request['page'])->getAsMessages();
+    ), array('messageId' => 'asc'), $request['messageLimit'], $request['page'])->getAsMessages();
 
 
     /* Process Messages */
