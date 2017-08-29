@@ -178,7 +178,7 @@ curlTestPOSTEquals(
     'api/message.php',
     ['_action' => 'delete', 'access_token' => $accessToken, 'roomId' => 1, 'id' => 1],
     [],
-    ['deleteMessage'],
+    [],
     []
 );
 
