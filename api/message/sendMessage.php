@@ -15,18 +15,12 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Get Messages from the Server
- * Works with both private and normal rooms.
+ * Send or update a message.
  *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2014
- *
- * @param int roomId - The room ID.
- * @param string message - The message text, properly URLencoded.
- * @param string flag - A message content-type/context flag, used for sending images, urls, etc.
- * @param bool ignoreBlock - If true, the system will ignore censor warnings. You must pass this to resend a message that was denied because of a censor warning.
  */
 
 
