@@ -95,6 +95,24 @@ public class MessengerAPI {
 
 
     /**
+     * Get messages. Returns the JSON data.
+     * @param lastMessageId The ID of the last message that was received.
+     * @throws IOException
+     */
+    public JsonNode getMessages(int roomId, int lastMessageId, boolean useArchive) {
+        try {
+            JsonNode json = httpGET("api/message.php?access_token=" + sessionToken + "&roomId=" + roomId + "&archive=" + (useArchive ? 1 : 0) + "&messageIdStart=" + (lastMessageId + 1)).get("messages");
+
+            return json;
+        } catch (Exception ex) {
+            System.err.println("Exception: " + ex);
+        }
+
+        return null;
+    }
+
+
+    /**
      * Performs simple HTTP GET request, returning JSON body.
      * @param path The URL (relative to {@link MessengerAPI#serverUrl} to use.
      * @return The JSON response to the request.
@@ -108,6 +126,8 @@ public class MessengerAPI {
                     .connectTimeout(1000)
                     .socketTimeout(1000)
                     .execute().handleResponse(responseHandler);
+
+            System.out.println(json);
 
             JsonNode root = mapper.readTree(json);
             return root;
@@ -134,6 +154,8 @@ public class MessengerAPI {
                     .connectTimeout(1000)
                     .socketTimeout(1000)
                     .execute().handleResponse(responseHandler);
+
+            System.out.println(json);
 
             JsonNode root = mapper.readTree(json);
             return root;
