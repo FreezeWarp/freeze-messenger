@@ -13,6 +13,15 @@ class Resolver {
     static cachedroomNames: Array<string> = [];
     static cachedroomProperties: Array<any> = [];
 
+    static waitinguserIds: Array<number> = [];
+    static waitinguserNames: Array<string> = [];
+    static waitinguserProperties: Array<any> = [];
+
+    static waitingroomIds: Array<number> = [];
+    static waitingroomNames: Array<string> = [];
+    static waitingroomProperties: Array<any> = [];
+
+
     private static cacheEntry(type, entry) {
         console.log(["resolveAddedToCache", type, entry]);
 
@@ -29,18 +38,48 @@ class Resolver {
         let deferred = $.Deferred();
         let returnData = {};
         let unresolvedItems = [];
+        let unresolvedItemsWaiting = [];
 
+        if (property == "Ids") {
+            for (let i = 0; i < items.length; i++) {
+                items[i] = Number(items[i]);
+            }
+        }
+
+        // Process Each Item
         for (let item of items) {
+
+            // If we already have a cached entry, return it.
             if (Resolver["cached" + type + property].indexOf(item) !== -1) {
                 returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + type + property].indexOf(item)];
 
                 console.log(["resolveFoundInCache", type, property, item, returnData[item]]);
             }
+
+            // If we are waiting on a result for the entry, wait for it to appear in the cache.
+            else if (Resolver["waiting" + type + property].indexOf(item) !== -1) {
+                let retry = setInterval(function() {
+                    console.log(["resolveWaitRetry", type, property, item, Resolver["cached" + type + property]]);
+
+                    if (Resolver["cached" + type + property].indexOf(item) !== -1) {
+                        clearInterval(retry);
+                        console.log(["resolveFoundInCacheAfterWait", type, property, item, returnData[item]]);
+                        returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + type + property].indexOf(item)];
+                        unresolvedItemsWaiting.splice($.inArray(item, unresolvedItemsWaiting),1);
+                    }
+                }, 100);
+
+                unresolvedItemsWaiting.push(item);
+            }
+
+            // Otherwise, add the item to the unresolved items list in preparation to query them.
             else {
+                Resolver["waiting" + type + property].push(item);
                 unresolvedItems.push(item);
             }
         }
 
+        // Query the unresolved items all at once.
         if (unresolvedItems.length > 0) {
             let query = {};
             query[type + property] = unresolvedItems;
@@ -50,9 +89,22 @@ class Resolver {
                     returnData[entry[type + property.slice(0, -1)]] = entry;
                 },
                 'end': function() {
-                    deferred.resolve(returnData);
+                    unresolvedItems = [];
                 }
             })
+        }
+
+        // Wait for all unresolved items that are waiting for entries to appear in cache to be processed.
+        if (unresolvedItemsWaiting.length > 0 || unresolvedItems.length > 0) {
+            let retry2 = setInterval(function() {
+                console.log("unresolvedItemsWait");
+
+                if (unresolvedItemsWaiting.length == 0 && unresolvedItems.length == 0) {
+                    console.log("unresolvedItemsComplete");
+                    clearInterval(retry2);
+                    deferred.resolve(returnData);
+                }
+            }, 100);
         }
         else {
             deferred.resolve(returnData);

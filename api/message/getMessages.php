@@ -182,21 +182,12 @@ else {
 
         foreach ($messages AS $id => $message) {
             $xmlData['messages'][] = array(
-                'messageData' => array(
-                    'messageId' => (int) $message->id,
-                    'messageTime' => (int) $message->time,
-                    'messageText' => ($request['encode'] == 'base64' ? base64_encode($message->text) : $message->text),
-                    'messageFormatting' => $message->formatting,
-                    'flags' => ($message->flag),
-                ),
-                'userData' => array(
-                    'userName' => $message->user->name,
-                    'userId' => $message->user->id,
-                    'userGroup' => $message->user->mainGroupId,
-                    'avatar' => $message->user->avatar,
-                    'socialGroups' => $message->user->socialGroupIds,
-                    'userNameFormat' => $message->user->userNameFormat,
-                ),
+                'messageId' => (int) $message->id,
+                'messageTime' => (int) $message->time,
+                'messageText' => ($request['encode'] == 'base64' ? base64_encode($message->text) : $message->text),
+                'messageFormatting' => $message->formatting,
+                'flags' => ($message->flag),
+                'userId' => $message->user->id,
             );
         }
     }

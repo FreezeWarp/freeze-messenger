@@ -97,7 +97,7 @@ echo '<h1>Get Messages, Room 1</h1>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 1],
-    ['messages', 0, 'messageData', 'messageText'],
+    ['messages', 0, 'messageText'],
     'Hi'
 );
 
@@ -105,7 +105,7 @@ echo '<h1>Get Messages Since Message 0, Room 1</h1>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 1],
-    ['messages', 0, 'messageData', 'messageText'],
+    ['messages', 0, 'messageText'],
     'Hi'
 );
 
@@ -130,7 +130,7 @@ echo '<h1>Get Messages Since Message 0, Room 1</h1>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 1],
-    ['messages', 0, 'messageData', 'messageText'],
+    ['messages', 0, 'messageText'],
     'Hi'
 );
 
@@ -138,7 +138,7 @@ echo '<h1>Get Messages Since Message 1, Room 1</h1>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 2],
-    ['messages', 0, 'messageData', 'messageText'],
+    ['messages', 0, 'messageText'],
     'Crazy'
 );
 
@@ -163,7 +163,7 @@ echo '<h1>Get Message 3</h1>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 1, 'id' => 2],
-    ['messages', 0, 'messageData', 'messageText'],
+    ['messages', 0, 'messageText'],
     'Crazy For You'
 );
 
@@ -180,7 +180,7 @@ echo '<h1>Get Messages Since Message 0, Room 1</h1>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 0],
-    ['messages', 0, 'messageData', 'messageText'],
+    ['messages', 0, 'messageText'],
     'Crazy For You'
 );
 
@@ -188,7 +188,7 @@ echo '<h1>Get Even Deleted Messages Since Message 0, Room 1</h1>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 0, 'archive' => true, 'showDeleted' => true],
-    ['messages', 0, 'messageData', 'messageText'],
+    ['messages', 0, 'messageText'],
     'Hi'
 );
 
@@ -206,7 +206,7 @@ echo '<h1>Get Messages Since Message 0, Room 1</h1>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 1, 'archive' => true, 'messageIdStart' => 0],
-    ['messages', 0, 'messageData', 'messageText'],
+    ['messages', 0, 'messageText'],
     'Hi'
 );
 

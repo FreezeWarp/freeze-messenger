@@ -214,25 +214,19 @@ function fim_showMissedMessage(message) { console.log(window.roomId)
 function fim_messageFormat(json, format) {
     console.log(["message format", format, json]);
 
-    var mjson = json.messageData,
-        ujson = json.userData,
-        data,
-        text = mjson.messageText,
-        messageTime = fim_dateFormat(mjson.messageTime),
-        messageId = mjson.messageId,
-        userId = ujson.userId;
+    var data,
+        text = json.messageText,
+        messageTime = fim_dateFormat(json.messageTime),
+        messageId = json.messageId,
+        userId = Number(json.userId),
+        style = (settings.disableFormatting ? "" : json.messageFormatting),
+        flag = json.flags;
 
-    if (ujson.userName != null)
-        var userName = ujson.userName;
-    else
-        var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId]).then(function(pairs) {
-            userName = pairs[userId].userName;
-        }));
-
-    var userNameFormat = ujson.userNameFormat,
-        avatar = ujson.avatar,
-        style = (settings.disableFormatting ? "" : mjson.messageFormatting),
-        flag = mjson.flags;
+    var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId]).then(function(pairs) {
+        userName = pairs[userId].userName;
+        userNameFormat = pairs[userId].userNameFormat;
+        avatar = pairs[userId].avatar;
+    }));
 
     text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
     text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {

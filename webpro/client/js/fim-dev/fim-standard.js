@@ -213,10 +213,10 @@ standard.prototype.getMessages = function() {console.log("Getting messages from 
             messageSource.addEventListener('message', function(e) {
                 active = JSON.parse(e.data);
 
-                console.log('Event (New Message): ' + Number(active.messageData.messageId));
+                console.log('Event (New Message): ' + Number(active.messageId));
 
                 $.when(fim_messageFormat(JSON.parse(e.data), 'list')).then(function(messageText) {
-                    fim_newMessage(messageText, Number(active.messageData.messageId));
+                    fim_newMessage(messageText, Number(active.messageId));
                 });
 
                 return false;
@@ -265,7 +265,7 @@ standard.prototype.getMessages = function() {console.log("Getting messages from 
                 }, {
                     'each': function (messageData) {
                         $.when(fim_messageFormat(messageData, 'list')).then(function(messageText) {
-                            fim_newMessage(messageText, Number(messageData.messageData.messageId));
+                            fim_newMessage(messageText, Number(messageData.messageId));
                         });
                     },
                     'end': function () {

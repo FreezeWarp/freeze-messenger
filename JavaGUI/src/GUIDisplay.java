@@ -256,14 +256,13 @@ public class GUIDisplay extends Application {
 
             if (messages.isArray()) {
                 for (final JsonNode message : messages) {
-                    JsonNode messageTemp = message.get("messageData"); // TODO: remove messageData node
                     System.out.println(message);
-                    currentRoom.addNewMessage(messageTemp);
+                    currentRoom.addNewMessage(message);
 
                     Text userName = new Text("temp");
                     userName.setFont(Font.font(null, FontWeight.BOLD, -1));
-                    Text messageTime = new Text(messageTemp.get("messageTime").asText());
-                    Text messageText = new Text(messageTemp.get("messageText").asText());
+                    Text messageTime = new Text(message.get("messageTime").asText());
+                    Text messageText = new Text(message.get("messageText").asText());
 
                     Platform.runLater(new Runnable() {
                         @Override

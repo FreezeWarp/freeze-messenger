@@ -63,27 +63,12 @@ function stream_messages($roomId, $lastEvent) {
             echo "\nid: " . (int) $message['messageId'] . "\n";
             echo "event: message\n";
             echo "data: " . json_encode(array(
-                    'messageData' => array(
-                        'roomId' => (int) $message['roomId'],
-                        'messageId' => (int) $message['messageId'],
-                        'messageTime' => (int) $message['time'],
-                        'messageText' => $message['text'],
-                        'flags' => ($message['flag']),
-                    ),
-                    'userData' => array(
-                        'userName' => ($message['userName']),
-                        'userId' => (int) $message['userId'],
-                        'userGroup' => (int) $message['userGroup'],
-                        'avatar' => ($message['avatar']),
-                        'socialGroups' => ($message['socialGroups']),
-                        'userNameFormat' => ($message['userNameFormat']),
-                        'defaultFormatting' => array(
-                            'color' => ($message['defaultColor']),
-                            'highlight' => ($message['defaultHighlight']),
-                            'fontface' => ($message['defaultFontface']),
-                            'general' => (int) $message['defaultFormatting']
-                        ),
-                    )
+                    'roomId' => (int) $message['roomId'],
+                    'messageId' => (int) $message['messageId'],
+                    'messageTime' => (int) $message['time'],
+                    'messageText' => $message['text'],
+                    'flags' => ($message['flag']),
+                    'userId' => (int) $message['userId'],
                 )) . "\n\n";
 
             fim_flush(); // Force the server to flush.
