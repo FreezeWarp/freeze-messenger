@@ -4,16 +4,18 @@
 
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 import java.util.Timer;
@@ -41,6 +43,32 @@ public class GUIDisplay extends Application {
      * In the future, this will be an array of multiple rooms.
      */
     Room currentRoom = new Room(1);
+
+
+    // Stores the overall frame, composed of the main frame and the side panel.
+    VBox mainMessageInterface = new VBox(25);
+
+
+    // Stores the main frame, composed of the messages frame and the send message frame.
+    VBox mainFrame = new VBox(5);
+
+
+    // Stores the config frame, composed of the labels and buttons for setting certain configuration at run-time.
+    VBox messagesFrame = new VBox(10);
+
+
+    // Stores the bit where new messages are typed.
+    VBox sendMessageFrame = new VBox(10);
+
+
+    // Stores side frame
+    HBox sideFrame = new HBox(10);
+
+
+    /**
+     * The textbox used when typing a new message.
+     */
+    TextField newMessageTextField = new TextField();
 
 
     /*################################
@@ -115,33 +143,33 @@ public class GUIDisplay extends Application {
 
 
         /* Build Our Interface */
-        // Stores the overall frame, composed of the main frame and the side panel.
-        VBox mainMessageInterface = new VBox(25);
+        // Make messagesFrame scroll.
+        ScrollPane messagesFrameScrollable = new ScrollPane();
+        messagesFrameScrollable.setContent(messagesFrame);
 
 
-        // Stores the main frame, composed of the messages frame and the send message frame.
-        HBox mainFrame = new HBox(5);
-
-
-        // Stores the config frame, composed of the labels and buttons for setting certain configuration at run-time.
-        VBox messagesFrame = new VBox(10);
-        messagesFrame.getChildren().add(currentRoom.getMessagesWebView());
-
-
-        // Stores the status frame, composed of status labels for temperature, etc.
-        VBox sendMessageFrame = new VBox(10);
+        // Add new message text box
+        sendMessageFrame.getChildren().add(newMessageTextField);
 
 
         // Add the messages, send message frames to the main frame
-        mainFrame.getChildren().addAll(messagesFrame, sendMessageFrame);
-
-
-        // Stores side frame
-        HBox sideFrame = new HBox(10);
+        mainFrame.getChildren().addAll(messagesFrameScrollable, sendMessageFrame);
 
 
         // Add main frame, side frame to overall frame.
         mainMessageInterface.getChildren().addAll(sideFrame, mainFrame);
+
+
+        // Sizes
+        mainMessageInterface.setFillWidth(true);
+        sideFrame.setMinWidth(200);
+        sideFrame.setPrefWidth(400);
+        sideFrame.setFillHeight(true);
+        mainFrame.setMinWidth(400);
+        sendMessageFrame.setPrefHeight(100);
+        sendMessageFrame.setFillWidth(true);
+        messagesFrameScrollable.setFitToHeight(true);
+        messagesFrameScrollable.setFitToWidth(true);
 
 
         // Center stuff.
@@ -154,6 +182,7 @@ public class GUIDisplay extends Application {
 
         // Add the overall frame to a scene, add the scene to the primary stage, then display the stage.
         Scene scene = new Scene(mainMessageInterface);
+        primaryStage.setResizable(true);
         primaryStage.setMinWidth(600);
         primaryStage.setMinHeight(400);
         primaryStage.setScene(scene);
@@ -173,7 +202,7 @@ public class GUIDisplay extends Application {
             alert("Login failed.");
         }
         else {
-            alert("Login successful, maybe. Session token: " + api.getSessionToken());
+            //alert("Login successful, maybe. Session token: " + api.getSessionToken());
 
             Timer timer = new Timer();
             timer.schedule(new RefreshMessages(), 0, 1000);
@@ -227,8 +256,22 @@ public class GUIDisplay extends Application {
 
             if (messages.isArray()) {
                 for (final JsonNode message : messages) {
+                    JsonNode messageTemp = message.get("messageData"); // TODO: remove messageData node
                     System.out.println(message);
-                    currentRoom.addNewMessage(message.get("messageData")); // TODO: remove messageData node
+                    currentRoom.addNewMessage(messageTemp);
+
+                    Text userName = new Text("temp");
+                    userName.setFont(Font.font(null, FontWeight.BOLD, -1));
+                    Text messageTime = new Text(messageTemp.get("messageTime").asText());
+                    Text messageText = new Text(messageTemp.get("messageText").asText());
+
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            messagesFrame.getChildren().add(0, new TextFlow(userName, new Text(" @ "), messageTime, new Text(": "), messageText));
+                        }
+                    });
+
                 }
             }
             else {
