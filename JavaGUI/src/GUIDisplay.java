@@ -1,6 +1,8 @@
 /**
  * Created by joseph on 28/08/17.
  */
+
+import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -14,6 +16,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * A GUI interface to simulate two coolers, a refridgerator and freezer.
  *
@@ -25,6 +30,19 @@ import javafx.stage.Stage;
  * @since   2017-August-05
  */
 public class GUIDisplay extends Application {
+    /**
+     * This is the object for making API calls.
+     * It will be instantiated once a server URL is known.
+     */
+    MessengerAPI api;
+
+    /**
+     * This is the current room we have loaded and are getting messages for.
+     * In the future, this will be an array of multiple rooms.
+     */
+    Room currentRoom = new Room(1);
+
+
     /*################################
      * Program Entry-Point
      *###############################*/
@@ -44,8 +62,21 @@ public class GUIDisplay extends Application {
     /*################################
      * JavaFX Properties
      *###############################*/
+    /**
+     * This is a map of labels that can be obtained dynamically by their name.
+     */
     private static StrongMap<String, Label> labels;
+
+
+    /**
+     * This is a map of buttons that can be obtained dynamically by their name.
+     */
     private static StrongMap<String, Button> buttons;
+
+
+    /**
+     * This is a map of text fields that can be obtained dynamically by their name.
+     */
     private static StrongMap<String, TextField> textfields;
 
 
@@ -94,6 +125,7 @@ public class GUIDisplay extends Application {
 
         // Stores the config frame, composed of the labels and buttons for setting certain configuration at run-time.
         VBox messagesFrame = new VBox(10);
+        messagesFrame.getChildren().add(currentRoom.getMessagesWebView());
 
 
         // Stores the status frame, composed of status labels for temperature, etc.
@@ -136,8 +168,16 @@ public class GUIDisplay extends Application {
 
 
 
-        /* Initialise Our Objects */
-        startSimulation();
+        api = new MessengerAPI("http://localhost/messenger/");
+        if (!api.login("admin", "admin")) {
+            alert("Login failed.");
+        }
+        else {
+            alert("Login successful, maybe. Session token: " + api.getSessionToken());
+
+            Timer timer = new Timer();
+            timer.schedule(new RefreshMessages(), 0, 1000);
+        }
     }
 
 
@@ -180,20 +220,20 @@ public class GUIDisplay extends Application {
 
 
 
-    /*################################
-     * Entry-Point for Stimulation
-     *###############################*/
+    class RefreshMessages extends TimerTask {
+        public void run() {
+            JsonNode messages = api.getMessages(currentRoom.getId(), currentRoom.getLastMessageId(), !currentRoom.isArchiveFetched());
+            currentRoom.setArchiveFetched(true);
 
-    /**
-     * Constructs the fridge, freezer, room, and display references.
-     */
-    public static void startSimulation() {
-        MessengerAPI api = new MessengerAPI("http://localhost/messenger/");
-        if (!api.login("admin", "admin")) {
-            alert("Login failed.");
-        }
-        else {
-            alert("Login successful, maybe. Session token: " + api.getSessionToken());
+            if (messages.isArray()) {
+                for (final JsonNode message : messages) {
+                    System.out.println(message);
+                    currentRoom.addNewMessage(message.get("messageData")); // TODO: remove messageData node
+                }
+            }
+            else {
+                alert("Bad response from getMessages.");
+            }
         }
     }
 }
