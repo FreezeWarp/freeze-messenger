@@ -46,13 +46,7 @@ function red($text) {
 
 
 echo '<h1>Login</h1>';
-/*$login = curlRequest::quickRunGET("{$host}/validate.php?user=admin&password=admin&grant_type=password&client_id=WebPro", []);
-if ($accessToken = $login['login']['access_token']) {
-    echo green('Success<br />');
-}
-else {
-    echo red(json_encode($login));
-}*/
+
 $accessToken = false;
 curlTestPOSTEquals(
     'validate.php',
@@ -66,7 +60,7 @@ curlTestPOSTEquals(
     }
 );
 
-/*echo '<h1>Get Messages, No Login</h1>';
+echo '<h1>Get Messages, No Login</h1>';
 curlTestGETEquals(
     'api/message.php',
     [],
@@ -171,7 +165,7 @@ curlTestGETEquals(
     ['access_token' => $accessToken, 'roomId' => 1, 'id' => 2],
     ['messages', 0, 'messageData', 'messageText'],
     'Crazy For You'
-);*/
+);
 
 echo '<h1>Delete Message 1, Room 1</h1>';
 curlTestPOSTEquals(
