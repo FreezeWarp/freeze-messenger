@@ -274,7 +274,7 @@ class curlRequest {
             return $json;
         }
         else {
-            new fimError("cURLBadJson", "Invalid JSON from cURL: " . $this->response);
+            trigger_error("Invalid JSON from cURL: " . $this->response, E_USER_WARNING);
             return false;
         }
     }
