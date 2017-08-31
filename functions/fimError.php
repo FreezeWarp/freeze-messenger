@@ -18,6 +18,7 @@
  * Class fimError
  *
  * Note: fimError can not be caught. It is intended to display data to the API.
+ * TODO: allow arrays, do in place of context
  */
 class fimError extends Exception {
     public function __construct($code = false, $string = false, $context = array(), $return = false, $httpError = 'HTTP/1.1 403 Forbidden') {
@@ -28,13 +29,13 @@ class fimError extends Exception {
 class fimErrorThrown extends Exception {
     protected $code;
     protected $string;
-    protected $context;
+    protected $context = [];
     protected $httpError;
 
     public function __construct($code = '', $string = '', $context = array(), $httpError = 'HTTP/1.1 403 Forbidden') {
         $this->code = $code;
         $this->string = $string;
-        $this->context = $context;
+        $this->context = (array) $context;
         $this->httpError = $httpError;
     }
 

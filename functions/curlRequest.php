@@ -16,6 +16,8 @@
 
 require_once('apiData.php');
 require_once('fimError.php');
+require('curlRequestMethod.php');
+
 
 /**
  * Performs a structured CURL request.
@@ -27,6 +29,11 @@ class curlRequest {
      * @var string The response populated after a request.
      */
     public $response;
+
+    /**
+     * @var string The final HTTP response header populated after a request.
+     */
+    public $responseHeader;
 
     /**
      * @var string The file to request. Includes domain.
@@ -110,94 +117,108 @@ class curlRequest {
      *
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function execute($method = 'post') {
-        global $installUrl;
+    public function execute($method = CurlRequestMethod::GET) {
+        if (function_exists('curl_init'))
+            $this->curl($method);
 
-        if (function_exists('curl_init')) {
-            $ch = curl_init($this->requestFile); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
-            if ($method == 'post') {
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $this->requestData);
-            }
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); /* obey redirects */
-            curl_setopt($ch, CURLOPT_HEADER, FALSE);  /* No HTTP headers */
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);  /* return the data */
+        elseif (function_exists('fsockopen'))
+            $this->fsockopen($method);
 
-            if ($che = curl_error($ch)) {
-                curl_close($ch);
-                trigger_error('Curl Error: ' . $che, E_USER_ERROR);
-                return false;
-            }
-            else {
-                $this->response = curl_exec($ch);
+        else
+            throw new Exception('curlRequest: no compatible PHP function found. Please enable fsock or curl.');
+    }
 
-                if (curl_getinfo($ch, CURLINFO_HTTP_CODE) === 200) {
-                    curl_close($ch);
-                    return $this->response;
-                }
-                else {
-                    curl_close($ch);
-                    return false;
-                }
-            }
+
+    public function curl($method) {
+        $ch = curl_init($this->requestFile); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
+
+        if ($method == CurlRequestMethod::POST)
+            curl_setopt($ch, CURLOPT_POST, true);
+        elseif ($method  != CurlRequestMethod::GET)
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, CurlRequestMethod::toString($method));
+
+        if ($method != CurlRequestMethod::GET)
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->requestData);
+
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); // obey redirects
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);  // return the data
+
+        if ($che = curl_error($ch)) {
+            throw new Exception('Curl Error: ' . $che);
         }
-
-        elseif (function_exists('fsockopen')) {
-            $errno = false;
-            $errstr = false;
-
-            $urlData = parse_url($this->requestFile); // parse the given URL
-
-            $fp = fsockopen($urlData['host'], 80, $errno, $errstr); // open a socket connection on port 80
-
-            if ($fp) {
-                // send the request headers:
-                if ($method === 'post')
-                    fputs($fp, "POST " . $urlData['path'] . (isset($urlData['query']) ? '?' . $urlData['query'] : '') . " HTTP/1.1\r\n");
-                else if ($method === 'get')
-                    fputs($fp, "GET " . $urlData['path'] . (isset($urlData['query']) ? '?' . $urlData['query'] : '') . " HTTP/1.1\r\n");
-                else
-                    throw new Exception('Invalid request method.');
-
-                fputs($fp, "Host: " . $urlData['host'] . "\r\n");
-
-                if ($this->requestData) {
-                    fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
-                    fputs($fp, "Content-length: " . strlen($this->requestData) . "\r\n");;
-                }
-
-                fputs($fp, "Connection: close\r\n\r\n");
-
-                if ($this->requestData) {
-                    fputs($fp, $this->requestData);
-                }
-
-                $result = '';
-
-                while(!feof($fp)) {
-                    $result .= fgets($fp, 128); // receive the results of the request
-                }
-            }
-
-            // close the socket connection:
-            fclose($fp);
-
-            if ($errno) {
-                trigger_error('FSock Error: ' . $errstr);
-                return false;
-            }
-            else {
-                // split the result header from the content
-                $result = explode("\r\n\r\n", $result, 2); // Return headers in [0], return content in [1].
-                $this->response = isset($result[1]) ? $result[1] : '';
-
-                // return as structured array:
-                return $this->response;
-            }
-        }
-
         else {
-            throw new Exception('fim_curl: no compatible PHP function found. Please enable fsock or curl.');
+            $this->response = curl_exec($ch);
+            $this->responseHeader = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        }
+
+        curl_close($ch);
+    }
+
+
+    public function fsockopen($method) {
+        $errno = false;
+        $errstr = false;
+
+        $urlData = parse_url($this->requestFile); // parse the given URL
+
+        $fp = fsockopen($urlData['host'], 80, $errno, $errstr); // open a socket connection on port 80
+
+        if ($fp) {
+            // send the request headers:
+            fputs($fp, CurlRequestMethod::toString($method) . " " . $urlData['path'] . (isset($urlData['query']) ? '?' . $urlData['query'] : '') . " HTTP/1.1\r\n");
+            fputs($fp, "Host: " . $urlData['host'] . "\r\n");
+
+            if ($this->requestData) {
+                fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
+                fputs($fp, "Content-length: " . strlen($this->requestData) . "\r\n");;
+            }
+
+            fputs($fp, "Connection: close\r\n\r\n");
+
+            if ($this->requestData) {
+                fputs($fp, $this->requestData);
+            }
+
+            $result = '';
+
+            while (!feof($fp)) {
+                $result .= fgets($fp, 1024); // receive the results of the request
+            }
+        }
+
+        fclose($fp); // close the socket connection:
+
+        if ($errno) {
+            throw new Exception('FSock Error: ' . $errstr);
+        }
+        else {
+            // split the result header from the content
+            $result = explode("\r\n\r\n", $result, 2); // Return headers in [0], return content in [1].
+            $this->response = isset($result[1]) ? $result[1] : '';
+
+            $headers = [];
+            $headerSet = 0;
+            foreach (explode("\n", $result[0]) AS $header) {
+                if (stripos($header, 'HTTP/') === 0) {
+                    $headerSet++;
+
+                    if (strpos($header, '301') !== false || strpos($header, '302') !== false)
+                        $headers[$headerSet]['status'] = 'redirect';
+                    else if (strpos($header, '200') === false)
+                        $headers[$headerSet]['status'] = 'error';
+                    else
+                        $headers[$headerSet]['status'] = 'okay';
+
+                    $headers[$headerSet]['httpCode'] = $header;
+                }
+
+                if (stripos($header, 'location') !== false) {
+                    $headers[$headerSet]['location'] = explode(': ', $header)[1];
+                }
+            }
+
+            $this->responseHeader = $headers[$headerSet]['httpCode'];
+            //$this->redirectLocation = $headers[$headerSet - 1]['location']
         }
     }
 
@@ -209,7 +230,7 @@ class curlRequest {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function executePOST() {
-        $this->execute();
+        $this->execute(CurlRequestMethod::POST);
     }
 
     /**
@@ -220,7 +241,7 @@ class curlRequest {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function executeGET() {
-        $this->execute("get");
+        $this->execute(CurlRequestMethod::GET);
     }
 
 
@@ -252,7 +273,7 @@ class curlRequest {
 
     public static function quickRunPOST($apiFile, $dataHead, $dataBody) {
         $curl = new curlRequest($apiFile, $dataHead, $dataBody);
-        $curl->execute();
+        $curl->executePOST();
         return $curl->getAsJson();
     }
 

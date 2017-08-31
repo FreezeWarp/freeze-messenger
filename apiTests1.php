@@ -1,4 +1,6 @@
 <?php
+//todo: change config. maybe custom WebPro API?
+
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
@@ -64,7 +66,7 @@ curlTestPOSTEquals(
 );
 
 
-echo '<h1>Get Messages, No Login</h1>';
+/*echo '<h1>Get Messages, No Login</h1>';
 curlTestGETEquals(
     'api/message.php',
     [],
@@ -255,9 +257,9 @@ curlTestPOSTEquals(
     [],
     ['exception', 'string'],
     'idNoExist'
-);
+);*/
 
-echo '<h1>Send Message "Hi Bob %d" 98 Times, Room 1</h1>';
+/*echo '<h1>Send Message "Hi Bob %d" 98 Times, Room 1</h1>';
 for ($i = 2; $i < 100; $i++) {
     curlTestPOSTEquals(
         'api/message.php',
@@ -266,10 +268,58 @@ for ($i = 2; $i < 100; $i++) {
         ['sendMessage', 'censor'],
         []
     );
-}
+}*/
 
 // todo: create admin-only room
-// todo: create unpriviledged user
+
+echo '<h1>Create User without Birthdate</h1>';
+curlTestPOSTEquals(
+    'api/user.php',
+    ['_action' => 'create'],
+    ['userName' => 'testUnitUser', 'password' => 'password', 'email' => 'bob@example.com'],
+    ['exception', 'string'],
+    'birthdateRequired'
+);
+
+echo '<h1>Create User With Email bob@example</h1>';
+curlTestPOSTEquals(
+    'api/user.php',
+    ['_action' => 'create'],
+    ['userName' => 'testUnitUser', 'password' => 'password', 'email' => 'bob@example', 'birthdate' => time() - 14 * 365 * 3600],
+    ['exception', 'string'],
+    'emailInvalid'
+);
+
+echo '<h1>Create User 12 Years Old</h1>';
+curlTestPOSTEquals(
+    'api/user.php',
+    ['_action' => 'create'],
+    ['userName' => 'testUnitUser', 'password' => 'password', 'email' => 'bob@example.com', 'birthdate' => time() - 12 * 365 * 3600],
+    ['exception', 'string'],
+    'ageMinimum'
+);
+
+// todo: email required
+
+echo '<h1>Create Valid User</h1>';
+curlTestPOSTEquals(
+    'api/user.php',
+    ['_action' => 'create'],
+    ['userName' => 'testUnitUser', 'password' => 'password', 'email' => 'bob@example.com', 'birthdate' => time() - 14 * 365 * 3600],
+    ['sendUser', 'userName'],
+    'testUnitUser'
+);
+
+echo '<h1>Create Duplicate User</h1>';
+curlTestPOSTEquals(
+    'api/user.php',
+    ['_action' => 'create'],
+    ['userName' => 'testUnitUser', 'password' => 'password', 'email' => 'bob@example.com', 'birthdate' => time() - 14 * 365 * 3600],
+    ['exception', 'string'],
+    'userExists'
+);
+
+
 // todo: unpriviledged user can post in default room
 // todo: unpriviledged user can't post in admin-only room
 // todo: admin kick unpriviledged user in default room

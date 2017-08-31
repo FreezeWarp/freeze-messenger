@@ -17,10 +17,6 @@
 class apiData implements ArrayAccess {
     private $format;
     private $data;
-    private $xmlEntitiesFind;
-    private $xmlEntitiesReplace;
-    private $xmlAttrEntitiesFind;
-    private $xmlAttrEntitiesReplace;
     public $jsonDepthLimit = 15;
 
     /* ArrayAccess Interface */
@@ -48,14 +44,6 @@ class apiData implements ArrayAccess {
     }
 
 
-    public function setXMLEntities($find, $replace, $attrFind, $attrReplace) {
-        $this->xmlEntitiesFind = $find;
-        $this->xmlEntitiesReplace = $replace;
-        $this->xmlAttrEntitiesFind = $attrFind;
-        $this->xmlAttrEntitiesReplace = $attrReplace;
-    }
-
-
     public function replaceData($data) {
         $this->data = $data;
     }
@@ -76,30 +64,6 @@ class apiData implements ArrayAccess {
             case 'jsonp':         header('Content-type: application/json'); return 'fim3_jsonp.parse(' . $this->outputJson($this->data) . ')'; break; // Javascript Object Notion for Cross-Origin Requests
             case 'json': default: header('Content-type: application/json'); return $this->outputJson($this->data);  break; // Javascript Object Notion
         }
-    }
-
-
-    /**
-     * Encodes a string as specifically-formatted XML data, converting "&", "'", '"', "<", and ">" to their equivilent values.
-     *
-     * @param string $data - The data to be encoded.
-     * @return string - Encoded data.
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    private function encodeXml($data) {
-        return str_replace("\n", '&#xA;', str_replace($this->xmlEntitiesFind, $this->xmlEntitiesReplace, $data));
-    }
-
-
-    /**
-     * Encodes a string as specifically-formatted XML data attribute.
-     *
-     * @param string $data - The data to be encoded.
-     * @return string - Encoded data.
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    private function encodeXmlAttr($data) {
-        return str_replace($this->xmlAttrEntitiesFind, $this->xmlAttrEntitiesReplace, $data); // Replace the entities defined in $config (these are usually not changed).
     }
 
 
@@ -176,10 +140,9 @@ class apiData implements ArrayAccess {
             return 'true';
         elseif ($value === false)
             return 'false';
-        elseif (is_string($value)) {
+        elseif (is_string($value))
             // mb_convert_encoding removes non-UTF8 characters, ensuring that json_encode doesn't fail.
             return json_encode(function_exists("mb_convert_encoding") ? mb_convert_encoding($value, "UTF-8", "UTF-8") : $value, JSON_PARTIAL_OUTPUT_ON_ERROR, 1);
-        }
         elseif (is_int($value) || is_float($value))
             return $value;
         elseif ($value == '')

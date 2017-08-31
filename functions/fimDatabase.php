@@ -2712,7 +2712,7 @@ class fimDatabase extends databaseSQL
             ])->getColumnValue('count');
 
             if ($floodCount > $this->config['floodDetectionGlobal_' . $action . '_perMinute'] && !$this->user->hasPriv('modPrivs')) {
-                throw new fimError("flood", "Your IP has sent too many $action requests ($floodCount observed).", null, null, "HTTP/1.1 429 Too Many Requests");
+                new fimError("flood", "Your IP has sent too many $action requests ($floodCount observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
                 $this->upsert($this->sqlPrefix . "accessFlood", [

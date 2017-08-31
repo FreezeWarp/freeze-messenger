@@ -394,7 +394,7 @@ function fim_sanitizeGPC($type, $data) {
 
                 // Finally, if the global is thus-far unprovided...
                 if (!isset($activeGlobal[$indexName])) {
-                    if ($indexMetaData['require']) new fimError('missing' . ucfirst($indexName), 'Required data not present (index ' . $indexName . ').'); // And required, throw an exception.
+                    if ($indexMetaData['require']) new fimError($indexName . 'Required', 'Required data not present (index ' . $indexName . ').'); // And required, throw an exception.
                     else continue; // And not required, just ignore this global and move on to the next one.
                 }
             }
@@ -709,6 +709,7 @@ function fim_emptyExplode(string $separator, $list) {
 
 /**
  * Custom exception handler. In general, all classes and functions are going to use exceptions so that they can be caught. But, the lazy coder that I am, I don't normally bother catching them -- these errors will hopefully give a user enough information if I can't be bothered.
+ * TODO: allow arrays from fimError
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
@@ -724,10 +725,9 @@ function fim_exceptionHandler($exception) {
     if ($exception instanceof fimErrorThrown) {
         header($exception->getHttpError()); // FimError is invoked when the user did something wrong, not us. (At least, it should be. I've been a little inconsistent.)
 
-        $errorData = array_merge($errorData, (array) $exception->getContext(), array(
-            'string' => $exception->getCode(),
-            'details' => (substr($exception->getString(), 0, 1) === '[' || substr($exception->getString(), 0, 1) === '{') ? json_decode($exception->getString(), true) : $exception->getString(),
-        ));
+        $errorData['string'] = $exception->getCode();
+        $errorData['details'] = $exception->getString();
+        $errorData['other'] = $exception->getContext();
 
         if ($config['displayBacktrace']) {
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
