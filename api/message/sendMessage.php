@@ -70,23 +70,17 @@ elseif ($request['flag'] === 'email'
 else {
     switch ($requestHead['_action']) {
         case 'edit':
-            $message = $database->getMessage($room, $requestHead['id']);
+            if ($message->text == $request['message'])
+                new fimError('noChange', 'Your edited message is unchanged.');
 
-            if (!$message->id)
-                new fimError('invalidMessage', 'The message specified is invalid.');
-            else {
-                if ($message->text == $request['message'])
-                    new fimError('noChange', 'Your edited message is unchanged.');
-
-                else if ($message->user->id = $user->id && $user->hasPriv('editOwnPosts')) {
-                    $message->setText($request['message']);
-                    $message->setFlag($request['flag']);
-                    $database->updateMessage($message);
-                }
-
-                else
-                    new fimError('noPerm', 'You are not allowed to edit this message.');
+            else if ($message->user->id = $user->id && $user->hasPriv('editOwnPosts')) {
+                $message->setText($request['message']);
+                $message->setFlag($request['flag']);
+                $database->updateMessage($message);
             }
+
+            else
+                new fimError('noPerm', 'You are not allowed to edit this message.');
         break;
 
         case 'create':

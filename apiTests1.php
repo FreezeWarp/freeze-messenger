@@ -1,7 +1,8 @@
 <?php
-require('functions/curlRequest.php');
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+require('functions/curlRequest.php');
 
 echo '<h1>API Unit Testing Suite</h1>';
 echo '<p>This is a basic series of unit tests for the Messenger API. Tests should only be run on a fresh installation without development data. The installation user should be admin/admin.</p>';
@@ -18,7 +19,7 @@ function curlTestCommon($input, $jsonIndex, $expectedValue, $callback = null) {
         echo green("Success");
     }
     else {
-        echo red(print_r($input, true));
+        echo red('Expected ' . $expectedValue . ', found ' . $requestNarrow . '<br />' . print_r($input, true));
     }
 
     if ($callback) {
@@ -48,6 +49,8 @@ function red($text) {
 echo '<h1>Login</h1>';
 
 $accessToken = false;
+
+
 curlTestPOSTEquals(
     'validate.php',
     [],
@@ -60,6 +63,7 @@ curlTestPOSTEquals(
     }
 );
 
+/*
 echo '<h1>Get Messages, No Login</h1>';
 curlTestGETEquals(
     'api/message.php',
@@ -208,6 +212,47 @@ curlTestGETEquals(
     ['access_token' => $accessToken, 'roomId' => 1, 'archive' => true, 'messageIdStart' => 0],
     ['messages', 0, 'messageText'],
     'Hi'
+);*/
+
+echo '<h1>Get (Invalid) Message 10, Room 1</h1>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => 1, 'id' => 10],
+    ['exception', 'string'],
+    'idNoExist'
+);
+
+echo '<h1>Get Message 10, (Invalid) Room 10</h1>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => 10, 'id' => 1],
+    ['exception', 'string'],
+    'roomIdNoExist'
+);
+
+echo '<h1>Get Messages Between Message 0 and Message 10, Room 1</h1>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 1, 'messageIdEnd' => 10],
+    ['exception', 'string'],
+    'messageDateMinMessageDateMaxMessageIdStartMessageIdEndConflict'
+);
+
+echo '<h1>Get Messages Starting Message 1 and Message Date 1, Room 1</h1>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 1, 'messageDateMin' => 1],
+    ['exception', 'string'],
+    'messageDateMinMessageDateMaxMessageIdStartMessageIdEndConflict'
+);
+
+echo '<h1>Undelete (Invalid) Message 10, Room 1</h1>';
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'undelete', 'access_token' => $accessToken, 'roomId' => 1, 'id' => 10],
+    [],
+    ['exception', 'string'],
+    'idNoExist'
 );
 
 /*echo '<h1>Send Message "Hi Bob %d" 98 Times, Room 1</h1>';

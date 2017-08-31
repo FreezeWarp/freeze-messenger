@@ -55,21 +55,25 @@ $request = fim_sanitizeGPC('g', array(
     ),
 
     'messageDateMax' => array(
+        'min' => 0,
         'default' => 0,
         'cast' => 'int',
     ),
 
     'messageDateMin' => array(
+        'min' => 0,
         'default' => 0,
         'cast' => 'int',
     ),
 
     'messageIdStart' => array(
+        'min' => 0,
         'default' => 0,
         'cast' => 'int',
     ),
 
     'messageIdEnd' => array(
+        'min' => 0,
         'default' => 0,
         'cast' => 'int',
     ),
@@ -98,8 +102,13 @@ $request = fim_sanitizeGPC('g', array(
     ),
 ));
 
+
 if (!$request['archive'] && $request['showDeleted'])
-    new fimError('incompatibleParams', 'archive and showDeleted cannot be used together.');
+    new fimError('archiveShowDeletedConflict', 'archive and showDeleted must be used together.');
+
+if ((((int) (bool) $request['messageDateMin']) + ((int) (bool) $request['messageDateMax']) + ((int) (bool) $request['messageIdStart']) + ((int) (bool) $request['messageIdEnd'])) > 1)
+    new fimError('messageDateMinMessageDateMaxMessageIdStartMessageIdEndConflict', 'Only one of messageDateMin, messageDateMax, messageIdStart, messageIdEnd may be used.');
+
 
 $database->accessLog('getMessages', $request);
 
@@ -120,28 +129,28 @@ else {
     if (!$request['archive'])
         $database->markMessageRead($room->id, $user->id);
 
+
     /* Get Messages from Database */
-    $messages = $database->getMessages(array(
-        'room' => $room,
-        'messageIdEnd' => $request['messageIdEnd'],
-        'messageIdStart' => $request['messageIdStart'],
-        'messageDateMin' => $request['messageDateMax'],
-        'messageDateMax' => $request['messageDateMax'],
-        'showDeleted' => $request['showDeleted'],
-        'messageTextSearch' => $request['search'],
-        'archive' => $request['archive'],
-        'userIds' => $request['userIds'],
-        'messageIds' => (array) $requestHead['id'],
-    ), array('messageId' => 'asc'), $request['messageLimit'], $request['page'])->getAsMessages();
+    if (isset($message)) { // From message.php
+        $messages = [$message];
+    }
+    else {
+        $messages = $database->getMessages(array(
+            'room' => $room,
+            'messageIdEnd' => $request['messageIdEnd'],
+            'messageIdStart' => $request['messageIdStart'],
+            'messageDateMin' => $request['messageDateMax'],
+            'messageDateMax' => $request['messageDateMax'],
+            'showDeleted' => $request['showDeleted'],
+            'messageTextSearch' => $request['search'],
+            'archive' => $request['archive'],
+            'userIds' => $request['userIds'],
+        ), ['messageId' => ($request['messageIdEnd'] || $request['messageDateMax'] ? 'desc' : 'asc')], $request['messageLimit'], $request['page'])->getAsMessages();
+    }
 
 
     /* Process Messages */
     if (count($messages) > 0) {
-        if (count($messages) > $request['messageHardLimit']) {
-            if (isset($request['messageIdEnd'])) array_splice($messages, 0, -1 * $request['messageHardLimit']);
-            else array_splice($messages, $request['messageHardLimit']);
-        }
-
         foreach ($messages AS $id => $message) {
             $xmlData['messages'][] = array(
                 'messageId' => (int) $message->id,

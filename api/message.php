@@ -46,14 +46,6 @@
  * @param string message - The message text.
  * @param string flag - A message content-type/context flag, used for sending images, urls, etc.
  * @param bool ignoreBlock - If true, the system will ignore censor warnings. You must pass this to resend a message that was denied because of a censor warning. Should not be used otherwise. Default false.
- *
- * -- TODO --
- * We need to use internal message boundaries via the messageIndex and messageDates table. Using these, we can approximate message dates for individual rooms. Here is how that will work:
- ** Step 1: Identify Crtiteria. If a criteria is date based (e.g. what was said in this room on this date?), we will rely on messageDates. If it is ID-based, we will rely on messageIndex.
- ** Step 2: If using date-based criteria, we lookup the approximate post ID that corresponds to the room and date. At this point, we are basically done. Simply set the messageIdStart to the date that occured before and mesageIdEnd to the date that occured after.
- ** If, however, we are using ID-based criteria, we will instead look into messageIndex. Here, we correlate room and ID, and try to find an approprimate messageIdEnd and messageIdStart.
- ** Step 3: Use a more narrow range if neccessary. The indexes we used may be too large. In this case, we need to do our best to approximate.
- * Add back unread message retrieval.
  */
 
 $apiRequest = true;
@@ -68,36 +60,31 @@ $requestHead = fim_sanitizeGPC('g', [
     '_action' => [],
 ]);
 
-if (!($room = new fimRoom($requestHead['roomId']))->roomExists())
-    new fimError('badRoom', 'The specified room does not exist.'); // Room doesn't exist.
 
+/* Early Validation */
+if (!($room = new fimRoom($requestHead['roomId']))->roomExists()) // Make sure we have a valid room.
+    new fimError('roomIdNoExist', 'The specified room does not exist.'); // Room doesn't exist.
+
+if (isset($requestHead['id'])) {
+    if ($requestHead['action'] == 'create') // ID shouldn't be used here.
+        new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
+
+    try {
+        $message = $database->getMessage($room, $requestHead['id']); // Get message object.
+    } catch (fimErrorThrown $ex) { // If getMessage() fails, it usually indicates in invalid ID.
+        new fimError('idNoExist', 'The given "id" parameter does not correspond with a real message.');
+    }
+}
+
+elseif ($requestHead['_action'] != 'get' && $requestHead['_action'] != 'create')
+    new fimError('idRequired', 'Parameter "ID" must be passed unless POSTing or GETing.');
 
 
 /* Load the correct file to perform the action */
 switch ($requestHead['_action']) {
     case 'delete':
     case 'undelete':
-        $message = $database->getMessage($room, $requestHead['id']);
-
-        if (!$message->id)
-            new fimError('invalidMessage', 'The message specified is invalid.');
-
-        else if (($message->user->id = $user->id && $user->hasPriv('editOwnPosts'))
-            || ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE)) {
-
-            if ($requestHead['_action'] == 'delete')
-                $message->setDeleted(true);
-            else
-                $message->setDeleted(false);
-
-            $database->updateMessage($message);
-
-        }
-
-        else
-            new fimError('noPerm', 'You are not allowed to delete this message.');
-
-        echo new apiData();
+        require('message/deleteUndeleteMessage.php');
     break;
 
     case 'edit': case 'create':
