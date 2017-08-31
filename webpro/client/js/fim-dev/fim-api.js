@@ -116,7 +116,7 @@ fimApi.prototype.getUsers = function(params, requestSettings) {
         $.ajax({
 //            'async' : false,
             type: 'get',
-            url: directory + 'api/getUsers.php',
+            url: directory + 'api/user.php',
             data: params,
             timeout: requestSettings.timeout,
             cache: requestSettings.cache

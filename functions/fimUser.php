@@ -664,4 +664,51 @@ class fimUser
 }
 
 require('fimUserFactory.php');
+
+
+/* Run Seperate Queries for Integration Methods
+ * TODO: These should, long term, probably be plugins.
+ * TODO: vB and PHPBB both broken. */
+/*switch ($loginConfig['method']) {
+  case 'vbulletin3': case 'vbulletin4':
+  $userDataForums = $integrationDatabase->select(
+    array(
+      $sqlUserTable => array(
+        'joindate' => 'joinDate',
+        'posts' => 'posts',
+        'usertitle' => 'userTitle',
+        'lastvisit' => 'lastVisit',
+        $sqlUserTableCols['userId'] => 'userId',
+      ),
+    ),
+    array('both' => array('userId' => $this->in(array_keys($users))))
+  )->getAsArray('userId');
+  break;
+
+  case 'phpbb':
+  $userDataForums = $integrationDatabase->select(
+    array(
+      $sqlUserTable => array(
+        'user_posts' => 'posts',
+        'user_regdate' => 'joinDate',
+        $sqlUserTableCols['userId'] => 'userId',
+      ),
+    ),
+    array(
+      array('both' => array('userId' => $this->in(array_keys($users))))
+    )
+  )->getAsArray('userId');
+  break;
+
+  case 'vanilla':
+    $userDataForums = array(
+      'joinDate' => $user['joinDate'],
+      'posts' => false,
+    );
+  break;
+
+  default:
+  $userDataForums = array();
+  break;
+}*/
 ?>
