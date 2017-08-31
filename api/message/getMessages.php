@@ -100,7 +100,7 @@ if (!$request['archive'] && $request['showDeleted'])
     new fimError('archiveShowDeletedConflict', 'archive and showDeleted must be used together.');
 
 if ((((int) (bool) $request['messageDateMin']) + ((int) (bool) $request['messageDateMax']) + ((int) (bool) $request['messageIdStart']) + ((int) (bool) $request['messageIdEnd'])) > 1)
-    new fimError('messageDateMinMessageDateMaxMessageIdStartMessageIdEndConflict', 'Only one of messageDateMin, messageDateMax, messageIdStart, messageIdEnd may be used.');
+    new fimError('messageDateMaxMessageDateMinMessageIdEndConflictMessageIdStart', 'Only one of messageDateMin, messageDateMax, messageIdStart, messageIdEnd may be used.');
 
 
 $database->accessLog('getMessages', $request);

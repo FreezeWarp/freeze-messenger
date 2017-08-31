@@ -267,3 +267,12 @@ for ($i = 2; $i < 100; $i++) {
         []
     );
 }
+
+// todo: create admin-only room
+// todo: create unpriviledged user
+// todo: unpriviledged user can post in default room
+// todo: unpriviledged user can't post in admin-only room
+// todo: admin kick unpriviledged user in default room
+// todo: unpriviledged user can't post in default room
+// todo: admin unkick unpriviledged user in default room
+// todo: unpriviledged user can post in default room

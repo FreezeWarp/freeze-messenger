@@ -46,6 +46,29 @@
  * @param string message - The message text.
  * @param string flag - A message content-type/context flag, used for sending images, urls, etc.
  * @param bool ignoreBlock - If true, the system will ignore censor warnings. You must pass this to resend a message that was denied because of a censor warning. Should not be used otherwise. Default false.
+ *
+ * Common Exceptions:
+ * @throws roomIdNoExist when the passed roomId does not correspond with a valid room.
+ * @throws idNoExist when the given id does not correspond with a valid message.
+ * @throws idRequired when an id is required but not passed.
+ * @throws noPerm when the user does not have permission to perform the attempted action.
+ *
+ * Create Message Exceptions:
+ * @throws idExtra when an id is passed but isn't allowed.
+ * @throws kickUserNameInvalid a message started with "/kick" but the username that followed was invalid.
+ *
+ * Edit Message Exceptions:
+ * @throws noChange The sent message text appears unchanged.
+ *
+ * Create and Edit Message Exceptions
+ * @throws messageLength when the message is too long
+ * @throws spaceMessage when a message appears to be exclusively whitespace
+ * @throws badUrl A message with a URL flag (image, video, url, html, and audio) is invalid. You may resend as an unflagged message if you encounter this error.
+ * @throws badEmail A message with the email flag is invalid. You may resend as an unflagged message if you encounter this error.
+ *
+ * Get Message Exceptions:
+ * @throws archiveShowDeletedConflict When showDeleted is used but archive is not.
+ * @throws messageDateMaxMessageDateMinMessageIdEndConflictMessageIdStart More than one message constraint (messageDateMin, messageDateMax, messageIdStart, messageIdEnd) was used.
  */
 
 $apiRequest = true;
@@ -77,7 +100,7 @@ if (isset($requestHead['id'])) {
 }
 
 elseif ($requestHead['_action'] != 'get' && $requestHead['_action'] != 'create')
-    new fimError('idRequired', 'Parameter "ID" must be passed unless POSTing or GETing.');
+    new fimError('idRequired', 'Parameter "ID" must be passed unless POSTing or  GETing.');
 
 
 /* Load the correct file to perform the action */

@@ -51,53 +51,55 @@ $database->accessLog('sendMessage', $request);
 
 /* Start Processing */
 if (strlen($request['message']) < $config['messageMinLength'] || strlen($request['message']) > $config['messageMaxLength'])
-    new fimError('messageLength', 'Minimum: ' . $config['messageMinLength'] . ', Maximum: ' . $config['messageMaxLength']); // Too short/long.
+    new fimError('messageLength', "The message is too long/too short. The minimum is {$config['messageMinLength']} characters, and the maximum is {$config['messageMaxLength']} chracters"); // Too short/long.
 
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))
-    new fimError('spaceMessage'); // All spaces. TODO: MB Support
+    new fimError('spaceMessage', 'The sent message is all whitespace.'); // All spaces. TODO: MB Support
 
 elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_POST))
-    new fimError('noPerm');
+    new fimError('noPerm', 'You may not post in this room.');
 
 elseif (in_array($request['flag'], array('image', 'video', 'url', 'html', 'audio'))
     && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED))
-    new fimError('badUrl'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+    new fimError('badUrl', 'The sent URL is invalid.'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 
 elseif ($request['flag'] === 'email'
     && !filter_var($request['message'], FILTER_VALIDATE_EMAIL))
-    new fimError('badUrl'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+    new fimError('badEmail', 'The sent email is invalid.'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 
 else {
     switch ($requestHead['_action']) {
         case 'edit':
-            if ($message->text == $request['message'])
+            if ($message->text == $request['message'] && $message->flag == $request['flag'])
                 new fimError('noChange', 'Your edited message is unchanged.');
 
-            else if ($message->user->id = $user->id && $user->hasPriv('editOwnPosts')) {
+            else if ($message->user->id != $user->id || !$user->hasPriv('editOwnPosts'))
+                new fimError('noPerm', 'You are not allowed to edit this message.');
+
+            else {
                 $message->setText($request['message']);
                 $message->setFlag($request['flag']);
                 $database->updateMessage($message);
             }
-
-            else
-                new fimError('noPerm', 'You are not allowed to edit this message.');
         break;
 
         case 'create':
             // if /kick starts the message, the user is using a shorthand to kick a user. We don't actually create a new message, but we do attempt to kick the user given.
-            if (strpos($request['message'], '/kick') === 0) { // TODO
+            if (strpos($request['message'], '/kick') === 0
+                && ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE)) {
                 $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2', $request['message']);
                 $kickData = explode(',',$kickData);
 
                 $userData = $database->getUsers(array(
-                    'userNames' => array($kickData[0])
+                    'userNames' => [$kickData[0]]
                 ))->getAsUser();
 
-                $userData->kick($kickData[1]);
+                if ($userData)
+                    new fimError('kickUserNameInvalid', 'That username does not exist.');
+                else
+                    $database->kickUser($userData->id, $room->id, $kickData[1] ?: 600);
             }
 
-            // if /topic starts the message, the user is trying to change the topic.
-            // todo: this probably shouldn't create a message either, and we should make it possible through editRoom.php
             else {
                 $message = new fimMessage([
                     'room' => $room,
@@ -107,7 +109,11 @@ else {
                     'ignoreBlock' => $request['ignoreBlock']
                 ]);
 
-                if (strpos($message->text, '/topic') === 0 && ($database->hasPermission($user, $room) & ROOM_PERMISSION_TOPIC)) {
+
+                // if /topic starts the message, the user is trying to change the topic.
+                // todo: this probably shouldn't create a message either, and we should make it possible through editRoom.php
+                if (strpos($message->text, '/topic') === 0 &&
+                    ($database->hasPermission($user, $room) & ROOM_PERMISSION_TOPIC)) {
                     $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $message->text));
                 }
 
