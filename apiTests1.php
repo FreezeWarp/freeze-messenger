@@ -16,10 +16,10 @@ function curlTestCommon($input, $jsonIndex, $expectedValue, $callback = null) {
     }
 
     if ($requestNarrow === $expectedValue) {
-        echo green("Success");
+        echo green("Success<br />");
     }
     else {
-        echo red('Expected ' . $expectedValue . ', found ' . $requestNarrow . '<br />' . print_r($input, true));
+        echo red('Expected ' . $expectedValue . ', found ' . $requestNarrow . '<br />' . print_r($input, true) . '<br />');
     }
 
     if ($callback) {
@@ -63,7 +63,7 @@ curlTestPOSTEquals(
     }
 );
 
-/*
+
 echo '<h1>Get Messages, No Login</h1>';
 curlTestGETEquals(
     'api/message.php',
@@ -212,7 +212,7 @@ curlTestGETEquals(
     ['access_token' => $accessToken, 'roomId' => 1, 'archive' => true, 'messageIdStart' => 0],
     ['messages', 0, 'messageText'],
     'Hi'
-);*/
+);
 
 echo '<h1>Get (Invalid) Message 10, Room 1</h1>';
 curlTestGETEquals(
@@ -230,6 +230,7 @@ curlTestGETEquals(
     'roomIdNoExist'
 );
 
+// mutually exclusive
 echo '<h1>Get Messages Between Message 0 and Message 10, Room 1</h1>';
 curlTestGETEquals(
     'api/message.php',
@@ -238,6 +239,7 @@ curlTestGETEquals(
     'messageDateMinMessageDateMaxMessageIdStartMessageIdEndConflict'
 );
 
+// mutually exclusive
 echo '<h1>Get Messages Starting Message 1 and Message Date 1, Room 1</h1>';
 curlTestGETEquals(
     'api/message.php',
@@ -255,17 +257,13 @@ curlTestPOSTEquals(
     'idNoExist'
 );
 
-/*echo '<h1>Send Message "Hi Bob %d" 98 Times, Room 1</h1>';
+echo '<h1>Send Message "Hi Bob %d" 98 Times, Room 1</h1>';
 for ($i = 2; $i < 100; $i++) {
-    try {
-        curlTestPOSTEquals(
-            'api/message.php',
-            ['_action' => 'create', 'access_token' => $accessToken, 'roomId' => 1],
-            ['message' => 'Hi Bob ' . $i],
-            ['sendMessage', 'censor'],
-            []
-        );
-    } catch (Exception $ex) {
-        echo 'Exception occured. If flood limit, that\'s a good thing: ' . $ex;
-    }
-}*/
+    curlTestPOSTEquals(
+        'api/message.php',
+        ['_action' => 'create', 'access_token' => $accessToken, 'roomId' => 1],
+        ['message' => 'Hi Bob ' . $i],
+        ['sendMessage', 'censor'],
+        []
+    );
+}

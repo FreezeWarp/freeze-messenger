@@ -61,7 +61,6 @@ standard.prototype.archive = {
             'userIds' : [standard.archive.options.searchUser],
             'search' : standard.archive.options.searchText,
             'messageIdStart' : standard.archive.options.firstMessage,
-            'messageHardLimit' : $('#resultLimit option:selected').val(),
             'archive' : 1,
             'page' : standard.archive.options.page
         }, {

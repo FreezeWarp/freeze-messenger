@@ -219,7 +219,6 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
             'page' : null,
             'search' : null,
             'archive' : false,
-            'messageHardLimit' : 25,
             'initialRequest' : false,
         });
 

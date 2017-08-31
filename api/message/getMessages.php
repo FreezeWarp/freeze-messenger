@@ -78,13 +78,6 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'int',
     ),
 
-    'messageLimit' => array(
-        'default' => $config['defaultMessageLimit'],
-        'max' => $config['maxMessageLimit'],
-        'min' => 1,
-        'cast' => 'int',
-    ),
-
     'search' => array(
         'default' => false,
     ),
@@ -145,7 +138,7 @@ else {
             'messageTextSearch' => $request['search'],
             'archive' => $request['archive'],
             'userIds' => $request['userIds'],
-        ), ['messageId' => ($request['messageIdEnd'] || $request['messageDateMax'] ? 'desc' : 'asc')], $request['messageLimit'], $request['page'])->getAsMessages();
+        ), ['messageId' => ($request['messageIdEnd'] || $request['messageDateMax'] ? 'desc' : 'asc')], $config['defaultMessageLimit'], $request['page'])->getAsMessages();
     }
 
 
