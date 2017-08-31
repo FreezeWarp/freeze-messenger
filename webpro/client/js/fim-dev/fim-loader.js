@@ -20,7 +20,7 @@
  * @param str - The string to encode.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function fim_eURL(str) {
     if ('encodeURIComponent' in window) { return window.encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+'); }
@@ -37,7 +37,7 @@ function fim_eURL(str) {
  * @param str - The string to encode.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function fim_eXMLAttr(str) { // Escapes data that is stored via doublequote-encased attributes.
     return str.replace(/\"/g, '&quot;').replace(/\\/g, '\\\\');
@@ -49,7 +49,7 @@ function fim_eXMLAttr(str) { // Escapes data that is stored via doublequote-enca
  * Scrolls the message list to the bottom.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function fim_toBottom() { // Scrolls the message list to the bottom.
     document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
@@ -64,7 +64,7 @@ function fim_toBottom() { // Scrolls the message list to the bottom.
  * @param str - The string to encode.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function fim_faviconFlash() { // Changes the state of the favicon from opaque to transparent or similar.
     if ($('#favicon').attr('href') === 'images/favicon.ico') $('#favicon').attr('href', 'images/favicon2.ico');
@@ -78,7 +78,7 @@ function fim_faviconFlash() { // Changes the state of the favicon from opaque to
  * @param object data - Data to be displayed in the popup.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function fim_messagePopup(data) {
     if (typeof notify != 'undefined' && typeof window.webkitNotifications === 'object') {
@@ -95,7 +95,7 @@ function fim_messagePopup(data) {
  * @param bool full - If true, will include
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function fim_dateFormat(timestamp, options) {
     // Create the date object; set it to the specified timestamp.
@@ -209,7 +209,7 @@ function fim_showMissedMessage(message) { console.log(window.roomId)
  * @param string format - The format to use.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function fim_messageFormat(json, format) {
     console.log(["message format", format, json]);
@@ -411,7 +411,7 @@ function fim_messagePreview(container, content) {
  * @param int messageId
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function fim_newMessage(messageText, messageId) {
     if ($.inArray(messageId, messageIndex) > -1) { return; } // Double post hack
@@ -523,7 +523,7 @@ function fim_newMessage(messageText, messageId) {
  * Hash Parse for URL-Defined Actions.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function fim_hashParse(options) {
     var urlHash = window.location.hash,
@@ -684,7 +684,7 @@ var userIdToData = {};
  * Redraws part of the window when it is resized.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function windowResize() {
     var windowWidth = $(window).width(); // Get the browser window "viewport" width, excluding scrollbars.
@@ -719,7 +719,7 @@ function windowResize() {
  * Define the window as blurred (used for new message notifications).
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function windowBlur() {
     window.isBlurred = true;
@@ -731,7 +731,7 @@ function windowBlur() {
  * Define the window as active (used for new message notifications), and clear the Favicon Flash timer.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function windowFocus() {
     window.isBlurred = false;
@@ -764,7 +764,7 @@ function windowFocus() {
  * @param string id - The video's unique ID.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function youtubeSend(id) {
     standard.sendMessage('http://www.youtube.com/watch?v=' + id, 0, 'source');
@@ -781,7 +781,7 @@ function youtubeSend(id) {
  *
  * @todo Support for video sorting.
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function updateVids(searchPhrase) {
     jQTubeUtil.search(searchPhrase, function(response) {
@@ -816,7 +816,7 @@ function updateVids(searchPhrase) {
  *
  * @todo Pictures in dropdowns, updated interface for user lists
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 var autoEntry = function(target, options) {
     this.options = options;
@@ -1060,7 +1060,7 @@ autoEntry.prototype = {
  * Draw the interace.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function windowDraw() {
     console.log('Redrawing window.');
@@ -1115,7 +1115,7 @@ function windowDraw() {
  * Redraws all links. This is required when changing rooms, users, etc.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function windowDynaLinks() {
     var noAdminCounter = 0, // This is probably a bad way of doing what we'll do, but meh.
@@ -1183,7 +1183,7 @@ function fim_hideLoader() {
  * Disables the input boxes.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function disableSender() {
     $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
@@ -1198,7 +1198,7 @@ function disableSender() {
  * Enables the input boxes.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function enableSender() {
     $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
@@ -1215,7 +1215,7 @@ function enableSender() {
  * @param container - A jQuery selector that can be used to restrict the results. For example, specifying "#funStuff" would only reparse menus that are within the "#funStuff" node.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function contextMenuParseUser(container) {
     $((container ? container + ' ' : '') + '.userName').contextMenu({
@@ -1253,7 +1253,7 @@ function contextMenuParseUser(container) {
  * (Re-)Parse the "message" context menus, including menus for embedded images and links.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function contextMenuParseMessage() {
     $('.messageLine .messageText').contextMenu({
@@ -1404,7 +1404,7 @@ function contextMenuParseMessage() {
  * (Re-)Parse the "room" context menus.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  */
 function contextMenuParseRoom() {
     $('.room').contextMenu({

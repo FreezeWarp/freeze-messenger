@@ -20,7 +20,7 @@
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  *
  * =GET Parameters=
  * @param string["edit", "delete", "create"] _action - The action parameter is used here for watchRooms, favRooms, friendsList, and ignoreList. If "edit," then those lists will be replaced with the list specified. If create, then those lists will be appended by the lists specified. If "delete," then those lists will have all items in the specified list deleted.

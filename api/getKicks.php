@@ -22,7 +22,7 @@
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  *
  * @param string rooms - A comma-seperated list of room IDs to get.
  * @param string users - A comma-seperated list of user IDs to get.

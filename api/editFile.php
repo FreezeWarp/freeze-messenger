@@ -20,7 +20,7 @@
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  *
  * =POST Parameters=
  * @param string action - The action to be performed by the script, either:

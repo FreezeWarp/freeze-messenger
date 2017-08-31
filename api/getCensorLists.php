@@ -19,7 +19,7 @@
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  *
  * @param string rooms - A comma-seperated list of room IDs to query for whether or not the list is active in that room.
  * @param string lists - A comma-seperated list of list IDs to filter by. If not specified all lists will be retrieved.

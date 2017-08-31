@@ -97,7 +97,7 @@ fimApi.prototype.login = function (params, requestSettings) {
  * Obtains one or more users.
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2014
+ * @copyright Joseph T. Parsons 2017
  *
  */
 fimApi.prototype.getUsers = function(params, requestSettings) {
