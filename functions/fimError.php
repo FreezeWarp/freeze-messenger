@@ -21,52 +21,48 @@
  */
 class fimError extends Exception {
     public function __construct($code = false, $string = false, $context = array(), $return = false, $httpError = 'HTTP/1.1 403 Forbidden') {
-        global $config;
+        if ($code && !$return) throw new fimErrorThrown($code, $string, $context, $httpError);
+    }
+}
 
-        $this->email = $config['email'];
-        $this->displayBacktrace = $config['displayBacktrace'];
+class fimErrorThrown extends Exception {
+    protected $code;
+    protected $string;
+    protected $context;
+    protected $httpError;
+
+    public function __construct($code = '', $string = '', $context = array(), $httpError = 'HTTP/1.1 403 Forbidden') {
         $this->code = $code;
         $this->string = $string;
         $this->context = $context;
-
-        if ($this->code && !$return) $this->trigger(false, $httpError);
+        $this->httpError = $httpError;
     }
 
-
-    public function trigger($return = false, $httpError = 'HTTP/1.1 403 Forbidden') {
-        ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
-        header($httpError); // FimError is invoked when the user did something wrong, not us. (At least, it should be. I've been a little inconsistent.)
-
-        $errorData = array_merge((array) $this->context, array(
-            'string' => $this->code,
-            'details' => (substr($this->string, 0, 1) === '[' || substr($this->string, 0, 1) === '{') ? json_decode($this->string, true) : $this->string,
-            'contactEmail' => $this->email,
-        ));
-
-        if ($this->displayBacktrace) {
-            $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
-            array_shift($backtrace); // Omits this function, fimError->trigger, from the backtrace.
-
-            $errorData['file'] = $backtrace[1]['file'];
-            $errorData['line'] = $backtrace[1]['line'];
-            $errorData['trace'] = $backtrace;
-        }
-
-
-        if ($return) {
-            return array(
-                'exception' => $errorData,
-            );
-        }
-        else {
-            die(new apiData(array(
-                'exception' => $errorData,
-            )));
-        }
+    /**
+     * @return string
+     */
+    public function isCode(): string {
+        return $this->code;
     }
 
+    /**
+     * @return string
+     */
+    public function getString(): string {
+        return $this->string;
+    }
 
-    public function value() {
-        return $this->trigger(true);
+    /**
+     * @return array
+     */
+    public function getContext(): array {
+        return $this->context;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHttpError(): string {
+        return $this->httpError;
     }
 }

@@ -716,23 +716,47 @@ function fim_emptyExplode(string $separator, $list) {
 function fim_exceptionHandler($exception) {
     global $config;
 
-    ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
-    header('HTTP/1.1 500 Internal Server Error'); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
-
     $errorData = array(
-        'string' => $exception->getMessage(),
         'contactEmail' => $config['email'],
     );
+    ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
 
-    if ($config['displayBacktrace']) {
-        $errorData['file'] = $exception->getFile();
-        $errorData['line'] = $exception->getLine();
-        $errorData['trace'] = $exception->getTrace();
+    if ($exception instanceof fimErrorThrown) {
+        header($exception->getHttpError()); // FimError is invoked when the user did something wrong, not us. (At least, it should be. I've been a little inconsistent.)
+
+        $errorData = array_merge($errorData, (array) $exception->getContext(), array(
+            'string' => $exception->getCode(),
+            'details' => (substr($exception->getString(), 0, 1) === '[' || substr($exception->getString(), 0, 1) === '{') ? json_decode($exception->getString(), true) : $exception->getString(),
+        ));
+
+        if ($config['displayBacktrace']) {
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
+            //array_shift($backtrace); // Omits this function, fimError->trigger, from the backtrace.
+
+            $errorData['file'] = $backtrace[1]['file'];
+            $errorData['line'] = $backtrace[1]['line'];
+            $errorData['trace'] = $backtrace;
+        }
+    }
+    else {
+        header('HTTP/1.1 500 Internal Server Error'); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
+
+        $errorData = array_merge($errorData, array(
+            'string' => $exception->getMessage(),
+            'contactEmail' => $config['email'],
+        ));
+
+        if ($config['displayBacktrace']) {
+            $errorData['file'] = $exception->getFile();
+            $errorData['line'] = $exception->getLine();
+            $errorData['trace'] = $exception->getTrace();
+        }
     }
 
     echo new apiData(array(
         'exception' => $errorData,
     ));
+    die();
 }
 
 
