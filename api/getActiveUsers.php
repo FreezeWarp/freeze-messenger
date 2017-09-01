@@ -90,8 +90,6 @@ foreach ($activeUsers AS $activeUser) {
             'userData' => array(
                 'userId' => (int) $activeUser['userId'],
                 'userName' => (string) $activeUser['userName'],
-                'userGroup' => (string) $activeUser['userGroup'],
-                'socialGroups' => (string) $activeUser['socialGroups'],
                 'userNameFormat' => (string) $activeUser['userNameFormat'],
             ),
             'rooms' => array(),

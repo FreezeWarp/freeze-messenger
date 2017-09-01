@@ -4,7 +4,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
-require('functions/curlRequest.php');
+require('../functions/curlRequest.php');
 
 echo '<h2>API Unit Testing Suite</h2>';
 echo '<p>This is a basic series of unit tests for the Messenger API. Tests should only be run on a fresh installation without development data. The installation user should be admin/admin.</p>';
@@ -90,7 +90,7 @@ curlTestPOSTEquals(
 );
 
 echo '<h1>Message Tests, Main User</h1>';
-/*echo '<h2>Get Messages, No Login</h2>';
+echo '<h2>Get Messages, No Login</h2>';
 curlTestGETEquals(
     'api/message.php',
     [],
@@ -103,7 +103,7 @@ curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken],
     ['exception', 'string'],
-    'missingRoomId'
+    'roomIdRequired'
 );
 
 echo '<h2>Get Messages, Room 1</h2>';
@@ -281,7 +281,7 @@ curlTestPOSTEquals(
     [],
     ['exception', 'string'],
     'idNoExist'
-);*/
+);
 
 echo '<h2>Send Message "Hi Bob %d" 98 Times, Room 1</h2>';
 for ($i = 2; $i < 100; $i++) {

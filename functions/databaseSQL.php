@@ -1740,10 +1740,16 @@ class databaseSQL extends database
             $sort = $this->sortArray; $this->sortArray = array();
         }
 
-        if ($this->limitArray) {
-            if ($limit !== false) throw new Exception("Limit array declared both in sort() and select().");
+        if ($this->limit) {
+            if ($limit !== false) throw new Exception("Limit declared both in sort() and select().");
 
-            $limit = $this->limitArray; $this->limitArray = array();
+            $limit = $this->limit; $this->limit = array();
+        }
+
+        if ($this->page) {
+            if ($page !== false) throw new Exception("Page declared both in sort() and select().");
+
+            $limit = $this->page; $this->page = false;
         }
 
 

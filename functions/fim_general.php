@@ -270,6 +270,9 @@ function fim_sanitizeGPC($type, $data) {
     global $config;
 
 
+    $newData = [];
+
+
     /* Define Defaults */
     $metaDataDefaults = array(
         'cast' => 'string',
@@ -473,7 +476,7 @@ function fim_sanitizeGPC($type, $data) {
                     $arrayFromGlobal,
                     ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
                     ($indexMetaData['evaltrue'] ? false : true),
-                    (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
+                    (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
                 );
 
                 // Remove duplicate values from the list if required

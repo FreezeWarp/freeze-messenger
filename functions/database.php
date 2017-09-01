@@ -87,9 +87,14 @@ abstract class database
     protected $sortArray = array();
 
     /**
-     * @var array An array holding a LIMIT clause to be used by the next applicable query. Used to aid {@link database::limit()}
+     * @var int A value holding the limit part of a LIMIT clause to be used by the next applicable query. Used to aid {@link database::limit()}
      */
-    protected $limitArray = array();
+    protected $limit = null;
+
+    /**
+     * @var int A value holding the page part of a LIMIT clause to be used by the next applicable query. Used to aid {@link database::page()}. Requires setting {@link database::limit()} to be used (or specifying the limit in a {@link database::select()} query, though {@link database::limit()} does not require any corresponding page data.
+     */
+    protected $page = null;
 
     /**
      * @var array An array of data instructing how to perform hard partitioning on a query if that information is not otherwise available. See {@link database::partitionAt()} for more.
@@ -631,13 +636,13 @@ abstract class database
      * For example, these two calls are equivalent:
      * ```php
      * // Method 1
-     * $db->select(['tableName' => 'col1, col2'], ['col1' => $db->col('col2')]);
+     * $db->select(['tableName' => 'col1, col2'], ['col1' => $db->col('col2')], ['col1' => 'asc'], 40, 2);
      *
      * // Method 2
-     * $db->where(['col1' => $db->col('col2')])->select(['tableName' => 'col1, col2'])
+     * $db->where(['col1' => $db->col('col2')])->sortBy(['col1' => 'asc'])->limit(40)->page(2)->select(['tableName' => 'col1, col2'])
      * ```
      *
-     * Wheres cannot be chained; that is, $db->where(condition1)->where(condition2) will only apply condition2. However, where, sortBy, and limit can all be chained.
+     * Wheres cannot be chained; that is, $db->where(condition1)->where(condition2) will only apply condition2. However, where, sortBy, limit, and page can all be chained.
      *
      * @param array $conditionArray The where condition array. See {@link database::select()} for additional information. (TODO: document here, link from elsewhere)
      *
@@ -657,10 +662,10 @@ abstract class database
      * For example, these two calls are equivalent:
      * ```php
      * // Method 1
-     * $db->select(['tableName' => 'col1, col2'], ['col1' => $db->col('col2')], ['col1' => 'asc']);
+     * $db->select(['tableName' => 'col1, col2'], ['col1' => $db->col('col2')], ['col1' => 'asc'], 40, 2);
      *
      * // Method 2
-     * $db->where(['col1' => $db->col('col2')])->sortBy(['col1' => 'asc'])->select(['tableName' => 'col1, col2'])
+     * $db->where(['col1' => $db->col('col2')])->sortBy(['col1' => 'asc'])->limit(40)->page(2)->select(['tableName' => 'col1, col2'])
      * ```
      *
      * @param array $sortArray The sort order array. See {@link database::select()} for additional information. (TODO: document here, link from elsewhere)
@@ -676,24 +681,48 @@ abstract class database
 
 
     /**
-     * Set a sort order to be used in the next applicable query (a select).
+     * Set a limit to be used in the next applicable query (a select).
      *
      * For example, these two calls are equivalent:
      * ```php
      * // Method 1
-     * $db->select(['tableName' => 'col1, col2'], ['col1' => $db->col('col2')], ['col1' => 'asc']);
+     * $db->select(['tableName' => 'col1, col2'], ['col1' => $db->col('col2')], ['col1' => 'asc'], 40, 2);
      *
      * // Method 2
-     * $db->where(['col1' => $db->col('col2')])->sortBy(['col1' => 'asc'])->select(['tableName' => 'col1, col2'])
+     * $db->where(['col1' => $db->col('col2')])->sortBy(['col1' => 'asc'])->limit(40)->page(2)->select(['tableName' => 'col1, col2'])
      * ```
      *
-     * @param array $sortArray The sort order array. See {@link database::select()} for additional information. (TODO: document here, link from elsewhere)
+     * @param int $limit The limit value. See {@link database::select()} for additional information. (TODO: document here, link from elsewhere)
      *
      * @return $this
      */
-    public function limit($limitArray)
+    public function limit($limit)
     {
-        $this->limitArray = $limitArray;
+        $this->limit = $limit;
+
+        return $this;
+    }
+
+
+    /**
+     * Set a page to be used in the next applicable query (a select).
+     *
+     * For example, these two calls are equivalent:
+     * ```php
+     * // Method 1
+     * $db->select(['tableName' => 'col1, col2'], ['col1' => $db->col('col2')], ['col1' => 'asc'], 40, 2);
+     *
+     * // Method 2
+     * $db->where(['col1' => $db->col('col2')])->sortBy(['col1' => 'asc'])->limit(40)->page(2)->select(['tableName' => 'col1, col2'])
+     * ```
+     *
+     * @param int $page The page value. See {@link database::select()} for additional information. (TODO: document here, link from elsewhere)
+     *
+     * @return $this
+     */
+    public function page($page)
+    {
+        $this->page = $page;
 
         return $this;
     }

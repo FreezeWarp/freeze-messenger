@@ -349,7 +349,7 @@ class fimDatabase extends databaseSQL
         $columns = array(
             $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId',
             $this->sqlPrefix . "rooms" => 'roomId, roomIdEncoded, roomName, ownerId, defaultPermissions, roomParentalAge, roomParentalFlags, options',
-            $this->sqlPrefix . "users" => 'userId, userName, userNameFormat, userGroupId, socialGroupIds, status',
+            $this->sqlPrefix . "users" => 'userId, userName, userNameFormat, status',
         );
 
 
@@ -602,6 +602,10 @@ class fimDatabase extends databaseSQL
         $columns = array(
             $this->sqlPrefix . "configuration" => 'directive, type, value',
         );
+
+        $conditions = [
+            'both' => []
+        ];
 
         if (count($options['directives']) > 0) {
             $conditions['both']['directive'] = $this->in($options['directives']);
@@ -1265,7 +1269,7 @@ class fimDatabase extends databaseSQL
      * @param int $pagination
      * @return bool|object|resource
      */
-    public function getRooms($options, $sort = array('roomId' => 'asc'), $limit = 0, $pagination = 1)
+    public function getRooms($options, $sort = array('roomId' => 'asc'), $limit = 50, $page = 0)
     {
         $options = $this->argumentMerge(array(
             'roomIds'            => [],
@@ -1285,10 +1289,15 @@ class fimDatabase extends databaseSQL
         $columns = [$this->sqlPrefix . 'rooms' => $options['columns']];
 
 
+
+        $conditions = [
+            'both' => [
+                'either' => []
+            ]
+        ];
         // Modify Query Data for Directives
 //  	if ($options['showDeleted']) $conditions['both']['options'] = $this->int(8, 'bAnd'); // TODO: Permission?
 //    else $conditions['both'] = array('!options' => $this->int(8, 'bAnd'));
-
         if (count($options['roomIds']) > 0) $conditions['both']['either']['roomId'] = $this->in($options['roomIds']);
         if (count($options['roomNames']) > 0) $conditions['both']['either']['roomName'] = $this->in($options['roomNames']);
         if ($options['roomNameSearch']) $conditions['both']['either']['roomName'] = $this->type('string', $options['roomNameSearch'], 'search');
@@ -1304,7 +1313,7 @@ class fimDatabase extends databaseSQL
 
 
         // Perform Query
-        return $this->where($conditions)->sortBy($sort)->select($columns);
+        return $this->where($conditions)->sortBy($sort)->limit($limit)->page($page)->select($columns);
     }
 
 

@@ -73,7 +73,7 @@ if (is_array($hookLogin) && isset($hookLogin['accessToken'])) {
 require_once('functions/oauth2-server-php/src/OAuth2/Autoloader.php');
 OAuth2\Autoloader::register();
 
-$oauthStorage = new OAuth2\Storage\FIMDatabaseOAuth($database, fimError);
+$oauthStorage = new OAuth2\Storage\FIMDatabaseOAuth($database, 'fimError');
 $oauthServer = new OAuth2\Server($oauthStorage); // Pass a storage object or array of storage objects to the OAuth2 server class
 $oauthRequest = OAuth2\Request::createFromGlobals();
 
@@ -155,7 +155,7 @@ elseif (isset($_REQUEST['access_token'])) {
         $token = $oauthServer->getResourceController()->getToken();
 
         $user = fimUserFactory::getFromId((int) $token['user_id']);
-        $user->anonId = $token['anon_id'];
+        $user->anonId = $token['anon_id'] ?? 0;
         $user->sessionHash = $token['access_token'];
         $user->clientCode = $token['client_id'];
     }

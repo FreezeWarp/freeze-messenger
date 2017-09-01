@@ -31,30 +31,116 @@ define("ROOM_TYPE_PRIVATE", 'private');
 define("ROOM_TYPE_OTR", 'otr');
 
 class fimRoom {
+    /**
+     * @var mixed The ID of the room.
+     */
     public $id = 0;
+
+    /**
+     * @var string The name of the room.
+     */
     private $name = "Missingname.";
+
+    /**
+     * @var int A bitfield containing options for delete, official, hidden, and archive.
+     */
     private $options;
+
+    /**
+     * @var bool Whether or not the room is deleted.
+     */
     private $deleted;
+
+    /**
+     * @var bool Whether or not the room is "official" and should be displayed with special prominence (typically, they are stickied).
+     */
     private $official;
+
+    /**
+     * @var bool Whether or not the room is hidden and won't be shown in a room search except to admins (but will otherwise be accessible).
+     */
     private $hidden;
+
+    /**
+     * @var bool Whether or not the room is archived and can't be posted in.
+     */
     private $archived;
+
+    /**
+     * @var bool The ID of the owner of the room. TODO: make user object.
+     */
     private $ownerId;
+
+    /**
+     * @var string The topic of the room.
+     */
     private $topic;
+
+    /**
+     * @var string The room's type, e.g. "private"
+     */
     private $type = 'unknown';
+
+    /**
+     * @var array An array of parental flags applied to the room.
+     */
     private $parentalFlags;
+
+    /**
+     * @var int The room's parental age (that is, the age a user should be to participate in a room).
+     */
     private $parentalAge;
+
+    /**
+     * @var int The default permission bitfield for the room.
+     */
     private $defaultPermissions;
+
+    /**
+     * @var int The ID of the last message that was posted in this room.
+     */
     private $lastMessageId;
+
+    /**
+     * @var int The time of the last message that was posted in this room.
+     */
     private $lastMessageTime;
+
+    /**
+     * @var int The number of messages that have been posted in this room.
+     */
     private $messageCount;
+
+    /**
+     * @var array A list of flags for this room. TODO: what are they for?
+     */
     private $flags;
+
+    /**
+     * @var string The room's ID encoded for binary storage.
+     */
     private $encodedId;
+
+    /**
+     * @var array A list of users watching this room. TODO: user instances?
+     */
     private $watchedBy;
 
+    /**
+     * @var mixed The room data the room was initialised with.
+     */
     protected $roomData;
 
+    /**
+     * @var array The parameters that have been resolved for this instance of fimRoom. If an unresolved parameter is accessed, it will be resolved.
+     */
     private $resolved = array();
-    private static $roomDataConversion = array( // Eventually, we'll hopefully rename everything in the DB itself, but that'd be too time-consuming right now.
+
+    /**
+     * @var array A mapping between fimRoom's parameters and their column names in the database.
+     * TODO: Eventually, we'll hopefully rename everything in the DB itself, but that'd be too time-consuming right now.
+     */
+    private static $roomDataConversion = array(
         'roomId' => 'id',
         'roomName' => 'name',
         'options' => 'options',
@@ -70,6 +156,9 @@ class fimRoom {
         'flags' => 'flags'
     );
 
+    /**
+     * @var array When one column in one of these arrays is resolved, the rest will be as well.
+     */
     private static $roomDataPullGroups = array(
         ['roomId','roomName'],
         ['defaultPermissions','options','ownerId'],
@@ -78,6 +167,9 @@ class fimRoom {
         ['watchedByUserIds']
     );
 
+    /**
+     * @var fimCache Our cache instance.
+     */
     private $generalCache;
 
     /**

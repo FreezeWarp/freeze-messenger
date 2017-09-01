@@ -51,6 +51,7 @@ $request = fim_sanitizeGPC('g', array(
     ),
 
     'search' => array(
+        'default' => '',
         'cast' => 'string',
     ),
 
@@ -118,9 +119,9 @@ do {
         if ($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW) { // These are not shown to users who are not allowed to access the room.
             $xmlData['rooms'][$roomId]['roomTopic'] = $room->topic;
             $xmlData['rooms'][$roomId]['owner'] = $room->ownerId;
-            $xmlData['rooms'][$roomId]['lastMessageId'] = $roomData['lastMessageId'];
-            $xmlData['rooms'][$roomId]['lastMessageTime'] = $roomData['lastMessageTime'];
-            $xmlData['rooms'][$roomId]['messageCount'] = $roomData['messageCount'];
+            $xmlData['rooms'][$roomId]['lastMessageId'] = $room->lastMessageId;
+            $xmlData['rooms'][$roomId]['lastMessageTime'] = $room->lastMessageTime;
+            $xmlData['rooms'][$roomId]['messageCount'] = $room->messageCount;
         }
 
         if ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
