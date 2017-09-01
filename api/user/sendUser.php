@@ -69,7 +69,10 @@ elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMA
     new fimError('emailInvalid', 'The email specified is not allowed.');
 
 elseif (isset($request['birthdate']) && (fim_dobToAge($request['birthdate']) < $config['ageMinimum']))
-    new fimError('ageMinimum', 'The age specified is below the minimum age allowed by the server.');
+    new fimError('ageMinimum', 'The age specified is below the minimum age allowed by the server.', [
+        'ageDetected' => fim_dobToAge($request['birthdate']),
+        'ageMinimum' => $config['ageMinimum']
+    ]);
 
 elseif (count($database->getUsers(['userNames' => [$request['userName']]])->getAsArray(true)) > 0)
     new fimError('userExists', 'That user specified already exists.');
