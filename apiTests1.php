@@ -283,7 +283,7 @@ curlTestPOSTEquals(
     'idNoExist'
 );*/
 
-/*echo '<h2>Send Message "Hi Bob %d" 98 Times, Room 1</h2>';
+echo '<h2>Send Message "Hi Bob %d" 98 Times, Room 1</h2>';
 for ($i = 2; $i < 100; $i++) {
     curlTestPOSTEquals(
         'api/message.php',
@@ -292,7 +292,7 @@ for ($i = 2; $i < 100; $i++) {
         ['sendMessage', 'censor'],
         []
     );
-}*/
+}
 
 echo '<h1>Room Tests, Main User</h1>';
 echo '<h2>Get Room 1</h2>';
@@ -393,6 +393,17 @@ curlTestGETEquals(
     ['rooms', 2, 'roomName'],
     'Test Unit Room'
 );
+
+echo '<h2>Create Room "Hi Room %d" 96 Times</h2>';
+for ($i = 4; $i < 100; $i++) {
+    curlTestPOSTEquals(
+        'api/room.php',
+        ['access_token' => $accessToken, '_action' => 'create'],
+        ['name' => 'Hi Room ' . $i],
+        ['response', 'insertId'],
+        $i
+    );
+}
 
 
 // todo: create admin-only room
