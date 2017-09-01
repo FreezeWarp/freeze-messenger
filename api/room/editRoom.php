@@ -22,42 +22,6 @@
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  *
- * =POST Parameters=
- * @param action The action to be performed by the script, either: [[Required.]]
- ** 'create' - Creates a room with the data specified.
- ** 'edit' - Updates a room with the data specified.
- ** 'delete' - Marks a room as deleted. (It's data, messages, and permissions will remain on the server.)
- ** 'undelete' - Unmarks a room as deleted.
- *
- * ==Edit, Delete, and Undelete Parameters==
- * @param int roomId - The ID of the room to be modified, deleted, or undeleted.
- *
- * ==Create and Edit Paramters==
- * @param string roomName - The name the room should be set to. Required when creating a room.
- * @param int defaultPermissions=0 - The default permissions all users are granted to a room.
- * @param csv moderators - A comma-separated list of user IDs who will be allowed to moderate the room.
- * @param csv allowedUsers - A comma-separated list of user IDs who will be allowed access to the room.
- * @param csv allowedGroups - A comma-separated list of group IDs who will be allowed to access the room.
- * @param int parentalAge=$config['parentalAgeDefault'] - The parental age corresponding to the room.
- * @param csv parentalFlag=$config['parentalFlagsDefault'] - A comma-separated list of parental flags that apply to the room.
- *
- * =Errors=
- * @throws noPerm - The user does not have permission to perform the action specified.
- *
- * ==Creating and Editing Rooms==
- * @throws exists - The room name specified collides with an existing room.
- * @throws noName - A valid room name was not specified.
- * @throws shortName - The room name specified was too short.
- * @throws longName - The room name specified was too long.
- * @throws unknown - The action could not proceed for unknown reasons.
- *
- * ==Editing Rooms==
- * @throws noRoom - The room ID specified does not correspond with an existing room.
- * @throws deleted - The room specified has been deleted, and thus can not be edited.
- *
- * ==Deleting and Undeleting Rooms==
- * @throws nothingToDo - The room is already deleted or undeleted.
- *
  * =Response=
  * @return APIOBJ:
  ** editRoom
@@ -70,21 +34,6 @@
  **** insertId - If creating a room, the ID of the created room.
  */
 
-$apiRequest = true;
-
-require('../global.php');
-
-
-/* Special Functions */
-$permFilterMatches = array(
-    'post' => ROOM_PERMISSION_POST,
-    'view' => ROOM_PERMISSION_VIEW,
-    'topic' => ROOM_PERMISSION_TOPIC,
-    'moderate' => ROOM_PERMISSION_MODERATE,
-    'properties' => ROOM_PERMISSION_PROPERTIES,
-    'grant' => ROOM_PERMISSION_GRANT,
-    'own' => ROOM_PERMISSION_VIEW
-);
 
 
 
@@ -132,13 +81,9 @@ function alterRoomPermissions($roomId, $userArray, $groupArray) {
 
 
 /* Get Request Data */
-$requestHead = fim_sanitizeGPC('g', [
-    'id' => ['cast' => 'int'],
-    '_action' => [],
-]);
-
 $request = fim_sanitizeGPC('p', array(
     'name' => array(
+        'require' => $requestHead['_action'] == 'create',
         'trim' => true,
     ),
 
@@ -183,6 +128,7 @@ $request = fim_sanitizeGPC('p', array(
         ]
     ),
 ));
+
 $database->accessLog('editRoom', $request);
 
 
@@ -217,19 +163,16 @@ $database->startTransaction();
 switch($requestHead['_action']) {
     case 'create':
     case 'edit':
-        if (strlen($request['name']) == 0)
-            new fimError('noName', 'A room name was not supplied.');
-
-        elseif (strlen($request['name']) < $config['roomLengthMinimum'])
-            new fimError('shortName', 'The room name specified is too short. It should be at least ' . $config['roomLengthMinimum'] . ' characters.');
+        if (strlen($request['name']) < $config['roomLengthMinimum'])
+            new fimError('nameMinimumLength', 'The room name specified is too short. It should be at least ' . $config['roomLengthMinimum'] . ' characters.');
 
         elseif (strlen($request['name']) > $config['roomLengthMaximum'])
-            new fimError('longName', 'The room name specified is too short. It should be at most ' . $config['roomLengthMaximum'] . ' characters.');
+            new fimError('nameMaximumLength', 'The room name specified is too short. It should be at most ' . $config['roomLengthMaximum'] . ' characters.');
 
         else {
             if ($requestHead['_action'] === 'create') {
                 if (!$user->hasPriv('createRooms'))
-                    new fimError('noPermCreate', 'You do not have permission to create rooms.');
+                    new fimError('noPerm', 'You do not have permission to create rooms.');
 
                 elseif (!$user->hasPriv('modRooms') && count($user->ownedRoomIds) >= $config['userRoomMaximum'])
                     new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for a single user.');
@@ -238,26 +181,25 @@ switch($requestHead['_action']) {
                     new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for the age of your account. You may eventually be allowed to create additional rooms.');
 
                 elseif ($slaveDatabase->getRooms(array('roomNames' => array($request['name'])))->getCount() > 0)
-                    new fimError('roomExists', 'A room with the name specified already exists.');
+                    new fimError('roomNameTaken', 'A room with the name specified already exists.');
 
                 else
                     $room = new fimRoom(false);
             }
 
             elseif ($requestHead['_action'] === 'edit') {
-                if ($room === false)
-                    new fimError('roomNotFound', "A room with the specified roomId, {$requestHead['id']} does not exist.");
-
-                elseif ($room->type !== 'general')
+                if ($room->type !== 'general')
                     new fimError('specialRoom', 'You are trying to edit a special room, which cannot be altered.');
 
                 elseif ($room->deleted) // Make sure the room hasn't been deleted.
                     new fimError('deletedRoom', 'The room has been deleted - it can not be edited.');
 
+                // TODO: only admins may change room name
+
                 elseif ($data = $slaveDatabase->getRooms(array('roomNames' => array($request['name'])))->getAsArray(false)
                     && count($data)
                     && $data['roomId'] !== $room['roomId'])
-                    new fimError('duplicateRoomName', 'The room name specified already belongs to another room.');
+                    new fimError('roomNameTaken', 'The room name specified already belongs to another room.');
             }
 
 

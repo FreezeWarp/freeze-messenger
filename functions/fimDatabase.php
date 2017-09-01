@@ -1258,7 +1258,13 @@ class fimDatabase extends databaseSQL
     }
 
 
-
+    /**
+     * @param $options
+     * @param array $sort
+     * @param int $limit
+     * @param int $pagination
+     * @return bool|object|resource
+     */
     public function getRooms($options, $sort = array('roomId' => 'asc'), $limit = 0, $pagination = 1)
     {
         $options = $this->argumentMerge(array(
@@ -2024,22 +2030,14 @@ class fimDatabase extends databaseSQL
      * @param array $lists - An array where each key is a list ID and each value is true/false -- true to enable a censor, false to disable a censor.
      */
     public function setCensorLists($roomId, $lists) {
-        $dbLists = $this->getCensorLists(array(
-            'activeStatus' => 'active',
-            'roomIds' => array($roomId),
-        ))->getAsArray(array('listId'));// var_dump($lists); die();
+        $dbLists = $this->getCensorListsActive($roomId);// var_dump($lists); die();
 
-        foreach ($dbLists AS $listId => $list) {
-            if ($list['type'] == 'black'
-                && $list['status'] == 'block') $checked = true;
-            elseif ($list['type'] == 'white'
-                && $list['status'] != 'unblock') $checked = true;
-            else $checked = false;
-
-            if ($checked == true && !$lists[$listId])
-                $this->setCensorList($roomId, $listId, 'unblock');
-            elseif ($checked == false && $lists[$listId])
+        foreach ($lists AS $listId => $listEnable) {
+            if ($listEnable && !isset($dbLists[$listId])) // the list should be enabled but isn't currently
                 $this->setCensorList($roomId, $listId, 'block');
+
+            elseif (!$listEnable && isset($dbLists[$listId])) // the list shouldn't be enabled but is currently
+                $this->setCensorList($roomId, $listId, 'unblock');
         }
     }
 
