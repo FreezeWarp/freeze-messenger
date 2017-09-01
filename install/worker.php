@@ -193,6 +193,9 @@ switch ($_REQUEST['phase']) {
                 $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
                 foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
+                    if ($table['@mode'] === 'dev' && !isset($_GET['db_usedev'])) // Don't insert dev data, unless asked.
+                        continue;
+
                     $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
                     $values = array(); // We will use this to store the column fragments that will be implode()d into the final query.
                     $insertData = array();

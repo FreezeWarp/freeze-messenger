@@ -189,7 +189,7 @@
     </table>
 
 
-    <!-- Table counters -->1
+    <!-- Table counters -->
     <table name="counters">
       <column name="counterName" value="uploads" />
       <column name="counterValue" value="0" />
@@ -245,24 +245,24 @@
 
 
     <table name="emoticons">
-      <column name="emoticonText">:|</column>
-      <column name="emoticonFile">webpro/client/smilies/icon_neutral.gif</column>
+      <column name="emoticonText" value=":|" />
+      <column name="emoticonFile" value="webpro/client/smilies/icon_neutral.gif" />
     </table>
     <table name="emoticons">
-      <column name="emoticonText">:(</column>
-      <column name="emoticonFile">webpro/client/smilies/icon_e_sad.gif</column>
+      <column name="emoticonText" value=":(" />
+      <column name="emoticonFile" value="webpro/client/smilies/icon_e_sad.gif" />
     </table>
     <table name="emoticons">
-      <column name="emoticonText">:)</column>
-      <column name="emoticonFile">webpro/client/smilies/icon_e_smile.gif</column>
+      <column name="emoticonText" value=":)" />
+      <column name="emoticonFile" value="webpro/client/smilies/icon_e_smile.gif" />
     </table>
     <table name="emoticons">
-      <column name="emoticonText">8)</column>
-      <column name="emoticonFile">webpro/client/smilies/icon_cool.gif</column>
+      <column name="emoticonText" value="8)" />
+      <column name="emoticonFile" value="webpro/client/smilies/icon_cool.gif" />
     </table>
     <table name="emoticons">
-      <column name="emoticonText">:D</column>
-      <column name="emoticonFile">webpro/client/smilies/icon_e_biggrin.gif</column>
+      <column name="emoticonText" value=":D" />
+      <column name="emoticonFile" value="webpro/client/smilies/icon_e_biggrin.gif" />
     </table>
 
 
