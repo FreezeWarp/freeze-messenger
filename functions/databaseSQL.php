@@ -95,19 +95,61 @@ class databaseSQL extends database
 
     public $getVersion = false; // Whether or not to get the database version, adding overhead.
 
-    public $version = 0;
-    public $versionPrimary = 0;
-    public $versionSeconday = 0;
-    public $versionTertiary = 0;
+    /**
+     * @var string The full version of the DBMS we are connected to.
+     */
     public $versionString = '0.0.0';
+
+    /**
+     * @var int|string The primary version (e.g. 4 in 4.2.1) of the DBMS we are connected to.
+     */
+    public $versionPrimary = 0;
+
+    /**
+     * @var int|string The secondary version (e.g. 2 in 4.2.1) of the DBMS we are connected to.
+     */
+    public $versionSeconday = 0;
+
+    /**
+     * @var int|string The tertiary version (e.g. 1 in 4.2.1) of the DBMS we are connected to.
+     */
+    public $versionTertiary = 0;
+
+    /**
+     * @var array The list of languages supported by the current DBMS. (PDO probably isn't actually supported. Will be soon.)
+     */
     public $supportedLanguages = array('mysql', 'mysqli', 'pdo');
-    public $storeTypes = array('memory', 'general', 'innodb');
+
+    /**
+     * @var array A list of distinct DB engine classifications the DBMS supports.
+     *   'memory' is an engine that stores all or most of its data in memory, and whose data may be lost on restart
+     *   'general' is an engine that stores all or most of its data on disk, and which supports transactions, permanence, and so-on.
+     */
+    public $storeTypes = array('memory', 'general');
+
+    /**
+     * @var string The database mode. This will always be SQL for us.
+     */
     public $mode = 'SQL';
+
+    /**
+     * @var string The DBMS language being used.
+     */
     public $language = '';
 
+    /**
+     * @var array All queries will be stored here during execution.
+     */
     public $queryLog = array();
+
+    /**
+     * @var bool|string If set to a file string, queries will be logged to this file.
+     */
     public $queryLogToFile = false;
 
+    /**
+     * @var array The language feature set we are targeting given different drivers.
+     */
     private $driverMap = array(
         'mysql' => 'mysql',
         'mysqli' => 'mysql',
@@ -116,18 +158,245 @@ class databaseSQL extends database
         'pdo-pqsql' => 'pqsql',
     );
 
+    /**
+     * @var bool If enums are enabled.
+     *   true - use native ENUM(val1, val2) type.
+     *   false - simulate with strings (validation is not performed)
+     */
     public $enumMode = false;
-    public $nativeBitfield = false;
-
-    public $returnQueryString = false;
-
-    protected $connection = false;
-    protected $connectionResult = false;
 
     /**
-     * @var null A link to an instance of the current database driver, if enabled.
+     * @var bool If native bitfields are supported.
+     *   true - use native BIT(length) type.
+     *   false - simulate with integers
      */
-    protected $dbLink = null;
+    public $nativeBitfield = false;
+
+    /**
+     * @var bool If rawQuery should return its query instead of executing it. Ideal for simulation and testing.
+     */
+    public $returnQueryString = false;
+
+    /**
+     * @var object An object that points to our active driver connection.
+     */
+    protected $connection = null;
+
+    /**
+     * @var object An object that points to our active driver result.
+     */
+    protected $connectionResult = null;
+
+
+    /*********************************************************
+     ************************ START **************************
+     ***************** Query Format Constants ****************
+     *********************************************************/
+
+    /**
+     * @var string The token that comes before database names.
+     */
+    protected $databaseQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after database names.
+     */
+    protected $databaseQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before database aliases.
+     */
+    protected $databaseAliasQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after database aliases.
+     */
+    protected $databaseAliasQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before table names.
+     */
+    protected $tableQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after table names.
+     */
+    protected $tableQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before table aliases.
+     */
+    protected $tableAliasQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after table aliases.
+     */
+    protected $tableAliasQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before column names.
+     */
+    protected $columnQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after column names.
+     */
+    protected $columnQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before column aliases.
+     */
+    protected $columnAliasQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after column aliases.
+     */
+    protected $columnAliasQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before strings.
+     */
+    protected $stringQuoteStart = '\'';
+
+    /**
+     * @var string The token that comes after strings.
+     */
+    protected $stringQuoteEnd = '\'';
+
+    /**
+     * @var string The wildcard token when used in strings in LIKE clauses.
+     */
+    protected $stringFuzzy = '%';
+
+    /**
+     * @var string The token that comes before arrays.
+     */
+    protected $arrayQuoteStart = '(';
+
+    /**
+     * @var string The token that comes after arrays.
+     */
+    protected $arrayQuoteEnd = ')';
+
+    /**
+     * @var string The token that comes between array elements.
+     */
+    protected $arraySeperator = ', ';
+
+    /**
+     * @var string The token that comes between statements.
+     */
+    protected $statementSeperator = ', ';
+
+    /**
+     * @var string The token that comes before ints.
+     */
+    protected $intQuoteStart = '';
+
+    /**
+     * @var string The token that comes after ints.
+     */
+    protected $intQuoteEnd = '';
+
+    /**
+     * @var string The token that comes before floats.
+     */
+    protected $floatQuoteStart = '';
+
+    /**
+     * @var string The token that comes after floats.
+     */
+    protected $floatQuoteEnd = '';
+
+    /**
+     * @var string The token that comes before timestamps.
+     */
+    protected $timestampQuoteStart = '';
+
+    /**
+     * @var string The token that comes after timestamps.
+     */
+    protected $timestampQuoteEnd = '';
+
+    /**
+     * @var string The token that comes between a database name and a column name.
+     */
+    protected $databaseTableDivider = '.';
+
+    /**
+     * @var string The token that comes between a table name and a column name.
+     */
+    protected $tableColumnDivider = '.';
+
+    /**
+     * @var string The token that designates ascending order.
+     */
+    protected $sortOrderAsc = 'ASC';
+
+    /**
+     * @var string The token that designates descending order.
+     */
+    protected $sortOrderDesc = 'DESC';
+
+    /**
+     * @var string The token that comes between a table name and a table alias.
+     */
+    protected $tableAliasDivider = ' AS ';
+
+    /**
+     * @var string The token that comes between a column name and a column alias.
+     */
+    protected $columnAliasDivider = ' AS ';
+
+    /**
+     * @var string The token that comes before an index.
+     */
+    protected $indexQuoteStart = '';
+
+    /**
+     * @var string The token that comes after an index.
+     */
+    protected $indexQuoteEnd = '';
+
+
+    /**
+     * @var array The tokens corresponding to DatabaseTypeComparison enumerations.
+     */
+    protected $comparisonTypes = array(
+        DatabaseTypeComparison::equals => '=',
+        DatabaseTypeComparison::assignment => '=',
+        DatabaseTypeComparison::in => 'IN',
+        DatabaseTypeComparison::notin => 'NOT IN',
+        DatabaseTypeComparison::lessThan => '<',
+        DatabaseTypeComparison::lessThanEquals=> '<=',
+        DatabaseTypeComparison::greaterThan => '>',
+        DatabaseTypeComparison::greaterThanEquals => '>=',
+        DatabaseTypeComparison::search => 'LIKE',
+        DatabaseTypeComparison::binaryAnd => '&',
+    );
+
+    /**
+     * @var array The tokens corresponding with 'both' and 'either' concatenations.
+     */
+    protected $concatTypes = array(
+       'both' => ' AND ', 'either' => ' OR ',
+    );
+
+    /**
+     * @var array The phrases that identify the three supported key types, 'primary', 'unique', and 'index'
+     */
+    protected $keyTypeConstants = array(
+        'primary' => 'PRIMARY KEY',
+        'unique' => 'UNIQUE KEY',
+        'index' => 'KEY',
+    );
+
+    /**
+     * @var array The phrases that correspond with the supported default phrases, currently only '__TIME__'
+     */
+    protected $defaultPhrases = array(
+        '__TIME__' => 'CURRENT_TIMESTAMP',
+    );
 
     /*********************************************************
      ************************ START **************************
@@ -135,7 +404,7 @@ class databaseSQL extends database
      *********************************************************/
 
     public function __destruct() {
-        if ($this->dbLink !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
+        if ($this->connection !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
             $this->close();
         }
 
@@ -169,7 +438,7 @@ class databaseSQL extends database
 
                         else {
                             if ($this->getVersion)
-                                $this->version = $this->setDatabaseVersion(mysql_get_server_info($this->connection));
+                                $this->setDatabaseVersion(mysql_get_server_info($this->connection));
 
                             return $this->connection;
                         }
@@ -236,7 +505,7 @@ class databaseSQL extends database
 
                         else {
                             if ($this->getVersion)
-                                $this->version = $this->setDatabaseVersion($this->connection->server_info);
+                                $this->setDatabaseVersion($this->connection->server_info);
 
                             return $this->connection;
                         }
@@ -298,7 +567,7 @@ class databaseSQL extends database
                             return false;
                         }
 
-                        $this->version = $this->setDatabaseVersion($this->connection->getAttribute(PDO::ATTR_SERVER_VERSION));
+                        $this->setDatabaseVersion($this->connection->getAttribute(PDO::ATTR_SERVER_VERSION));
                         $this->activeDatabase = $args[5];
 
                         return $this->connection;
@@ -378,7 +647,7 @@ class databaseSQL extends database
                         }
                         else {
                             if ($this->getVersion)
-                                $this->version = $this->setDatabaseVersion(pg_version($this->connection)['client']);
+                                $this->setDatabaseVersion(pg_version($this->connection)['client']);
 
                             return $this->connection;
                         }
@@ -780,26 +1049,6 @@ class databaseSQL extends database
                 $this->databaseQuoteEnd = '`';
                 $this->databaseAliasQuoteStart = '`';
                 $this->databaseAliasQuoteEnd = '`';
-                $this->stringQuoteStart = '"';
-                $this->stringQuoteEnd = '"';
-                $this->emptyString = '""';
-                $this->stringFuzzy = '%';
-                $this->arrayQuoteStart = '(';
-                $this->arrayQuoteEnd = ')';
-                $this->arraySeperator = ', ';
-                $this->statementSeperator = ', ';
-                $this->intQuoteStart = '';
-                $this->intQuoteEnd = '';
-                $this->floatQuoteStart = '';
-                $this->floatQuoteEnd = '';
-                $this->tableColumnDivider = '.';
-                $this->databaseTableDivider = '.';
-                $this->sortOrderAsc = 'ASC';
-                $this->sortOrderDesc = 'DESC';
-                $this->tableAliasDivider = ' AS ';
-                $this->columnAliasDivider = ' AS ';
-                $this->indexQuoteStart = '';
-                $this->indexQuoteEnd = '';
                 break;
 
             case 'pdo':
@@ -817,87 +1066,14 @@ class databaseSQL extends database
                 $this->databaseAliasQuoteEnd = '';
                 $this->stringQuoteStart = '';
                 $this->stringQuoteEnd = '';
-                $this->emptyString = '""';
-                $this->stringFuzzy = '%';
-                $this->arrayQuoteStart = '(';
-                $this->arrayQuoteEnd = ')';
-                $this->arraySeperator = ', ';
-                $this->statementSeperator = ', ';
-                $this->intQuoteStart = '';
-                $this->intQuoteEnd = '';
-                $this->floatQuoteStart = '';
-                $this->floatQuoteEnd = '';
-                $this->tableColumnDivider = '.';
-                $this->databaseTableDivider = '.';
-                $this->sortOrderAsc = 'ASC';
-                $this->sortOrderDesc = 'DESC';
-                $this->tableAliasDivider = ' AS ';
-                $this->columnAliasDivider = ' AS ';
-                $this->indexQuoteStart = '';
-                $this->indexQuoteEnd = '';
                 break;
 
             case 'pgsql':
-                $this->tableQuoteStart = '"';
-                $this->tableQuoteEnd = '"';
-                $this->tableAliasQuoteStart = '"';
-                $this->tableAliasQuoteEnd = '"';
-                $this->columnQuoteStart = '"';
-                $this->columnQuoteEnd = '"';
-                $this->columnAliasQuoteStart = '"';
-                $this->columnAliasQuoteEnd = '"';
-                $this->databaseQuoteStart = '"';
-                $this->databaseQuoteEnd = '"';
-                $this->databaseAliasQuoteStart = '"';
-                $this->databaseAliasQuoteEnd = '"';
-                $this->stringQuoteStart = '"';
-                $this->stringQuoteEnd = '"';
-                $this->emptyString = '""';
-                $this->stringFuzzy = '%';
-                $this->arrayQuoteStart = '(';
-                $this->arrayQuoteEnd = ')';
-                $this->arraySeperator = ', ';
-                $this->statementSeperator = ', ';
-                $this->intQuoteStart = '';
-                $this->intQuoteEnd = '';
-                $this->floatQuoteStart = '';
-                $this->floatQuoteEnd = '';
-                $this->tableColumnDivider = '.';
-                $this->databaseTableDivider = '.';
-                $this->sortOrderAsc = 'ASC';
-                $this->sortOrderDesc = 'DESC';
-                $this->tableAliasDivider = ' AS ';
-                $this->columnAliasDivider = ' AS ';
-                $this->indexQuoteStart = '';
-                $this->indexQuoteEnd = '';
                 break;
         }
 
         switch ($this->language) {
             case 'mysql':
-                $this->comparisonTypes = array(
-                    DatabaseTypeComparison::equals => '=',
-                    DatabaseTypeComparison::assignment => '=',
-                    DatabaseTypeComparison::in => 'IN',
-                    DatabaseTypeComparison::notin => 'NOT IN',
-                    DatabaseTypeComparison::lessThan => '<',
-                    DatabaseTypeComparison::lessThanEquals=> '<=',
-                    DatabaseTypeComparison::greaterThan => '>',
-                    DatabaseTypeComparison::greaterThanEquals => '>=',
-                    DatabaseTypeComparison::search => 'LIKE',
-                    DatabaseTypeComparison::binaryAnd => '&',
-                );
-
-                $this->concatTypes = array(
-                    'both' => ' AND ', 'either' => ' OR ',
-                );
-
-                $this->keyTypeConstants = array(
-                    'primary' => 'PRIMARY KEY',
-                    'unique' => 'UNIQUE KEY',
-                    'index' => 'KEY',
-                );
-
                 $this->defaultPhrases = array(
                     '__TIME__' => 'CURRENT_TIMESTAMP',
                 );
@@ -966,32 +1142,6 @@ class databaseSQL extends database
                 break;
 
             case 'pgsql':
-                $this->comparisonTypes = array(
-                    DatabaseTypeComparison::equals => '=',
-                    DatabaseTypeComparison::assignment => '=',
-                    DatabaseTypeComparison::in => 'IN',
-                    DatabaseTypeComparison::notin => 'NOT IN',
-                    DatabaseTypeComparison::lessThan => '<',
-                    DatabaseTypeComparison::lessThanEquals=> '<=',
-                    DatabaseTypeComparison::greaterThan => '>',
-                    DatabaseTypeComparison::greaterThanEquals => '>=',
-                    DatabaseTypeComparison::search => 'LIKE',
-                    DatabaseTypeComparison::binaryAnd => '&',
-                );
-
-                $this->concatTypes = array(
-                    'both' => ' AND ', 'either' => ' OR ',
-                );
-
-                $this->keyTypeConstants = array(
-                    'primary' => 'PRIMARY KEY',
-                    'unique' => 'UNIQUE KEY',
-                    'index' => 'KEY',
-                );
-
-                $this->defaultPhrases = array(
-                    '__TIME__' => 'CURRENT_TIMESTAMP',
-                );
 
                 $this->dataTypes = array(
                     'columnIntLimits' => array(
