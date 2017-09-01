@@ -63,7 +63,7 @@ class fimConfig implements ArrayAccess {
     /*** FIM Features ***/
     /* Posting Restrictions */
     /** @var bool Whether global API-based flood detection is enabled. This relies on a memory table to be efficient, so it should generally be disabled if memory tables are not available. */
-    public $floodDetectionGlobal = true;
+    public $floodDetectionGlobal = false;
     /** @var int The maximum number of calls a user can make to api/acHelper per minute before triggering a flood lockout on that specific API. */
     public $floodDetectionGlobal_acHelper_perMinute = 60;
     /** @var int The maximum number of calls a user can make to api/editFile per minute before triggering a flood lockout on that specific API. */
@@ -208,8 +208,9 @@ class fimConfig implements ArrayAccess {
     /* Message Retrieval */
     /** @var int The default number of messages that will be returned by api/getMessages.php. */
     public $defaultMessageLimit = 50;
-    /** @var int The maximum number of messages that will be returned by api/getMessages.php. */
-    public $maxMessageLimit = 100;
+
+    /** @var int The default number of rooms that will be returned by api/getRooms.php. */
+    public $defaultRoomLimit = 50;
 
     /** @var bool Whether to enable SSE. These are fairly stable; but some server configurations will still have problems with server sent events. Disable if you have issues. */
     public $serverSentEvents = true;
