@@ -220,7 +220,6 @@
     <!-- Table rooms -->
     <table name="rooms">
       <column name="roomId" value="1" />
-      <column name="roomAlias" value="1" />
       <column name="roomName" value="Your Room!" />
       <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
       <column name="ownerId" value="0" />
@@ -228,7 +227,6 @@
     </table>
     <table name="rooms">
       <column name="roomId" value="2" />
-      <column name="roomAlias" value="2" />
       <column name="roomName" value="Another Room!" />
       <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
       <column name="ownerId" value="0" />
@@ -236,7 +234,6 @@
     </table>
     <table name="rooms" mode="dev">
       <column name="roomId" value="3" />
-      <column name="roomAlias" value="3" />
       <column name="roomName" value="Hidden Room" />
       <column name="roomTopic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
       <column name="ownerId" value="1" />

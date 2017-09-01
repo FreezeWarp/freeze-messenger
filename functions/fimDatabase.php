@@ -1270,7 +1270,6 @@ class fimDatabase extends databaseSQL
         $options = $this->argumentMerge(array(
             'roomIds'            => [],
             'roomNames'          => [],
-            'roomAliases'        => [],
             'ownerIds'           => [],
             'parentalAgeMin'     => 0,
             'parentalAgeMax'     => 0,
@@ -1280,7 +1279,7 @@ class fimDatabase extends databaseSQL
             'lastMessageTimeMax' => 0,
             'showDeleted'        => false,
             'roomNameSearch'     => false,
-            'columns'            => ['roomId', 'roomName', 'roomAlias', 'roomTopic', 'ownerId', 'defaultPermissions', 'roomParentalFlags', 'roomParentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount'],
+            'columns'            => ['roomId', 'roomName', 'roomTopic', 'ownerId', 'defaultPermissions', 'roomParentalFlags', 'roomParentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount'],
         ), $options);
 
         $columns = [$this->sqlPrefix . 'rooms' => $options['columns']];
@@ -1292,7 +1291,6 @@ class fimDatabase extends databaseSQL
 
         if (count($options['roomIds']) > 0) $conditions['both']['either']['roomId'] = $this->in($options['roomIds']);
         if (count($options['roomNames']) > 0) $conditions['both']['either']['roomName'] = $this->in($options['roomNames']);
-        if (count($options['roomAliases']) > 0) $conditions['both']['either']['roomAlias'] = $this->in($options['roomAliases']);
         if ($options['roomNameSearch']) $conditions['both']['either']['roomName'] = $this->type('string', $options['roomNameSearch'], 'search');
 
         if ($options['parentalAgeMin'] > 0) $conditions['both']['roomParentalAge'] = $this->int($options['parentalAgeMin'], 'gte');

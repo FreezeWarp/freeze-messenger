@@ -33,7 +33,6 @@ define("ROOM_TYPE_OTR", 'otr');
 class fimRoom {
     public $id = 0;
     private $name = "Missingname.";
-    private $alias; // TODO: remove
     private $options;
     private $deleted;
     private $official;
@@ -58,7 +57,6 @@ class fimRoom {
     private static $roomDataConversion = array( // Eventually, we'll hopefully rename everything in the DB itself, but that'd be too time-consuming right now.
         'roomId' => 'id',
         'roomName' => 'name',
-        'roomAlias' => 'alias', // TODO: remove
         'options' => 'options',
         'ownerId' => 'ownerId',
         'roomTopic' => 'topic',
