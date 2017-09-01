@@ -8,6 +8,10 @@ class fimRoomFactory {
             return apc_fetch('fim_fimRoom_' . $roomId);
         }
 
+        else if (function_exists('apcu_fetch') && apcu_exists('fim_fimRoom_' . $roomId)) {
+            return apcu_fetch('fim_fimRoom_' . $roomId);
+        }
+
         else {
             return new fimRoom($roomId);
         }

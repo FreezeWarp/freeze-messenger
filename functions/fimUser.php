@@ -659,7 +659,12 @@ class fimUser
     }
 
     public function __destruct() {
-        if ($this->id !== 0 && function_exists('apc_store')) apc_store('fim_fimUser_' . $this->id, $this, 500);
+        if ($this->id !== 0) {
+            if (function_exists('apc_store'))
+                apc_store('fim_fimUser_' . $this->id, $this, 500);
+            elseif (function_exists('apcu_store'))
+                apcu_store('fim_fimUser_' . $this->id, $this, 500);
+        }
     }
 }
 

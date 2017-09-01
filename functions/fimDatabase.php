@@ -2669,7 +2669,7 @@ class fimDatabase extends databaseSQL
     public function fullLog($action, $data)
     {
         if ($this->insert($this->sqlPrefix . "fullLog", array(
-            'user'   => $this->user->id,
+            'userId'   => $this->user->id,
             'server' => json_encode(array_intersect_key($_SERVER,array_flip($this->config['fullLogServerDirectives']))),
             'action' => $action,
             'time'   => $this->now(),

@@ -591,7 +591,12 @@ class fimRoom {
 
 
     public function __destruct() {
-        if ($this->id !== 0 && function_exists('apc_store')) apc_store('fim_fimRoom_' . $this->id, $this, 500);
+        if ($this->id !== 0) {
+            if (function_exists('apc_store'))
+                apc_store('fim_fimRoom_' . $this->id, $this, 500);
+            else if (function_exists('apcu_store'))
+                apcu_store('fim_fimRoom_' . $this->id, $this, 500);
+        }
     }
 }
 ?>
