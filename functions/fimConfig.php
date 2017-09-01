@@ -70,6 +70,8 @@ class fimConfig implements ArrayAccess {
     public $floodDetectionGlobal_editFile_perMinute = 5;
     /** @var int The maximum number of calls a user can make to api/editMessage per minute before triggering a flood lockout on that specific API. Note that message sends (which are also tracked by floodRoomLimitPerMinute and floodSiteLimitPerMinute) count against this as well. */
     public $floodDetectionGlobal_editMessage_perMinute = 120;
+    /** @var int The maximum number of calls a user can make to api/editMessage per minute before triggering a flood lockout on that specific API. Note that message sends (which are also tracked by floodRoomLimitPerMinute and floodSiteLimitPerMinute) count against this as well. */
+    public $floodDetectionGlobal_editRoom_perMinute = 5;
     /** @var int The maximum number of calls a user can make to api/editUserOptions per minute before triggering a flood lockout on that specific API. */
     public $floodDetectionGlobal_editUserOptions_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/editUserStatus per minute before triggering a flood lockout on that specific API. */

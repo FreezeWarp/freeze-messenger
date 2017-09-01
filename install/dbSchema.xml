@@ -274,6 +274,7 @@
         </table>
 
         <!-- partitionBy=roomId would be nice here, but doesn't work with strings. -->
+        <!-- I'm pretty sure after I made that comment, I added my own manual partitioning to the DBA. Which, uh... that's one solution, isn't it? -->
         <table name="messages" hardPartitions="10" type="general" comment="User-created messages.">
             <column name="messageId" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
             <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
@@ -283,6 +284,7 @@
             <column name="textSha1" type="string" maxlen="40" comment="A SHA1 hash of the text of the message." />
             <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
             <column name="iv" type="blob" maxlen="255" comment="The base64-encoded IV used for encryption." />
+            <column name="messageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
             <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />
             <column name="time" type="time" default="__TIME__" comment="The time the message was made on." />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
@@ -319,12 +321,6 @@
             <column name="messageId" type="int" maxlen="9" />
             <column name="roomId" type="int" maxlen="6" />
             <column name="userId" type="int" maxlen="8" />
-            <column name="userName" type="string" maxlen="50" />
-            <column name="avatar" type="string" maxlen="200" />
-            <column name="profile" type="string" maxlen="200" />
-            <column name="userGroupId" type="int" maxlen="6" default="1" />
-            <column name="socialGroupIds" type="string" maxlen="300" />
-            <column name="userNameFormat" type="string" maxlen="100" comment="CSS-formatting to be applied to the user's name." />
             <column name="messageFormatting" type="string" maxlen="300" />
             <column name="time" default="__TIME__" type="time" />
             <column name="text" type="string" maxlen="1000" />
@@ -648,7 +644,7 @@
             <column name="status" type="int" maxlen="3" comment="The user's activity status." />
 
             <!-- Formatting -->
-            <column name="messageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
+            <column name="defaultMessageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
 
             <!-- Permissions -->
             <column name="privs" type="bitfield" bits="31" default="0" comment="A bitfield corresponding to admin-set user priviledges. The 31 size is done for portability -- 32-bit PHP systems (those on 32-bit or Windows systems) can only use the first 31 bits, because the 32 bit is used for signing." />
