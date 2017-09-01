@@ -33,27 +33,24 @@ if (isset($_GET['do']) && $_GET['do'] === 'logout') {
 }
 
 elseif (isset($_POST['webproModerate_userName'])) {
-    $cr = new curlRequest(['client_id' => 'WebProAdmin', 'grant_type' => 'password', 'username' => $_POST['webproModerate_userName'], 'password' => $_POST['webproModerate_password']], '/validate.php');
+    $cr = new curlRequest($installUrl . '/validate.php', [], ['client_id' => 'WebProAdmin', 'grant_type' => 'password', 'username' => $_POST['webproModerate_userName'], 'password' => $_POST['webproModerate_password']]);
 
-    if (!$cr->execute()) {
+     try {
+         $cr->executePOST();
+         $result = $cr->getAsJson();
+
+         if (isset($result['exception'])) {
+             var_dump($result);
+             die();
+         }
+         else {
+             setcookie('webproModerate_accessToken', $result['login']['access_token'], time() + (int) $result['login']['expires'] - 10);
+             $hookLogin['accessToken'] = $result['login']['access_token'];
+         }
+
+     } catch (Exception $ex) {
         die('The request could not be completed (Server Error). Its response is below: ' . $cr->response);
-    }
-
-    elseif ($result = $cr->getAsJson()) {
-        if (isset($result['exception'])) {
-            var_dump($result);
-            die('fail');
-        }
-
-        else {
-            setcookie('webproModerate_accessToken', $result['login']['access_token'], time() + (int) $result['login']['expires'] - 10);
-            $hookLogin['accessToken'] = $result['login']['access_token'];
-        }
-    }
-
-    else {
-        die('The response could not be parsed. It is below: ' . $cr->response);
-    }
+     }
 }
 
 elseif (isset($_COOKIE['webproModerate_accessToken'])) {
