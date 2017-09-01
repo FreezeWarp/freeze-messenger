@@ -15,23 +15,55 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Class fimError
- *
- * Note: fimError can not be caught. It is intended to display data to the API.
- * TODO: allow arrays, do in place of context
+ * An error class that is intended to communicate the error to a client user or client developer. In some cases, it may be used to communicate errors to the FreezeMessenger developer, but such communication usually uses normally exceptions.
  */
 class fimError extends Exception {
+    /**
+     * fimErrorThrown constructor.
+     * @param string $code {@link fimErrorThrown::$code}
+     * @param string $string {@link fimErrorThrown::$string}
+     * @param string $return If true, this will return the Exception instance instead of throwing it.
+     * @param array $context {@link fimErrorThrown::$context}
+     * @param string $httpError {@link fimErrorThrown::$httpError}
+     */
     public function __construct($code = false, $string = false, $context = array(), $return = false, $httpError = 'HTTP/1.1 403 Forbidden') {
         if ($code && !$return) throw new fimErrorThrown($code, $string, $context, $httpError);
+        else return new fimErrorThrown($code, $string, $context, $httpError);
     }
 }
 
+
+/**
+ * This is the counterpart to fimError that is actually thrown. It is separate from fimError to allow either throwing or returning an instance of this.
+ */
 class fimErrorThrown extends Exception {
+    /**
+     * @var string A short code uniquely identifying the error.
+     */
     protected $code;
+
+    /**
+     * @var string A longer description of the error. Typically used to inform either the developer or the client user, depending on the type of error.
+     */
     protected $string;
+
+    /**
+     * @var array Additional information about the error. May detail valid parameters such as to fix the error, etc.
+     */
     protected $context = [];
+
+    /**
+     * @var string The HTTP header to use when returning an HTTP response.
+     */
     protected $httpError;
 
+    /**
+     * fimErrorThrown constructor.
+     * @param string $code {@link fimErrorThrown::$code}
+     * @param string $string {@link fimErrorThrown::$string}
+     * @param array $context {@link fimErrorThrown::$context}
+     * @param string $httpError {@link fimErrorThrown::$httpError}
+     */
     public function __construct($code = '', $string = '', $context = array(), $httpError = 'HTTP/1.1 403 Forbidden') {
         $this->code = $code;
         $this->string = $string;
@@ -40,28 +72,21 @@ class fimErrorThrown extends Exception {
     }
 
     /**
-     * @return string
-     */
-    public function isCode(): string {
-        return $this->code;
-    }
-
-    /**
-     * @return string
+     * @return string {@link fimErrorThrown::$string}
      */
     public function getString(): string {
         return $this->string;
     }
 
     /**
-     * @return array
+     * @return array {@link fimErrorThrown::$context}
      */
     public function getContext(): array {
         return $this->context;
     }
 
     /**
-     * @return string
+     * @return string {@link fimErrorThrown::$httpError}
      */
     public function getHttpError(): string {
         return $this->httpError;
