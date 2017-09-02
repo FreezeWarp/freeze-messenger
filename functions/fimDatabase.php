@@ -448,7 +448,7 @@ class fimDatabase extends databaseSQL
         $conditions = [
             'both' => [],
         ];
-        
+
         if (count($options['listIds']) > 0) $conditions['both']['listId'] = $this->in((array) $options['listIds']);
         if ($options['listNameSearch']) $conditions['both']['listName'] = $this->type('string', $options['listNameSearch'], 'search');
 
@@ -2144,21 +2144,23 @@ class fimDatabase extends databaseSQL
          * Flood limit check.
          * As this is... pretty important to ensure, we perform this check at the last possible moment, here in storeMessage.
          */
-        $time = time();
-        $minute = $this->ts($time - ($time % 60));
-        $messageFlood = $this->select([
-            $this->sqlPrefix . 'messageFlood' => 'userId, roomId, messages, time'
-        ], [
-            'userId' => $message->user->id,
-            'roomId' => $this->in([$message->room->id, 0]),
-            'time' => $minute,
-        ])->getAsArray('roomId');
+        if ($this->config['floodDetectionGlobal']) {
+            $time = time();
+            $minute = $this->ts($time - ($time % 60));
+            $messageFlood = $this->select([
+                $this->sqlPrefix . 'messageFlood' => 'userId, roomId, messages, time'
+            ], [
+                'userId' => $message->user->id,
+                'roomId' => $this->in([$message->room->id, 0]),
+                'time' => $minute,
+            ])->getAsArray('roomId');
 
-        if ($messageFlood[$message->room->id]['messages'] >= $this->config['floodRoomLimitPerMinute'])
-            new fimError('roomFlood', 'Room flood limit breached.');
+            if ($messageFlood[$message->room->id]['messages'] >= $this->config['floodRoomLimitPerMinute'])
+                new fimError('roomFlood', 'Room flood limit breached.');
 
-        if ($messageFlood[0]['messages'] >= $this->config['floodSiteLimitPerMinute'])
-            new fimError('siteFlood', 'Site flood limit breached.');
+            if ($messageFlood[0]['messages'] >= $this->config['floodSiteLimitPerMinute'])
+                new fimError('siteFlood', 'Site flood limit breached.');
+        }
 
 
 
