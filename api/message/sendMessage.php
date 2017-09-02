@@ -31,9 +31,12 @@ if (!defined('API_INMESSAGE'))
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-    'message' => [],
+    'message' => [
+        'required' => true,
+    ],
 
     'flag' => [
+        'default' => '',
         'valid' => ['image', 'video', 'url', 'email', 'html', 'audio', 'text', 'source', ''],
     ],
 
