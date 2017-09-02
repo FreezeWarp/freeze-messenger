@@ -98,7 +98,7 @@ class fimUser
 
         'defaultRoomId' => 'defaultRoomId',
 
-        'messageFormatting' => 'messageFormatting',
+        'defaultMessageFormatting' => 'messageFormatting',
         'profile' => 'profile',
         'avatar' => 'avatar',
 
@@ -121,7 +121,7 @@ class fimUser
     private static $userDataPullGroups = array(
         'userId,userName,privs,lastSync',
         'userGroupId,socialGroupIds,userParentalFlags,userParentalAge,birthDate',
-        'joinDate,messageFormatting,profile,avatar,userNameFormat',
+        'joinDate,defaultMessageFormatting,profile,avatar,userNameFormat',
         'options,defaultRoomId',
         'passwordHash,passwordFormat',
         'fileCount,fileSize',
@@ -631,7 +631,7 @@ class fimUser
                         "avatar" => $existingUserData['avatar'],
                         "userGroupId" => $existingUserData['userGroupId'],
                         "socialGroupIds" => $existingUserData['socialGroupIds'],
-                        "messageFormatting" => $existingUserData['messageFormatting'],
+                        "defaultMessageFormatting" => $existingUserData['messageFormatting'],
                         "options" => (int)$existingUserData['options'],
                         "userParentalAge" => (int)$existingUserData['userParentalAge'],
                         "userParentalFlags" => $existingUserData['userParentalFlags'],

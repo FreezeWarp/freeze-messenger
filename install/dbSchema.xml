@@ -725,7 +725,7 @@
             <column name="userGroupId" type="int" maxlen="6" default="1" />
             <column name="socialGroupIds" type="string" maxlen="1000" />
             <column name="options" type="bitfield" bits="16" />
-            <column name="messageFormatting" type="string" maxlen="300" />
+            <column name="defaultMessageFormatting" type="string" maxlen="300" />
 
             <!-- Password Fun -->
             <column name="password" type="string" maxlen="64" />

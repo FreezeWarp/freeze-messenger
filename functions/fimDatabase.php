@@ -36,7 +36,7 @@ class fimDatabase extends databaseSQL
     /**
      * @var string The columns containing all user data.
      */
-    public $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs, lastSync';
+    public $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, defaultMessageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs, lastSync';
 
     /**
      * @var string The columns containing all user login data.
@@ -46,7 +46,7 @@ class fimDatabase extends databaseSQL
     /**
      * @var string The columns containing all user data that is recorded in the user history.
      */
-    public $userHistoryColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, messageFormatting, options, userParentalAge, userParentalFlags, privs';
+    public $userHistoryColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, defaultMessageFormatting, options, userParentalAge, userParentalFlags, privs';
 
     /**
      * @var string The columns containing all room data that is recorded in the room history.
@@ -1104,7 +1104,7 @@ class fimDatabase extends databaseSQL
         if ($options['archive']) {
             $columns = array(
                 $this->sqlPrefix . "messages" => 'messageId, time, iv, salt, roomId, userId, anonId, deleted, flag, text',
-                $this->sqlPrefix . "users"    => 'userId muserId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, messageFormatting'
+                $this->sqlPrefix . "users"    => 'userId muserId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, defaultMessageFormatting'
             );
 
             $conditions['both']['muserId'] = $this->col('userId');
@@ -1115,7 +1115,7 @@ class fimDatabase extends databaseSQL
             if ($options['room']->isPrivateRoom())
                 $columns = [$this->sqlPrefix . "messagesCachedPrivate" => "messageId, roomId, time, flag, userId, text"];
             else
-                $columns = [$this->sqlPrefix . "messagesCached" => "messageId, roomId, time, flag, userId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, messageFormatting, text"];
+                $columns = [$this->sqlPrefix . "messagesCached" => "messageId, roomId, time, flag, userId, messageFormatting, text"];
         }
 
 
@@ -2207,11 +2207,6 @@ class fimDatabase extends databaseSQL
                 'messageId'         => $messageId,
                 'roomId'            => $message->room->id,
                 'userId'            => $message->user->id,
-                'userName'          => $message->user->name,
-                'userGroupId'       => $message->user->mainGroupId,
-                'avatar'            => $message->user->avatar,
-                'profile'           => $message->user->profile,
-                'userNameFormat'    => $message->user->userNameFormat,
                 'messageFormatting' => $message->user->messageFormatting,
                 'text'              => $message->text,
                 'flag'              => $message->flag,
