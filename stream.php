@@ -95,7 +95,7 @@ else {
 //  header('Content-Type: text/plain');
     header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
 
-    set_time_limit($config['serverSentTimeLimit']);
+    @set_time_limit($config['serverSentTimeLimit']);
 
     $serverSentRetries = 0;
 

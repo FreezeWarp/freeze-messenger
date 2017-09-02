@@ -28,9 +28,9 @@ require('../functions/fimCache.php');
 require('../functions/fimConfigFactory.php');
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
-if(!ini_get('safe_mode')) {
-    ini_set('max_execution_time', 0);
-    set_time_limit(0);
+if(!@ini_get('safe_mode')) {
+    @ini_set('max_execution_time', 0);
+    @set_time_limit(0);
 }
 
 if (file_exists('../config.php')) { // Make sure that config doesn't exist. TODO: Is this secure?

@@ -278,7 +278,7 @@ class fimDatabase extends databaseSQL
      *********************** Setters *************************
      *********************************************************/
 
-    /**
+        /**
      * Associates $user with the database instance, such as for auditing.
      *
      * @param fimUser $user
