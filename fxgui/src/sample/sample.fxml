@@ -26,12 +26,12 @@
               <items>
                   <ScrollPane prefHeight="530.0" prefWidth="531.0">
                      <content>
-                        <VBox />
+                        <VBox fx:id="messageList" />
                      </content>
                   </ScrollPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
-                        <TextField prefHeight="62.0" prefWidth="430.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <TextField fx:id="newMessageText" prefHeight="62.0" prefWidth="430.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children></AnchorPane>
               </items>
             </SplitPane>
