@@ -1,0 +1,7 @@
+.idea/*
+*/.idea/*
+config.php
+querylog
+*.class
+*.iml
+target/*
