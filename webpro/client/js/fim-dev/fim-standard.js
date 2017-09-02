@@ -64,7 +64,7 @@ standard.prototype.archive = {
             'archive' : 1,
             'page' : standard.archive.options.page
         }, {
-            'reverseEach' : true,
+            'reverseEach' : false,
             'each' : function(messageData) {
                 $.when(fim_messageFormat(messageData, 'table')).then(function(messageText) {
                     $('#archiveMessageList').append(messageText);
@@ -262,6 +262,7 @@ standard.prototype.getMessages = function() {console.log("Getting messages from 
                     'initialRequest': (requestSettings.firstRequest ? 1 : 0),
                     'messageIdStart': requestSettings.lastMessage + 1,
                 }, {
+                    'reverseEach' : true,
                     'each': function (messageData) {
                         $.when(fim_messageFormat(messageData, 'list')).then(function(messageText) {
                             fim_newMessage(messageText, Number(messageData.messageId));

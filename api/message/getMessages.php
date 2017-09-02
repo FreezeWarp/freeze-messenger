@@ -138,7 +138,7 @@ else {
             'messageTextSearch' => $request['search'],
             'archive' => $request['archive'],
             'userIds' => $request['userIds'],
-        ), ['messageId' => ($request['messageIdEnd'] || $request['messageDateMax'] ? 'desc' : 'asc')], $config['defaultMessageLimit'], $request['page'])->getAsMessages();
+        ), ['messageId' => ($request['messageIdStart'] || $request['messageDateMin'] ? 'asc' : 'desc')], $config['defaultMessageLimit'], $request['page'])->getAsMessages();
     }
 
 
