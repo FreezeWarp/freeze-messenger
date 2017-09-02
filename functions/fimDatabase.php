@@ -445,6 +445,10 @@ class fimDatabase extends databaseSQL
 
 
         /* Modify Query Data for Directives */
+        $conditions = [
+            'both' => [],
+        ];
+        
         if (count($options['listIds']) > 0) $conditions['both']['listId'] = $this->in((array) $options['listIds']);
         if ($options['listNameSearch']) $conditions['both']['listName'] = $this->type('string', $options['listNameSearch'], 'search');
 

@@ -32,7 +32,7 @@ if (!defined('API_INMESSAGE'))
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
     'message' => [
-        'required' => true,
+        'require' => true,
     ],
 
     'flag' => [
