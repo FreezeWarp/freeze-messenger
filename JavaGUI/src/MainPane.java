@@ -1,19 +1,26 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -24,16 +31,23 @@ public class MainPane {
     @FXML
     public TextArea newMessageText;
 
+    @FXML
+    public ScrollPane messageListScroll;
+
     /**
      * This is the current room we have loaded and are getting messages for.
      * In the future, this will be an array of multiple rooms.
      */
-    Room currentRoom = new Room(1);
+    Room currentRoom = new Room(2);
 
 
     public void initialize() {
         Timer timer = new Timer();
         timer.schedule(new RefreshMessages(), 0, 1000);
+
+        // align messages to bottom
+        messageListScroll.setFitToHeight(true);
+        messageList.minHeightProperty().bind(Bindings.createDoubleBinding(() -> messageListScroll.getViewportBounds().getHeight(), messageListScroll.viewportBoundsProperty()));
 
         // todo: shift+enter
         newMessageText.setOnKeyPressed(event -> {
@@ -62,13 +76,17 @@ public class MainPane {
 
                     final Text userName = new Text("temp");
                     userName.setFont(Font.font(null, FontWeight.BOLD, -1));
-                    final Text messageTime = new Text(message.get("messageTime").asText());
+
+                    Calendar c = Calendar.getInstance(Locale.getDefault());
+                    System.out.println(message.get("messageTime").asLong() * 1000);
+                    c.setTimeInMillis(message.get("messageTime").asLong() * 1000);
+                    final Text messageTime = new Text((new SimpleDateFormat()).format(c.getTime()));
                     final Text messageText = new Text(message.get("messageText").asText());
 
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
-                            messageList.getChildren().add(0, new TextFlow(userName, new Text(" @ "), messageTime, new Text(": "), messageText));
+                            messageList.getChildren().add(new TextFlow(userName, new Text(" @ "), messageTime, new Text(": "), messageText));
                         }
                     });
 

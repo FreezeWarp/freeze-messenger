@@ -34,9 +34,9 @@
                             <TextArea fx:id="newMessageText" prefHeight="62.0" prefWidth="430.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                         </children>
                     </AnchorPane>
-                    <ScrollPane prefHeight="530.0" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                    <ScrollPane fx:id="messageListScroll" prefHeight="530.0" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                         <content>
-                            <VBox fx:id="messageList" minHeight="200.0" />
+                            <VBox fx:id="messageList" alignment="BOTTOM_CENTER" minHeight="200.0" />
                         </content>
                     </ScrollPane>
                </children>
