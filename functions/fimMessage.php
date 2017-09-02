@@ -121,7 +121,7 @@ class fimMessage
 
             $this->flag = $messageData['flag'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have flag column.');
             $this->time = $messageData['time'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');
-            $this->formatting = $messageData['messageFormatting'];// todo: ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have messageFormatting column.');
+            $this->formatting = $messageData['messageFormatting'] ?? '';// todo: ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have messageFormatting column.');
         } // When creating a new message.
         else if (is_array($messageData)) {
             $this->user = $messageData['user'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain user.');
