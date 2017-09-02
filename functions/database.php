@@ -145,6 +145,14 @@ abstract class database
      */
     public $collectionTriggers = [];
 
+
+    /**
+     * @var bool Whether or not a transaction is currently active (and it should be reverted on failure).
+     */
+    public $transaction = false;
+
+    
+    /** TODO */
     public $sqlPrefix;
 
 
