@@ -27,14 +27,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * A GUI interface to simulate two coolers, a refridgerator and freezer.
+ * Basic driver for Messenger.
  *
- * Key Design Notes:
- ** We are using JavaFX's listeners (using Properties) instead of custom listener classes. This is probably a good idea, because those methods exist for a reason and are becoming the default choice for GUIs in the Java world. They work much like the Observer pattern.
- *
- * @author Eric Fulwiler, Daniel Johnson, Joseph T. Parsons, Cory Stadther
- * @version 2.0
- * @since   2017-August-05
+ * @author
+ * @version 1.0
  */
 public class GUIDisplay extends Application {
     /**

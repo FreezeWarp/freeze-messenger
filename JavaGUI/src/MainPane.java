@@ -1,9 +1,13 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -18,7 +22,7 @@ public class MainPane {
     public VBox messageList;
 
     @FXML
-    public TextField newMessageText;
+    public TextArea newMessageText;
 
     /**
      * This is the current room we have loaded and are getting messages for.
@@ -30,6 +34,18 @@ public class MainPane {
     public void initialize() {
         Timer timer = new Timer();
         timer.schedule(new RefreshMessages(), 0, 1000);
+
+        // todo: shift+enter
+        newMessageText.setOnKeyPressed(event -> {
+            if(event.getCode() == KeyCode.ENTER) {
+                String text = newMessageText.getText();
+                GUIDisplay.api.sendMessage(currentRoom.getId(), text);
+
+                newMessageText.setText("");
+
+                event.consume(); // don't show enter key
+            }
+        });
     }
 
 

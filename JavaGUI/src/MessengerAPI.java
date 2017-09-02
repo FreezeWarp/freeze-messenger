@@ -113,6 +113,24 @@ public class MessengerAPI {
 
 
     /**
+     * Send message to room.
+     * @param roomId The room to post to.
+     * @param messageText The message to post.
+     * @todo test for message send failure
+     */
+    public boolean sendMessage(int roomId, String messageText) {
+        try {
+            JsonNode json = httpPOST("api/message.php?_action=create&access_token=" + sessionToken + "&roomId=" + roomId, "message=" + messageText).get("sendMessage");
+        } catch (Exception ex) {
+            System.err.println("Exception: " + ex);
+            return false;
+        }
+
+        return true;
+    }
+
+
+    /**
      * Performs simple HTTP GET request, returning JSON body.
      * @param path The URL (relative to {@link MessengerAPI#serverUrl} to use.
      * @return The JSON response to the request.
