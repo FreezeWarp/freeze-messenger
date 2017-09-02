@@ -131,6 +131,4 @@ class fimCache extends generalCache {
         return $text;
     }
 }
-
-require('fimConfigFactory.php');
 ?>

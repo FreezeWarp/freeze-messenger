@@ -25,7 +25,7 @@ require('../functions/fimUser.php'); // ""
 require('../functions/fimRoom.php'); // ""
 require('../functions/generalCache.php');
 require('../functions/fimCache.php');
-require('../functions/fimConfig.php');
+require('../functions/fimConfigFactory.php');
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!ini_get('safe_mode')) {
