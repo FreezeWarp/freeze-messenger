@@ -11,7 +11,6 @@ class fimConfigFactory {
         }
         else {
             global $disableConfig;
-            require_once('fimConfig.php');
             $config = new fimConfig();
 
             if (!$disableConfig) {
