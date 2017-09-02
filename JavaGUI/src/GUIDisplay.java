@@ -7,8 +7,10 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -39,13 +41,7 @@ public class GUIDisplay extends Application {
      * This is the object for making API calls.
      * It will be instantiated once a server URL is known.
      */
-    MessengerAPI api;
-
-    /**
-     * This is the current room we have loaded and are getting messages for.
-     * In the future, this will be an array of multiple rooms.
-     */
-    Room currentRoom = new Room(1);
+    static MessengerAPI api;
 
 
     // Stores the overall frame, composed of the main frame and the side panel.
@@ -184,13 +180,19 @@ public class GUIDisplay extends Application {
 
 
         // Add the overall frame to a scene, add the scene to the primary stage, then display the stage.
-        Scene scene = new Scene(mainMessageInterface);
-        primaryStage.setResizable(true);
-        primaryStage.setMinWidth(600);
-        primaryStage.setMinHeight(400);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Message Interface");
-        primaryStage.show();
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("MainPane.fxml"));
+
+            Scene scene = new Scene(root);
+            primaryStage.setResizable(true);
+            primaryStage.setMinWidth(600);
+            primaryStage.setMinHeight(400);
+            primaryStage.setScene(scene);
+            primaryStage.setTitle("Message Interface");
+            primaryStage.show();
+        } catch (Exception ex) {
+            System.out.println("Exception: " + ex);
+        }
 
 
 
@@ -289,37 +291,5 @@ public class GUIDisplay extends Application {
         dialog.setHeaderText("Error");
         dialog.getDialogPane().setContent(label);
         dialog.showAndWait();
-    }
-
-
-
-    class RefreshMessages extends TimerTask {
-        public void run() {
-            JsonNode messages = api.getMessages(currentRoom.getId(), currentRoom.getLastMessageId(), !currentRoom.isArchiveFetched());
-            currentRoom.setArchiveFetched(true);
-
-            if (messages.isArray()) {
-                for (final JsonNode message : messages) {
-                    System.out.println(message);
-                    currentRoom.addNewMessage(message);
-
-                    final Text userName = new Text("temp");
-                    userName.setFont(Font.font(null, FontWeight.BOLD, -1));
-                    final Text messageTime = new Text(message.get("messageTime").asText());
-                    final Text messageText = new Text(message.get("messageText").asText());
-
-                    Platform.runLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            messagesFrame.getChildren().add(0, new TextFlow(userName, new Text(" @ "), messageTime, new Text(": "), messageText));
-                        }
-                    });
-
-                }
-            }
-            else {
-                alert("Bad response from getMessages.");
-            }
-        }
     }
 }
