@@ -2165,7 +2165,7 @@ class fimDatabase extends databaseSQL
 
 
         /* Preemptively resolve all needed $user properties */
-        $message->user->resolve(array("messageFormatting", "userNameFormat", "profile", "avatar", "mainGroupId", "name"));
+        $message->user->resolve(array("messageFormatting"));
 
 
 
