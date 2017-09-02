@@ -1546,7 +1546,7 @@ class fimDatabase extends databaseSQL
 
 
             /* Update cache and return. */
-            $this->updatePermissionsCache($room->id, $user->id, $returnBitfield, ($kicks > 0 ? true : false));
+            $this->updatePermissionsCache($room->id, $user->id, $returnBitfield, (isset($kicks) && $kicks > 0 ? true : false));
 
             return $returnBitfield;
         }
