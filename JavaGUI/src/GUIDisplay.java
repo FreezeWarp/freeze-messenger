@@ -259,10 +259,10 @@ public class GUIDisplay extends Application {
                     System.out.println(message);
                     currentRoom.addNewMessage(message);
 
-                    Text userName = new Text("temp");
+                    final Text userName = new Text("temp");
                     userName.setFont(Font.font(null, FontWeight.BOLD, -1));
-                    Text messageTime = new Text(message.get("messageTime").asText());
-                    Text messageText = new Text(message.get("messageText").asText());
+                    final Text messageTime = new Text(message.get("messageTime").asText());
+                    final Text messageText = new Text(message.get("messageText").asText());
 
                     Platform.runLater(new Runnable() {
                         @Override
