@@ -1498,7 +1498,7 @@ class fimDatabase extends databaseSQL
                     return 0;
 
                 elseif (in_array($user->id, $userIds))
-                    return ROOM_PERMISSION_VIEW | ROOM_PERMISSION_POST; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
+                    return fimRoom::ROOM_PERMISSION_VIEW | fimRoom::ROOM_PERMISSION_POST; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
 
                 else
                     return 0;
@@ -1530,15 +1530,15 @@ class fimDatabase extends databaseSQL
 
             /* Remove priviledges under certain circumstances. */
             // Remove priviledges that a user does not have for any room.
-            if (!($user->hasPriv('view'))) $returnBitfield &= ~ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
-            if (!($user->hasPriv('post'))) $returnBitfield &= ~ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
-            if (!($user->hasPriv('changeTopic'))) $returnBitfield &= ~ROOM_PERMISSION_TOPIC;
+            if (!($user->hasPriv('view'))) $returnBitfield &= ~fimRoom::ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
+            if (!($user->hasPriv('post'))) $returnBitfield &= ~fimRoom::ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
+            if (!($user->hasPriv('changeTopic'))) $returnBitfield &= ~fimRoom::ROOM_PERMISSION_TOPIC;
 
             // Deleted and archived rooms act similarly: no one may post in them, while only admins can view deleted rooms.
             if ($room->deleted || $room->archived) { // that is, check if a room is either deleted or archived.
-                if ($room->deleted && !$user->hasPriv('modRooms')) $returnBitfield &= ~(ROOM_PERMISSION_VIEW); // Only super moderators may view deleted rooms.
+                if ($room->deleted && !$user->hasPriv('modRooms')) $returnBitfield &= ~(fimRoom::ROOM_PERMISSION_VIEW); // Only super moderators may view deleted rooms.
 
-                $returnBitfield &= ~(ROOM_PERMISSION_POST | ROOM_PERMISSION_TOPIC); // And no one can post in them - a rare case where even admins are denied certain abilities.
+                $returnBitfield &= ~(fimRoom::ROOM_PERMISSION_POST | fimRoom::ROOM_PERMISSION_TOPIC); // And no one can post in them - a rare case where even admins are denied certain abilities.
             }
 
 
@@ -1828,7 +1828,7 @@ class fimDatabase extends databaseSQL
 
         if ($action === 'create' || $action === 'edit') {
             foreach ($rooms AS $roomId => $room) {
-                if ($this->hasPermission($userData, $room) & ROOM_PERMISSION_VIEW) {
+                if ($this->hasPermission($userData, $room) & fimRoom::ROOM_PERMISSION_VIEW) {
                     $this->insert($table, array(
                         'userId' => $userData->id,
                         'roomId' => $roomId,

@@ -107,7 +107,7 @@ $xmlData = [
     'messages' => [],
 ];
 
-if (!($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW))
+if (!($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
     new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
 else {

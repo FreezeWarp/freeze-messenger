@@ -59,7 +59,7 @@ $files = $database->getFiles(array(
 foreach ($files AS $file) {
     // Only show if the user has permission.
     if ($file['roomIdLink'] && $file['userId'] != $user->id) { /* TODO: Test */
-        if (!($database->hasPermission($user, $database->getRoom($file['roomIdLink'])) & ROOM_PERMISSION_VIEW)) continue;
+        if (!($database->hasPermission($user, $database->getRoom($file['roomIdLink'])) & fimRoom::ROOM_PERMISSION_VIEW)) continue;
     }
 
     $xmlData['files']['file ' . $file['fileId']] = array(

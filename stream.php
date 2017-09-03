@@ -45,7 +45,7 @@ function stream_event($streamSource, $queryId, $lastEvent) {
 function stream_messages($roomId, $lastEvent) {
     global $database, $user;
 
-    if (!($database->hasPermission($user, new fimRoom($roomId)) & ROOM_PERMISSION_VIEW))
+    if (!($database->hasPermission($user, new fimRoom($roomId)) & fimRoom::ROOM_PERMISSION_VIEW))
         new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
     else {

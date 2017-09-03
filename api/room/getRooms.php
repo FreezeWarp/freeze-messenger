@@ -110,7 +110,7 @@ do {
             ]
         );
 
-        if ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
+        if ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
             foreach ($database->getRoomPermissions([$roomId], 'user')->getAsArray() AS $row) {
                 var_dump($row);
                 $xmlData['rooms'][$roomId]['userPermissions'][$row['param']] = $row['permissions'];

@@ -63,7 +63,7 @@ $database->accessLog('getActiveUsers', $request);
 if (count($request['roomIds']) > 0) {
     // Only include the room \if the active user has permission to know about the room.
     foreach ($request['roomIds'] AS $index => $roomId) {
-        if (!($database->hasPermission($user, new fimRoom($roomId)) & ROOM_PERMISSION_VIEW)) {
+        if (!($database->hasPermission($user, new fimRoom($roomId)) & fimRoom::ROOM_PERMISSION_VIEW)) {
             unset($request['roomIds'][$index]);
         }
     }

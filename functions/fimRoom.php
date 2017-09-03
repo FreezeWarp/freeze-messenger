@@ -14,74 +14,76 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/**
- * The room is official, and will receive special prominence in room searches.
- */
-define("ROOM_OFFICIAL", 1);
-
-/**
- * The room is deleted, and cannot be viewed (except by admins) or posted in.
- */
-define("ROOM_DELETED", 4);
-
-/**
- * The room is hidden, and will not be shown in room searches.
- */
-define("ROOM_HIDDEN", 8);
-
-/**
- * The room is archived, and cannot be posted in, but can still be viewed.
- */
-define("ROOM_ARCHIVED", 16);
-
-
-/**
- * The room can be viewed by the user.
- */
-define("ROOM_PERMISSION_VIEW", 1);
-
-/**
- * The room can be posted in by the user.
- */
-define("ROOM_PERMISSION_POST", 2);
-
-/**
- * The room's topic can be changed by the user.
- */
-define("ROOM_PERMISSION_TOPIC", 4);
-
-/**
- * The room can be moderated by the user, e.g. posts can be deleted.
- */
-define("ROOM_PERMISSION_MODERATE", 8);
-
-/**
- * The room's properties can be altered by the user, e.g. the room's censors can be changed.
- */
-define("ROOM_PERMISSION_PROPERTIES", 16);
-
-/**
- * The room's permissions for users and groups can be changed by the user. This includes, for instance, making other users moderators.
- */
-define("ROOM_PERMISSION_GRANT", 128);
-
-
-/**
- * The room is private between two or more people.
- */
-define("ROOM_TYPE_PRIVATE", 'private');
-
-/**
- * The room is off-the-record between two or more people.
- */
-define("ROOM_TYPE_OTR", 'otr');
-
 
 /**
  * Class fimRoom
  * The data for a room object.
  */
 class fimRoom {
+
+    /**
+     * The room is official, and will receive special prominence in room searches.
+     */
+    const ROOM_OFFICIAL = 1;
+
+    /**
+     * The room is deleted, and cannot be viewed (except by admins) or posted in.
+     */
+    const ROOM_DELETED = 4;
+
+    /**
+     * The room is hidden, and will not be shown in room searches.
+     */
+    const ROOM_HIDDEN = 8;
+
+    /**
+     * The room is archived, and cannot be posted in, but can still be viewed.
+     */
+    const ROOM_ARCHIVED = 16;
+
+
+    /**
+     * The room can be viewed by the user.
+     */
+    const ROOM_PERMISSION_VIEW = 1;
+
+    /**
+     * The room can be posted in by the user.
+     */
+    const ROOM_PERMISSION_POST = 2;
+
+    /**
+     * The room's topic can be changed by the user.
+     */
+    const ROOM_PERMISSION_TOPIC = 4;
+
+    /**
+     * The room can be moderated by the user, e.g. posts can be deleted.
+     */
+    const ROOM_PERMISSION_MODERATE = 8;
+
+    /**
+     * The room's properties can be altered by the user, e.g. the room's censors can be changed.
+     */
+    const ROOM_PERMISSION_PROPERTIES = 16;
+
+    /**
+     * The room's permissions for users and groups can be changed by the user. This includes, for instance, making other users moderators.
+     */
+    const ROOM_PERMISSION_GRANT = 128;
+
+
+    /**
+     * The room is private between two or more people.
+     */
+    const ROOM_TYPE_PRIVATE = 'private';
+
+    /**
+     * The room is off-the-record between two or more people.
+     */
+    const ROOM_TYPE_OTR = 'otr';
+
+    
     /**
      * @var mixed The ID of the room.
      */
@@ -192,12 +194,12 @@ class fimRoom {
      * @var array A map of string permissions to their bits in a bitfield.
      */
     public static $permArray = [
-        'post' => ROOM_PERMISSION_POST,
-        'view' => ROOM_PERMISSION_VIEW,
-        'topic' => ROOM_PERMISSION_TOPIC,
-        'moderate' => ROOM_PERMISSION_MODERATE,
-        'properties' => ROOM_PERMISSION_PROPERTIES,
-        'grant' => ROOM_PERMISSION_GRANT,
+        'post' => fimRoom::ROOM_PERMISSION_POST,
+        'view' => fimRoom::ROOM_PERMISSION_VIEW,
+        'topic' => fimRoom::ROOM_PERMISSION_TOPIC,
+        'moderate' => fimRoom::ROOM_PERMISSION_MODERATE,
+        'properties' => fimRoom::ROOM_PERMISSION_PROPERTIES,
+        'grant' => fimRoom::ROOM_PERMISSION_GRANT,
         'own' => 255,
     ];
 
@@ -528,10 +530,10 @@ class fimRoom {
 
 
             else if ($property === 'options') {
-                $this->deleted  = ($this->options & ROOM_DELETED);
-                $this->archived = ($this->options & ROOM_ARCHIVED);
-                $this->official = ($this->options & ROOM_OFFICIAL) && $config['officialRooms'];
-                $this->hidden   = ($this->options & ROOM_HIDDEN) && $config['hiddenRooms'];
+                $this->deleted  = ($this->options & fimRoom::ROOM_DELETED);
+                $this->archived = ($this->options & fimRoom::ROOM_ARCHIVED);
+                $this->official = ($this->options & fimRoom::ROOM_OFFICIAL) && $config['officialRooms'];
+                $this->hidden   = ($this->options & fimRoom::ROOM_HIDDEN) && $config['hiddenRooms'];
             }
 
             else if ($property === 'id' && $this->isPrivateRoom()) {

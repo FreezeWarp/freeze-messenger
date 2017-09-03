@@ -28,7 +28,7 @@ else {
         switch ($request['do2']) {
             case 'view': case false:
             $users = $database->getUsers(array(
-                                             'hasPrivs' => array(ADMIN_CENSOR, ADMIN_FILES, ADMIN_GRANT, ADMIN_PROTECTED, ADMIN_ROOMS, ADMIN_USERS, ADMIN_VIEW_PRIVATE),
+                                             'hasPrivs' => array(fimUser::ADMIN_CENSOR, fimUser::ADMIN_FILES, fimUser::ADMIN_GRANT, fimUser::ADMIN_PROTECTED, fimUser::ADMIN_ROOMS, fimUser::ADMIN_USERS, fimUser::ADMIN_VIEW_PRIVATE),
                                          ))->getAsUsers();
 
             foreach ($users AS $user2) {

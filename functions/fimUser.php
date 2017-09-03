@@ -14,83 +14,6 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/**
- * The user may view rooms.
- */
-define("USER_PRIV_VIEW", 0x1);
-
-/**
- * The user may post in rooms.
- */
-define("USER_PRIV_POST", 0x2);
-
-/**
- * The user may change the topic in rooms.
- */
-define("USER_PRIV_TOPIC", 0x4);
-
-/**
- * The user may create rooms.
- */
-define("USER_PRIV_CREATE_ROOMS", 0x20);
-
-/*
- * The user may make private messages to friends.
- */
-define("USER_PRIV_PRIVATE_FRIENDS", 0x40);
-
-/**
- * The user may make private messages to everybody.
- */
-define("USER_PRIV_PRIVATE_ALL", 0x80);
-
-/**
- * The user may view active users.
- */
-define("USER_PRIV_ACTIVE_USERS", 0x400);
-
-/**
- * The user may view post counts.
- */
-define("USER_PRIV_POST_COUNTS", 0x800);
-
-
-/**
- * The user has administrative grant priviledges, such that they can make other users administrators.
- */
-define("ADMIN_GRANT", 0x10000);
-
-/**
- * The user is protected, and cannot lose permissions through normal means.
- */
-define("ADMIN_PROTECTED", 0x20000);
-
-/**
- * The user may administer rooms.
- */
-define("ADMIN_ROOMS", 0x40000);
-
-/**
- * The user may view private rooms.
- * @todo: remove?
- */
-define("ADMIN_VIEW_PRIVATE", 0x80000);
-
-/**
- * The user may administer users.
- */
-define("ADMIN_USERS", 0x100000);
-
-/**
- * The user may administer files.
- */
-define("ADMIN_FILES", 0x400000);
-
-/**
- * The user may administer the censor.
- */
-define("ADMIN_CENSOR", 0x1000000);
-
 
 /**
  * Class fimUser
@@ -98,6 +21,84 @@ define("ADMIN_CENSOR", 0x1000000);
  */
 class fimUser
 {
+    /**
+     * The user may view rooms.
+     */
+    const USER_PRIV_VIEW = 0x1;
+
+    /**
+     * The user may post in rooms.
+     */
+    const USER_PRIV_POST = 0x2;
+
+    /**
+     * The user may change the topic in rooms.
+     */
+    const USER_PRIV_TOPIC = 0x4;
+
+    /**
+     * The user may create rooms.
+     */
+    const USER_PRIV_CREATE_ROOMS = 0x20;
+
+    /*
+     * The user may make private messages to friends.
+     */
+    const USER_PRIV_PRIVATE_FRIENDS = 0x40;
+
+    /**
+     * The user may make private messages to everybody.
+     */
+    const USER_PRIV_PRIVATE_ALL = 0x80;
+
+    /**
+     * The user may view active users.
+     */
+    const USER_PRIV_ACTIVE_USERS = 0x400;
+
+    /**
+     * The user may view post counts.
+     */
+    const USER_PRIV_POST_COUNTS = 0x800;
+
+
+    /**
+     * The user has administrative grant priviledges, such that they can make other users administrators.
+     */ 
+    const ADMIN_GRANT = 0x10000;
+
+    /**
+     * The user is protected, and cannot lose permissions through normal means.
+     */
+    const ADMIN_PROTECTED = 0x20000;
+
+    /**
+     * The user may administer rooms.
+     */
+    const ADMIN_ROOMS = 0x40000;
+
+    /**
+     * The user may view private rooms.
+     * @todo: remove?
+     */
+    const ADMIN_VIEW_PRIVATE = 0x80000;
+
+    /**
+     * The user may administer users.
+     */
+    const ADMIN_USERS = 0x100000;
+
+    /**
+     * The user may administer files.
+     */
+    const ADMIN_FILES = 0x400000;
+
+    /**
+     * The user may administer the censor.
+     */
+    const ADMIN_CENSOR = 0x1000000;
+
+
     /**
      * The id reserved for anonymous users.
      */
@@ -439,22 +440,22 @@ class fimUser
             elseif ($property === 'privs') {
                 // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
                 if (!$config['userRoomCreation'])
-                    $this->privs &= ~USER_PRIV_CREATE_ROOMS;
+                    $this->privs &= ~fimUser::USER_PRIV_CREATE_ROOMS;
                 if (!$config['userPrivateRoomCreation'])
-                    $this->privs &= ~(USER_PRIV_PRIVATE_ALL | USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
+                    $this->privs &= ~(fimUser::USER_PRIV_PRIVATE_ALL | fimUser::USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
                 if ($config['disableTopic'])
-                    $this->privs &= ~USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
+                    $this->privs &= ~fimUser::USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
 
                 // Certain bits imply other bits. Make sure that these are consistent.
-                if ($this->privs & USER_PRIV_PRIVATE_ALL)
-                    $this->privs |= USER_PRIV_PRIVATE_FRIENDS;
+                if ($this->privs & fimUser::USER_PRIV_PRIVATE_ALL)
+                    $this->privs |= fimUser::USER_PRIV_PRIVATE_FRIENDS;
 
                 // Superuser override (note that any user with GRANT or in the $config superuser array is automatically given all permissions, and is marked as protected. The only way, normally, to remove a user's GRANT status, because they are automatically protected, is to do so directly in the database.)
                 // LoginConfig is not guranteed to be set here (e.g. during installation), which is why we cast.
-                if (in_array($this->id, (array) $loginConfig['superUsers']) || ($this->privs & ADMIN_GRANT))
+                if (in_array($this->id, (array) $loginConfig['superUsers']) || ($this->privs & fimUser::ADMIN_GRANT))
                     $this->privs = 0x7FFFFFFF;
-                elseif ($this->privs & ADMIN_ROOMS)
-                    $this->privs |= (USER_PRIV_VIEW | USER_PRIV_POST | USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
+                elseif ($this->privs & fimUser::ADMIN_ROOMS)
+                    $this->privs |= (fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
             }
 
             elseif ($property === 'avatar') {
@@ -486,23 +487,23 @@ class fimUser
 
         switch ($priv) {
             /* Admin Privs */
-            case 'protected' :  return (bool)($privs & ADMIN_PROTECTED);     break; // This the "untouchable" flag; break; but that's more or less all it means.
-            case 'modPrivs' :   return (bool)($privs & ADMIN_GRANT);         break; // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
-            case 'modRooms' :   return (bool)($privs & ADMIN_ROOMS);         break; // Alter rooms -- kicking users; break; delete posts; break; and change hidden/official status
-            case 'modPrivate' : return (bool)($privs & ADMIN_VIEW_PRIVATE);  break; // View private communications.
-            case 'modUsers' :   return (bool)($privs & ADMIN_USERS);         break; // Site-wide bans; break; mostly.
-            case 'modFiles' :   return (bool)($privs & ADMIN_FILES);         break; // File Uploads
-            case 'modCensor' :  return (bool)($privs & ADMIN_CENSOR);        break; // Censor
+            case 'protected' :  return (bool)($privs & fimUser::ADMIN_PROTECTED);     break; // This the "untouchable" flag; break; but that's more or less all it means.
+            case 'modPrivs' :   return (bool)($privs & fimUser::ADMIN_GRANT);         break; // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
+            case 'modRooms' :   return (bool)($privs & fimUser::ADMIN_ROOMS);         break; // Alter rooms -- kicking users; break; delete posts; break; and change hidden/official status
+            case 'modPrivate' : return (bool)($privs & fimUser::ADMIN_VIEW_PRIVATE);  break; // View private communications.
+            case 'modUsers' :   return (bool)($privs & fimUser::ADMIN_USERS);         break; // Site-wide bans; break; mostly.
+            case 'modFiles' :   return (bool)($privs & fimUser::ADMIN_FILES);         break; // File Uploads
+            case 'modCensor' :  return (bool)($privs & fimUser::ADMIN_CENSOR);        break; // Censor
 
             /* User Privs */
-            case 'view' :                 return (bool)($privs & USER_PRIV_VIEW);            break; // Is not banned
-            case 'post' :                 return (bool)($privs & USER_PRIV_POST);            break;
-            case 'changeTopic':           return (bool)($privs & USER_PRIV_TOPIC);           break;
-            case 'createRooms':           return (bool)($privs & USER_PRIV_CREATE_ROOMS);    break; // May create rooms
-            case 'privateRoomsFriends':   return (bool)($privs & USER_PRIV_PRIVATE_FRIENDS); break; // May create private rooms (friends only)
-            case 'privateRoomsAll':       return (bool)($privs & USER_PRIV_PRIVATE_ALL);     break; // May create private rooms (anybody)
-            case 'roomsOnline':           return (bool)($privs & USER_PRIV_ACTIVE_USERS);    break; // May see rooms online.
-            case 'postCounts':            return (bool)($privs & USER_PRIV_POST_COUNTS);     break; // May see post counts.
+            case 'view' :                 return (bool)($privs & fimUser::USER_PRIV_VIEW);            break; // Is not banned
+            case 'post' :                 return (bool)($privs & fimUser::USER_PRIV_POST);            break;
+            case 'changeTopic':           return (bool)($privs & fimUser::USER_PRIV_TOPIC);           break;
+            case 'createRooms':           return (bool)($privs & fimUser::USER_PRIV_CREATE_ROOMS);    break; // May create rooms
+            case 'privateRoomsFriends':   return (bool)($privs & fimUser::USER_PRIV_PRIVATE_FRIENDS); break; // May create private rooms (friends only)
+            case 'privateRoomsAll':       return (bool)($privs & fimUser::USER_PRIV_PRIVATE_ALL);     break; // May create private rooms (anybody)
+            case 'roomsOnline':           return (bool)($privs & fimUser::USER_PRIV_ACTIVE_USERS);    break; // May see rooms online.
+            case 'postCounts':            return (bool)($privs & fimUser::USER_PRIV_POST_COUNTS);     break; // May see post counts.
 
             /* Config Aliases
              * (These may become full priviledges in the future.) */

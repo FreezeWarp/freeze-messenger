@@ -95,7 +95,7 @@ if ($request['action'] === 'kickUser' || $request['action'] === 'unkickUser') {
     elseif (!$room->id)
         throw new fimError('badRoomId');
 
-    elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE))
+    elseif (!($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE))
         throw new fimError('noPerm'); // You have to be a mod yourself.
 
 
@@ -103,7 +103,7 @@ if ($request['action'] === 'kickUser' || $request['action'] === 'unkickUser') {
         if ($request['length'] < 10)
             throw new fimError('tooShortKick', 'The kick length specified is too short.');
 
-        elseif ($database->hasPermission($kickUser, $room) & ROOM_PERMISSION_MODERATE)
+        elseif ($database->hasPermission($kickUser, $room) & fimRoom::ROOM_PERMISSION_MODERATE)
             throw new fimError('noKickUser', 'Other room moderators may not be kicked.');
 
         else {

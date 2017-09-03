@@ -69,7 +69,7 @@ $kicks = $database->getKicks(array(
 
 /* Start Processing */
 foreach ($kicks AS $kick) {
-    if ($kick['userId'] == $user->id || $database->hasPermission($user, new fimRoom((int) $kick['roomId'])) & ROOM_PERMISSION_MODERATE) { // The user is allowed to know of all kicks they are subject to, and of all kicks in any rooms they moderate.
+    if ($kick['userId'] == $user->id || $database->hasPermission($user, new fimRoom((int) $kick['roomId'])) & fimRoom::ROOM_PERMISSION_MODERATE) { // The user is allowed to know of all kicks they are subject to, and of all kicks in any rooms they moderate.
         $xmlData['kicks']['kick ' . $kick['kickId']] = [
             'roomData'   => [
                 'roomId'   => (int)$kick['roomId'],

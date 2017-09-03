@@ -6,8 +6,8 @@
  * The fimConfig class is used to reference all configuration variables. It is not currently optimised, but we may eventually cache config variables seperately, lowering the memory footprint.
  */
 class fimConfig implements ArrayAccess {
-    /** @var int A bitfield consisting of some combination of USER_PRIV_VIEW, USER_PRIV_POST, USER_PRIV_TOPIC, USER_PRIV_CREATE_ROOMS, USER_PRIV_PRIVATE_FRIENDS, USER_PRIV_PRIVATE_ALL, USER_PRIV_ACTIVE_USERS, and USER_PRIV_POST_COUNTS. USER_PRIV_TOPIC and USER_PRIV_PRIVATE_ALL are omitted by default. */
-    public $defaultUserPrivs = USER_PRIV_VIEW | USER_PRIV_POST | USER_PRIV_CREATE_ROOMS | USER_PRIV_PRIVATE_FRIENDS | USER_PRIV_ACTIVE_USERS | USER_PRIV_POST_COUNTS;
+    /** @var int A bitfield consisting of some combination of fimUser::USER_PRIV_VIEW, fimUser::USER_PRIV_POST, fimUser::USER_PRIV_TOPIC, fimUser::USER_PRIV_CREATE_ROOMS, fimUser::USER_PRIV_PRIVATE_FRIENDS, fimUser::USER_PRIV_PRIVATE_ALL, fimUser::USER_PRIV_ACTIVE_USERS, and fimUser::USER_PRIV_POST_COUNTS. fimUser::USER_PRIV_TOPIC and fimUser::USER_PRIV_PRIVATE_ALL are omitted by default. */
+    public $defaultUserPrivs = fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_CREATE_ROOMS | fimUser::USER_PRIV_PRIVATE_FRIENDS | fimUser::USER_PRIV_ACTIVE_USERS | fimUser::USER_PRIV_POST_COUNTS;
 
     /** @var int */
     public $anonymousUserMinId = 0;

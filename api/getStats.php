@@ -75,7 +75,7 @@ $totalPosts = $database->getPostStats(array(
 foreach ($totalPosts AS $room) {
     foreach ($room AS $roomId => $totalPoster) {
         // Users must be able to view the room to see the respective post counts.
-        if (!($database->hasPermission($user, new fimRoom($roomId)) & ROOM_PERMISSION_VIEW)) {
+        if (!($database->hasPermission($user, new fimRoom($roomId)) & fimRoom::ROOM_PERMISSION_VIEW)) {
             continue;
         }
 

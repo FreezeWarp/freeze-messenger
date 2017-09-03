@@ -122,8 +122,8 @@ $request = fim_sanitizeGPC('p', [
     'options' => [
         'cast'      => 'bitfieldEquation',
         'flipTable' => [
-            ROOM_HIDDEN   => 'hidden',
-            ROOM_OFFICIAL => 'official',
+            fimRoom::ROOM_HIDDEN   => 'hidden',
+            fimRoom::ROOM_OFFICIAL => 'official',
         ]
     ],
 ]);
@@ -195,7 +195,7 @@ switch ($requestHead['_action']) {
 
 
         if ($requestHead['_action'] === 'create' ||
-            ($database->hasPermission($user, $room) & ROOM_PERMISSION_PROPERTIES)) {
+            ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_PROPERTIES)) {
             $room->setDatabase([
                 'roomName'           => $request['name'],
                 'roomParentalFlags'  => $request['parentalFlags'],
@@ -207,7 +207,7 @@ switch ($requestHead['_action']) {
         }
 
         if ($requestHead['_action'] === 'create' ||
-            ($database->hasPermission($user, $room) & ROOM_PERMISSION_GRANT)) {
+            ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_GRANT)) {
             alterRoomPermissions($room->id, $request['userPermissions'], $request['groupPermissions']);
         }
 

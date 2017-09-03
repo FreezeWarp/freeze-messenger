@@ -276,7 +276,7 @@ if ($requestHead['_action'] === 'edit') {
         if (!$defaultRoom->roomExists())
             $xmlData['editUserOptions']['defaultRoom'] = (new fimError('invalidRoom', 'The room specified does not exist.', null, true))->value();
 
-        elseif (!($database->hasPermission($user, $defaultRoom) & ROOM_PERMISSION_VIEW))
+        elseif (!($database->hasPermission($user, $defaultRoom) & fimRoom::ROOM_PERMISSION_VIEW))
             $xmlData['editUserOptions']['defaultRoom'] = (new fimError('noPerm', 'You do not have permission to view the room you are trying to default to.', null, true))->value();
 
         else

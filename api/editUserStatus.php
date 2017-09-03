@@ -58,7 +58,7 @@ $database->accessLog('editUserStatus', $request);
 foreach ($request['roomIds'] AS $roomId) {
     $room = new fimRoom($roomId);
 
-    if ($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW)
+    if ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)
         $database->setUserStatus($room->id, $request['status'],  $request['typing']);
 }
 
