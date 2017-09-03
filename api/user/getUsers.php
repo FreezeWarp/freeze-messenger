@@ -17,9 +17,9 @@
 /**
  * Get Data on One or More Users
  *
- * @package fim3
- * @version 3.0
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @package   fim3
+ * @version   3.0
+ * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  */
 
@@ -31,48 +31,52 @@ if (!defined('API_INUSER'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', array(
-    'userIds' => array(
-        'conflict' => ['id'],
-        'cast' => 'list',
-        'filter' => 'int',
+$request = fim_sanitizeGPC('g', [
+    'userIds' => [
+        'conflict' => ['id', 'showOnly'],
+        'cast'     => 'list',
+        'filter'   => 'int',
         'evaltrue' => true,
-        'default' => [],
-    ),
+        'default'  => [],
+    ],
 
-    'userNames' => array(
+    'userNames' => [
+        'conflict' => ['id', 'showOnly'],
+        'cast'     => 'list',
+        'filter'   => 'string',
+        'default'  => [],
+    ],
+
+    'showOnly' => [ // TODO
         'conflict' => ['id'],
-        'cast' => 'list',
-        'filter' => 'string',
-        'default' => [],
-    ),
+        'cast'     => 'list',
+        'valid'    => array_merge(
+            ['!friends', 'friends', '!ignored', 'ignored'],
+            ($user->hasPriv('modUsers') ? ['banned', '!banned'] : [])
+        ),
+        'default'  => [],
+    ],
 
-    'showOnly' => array( // TODO
-        'cast' => 'list',
-        'valid' => array('banned', '!banned', '!friends', 'friends', '!ignored', 'ignored', ''),
-        'default' => [],
-    ),
-
-    'sort' => array(
-        'valid' => array('id', 'name'),
+    'sort' => [
+        'valid'   => ['id', 'name'],
         'default' => 'id',
-    ),
+    ],
 
-    'info' => array(
-        'cast' => 'list',
-        'valid' => array('profile', 'groups', 'self'),
-        'default' => ["profile", "groups", "self"],
-    ),
-));
+    'info' => [
+        'cast'    => 'list',
+        'valid'   => ['profile', 'groups', 'self'],
+        'default' => ['profile', 'groups', 'self'],
+    ],
+]);
 
 $database->accessLog('getUsers', $request);
 
 
 
 /* Data Predefine */
-$xmlData = array(
-    'users' => array(),
-);
+$xmlData = [
+    'users' => [],
+];
 
 
 
@@ -81,6 +85,18 @@ if (isset($userData)) { // From api/user.php
     $users = $userData;
 }
 else {
+    if (in_array('friends', $request['showOnly']))
+        $request['userIds'] = array_merge($request['userIds'], $user->friendedUsers);
+
+    if (in_array('ignored', $request['showOnly']))
+        $request['userIds'] = array_merge($request['userIds'], $user->ignoredUsers);
+
+    if (in_array('banned', $request['showOnly']))
+        $request['bannedStatus'] = 'banned';
+    elseif (in_array('!banned', $request['showOnly']))
+        $request['bannedStatus'] = 'unbanned';
+
+
     $users = $slaveDatabase->getUsers(
         fim_arrayFilterKeys($request, ['userIds', 'userNames']),
         [$request['sort'] => 'asc']
@@ -94,7 +110,7 @@ foreach ($users AS $userId => $userData) {
     $returnFields = ['name', 'id'];
 
     if (in_array('profile', $request['info']))
-        $returnFields = array_merge($returnFields, ['info', 'avatar', 'profile', 'nameFormat', 'messageFormatting', 'joinDate']);
+        $returnFields = array_merge($returnFields, ['avatar', 'profile', 'nameFormat', 'messageFormatting', 'joinDate']);
 
     if (in_array('groups', $request['info']))
         $returnFields = array_merge($returnFields, ['mainGroupId', 'socialGroupIds']);
@@ -105,12 +121,12 @@ foreach ($users AS $userId => $userData) {
 
     $xmlData['users']['user ' . $userId] = fim_objectArrayFilterKeys($userData, $returnFields);
 
-        // todo
-        //if (isset($userDataForums[$userId]['posts'])) // TODO
-        //    $xmlData['users']['user ' . $userId]['postCount'] = $userDataForums[$userId]['posts'];
+    // todo
+    //if (isset($userDataForums[$userId]['posts'])) // TODO
+    //    $xmlData['users']['user ' . $userId]['postCount'] = $userDataForums[$userId]['posts'];
 
-        //if (isset($userDataForums[$userId]['userTitle']))
-        //    $xmlData['users']['user ' . $userId]['userTitle'] = $userDataForums[$userId]['userTitle'];
+    //if (isset($userDataForums[$userId]['userTitle']))
+    //    $xmlData['users']['user ' . $userId]['userTitle'] = $userDataForums[$userId]['userTitle'];
 }
 
 

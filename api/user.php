@@ -24,30 +24,48 @@
  *
  * =Directives=
  * ==Common Directives (must be in URL parameters):==
+ *
  * @param int         $id        The user's ID.
  *
  * ==Create User Directives==
  * @param string     $userName  The user's name. Required.
  * @param string     $password  The user's password. Required.
  * @param string     $email     The email of the user. Possibly required; use getServerStatus to find out.
- * @param int        $birthdate The date-of-birth of the user as a unix timestamp.  Possibly required; use getServerStatus to find out.
+ * @param int        $birthDate The date-of-birth of the user as a unix timestamp.  Possibly required; use getServerStatus to find out.
  *
  * ==Get User Directives==
- * @param string     $users     A comma-seperated list of user IDs to get. If not specified, all users will be retrieved.
- * @param string     $sort      How to sort the users, either by userId or userName. Default is userId.
- * @param string     $showOnly  A specific filter to apply to users that may be used for certain special tasks. "banned" specifies to show only users who have been banned. Prepending a bang ("!") to any value will reverse the filter - thus, "!banned" will only show users who have not been banned. It is possible to apply multiple filters by comma-separating values.
+ * @param list       $userIds   A list of user IDs to filter by.
+ * @param list       $userNames A list of user names to filter by.
+ * @param string     $sort      How to sort the users, either by id or name. Default is id.
+ * @param list       $info      {
+ *      Which fields to include. Valid options are:
+ *
+ *      @param string "profile" User profile information: avatar, nameFormat, messageFormatting, joinDate
+ *      @param string "groups"  User group information: mainGroupId and socialGroupIds
+ *      @param string "self"    User's own information: defaultRoomId, options, parentalAge, parentalFlags, ignoredUsers, friendedUsers, favRooms, and watchRooms. Only applies to the logged-in user.
+ * }
+ * @param string     $showOnly  {
+ *      A specific filter to apply to users. Options are:
+ *
+ *      @param string "banned"    Only include banned users. Only allowed if the user is allowed to administer users.
+ *      @param string "friends"   Only include users the user is friends with.
+ *      @param string "ignored"   Only include users the user is ignoring.
+ *
+ *      Prepending a bang ("!") to any value will reverse the filter - thus, "!banned" will only show users who have not been banned. It is possible to apply multiple filters by comma-separating values.
+ * }
  *
  *
  * =Exceptions=
  * ==Get User Exceptions==
  * idUserIdsUserNamesConflict
  * ==Create User Exceptions==
+ *
  * @throws notSupported       If trying to create a user when the vanilla login subsystem is not enabled.
  * @throws loggedIn           If a session token was provided.
  * @throws emailInvalid       If the specified email is invalid.
  * @throws ageMinimum         If the specified birthdate is too young.
  * @throws userNameTaken      If the specified userName is already in use.
- * @throws uesrCreationFailed If the user creation failed for unknown reasons.
+ * @throws userCreationFailed If the user creation failed for unknown reasons.
  *
  *
  * =Todo=

@@ -17,9 +17,9 @@
 /**
  * Send or update a message.
  *
- * @package fim3
- * @version 3.0
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @package   fim3
+ * @version   3.0
+ * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  */
 
@@ -30,21 +30,21 @@ if (!defined('API_INMESSAGE'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('p', array(
+$request = fim_sanitizeGPC('p', [
     'message' => [
         'require' => true,
     ],
 
     'flag' => [
         'default' => '',
-        'valid' => ['image', 'video', 'url', 'email', 'html', 'audio', 'text', 'source', ''],
+        'valid'   => ['image', 'video', 'url', 'email', 'html', 'audio', 'text', 'source', ''],
     ],
 
     'ignoreBlock' => [
         'default' => false,
-        'cast' => 'bool',
+        'cast'    => 'bool',
     ],
-));
+]);
 
 
 /* Logging */
@@ -54,7 +54,10 @@ $database->accessLog('sendMessage', $request);
 
 /* Start Processing */
 if (strlen($request['message']) < $config['messageMinLength'] || strlen($request['message']) > $config['messageMaxLength'])
-    new fimError('messageLength', "The message is too long/too short. The minimum is {$config['messageMinLength']} characters, and the maximum is {$config['messageMaxLength']} chracters"); // Too short/long.
+    new fimError('messageLength', "The message is too long/too short.", [
+        "minLength" => $config['messageMinLength'],
+        "maxLength" => $config['messageMaxLength']
+    ]); // Too short/long.
 
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))
     new fimError('spaceMessage', 'The sent message is all whitespace.'); // All spaces. TODO: MB Support
@@ -62,7 +65,7 @@ elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))
 elseif (!($database->hasPermission($user, $room) & ROOM_PERMISSION_POST))
     new fimError('noPerm', 'You may not post in this room.');
 
-elseif (in_array($request['flag'], array('image', 'video', 'url', 'html', 'audio'))
+elseif (in_array($request['flag'], ['image', 'video', 'url', 'html', 'audio'])
     && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED))
     new fimError('badUrl', 'The sent URL is invalid.'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 
@@ -76,7 +79,7 @@ else {
             if ($message->text == $request['message'] && $message->flag == $request['flag'])
                 new fimError('noChange', 'Your edited message is unchanged.');
 
-            else if ($message->user->id != $user->id || !$user->hasPriv('editOwnPosts'))
+            elseif ($message->user->id != $user->id || !$user->hasPriv('editOwnPosts'))
                 new fimError('noPerm', 'You are not allowed to edit this message.');
 
             else {
@@ -90,12 +93,12 @@ else {
             // if /kick starts the message, the user is using a shorthand to kick a user. We don't actually create a new message, but we do attempt to kick the user given.
             if (strpos($request['message'], '/kick') === 0
                 && ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE)) {
-                $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i','$1,$2', $request['message']);
-                $kickData = explode(',',$kickData);
+                $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i', '$1,$2', $request['message']);
+                $kickData = explode(',', $kickData);
 
-                $userData = $database->getUsers(array(
+                $userData = $database->getUsers([
                     'userNames' => [$kickData[0]]
-                ))->getAsUser();
+                ])->getAsUser();
 
                 if ($userData)
                     new fimError('kickUserNameInvalid', 'That username does not exist.');
@@ -105,10 +108,10 @@ else {
 
             else {
                 $message = new fimMessage([
-                    'room' => $room,
-                    'user' => $user,
-                    'text' => $request['message'],
-                    'flag' => $request['flag'],
+                    'room'        => $room,
+                    'user'        => $user,
+                    'text'        => $request['message'],
+                    'flag'        => $request['flag'],
                     'ignoreBlock' => $request['ignoreBlock']
                 ]);
 
@@ -131,11 +134,11 @@ else {
 
 
 /* Data Define */
-$xmlData = array(
-    'sendMessage' => array(
+$xmlData = [
+    'sendMessage' => [
         'censor' => $message->censorMatches
-    ),
-);
+    ],
+];
 
 
 

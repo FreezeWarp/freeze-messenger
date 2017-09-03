@@ -17,9 +17,9 @@
 /**
  * Get Rooms from the Server
  *
- * @package fim3
- * @version 3.0
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @package   fim3
+ * @version   3.0
+ * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  */
 
@@ -29,54 +29,54 @@ if (!defined('API_INROOM'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', array(
+$request = fim_sanitizeGPC('g', [
     // No matter what, the user will not be able to see rooms that he is unable to view.
-    'permFilter' => array(
+    'permFilter' => [
         'default' => 'view',
-        'valid' => array_keys(fimRoom::$permArray),
-    ),
+        'valid'   => array_keys(fimRoom::$permArray),
+    ],
 
-    'roomIds' => array(
-        'default' => [],
-        'cast' => 'list',
-        'filter' => 'int',
+    'roomIds' => [
+        'default'  => [],
+        'cast'     => 'list',
+        'filter'   => 'int',
         'evaltrue' => true,
-    ),
+    ],
 
-    'roomNames' => array(
-        'default' => [],
-        'cast' => 'list',
-        'filter' => 'string',
+    'roomNames' => [
+        'default'  => [],
+        'cast'     => 'list',
+        'filter'   => 'string',
         'evaltrue' => true,
-    ),
+    ],
 
-    'roomNameSearch' => array(
+    'roomNameSearch' => [
         'default' => '',
-        'cast' => 'string',
-    ),
+        'cast'    => 'string',
+    ],
 
-    'sort' => array(
-        'valid' => array('id', 'name'),
+    'sort' => [
+        'valid'   => ['id', 'name'],
         'default' => 'id',
-    ),
+    ],
 
-    'showDeleted' => array(
-        'cast' => 'bool',
+    'showDeleted' => [
+        'cast'    => 'bool',
         'default' => false,
-    ),
+    ],
 
     'page' => [
-        'cast' => 'int',
+        'cast'    => 'int',
         'default' => 0,
     ]
-));
+]);
 
 $database->accessLog('getRooms', $request);
 
 
 /* Data Predefine */
 $xmlData = [
-    'rooms' => [],
+    'rooms'    => [],
     'metadata' => [
         'nextPage' => 0,
     ]
@@ -89,8 +89,8 @@ do {
     else {
         $roomsQuery = $database->getRooms(array_merge(
             fim_arrayFilterKeys($request, ['roomIds', 'roomNames', 'showDeleted', 'roomNameSearch']),
-            ['ownerIds' => ($request['permFilter'] === 'own' ? array($user->id) : array())]
-        ), array($request['sort'] => 'asc'), $config['defaultRoomLimit'], $request['page']);
+            ['ownerIds' => ($request['permFilter'] === 'own' ? [$user->id] : [])]
+        ), [$request['sort'] => 'asc'], $config['defaultRoomLimit'], $request['page']);
 
         $rooms = $roomsQuery->getAsRooms();
     }
@@ -105,17 +105,17 @@ do {
             fim_objectArrayFilterKeys($room, ['id', 'name', 'ownerId', 'parentalAge', 'official', 'archived', 'hidden', 'deleted', 'topic', 'ownerId', 'lastMessageId', 'lastMessageTime', 'messageCount']),
             [
                 'defaultPermissions' => $room->getPermissionsArray($room->defaultPermissions),
-                'permissions' => $room->getPermissionsArray($database->hasPermission($user, $room)),
-                'parentalFlags' => new apiOutputList($room->parentalFlags)
+                'permissions'        => $room->getPermissionsArray($database->hasPermission($user, $room)),
+                'parentalFlags'      => new apiOutputList($room->parentalFlags)
             ]
         );
 
         if ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
-            foreach ($database->getRoomPermissions(array($roomId), 'user')->getAsArray() AS $row) {
+            foreach ($database->getRoomPermissions([$roomId], 'user')->getAsArray() AS $row) {
                 var_dump($row);
                 $xmlData['rooms'][$roomId]['userPermissions'][$row['param']] = $row['permissions'];
             }
-            foreach ($database->getRoomPermissions(array($roomId), 'group')->getAsArray() AS $row) {
+            foreach ($database->getRoomPermissions([$roomId], 'group')->getAsArray() AS $row) {
                 $xmlData['rooms'][$roomId]['groupPermissions'][$row['param']] = $row['permissions'];
             }
         }
@@ -123,7 +123,7 @@ do {
 
     $request['page']++;
     $database->accessLog('editRoom', $request); // We relog so that the next query counts as part of the flood detection. The only big drawback is that we will throw an exception eventually, without properly informing the user of where to resume searching from. (TODO)
-} while(!isset($room) && $roomsQuery->paginated && count($xmlData['rooms']) == 0);
+} while (!isset($room) && $roomsQuery->paginated && count($xmlData['rooms']) == 0);
 
 
 $xmlData['metadata']['nextPage'] = $request['page'];

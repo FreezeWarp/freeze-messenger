@@ -18,9 +18,9 @@
  * Get Messages from the Server
  * Works with both private and normal rooms.
  *
- * @package fim3
- * @version 3.0
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @package   fim3
+ * @version   3.0
+ * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  */
 
@@ -31,68 +31,68 @@ if (!defined('API_INMESSAGE'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', array(
-    'userIds' => array(
-        'default' => [],
-        'cast' => 'list',
-        'filter' => 'int',
+$request = fim_sanitizeGPC('g', [
+    'userIds' => [
+        'default'  => [],
+        'cast'     => 'list',
+        'filter'   => 'int',
         'evaltrue' => true,
-    ),
+    ],
 
-    'showDeleted' => array(
+    'showDeleted' => [
         'default' => false,
-        'cast' => 'bool',
-    ),
+        'cast'    => 'bool',
+    ],
 
-    'archive' => array(
+    'archive' => [
         'default' => false,
-        'cast' => 'bool',
-    ),
+        'cast'    => 'bool',
+    ],
 
-    'noping' => array(
+    'noping' => [
         'default' => false,
-        'cast' => 'bool',
-    ),
+        'cast'    => 'bool',
+    ],
 
-    'messageDateMax' => array(
+    'messageDateMax' => [
         'conflict' => ['id', 'messageDateMin', 'messageIdStart', 'messageIdEnd'],
-        'min' => 0,
-        'cast' => 'int',
-    ),
+        'min'      => 0,
+        'cast'     => 'int',
+    ],
 
-    'messageDateMin' => array(
+    'messageDateMin' => [
         'conflict' => ['id', 'messageDateMax', 'messageIdStart', 'messageIdEnd'],
-        'min' => 0,
-        'cast' => 'int',
-    ),
+        'min'      => 0,
+        'cast'     => 'int',
+    ],
 
-    'messageIdStart' => array(
+    'messageIdStart' => [
         'conflict' => ['id', 'messageDateMax', 'messageDateMin', 'messageIdEnd'],
-        'min' => 0,
-        'cast' => 'int',
-    ),
+        'min'      => 0,
+        'cast'     => 'int',
+    ],
 
-    'messageIdEnd' => array(
+    'messageIdEnd' => [
         'conflict' => ['id', 'messageDateMax', 'messageIdStart', 'messageDateMin'],
-        'min' => 0,
-        'cast' => 'int',
-    ),
+        'min'      => 0,
+        'cast'     => 'int',
+    ],
 
-    'messageTextSearch' => array(
-    ),
+    'messageTextSearch' => [
+    ],
 
-    'encode' => array(
+    'encode' => [
         'default' => 'plaintext',
-        'valid' => array(
+        'valid'   => [
             'plaintext', 'base64',
-        ),
-    ),
+        ],
+    ],
 
-    'page' => array(
+    'page' => [
         'default' => 0,
-        'cast' => 'int',
-    ),
-));
+        'cast'    => 'int',
+    ],
+]);
 
 
 if (!$request['archive'] && $request['showDeleted'])
@@ -103,9 +103,9 @@ $database->accessLog('getMessages', $request);
 
 
 /* Data Predefine */
-$xmlData = array(
-    'messages' => array(),
-);
+$xmlData = [
+    'messages' => [],
+];
 
 if (!($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW))
     new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
@@ -125,9 +125,9 @@ else {
     }
     else {
         $messages = $database->getMessages(
-            array_merge(array(
+            array_merge([
                 'room' => $room,
-            ), fim_arrayFilterKeys($request, ['messageIdEnd', 'messageIdStart', 'messageDateMin', 'messageDateMax', 'showDeleted', 'messageTextSearch', 'archive', 'userIds'])),
+            ], fim_arrayFilterKeys($request, ['messageIdEnd', 'messageIdStart', 'messageDateMin', 'messageDateMax', 'showDeleted', 'messageTextSearch', 'archive', 'userIds'])),
 
             ['id' => ($request['messageIdStart'] || $request['messageDateMin'] ? 'asc' : 'desc')],
             $config['defaultMessageLimit'],
@@ -140,7 +140,7 @@ else {
     if (count($messages) > 0) {
         foreach ($messages AS $id => $message) {
             $xmlData['messages'][] = array_merge([
-                'text' => ($request['encode'] == 'base64' ? base64_encode($message->text) : $message->text),
+                'text'   => ($request['encode'] == 'base64' ? base64_encode($message->text) : $message->text),
                 'userId' => $message->user->id,
             ], fim_objectArrayFilterKeys($message, ['id', 'time', 'formatting', 'flag']));
         }

@@ -17,9 +17,9 @@
 /**
  * Creates a New User. Only valid with certain login backends.
  *
- * @package fim3
- * @version 3.0
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @package   fim3
+ * @version   3.0
+ * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  *
  * (Want password security? Install on TLS.)
@@ -51,7 +51,7 @@ $request = fim_sanitizeGPC('p', [
 
     'birthDate' => [
         'require' => $config['ageRequired'],
-        'cast' => 'int',
+        'cast'    => 'int',
     ],
 ]);
 
@@ -71,7 +71,7 @@ elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMA
 elseif (isset($request['birthDate']) && (fim_dobToAge($request['birthDate']) < $config['ageMinimum']))
     new fimError('ageMinimum', 'The age specified is below the minimum age allowed by the server.', [
         'ageDetected' => fim_dobToAge($request['birthDate']),
-        'ageMinimum' => $config['ageMinimum']
+        'ageMinimum'  => $config['ageMinimum']
     ]);
 
 elseif ($database->getUsers(['userNames' => [$request['userName']]])->count() > 0)

@@ -17,26 +17,21 @@
 /**
  * Creates, Edits, or Deletes a Room
  *
- * @package fim3
- * @version 3.0
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @package   fim3
+ * @version   3.0
+ * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
- *
- * =Response=
- * @return APIOBJ:
- ** editRoom
- *** activeUser
- **** userId
- **** userName
- *** errStr
- *** errDesc
- *** response
- **** insertId - If creating a room, the ID of the created room.
  */
 
 
 /* Helper Functions */
-function getPermissionsField($permissionsArray) {
+/**
+ * Generates a permissions bitfield from a list of permission strings.
+ *
+ * @param $permissionsArray array List of strings corresponding with permissions in {@link fimRoom::$permArray}.
+ */
+function getPermissionsField($permissionsArray)
+{
     $permissionsField = 0;
 
     foreach (fimRoom::$permArray AS $string => $byte) {
@@ -52,24 +47,31 @@ function getPermissionsField($permissionsArray) {
  * @param $userArray
  * @param $groupArray
  */
-function alterRoomPermissions($roomId, $userArray, $groupArray) {
+function alterRoomPermissions($roomId, $userArray, $groupArray)
+{
     global $database;
 
-    foreach (array('users' => $userArray, 'groups' => $groupArray) AS $attribute => $array) {
-        foreach ((array) $array AS $code => $permissionsArray) {
+    foreach (['users' => $userArray, 'groups' => $groupArray] AS $attribute => $array) {
+        foreach ((array)$array AS $code => $permissionsArray) {
             $operation = substr($code, 0, 1); // The first character of the code is going to be either '+', '-', or '*', representing which action we are taking.
-            $param = (int) substr($code, 1); // Everything after the first character represents either a group or user ID.
+            $param = (int)substr($code, 1); // Everything after the first character represents either a group or user ID.
 
             $permissionsField = getPermissionsField($permissionsArray);
             $databasePermissionsField = 0;
 
             if ($attribute === 'users') $databasePermissionsField = $database->getPermissionsField($roomId, $param);
-            elseif ($attribute === 'groups') $databasePermissionsField = $database->getPermissionsField($roomId, array(), $param);
+            elseif ($attribute === 'groups') $databasePermissionsField = $database->getPermissionsField($roomId, [], $param);
 
             switch ($operation) {
-                case '+': $database->setPermission($roomId, $attribute, $param, $databasePermissionsField | $permissionsField); break; // Add new permissions to any existing permissions.
-                case '-': $database->setPermission($roomId, $attribute, $param, $databasePermissionsField &~ $permissionsField); break; // Remove permissions from any existing permissions.
-                case '*': $database->setPermission($roomId, $attribute, $param, $permissionsField); break; // Replace permissions.
+                case '+':
+                    $database->setPermission($roomId, $attribute, $param, $databasePermissionsField | $permissionsField);
+                break; // Add new permissions to any existing permissions.
+                case '-':
+                    $database->setPermission($roomId, $attribute, $param, $databasePermissionsField & ~$permissionsField);
+                break; // Remove permissions from any existing permissions.
+                case '*':
+                    $database->setPermission($roomId, $attribute, $param, $permissionsField);
+                break; // Replace permissions.
             }
         }
     }
@@ -78,64 +80,64 @@ function alterRoomPermissions($roomId, $userArray, $groupArray) {
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('p', array(
-    'name' => array(
+$request = fim_sanitizeGPC('p', [
+    'name' => [
         'require' => $requestHead['_action'] == 'create',
-        'trim' => true,
-    ),
+        'trim'    => true,
+    ],
 
-    'defaultPermissions' => array(
-        'cast' => 'list',
+    'defaultPermissions' => [
+        'cast'      => 'list',
         'transform' => 'bitfield',
-        'bitTable' => fimRoom::$permArray
-    ),
+        'bitTable'  => fimRoom::$permArray
+    ],
 
-    'userPermissions' => array(
+    'userPermissions' => [
         'cast' => 'json',
-    ),
+    ],
 
-    'groupPermissions' => array(
+    'groupPermissions' => [
         'cast' => 'json',
-    ),
+    ],
 
-    'censorLists' => array(
-        'cast' => 'dict',
-        'filter' => 'bool',
+    'censorLists' => [
+        'cast'     => 'dict',
+        'filter'   => 'bool',
         'evaltrue' => false,
-    ),
+    ],
 
-    'parentalAge' => array(
-        'cast' => 'int',
-        'valid' => $config['parentalAges'],
+    'parentalAge' => [
+        'cast'    => 'int',
+        'valid'   => $config['parentalAges'],
         'default' => ($requestHead['_action'] === 'create' ? $config['parentalAgeDefault'] : null),
-    ),
+    ],
 
-    'parentalFlags' => array(
-        'cast' => 'list',
+    'parentalFlags' => [
+        'cast'      => 'list',
         'transform' => 'csv',
-        'default' => ($requestHead['_action'] === 'create' ? $config['parentalFlagsDefault'] : null),
-        'valid' => $config['parentalFlags'],
-    ),
+        'default'   => ($requestHead['_action'] === 'create' ? $config['parentalFlagsDefault'] : null),
+        'valid'     => $config['parentalFlags'],
+    ],
 
-    'options' => array(
-        'cast' => 'bitfieldEquation',
+    'options' => [
+        'cast'      => 'bitfieldEquation',
         'flipTable' => [
-            ROOM_HIDDEN => 'hidden',
+            ROOM_HIDDEN   => 'hidden',
             ROOM_OFFICIAL => 'official',
         ]
-    ),
-));
+    ],
+]);
 
 $database->accessLog('editRoom', $request);
 
 
 
 /* Data Predefine */
-$xmlData = array(
-    'response' => array(
+$xmlData = [
+    'response' => [
         'insertId' => null
-    ),
-);
+    ],
+];
 
 
 
@@ -148,7 +150,7 @@ if ($request['_action'] !== 'create') {
 /* Start Processing */
 $database->startTransaction();
 
-switch($requestHead['_action']) {
+switch ($requestHead['_action']) {
     case 'create':
     case 'edit':
         if ($requestHead['_action'] === 'create') {
@@ -167,7 +169,7 @@ switch($requestHead['_action']) {
             elseif (!$user->hasPriv('modRooms') && ((time() - $user->joinDate / (60 * 60 * 24 * 365)) * $user->ownedRooms) >= $config['userRoomMaximumPerYear'])
                 new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for the age of your account. You may eventually be allowed to create additional rooms.');
 
-            elseif ($slaveDatabase->getRooms(array('roomNames' => array($request['name'])))->getCount() > 0)
+            elseif ($slaveDatabase->getRooms(['roomNames' => [$request['name']]])->getCount() > 0)
                 new fimError('nameTaken', 'A room with the name specified already exists.');
 
             else
@@ -180,7 +182,7 @@ switch($requestHead['_action']) {
                     new fimError('nameExtra', 'The room\'s name cannot be edited except by administrators.');
 
                 elseif ($request['name'] != $room->name
-                    && $slaveDatabase->getRooms(array('roomNames' => array($request['name'])))->getCount() > 0)
+                    && $slaveDatabase->getRooms(['roomNames' => [$request['name']]])->getCount() > 0)
                     new fimError('nameTaken', 'The room name specified already belongs to another room.');
             }
 
@@ -195,11 +197,11 @@ switch($requestHead['_action']) {
         if ($requestHead['_action'] === 'create' ||
             ($database->hasPermission($user, $room) & ROOM_PERMISSION_PROPERTIES)) {
             $room->setDatabase([
-                'roomName' => $request['name'],
-                'roomParentalFlags' => $request['parentalFlags'],
-                'roomParentalAge' => $request['parentalAge'],
+                'roomName'           => $request['name'],
+                'roomParentalFlags'  => $request['parentalFlags'],
+                'roomParentalAge'    => $request['parentalAge'],
                 'defaultPermissions' => $request['defaultPermissions'],
-                'options' => $database->type('equation', $request['options']),
+                'options'            => $database->type('equation', $request['options']),
             ], false);
             $database->setCensorLists($room->id, $request['censorLists']);
         }
@@ -215,12 +217,12 @@ switch($requestHead['_action']) {
 
     case 'delete':
         if ($room->deleted) new fimError('nothingToDo', 'The room is already deleted.');
-        else $room->setDatabase(array('deleted' => true));
+        else $room->setDatabase(['deleted' => true]);
     break;
 
     case 'undelete':
         if (!$room->deleted) new fimError('nothingToDo', 'The room isn\'t deleted.');
-        else $room->setDatabase(array('deleted' => false));
+        else $room->setDatabase(['deleted' => false]);
     break;
 }
 
