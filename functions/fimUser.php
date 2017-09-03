@@ -64,7 +64,7 @@ class fimUser
 
     /**
      * The user has administrative grant priviledges, such that they can make other users administrators.
-     */ 
+     */
     const ADMIN_GRANT = 0x10000;
 
     /**

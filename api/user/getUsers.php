@@ -91,14 +91,14 @@ else {
     if (in_array('ignored', $request['showOnly']))
         $request['userIds'] = array_merge($request['userIds'], $user->ignoredUsers);
 
-    if (in_array('banned', $request['showOnly']))
+    if (in_array('banned', $request['showOnly']) && $user->hasPriv('modUsers'))
         $request['bannedStatus'] = 'banned';
-    elseif (in_array('!banned', $request['showOnly']))
+    elseif (in_array('!banned', $request['showOnly']) && $user->hasPriv('modUsers'))
         $request['bannedStatus'] = 'unbanned';
 
 
     $users = $slaveDatabase->getUsers(
-        fim_arrayFilterKeys($request, ['userIds', 'userNames']),
+        fim_arrayFilterKeys($request, ['userIds', 'userNames', 'bannedStatus']),
         [$request['sort'] => 'asc']
     )->getAsUsers();
 }

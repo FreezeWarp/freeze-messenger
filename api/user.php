@@ -48,6 +48,7 @@
  *      A specific filter to apply to users. Options are:
  *
  *      @param string "banned"    Only include banned users. Only allowed if the user is allowed to administer users.
+ *      @param string "!banned"   Only include unbanned users. Only allowed if the user is allowed to administer users.
  *      @param string "friends"   Only include users the user is friends with.
  *      @param string "ignored"   Only include users the user is ignoring.
  *
