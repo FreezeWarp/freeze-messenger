@@ -33,7 +33,7 @@ $request = fim_sanitizeGPC('g', array(
     // No matter what, the user will not be able to see rooms that he is unable to view.
     'permFilter' => array(
         'default' => 'view',
-        'valid' => array('post', 'view', 'topic', 'moderate', 'properties', 'grant', 'own'),
+        'valid' => array_keys(fimRoom::$permArray),
     ),
 
     'roomIds' => array(
@@ -100,7 +100,7 @@ do {
     foreach ($rooms AS $roomId => $room) {
         $permission = $database->hasPermission($user, $room);
 
-        if (!($permission & $permFilterMatches[$request['permFilter']])) continue;
+        if (!($permission & fimRoom::$permArray[$request['permFilter']])) continue;
 
         $xmlData['rooms'][$roomId] = array(
             'roomId' => $room->id,

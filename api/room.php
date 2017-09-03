@@ -24,40 +24,65 @@
  ** When used with an UNDELETE request, this will unmark the room as deleted.
  *
  * =Common Directives (must be in URL parameters)=
- * @param int         $id        The room's ID.
+ *
+ * @param int    $id                 The room's ID.
  *
  * =Get Rooms Directives=
- * @param bool showDeleted Will include deleted rooms in results, assuming the user has access to them (that is, is an administrator). Default false.
- * @param enum["roomId", "roomName"] sort How the rooms should be ordered (either roomId or roomName). Default roomId.
- * @param list[int] roomIds Narrows the result to these specific roomIds. Cannot be used with id
- * @param list[string] roomNames Narrows the result to these specific roomNames. Cannot be used with name.
- * @param string roomNameSearch Narrows the result to room names containing this phrase.
- * @param string permFilter Narrows the result to rooms the user has this level of access to. Valid options are 'post', 'view', 'moderate', 'alter', 'admin', and 'own'. Default 'view'.
+ * @param bool   $showDeleted        Will include deleted rooms in results, assuming the user has access to them (that is, is an administrator). Default false.
+ * @param enum   $sort               How the rooms should be ordered (either roomId or roomName). Default roomId.
+ * @param list   $roomIds            Narrows the result to these specific roomIds. Cannot be used with id
+ * @param list   $roomNames          Narrows the result to these specific roomNames. Cannot be used with id.
+ * @param string $roomNameSearch     Narrows the result to room names containing this phrase. Cannot be used with id.
+ * @param string $permFilter         {
+ *      Narrows the result to rooms the user has this level of access to. Options:
+ *
+ *      @param string "view"       You may view. Default.
+ *      @param string "post"       You may post.
+ *      @param string "topic"      You may change the room's topic.
+ *      @param string "moderate"   You may moderate the room, such as by deleting other users' messages.
+ *      @param string "properties" You may alter room properties, such as allowed users and moderators.
+ *      @param string "grant"      You may alter room properties, such as allowed users and moderators.
+ *      @param string "own"        You own/created the room.
+ * }
  *
  * =Edit/Create Room Directives=
- * @param string name - The name the room should be set to. Required when creating a room
- * @param list defaultPermissions - A list of the default permissions all users are granted in the room. May include 'post', 'view', 'moderate', 'alter', 'admin', and 'own'.
- * @param json userPermissions - A special JSON representation of allowed users. It should be an object containing properties such that the name of the property is either "+ID", "-ID", or "*ID", where ID is the ID of a user, and the value of the property is the list of permissions to add (if "+ID"), remove (if "-ID"), or replace with "*ID".
- * @param json groupPermissions - A special JSON representation of allowed groups, in the same format as userPermissions.
- * @param dict censorLists A list of censor lists to enable or disable.
- * @param int parentalAge The parental age corresponding to the room. This will default to a site-configured value.
- * @param list parentalFlag A list of parental flags that will apply to the room. This will default to a site-configured value.
- * @param list options A list of special options to apply to the room, possibilities "hidden" and "official".
+ * @param string $name               The name the room should be set to. Required when creating a room
+ * @param list $defaultPermissions   {
+ *      A list of the default permissions all users are granted in the room. Options:
+ *
+ *      @param string "view"       Users may view.
+ *      @param string "post"       Users may post.
+ *      @param string "topic"      Users may change the room's topic.
+ *      @param string "moderate"   Users may moderate the room, such as by deleting other users' messages. Should typically not be supported by clients.
+ *      @param string "properties" Users may alter room properties, such as allowed users and moderators. Should typically not be supported by clients.
+ *      @param string "grant"      Users may alter room properties, such as allowed users and moderators. Should typically not be supported by clients.
+ * }
+ * @param json   $userPermissions    A special JSON representation of allowed users. It should be an object containing properties such that the name of the property is either "+ID", "-ID", or "*ID", where ID is the ID of a user, and the value of the property is the list of permissions to add (if "+ID"), remove (if "-ID"), or replace with "*ID".
+ * @param json   $groupPermissions   A special JSON representation of allowed groups, in the same format as userPermissions.
+ * @param dict   $censorLists        A list of censor lists to enable or disable. The index of the dictionary should be the list ID, while the value should be boolean (true to enable, false to disable). If a list is not included, it's state will not be changed. Active lists can be found through getCensorLists.php.
+ * @param int    $parentalAge        The parental age corresponding to the room. This will default to a site-configured value. Possibilities can be fetched with getServerStatus.php.
+ * @param list   $parentalFlag       A list of parental flags that will apply to the room. This will default to a site-configured value. Possibilities can be fetched with getServerStatus.php.
+ * @param list   $options            {
+ *     A list of special options to apply to the room. Options:
+ *
+ *     @param string "hidden"   The room should be hidden in search results.
+ *     @param string "official" The room should be promoted in search results.
+ * }
  *
  * =Errors=
  * ==Creating Rooms==
- * @throws nameMinimumLength The room name specified was too short.
- * @throws nameMaximumLength The room name specified was too long.
+ *
  * @throws maximumRooms The logged in user is not allowed to create any more rooms. In general, they will be allowed to create more after time passes; deleting rooms will not lower their threshold.
  *
  * ==Editing Rooms=
- * @throws specialRoom The given room may not be edited.
- * @throws deletedRoom The given room may not be edited until it is undeleted.
- * @throws
- * @throws unknown - The action could not proceed for unknown reasons.
+ * @throws nameExtra         The room name can only be editted by administrators.
+ * @throws specialRoom       The given room may not be edited.
+ * @throws deletedRoom       The given room may not be edited until it is undeleted.
  *
  * ==Editing and Creating Rooms==
- * @throws roomNameTaken The room name specified collides with an existing room.
+ * @throws nameMinimumLength The room name specified was too short.
+ * @throws nameMaximumLength The room name specified was too long.
+ * @throws nameTaken         The room name is already in use by another room.
  *
  * ==Deleting and Undeleting Rooms==
  * @throws nothingToDo - The room is already deleted or undeleted.
@@ -68,23 +93,13 @@ require('../global.php');
 $apiRequest = true;
 define('API_INROOM', true);
 
-$permFilterMatches = array(
-    'post' => ROOM_PERMISSION_POST,
-    'view' => ROOM_PERMISSION_VIEW,
-    'topic' => ROOM_PERMISSION_TOPIC,
-    'moderate' => ROOM_PERMISSION_MODERATE,
-    'properties' => ROOM_PERMISSION_PROPERTIES,
-    'grant' => ROOM_PERMISSION_GRANT,
-    'own' => ROOM_PERMISSION_VIEW
-);
-
 
 /* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
 $requestHead = fim_sanitizeGPC('g', [
     '_action' => [],
 ]);
-$requestHead = array_merge($requestHead, (array) fim_sanitizeGPC('g', [
-    'id'      => [
+$requestHead = array_merge($requestHead, (array)fim_sanitizeGPC('g', [
+    'id' => [
         'cast' => 'int',
         'require' => $requestHead['_action'] == 'edit'
     ],
@@ -96,9 +111,8 @@ if (isset($requestHead['id'])) {
     if ($requestHead['action'] == 'create') // ID shouldn't be used here.
         new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
 
-    if (!($room = $database->getRoom($requestHead['id']))->roomExists()) {
+    if (!($room = $database->getRoom($requestHead['id']))->roomExists())
         new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.');
-    }
 }
 
 

@@ -74,8 +74,8 @@ elseif (isset($request['birthdate']) && (fim_dobToAge($request['birthdate']) < $
         'ageMinimum' => $config['ageMinimum']
     ]);
 
-elseif (count($database->getUsers(['userNames' => [$request['userName']]])->getAsArray(true)) > 0)
-    new fimError('userExists', 'That user specified already exists.');
+elseif ($database->getUsers(['userNames' => [$request['userName']]])->count() > 0)
+    new fimError('userNameTaken', 'That user specified already exists.');
 
 else {
     // Create Userdata Array

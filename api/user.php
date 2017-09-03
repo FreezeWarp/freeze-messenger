@@ -22,19 +22,36 @@
  *
  * To edit a user's options, use api/editUserOptions.php.
  *
- * Common Directives (must be in URL parameters):
+ * =Directives=
+ * ==Common Directives (must be in URL parameters):==
  * @param int         $id        The user's ID.
  *
- * Create User Directives:
+ * ==Create User Directives==
  * @param string     $userName  The user's name. Required.
  * @param string     $password  The user's password. Required.
  * @param string     $email     The email of the user. Possibly required; use getServerStatus to find out.
  * @param int        $birthdate The date-of-birth of the user as a unix timestamp.  Possibly required; use getServerStatus to find out.
  *
- * Get User Directives:
+ * ==Get User Directives==
  * @param string     $users     A comma-seperated list of user IDs to get. If not specified, all users will be retrieved.
  * @param string     $sort      How to sort the users, either by userId or userName. Default is userId.
  * @param string     $showOnly  A specific filter to apply to users that may be used for certain special tasks. "banned" specifies to show only users who have been banned. Prepending a bang ("!") to any value will reverse the filter - thus, "!banned" will only show users who have not been banned. It is possible to apply multiple filters by comma-separating values.
+ *
+ *
+ * =Exceptions=
+ * ==Get User Exceptions==
+ * idUserIdsUserNamesConflict
+ * ==Create User Exceptions==
+ * @throws notSupported       If trying to create a user when the vanilla login subsystem is not enabled.
+ * @throws loggedIn           If a session token was provided.
+ * @throws emailInvalid       If the specified email is invalid.
+ * @throws ageMinimum         If the specified birthdate is too young.
+ * @throws userNameTaken      If the specified userName is already in use.
+ * @throws uesrCreationFailed If the user creation failed for unknown reasons.
+ *
+ *
+ * =Todo=
+ * @todo showOnly
  */
 
 

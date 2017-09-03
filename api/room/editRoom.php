@@ -35,15 +35,11 @@
  */
 
 
-
-
 /* Helper Functions */
 function getPermissionsField($permissionsArray) {
-    global $permFilterMatches;
-
     $permissionsField = 0;
 
-    foreach ($permFilterMatches AS $string => $byte) {
+    foreach (fimRoom::$permArray AS $string => $byte) {
         if (in_array($string, $permissionsArray)) $permissionsField |= $byte;
     }
 }
@@ -65,6 +61,7 @@ function alterRoomPermissions($roomId, $userArray, $groupArray) {
             $param = (int) substr($code, 1); // Everything after the first character represents either a group or user ID.
 
             $permissionsField = getPermissionsField($permissionsArray);
+            $databasePermissionsField = 0;
 
             if ($attribute === 'users') $databasePermissionsField = $database->getPermissionsField($roomId, $param);
             elseif ($attribute === 'groups') $databasePermissionsField = $database->getPermissionsField($roomId, array(), $param);
@@ -90,7 +87,7 @@ $request = fim_sanitizeGPC('p', array(
     'defaultPermissions' => array(
         'cast' => 'list',
         'transform' => 'bitfield',
-        'bitTable' => $permFilterMatches
+        'bitTable' => fimRoom::$permArray
     ),
 
     'userPermissions' => array(
@@ -149,79 +146,70 @@ if ($request['_action'] !== 'create') {
 
 
 /* Start Processing */
-if (isset($request['defaultPermissions'])) {
-    $permissionsField = 0;
-
-    foreach ($request['defaultPermissions'] AS $priv) {
-        $permissionsField &= $permFilterMatches[$priv];
-    }
-
-    $request['defaultPermissions'] = $permissionsField;
-}
-
 $database->startTransaction();
+
 switch($requestHead['_action']) {
     case 'create':
     case 'edit':
-        if (strlen($request['name']) < $config['roomLengthMinimum'])
-            new fimError('nameMinimumLength', 'The room name specified is too short. It should be at least ' . $config['roomLengthMinimum'] . ' characters.');
+        if ($requestHead['_action'] === 'create') {
+            if (strlen($request['name']) < $config['roomLengthMinimum'])
+                new fimError('nameMinimumLength', 'The room name specified is too short. It should be at least ' . $config['roomLengthMinimum'] . ' characters.');
 
-        elseif (strlen($request['name']) > $config['roomLengthMaximum'])
-            new fimError('nameMaximumLength', 'The room name specified is too short. It should be at most ' . $config['roomLengthMaximum'] . ' characters.');
+            elseif (strlen($request['name']) > $config['roomLengthMaximum'])
+                new fimError('nameMaximumLength', 'The room name specified is too short. It should be at most ' . $config['roomLengthMaximum'] . ' characters.');
 
-        else {
-            if ($requestHead['_action'] === 'create') {
-                if (!$user->hasPriv('createRooms'))
-                    new fimError('noPerm', 'You do not have permission to create rooms.');
+            elseif (!$user->hasPriv('createRooms'))
+                new fimError('noPerm', 'You do not have permission to create rooms.');
 
-                elseif (!$user->hasPriv('modRooms') && count($user->ownedRoomIds) >= $config['userRoomMaximum'])
-                    new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for a single user.');
+            elseif (!$user->hasPriv('modRooms') && count($user->ownedRoomIds) >= $config['userRoomMaximum'])
+                new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for a single user.');
 
-                elseif (!$user->hasPriv('modRooms') && ((time() - $user->joinDate / (60 * 60 * 24 * 365)) * count($user->ownedRoomIds)) >= $config['userRoomMaximumPerYear'])
-                    new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for the age of your account. You may eventually be allowed to create additional rooms.');
+            elseif (!$user->hasPriv('modRooms') && ((time() - $user->joinDate / (60 * 60 * 24 * 365)) * count($user->ownedRoomIds)) >= $config['userRoomMaximumPerYear'])
+                new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for the age of your account. You may eventually be allowed to create additional rooms.');
 
-                elseif ($slaveDatabase->getRooms(array('roomNames' => array($request['name'])))->getCount() > 0)
-                    new fimError('roomNameTaken', 'A room with the name specified already exists.');
+            elseif ($slaveDatabase->getRooms(array('roomNames' => array($request['name'])))->getCount() > 0)
+                new fimError('nameTaken', 'A room with the name specified already exists.');
 
-                else
-                    $room = new fimRoom(false);
-            }
-
-            elseif ($requestHead['_action'] === 'edit') {
-                if ($room->type !== 'general')
-                    new fimError('specialRoom', 'You are trying to edit a special room, which cannot be altered.');
-
-                elseif ($room->deleted) // Make sure the room hasn't been deleted.
-                    new fimError('deletedRoom', 'The room has been deleted - it can not be edited.');
-
-                // TODO: only admins may change room name
-
-                elseif ($data = $slaveDatabase->getRooms(array('roomNames' => array($request['name'])))->getAsArray(false)
-                    && count($data)
-                    && $data['roomId'] !== $room['roomId'])
-                    new fimError('roomNameTaken', 'The room name specified already belongs to another room.');
-            }
-
-
-            if ($requestHead['_action'] === 'create' ||
-                ($database->hasPermission($user, $room) & ROOM_PERMISSION_PROPERTIES)) {
-                $room->setDatabase([
-                    'roomName' => $request['name'],
-                    'roomParentalFlags' => $request['parentalFlags'],
-                    'roomParentalAge' => $request['parentalAge'],
-                    'defaultPermissions' => $request['defaultPermissions'],
-                    'options' => $database->type('equation', $request['options']),
-                ], false);
-                $database->setCensorLists($room->id, $request['censorLists']);
-            }
-
-            if ($requestHead['_action'] === 'create' ||
-                ($database->hasPermission($user, $room) & ROOM_PERMISSION_GRANT)) {
-                alterRoomPermissions($room->id, $request['userPermissions'], $request['groupPermissions']);
-            }
-
-            $xmlData['response']['insertId'] = $room->id;
+            else
+                $room = new fimRoom(false);
         }
+
+        elseif ($requestHead['_action'] === 'edit') {
+            if (isset($request['name'])) {
+                if (!$user->hasPriv('modRooms'))
+                    new fimError('nameExtra', 'The room\'s name cannot be edited except by administrators.');
+
+                elseif ($request['name'] != $room->name
+                    && $slaveDatabase->getRooms(array('roomNames' => array($request['name'])))->getCount() > 0)
+                    new fimError('nameTaken', 'The room name specified already belongs to another room.');
+            }
+
+            elseif ($room->type !== 'general')
+                new fimError('specialRoom', 'You are trying to edit a special room, which cannot be altered.');
+
+            elseif ($room->deleted) // Make sure the room hasn't been deleted.
+                new fimError('deletedRoom', 'The room has been deleted - it can not be edited.');
+        }
+
+
+        if ($requestHead['_action'] === 'create' ||
+            ($database->hasPermission($user, $room) & ROOM_PERMISSION_PROPERTIES)) {
+            $room->setDatabase([
+                'roomName' => $request['name'],
+                'roomParentalFlags' => $request['parentalFlags'],
+                'roomParentalAge' => $request['parentalAge'],
+                'defaultPermissions' => $request['defaultPermissions'],
+                'options' => $database->type('equation', $request['options']),
+            ], false);
+            $database->setCensorLists($room->id, $request['censorLists']);
+        }
+
+        if ($requestHead['_action'] === 'create' ||
+            ($database->hasPermission($user, $room) & ROOM_PERMISSION_GRANT)) {
+            alterRoomPermissions($room->id, $request['userPermissions'], $request['groupPermissions']);
+        }
+
+        $xmlData['response']['insertId'] = $room->id;
     break;
 
 
@@ -235,6 +223,7 @@ switch($requestHead['_action']) {
         else $room->setDatabase(array('deleted' => false));
     break;
 }
+
 $database->endTransaction();
 
 

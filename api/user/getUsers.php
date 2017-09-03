@@ -33,6 +33,7 @@ if (!defined('API_INUSER'))
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
     'userIds' => array(
+        'conflict' => ['id'],
         'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
@@ -40,6 +41,7 @@ $request = fim_sanitizeGPC('g', array(
     ),
 
     'userNames' => array(
+        'conflict' => ['id'],
         'cast' => 'list',
         'filter' => 'string',
         'default' => [],
@@ -76,9 +78,6 @@ $xmlData = array(
 
 /* Get Users from Database */
 if (isset($userData)) { // From api/user.php
-    if (count($request['userIds']) || count($request['userNames']))
-        new fimError('idUserIdsUserNamesConflict', 'id can not be used with userIds and userNames.');
-
     $users = $userData;
 }
 else {
