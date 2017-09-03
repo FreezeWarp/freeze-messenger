@@ -215,12 +215,12 @@ function fim_messageFormat(json, format) {
     console.log(["message format", format, json]);
 
     var data,
-        text = json.messageText,
-        messageTime = fim_dateFormat(json.messageTime),
-        messageId = json.messageId,
+        text = json.text,
+        messageTime = fim_dateFormat(json.time),
+        messageId = json.id,
         userId = Number(json.userId),
-        style = (settings.disableFormatting ? "" : json.messageFormatting),
-        flag = json.flags;
+        style = (settings.disableFormatting ? "" : json.formatting),
+        flag = json.flag;
 
     var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId]).then(function(pairs) {
         userName = pairs[userId].userName;

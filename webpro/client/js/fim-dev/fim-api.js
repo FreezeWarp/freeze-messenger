@@ -217,7 +217,7 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
         'messageIdEnd' : null,
         'messageIdStart' : null,
         'page' : null,
-        'search' : null,
+        'messageTextSearch' : null,
         'archive' : false,
         'initialRequest' : false,
     });
@@ -226,8 +226,6 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
 
     if (params.initialRequest) {
         params.archive = 1;
-        params.messageIdEnd = 0;
-        params.messageIdStart = 0;
     }
 
     function getMessages_query() {

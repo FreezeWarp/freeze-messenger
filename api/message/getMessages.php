@@ -55,31 +55,30 @@ $request = fim_sanitizeGPC('g', array(
     ),
 
     'messageDateMax' => array(
+        'conflict' => ['id', 'messageDateMin', 'messageIdStart', 'messageIdEnd'],
         'min' => 0,
-        'default' => 0,
         'cast' => 'int',
     ),
 
     'messageDateMin' => array(
+        'conflict' => ['id', 'messageDateMax', 'messageIdStart', 'messageIdEnd'],
         'min' => 0,
-        'default' => 0,
         'cast' => 'int',
     ),
 
     'messageIdStart' => array(
+        'conflict' => ['id', 'messageDateMax', 'messageDateMin', 'messageIdEnd'],
         'min' => 0,
-        'default' => 0,
         'cast' => 'int',
     ),
 
     'messageIdEnd' => array(
+        'conflict' => ['id', 'messageDateMax', 'messageIdStart', 'messageDateMin'],
         'min' => 0,
-        'default' => 0,
         'cast' => 'int',
     ),
 
-    'search' => array(
-        'default' => false,
+    'messageTextSearch' => array(
     ),
 
     'encode' => array(
@@ -98,9 +97,6 @@ $request = fim_sanitizeGPC('g', array(
 
 if (!$request['archive'] && $request['showDeleted'])
     new fimError('archiveShowDeletedConflict', 'archive and showDeleted must be used together.');
-
-if ((((int) (bool) $request['messageDateMin']) + ((int) (bool) $request['messageDateMax']) + ((int) (bool) $request['messageIdStart']) + ((int) (bool) $request['messageIdEnd'])) > 1)
-    new fimError('messageDateMaxMessageDateMinMessageIdEndConflictMessageIdStart', 'Only one of messageDateMin, messageDateMax, messageIdStart, messageIdEnd may be used.');
 
 
 $database->accessLog('getMessages', $request);
@@ -128,31 +124,25 @@ else {
         $messages = [$message];
     }
     else {
-        $messages = $database->getMessages(array(
-            'room' => $room,
-            'messageIdEnd' => $request['messageIdEnd'],
-            'messageIdStart' => $request['messageIdStart'],
-            'messageDateMin' => $request['messageDateMax'],
-            'messageDateMax' => $request['messageDateMax'],
-            'showDeleted' => $request['showDeleted'],
-            'messageTextSearch' => $request['search'],
-            'archive' => $request['archive'],
-            'userIds' => $request['userIds'],
-        ), ['messageId' => ($request['messageIdStart'] || $request['messageDateMin'] ? 'asc' : 'desc')], $config['defaultMessageLimit'], $request['page'])->getAsMessages();
+        $messages = $database->getMessages(
+            array_merge(array(
+                'room' => $room,
+            ), fim_arrayFilterKeys($request, ['messageIdEnd', 'messageIdStart', 'messageDateMin', 'messageDateMax', 'showDeleted', 'messageTextSearch', 'archive', 'userIds'])),
+
+            ['messageId' => ($request['messageIdStart'] || $request['messageDateMin'] ? 'asc' : 'desc')],
+            $config['defaultMessageLimit'],
+            $request['page']
+        )->getAsMessages();
     }
 
 
     /* Process Messages */
     if (count($messages) > 0) {
         foreach ($messages AS $id => $message) {
-            $xmlData['messages'][] = array(
-                'messageId' => (int) $message->id,
-                'messageTime' => (int) $message->time,
-                'messageText' => ($request['encode'] == 'base64' ? base64_encode($message->text) : $message->text),
-                'messageFormatting' => $message->formatting,
-                'flags' => ($message->flag),
+            $xmlData['messages'][] = array_merge([
+                'text' => ($request['encode'] == 'base64' ? base64_encode($message->text) : $message->text),
                 'userId' => $message->user->id,
-            );
+            ], fim_objectArrayFilterKeys($message, ['id', 'time', 'formatting', 'flag']));
         }
     }
 }

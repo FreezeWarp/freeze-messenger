@@ -1039,7 +1039,6 @@ class fimDatabase extends databaseSQL
      *      @param bool  ['archive']           Whether to query the message archive instead of the main table. Default false. (On average, the main table only includes around 100 messages, so this must be true for archive viewing.)
      *
      *      The following are still being revised:
-     *      @param array ['messagesSince']
      *      @param array ['messageIdStart']
      *      @param array ['messageIdEnd']
      *      @param array ['messageDateMax']
@@ -1059,11 +1058,10 @@ class fimDatabase extends databaseSQL
             'userIds'           => array(),
             'messageTextSearch' => '', // Overwrites messageIds.
             'showDeleted'       => false,
-            'messagesSince'     => 0,
-            'messageIdStart'    => 0,
-            'messageIdEnd'      => 0,
-            'messageDateMax'    => 0,
-            'messageDateMin'    => 0,
+            'messageIdStart'    => null,
+            'messageIdEnd'      => null,
+            'messageDateMax'    => null,
+            'messageDateMin'    => null,
             'archive'           => false
         ), $options);
 
@@ -1100,10 +1098,6 @@ class fimDatabase extends databaseSQL
         }
 
 
-        /* roomId */
-        $conditions['both']['roomId'] = $options['room']->id;
-
-
         /* Query via the Archive */
         if ($options['archive']) {
             $columns = array(
@@ -1111,7 +1105,7 @@ class fimDatabase extends databaseSQL
                 $this->sqlPrefix . "users"    => 'userId muserId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, defaultMessageFormatting'
             );
 
-            $conditions['both']['muserId'] = $this->col('userId');
+            $conditions['muserId'] = $this->col('userId');
         }
 
         /* Access the Stream */
@@ -1123,31 +1117,36 @@ class fimDatabase extends databaseSQL
         }
 
 
-        /* Modify Query Data for Directives
-         * TODO: Remove messageIdStart and messageIdEnd, replacing with $limit and $pagination (combined with other operators). */
-        if ($options['messageDateMax'] > 0)
-            $conditions['both']['time 1'] = $this->int($options['messageDateMax'], 'lte');
-        if ($options['messageDateMin'] > 0)
-            $conditions['both']['time 2'] = $this->int($options['messageDateMin'], 'gte');
+        /* Conditions Template */
+        $conditions = [
+            'both' => [],
+            'either' => [],
+        ];
 
 
-        if ($options['messageIdStart'] > 0) {
-            $conditions['both']['messageId 3'] = $this->int($options['messageIdStart'], 'gte');
-            $conditions['both']['messageId 4'] = $this->int($options['messageIdStart'] + $limit, 'lt');
-        } elseif ($options['messageIdEnd'] > 0) {
-            $conditions['both']['messageId 3'] = $this->int($options['messageIdEnd'], 'lte');
-            $conditions['both']['messageId 4'] = $this->int($options['messageIdEnd'] - $limit, 'gt');
-        }
+        /* roomId */
+        $conditions['roomId'] = $options['room']->id;
 
 
-        if ($options['showDeleted'] === false && $options['archive'] === true)
-            $conditions['both']['deleted'] = $this->bool(false);
+        /* Modify Query Data for Directives */
+        if (isset($options['messageDateMax']))
+            $conditions['time 1'] = $this->int($options['messageDateMax'], 'lte');
+        if (isset($options['messageDateMin']))
+            $conditions['time 2'] = $this->int($options['messageDateMin'], 'gte');
+
+        if (isset($options['messageIdStart']))
+            $conditions['either']['both']['messageId 3'] = $this->int($options['messageIdStart'], 'gte');
+        if (isset($options['messageIdEnd']))
+            $conditions['either']['both']['messageId 4'] = $this->int($options['messageIdEnd'], 'lte');
+
+        if (!$options['showDeleted'] && $options['archive'])
+            $conditions['deleted'] = $this->bool(false);
 
         if (count($options['messageIds']) > 0)
-            $conditions['both']['messageId'] = $this->in($options['messageIds']); // Overrides all other message ID parameters; TODO
+            $conditions['either']['messageId'] = $this->in($options['messageIds']);
 
         if (count($options['userIds']) > 0)
-            $conditions['both']['userId'] = $this->in($options['userIds']);
+            $conditions['userId'] = $this->in($options['userIds']);
 
 
 

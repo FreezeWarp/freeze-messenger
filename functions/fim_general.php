@@ -325,7 +325,7 @@ function fim_sanitizeGPC($type, $data) {
         else {
             /* Validate Metadata */
             foreach ($indexData AS $metaName => $metaData) {
-                if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'filter', 'cast', 'transform', 'bitTable', 'flipTable', 'removeDuplicates')))
+                if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'filter', 'cast', 'transform', 'bitTable', 'flipTable', 'removeDuplicates', 'conflict')))
                     throw new Exception('Unrecognised metadata: ' . $metaName);
 
                 elseif (($metaName === 'require' || $metaName === 'trim' || $metaName === 'evaltrue')
@@ -334,7 +334,11 @@ function fim_sanitizeGPC($type, $data) {
 
                 elseif ($metaName === 'valid' &&
                     !is_array($metaData))
-                    throw new Exception('Defined valid values do not correspond to recognized data type (array).');
+                    throw new Exception('Defined valid value does not correspond to recognized data type (array).');
+
+                elseif ($metaName === 'conflict' &&
+                    !is_array($metaData))
+                    throw new Exception('Defined conflict value does not correspond to recognized data type (array).');
 
                 elseif (($metaName === 'min' || $metaName === 'max')
                     && !is_numeric($metaData))
@@ -373,6 +377,22 @@ function fim_sanitizeGPC($type, $data) {
 
 
 
+            if (isset($activeGlobal[$indexName])) {
+                /* Check for conflicting directives. */
+                if (isset($indexMetaData['conflict'])) {
+                    foreach ($indexMetaData['conflict'] AS $conflict) {
+                        if (isset($activeGlobal[$conflict])) { var_dump($activeGlobal);
+                            $conflictArray = [$conflict, $indexName]; var_dump($conflictArray); die();
+                            new fimError(fim_arrayOfPropertiesImplode($conflictArray). 'Conflict');
+                        }
+                    }
+                }
+
+                /* Trim */
+                if ($indexMetaData['trim'] === true) $activeGlobal[$indexName] = trim($activeGlobal[$indexName]); // Trim white space.
+            }
+
+
             /* Set to Default and Perform Validation */
             if (!(isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'bitfieldEquation')) { // bitfieldEquation isn't normally set, so our default-setting is irrelevant for it
                 // If the global is provided, check to see if it's valid. If not, throw error.
@@ -404,195 +424,190 @@ function fim_sanitizeGPC($type, $data) {
 
 
 
-            /* Trim */
-            if ($indexMetaData['trim'] === true) $activeGlobal[$indexName] = trim($activeGlobal[$indexName]); // Trim white space.
-
-
-
             /* Casting */
             switch($indexMetaData['cast']) {
-            /**
-             * Treat as JSON. Still working out the kinks here.
-             */
-            case 'json':
-                $newData[$indexName] = json_decode(
-                    $activeGlobal[$indexName],
-                    true,
-                    $config['jsonDecodeRecursionLimit'],
-                    JSON_BIGINT_AS_STRING
-                );
+                /**
+                 * Treat as JSON. Still working out the kinks here.
+                 */
+                case 'json':
+                    $newData[$indexName] = json_decode(
+                        $activeGlobal[$indexName],
+                        true,
+                        $config['jsonDecodeRecursionLimit'],
+                        JSON_BIGINT_AS_STRING
+                    );
 
-                /* Newer Code -- Breaks Conventions Because I'm Not Sure Which Conventions I Want Yet */
-                $holder = array();
-                foreach ($newData[$indexName] AS $key => $value) {
-                    $holder[fim_cast($indexMetaData['filterKey'] ? $indexMetaData['filterKey'] : 'string', $key)] = fim_cast($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string', $key);
-                }
-            break;
-
-
-            /*
-             * Treat as an associative (two-dimensional) array.
-             * Most of list's parameters are omitted here, though the following still apply:
-             ** "filter" will cast values
-             ** "evaltrue" will remove array values (not keys) that are falsey
-             ** "valid" will remove any array value (not key) that is not present in the valid list.
-             */
-            case 'dict':
-                // Make sure the passed element is an array -- we don't do any conversion to make it one.
-                if (!is_array($activeGlobal[$indexName])) {
-                    throw new Exception("Bad API data: '$indexName' must be array.");
-                }
-
-                $arrayFromGlobal = $activeGlobal[$indexName];
-
-                // Apply filters, evaltrue, and valid -- these will cast the datatype, remove falsey entries, and remove entries not on the valid list respectively.
-                $newData[$indexName] = fim_arrayValidate(
-                    $arrayFromGlobal,
-                    ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
-                    ($indexMetaData['evaltrue'] ? false : true),
-                    (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
-                );
-            break;
-
-
-            /*
-             * Treat as a list (one-dimensional array).
-             * We apply all kinds of filters here, only including truthy values if evaltrue is set, applying casts to the list's contents if filter is set, and tranforming the entire list into a new datatype if transform is set.
-             *
-             */
-            case 'list':
-                // Make sure the passed element is an array -- we don't do any conversion to make it an array.
-                if (!is_array($activeGlobal[$indexName])) {
-                    throw new Exception("Bad API data: '$indexName' must be array.");
-                }
-
-                // Remove any array keys.
-                $arrayFromGlobal = array_values(
-                    $activeGlobal[$indexName]
-                );
-
-                // Apply filters, evaltrue, and valid -- these will cast the datatype, remove falsey entries, and remove entries not on the valid list respectively.
-                $newData[$indexName] = fim_arrayValidate(
-                    $arrayFromGlobal,
-                    ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
-                    ($indexMetaData['evaltrue'] ? false : true),
-                    (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
-                );
-
-                // Remove duplicate values from the list if required
-                if (isset($indexMetaData['removeDuplicates']) && $indexMetaData['removeDuplicates']) {
-                    $newData[$indexName] = array_unique($newData[$indexName]);
-                }
-
-                // Transform the list into a single, non-list datatype
-                if (isset($indexMetaData['transform'])) {
-                    switch ($indexMetaData['transform']) {
-                    case 'bitfield':
-                        $bitfield = 0;
-
-                        foreach ($newData[$indexName] AS $name) {
-                            if (!isset($indexMetaData['bitTable'][$name])) throw new Exception("Bad API data: '$name' is not a recognized value for field '$indexName'");
-                            else $bitfield &= $indexMetaData['bitTable'][$name];
-                        }
-
-                        $newData[$indexName] = $bitfield;
-                    break;
-
-                    case 'csv':
-                        $newData[$indexName] = implode(',', $newData[$indexName]);
-                    break;
-
-                    default:
-                        throw new Exception("Bad transform.");
-                    break;
+                    /* Newer Code -- Breaks Conventions Because I'm Not Sure Which Conventions I Want Yet */
+                    $holder = array();
+                    foreach ($newData[$indexName] AS $key => $value) {
+                        $holder[fim_cast($indexMetaData['filterKey'] ? $indexMetaData['filterKey'] : 'string', $key)] = fim_cast($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string', $key);
                     }
-                }
-            break;
+                break;
 
 
-            /*
-             * Treat as an integer. When evaltrue is set, we only include the value in $newData if it is truthy (according to PHP's own logic after cast to an int).
-             * We also apply min/maxes here -- if the value exceeds max, it is set to max, and if it is under the min, it is set to the min.
-             */
-            case 'int':
-                if (!$indexMetaData['evaltrue'] || (int) $activeGlobal[$indexName]) // If evaltrue is true, only include the value if it's true.
-                    $newData[$indexName] = (int) $activeGlobal[$indexName];
+                /*
+                 * Treat as an associative (two-dimensional) array.
+                 * Most of list's parameters are omitted here, though the following still apply:
+                 ** "filter" will cast values
+                 ** "evaltrue" will remove array values (not keys) that are falsey
+                 ** "valid" will remove any array value (not key) that is not present in the valid list.
+                 */
+                case 'dict':
+                    // Make sure the passed element is an array -- we don't do any conversion to make it one.
+                    if (!is_array($activeGlobal[$indexName])) {
+                        throw new Exception("Bad API data: '$indexName' must be array.");
+                    }
 
-                if (isset($indexMetaData['min']) &&
-                    $newData[$indexName] < $indexMetaData['min']) $newData[$indexName] = $indexMetaData['min']; // Minimum Value
-                elseif (isset($indexMetaData['max']) &&
-                    $newData[$indexName] > $indexMetaData['max']) $newData[$indexName] = $indexMetaData['max']; // Maximum Value
-            break;
+                    $arrayFromGlobal = $activeGlobal[$indexName];
 
-
-            /*
-             * Treat as a bool, according to fim_cast's boolean logic -- which only treats a very small subset of truthy values as true.
-             * If we have a default, and the cast value is unrecognised by fim_cast (e.g. 2 is neither seen as true nor false), then it will set to default. Otherwise, it will set to null.
-             */
-            case 'bool':
-                $newData[$indexName] = fim_cast(
-                    'bool',
-                    $activeGlobal[$indexName],
-                    (isset($indexMetaData['default']) ? $indexMetaData['default'] : null)
-                );
-            break;
+                    // Apply filters, evaltrue, and valid -- these will cast the datatype, remove falsey entries, and remove entries not on the valid list respectively.
+                    $newData[$indexName] = fim_arrayValidate(
+                        $arrayFromGlobal,
+                        ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
+                        ($indexMetaData['evaltrue'] ? false : true),
+                        (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
+                    );
+                break;
 
 
-            /*
-             * Remove characters outside of the ASCII128 range.
-             */
-            case 'ascii128':
-                $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $activeGlobal[$indexName]);
-            break;
+                /*
+                 * Treat as a list (one-dimensional array).
+                 * We apply all kinds of filters here, only including truthy values if evaltrue is set, applying casts to the list's contents if filter is set, and tranforming the entire list into a new datatype if transform is set.
+                 *
+                 */
+                case 'list':
+                    // Make sure the passed element is an array -- we don't do any conversion to make it an array.
+                    if (!is_array($activeGlobal[$indexName])) {
+                        throw new Exception("Bad API data: '$indexName' must be array.");
+                    }
+
+                    // Remove any array keys.
+                    $arrayFromGlobal = array_values(
+                        $activeGlobal[$indexName]
+                    );
+
+                    // Apply filters, evaltrue, and valid -- these will cast the datatype, remove falsey entries, and remove entries not on the valid list respectively.
+                    $newData[$indexName] = fim_arrayValidate(
+                        $arrayFromGlobal,
+                        ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
+                        ($indexMetaData['evaltrue'] ? false : true),
+                        (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
+                    );
+
+                    // Remove duplicate values from the list if required
+                    if (isset($indexMetaData['removeDuplicates']) && $indexMetaData['removeDuplicates']) {
+                        $newData[$indexName] = array_unique($newData[$indexName]);
+                    }
+
+                    // Transform the list into a single, non-list datatype
+                    if (isset($indexMetaData['transform'])) {
+                        switch ($indexMetaData['transform']) {
+                        case 'bitfield':
+                            $bitfield = 0;
+
+                            foreach ($newData[$indexName] AS $name) {
+                                if (!isset($indexMetaData['bitTable'][$name])) throw new Exception("Bad API data: '$name' is not a recognized value for field '$indexName'");
+                                else $bitfield &= $indexMetaData['bitTable'][$name];
+                            }
+
+                            $newData[$indexName] = $bitfield;
+                        break;
+
+                        case 'csv':
+                            $newData[$indexName] = implode(',', $newData[$indexName]);
+                        break;
+
+                        default:
+                            throw new Exception("Bad transform.");
+                        break;
+                        }
+                    }
+                break;
 
 
-            /*
-             * Remove characters that are non-alphanumeric. Note that we will try to romanise what we can, based on the $config directive romanisation.
-             */
-            case 'alphanum':
-                $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $activeGlobal[$indexName]));
-            break;
+                /*
+                 * Treat as an integer. When evaltrue is set, we only include the value in $newData if it is truthy (according to PHP's own logic after cast to an int).
+                 * We also apply min/maxes here -- if the value exceeds max, it is set to max, and if it is under the min, it is set to the min.
+                 */
+                case 'int':
+                    if (!$indexMetaData['evaltrue'] || (int) $activeGlobal[$indexName]) // If evaltrue is true, only include the value if it's true.
+                        $newData[$indexName] = (int) $activeGlobal[$indexName];
+
+                    if (isset($indexMetaData['min']) &&
+                        $newData[$indexName] < $indexMetaData['min']) $newData[$indexName] = $indexMetaData['min']; // Minimum Value
+                    elseif (isset($indexMetaData['max']) &&
+                        $newData[$indexName] > $indexMetaData['max']) $newData[$indexName] = $indexMetaData['max']; // Maximum Value
+                break;
 
 
-            /* This is a funky one that really helps when dealing with bitfields.
-             * First of all, it uniquely has the "flipTable" parameter, which is an array of [bit => name]s.
-             * A name is a string pointing to another entry in the activeGlobal, while a bit is the bitvalue that name represents.
-             * If the activeGlobal doesn't have the name, we just ignore it. If it does have it, and it evaluates to true, then our string will contain an equation turning that bit on. If it evaluates to false, our equation will try and turn that bit off.
-             * This equation can then be used by $database->equation.
-             */
-            case 'bitfieldEquation':
-                global $database;
-                $equation = '$' . $indexName;
-
-                foreach ($indexMetaData['flipTable'] AS $bit => $name) {
-                    if (!isset($activeGlobal[$name]))
-                        continue;
-
-                    elseif ($activeGlobal[$name])
-                        $equation .= (' | ' . $bit);
-
-                    else
-                        $equation .= (' & ~' . $bit);
-                }
-
-                $newData[$indexName] = $equation;
-            break;
+                /*
+                 * Treat as a bool, according to fim_cast's boolean logic -- which only treats a very small subset of truthy values as true.
+                 * If we have a default, and the cast value is unrecognised by fim_cast (e.g. 2 is neither seen as true nor false), then it will set to default. Otherwise, it will set to null.
+                 */
+                case 'bool':
+                    $newData[$indexName] = fim_cast(
+                        'bool',
+                        $activeGlobal[$indexName],
+                        (isset($indexMetaData['default']) ? $indexMetaData['default'] : null)
+                    );
+                break;
 
 
-            /*
-             * Basically, cast it to an integer if otherwise looks like one (e.g. the string "123"), keep it as-is if it's a private room ID (e.g. the string "p1,4,90"), or set it to null.
-             */
-            case 'roomId':
-                $newData[$indexName] = fim_cast('roomId', $activeGlobal[$indexName]);
-            break;
+                /*
+                 * Remove characters outside of the ASCII128 range.
+                 */
+                case 'ascii128':
+                    $newData[$indexName] = preg_replace('/[^(\x20-\x7F)]*/', '', $activeGlobal[$indexName]);
+                break;
 
 
-            /*
-             * Treat as a string.
-             */
-            default:
-                $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
-            break;
+                /*
+                 * Remove characters that are non-alphanumeric. Note that we will try to romanise what we can, based on the $config directive romanisation.
+                 */
+                case 'alphanum':
+                    $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $activeGlobal[$indexName]));
+                break;
+
+
+                /* This is a funky one that really helps when dealing with bitfields.
+                 * First of all, it uniquely has the "flipTable" parameter, which is an array of [bit => name]s.
+                 * A name is a string pointing to another entry in the activeGlobal, while a bit is the bitvalue that name represents.
+                 * If the activeGlobal doesn't have the name, we just ignore it. If it does have it, and it evaluates to true, then our string will contain an equation turning that bit on. If it evaluates to false, our equation will try and turn that bit off.
+                 * This equation can then be used by $database->equation.
+                 */
+                case 'bitfieldEquation':
+                    global $database;
+                    $equation = '$' . $indexName;
+
+                    foreach ($indexMetaData['flipTable'] AS $bit => $name) {
+                        if (!isset($activeGlobal[$name]))
+                            continue;
+
+                        elseif ($activeGlobal[$name])
+                            $equation .= (' | ' . $bit);
+
+                        else
+                            $equation .= (' & ~' . $bit);
+                    }
+
+                    $newData[$indexName] = $equation;
+                break;
+
+
+                /*
+                 * Basically, cast it to an integer if otherwise looks like one (e.g. the string "123"), keep it as-is if it's a private room ID (e.g. the string "p1,4,90"), or set it to null.
+                 */
+                case 'roomId':
+                    $newData[$indexName] = fim_cast('roomId', $activeGlobal[$indexName]);
+                break;
+
+
+                /*
+                 * Treat as a string.
+                 */
+                default:
+                    $newData[$indexName] = (string) $activeGlobal[$indexName]; // Append value as string-cast.
+                break;
             }
         }
 
@@ -670,6 +685,63 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
 
     return $arrayValidated; // Return the validated array.
 }
+
+
+/**
+ * Implodes an array to be a consistent string properties list, with all properties alphabetised and all but the first property name capitalised.
+ * For instance, arrayOfPropertiesImplode(["userId", "userName", "id"]) = "idUserIdUserName"
+ *
+ * @param $array array The source array.
+ *
+ * @return string The source array as a string of properties.
+ */
+function fim_arrayOfPropertiesImplode(&$array) {
+    asort($array);
+    $array = array_map(function($index, $value) {
+        if ($index > 0) return ucfirst($value);
+        return $value;
+    });
+    return $array;
+}
+
+
+/**
+ * Filters an array to just contain the key-value pairs identified by the keys parameter.
+ *
+ * @param array $array The source array.
+ * @param array $keys The keys to filter by.
+ *
+ * @return array An array containing only the key-value pairs with a key in $keys.
+ */
+function fim_arrayFilterKeys(array $array, array $keys) : array {
+    $newArray = [];
+
+    foreach ($array AS $key => $value) {
+        if (in_array($key, $keys)) $newArray[$key] = $value;
+    }
+
+    return $newArray;
+}
+
+
+/**
+ * Tranforms and object into an array consisting only of the specified keys.
+ *
+ * @param object $object The source object.
+ * @param array $keys The keys/object properties to filter by.
+ *
+ * @return array An array containing only the key-value pairs with a key in $keys, where value is the object's property value.
+ */
+function fim_objectArrayFilterKeys($object, array $keys) : array {
+    $newArray = [];
+
+    foreach ($keys AS $key) {
+        if (property_exists($object, $key)) $newArray[$key] = $object->{$key};
+    }
+
+    return $newArray;
+}
+
 
 /**
  * Join a string with a natural language conjunction at the end.

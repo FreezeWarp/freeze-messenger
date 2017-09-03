@@ -78,10 +78,9 @@ public class MainPane {
                     userName.setFont(Font.font(null, FontWeight.BOLD, -1));
 
                     Calendar c = Calendar.getInstance(Locale.getDefault());
-                    System.out.println(message.get("messageTime").asLong() * 1000);
-                    c.setTimeInMillis(message.get("messageTime").asLong() * 1000);
+                    c.setTimeInMillis(message.get("time").asLong() * 1000);
                     final Text messageTime = new Text((new SimpleDateFormat()).format(c.getTime()));
-                    final Text messageText = new Text(message.get("messageText").asText());
+                    final Text messageText = new Text(message.get("text").asText());
 
                     Platform.runLater(new Runnable() {
                         @Override

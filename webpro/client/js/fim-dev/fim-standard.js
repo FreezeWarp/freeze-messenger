@@ -68,7 +68,7 @@ standard.prototype.archive = {
             'each' : function(messageData) {
                 $.when(fim_messageFormat(messageData, 'table')).then(function(messageText) {
                     $('#archiveMessageList').append(messageText);
-                    standard.archive.messageData[messageData.messageId] = messageData;
+                    standard.archive.messageData[messageData.id] = messageData;
                 });
             },
             'end' : function(messages) {
@@ -195,7 +195,9 @@ standard.prototype.logout = function() {
 };
 
 
-standard.prototype.getMessages = function() {console.log("Getting messages from roomId: " + window.roomId);
+standard.prototype.getMessages = function() {
+    console.log("Getting messages from roomId: " + window.roomId);
+
     if (window.roomId) {
         var encrypt = 'base64';
 
@@ -210,12 +212,12 @@ standard.prototype.getMessages = function() {console.log("Getting messages from 
             }, false);
 
             messageSource.addEventListener('message', function(e) {
-                active = JSON.parse(e.data);
+                var active = JSON.parse(e.data);
 
-                console.log('Event (New Message): ' + Number(active.messageId));
+                console.log('Event (New Message): ' + Number(active.id));
 
                 $.when(fim_messageFormat(JSON.parse(e.data), 'list')).then(function(messageText) {
-                    fim_newMessage(messageText, Number(active.messageId));
+                    fim_newMessage(messageText, Number(active.id));
                 });
 
                 return false;
@@ -260,12 +262,12 @@ standard.prototype.getMessages = function() {console.log("Getting messages from 
                 fimApi.getMessages({
                     'roomId': roomId,
                     'initialRequest': (requestSettings.firstRequest ? 1 : 0),
-                    'messageIdStart': requestSettings.lastMessage + 1,
+                    'messageIdStart': requestSettings.lastMessage + 1
                 }, {
                     'reverseEach' : true,
                     'each': function (messageData) {
                         $.when(fim_messageFormat(messageData, 'list')).then(function(messageText) {
-                            fim_newMessage(messageText, Number(messageData.messageId));
+                            fim_newMessage(messageText, Number(messageData.id));
                         });
                     },
                     'end': function () {

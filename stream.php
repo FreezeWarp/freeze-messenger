@@ -54,22 +54,18 @@ function stream_messages($roomId, $lastEvent) {
         $messages = $database->getMessages(array(
             'room' => new fimRoom($roomId),
             'messageIdStart' => $lastEvent + 1,
-        ), array('messageId' => 'asc'))->getAsArray('messageId');
+        ), array('messageId' => 'asc'))->getAsMessages();
 
 
         foreach ($messages AS $messageId => $message) {
             if ($messageId > $lastEvent) $lastEvent = $messageId;
 
-            echo "\nid: " . (int) $message['messageId'] . "\n";
+            echo "\nid: " . (int) $message->id . "\n";
             echo "event: message\n";
-            echo "data: " . json_encode(array(
-                    'roomId' => (int) $message['roomId'],
-                    'messageId' => (int) $message['messageId'],
-                    'messageTime' => (int) $message['time'],
-                    'messageText' => $message['text'],
-                    'flags' => ($message['flag']),
-                    'userId' => (int) $message['userId'],
-                )) . "\n\n";
+            echo "data: " . json_encode(array_merge([
+                    'roomId' => $message->room->id,
+                    'userId' => $message->user->id,
+                ], fim_objectArrayFilterKeys($message, ['id', 'time', 'text', 'flag']))) . "\n\n";
 
             fim_flush(); // Force the server to flush.
         }
