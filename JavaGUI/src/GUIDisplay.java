@@ -23,6 +23,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
+import java.io.*;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -38,6 +39,19 @@ public class GUIDisplay extends Application {
      * It will be instantiated once a server URL is known.
      */
     static MessengerAPI api;
+
+
+    /**
+     * The currently logged-in user. May be serialized between application runs.
+     */
+    static LoggedInUser user = new LoggedInUser();
+
+
+    /**
+     * A file object corresponding to the persistence file, whether or whether not it exists.
+     */
+    private static final File persistenceFile = new File(new File(System.getProperty("user.dir")), "messenger-persistence.bin");
+
 
 
     // Stores the overall frame, composed of the main frame and the side panel.
@@ -81,29 +95,6 @@ public class GUIDisplay extends Application {
 
 
 
-
-    /*################################
-     * JavaFX Properties
-     *###############################*/
-    /**
-     * This is a map of labels that can be obtained dynamically by their name.
-     */
-    private static StrongMap<String, Label> labels;
-
-
-    /**
-     * This is a map of buttons that can be obtained dynamically by their name.
-     */
-    private static StrongMap<String, Button> buttons;
-
-
-    /**
-     * This is a map of text fields that can be obtained dynamically by their name.
-     */
-    private static StrongMap<String, TextField> textfields;
-
-
-
     /*################################
      * JavaFX Entry-Point
      *###############################*/
@@ -114,67 +105,6 @@ public class GUIDisplay extends Application {
      * @param primaryStage Set by JavaFx.
      */
     public void mainScene(Stage primaryStage) {
-        labels = new StrongMap<String, Label>(
-                new String[] {
-                },
-                new Label[] {
-                }
-        );
-
-        buttons = new StrongMap<String, Button>(
-                new String[] {
-                },
-                new Button[] {
-                }
-        );
-
-        textfields = new StrongMap<String, TextField>(
-                new String[] {
-                },
-                new TextField[] {
-                }
-        );
-
-
-
-        /* Build Our Interface */
-        // Make messagesFrame scroll.
-        ScrollPane messagesFrameScrollable = new ScrollPane();
-        messagesFrameScrollable.setContent(messagesFrame);
-
-
-        // Add new message text box
-        sendMessageFrame.getChildren().add(newMessageTextField);
-
-
-        // Add the messages, send message frames to the main frame
-        mainFrame.getChildren().addAll(messagesFrameScrollable, sendMessageFrame);
-
-
-        // Add main frame, side frame to overall frame.
-        mainMessageInterface.getChildren().addAll(sideFrame, mainFrame);
-
-
-        // Sizes
-        mainMessageInterface.setFillWidth(true);
-        sideFrame.setMinWidth(200);
-        sideFrame.setPrefWidth(400);
-        sideFrame.setFillHeight(true);
-        mainFrame.setMinWidth(400);
-        sendMessageFrame.setPrefHeight(100);
-        sendMessageFrame.setFillWidth(true);
-        messagesFrameScrollable.setFitToHeight(true);
-        messagesFrameScrollable.setFitToWidth(true);
-
-
-        // Center stuff.
-        mainMessageInterface.setAlignment(Pos.CENTER);
-        mainFrame.setAlignment(Pos.CENTER);
-        messagesFrame.setAlignment(Pos.CENTER);
-        sendMessageFrame.setAlignment(Pos.CENTER);
-        sideFrame.setAlignment(Pos.CENTER);
-
-
         // Add the overall frame to a scene, add the scene to the primary stage, then display the stage.
         try {
             Parent root = FXMLLoader.load(getClass().getResource("MainPane.fxml"));
@@ -189,66 +119,89 @@ public class GUIDisplay extends Application {
         } catch (Exception ex) {
             System.out.println("Exception: " + ex);
         }
-
-
-
-        // Open/Close Door
-        //buttons.get("").setOnAction(new ButtonHandler());
-        //buttons.get("").setOnAction(new ButtonHandler());
     }
 
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("JavaFX Welcome");
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(25, 25, 25, 25));
+        try {
+            FileInputStream in = new FileInputStream(persistenceFile);
+            ObjectInputStream ois = new ObjectInputStream(in);
 
-        Text scenetitle = new Text("Welcome");
-        scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
-        grid.add(scenetitle, 0, 0, 2, 1);
+            user = (LoggedInUser) ois.readObject();
+        } catch (Exception ex) {
+        }
 
-        Label userName = new Label("User Name:");
-        grid.add(userName, 0, 1);
+        api = new MessengerAPI("http://localhost/messenger/");
 
-        TextField userTextField = new TextField();
-        grid.add(userTextField, 1, 1);
+        if (!api.login(user.getName(), user.getPassword())) {
+            primaryStage.setTitle("JavaFX Welcome");
+            GridPane grid = new GridPane();
+            grid.setAlignment(Pos.CENTER);
+            grid.setHgap(10);
+            grid.setVgap(10);
+            grid.setPadding(new Insets(25, 25, 25, 25));
 
-        Label pw = new Label("Password:");
-        grid.add(pw, 0, 2);
+            Text scenetitle = new Text("Welcome");
+            scenetitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+            grid.add(scenetitle, 0, 0, 2, 1);
 
-        PasswordField pwBox = new PasswordField();
-        grid.add(pwBox, 1, 2);
+            Label userName = new Label("User Name:");
+            grid.add(userName, 0, 1);
 
-        Button btn = new Button("Sign in");
-        HBox hbBtn = new HBox(10);
-        hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
-        hbBtn.getChildren().add(btn);
-        grid.add(hbBtn, 1, 4);
+            TextField userTextField = new TextField();
+            grid.add(userTextField, 1, 1);
 
-        final Text actiontarget = new Text();
-        grid.add(actiontarget, 1, 6);
+            Label pw = new Label("Password:");
+            grid.add(pw, 0, 2);
 
-        btn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                api = new MessengerAPI("http://localhost/messenger/");
-                if (!api.login(userTextField.getText(), pwBox.getText())) {
-                    alert("Login failed.");
+            PasswordField pwBox = new PasswordField();
+            grid.add(pwBox, 1, 2);
+
+            Button btn = new Button("Sign in");
+            HBox hbBtn = new HBox(10);
+            hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
+            hbBtn.getChildren().add(btn);
+            grid.add(hbBtn, 1, 4);
+
+            final Text actiontarget = new Text();
+            grid.add(actiontarget, 1, 6);
+
+            btn.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent e) {
+                    if (!api.login(userTextField.getText(), pwBox.getText())) {
+                        alert("Login failed.");
+                    } else {
+                        user.setName(userTextField.getText());
+                        user.setPassword(pwBox.getText());
+
+                        primaryStage.hide();
+                        mainScene(primaryStage);
+                    }
                 }
-                else {
-                    System.out.println("Login successful, maybe. Session token: " + api.getSessionToken());
+            });
 
-                    primaryStage.hide();
-                    mainScene(primaryStage);
-                }
-            }
-        });
+            Scene scene = new Scene(grid, 300, 275);
+            primaryStage.setScene(scene);
+            primaryStage.show();
+        }
+        else {
+            mainScene(primaryStage);
+        }
+    }
 
-        Scene scene = new Scene(grid, 300, 275);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+    @Override
+    public void stop(){
+        try {
+            FileOutputStream out = new FileOutputStream(persistenceFile);
+            ObjectOutputStream oos = new ObjectOutputStream(out);
+
+            oos.writeObject(user);
+            oos.flush();
+        } catch (Exception ex) {
+            System.err.println("Saving data failed.");
+        }
+
+        MainPane.timer.cancel();
     }
 
 

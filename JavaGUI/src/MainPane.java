@@ -38,11 +38,13 @@ public class MainPane {
      * This is the current room we have loaded and are getting messages for.
      * In the future, this will be an array of multiple rooms.
      */
-    Room currentRoom = new Room(2);
+    Room currentRoom = new Room(1);
+
+
+    static Timer timer = new Timer();
 
 
     public void initialize() {
-        Timer timer = new Timer();
         timer.schedule(new RefreshMessages(), 0, 1000);
 
         // align messages to bottom

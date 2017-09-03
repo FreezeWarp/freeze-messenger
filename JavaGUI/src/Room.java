@@ -49,6 +49,6 @@ public class Room {
 
 
     public void addNewMessage(JsonNode message) {
-        this.setLastMessageId(message.get("messageId").intValue());
+        this.setLastMessageId(message.get("id").intValue());
     }
 }
