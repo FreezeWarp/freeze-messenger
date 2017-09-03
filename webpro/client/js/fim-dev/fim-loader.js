@@ -223,8 +223,9 @@ function fim_messageFormat(json, format) {
         flag = json.flag;
 
     var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId]).then(function(pairs) {
-        userName = pairs[userId].userName;
-        userNameFormat = pairs[userId].userNameFormat;
+        console.log(pairs);
+        userName = pairs[userId].name;
+        userNameFormat = pairs[userId].nameFormat;
         avatar = pairs[userId].avatar;
     }));
 
@@ -849,7 +850,7 @@ autoEntry.prototype = {
 
         if (!id && name) {
             var resolver = $.when(this.options.resolveFromNames([name])).then(function(data) {
-                id = data[name][_this.options.list.slice(0, -1) + "Id"];
+                id = data[name].id;
 
                 console.log(["autoEntry: resolved id", id]);
             });
@@ -857,7 +858,7 @@ autoEntry.prototype = {
 
         else if (!name && id) {
             var resolver = $.when(this.options.resolveFromIds([id]).then(function(data) {
-                name = data[id][_this.options.list.slice(0, -1) + "Name"];
+                name = data[id].name;
 
                 console.log(["autoEntry: resolved name", name]);
             }));
@@ -917,7 +918,7 @@ autoEntry.prototype = {
         var _this = this;
         $.when(this.options.resolveFromIds(entryList)).then(function(entries) {
             for (i in entryList) {
-                _this.addEntry(entryList[i], entries[entryList[i]][_this.options.list.slice(0, -1) + "Name"]);
+                _this.addEntry(entryList[i], entries[entryList[i]].name);
             }
         });
     },

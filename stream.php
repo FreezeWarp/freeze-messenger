@@ -54,7 +54,7 @@ function stream_messages($roomId, $lastEvent) {
         $messages = $database->getMessages(array(
             'room' => new fimRoom($roomId),
             'messageIdStart' => $lastEvent + 1,
-        ), array('messageId' => 'asc'))->getAsMessages();
+        ), array('id' => 'asc'))->getAsMessages();
 
 
         foreach ($messages AS $messageId => $message) {

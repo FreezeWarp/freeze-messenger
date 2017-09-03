@@ -54,8 +54,8 @@ $request = fim_sanitizeGPC('g', array(
     ),
 
     'sort' => array(
-        'valid' => array('userId', 'userName'),
-        'default' => 'userId',
+        'valid' => array('id', 'name'),
+        'default' => 'id',
     ),
 
     'info' => array(
@@ -81,51 +81,36 @@ if (isset($userData)) { // From api/user.php
     $users = $userData;
 }
 else {
-    $users = $slaveDatabase->getUsers(array(
-        'userIds' => $request['userIds'],
-        'userNames' => $request['userNames']
-    ), array($request['sort'] => 'asc'))->getAsUsers();
+    $users = $slaveDatabase->getUsers(
+        fim_arrayFilterKeys($request, ['userIds', 'userNames']),
+        [$request['sort'] => 'asc']
+    )->getAsUsers();
 }
 
 
 
 /* Start Processing */
 foreach ($users AS $userId => $userData) {
-    $xmlData['users']['user ' . $userId] = array(
-        'userName' => $userData->name,
-        'userId' => $userData->id,
-    );
+    $returnFields = ['name', 'id'];
 
-    if (in_array('profile', $request['info'])) {
-        $xmlData['users']['user ' . $userId]['avatar'] = $userData->avatar;
-        $xmlData['users']['user ' . $userId]['profile'] = $userData->profile;
-        $xmlData['users']['user ' . $userId]['userNameFormat'] = $userData->userNameFormat;
-        $xmlData['users']['user ' . $userId]['messageFormatting'] = $userData->messageFormatting;
+    if (in_array('profile', $request['info']))
+        $returnFields = array_merge($returnFields, ['info', 'avatar', 'profile', 'nameFormat', 'messageFormatting', 'joinDate']);
 
-        if (isset($userDataForums[$userId]['posts'])) // TODO
-            $xmlData['users']['user ' . $userId]['postCount'] = $userDataForums[$userId]['posts'];
+    if (in_array('groups', $request['info']))
+        $returnFields = array_merge($returnFields, ['mainGroupId', 'socialGroupIds']);
 
-        if (isset($userDataForums[$userId]['userTitle']))
-            $xmlData['users']['user ' . $userId]['userTitle'] = $userDataForums[$userId]['userTitle'];
+    if ($userData->id === $user->id
+        && in_array('self', $request['info']))
+        $returnFields = array_merge($returnFields, ['defaultRoomId', 'options', 'parentalAge', 'parentalFlags', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms']);
 
-        $xmlData['users']['user ' . $userId]['joinDate'] = (int) (isset($userDataForums[$userId]['joinDate']) ? $userDataForums[$userId]['joinDate'] : $user->joinDate);
-    }
+    $xmlData['users']['user ' . $userId] = fim_objectArrayFilterKeys($userData, $returnFields);
 
-    if (in_array('groups', $request['info'])) {
-        $xmlData['users']['user ' . $userId]['mainGroupId'] = $userData->mainGroupId;
-        $xmlData['users']['user ' . $userId]['socialGroupIds'] = new apiOutputList($userData->socialGroupIds);
-    }
+        // todo
+        //if (isset($userDataForums[$userId]['posts'])) // TODO
+        //    $xmlData['users']['user ' . $userId]['postCount'] = $userDataForums[$userId]['posts'];
 
-    if ((int) $userId === (int) $user->id
-        && in_array('self', $request['info'])) {
-        $xmlData['users']['user ' . $userId]['defaultRoomId'] = $userData->defaultRoomId;
-        $xmlData['users']['user ' . $userId]['options'] = $userData->options;
-        $xmlData['users']['user ' . $userId]['parentalAge'] = $userData->parentalAge;
-        $xmlData['users']['user ' . $userId]['parentalFlags'] = new apiOutputList($userData->parentalFlags);
-        $xmlData['users']['user ' . $userId]['ignoreList'] = $userData->ignoreList;
-        $xmlData['users']['user ' . $userId]['favRooms'] = $userData->favRooms;
-        $xmlData['users']['user ' . $userId]['watchRooms'] = $userData->watchRooms;
-    }
+        //if (isset($userDataForums[$userId]['userTitle']))
+        //    $xmlData['users']['user ' . $userId]['userTitle'] = $userDataForums[$userId]['userTitle'];
 }
 
 

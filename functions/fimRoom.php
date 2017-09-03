@@ -175,7 +175,7 @@ class fimRoom {
     /**
      * @var array A list of users watching this room. TODO: user instances?
      */
-    private $watchedBy;
+    private $watchedByUsers;
 
     /**
      * @var mixed The room data the room was initialised with.
@@ -205,31 +205,16 @@ class fimRoom {
      * @var array A mapping between fimRoom's parameters and their column names in the database.
      * TODO: Eventually, we'll hopefully rename everything in the DB itself, but that'd be too time-consuming right now.
      */
-    private static $roomDataConversion = array(
-        'roomId' => 'id',
-        'roomName' => 'name',
-        'options' => 'options',
-        'ownerId' => 'ownerId',
-        'roomTopic' => 'topic',
-        'roomParentalFlags' => 'parentalFlags',
-        'roomParentalAge' => 'parentalAge',
-        'defaultPermissions' => 'defaultPermissions',
-        'lastMessageTime' => 'lastMessageTime',
-        'lastMessageId' => 'lastMessageTime',
-        'messageCount' => 'messageCount',
-        'watchedByUserIds' => 'watchedBy',
-        'flags' => 'flags'
-    );
 
     /**
      * @var array When one column in one of these arrays is resolved, the rest will be as well.
      */
     private static $roomDataPullGroups = array(
-        ['roomId','roomName'],
+        ['id','name'],
         ['defaultPermissions','options','ownerId'],
-        ['roomParentalFlags','roomParentalAge','roomTopic'],
+        ['parentalFlags','parentalAge','topic'],
         ['lastMessageTime','lastMessageId','messageCount','flags'],
-        ['watchedByUserIds']
+        ['watchedByUsers']
     );
 
     /**
@@ -271,7 +256,7 @@ class fimRoom {
         elseif ($roomData === false)
             $this->id = false;
         else
-            new fimError('invalidRoom', 'Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.) Passed: ' . print_r($roomData, true));
+            throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.) Passed: ' . print_r($roomData, true));
 
         $this->roomData = $roomData;
     }
@@ -434,8 +419,12 @@ class fimRoom {
                 $this->__set('encodedId', $this->encodeId($this->id));
             }
 
-            elseif ($property === 'watchedBy' && !$config['enableWatchRooms']) {
-                $this->__set('watchedBy', []);
+            elseif ($property === 'watchedByUsers' && !$config['enableWatchRooms']) {
+                $this->__set('watchedByUsers', []);
+            }
+
+            elseif ($property === 'deleted' || $property === 'archived' || $property === 'hidden' || $property === 'official') {
+                $this->resolveFromPullGroup("options");
             }
 
             else {
@@ -458,26 +447,7 @@ class fimRoom {
                  }
 
                 else {
-                    // Find selection group
-                    $flip = array_flip(fimRoom::$roomDataConversion);
-                    if (isset($flip[$property])) {
-                        $needle = $flip[$property];
-                        $groupPointer = false;
-
-                        foreach (fimRoom::$roomDataPullGroups AS $group) {
-                            //var_dump(["get-1", $needle, $group, in_array($needle, $group)]);
-                            if (in_array($needle, $group)) {
-                                $groupPointer =& $group;
-                                break;
-                            }
-                        }
-
-                        if ($groupPointer) {// var_dump(["get", $groupPointer]);
-                            $this->getColumns($groupPointer);
-                        }
-                        else
-                            throw new Exception("Selection group not found for '$property'");
-                    }
+                    $this->resolveFromPullGroup($property);
                 }
             }
         }
@@ -491,7 +461,6 @@ class fimRoom {
      *
      * @param $property
      * @param $value
-     * @throws fimError
      */
     public function __set($property, $value)
     {
@@ -501,12 +470,12 @@ class fimRoom {
         if (property_exists($this, $property))
             $this->{$property} = $value;
         else
-            throw new fimError("fimRoomBadProperty", "fimRoom does not have property '$property'");
+            throw new Exception("fimRoom does not have property '$property'");
 
 
         // If we've already processed the value once, it generally won't need to be reprocessed. Permissions, for instance, may be altered intentionally. We do make an exception for setting integers to what should be arrays -- we will reprocess in this case.
         if (!in_array($property, $this->resolved) ||
-            (($property === 'parentalFlags' || $property === 'watchedBy')
+            (($property === 'parentalFlags' || $property === 'watchedByUsers')
                 && gettype($value) === 'integer')
         ) {
             $this->resolved[] = $property;
@@ -524,30 +493,30 @@ class fimRoom {
                 $this->parentalAge = 0;
             }
 
-            elseif ($property === 'watchedBy') {
+            elseif ($property === 'watchedByUsers') {
                 if (!$config['enableWatchRooms'])
-                    $this->watchedBy = [];
+                    $this->watchedByUsers = [];
 
                 elseif ($value === fimDatabase::decodeError) {
                     // TODO: regenerate and cache to APC
                     global $database;
-                    $this->watchedBy = $database->getWatchRoomUsers($this->id);
+                    $this->watchedByUsers = $database->getWatchRoomUsers($this->id);
 
                     $database->update($database->sqlPrefix . "rooms", [
-                        "watchedByUserIds" => $this->watchedBy
+                        "watchedByUsers" => $this->watchedByUsers
                     ], [
-                        "roomId" => $this->id,
+                        "id" => $this->id,
                     ]);
                 }
 
                 elseif ($value === fimDatabase::decodeExpired) {
                     global $database;
-                    $this->watchedBy = $database->getWatchRoomUsers($this->id);
+                    $this->watchedByUsers = $database->getWatchRoomUsers($this->id);
 
                     $database->update($database->sqlPrefix . "rooms", [
-                        "watchedByUserIds" => $this->watchedBy
+                        "watchedByUsers" => $this->watchedByUsers
                     ], [
-                        "roomId" => $this->id,
+                        "id" => $this->id,
                     ]);
                 }
             }
@@ -586,16 +555,9 @@ class fimRoom {
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->getColumns on private room.');
         elseif (count($columns) > 0)
-            return $this->populateFromArray($database->where(array('roomId' => $this->id))->select(array($database->sqlPrefix . 'rooms' => array_merge(array('roomId'), $columns)))->getAsArray(false));
+            return $this->populateFromArray($database->where(array('id' => $this->id))->select(array($database->sqlPrefix . 'rooms' => array_merge(array('id'), $columns)))->getAsArray(false));
         else
             return true;
-    }
-
-    private function mapDatabaseProperty($property) {
-        if (!isset(array_flip(fimRoom::$roomDataConversion)[$property]))
-            throw new Exception("Unable to map database property '$property'");
-        else
-            return array_flip(fimRoom::$roomDataConversion)[$property];
     }
 
 
@@ -607,7 +569,7 @@ class fimRoom {
      * @throws Exception
      */
     public function resolve($properties) {
-        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff($properties, $this->resolved)));
+        return $this->getColumns(array_diff($properties, $this->resolved));
     }
 
     /**
@@ -617,7 +579,33 @@ class fimRoom {
      * @throws Exception
      */
     public function resolveAll() {
-        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff(array_values(fimRoom::$roomDataConversion), $this->resolved)));
+        return $this->resolve('id', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge', 'lastMessageTime', 'lastMessageId', 'messageCount', 'flags', 'watchedByUsers');
+    }
+
+
+    /**
+     * Resolves the needle property and all similar properties.
+     *
+     * @param $needle
+     *
+     * @throws Exception If matching pullgroup not found.
+     */
+    public function resolveFromPullGroup($needle) {
+        $groupPointer = false;
+
+        foreach (fimRoom::$roomDataPullGroups AS $group) {
+            //var_dump(["get-1", $needle, $group, in_array($needle, $group)]);
+            if (in_array($needle, $group)) {
+                $groupPointer =& $group;
+                break;
+            }
+        }
+
+        if ($groupPointer) {// var_dump(["get", $groupPointer]);
+            $this->resolve($groupPointer);
+        }
+        else
+            throw new Exception("Selection group not found for '$needle'");
     }
 
 
@@ -629,19 +617,13 @@ class fimRoom {
      * @return bool
      * @throws fimError
      */
-    private function populateFromArray(array $roomData, $dbNameMapping = true): bool {
+    private function populateFromArray(array $roomData, bool $overwrite = false): bool {
         if ($roomData) {
-//            $this->resolved = array_diff($this->resolved, array_values($roomData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
+             // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
+            if ($overwrite) $this->resolved = array_diff($this->resolved, array_keys($roomData));
 
             foreach ($roomData AS $attribute => $value) {
-                if (!$dbNameMapping) {
-                    $this->__set($attribute, $value);
-                }
-                elseif (!isset(fimRoom::$roomDataConversion[$attribute]))
-                    trigger_error("fimRoom was passed a roomData array containing '$attribute', which is unsupported.", E_USER_ERROR);
-                else {
-                    $this->__set(fimRoom::$roomDataConversion[$attribute], $value);
-                }
+                $this->__set($attribute, $value);
             }
 
             return true;
@@ -663,9 +645,9 @@ class fimRoom {
         else {
             $database->createRoomEvent('topicChange', $this->id, $topic); // name, roomId, message
             $database->update($database->sqlPrefix . "rooms", array(
-                'roomTopic' => $topic,
+                'topic' => $topic,
             ), array(
-                'roomId' => $this->id,
+                'id' => $this->id,
             ));
         }
     }
@@ -698,7 +680,7 @@ class fimRoom {
             throw new Exception('Can\'t call fimRoom->setDatabase on private rooms.');
 
         fim_removeNullValues($roomParameters);
-        $this->populateFromArray($roomParameters, true);
+        $this->populateFromArray($roomParameters);
 
         if ($this->id) {
             $database->startTransaction();
@@ -707,19 +689,10 @@ class fimRoom {
                 'roomIds' => [$this->id],
                 'columns' => explode(', ', $database->roomHistoryColumns), // TODO: uh... shouldn't roomHistoryColumns be array?
             ])->getAsArray(false)) {
-                $database->insert($database->sqlPrefix . "roomHistory", [
-                    'roomId' => $this->id,
-                    'roomName' => $existingRoomData['roomName'],
-                    'roomTopic' => $existingRoomData['roomTopic'],
-                    'options' => (int) $existingRoomData['options'],
-                    'ownerId' => (int) $existingRoomData['ownerId'],
-                    'defaultPermissions' => (int) $existingRoomData['defaultPermissions'],
-                    'roomParentalFlags' => $existingRoomData['roomParentalFlags'],
-                    'roomParentalAge' => (int) $existingRoomData['roomParentalAge'],
-                ]);
+                $database->insert($database->sqlPrefix . "roomHistory", fim_arrayFilterKeys($existingRoomData, ['id', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge']));
 
                 $return = $database->update($database->sqlPrefix . "rooms", $roomParameters, array(
-                    'roomId' => $this->id,
+                    'id' => $this->id,
                 ));
             }
 

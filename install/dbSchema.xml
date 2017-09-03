@@ -276,7 +276,7 @@
         <!-- partitionBy=roomId would be nice here, but doesn't work with strings. -->
         <!-- I'm pretty sure after I made that comment, I added my own manual partitioning to the DBA. Which, uh... that's one solution, isn't it? -->
         <table name="messages" hardPartitions="10" type="general" comment="User-created messages.">
-            <column name="messageId" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
+            <column name="id" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
             <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
             <column name="anonId" type="int" maxlen="8" comment="The anonymous ID of the user who made the message, if applicable." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
@@ -290,7 +290,7 @@
             <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
             <column name="flag" type="string" maxlen="10" comment="The content-type flag of the message (e.g. video, image, text, archive, html, url, email)." />
 
-            <key name="messageId,roomId" type="primary" />
+            <key name="id,roomId" type="primary" />
             <key name="deleted" type="index" />
             <key name="time" type="index" />
             <key name="roomId" type="index" />
@@ -363,7 +363,7 @@
 
 
         <table name="messageEditHistory" type="general" comment="A history of editted messages.">
-            <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
+            <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
             <column name="userId" type="int" maxlen="8" comment="The user who editted the message." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="oldText" type="blob" maxlen="5000" comment="The old raw text of the message." />
@@ -375,7 +375,7 @@
             <column name="iv1" type="blob" maxlen="255" comment="The base64-encoded IV used for encryption." />
             <column name="iv2" type="blob" maxlen="255" comment="The base64-encoded IV used for encryption." />
 
-            <key name="messageId,time" type="primary" />
+            <key name="messageId,roomId,time" type="primary" />
         </table>
 
 
@@ -423,11 +423,11 @@
 
         <table name="rooms" type="general" comment="User-created rooms. Does not include private rooms.">
             <!-- General -->
-            <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
-            <column name="roomIdEncoded" type="blob" maxlen="23" comment="The unique ID for the room, encoded as appropriate." />
-            <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
-            <column name="roomNameSearchable" type="string" maxlen="50" comment="The name of the room, formatted for searching." />
-            <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
+            <column name="id" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
+            <column name="idEncoded" type="blob" maxlen="23" comment="The unique ID for the room, encoded as appropriate." />
+            <column name="name" type="string" maxlen="50" comment="The name of the room." />
+            <column name="nameSearchable" type="string" maxlen="50" comment="The name of the room, formatted for searching." />
+            <column name="topic" type="string" maxlen="200" comment="The current topic of the room." />
             <column name="options" type="bitfield" bits="8" default="0" comment="A bitfield corrosponding to certain room options." />
 
             <!-- Permissions -->
@@ -435,9 +435,9 @@
             <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
 
             <!-- Parental Controls -->
-            <column name="roomParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the user." />
-            <column name="roomParentalFlagsField" type="bitfield" bits="16" comment="[TODO] A bitfield corresponding to parentalFlags. The corresponding bits are defined as part of config, and whenever the corresponding config data is modified, all bitfields must be updated. The benefits over a comma-seperated list are the ability to rename flags without requiring a rebuild, less data usage (good for caching), and the ability to query for individual flags." />
-            <column name="roomParentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
+            <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the user." />
+            <column name="parentalFlagsField" type="bitfield" bits="16" comment="[TODO] A bitfield corresponding to parentalFlags. The corresponding bits are defined as part of config, and whenever the corresponding config data is modified, all bitfields must be updated. The benefits over a comma-seperated list are the ability to rename flags without requiring a rebuild, less data usage (good for caching), and the ability to query for individual flags." />
+            <column name="parentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
 
             <!-- Counters -->
             <column name="lastMessageTime" type="time" default="0" comment="The time of the last message made in the room." />
@@ -446,11 +446,11 @@
             <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
             <!-- Caches -->
-            <column name="watchedByUserIds" type="blob" maxlen="50000" comment="A CSV cache of the users watching this room." />
+            <column name="watchedByUsers" type="blob" maxlen="50000" comment="A CSV cache of the users watching this room." />
 
 
-            <key name="roomId" type="primary" />
-            <key name="roomNameSearchable" type="index" />
+            <key name="id" type="primary" />
+            <key name="nameSearchable" type="index" />
             <key name="options" type="index" />
             <key name="ownerId" type="index" />
             <key name="lastMessageId" type="index" />
@@ -474,9 +474,9 @@
 
         <table name="roomHistory" type="general" comment="A history of all changes made to rooms. This is enabled per-installation. It does not include private rooms.">
             <!-- General -->
-            <column name="roomId" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
-            <column name="roomName" type="string" maxlen="50" comment="The name of the room." />
-            <column name="roomTopic" type="string" maxlen="200" comment="The current topic of the room." />
+            <column name="id" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
+            <column name="name" type="string" maxlen="50" comment="The name of the room." />
+            <column name="topic" type="string" maxlen="200" comment="The current topic of the room." />
             <column name="options" type="bitfield" bits="8" comment="A bitfield corrosponding to certain room options." />
 
             <!-- Permissions -->
@@ -484,12 +484,12 @@
             <column name="defaultPermissions" type="bitfield" bits="8" default="7" comment="A bitfield corrosponding to permissions users are granted if they do not exist in the roomPermissions table." />
 
             <!-- Parental Controls -->
-            <column name="roomParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the room." />
-            <column name="roomParentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
+            <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the room." />
+            <column name="parentalAge" type="int" maxlen="2" comment="The room's parental content age rating." />
 
             <column name="changeTime" type="time" default="__TIME__" comment="The time at which the above information was altered." />
 
-            <key name="roomId,changeTime" type="primary" />
+            <key name="id,changeTime" type="primary" />
         </table>
 
 
@@ -567,7 +567,7 @@
         </table>
 
 
-        <table name="socialGroups" type="general" comment="The members of user groups.">
+        <table name="socialGroups" type="general" comment="The members of user groups. This is a reserved table for future functionality; at present, social group functionality is only possible through integration services.">
             <column name="groupId" type="int" maxlen="6" comment="The group ID." />
             <column name="groupName" type="string" maxlen="50" comment="The group name." />
             <column name="ownerId" type="int" maxlen="8" fkey="users.userId" comment="The owner userID of the group." />
@@ -581,7 +581,7 @@
         </table>
 
 
-        <table name="socialGroupMembers" type="general" comment="The members of groups, used with vanilla logins.">
+        <table name="socialGroupMembers" type="general" comment="The members of groups, used with vanilla logins. This is a reserved table for future functionality; at present, social group functionality is only possible through integration services.">
             <column name="groupId" type="int" maxlen="6" fkey="socialGroups.groupId" comment="The group ID." />
             <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The member ID of the group." />
             <column name="type" type="enum" default="pending" restrict="member,moderator,pending,banned" comment="Whether a group member is a normal member, a moderator (able to add and remove other users from the group), or has been banned from the group (can not requested invitation)." />
@@ -608,9 +608,10 @@
 
         <table name="users" type="general" comment="The users.">
             <!-- General -->
-            <column name="userId" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
-            <column name="userName" type="string" maxlen="50" comment="The user's name." />
-            <column name="userGroupId" type="int" maxlen="6" default="1" comment="The admin-set socialGroup ID of the user." />
+            <column name="id" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
+            <column name="name" type="string" maxlen="50" comment="The user's name." />
+            <column name="mainGroupId" type="int" maxlen="6" default="1" comment="The admin-set socialGroup ID of the user." />
+            <column name="socialGroupIds" type="blob" maxlen="10000" comment="A cache of the IDs of all groups the user has joined." />
             <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
             <column name="joinDate" type="time" default="__TIME__" comment="The date the user joined." />
             <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
@@ -633,7 +634,7 @@
             <!-- User Display -->
             <column name="avatar" type="string" maxlen="200" comment="The absolute URI of the user's avatar." />
             <column name="profile" type="string" maxlen="200" comment="The absolute URI of the user's profile link or website." />
-            <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the user's name for its display." />
+            <column name="nameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the user's name for its display." />
 
             <!-- Prefs -->
             <column name="defaultRoomId" type="blob" maxlen="23" default="1" fkey="rooms.roomId" comment="The user's default room." />
@@ -642,7 +643,7 @@
             <column name="status" type="int" maxlen="3" comment="The user's activity status." />
 
             <!-- Formatting -->
-            <column name="defaultMessageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
+            <column name="messageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
 
             <!-- Permissions -->
             <column name="privs" type="bitfield" bits="31" default="0" comment="A bitfield corresponding to admin-set user priviledges. The 31 size is done for portability -- 32-bit PHP systems (those on 32-bit or Windows systems) can only use the first 31 bits, because the 32 bit is used for signing." />
@@ -650,24 +651,23 @@
             <!-- Counters -->
             <column name="fileCount" type="int" maxlen="8" default="0" comment="The number of files store on the server by this user." />
             <column name="fileSize" type="int" maxlen="8" default="0" comment="The total size of all files stored on the server by this user." />
-            <column name="ownedRoomIds" type="string" maxlen="10000" comment="Total number of rooms owned by this user (may be used to place a limit on room creation.)" />
+            <column name="ownedRooms" type="int" maxlen="6" comment="Total number of rooms owned by this user (may be used to place a limit on room creation.)" />
             <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
 
             <!-- List Caches -->
-            <column name="favRoomIds" type="blob" maxlen="10000" comment="A CSV cache of the favRooms table for this user." />
-            <column name="watchRoomIds" type="blob" maxlen="10000" comment="A CSV cache of the watchRooms table for this user." />
-            <column name="ignoredUserIds" type="blob" maxlen="10000" comment="A CSV cache of users ignored by this user." />
-            <column name="friendedUserIds" type="blob" maxlen="10000" comment="A CSV cache of users friended by this user." />
-            <column name="socialGroupIds" type="blob" maxlen="10000" comment="A CSV cache of the IDs of all groups the user has joined." />
+            <column name="favRooms" type="blob" maxlen="10000" comment="A cache of the favRooms table for this user." />
+            <column name="watchRooms" type="blob" maxlen="10000" comment="A cache of the watchRooms table for this user." />
+            <column name="ignoredUsers" type="blob" maxlen="10000" comment="A cache of users ignored by this user." />
+            <column name="friendedUsers" type="blob" maxlen="10000" comment="A cache of users friended by this user." />
 
 
             <!-- Parental Controls -->
-            <column name="userParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
-            <column name="userParentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
+            <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
+            <column name="parentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
 
 
-            <key name="userId" type="primary" />
-            <key name="userGroupId" type="index" />
+            <key name="id" type="primary" />
+            <key name="mainGroupId" type="index" />
             <key name="lastSync" type="index" />
             <key name="privs" type="index" />
 
@@ -720,12 +720,12 @@
 
         <table name="userHistory" type="general" comment="A history of modifications to the user table. This is enabled per-installation.">
             <!-- General -->
-            <column name="userId" type="int" maxlen="8" />
-            <column name="userName" type="string" maxlen="50" />
-            <column name="userGroupId" type="int" maxlen="6" default="1" />
+            <column name="id" type="int" maxlen="8" />
+            <column name="name" type="string" maxlen="50" />
+            <column name="mainGroupId" type="int" maxlen="6" default="1" />
             <column name="socialGroupIds" type="string" maxlen="1000" />
             <column name="options" type="bitfield" bits="16" />
-            <column name="defaultMessageFormatting" type="string" maxlen="300" />
+            <column name="messageFormatting" type="string" maxlen="300" />
 
             <!-- Password Fun -->
             <column name="password" type="string" maxlen="64" />
@@ -735,7 +735,7 @@
             <!-- User Display -->
             <column name="avatar" type="string" maxlen="200" />
             <column name="profile" type="string" maxlen="200" />
-            <column name="userNameFormat" type="string" maxlen="300" />
+            <column name="nameFormat" type="string" maxlen="300" />
 
             <!-- Permissions -->
             <column name="privs" type="bitfield" bits="31" />
@@ -746,7 +746,7 @@
 
             <column name="changeTime" type="time" default="__TIME__" comment="The time at which the above information was altered." />
 
-            <key name="userId,changeTime" type="primary" />
+            <key name="id,changeTime" type="primary" />
         </table>
 
 
@@ -775,7 +775,7 @@
             <def bit="1">Can View</def>
             <def bit="2">Can Post</def>
             <def bit="4">Can Change the Topic</def>
-            <def bit="8">Can Modify and Delete Posts</def>
+            <def bit="8">Can Delete Posts</def>
             <def bit="16">Can Edit Room Properties (e.g. name)</def>
             <def bit="128">Can Grant</def>
         </bitfield>

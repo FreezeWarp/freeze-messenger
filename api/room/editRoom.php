@@ -161,10 +161,10 @@ switch($requestHead['_action']) {
             elseif (!$user->hasPriv('createRooms'))
                 new fimError('noPerm', 'You do not have permission to create rooms.');
 
-            elseif (!$user->hasPriv('modRooms') && count($user->ownedRoomIds) >= $config['userRoomMaximum'])
+            elseif (!$user->hasPriv('modRooms') && $user->ownedRooms >= $config['userRoomMaximum'])
                 new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for a single user.');
 
-            elseif (!$user->hasPriv('modRooms') && ((time() - $user->joinDate / (60 * 60 * 24 * 365)) * count($user->ownedRoomIds)) >= $config['userRoomMaximumPerYear'])
+            elseif (!$user->hasPriv('modRooms') && ((time() - $user->joinDate / (60 * 60 * 24 * 365)) * $user->ownedRooms) >= $config['userRoomMaximumPerYear'])
                 new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for the age of your account. You may eventually be allowed to create additional rooms.');
 
             elseif ($slaveDatabase->getRooms(array('roomNames' => array($request['name'])))->getCount() > 0)

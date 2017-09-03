@@ -18,8 +18,8 @@ class fimRoomFactory {
     }
 
     public static function getFromData(array $roomData) : fimRoom {
-        if (!isset($roomData['roomId'])) {
-            throw new Exception('Roomdata must contain roomId');
+        if (!isset($roomData['id'])) {
+            throw new Exception('Roomdata must contain id');
         }
 
         elseif (function_exists('apc_fetch') && apc_exists('fim_fimRoom_' . $roomData['roomId'])) {

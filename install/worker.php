@@ -257,7 +257,7 @@ switch ($_REQUEST['phase']) {
 
                 $user = new fimUser(1);
                 if (!$user->setDatabase(array(
-                    'userName' => $adminUsername,
+                    'name' => $adminUsername,
                     'password' => $adminPassword,
                     'privs' => 0x7FFFFFFF,
                 ))) {

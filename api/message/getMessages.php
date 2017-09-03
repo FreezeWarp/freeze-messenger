@@ -129,7 +129,7 @@ else {
                 'room' => $room,
             ), fim_arrayFilterKeys($request, ['messageIdEnd', 'messageIdStart', 'messageDateMin', 'messageDateMax', 'showDeleted', 'messageTextSearch', 'archive', 'userIds'])),
 
-            ['messageId' => ($request['messageIdStart'] || $request['messageDateMin'] ? 'asc' : 'desc')],
+            ['id' => ($request['messageIdStart'] || $request['messageDateMin'] ? 'asc' : 'desc')],
             $config['defaultMessageLimit'],
             $request['page']
         )->getAsMessages();

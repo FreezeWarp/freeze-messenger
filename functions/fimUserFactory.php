@@ -18,8 +18,8 @@ class fimUserFactory {
     }
 
     public static function getFromData(array $userData) : fimUser {
-        if (!isset($userData['userId'])) {
-            throw new Exception('Userdata must contain userId');
+        if (!isset($userData['id'])) {
+            throw new Exception('Userdata must contain id');
         }
 
         elseif (function_exists('apc_fetch') && apc_exists('fim_fimUser_' . $userData['userId'])) {

@@ -50,14 +50,14 @@ $request = fim_sanitizeGPC('g', array(
         'evaltrue' => true,
     ),
 
-    'search' => array(
+    'roomNameSearch' => array(
         'default' => '',
         'cast' => 'string',
     ),
 
     'sort' => array(
-        'valid' => array('roomId', 'roomName'),
-        'default' => 'roomId',
+        'valid' => array('id', 'name'),
+        'default' => 'id',
     ),
 
     'showDeleted' => array(
@@ -87,42 +87,28 @@ do {
         $rooms = [$room];
 
     else {
-        $roomsQuery = $database->getRooms(array(
-            'roomIds' => $request['roomIds'],
-            'roomNames' => $request['roomNames'],
-            'showDeleted' => $request['showDeleted'],
-            'roomNameSearch' => $request['search'],
-            'ownerIds' => ($request['permFilter'] === 'own' ? array($user->id) : array())
+        $roomsQuery = $database->getRooms(array_merge(
+            fim_arrayFilterKeys($request, ['roomIds', 'roomNames', 'showDeleted', 'roomNameSearch']),
+            ['ownerIds' => ($request['permFilter'] === 'own' ? array($user->id) : array())]
         ), array($request['sort'] => 'asc'), $config['defaultRoomLimit'], $request['page']);
+
         $rooms = $roomsQuery->getAsRooms();
     }
+
 
     foreach ($rooms AS $roomId => $room) {
         $permission = $database->hasPermission($user, $room);
 
         if (!($permission & fimRoom::$permArray[$request['permFilter']])) continue;
 
-        $xmlData['rooms'][$roomId] = array(
-            'roomId' => $room->id,
-            'roomName' => $room->name,
-            'ownerId' => $room->ownerId,
-            'defaultPermissions' => $room->defaultPermissions,
-            'parentalFlags' => new apiOutputList($room->parentalFlags),
-            'parentalAge' => $room->parentalAge,
-            'official' => $room->official,
-            'archived' => $room->archived,
-            'hidden' => $room->hidden,
-            'deleted' => $room->deleted,
-            'permissions' => $room->getPermissionsArray($database->hasPermission($user, $room))
+        $xmlData['rooms'][$roomId] = array_merge(
+            fim_objectArrayFilterKeys($room, ['id', 'name', 'ownerId', 'parentalAge', 'official', 'archived', 'hidden', 'deleted', 'topic', 'ownerId', 'lastMessageId', 'lastMessageTime', 'messageCount']),
+            [
+                'defaultPermissions' => $room->getPermissionsArray($room->defaultPermissions),
+                'permissions' => $room->getPermissionsArray($database->hasPermission($user, $room)),
+                'parentalFlags' => new apiOutputList($room->parentalFlags)
+            ]
         );
-
-        if ($database->hasPermission($user, $room) & ROOM_PERMISSION_VIEW) { // These are not shown to users who are not allowed to access the room.
-            $xmlData['rooms'][$roomId]['roomTopic'] = $room->topic;
-            $xmlData['rooms'][$roomId]['owner'] = $room->ownerId;
-            $xmlData['rooms'][$roomId]['lastMessageId'] = $room->lastMessageId;
-            $xmlData['rooms'][$roomId]['lastMessageTime'] = $room->lastMessageTime;
-            $xmlData['rooms'][$roomId]['messageCount'] = $room->messageCount;
-        }
 
         if ($database->hasPermission($user, $room) & ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
             foreach ($database->getRoomPermissions(array($roomId), 'user')->getAsArray() AS $row) {

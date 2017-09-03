@@ -116,17 +116,10 @@ else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_t
                 'expires' => $oauthResponse->getParameter('expires_in'),
                 'anonId' => $user->anonId,
                 'defaultRoomId' => $user->defaultRoomId,
-                'userData' => array(
-                    'userId' => $user->id,
-                    'userName' => $user->name,
-                    'userNameFormat' => $user->userNameFormat,
-                    'userGroupId' => $user->mainGroupId,
-                    'socialGroupIds' => new apiOutputList($user->socialGroupIds),
-                    'avatar' => $user->avatar,
-                    'profile' => $user->profile,
-                    'messageFormatting' => $user->messageFormatting,
-                    'parentalFlags' => new apiOutputList($user->parentalFlags),
-                    'parentalAge' => $user->parentalAge,
+                'userData' => array_merge([
+                        'socialGroupIds' => new apiOutputList($user->socialGroupIds),
+                        'parentalFlags' => new apiOutputList($user->parentalFlags),
+                    ], fim_objectArrayFilterKeys($user, ['id', 'name', 'nameFormat', 'mainGroupId', 'avatar', 'profile', 'messageFormatting', 'parentalAge'])
                 ),
                 'permissions' => $user->getPermissionsArray()
             ),

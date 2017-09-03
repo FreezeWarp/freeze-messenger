@@ -125,7 +125,7 @@ standard.prototype.login = function(options) {
     }, {
         end : function(activeLogin) {
             window.activeLogin = activeLogin;
-            window.userId = activeLogin.userData.userId;
+            window.userId = activeLogin.userData.id;
             window.anonId = activeLogin.anonId;
             window.sessionHash = activeLogin.access_token;
             window.permissions = activeLogin.permissions;
@@ -382,13 +382,13 @@ standard.prototype.changeRoom = function(roomId) {
 
 
             if (roomData.permissions.view) { // If we can view the room...
-                window.roomId = roomData.roomId;
+                window.roomId = roomData.id;
 
-                $('#roomName').html(roomData.roomName); // Update the room name.
-                $('#topic').html(roomData.roomTopic); // Update the room topic.
+                $('#roomName').html(roomData.name); // Update the room name.
+                $('#topic').html(roomData.topic); // Update the room topic.
 
                /*** Get Messages (TODO: Streamline) ***/
-                standard.populateMessages(roomData.roomId);
+                standard.populateMessages(roomData.id);
             }
         }});
     }

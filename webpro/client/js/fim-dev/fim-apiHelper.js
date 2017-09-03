@@ -3,9 +3,9 @@ var Resolver = (function () {
     }
     Resolver.cacheEntry = function (type, entry) {
         console.log(["resolveAddedToCache", type, entry]);
-        if (Resolver["cached" + type + "Ids"].indexOf(entry[type + "Id"]) === -1) {
-            Resolver["cached" + type + "Ids"].push(Number(entry[type + "Id"]));
-            Resolver["cached" + type + "Names"].push(String(entry[type + "Name"]));
+        if (Resolver["cached" + type + "Ids"].indexOf(entry.id) === -1) {
+            Resolver["cached" + type + "Ids"].push(Number(entry.id));
+            Resolver["cached" + type + "Names"].push(String(entry.name));
             Resolver["cached" + type + "Properties"].push(entry);
         }
     };
@@ -15,31 +15,33 @@ var Resolver = (function () {
         var returnData = {};
         var unresolvedItems = [];
         var unresolvedItemsWaiting = [];
-        if (property == "Ids") {
+        var propertyPlural = property.charAt(0).toUpperCase() + property.slice(1) + "s"; // e.g. if property = id, this creates "Ids"
+        var typeProperty = type + propertyPlural;
+        if (property == "id") {
             for (var i = 0; i < items.length; i++) {
                 items[i] = Number(items[i]);
             }
         }
         var _loop_1 = function (item) {
             // If we already have a cached entry, return it.
-            if (Resolver["cached" + type + property].indexOf(item) !== -1) {
-                returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + type + property].indexOf(item)];
+            if (Resolver["cached" + typeProperty].indexOf(item) !== -1) {
+                returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + typeProperty].indexOf(item)];
                 console.log(["resolveFoundInCache", type, property, item, returnData[item]]);
             }
-            else if (Resolver["waiting" + type + property].indexOf(item) !== -1) {
+            else if (Resolver["waiting" + typeProperty].indexOf(item) !== -1) {
                 var retry_1 = setInterval(function () {
-                    console.log(["resolveWaitRetry", type, property, item, Resolver["cached" + type + property]]);
-                    if (Resolver["cached" + type + property].indexOf(item) !== -1) {
+                    console.log(["resolveWaitRetry", typeProperty, item, Resolver["cached" + typeProperty]]);
+                    if (Resolver["cached" + typeProperty].indexOf(item) !== -1) {
                         clearInterval(retry_1);
-                        console.log(["resolveFoundInCacheAfterWait", type, property, item, returnData[item]]);
-                        returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + type + property].indexOf(item)];
+                        console.log(["resolveFoundInCacheAfterWait", typeProperty, item, returnData[item]]);
+                        returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + typeProperty].indexOf(item)];
                         unresolvedItemsWaiting.splice($.inArray(item, unresolvedItemsWaiting), 1);
                     }
                 }, 100);
                 unresolvedItemsWaiting.push(item);
             }
             else {
-                Resolver["waiting" + type + property].push(item);
+                Resolver["waiting" + typeProperty].push(item);
                 unresolvedItems.push(item);
             }
         };
@@ -51,11 +53,11 @@ var Resolver = (function () {
         // Query the unresolved items all at once.
         if (unresolvedItems.length > 0) {
             var query = {};
-            query[type + property] = unresolvedItems;
+            query[typeProperty] = unresolvedItems;
             fimApi["get" + type.charAt(0).toUpperCase() + type.slice(1) + "s"](query, {
                 'each': function (entry) {
                     Resolver.cacheEntry(type, entry);
-                    returnData[entry[type + property.slice(0, -1)]] = entry;
+                    returnData[entry[property]] = entry;
                 },
                 'end': function () {
                     unresolvedItems = [];
@@ -79,16 +81,16 @@ var Resolver = (function () {
         return deferred.promise();
     };
     Resolver.resolveUsersFromIds = function (ids) {
-        return Resolver.resolve("user", "Ids", ids);
+        return Resolver.resolve("user", "id", ids);
     };
     Resolver.resolveUsersFromNames = function (names) {
-        return Resolver.resolve("user", "Names", names);
+        return Resolver.resolve("user", "name", names);
     };
     Resolver.resolveRoomsFromIds = function (ids) {
-        return Resolver.resolve("room", "Ids", ids);
+        return Resolver.resolve("room", "id", ids);
     };
     Resolver.resolveRoomsFromNames = function (names) {
-        return Resolver.resolve("room", "Names", names);
+        return Resolver.resolve("room", "name", names);
     };
     Resolver.cacheduserIds = [];
     Resolver.cacheduserNames = [];

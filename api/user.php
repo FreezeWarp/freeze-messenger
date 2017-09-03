@@ -52,6 +52,7 @@
  *
  * =Todo=
  * @todo showOnly
+ * @todo getUser params
  */
 
 

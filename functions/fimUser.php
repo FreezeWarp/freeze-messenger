@@ -14,118 +14,296 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * The user may view rooms.
+ */
 define("USER_PRIV_VIEW", 0x1);
+
+/**
+ * The user may post in rooms.
+ */
 define("USER_PRIV_POST", 0x2);
+
+/**
+ * The user may change the topic in rooms.
+ */
 define("USER_PRIV_TOPIC", 0x4);
+
+/**
+ * The user may create rooms.
+ */
 define("USER_PRIV_CREATE_ROOMS", 0x20);
+
+/*
+ * The user may make private messages to friends.
+ */
 define("USER_PRIV_PRIVATE_FRIENDS", 0x40);
+
+/**
+ * The user may make private messages to everybody.
+ */
 define("USER_PRIV_PRIVATE_ALL", 0x80);
+
+/**
+ * The user may view active users.
+ */
 define("USER_PRIV_ACTIVE_USERS", 0x400);
+
+/**
+ * The user may view post counts.
+ */
 define("USER_PRIV_POST_COUNTS", 0x800);
 
+
+/**
+ * The user has administrative grant priviledges, such that they can make other users administrators.
+ */
 define("ADMIN_GRANT", 0x10000);
+
+/**
+ * The user is protected, and cannot lose permissions through normal means.
+ */
 define("ADMIN_PROTECTED", 0x20000);
+
+/**
+ * The user may administer rooms.
+ */
 define("ADMIN_ROOMS", 0x40000);
+
+/**
+ * The user may view private rooms.
+ * @todo: remove?
+ */
 define("ADMIN_VIEW_PRIVATE", 0x80000);
+
+/**
+ * The user may administer users.
+ */
 define("ADMIN_USERS", 0x100000);
+
+/**
+ * The user may administer files.
+ */
 define("ADMIN_FILES", 0x400000);
+
+/**
+ * The user may administer the censor.
+ */
 define("ADMIN_CENSOR", 0x1000000);
 
 
+/**
+ * Class fimUser
+ * Stores user data.
+ */
 class fimUser
 {
+    /**
+     * The id reserved for anonymous users.
+     */
     const ANONYMOUS_USER_ID = -1;
 
-    // Set after initialisation, if set at all.
+    /**
+     * @var string The user's session hash.
+     * @todo: remove, shouldn't be cached
+     */
     private $sessionHash;
+
+    /**
+     * @var string The user's client code.
+     * @todo: remove
+     */
     private $clientCode;
+
+
+    /**
+     * @var int The user's anonymous user ID.
+     * @todo: prevent caching?
+     */
     private $anonId;
 
+
+    /**
+     * @var int The user's ID.
+     */
     public $id = 0;
+
+    /**
+     * @var string The user's name.
+     */
     private $name = "MISSINGno.";
+
+    /**
+     * @var array The list of social group IDs the user belongs to.
+     */
     private $socialGroupIds;
+
+    /**
+     * @var int The primary group the user belongs to, mainly for integration purposes.
+     */
     private $mainGroupId;
+
+    /**
+     * @var array The list of parental flags the user is blocking.
+     */
     private $parentalFlags;
+
+    /**
+     * @var int The age cutoff of content the user wishes to see.
+     */
     private $parentalAge;
+
+    /**
+     * @var int The priviledges the user has (as bitfield)
+     */
     private $privs = 0;
+
+    /**
+     * @var int The last time the user's data was synced with an integration service.
+     */
     private $lastSync;
+
+    /**
+     * @var string The user's avatar; URL.
+     */
     private $avatar;
-    private $userNameFormat;
+
+    /**
+     * @var string The user's name formatting; CSS.
+     */
+    private $nameFormat;
+
+    /**
+     * @var string The default message formatting applied to the user's messages; CSS.
+     */
     private $messageFormatting;
-    private $defaultRoomId;
+
+    /**
+     * @var int The room the user would like to be loaded by default.
+     */
+    private $defaultRoomId = 1;
+
+    /**
+     * @var string The user's profile page; URL.
+     */
     private $profile;
+
+    /**
+     * @var int A bitfield of options the user has set.
+     */
     private $options;
+
+    /**
+     * @var string The user's email address.
+     */
     private $email;
 
+    /**
+     * @var int The date the user joined the integration service (possibly the date they created a messenger account, if vanilla logins).
+     */
     private $joinDate;
+
+    /**
+     * @var int The user's birthdate, for content settings.
+     */
     private $birthDate = 0;
 
+    /**
+     * @var array An integer list of rooms the user has favourited.
+     * TODO: evaluate performance of making list of fimRoom objects
+     */
     private $favRooms = [];
-    private $watchRooms = [];
-    private $ignoreList = [];
-    private $friendsList = [];
 
+    /**
+     * @var array An integer list of rooms the user is watching (wants to know when new messages are made in).
+     * TODO: evaluate performance of making list of fimRoom objects
+     */
+    private $watchRooms = [];
+
+    /**
+     * @var array An integer list of users the user is ignoring (doesn't want private messages from).
+     * TODO: evaluate performance of making list of fimUser objects
+     */
+    private $ignoredUsers = [];
+
+    /**
+     * @var array An integer list of users the user is friends with.
+     * TODO: evaluate performance of making list of fimUser objects
+     */
+    private $friendedUsers = [];
+
+    /**
+     * @var string The user's password, hashed. Only in vanilla logins.
+     */
     private $passwordHash;
+
+    /**
+     * @var string The user's password's salt. Only in vanilla logins.
+     */
     private $passwordSalt;
+
+    /**
+     * @var string The user's password hasing algorithm. Only in vanilla logins.
+     */
     private $passwordFormat;
+
+    /**
+     * @var string The last time the user's password was changed. Only in vanilla logins.
+     */
     private $passwordLastReset;
+
+    /**
+     * @var string If the user's password must be changed immediately. Usually only in vanilla logins.
+     */
     private $passwordResetNow = false;
 
+    /**
+     * @var int The number of files the user has uploaded.
+     */
     private $fileCount;
+
+    /**
+     * @var int The number of rooms the user has created.
+     */
+    private $ownedRooms;
+
+    /**
+     * @var int The number of messages the user has posted.
+     */
+    private $messageCount;
+
+    /**
+     * @var string The total size of the files the user has uploaded.
+     */
     private $fileSize;
 
+    /**
+     * @var fimCache The caching object.
+     */
     protected $generalCache;
+
+    /**
+     * @var array The source userdata.
+     * @todo remove?
+     */
     protected $userData;
 
+    /**
+     * @var array The list of fields that have been resolved on this user object.
+     */
     private $resolved = array();
-    private static $userDataConversion = array(
-        'userId' => 'id',
-        'userName' => 'name',
-        'userNameFormat' => 'userNameFormat',
-        'joinDate' => 'joinDate',
-        'birthDate' => 'birthDate',
-        'email' => 'email',
 
-        'userGroupId' => 'mainGroupId',
-        'socialGroupIds' => 'socialGroupIds',
-
-        'userParentalFlags' => 'parentalFlags',
-        'userParentalAge' => 'parentalAge',
-
-        'privs' => 'privs',
-
-        'lastSync' => 'lastSync',
-
-        'defaultRoomId' => 'defaultRoomId',
-
-        'defaultMessageFormatting' => 'messageFormatting',
-        'profile' => 'profile',
-        'avatar' => 'avatar',
-
-        'options' => 'options',
-
-        'passwordHash' => 'passwordHash',
-        'passwordFormat' => 'passwordFormat',
-        'passwordResetNow' => 'passwordResetNow',
-        'passwordLastReset' => 'passwordLastReset',
-
-        'fileCount' => 'fileCount',
-        'fileSize' => 'fileSize',
-
-        'favRoomIds' => 'favRooms',
-        'watchRoomIds' => 'watchRooms',
-        'ignoredUserIds' => 'ignoreList',
-        'friendedUserIds' => 'friendsList'
-    );
-
+    /**
+     * @var array User data fields that should be resolved together when a resolution is needed.
+     */
     private static $userDataPullGroups = array(
-        'userId,userName,privs,lastSync',
-        'userGroupId,socialGroupIds,userParentalFlags,userParentalAge,birthDate',
-        'joinDate,defaultMessageFormatting,profile,avatar,userNameFormat',
+        'id,name,privs,lastSync',
+        'mainGroupId,socialGroupIds,parentalFlags,parentalAge,birthDate',
+        'joinDate,messageFormatting,profile,avatar,nameFormat',
         'options,defaultRoomId',
         'passwordHash,passwordFormat',
         'fileCount,fileSize',
-        'favRoomIds,watchRoomIds,ignoredUserIds,friendedUserIds',
+        'favRooms,watchRooms,ignoredUsers,friendedUsers',
         'email'
     );
 
@@ -147,7 +325,7 @@ class fimUser
             $this->id = false;
 
         else
-            throw new fimError('fimUserInvalidConstruct', 'Invalid user data specified -- must either be an associative array corresponding to a table row, a user ID, or false (to create a user, etc.)');
+            throw new Exception('Invalid user data specified -- must either be an associative array corresponding to a table row, a user ID, or false (to create a user, etc.)');
 
         $this->userData = $userData;
     }
@@ -157,8 +335,8 @@ class fimUser
         global $loginConfig, $integrationDatabase;
 
         // Return a unique username for every anonymous user.
-        if ($this->isAnonymousUser() && $property === 'userName')
-            return $this->userName . $this->anonId;
+        if ($this->isAnonymousUser() && $property === 'name')
+            return $this->name . $this->anonId;
 
         if (!property_exists($this, $property))
             throw new Exception("Invalid property accessed in fimUser: $property");
@@ -179,8 +357,8 @@ class fimUser
             }
 
             // Find selection group
-            elseif (isset(array_flip(fimUser::$userDataConversion)[$property])) {
-                $needle = array_flip(fimUser::$userDataConversion)[$property];
+            else {
+                $needle = $property;
                 $selectionGroup = array_values(array_filter(fimUser::$userDataPullGroups, function ($var) use ($needle) {
                     return strpos($var, $needle) !== false;
                 }))[0];
@@ -189,10 +367,6 @@ class fimUser
                     $this->getColumns(explode(',', $selectionGroup));
                 else
                     throw new Exception("Selection group not found for '$property'");
-            }
-
-            else {
-                throw new Exception("Conversion not found for '$property'");
             }
         }
 
@@ -210,7 +384,7 @@ class fimUser
         if (property_exists($this, $property))
             $this->{$property} = $value;
         else
-            throw new fimError("fimUserBadProperty", "fimUser does not have property '$property'");
+            throw new Exception("fimUser does not have property '$property'");
 
         // If we've already processed the value once, it generally won't need to be reprocessed. Permissions, for instance, may be altered intentionally. We do make an exception for setting integers to what should be arrays -- we will reprocess in this case.
         if (!in_array($property, $this->resolved)) {
@@ -257,7 +431,7 @@ class fimUser
                 }
 
                 elseif (!is_array($value))
-                    throw new fimError("fimUserBadList", "The following list was passed as something other than an array to fimUser:" . $property);
+                    throw new Exception( "The following list was passed as something other than an array to fimUser:" . $property);
             }
 
 
@@ -530,7 +704,7 @@ class fimUser
         global $database;
 
         if (count($columns) > 0)
-            return $this->populateFromArray($database->where(array('userId' => $this->id))->select(array($database->sqlPrefix . 'users' => array_merge(array('userId'), $columns)))->getAsArray(false));
+            return $this->populateFromArray($database->where(array('id' => $this->id))->select(array($database->sqlPrefix . 'users' => array_merge(array('id'), $columns)))->getAsArray(false));
         else
             return true;
     }
@@ -541,19 +715,15 @@ class fimUser
      *
      * @param array $userData An array of user data obtained from the database users table.
      * @return bool Returns false if userData is empty, true otherwise.
-     * @throws fimError
      */
     public function populateFromArray(array $userData, bool $overwrite = false) : bool
     {
         if ($userData) {
-            if ($overwrite) $this->resolved = array_diff($this->resolved, array_values($userData)); // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
+            // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
+            if ($overwrite) $this->resolved = array_diff($this->resolved, array_keys($userData));
 
             foreach ($userData AS $attribute => $value) {
-                if (!isset(fimUser::$userDataConversion[$attribute]))
-                    throw new fimError("fimUserBadProperty", "fimUser does not have conversion data for property '$attribute'");
-                else {
-                    $this->__set(fimUser::$userDataConversion[$attribute], $value);
-                }
+                $this->__set($attribute, $value);
             }
 
             return true;
@@ -564,21 +734,23 @@ class fimUser
     }
 
 
-    private function mapDatabaseProperty($property) {
-        if (!isset(array_flip(fimUser::$userDataConversion)[$property]))
-            throw new Exception("Unable to map database property '$property'");
-        else
-            return array_flip(fimUser::$userDataConversion)[$property];
+    /**
+     * Resolves the list of properties from the database.
+     *
+     * @param $properties list of properties ot resolve
+     */
+    public function resolve(array $properties) {
+        return $this->getColumns(array_diff($properties, $this->resolved));
     }
 
 
-    public function resolve($properties) {
-        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff($properties, $this->resolved)));
-    }
-
+    /**
+     * Resolves all user data from the database.
+     */
     public function resolveAll() {
-        return $this->getColumns(array_map(array($this, 'mapDatabaseProperty'), array_diff(array_values(fimUser::$userDataConversion), $this->resolved)));
+        return $this->resolve(['id', 'name', 'mainGroupId', 'options', 'joinDate', 'birthDate', 'email', 'lastSync', 'passwordHash', 'passwordFormat', 'passwordResetNow', 'passwordLastReset', 'avatar', 'profile', 'nameFormat', 'defaultRoomId', 'messageFormatting', 'privs', 'fileCount', 'fileSize', 'ownedRooms', 'messageCount', 'favRooms', 'watchRooms', 'ignoredUsers', 'friendedUsers', 'socialGroupIds', 'parentalFlags', 'parentalAge']);
     }
+
 
     /* Do I even remember what this was going to be for? Not really. */
     public function syncUser()
@@ -621,27 +793,13 @@ class fimUser
                 if ($existingUserData = $database->getUsers(array(
                     'userIds' => array($this->id),
                     'columns' => $database->userHistoryColumns,
-                ))->getAsArray(false)
-                ) {
-                    $database->insert($database->sqlPrefix . "userHistory", [
-                        "userId" => $existingUserData['userId'],
-                        "userName" => $existingUserData['userName'],
-                        "userNameFormat" => $existingUserData['userNameFormat'],
-                        "profile" => $existingUserData['profile'],
-                        "avatar" => $existingUserData['avatar'],
-                        "userGroupId" => $existingUserData['userGroupId'],
-                        "socialGroupIds" => $existingUserData['socialGroupIds'],
-                        "defaultMessageFormatting" => $existingUserData['messageFormatting'],
-                        "options" => (int)$existingUserData['options'],
-                        "userParentalAge" => (int)$existingUserData['userParentalAge'],
-                        "userParentalFlags" => $existingUserData['userParentalFlags'],
-                        "privs" => (int)$existingUserData['privs']
-                    ]);
+                ))->getAsArray(false)) {
+                    $database->insert($database->sqlPrefix . "userHistory", fim_arrayFilterKeys($existingUserData, ['id', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'socialGroupIds', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
                 }
             }
 
             $return = $database->upsert($database->sqlPrefix . "users", array(
-                'userId' => $this->id,
+                'id' => $this->id,
             ), $databaseFields);
 
             $database->endTransaction();

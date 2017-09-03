@@ -49,7 +49,7 @@ $request = fim_sanitizeGPC('p', [
         'require' => $config['emailRequired'],
     ],
 
-    'birthdate' => [
+    'birthDate' => [
         'require' => $config['ageRequired'],
         'cast' => 'int',
     ],
@@ -68,9 +68,9 @@ elseif ($user->id && !$user->isAnonymousUser())
 elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMAIL)))
     new fimError('emailInvalid', 'The email specified is not allowed.');
 
-elseif (isset($request['birthdate']) && (fim_dobToAge($request['birthdate']) < $config['ageMinimum']))
+elseif (isset($request['birthDate']) && (fim_dobToAge($request['birthDate']) < $config['ageMinimum']))
     new fimError('ageMinimum', 'The age specified is below the minimum age allowed by the server.', [
-        'ageDetected' => fim_dobToAge($request['birthdate']),
+        'ageDetected' => fim_dobToAge($request['birthDate']),
         'ageMinimum' => $config['ageMinimum']
     ]);
 
@@ -78,13 +78,9 @@ elseif ($database->getUsers(['userNames' => [$request['userName']]])->count() > 
     new fimError('userNameTaken', 'That user specified already exists.');
 
 else {
-    // Create Userdata Array
-    if (!(new fimUser(0))->setDatabase([
-          'userName'  => $request['userName'],
-          'password'  => $request['password'],
-          'birthDate' => $request['birthdate'] ?? 0,
-          'email'     => $request['email'] ?? ''
-      ])) {
+    if (!(new fimUser(0))->setDatabase(
+        fim_arrayFilterKeys($request, ['userName', 'password', 'birthDate', 'email'])
+    )) {
         new fimError("userCreationFailed", "Could not create user.");
     }
 }

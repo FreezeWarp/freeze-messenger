@@ -36,7 +36,7 @@ class fimDatabase extends databaseSQL
     /**
      * @var string The columns containing all user data.
      */
-    public $userColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, defaultMessageFormatting, options, defaultRoomId, userParentalAge, userParentalFlags, privs, lastSync';
+    public $userColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, parentalAge, parentalFlags, privs, lastSync';
 
     /**
      * @var string The columns containing all user login data.
@@ -46,12 +46,12 @@ class fimDatabase extends databaseSQL
     /**
      * @var string The columns containing all user data that is recorded in the user history.
      */
-    public $userHistoryColumns = 'userId, userName, userNameFormat, profile, avatar, userGroupId, socialGroupIds, defaultMessageFormatting, options, userParentalAge, userParentalFlags, privs';
+    public $userHistoryColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, parentalAge, parentalFlags, privs';
 
     /**
      * @var string The columns containing all room data that is recorded in the room history.
      */
-    public $roomHistoryColumns = 'roomId, roomName, roomTopic, options, ownerId, defaultPermissions, roomParentalAge, roomParentalFlags';
+    public $roomHistoryColumns = 'id, name, topic, options, ownerId, defaultPermissions, parentalAge, parentalFlags';
 
     /**
      * @var string An error format function to be used when errors are encountered. Overrides {@link database:errorFormatFunction}
@@ -348,8 +348,8 @@ class fimDatabase extends databaseSQL
 
         $columns = array(
             $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId',
-            $this->sqlPrefix . "rooms" => 'roomId, roomIdEncoded, roomName, ownerId, defaultPermissions, roomParentalAge, roomParentalFlags, options',
-            $this->sqlPrefix . "users" => 'userId, userName, userNameFormat, status',
+            $this->sqlPrefix . "rooms" => 'id roomId, idEncoded roomIdEncoded, name roomName, ownerId, defaultPermissions, options',
+            $this->sqlPrefix . "users" => 'id userId, name userName, nameFormat userNameFormat, status',
         );
 
 
@@ -1050,7 +1050,7 @@ class fimDatabase extends databaseSQL
      *
      * @return databaseResult
      */
-    public function getMessages($options = array(), $sort = array('messageId' => 'asc'), $limit = 40, $page = 0)
+    public function getMessages($options = array(), $sort = array('id' => 'asc'), $limit = 40, $page = 0)
     {
         $options = $this->argumentMerge(array(
             'room'              => false,
@@ -1101,19 +1101,16 @@ class fimDatabase extends databaseSQL
         /* Query via the Archive */
         if ($options['archive']) {
             $columns = array(
-                $this->sqlPrefix . "messages" => 'messageId, time, iv, salt, roomId, userId, anonId, deleted, flag, text',
-                $this->sqlPrefix . "users"    => 'userId muserId, userName, userGroupId, socialGroupIds, userNameFormat, avatar, defaultMessageFormatting'
+                $this->sqlPrefix . "messages" => 'id, time, iv, salt, roomId, userId, anonId, deleted, flag, text',
             );
-
-            $conditions['muserId'] = $this->col('userId');
         }
 
         /* Access the Stream */
         else {
             if ($options['room']->isPrivateRoom())
-                $columns = [$this->sqlPrefix . "messagesCachedPrivate" => "messageId, roomId, time, flag, userId, text"];
+                $columns = [$this->sqlPrefix . "messagesCachedPrivate" => "id cacheId, messageId id, roomId, time, flag, userId, text"];
             else
-                $columns = [$this->sqlPrefix . "messagesCached" => "messageId, roomId, time, flag, userId, messageFormatting, text"];
+                $columns = [$this->sqlPrefix . "messagesCached" => "id cacheId, messageId id, roomId, time, flag, userId, messageFormatting, text"];
         }
 
 
@@ -1135,15 +1132,15 @@ class fimDatabase extends databaseSQL
             $conditions['time 2'] = $this->int($options['messageDateMin'], 'gte');
 
         if (isset($options['messageIdStart']))
-            $conditions['either']['both']['messageId 3'] = $this->int($options['messageIdStart'], 'gte');
+            $conditions['either']['both']['id 3'] = $this->int($options['messageIdStart'], 'gte');
         if (isset($options['messageIdEnd']))
-            $conditions['either']['both']['messageId 4'] = $this->int($options['messageIdEnd'], 'lte');
+            $conditions['either']['both']['id 4'] = $this->int($options['messageIdEnd'], 'lte');
 
         if (!$options['showDeleted'] && $options['archive'])
             $conditions['deleted'] = $this->bool(false);
 
         if (count($options['messageIds']) > 0)
-            $conditions['either']['messageId'] = $this->in($options['messageIds']);
+            $conditions['either']['id'] = $this->in($options['messageIds']);
 
         if (count($options['userIds']) > 0)
             $conditions['userId'] = $this->in($options['userIds']);
@@ -1194,14 +1191,14 @@ class fimDatabase extends databaseSQL
              $this->sqlPrefix . $options['log'] . 'Log' => 'userId luserId, time, ip, action, data' . ($options['log'] === 'full' ? ', server' : '') . ($options['log'] === 'access' ? ', userAgent, clientCode' : '')
         );
 
-        if ($options['combineUserData']) {
-            $columns[$this->sqlPrefix . "users"] = $this->userColumns;
-            $conditions['both']['userId'] = $this->col('luserId');
-        }
-
-        if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
+        if (count($options['userIds']) > 0) $conditions['both']['luserId'] = $this->in($options['userIds']);
         if (count($options['ips']) > 0) $conditions['both']['ip'] = $this->in($options['ips']);
         if (count($options['actions']) > 0) $conditions['both']['action'] = $this->in($options['actions']);
+
+        if ($options['combineUserData']) {
+            $columns[$this->sqlPrefix . "users"] = $this->userColumns;
+            $conditions['both']['id'] = $this->col('luserId');
+        }
 
         return $this->select($columns, $conditions, $sort, $limit, $page);
     }
@@ -1272,7 +1269,7 @@ class fimDatabase extends databaseSQL
      * @param int $pagination
      * @return bool|object|resource
      */
-    public function getRooms($options, $sort = array('roomId' => 'asc'), $limit = 50, $page = 0)
+    public function getRooms($options, $sort = array('id' => 'asc'), $limit = 50, $page = 0)
     {
         $options = $this->argumentMerge(array(
             'roomIds'            => [],
@@ -1286,7 +1283,7 @@ class fimDatabase extends databaseSQL
             'lastMessageTimeMax' => 0,
             'showDeleted'        => false,
             'roomNameSearch'     => false,
-            'columns'            => ['roomId', 'roomName', 'roomTopic', 'ownerId', 'defaultPermissions', 'roomParentalFlags', 'roomParentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount'],
+            'columns'            => ['id', 'name', 'topic', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount'],
         ), $options);
 
         $columns = [$this->sqlPrefix . 'rooms' => $options['columns']];
@@ -1301,12 +1298,12 @@ class fimDatabase extends databaseSQL
         // Modify Query Data for Directives
 //  	if ($options['showDeleted']) $conditions['both']['options'] = $this->int(8, 'bAnd'); // TODO: Permission?
 //    else $conditions['both'] = array('!options' => $this->int(8, 'bAnd'));
-        if (count($options['roomIds']) > 0) $conditions['both']['either']['roomId'] = $this->in($options['roomIds']);
-        if (count($options['roomNames']) > 0) $conditions['both']['either']['roomName'] = $this->in($options['roomNames']);
-        if ($options['roomNameSearch']) $conditions['both']['either']['roomName'] = $this->type('string', $options['roomNameSearch'], 'search');
+        if (count($options['roomIds']) > 0) $conditions['both']['either']['id'] = $this->in($options['roomIds']);
+        if (count($options['roomNames']) > 0) $conditions['both']['either']['name'] = $this->in($options['roomNames']);
+        if ($options['roomNameSearch']) $conditions['both']['either']['name'] = $this->type('string', $options['roomNameSearch'], 'search');
 
-        if ($options['parentalAgeMin'] > 0) $conditions['both']['roomParentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
-        if ($options['parentalAgeMax'] > 0) $conditions['both']['roomParentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
+        if ($options['parentalAgeMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
+        if ($options['parentalAgeMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
 
         if ($options['messageCountMin'] > 0) $conditions['both']['messageCount'] = $this->int($options['messageCount'], 'gte');
         if ($options['messageCountMax'] > 0) $conditions['both']['messageCount'] = $this->int($options['messageCount'], 'lte');
@@ -1330,7 +1327,7 @@ class fimDatabase extends databaseSQL
 
 
 
-    public function getUsers($options = array(), $sort = array('userId' => 'asc'), $limit = 0, $pagination = 1)
+    public function getUsers($options = array(), $sort = array('id' => 'asc'), $limit = 0, $pagination = 1)
     {
         $options = $this->argumentMerge(array(
             'userIds'        => array(),
@@ -1341,6 +1338,7 @@ class fimDatabase extends databaseSQL
             'columns' => $this->userColumns, // csvstring a list of columns to include in the return; if not specified, this will default to almost everything except passwords
             'includePasswords' => false, // bool shorthand to add password fields -- whatever they are -- to the otherwise specified columns
         ), $options);
+
 
         $columns = array(
             $this->sqlPrefix . "users" => $options['columns'] . ($options['includePasswords'] ? ', ' . $this->userPasswordColumns : '') // For this particular request, you can also access user password information using the includePasswords flag.
@@ -1363,11 +1361,11 @@ class fimDatabase extends databaseSQL
 
 
         if (count($options['userIds']) > 0)
-            $conditions['both']['either']['userId'] = $this->in($options['userIds']);
+            $conditions['both']['either']['id'] = $this->in($options['userIds']);
         if (count($options['userNames']) > 0)
-            $conditions['both']['either']['userName 1'] = $this->in($options['userNames']);
+            $conditions['both']['either']['name 1'] = $this->in($options['userNames']);
         if ($options['userNameSearch'])
-            $conditions['both']['either']['userName 2'] = $this->type('string', $options['userNameSearch'], 'search');
+            $conditions['both']['either']['name 2'] = $this->type('string', $options['nameSearch'], 'search');
 
 
         return $this->select($columns, $conditions, $sort);
@@ -1400,13 +1398,13 @@ class fimDatabase extends databaseSQL
 
         $conditions = array();
 
-        if ($options['combineUserData']) {
-            $columns[$this->sqlPrefix . "users"] = $this->userColumns;
-            $conditions['both']['userId'] = $this->col('suserId');
-        }
-
         if (count($options['userIds']) > 0) $conditions['both']['either']['suserId'] = $this->in($options['userIds']);
         if (count($options['ips']) > 0) $conditions['both']['either']['sessionIp'] = $this->in($options['ips']);
+
+        if ($options['combineUserData']) {
+            $columns[$this->sqlPrefix . "users"] = $this->userColumns;
+            $conditions['both']['id'] = $this->col('suserId');
+        }
 
         return $this->select($columns, $conditions, $sort);
     }
@@ -2236,7 +2234,7 @@ class fimDatabase extends databaseSQL
             'lastMessageId'   => $messageId,
             'messageCount'    => $this->equation('$messageCount + 1')
         ), array(
-            'roomId' => $message->room->id,
+            'id' => $message->room->id,
         ));
 
 
@@ -2290,7 +2288,7 @@ class fimDatabase extends databaseSQL
         $this->update($this->sqlPrefix . "users", array(
             'messageCount' => $this->equation('$messageCount + 1'),
         ), array(
-            'userId' => $message->user->id,
+            'id' => $message->user->id,
         ));
 
 
@@ -2325,7 +2323,7 @@ class fimDatabase extends databaseSQL
             }
         }
         else {
-            foreach ($message->room->watchedBy AS $sendToUserId) {
+            foreach ($message->room->watchedByUsers AS $sendToUserId) {
                 $this->createUnreadMessage($sendToUserId, $message->user, $message->room, $messageId);
             }
         }
@@ -2474,7 +2472,7 @@ class fimDatabase extends databaseSQL
             'fileCount' => $this->type('equation', '$fileCount + 1'),
             'fileSize' => $this->type('equation', '$fileSize + ' . (int) $file->size),
         ), array(
-            'userId' => $user->id,
+            'id' => $user->id,
         ));
 
         $this->incrementCounter('uploads');

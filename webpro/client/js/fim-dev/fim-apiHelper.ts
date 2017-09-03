@@ -25,9 +25,9 @@ class Resolver {
     private static cacheEntry(type, entry) {
         console.log(["resolveAddedToCache", type, entry]);
 
-        if (Resolver["cached" + type + "Ids"].indexOf(entry[type + "Id"]) === -1) {
-            Resolver["cached" + type + "Ids"].push(Number(entry[type + "Id"]));
-            Resolver["cached" + type + "Names"].push(String(entry[type + "Name"]));
+        if (Resolver["cached" + type + "Ids"].indexOf(entry.id) === -1) {
+            Resolver["cached" + type + "Ids"].push(Number(entry.id));
+            Resolver["cached" + type + "Names"].push(String(entry.name));
             Resolver["cached" + type + "Properties"].push(entry);
         }
     }
@@ -40,7 +40,10 @@ class Resolver {
         let unresolvedItems = [];
         let unresolvedItemsWaiting = [];
 
-        if (property == "Ids") {
+        let propertyPlural = property.charAt(0).toUpperCase() + property.slice(1) + "s"; // e.g. if property = id, this creates "Ids"
+        let typeProperty = type + propertyPlural;
+
+        if (property == "id") {
             for (let i = 0; i < items.length; i++) {
                 items[i] = Number(items[i]);
             }
@@ -50,21 +53,21 @@ class Resolver {
         for (let item of items) {
 
             // If we already have a cached entry, return it.
-            if (Resolver["cached" + type + property].indexOf(item) !== -1) {
-                returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + type + property].indexOf(item)];
+            if (Resolver["cached" + typeProperty].indexOf(item) !== -1) {
+                returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + typeProperty].indexOf(item)];
 
                 console.log(["resolveFoundInCache", type, property, item, returnData[item]]);
             }
 
             // If we are waiting on a result for the entry, wait for it to appear in the cache.
-            else if (Resolver["waiting" + type + property].indexOf(item) !== -1) {
+            else if (Resolver["waiting" + typeProperty].indexOf(item) !== -1) {
                 let retry = setInterval(function() {
-                    console.log(["resolveWaitRetry", type, property, item, Resolver["cached" + type + property]]);
+                    console.log(["resolveWaitRetry", typeProperty, item, Resolver["cached" + typeProperty]]);
 
-                    if (Resolver["cached" + type + property].indexOf(item) !== -1) {
+                    if (Resolver["cached" + typeProperty].indexOf(item) !== -1) {
                         clearInterval(retry);
-                        console.log(["resolveFoundInCacheAfterWait", type, property, item, returnData[item]]);
-                        returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + type + property].indexOf(item)];
+                        console.log(["resolveFoundInCacheAfterWait", typeProperty, item, returnData[item]]);
+                        returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + typeProperty].indexOf(item)];
                         unresolvedItemsWaiting.splice($.inArray(item, unresolvedItemsWaiting),1);
                     }
                 }, 100);
@@ -74,7 +77,7 @@ class Resolver {
 
             // Otherwise, add the item to the unresolved items list in preparation to query them.
             else {
-                Resolver["waiting" + type + property].push(item);
+                Resolver["waiting" + typeProperty].push(item);
                 unresolvedItems.push(item);
             }
         }
@@ -82,11 +85,12 @@ class Resolver {
         // Query the unresolved items all at once.
         if (unresolvedItems.length > 0) {
             let query = {};
-            query[type + property] = unresolvedItems;
+            query[typeProperty] = unresolvedItems;
+
             fimApi["get" + type.charAt(0).toUpperCase() + type.slice(1) + "s"](query, {
                 'each': function(entry) {
                     Resolver.cacheEntry(type, entry);
-                    returnData[entry[type + property.slice(0, -1)]] = entry;
+                    returnData[entry[property]] = entry;
                 },
                 'end': function() {
                     unresolvedItems = [];
@@ -114,18 +118,18 @@ class Resolver {
     }
 
     public static resolveUsersFromIds(ids: Array<number>) {
-        return Resolver.resolve("user", "Ids", ids);
+        return Resolver.resolve("user", "id", ids);
     }
 
     public static resolveUsersFromNames(names: Array<string>) {
-        return Resolver.resolve("user", "Names", names);
+        return Resolver.resolve("user", "name", names);
     }
 
     public static resolveRoomsFromIds(ids: Array<number>) {
-        return Resolver.resolve("room", "Ids", ids);
+        return Resolver.resolve("room", "id", ids);
     }
 
     public static resolveRoomsFromNames(names: Array<string>) {
-        return Resolver.resolve("room", "Names", names);
+        return Resolver.resolve("room", "name", names);
     }
 }

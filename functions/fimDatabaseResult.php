@@ -6,7 +6,7 @@ class fimDatabaseResult extends databaseResult {
      * @internal This function may use too much memory. I'm not... exactly sure how to fix this.
      */
     function getAsRooms() : array {
-        $rooms = $this->getAsArray('roomId');
+        $rooms = $this->getAsArray('id');
         $return = array();
 
         foreach ($rooms AS $roomId => $room) {
@@ -30,7 +30,7 @@ class fimDatabaseResult extends databaseResult {
      * @internal This function may use too much memory. I'm not... exactly sure how to fix this.
      */
     function getAsUsers() : array {
-        $users = $this->getAsArray('userId');
+        $users = $this->getAsArray('id');
         $return = array();
 
         foreach ($users AS $userId => $user) {

@@ -5,7 +5,7 @@ $database->setTransformationParameters([
     $database->sqlPrefix . 'messageIndex' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     $database->sqlPrefix . 'ping' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     $database->sqlPrefix . 'rooms' => [
-        'watchedByUserIds'  => ['fimDatabase::packListCache', DatabaseTypeType::blob, 'fimDatabase::unpackListCache']
+        'watchedByUsers'  => ['fimDatabase::packListCache', DatabaseTypeType::blob, 'fimDatabase::unpackListCache']
     ],
     $database->sqlPrefix . 'roomEvents' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     $database->sqlPrefix . 'roomStats' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
@@ -16,21 +16,21 @@ $database->setTransformationParameters([
     $database->sqlPrefix . 'searchCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     $database->sqlPrefix . 'unreadMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     $database->sqlPrefix . 'users' => [
-        'defaultRoomId'   => ['fimRoom::encodeId',     DatabaseTypeType::blob, 'fimRoom::decodeId'],
-        'favRoomIds'      => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
-        'watchRoomIds'    => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
-        'friendedUserIds' => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
-        'ignoredUserIds'  => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
+        'defaultRoomId' => ['fimRoom::encodeId',     DatabaseTypeType::blob, 'fimRoom::decodeId'],
+        'favRooms'      => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
+        'watchRooms'    => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
+        'friendedUsers' => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
+        'ignoredUsers'  => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
         'socialGroupIds'  => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
     ],
     $database->sqlPrefix . 'userFavRooms' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
 ], [
     $database->sqlPrefix . 'rooms' => [
-        'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'roomIdEncoded'],
-        'roomName' => [[$database, 'makeSearchable'], false, 'roomNameSearchable']
+        'id' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'idEncoded'],
+        'name' => [[$database, 'makeSearchable'], false, 'nameSearchable']
     ],
 ], [
-    $database->sqlPrefix . 'rooms' => 'roomId',
+    $database->sqlPrefix . 'rooms' => 'id',
 ]);
 
 
@@ -58,7 +58,7 @@ $database->setCollectionTriggers([
     ],
     $database->sqlPrefix . 'socialGroupMembers' => [
         ['userId', 'groupId', [$database, 'triggerUserMemberOfGroupIds']],
-//            ['groupId', 'userId', 'fimDatabase:triggerGroupMemberIds'],
+        //['groupId', 'userId', 'fimDatabase:triggerGroupMemberIds'],
     ],
 ]);
 ?>
