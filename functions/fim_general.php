@@ -325,7 +325,7 @@ function fim_sanitizeGPC($type, $data) {
         else {
             /* Validate Metadata */
             foreach ($indexData AS $metaName => $metaData) {
-                if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'filter', 'cast', 'transform', 'bitTable', 'flipTable', 'removeDuplicates', 'conflict')))
+                if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'filter', 'cast', 'transform', 'bitTable', 'flipTable', 'removeDuplicates', 'conflict', 'source')))
                     throw new Exception('Unrecognised metadata: ' . $metaName);
 
                 elseif (($metaName === 'require' || $metaName === 'trim' || $metaName === 'evaltrue')
@@ -349,13 +349,13 @@ function fim_sanitizeGPC($type, $data) {
                     throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
 
                 elseif ($metaName === 'cast'
-                    && !in_array($metaData, array('int', 'bool', 'string', 'json', 'list', 'dict', 'ascii128', 'alphanum', 'bitfieldEquation', 'roomId')))
+                    && !in_array($metaData, array('int', 'bool', 'string', 'json', 'list', 'dict', 'ascii128', 'alphanum', 'bitfieldShift', 'roomId')))
                     throw new Exception("Invalid 'cast' (value = $metaData) in data in fim_sanitizeGPC.");
 
                 elseif ($metaName === 'cast'
-                    && $metaData === 'bitfieldEquation'
+                    && $metaData === 'bitfieldShift'
                     && (!isset($indexData['flipTable']) || !is_array($indexData['flipTable'])))
-                    throw new Exception("'bitfieldEquation' cast missing corresponding flipTable parameter in fim_sanitizeGPC.");
+                    throw new Exception("'bitfieldShift' cast missing corresponding flipTable or source parameter in fim_sanitizeGPC.");
 
                 elseif ($metaName === 'transform'
                     && $metaData === 'bitfield'
@@ -381,9 +381,9 @@ function fim_sanitizeGPC($type, $data) {
                 /* Check for conflicting directives. */
                 if (isset($indexMetaData['conflict'])) {
                     foreach ($indexMetaData['conflict'] AS $conflict) {
-                        if (isset($activeGlobal[$conflict])) { var_dump($activeGlobal);
-                            $conflictArray = [$conflict, $indexName]; var_dump($conflictArray); die();
-                            new fimError(fim_arrayOfPropertiesImplode($conflictArray). 'Conflict');
+                        if (isset($activeGlobal[$conflict])) {
+                            $conflictArray = [$conflict, $indexName];
+                            new fimError(fim_arrayOfPropertiesImplode($conflictArray) . 'Conflict');
                         }
                     }
                 }
@@ -394,7 +394,7 @@ function fim_sanitizeGPC($type, $data) {
 
 
             /* Set to Default and Perform Validation */
-            if (!(isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'bitfieldEquation')) { // bitfieldEquation isn't normally set, so our default-setting is irrelevant for it
+            if (!(isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'bitfieldShift')) { // bitfieldShift isn't normally set, so our default-setting is irrelevant for it
                 // If the global is provided, check to see if it's valid. If not, throw error.
                 if (isset($activeGlobal[$indexName], $indexMetaData['valid'])) {
                     if (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'list') {
@@ -575,22 +575,21 @@ function fim_sanitizeGPC($type, $data) {
                  * If the activeGlobal doesn't have the name, we just ignore it. If it does have it, and it evaluates to true, then our string will contain an equation turning that bit on. If it evaluates to false, our equation will try and turn that bit off.
                  * This equation can then be used by $database->equation.
                  */
-                case 'bitfieldEquation':
-                    global $database;
-                    $equation = '$' . $indexName;
+                case 'bitfieldShift':
+                    $source = $indexMetaData['source'];
 
                     foreach ($indexMetaData['flipTable'] AS $bit => $name) {
                         if (!isset($activeGlobal[$name]))
                             continue;
 
                         elseif ($activeGlobal[$name])
-                            $equation .= (' | ' . $bit);
+                            $source |= $bit;
 
                         else
-                            $equation .= (' & ~' . $bit);
+                            $source &= $bit;
                     }
 
-                    $newData[$indexName] = $equation;
+                    $newData[$indexName] = $source;
                 break;
 
 
@@ -696,12 +695,12 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
  * @return string The source array as a string of properties.
  */
 function fim_arrayOfPropertiesImplode(&$array) {
-    asort($array);
+    sort($array);
     $array = array_map(function($index, $value) {
         if ($index > 0) return ucfirst($value);
         return $value;
-    });
-    return $array;
+    }, array_keys($array), array_values($array));
+    return implode('', $array);
 }
 
 

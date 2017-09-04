@@ -813,7 +813,11 @@ class fimUser
                 'privs' => $config['defaultUserPrivs']
             ), $databaseFields);
 
-            return $database->insert($database->sqlPrefix . "users", $databaseFields);
+            $return = $database->insert($database->sqlPrefix . "users", $databaseFields);
+
+            $this->id = $database->insertId;
+
+            return $return;
         }
     }
 

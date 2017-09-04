@@ -123,7 +123,7 @@ class FIMDatabaseOAuth implements
             'expires' => $expires,
             'user_id' => $user_id,
             'scope' => $scope,
-            'http_user_agent' => $_SERVER['HTTP_USER_AGENT'],
+            'http_user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''  ,
             'ip_address' => $_SERVER['REMOTE_ADDR'],
             'anon_id' => ($user_id === \fimUser::ANONYMOUS_USER_ID ? $anonId : 0),
         ));

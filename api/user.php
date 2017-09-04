@@ -51,21 +51,41 @@
  *      @param string "!banned"   Only include unbanned users. Only allowed if the user is allowed to administer users.
  *      @param string "friends"   Only include users the user is friends with.
  *      @param string "ignored"   Only include users the user is ignoring.
- *
- *      Prepending a bang ("!") to any value will reverse the filter - thus, "!banned" will only show users who have not been banned. It is possible to apply multiple filters by comma-separating values.
  * }
+ *
+ * =Return Trees=
+ * ==Get Users==
+ * * users
+ *   * avatar
+ *   * profile
+ *   * nameFormat
+ *   * messageFormatting
+ *   * joinDate
+ *   * mainGroupId
+ *   * socialGroupIds
+ *   * defaultRoomId
+ *   * options
+ *   * parentalAge
+ *   * parentalFlags
+ *   * ignoredUsers
+ *   * friendedUsers
+ *   * favRooms
+ *   * watchRooms
+ *
+ * ==Send User==
+ * * sendUser
+ *   * userName - The userName the user was created with.
+ *   * insertId - The userId the user was created with.
  *
  *
  * =Exceptions=
- * ==Get User Exceptions==
- * idUserIdsUserNamesConflict
  * ==Create User Exceptions==
  *
  * @throws notSupported       If trying to create a user when the vanilla login subsystem is not enabled.
  * @throws loggedIn           If a session token was provided.
  * @throws emailInvalid       If the specified email is invalid.
  * @throws ageMinimum         If the specified birthdate is too young.
- * @throws userNameTaken      If the specified userName is already in use.
+ * @throws nameTaken          If the specified userName is already in use.
  * @throws userCreationFailed If the user creation failed for unknown reasons.
  *
  *
@@ -96,11 +116,14 @@ define('API_INUSER', true);
 
 /* Early Validation */
 if (isset($requestHead['id'])) {
-    if ($requestHead['action'] == 'create') // ID shouldn't be used here.
+    if ($requestHead['_action'] === 'create') // ID shouldn't be used here.
         new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
 
-    if (!$userData = $database->getUser($requestHead['id']))
+    try {
+        $userData = $database->getUser($requestHead['id']);
+    } catch (Exception $ex) {
         new fimError('idNoExist', 'The given "id" parameter does not correspond with a real user.');
+    }
 }
 
 

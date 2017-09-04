@@ -82,7 +82,7 @@ $xmlData = [
 
 /* Get Users from Database */
 if (isset($userData)) { // From api/user.php
-    $users = $userData;
+    $users = [$userData];
 }
 else {
     if (in_array('friends', $request['showOnly']))
@@ -106,7 +106,7 @@ else {
 
 
 /* Start Processing */
-foreach ($users AS $userId => $userData) {
+foreach ($users AS $userData) {
     $returnFields = ['name', 'id'];
 
     if (in_array('profile', $request['info']))
@@ -119,7 +119,7 @@ foreach ($users AS $userId => $userData) {
         && in_array('self', $request['info']))
         $returnFields = array_merge($returnFields, ['defaultRoomId', 'options', 'parentalAge', 'parentalFlags', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms']);
 
-    $xmlData['users']['user ' . $userId] = fim_objectArrayFilterKeys($userData, $returnFields);
+    $xmlData['users'][$userData->id] = fim_objectArrayFilterKeys($userData, $returnFields);
 
     // todo
     //if (isset($userDataForums[$userId]['posts'])) // TODO

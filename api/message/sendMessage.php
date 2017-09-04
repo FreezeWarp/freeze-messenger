@@ -83,7 +83,7 @@ else {
                 new fimError('noPerm', 'You are not allowed to edit this message.');
 
             else {
-                $message->setText($request['message']);
+                $message->setText($request['message'], $request['ignoreBlock']);
                 $message->setFlag($request['flag']);
                 $database->updateMessage($message);
             }
@@ -135,7 +135,8 @@ else {
 
 /* Data Define */
 $xmlData = [
-    'sendMessage' => [
+    'message' => [
+        'id'     => $message->id,
         'censor' => $message->censorMatches
     ],
 ];

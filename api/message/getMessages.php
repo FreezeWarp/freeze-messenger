@@ -129,7 +129,7 @@ else {
                 'room' => $room,
             ], fim_arrayFilterKeys($request, ['messageIdEnd', 'messageIdStart', 'messageDateMin', 'messageDateMax', 'showDeleted', 'messageTextSearch', 'archive', 'userIds'])),
 
-            ['id' => ($request['messageIdStart'] || $request['messageDateMin'] ? 'asc' : 'desc')],
+            ['id' => (isset($request['messageIdStart']) || isset($request['messageDateMin']) ? 'asc' : 'desc')],
             $config['defaultMessageLimit'],
             $request['page']
         )->getAsMessages();
@@ -148,6 +148,7 @@ else {
 }
 
 
+$xmlData['messages'] = new apiOutputList($xmlData['messages']); // output the messages as a list
 
 /* Output Data */
 echo new apiData($xmlData);

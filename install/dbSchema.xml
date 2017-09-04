@@ -667,6 +667,7 @@
 
 
             <key name="id" type="primary" />
+            <key name="name" type="index" />
             <key name="mainGroupId" type="index" />
             <key name="lastSync" type="index" />
             <key name="privs" type="index" />

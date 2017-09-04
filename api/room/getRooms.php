@@ -96,12 +96,12 @@ do {
     }
 
 
-    foreach ($rooms AS $roomId => $room) {
+    foreach ($rooms AS $room) {
         $permission = $database->hasPermission($user, $room);
 
         if (!($permission & fimRoom::$permArray[$request['permFilter']])) continue;
 
-        $xmlData['rooms'][$roomId] = array_merge(
+        $xmlData['rooms'][$room->id] = array_merge(
             fim_objectArrayFilterKeys($room, ['id', 'name', 'ownerId', 'parentalAge', 'official', 'archived', 'hidden', 'deleted', 'topic', 'ownerId', 'lastMessageId', 'lastMessageTime', 'messageCount']),
             [
                 'defaultPermissions' => $room->getPermissionsArray($room->defaultPermissions),
@@ -111,12 +111,12 @@ do {
         );
 
         if ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
-            foreach ($database->getRoomPermissions([$roomId], 'user')->getAsArray() AS $row) {
+            foreach ($database->getRoomPermissions([$room->id], 'user')->getAsArray() AS $row) {
                 var_dump($row);
-                $xmlData['rooms'][$roomId]['userPermissions'][$row['param']] = $row['permissions'];
+                $xmlData['rooms']['room' . $room->id]['userPermissions'][$row['param']] = $row['permissions'];
             }
-            foreach ($database->getRoomPermissions([$roomId], 'group')->getAsArray() AS $row) {
-                $xmlData['rooms'][$roomId]['groupPermissions'][$row['param']] = $row['permissions'];
+            foreach ($database->getRoomPermissions([$room->id], 'group')->getAsArray() AS $row) {
+                $xmlData['rooms']['room' . $room->id]['groupPermissions'][$row['param']] = $row['permissions'];
             }
         }
     }

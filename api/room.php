@@ -108,7 +108,7 @@ $requestHead = array_merge($requestHead, (array)fim_sanitizeGPC('g', [
 
 /* Early Validation */
 if (isset($requestHead['id'])) {
-    if ($requestHead['action'] == 'create') // ID shouldn't be used here.
+    if ($requestHead['_action'] === 'create') // ID shouldn't be used here.
         new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
 
     if (!($room = $database->getRoom($requestHead['id']))->roomExists())

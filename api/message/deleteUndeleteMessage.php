@@ -28,22 +28,23 @@
 if (!defined('API_INMESSAGE'))
     die();
 
-try {
-    if (($message->user->id = $user->id && $user->hasPriv('editOwnPosts'))
-        || ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE)) {
 
-        if ($requestHead['_action'] == 'delete')
-            $message->setDeleted(true);
-        else
-            $message->setDeleted(false);
+if (($message->user->id = $user->id && $user->hasPriv('editOwnPosts'))
+    || ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE)) {
 
-        $database->updateMessage($message);
-    }
-
+    if ($requestHead['_action'] == 'delete')
+        $message->setDeleted(true);
     else
-        new fimError('noPerm', 'You are not allowed to delete this message.');
+        $message->setDeleted(false);
 
-    echo new apiData();
-} catch (fimError $ex) {
-    new fimError('invalidMessage', 'The message specified is invalid.');
+    $database->updateMessage($message);
 }
+
+else
+    new fimError('noPerm', 'You are not allowed to delete this message.');
+
+echo new apiData([
+    'message' => [
+        'id'     => $message->id,
+    ],
+]);

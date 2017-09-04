@@ -824,17 +824,18 @@ class fimDatabase extends databaseSQL
 
 
         // Modify Columns (and Joins)
+        // Todo: replace joins with only enough info for searches
         if ($options['includeUserData']) {
-            $columns[$this->sqlPrefix . "users user"]  = 'userId kuserId, userName, userNameFormat';
+            $columns[$this->sqlPrefix . "users user"]  = 'id kuserId, name userName';
             $conditions['both']['userId'] = $this->col('kuserId');
         }
         if ($options['includeKickerData']) {
-            $columns[$this->sqlPrefix . "users kicker"] = 'userId kkickerId, userName kickerName, userNameFormat kickerNameFormat';
-            $conditions['both']['roomId'] = $this->col('kroomId');
+            $columns[$this->sqlPrefix . "users kicker"] = 'id kkickerId, name kickerName';
+            $conditions['both']['kickerId'] = $this->col('kkickerId');
         }
         if ($options['includeRoomData']) {
-            $columns[$this->sqlPrefix . "rooms"] = 'roomId kroomId, roomName, ownerId, options, defaultPermissions, roomParentalFlags, roomParentalAge';
-            $conditions['both']['kickerId'] = $this->col('kkickerId');
+            $columns[$this->sqlPrefix . "rooms"] = 'id kroomId, nameSearchable roomName';
+            $conditions['both']['roomId'] = $this->col('kroomId');
         }
 
 
@@ -844,8 +845,8 @@ class fimDatabase extends databaseSQL
         if (count($options['roomIds']) > 0) $conditions['both']['roomId'] = $this->in((array) $options['roomIds']);
         if (count($options['kickerIds']) > 0) $conditions['both']['userId'] = $this->in((array) $options['kickerIds']);
 
-        if ($options['lengthIdMin'] > 0) $conditions['both']['length 1'] = $this->int($options['lengthMin'], 'gte');
-        if ($options['lengthIdMax'] > 0) $conditions['both']['length 2'] = $this->int($options['lengthMax'], 'lte');
+        if ($options['lengthMin'] > 0) $conditions['both']['length 1'] = $this->int($options['lengthMin'], 'gte');
+        if ($options['lengthMax'] > 0) $conditions['both']['length 2'] = $this->int($options['lengthMax'], 'lte');
 
         if ($options['timeMin'] > 0) $conditions['both']['time 1'] = $this->int($options['timeMin'], 'gte');
         if ($options['timeMax'] > 0) $conditions['both']['time 2'] = $this->int($options['timeMax'], 'lte');
@@ -1735,7 +1736,7 @@ class fimDatabase extends databaseSQL
             'anonId' => $user->anonId,
             'sessionTime' => $this->now(),
             'sessionHash' => $sessionHash,
-            'userAgent' => $_SERVER['HTTP_USER_AGENT'],
+            'userAgent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
             'sessionIp' => $_SERVER['REMOTE_ADDR'],
             'clientCode' => $_REQUEST['clientCode']
         ));
@@ -2176,7 +2177,7 @@ class fimDatabase extends databaseSQL
             $this->insert($this->sqlPrefix . "messages", array(
                 'roomId'   => $message->room->id,
             ));
-            $messageId = $this->insertId;
+            $message->id = $this->insertId;
         }
         else {
             $this->insert($this->sqlPrefix . "messages", array(
@@ -2190,14 +2191,14 @@ class fimDatabase extends databaseSQL
                 'flag'     => $message->flag,
                 'time'     => $this->now(),
             ));
-            $messageId = $this->insertId;
+            $message->id = $this->insertId;
         }
 
 
         // Insert into cache/memory datastore.
         if ($message->room->isPrivateRoom()) {
             $this->insert($this->sqlPrefix . "messagesCachedPrivate", array(
-                'messageId'         => $messageId,
+                'messageId'         => $message->id,
                 'roomId'            => $message->room->id,
                 'userId'            => $message->user->id,
                 'text'              => $message->text,
@@ -2207,7 +2208,7 @@ class fimDatabase extends databaseSQL
         }
         else {
             $this->insert($this->sqlPrefix . "messagesCached", array(
-                'messageId'         => $messageId,
+                'messageId'         => $message->id,
                 'roomId'            => $message->room->id,
                 'userId'            => $message->user->id,
                 'messageFormatting' => $message->user->messageFormatting,
@@ -2216,13 +2217,13 @@ class fimDatabase extends databaseSQL
                 'time'              => $this->now(),
             ));
         }
-        $messageId2 = $this->insertId;
+        $messageCacheId = $this->insertId;
 
 
         // Generate (and Insert) Key Words, Unless an Off-the-Record Room
         if ($message->room->type !== 'otr') {
             $keyWords = $this->getKeyWordsFromText($message->text);
-            $this->storeKeyWords($keyWords, $messageId, $message->user->id, $message->room->id);
+            $this->storeKeyWords($keyWords, $message->id, $message->user->id, $message->room->id);
         }
 
 
@@ -2231,7 +2232,7 @@ class fimDatabase extends databaseSQL
         // Update room caches.
         $this->update($this->sqlPrefix . "rooms", array(
             'lastMessageTime' => $this->now(),
-            'lastMessageId'   => $messageId,
+            'lastMessageId'   => $message->id,
             'messageCount'    => $this->equation('$messageCount + 1')
         ), array(
             'id' => $message->room->id,
@@ -2246,7 +2247,7 @@ class fimDatabase extends databaseSQL
                 $this->insert($this->sqlPrefix . "messageIndex", array(
                     'roomId'    => $message->room->id,
                     'interval'  => $message->room->messageCount,
-                    'messageId' => $messageId
+                    'messageId' => $message->id
                 ));
             }
         }
@@ -2306,9 +2307,9 @@ class fimDatabase extends databaseSQL
 
 
         // Delete old messages from the cache, based on the maximum allowed rows. (TODO: test)
-        if ($messageId2 > $this->config['messageCacheTableMaxRows']) {
+        if ($messageCacheId > $this->config['messageCacheTableMaxRows']) {
             $this->partitionAt(['roomId' => $message->room->id])->delete($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? 'Private' : ''), [
-                'id' => $this->int($messageId2 - $this->config['messageCacheTableMaxRows'], 'lte')
+                'id' => $this->int($messageCacheId - $this->config['messageCacheTableMaxRows'], 'lte')
             ]);
         }
 
@@ -2319,12 +2320,12 @@ class fimDatabase extends databaseSQL
                 if ($sendToUserId == $message->user->id)
                     continue;
                 else
-                    $this->createUnreadMessage($sendToUserId, $message->user, $message->room, $messageId);
+                    $this->createUnreadMessage($sendToUserId, $message->user, $message->room, $message->id);
             }
         }
         else {
             foreach ($message->room->watchedByUsers AS $sendToUserId) {
-                $this->createUnreadMessage($sendToUserId, $message->user, $message->room, $messageId);
+                $this->createUnreadMessage($sendToUserId, $message->user, $message->room, $message->id);
             }
         }
 
@@ -2333,7 +2334,7 @@ class fimDatabase extends databaseSQL
 
 
         // Return the ID of the inserted message.
-        return $messageId;
+        return $message->id;
     }
 
 
@@ -2357,8 +2358,8 @@ class fimDatabase extends databaseSQL
 
             $this->insert($this->sqlPrefix . "messageEditHistory", array(
                 'messageId' => $message->id,
-                'userId' => $message->user->id,
                 'roomId' => $message->room->id,
+                'userId' => $message->user->id,
                 'oldText' => $oldMessage->textEncrypted,
                 'newText' => $message->textEncrypted,
                 'iv1' => $oldMessage->iv,
@@ -2386,7 +2387,7 @@ class fimDatabase extends databaseSQL
             'deleted' => $this->bool($message->deleted)
         ], array(
             'roomId' => $message->room->id,
-            'messageId' => $message->id,
+            'id' => $message->id,
         ));
 
         // Update message caches
@@ -2740,7 +2741,7 @@ class fimDatabase extends databaseSQL
                 'data' => json_encode($data),
                 'time' => $_SERVER['REQUEST_TIME_FLOAT'],
                 'executionTime' => microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
-                'userAgent' => $_SERVER['HTTP_USER_AGENT'],
+                'userAgent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
                 'clientCode' => $this->user->clientCode,
                 'ip' => $_SERVER['REMOTE_ADDR'],
             ))

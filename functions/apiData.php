@@ -104,12 +104,7 @@ class apiData implements ArrayAccess {
         if ($depth > $this->jsonDepthLimit) return '"<<cut>>"';
 
         if (is_array($value)) {
-            // http://stackoverflow.com/a/5969617
-            for (reset($value); is_int(key($value)); next($value));
-            if (is_null(key($value))) // The array is not associative (well, doesn't have non-numeric keys)
-                return $this->outputJsonArray($value, $depth + 1);
-            else
-                return $this->outputJson($value, $depth + 1);
+            return $this->outputJson($value, $depth + 1);
         }
 
         elseif (is_object($value) && get_class($value) === 'apiOutputDict') {

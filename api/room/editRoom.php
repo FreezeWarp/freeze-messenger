@@ -94,10 +94,12 @@ $request = fim_sanitizeGPC('p', [
 
     'userPermissions' => [
         'cast' => 'json',
+        'default' => '{}',
     ],
 
     'groupPermissions' => [
         'cast' => 'json',
+        'default' => '{}',
     ],
 
     'censorLists' => [
@@ -118,32 +120,9 @@ $request = fim_sanitizeGPC('p', [
         'default'   => ($requestHead['_action'] === 'create' ? $config['parentalFlagsDefault'] : null),
         'valid'     => $config['parentalFlags'],
     ],
-
-    'options' => [
-        'cast'      => 'bitfieldEquation',
-        'flipTable' => [
-            fimRoom::ROOM_HIDDEN   => 'hidden',
-            fimRoom::ROOM_OFFICIAL => 'official',
-        ]
-    ],
 ]);
 
 $database->accessLog('editRoom', $request);
-
-
-
-/* Data Predefine */
-$xmlData = [
-    'response' => [
-        'insertId' => null
-    ],
-];
-
-
-
-if ($request['_action'] !== 'create') {
-    $room = $slaveDatabase->getRoom($requestHead['id']);
-}
 
 
 
@@ -153,6 +132,7 @@ $database->startTransaction();
 switch ($requestHead['_action']) {
     case 'create':
     case 'edit':
+        // Handle Room Creation Exceptions
         if ($requestHead['_action'] === 'create') {
             if (strlen($request['name']) < $config['roomLengthMinimum'])
                 new fimError('nameMinimumLength', 'The room name specified is too short. It should be at least ' . $config['roomLengthMinimum'] . ' characters.');
@@ -176,6 +156,8 @@ switch ($requestHead['_action']) {
                 $room = new fimRoom(false);
         }
 
+
+        // Handle Room Edit Exceptions
         elseif ($requestHead['_action'] === 'edit') {
             if (isset($request['name'])) {
                 if (!$user->hasPriv('modRooms'))
@@ -194,24 +176,37 @@ switch ($requestHead['_action']) {
         }
 
 
+        // Handle Options Flags
+        $requestOptions = fim_sanitizeGPC('p', [
+            'options' => [
+                'cast'      => 'bitfieldShift',
+                'source'    => $room->options,
+                'flipTable' => [
+                    fimRoom::ROOM_HIDDEN   => 'hidden',
+                    fimRoom::ROOM_OFFICIAL => 'official',
+                ]
+            ]
+        ]);
+        $room->options = $requestOptions['options'];
+
+
+        // Handle Room Properties
         if ($requestHead['_action'] === 'create' ||
             ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_PROPERTIES)) {
-            $room->setDatabase([
-                'roomName'           => $request['name'],
-                'roomParentalFlags'  => $request['parentalFlags'],
-                'roomParentalAge'    => $request['parentalAge'],
-                'defaultPermissions' => $request['defaultPermissions'],
-                'options'            => $database->type('equation', $request['options']),
-            ], false);
-            $database->setCensorLists($room->id, $request['censorLists']);
+            $room->setDatabase(array_merge(
+                fim_arrayFilterKeys($request, ['name', 'parentalFlags', 'parentalAge', 'defaultPermissions', 'options'])
+            ));
+
+            if (isset($request['censorLists']))
+                $database->setCensorLists($room->id, $request['censorLists']);
         }
 
+
+        // Handle Room Grants
         if ($requestHead['_action'] === 'create' ||
             ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_GRANT)) {
             alterRoomPermissions($room->id, $request['userPermissions'], $request['groupPermissions']);
         }
-
-        $xmlData['response']['insertId'] = $room->id;
     break;
 
 
@@ -230,5 +225,6 @@ $database->endTransaction();
 
 
 /* Output Data */
+$xmlData = ['room' => fim_objectArrayFilterKeys($room, ['id', 'name'])];
 echo new apiData($xmlData);
 ?>

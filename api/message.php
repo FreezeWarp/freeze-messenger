@@ -89,7 +89,7 @@ if (!($room = new fimRoom($requestHead['roomId']))->roomExists()) // Make sure w
     new fimError('roomIdNoExist', 'The specified room does not exist.'); // Room doesn't exist.
 
 if (isset($requestHead['id'])) {
-    if ($requestHead['action'] == 'create') // ID shouldn't be used here.
+    if ($requestHead['_action'] == 'create') // ID shouldn't be used here.
         new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
 
     try {

@@ -37,7 +37,7 @@ if (!defined('API_INUSER'))
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', [
-    'userName' => [
+    'name' => [
         'require' => true,
     ],
 
@@ -74,12 +74,13 @@ elseif (isset($request['birthDate']) && (fim_dobToAge($request['birthDate']) < $
         'ageMinimum'  => $config['ageMinimum']
     ]);
 
-elseif ($database->getUsers(['userNames' => [$request['userName']]])->count() > 0)
-    new fimError('userNameTaken', 'That user specified already exists.');
+elseif ($database->getUsers(['userNames' => [$request['name']]])->getCount() > 0)
+    new fimError('nameTaken', 'That user specified already exists.');
 
 else {
-    if (!(new fimUser(0))->setDatabase(
-        fim_arrayFilterKeys($request, ['userName', 'password', 'birthDate', 'email'])
+    $newUser = new fimUser(0);
+    if (!$newUser->setDatabase(
+        fim_arrayFilterKeys($request, ['name', 'password', 'birthDate', 'email'])
     )) {
         new fimError("userCreationFailed", "Could not create user.");
     }
@@ -88,8 +89,9 @@ else {
 
 /* Output Data */
 echo new apiData([
-    'sendUser' => [
-        'userName' => $request['userName']
+    'user' => [
+        'id' => $newUser->id,
+        'name' => $newUser->name,
     ],
 ]);
 ?>

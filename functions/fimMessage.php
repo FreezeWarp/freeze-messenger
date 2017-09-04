@@ -167,7 +167,7 @@ class fimMessage
      * @param $text string New message text.
      * @param $ignoreBlock bool True if a censor prompt should be ignored.
      */
-    public function setText($text, $ignoreBlock)
+    public function setText($text, $ignoreBlock = false)
     {
         $this->text = $this->generalCache->censorScan($text, $this->room->id, $ignoreBlock, $this->censorMatches);
         list($this->textEncrypted, $this->iv, $this->salt) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
