@@ -712,7 +712,7 @@ class databaseSQL extends database
         switch ($type) {
             case 'detect':
                 if (!$this->isTypeObject($values[1])) {
-                    if (ctype_digit($values[1])) $values[1] = $this->int($values[1]);
+                    if (is_int($values[1]) || ctype_digit($values[1])) $values[1] = $this->int($values[1]);
                     else $values[1] = $this->str($values[1]);
                 }
 

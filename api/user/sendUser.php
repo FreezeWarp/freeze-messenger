@@ -59,6 +59,8 @@ $database->accessLog('sendUser', $request);
 
 
 /* Start Processing */
+$age = fim_dobToAge($request['birthDate']);
+
 if ($loginConfig['method'] != 'vanilla')
     new fimError('notSupported', 'This script only works for servers using vanilla logins.');
 
@@ -68,9 +70,9 @@ elseif ($user->id && !$user->isAnonymousUser())
 elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMAIL)))
     new fimError('emailInvalid', 'The email specified is not allowed.');
 
-elseif (isset($request['birthDate']) && (fim_dobToAge($request['birthDate']) < $config['ageMinimum']))
+elseif (isset($request['birthDate']) && ($age < $config['ageMinimum']))
     new fimError('ageMinimum', 'The age specified is below the minimum age allowed by the server.', [
-        'ageDetected' => fim_dobToAge($request['birthDate']),
+        'ageDetected' => $age,
         'ageMinimum'  => $config['ageMinimum']
     ]);
 
@@ -79,9 +81,10 @@ elseif ($database->getUsers(['userNames' => [$request['name']]])->getCount() > 0
 
 else {
     $newUser = new fimUser(0);
-    if (!$newUser->setDatabase(
-        fim_arrayFilterKeys($request, ['name', 'password', 'birthDate', 'email'])
-    )) {
+    if (!$newUser->setDatabase(array_merge(
+        fim_arrayFilterKeys($request, ['name', 'password', 'birthDate', 'email']),
+        ['parentalAge' => fim_nearestAge($age)]
+    ))) {
         new fimError("userCreationFailed", "Could not create user.");
     }
 }

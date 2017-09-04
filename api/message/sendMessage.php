@@ -51,7 +51,6 @@ $request = fim_sanitizeGPC('p', [
 $database->accessLog('sendMessage', $request);
 
 
-
 /* Start Processing */
 if (strlen($request['message']) < $config['messageMinLength'] || strlen($request['message']) > $config['messageMaxLength'])
     new fimError('messageLength', "The message is too long/too short.", [

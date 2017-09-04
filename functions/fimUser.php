@@ -147,12 +147,12 @@ class fimUser
     /**
      * @var array The list of parental flags the user is blocking.
      */
-    private $parentalFlags;
+    private $parentalFlags = [];
 
     /**
      * @var int The age cutoff of content the user wishes to see.
      */
-    private $parentalAge;
+    private $parentalAge = 0;
 
     /**
      * @var int The priviledges the user has (as bitfield)

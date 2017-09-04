@@ -107,6 +107,7 @@ else {
 
 /* Start Processing */
 foreach ($users AS $userData) {
+    $xmlData['users'][$userData->id] = [];
     $returnFields = ['name', 'id'];
 
     if (in_array('profile', $request['info']))
@@ -115,11 +116,15 @@ foreach ($users AS $userData) {
     if (in_array('groups', $request['info']))
         $returnFields = array_merge($returnFields, ['mainGroupId', 'socialGroupIds']);
 
-    if ($userData->id === $user->id
-        && in_array('self', $request['info']))
+    if (($userData->id === $user->id || $user->hasPriv('modUsers')
+        && in_array('self', $request['info']))) {
+        $xmlData['users'][$userData->id] = array_merge($xmlData['users'][$userData->id], [
+            'permissions' => $userData->getPermissionsArray()
+        ]);
         $returnFields = array_merge($returnFields, ['defaultRoomId', 'options', 'parentalAge', 'parentalFlags', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms']);
+    }
 
-    $xmlData['users'][$userData->id] = fim_objectArrayFilterKeys($userData, $returnFields);
+    $xmlData['users'][$userData->id] = array_merge($xmlData['users'][$userData->id], fim_objectArrayFilterKeys($userData, $returnFields));
 
     // todo
     //if (isset($userDataForums[$userId]['posts'])) // TODO

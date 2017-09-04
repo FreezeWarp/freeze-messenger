@@ -126,6 +126,8 @@ class curlRequest {
 
         else
             throw new Exception('curlRequest: no compatible PHP function found. Please enable fsock or curl.');
+
+        return $this;
     }
 
 
@@ -230,7 +232,7 @@ class curlRequest {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function executePOST() {
-        $this->execute(CurlRequestMethod::POST);
+        return $this->execute(CurlRequestMethod::POST);
     }
 
     /**
@@ -241,7 +243,7 @@ class curlRequest {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function executeGET() {
-        $this->execute(CurlRequestMethod::GET);
+        return $this->execute(CurlRequestMethod::GET);
     }
 
 

@@ -877,7 +877,7 @@ class fimDatabase extends databaseSQL
             'time' => $this->now(),
         ));
 
-        $this->deletePermissionCache($roomId, $userId);
+        $this->deletePermissionsCache($roomId, $userId);
     }
 
 
@@ -895,7 +895,7 @@ class fimDatabase extends databaseSQL
             'roomId' => (int) $roomId,
         ));
 
-        $this->deletePermissionCache($roomId, $userId);
+        $this->deletePermissionsCache($roomId, $userId);
     }
 
     /*********************************************************
@@ -1665,15 +1665,15 @@ class fimDatabase extends databaseSQL
      *
      * @param int $roomId The room ID a permission change has occured in.
      * @param int $userId The user ID for whom a permission has changed.
-     * @param int $permissions The new permissions bitfield.
-     * @param bool $isKicked Whether the permission cache is because of a kick (this is not generally used internally, but can be used to indicate to a user that they have been denied permission because of a kick)
      */
-    public function deletePermissionCache($roomId, $userId) {
+    public function deletePermissionsCache($roomId = false, $userId = false) {
         if ($this->config['roomPermissionsCacheEnabled']) {
-            $this->delete($this->prefix . 'roomPermissionsCache', array(
-                'roomId' => $roomId,
-                'userId' => $userId
-            ));
+            $conditions = [];
+
+            if ($roomId !== false) $conditions['roomId'] = $roomId;
+            if ($userId !== false) $conditions['userId'] = $userId;
+
+            $this->delete($this->sqlPrefix . 'roomPermissionsCache', $conditions);
         }
     }
 
@@ -2070,7 +2070,7 @@ class fimDatabase extends databaseSQL
         ));
 
         /* Delete Permissions Cache */
-        $this->deletePermissionCache($roomId, $attribute, $param);
+        $this->deletePermissionsCache($roomId, $attribute, $param);
 
         /* End Transaction */
         $this->endTransaction();
@@ -2087,7 +2087,7 @@ class fimDatabase extends databaseSQL
             'param' => $param,
         ));
 
-        $this->deletePermissionCache($roomId, $attribute, $param);
+        $this->deletePermissionsCache($roomId, $attribute, $param);
 
         $this->endTransaction();
     }

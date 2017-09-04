@@ -507,7 +507,7 @@ function fim_sanitizeGPC($type, $data) {
 
                             foreach ($newData[$indexName] AS $name) {
                                 if (!isset($indexMetaData['bitTable'][$name])) throw new Exception("Bad API data: '$name' is not a recognized value for field '$indexName'");
-                                else $bitfield &= $indexMetaData['bitTable'][$name];
+                                else $bitfield |= $indexMetaData['bitTable'][$name];
                             }
 
                             $newData[$indexName] = $bitfield;
@@ -851,5 +851,28 @@ function fim_removeNullValues(array &$a) {
     foreach ($a AS $key => $value) {
         if (is_null($value)) unset($a[$key]);
     }
+
+    return $a;
+}
+
+
+/**
+ * Finds the nearest valid parental age valid to one's own age.
+ *
+ * @param $age
+ *
+ * @return mixed
+ */
+function fim_nearestAge($age) {
+    global $config;
+
+    $ages = $config['parentalAges'];
+    sort($ages);
+
+    foreach ($ages AS $i => $a) {
+        if ($a > $age) return $ages[$i - 1] ?? $ages[0];
+    }
+
+    return pop($ages);
 }
 ?>

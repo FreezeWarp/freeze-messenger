@@ -33,7 +33,7 @@ $request = fim_sanitizeGPC('g', [
     // No matter what, the user will not be able to see rooms that he is unable to view.
     'permFilter' => [
         'default' => 'view',
-        'valid'   => array_keys(fimRoom::$permArray),
+        'valid'   => array_merge(array_keys(fimRoom::$permArray), ['own']),
     ],
 
     'roomIds' => [
