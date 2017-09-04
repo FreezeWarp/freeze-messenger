@@ -1,65 +1,154 @@
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/jquery-ui-1.8.16.custom.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/fim.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
+    <style>
+        body {
+            padding: 0px 40px;
+            background-color: white;
+        }
+        h1 {
+            margin: 0px;
+            padding: 5px;
+        }
+
+        .main {
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            border: 1px solid black;
+        }
+
+        .ui-widget {
+            font-size: 12px;
+        }
+        .ui-widget-content {
+            padding: 5px;
+        }
+
+        abbr {
+            outline-bottom: dotted 1px;
+        }
+        pre {
+            display: inline;
+        }
+
+        /* General Tables */
+        table {
+            border: 2px solid black;
+        }
+        table td {
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+        table tr {
+            border-bottom: 1px solid black;
+        }
+        table {
+            border-collapse: collapse;
+        }
+        table tr:last-child {
+            border-bottom: none;
+        }
+        tbody tr:nth-child(2n) {
+            background: #efefef !important;
+        }
+    </style>
+
+</head>
+
+<body>
+<h1>API Unit Testing Suite</h1>
+<p>This is a basic series of unit tests for the Messenger API. Tests should only be run on a fresh installation without development data. The installation user should be admin/admin.</p>
+
+<div class="ui-widget">
+
 <?php
 //todo: change config. maybe custom WebPro API?
 
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
+error_reporting(0);
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
 require('../functions/curlRequest.php');
-
-echo '<h2>API Unit Testing Suite</h2>';
-echo '<p>This is a basic series of unit tests for the Messenger API. Tests should only be run on a fresh installation without development data. The installation user should be admin/admin.</p>';
 
 $host = 'http://localhost/freeze-messenger/';
 
 function curlTestCommon($input, $jsonIndexes, $expectedValues, $callback = null) {
     $good = true;
+    $return = "";
 
     foreach ($jsonIndexes AS $indexNum => $jsonIndex) {
         $requestNarrow = $input;
 
         foreach ($jsonIndex AS $index) {
+            if (!@isset($requestNarrow[$index])) break;
+
             $requestNarrow = $requestNarrow[$index];
         }
 
         if ($requestNarrow !== $expectedValues[$indexNum]) {
-            echo red('Expected ' . $expectedValues[$indexNum] . ', found ' . $requestNarrow . '<br />');
+            $return .= red(implode(',', $jsonIndex) . ': Expected ' . htmlentities(print_r($expectedValues[$indexNum], true)) . ', found ' . htmlentities(print_r($requestNarrow, true)) . '<br />');
             $good = false;
         }
     }
 
 
-    if ($good) {
-        echo green("Success<br />");
-    }
-    else {
-        echo red(print_r($input, true) . '<br />');
-    }
-
-
-
     if ($callback) {
         $callback($input);
+    }
+
+    if ($good) {
+        echo '<td>' . green("Success") . '</td></tr>';
+    }
+    else {
+        echo '<td> ' . $return . '</td></tr>';
     }
 }
 
 function curlTestGETEquals($path, $params, $jsonIndex, $expectedValue, $callback = false) {
     global $host;
-    curlTestCommon(curlRequest::quickRunGET("{$host}{$path}", $params), [$jsonIndex], [$expectedValue], $callback);
+    echo '<td>' . $path . '?' . http_build_query($params) . '</td>';
+
+    $request = (new curlRequest("{$host}{$path}", $params))->executeGET();
+
+    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . $request->response . '</textarea></td>';
+
+    curlTestCommon($request->getAsJson(), [$jsonIndex], [$expectedValue], $callback);
 }
 
 function curlTestGETEqualsMulti($path, $params, $jsonIndexes, $expectedValues, $callback = false) {
     global $host;
-    curlTestCommon(curlRequest::quickRunGET("{$host}{$path}", $params), $jsonIndexes, $expectedValues, $callback);
+    echo '<td>' . $path . '?' . http_build_query($params) . '</td>';
+
+    $request = (new curlRequest("{$host}{$path}", $params))->executeGET();
+
+    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . $request->response . '</textarea></td>';
+
+    curlTestCommon($request->getAsJson(), $jsonIndexes, $expectedValues, $callback);
 }
 
 function curlTestPOSTEquals($path, $params, $body, $jsonIndex, $expectedValue, $callback = false) {
     global $host;
-    curlTestCommon(curlRequest::quickRunPOST("{$host}{$path}", $params, $body), [$jsonIndex], [$expectedValue], $callback);
+    echo '<td>' . $path . '?' . http_build_query($params) . '<br />' . http_build_query($body) . '</td>';
+
+    $request = (new curlRequest("{$host}{$path}", $params, $body))->executePOST();
+
+    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . $request->response . '</textarea></td>';
+
+    curlTestCommon($request->getAsJson(), [$jsonIndex], [$expectedValue], $callback);
 }
 
 function curlTestPOSTEqualsMulti($path, $params, $body, $jsonIndexes, $expectedValues, $callback = false) {
     global $host;
-    curlTestCommon(curlRequest::quickRunPOST("{$host}{$path}", $params, $body), $jsonIndexes, $expectedValues, $callback);
+    echo '<td>' . $path . '?' . http_build_query($params) . '<br />' . http_build_query($body) . '</td>';
+
+    $request = (new curlRequest("{$host}{$path}", $params, $body))->executePOST();
+
+    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . $request->response . '</textarea></td>';
+
+    curlTestCommon($request->getAsJson(), $jsonIndexes, $expectedValues, $callback);
 }
 
 function green($text) {
@@ -71,17 +160,15 @@ function red($text) {
 }
 
 
-echo '<h2>Login</h2>';
 
 $accessToken = false;
-$accessToken2 = false;
-
-
+echo '<table>';
+echo '<tr><td>Login</td>';
 curlTestPOSTEquals(
     'validate.php',
     [],
     ['username' => 'admin', 'password' => 'admin', 'client_id' => 'WebPro', 'grant_type' => 'password'],
-    ['login', 'userData', 'userName'],
+    ['login', 'userData', 'name'],
     'admin',
     function($data) {
         global $accessToken;
@@ -89,8 +176,9 @@ curlTestPOSTEquals(
     }
 );
 
-echo '<h1>Message Tests, Main User</h1>';
-echo '<h2>Get Messages, No Login</h2>';
+
+echo '<thead><tr class="ui-widget-header"><th colspan="4">Message Tests, Main User</th></tr></thead>';
+echo '<tr><td>Get Messages, No Login</td>';
 curlTestGETEquals(
     'api/message.php',
     [],
@@ -98,7 +186,7 @@ curlTestGETEquals(
     'noLogin'
 );
 
-echo '<h2>Get Messages, No Room</h2>';
+echo '<tr><td>Get Messages, No Room</td>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken],
@@ -106,226 +194,92 @@ curlTestGETEquals(
     'roomIdRequired'
 );
 
-echo '<h2>Get Messages, Room 1</h2>';
+echo '<tr><td>Get (Invalid) Message 1,000,000, Room 1</td>';
 curlTestGETEquals(
     'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1],
-    ['messages'],
-    []
-);
-
-echo '<h2>Send Message "Hi", Room 1</h2>';
-curlTestPOSTEquals(
-    'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken, 'roomId' => 1],
-    ['message' => 'Hi'],
-    ['sendMessage', 'censor'],
-    []
-);
-
-echo '<h2>Get Messages, Room 1</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1],
-    ['messages', 0, 'messageText'],
-    'Hi'
-);
-
-echo '<h2>Get Messages Since Message 0, Room 1</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 1],
-    ['messages', 0, 'messageText'],
-    'Hi'
-);
-
-echo '<h2>Get Messages Since Message 1, Room 1</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 2],
-    ['messages'],
-    []
-);
-
-echo '<h2>Send Message "Crazy", Room 1</h2>';
-curlTestPOSTEquals(
-    'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken, 'roomId' => 1],
-    ['message' => 'Crazy'],
-    ['sendMessage', 'censor'],
-    []
-);
-
-echo '<h2>Get Messages Since Message 0, Room 1</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 1],
-    ['messages', 0, 'messageText'],
-    'Hi'
-);
-
-echo '<h2>Get Messages Since Message 1, Room 1</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 2],
-    ['messages', 0, 'messageText'],
-    'Crazy'
-);
-
-echo '<h2>Get Messages Since Message 2, Room 1</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 3],
-    ['messages'],
-    []
-);
-
-echo '<h2>Edit Message 3, Room 1</h2>';
-curlTestPOSTEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'id' => 2],
-    ['message' => 'Crazy For You'],
-    ['sendMessage', 'censor'],
-    []
-);
-
-echo '<h2>Get Message 3</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'id' => 2],
-    ['messages', 0, 'messageText'],
-    'Crazy For You'
-);
-
-echo '<h2>Delete Message 1, Room 1</h2>';
-curlTestPOSTEquals(
-    'api/message.php',
-    ['_action' => 'delete', 'access_token' => $accessToken, 'roomId' => 1, 'id' => 1],
-    [],
-    [],
-    []
-);
-
-echo '<h2>Get Messages Since Message 0, Room 1</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 0],
-    ['messages', 0, 'messageText'],
-    'Crazy For You'
-);
-
-echo '<h2>Get Even Deleted Messages Since Message 0, Room 1</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 0, 'archive' => true, 'showDeleted' => true],
-    ['messages', 0, 'messageText'],
-    'Hi'
-);
-
-echo '<h2>Undelete Message 1, Room 1</h2>';
-curlTestPOSTEquals(
-    'api/message.php',
-    ['_action' => 'undelete', 'access_token' => $accessToken, 'roomId' => 1, 'id' => 1],
-    [],
-    [],
-    []
-);
-
-// we need to use archive to get undeleted messages.
-echo '<h2>Get Messages Since Message 0, Room 1</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'archive' => true, 'messageIdStart' => 0],
-    ['messages', 0, 'messageText'],
-    'Hi'
-);
-
-echo '<h2>Get (Invalid) Message 10, Room 1</h2>';
-curlTestGETEquals(
-    'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 1, 'id' => 10],
+    ['access_token' => $accessToken, 'roomId' => 1, 'id' => 1000000],
     ['exception', 'string'],
     'idNoExist'
 );
 
-echo '<h2>Get Message 10, (Invalid) Room 10</h2>';
+echo '<tr><td>Get Message 10, (Invalid) Room 100,000</td>';
 curlTestGETEquals(
     'api/message.php',
-    ['access_token' => $accessToken, 'roomId' => 10, 'id' => 1],
+    ['access_token' => $accessToken, 'roomId' => 100000, 'id' => 1],
     ['exception', 'string'],
     'roomIdNoExist'
 );
 
 // mutually exclusive
-echo '<h2>Get Messages Between Message 0 and Message 10, Room 1</h2>';
+echo '<tr><td>Get Messages Between Message 0 and Message 10, Room 1</td>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 1, 'messageIdEnd' => 10],
     ['exception', 'string'],
-    'messageDateMinMessageDateMaxMessageIdStartMessageIdEndConflict'
+    'messageIdEndMessageIdStartConflict'
 );
 
 // mutually exclusive
-echo '<h2>Get Messages Starting Message 1 and Message Date 1, Room 1</h2>';
+echo '<tr><td>Get Messages Starting Message 1 and Message Date 1, Room 1</td>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 1, 'messageIdStart' => 1, 'messageDateMin' => 1],
     ['exception', 'string'],
-    'messageDateMinMessageDateMaxMessageIdStartMessageIdEndConflict'
+    'messageDateMinMessageIdStartConflict'
 );
 
-echo '<h2>Undelete (Invalid) Message 10, Room 1</h2>';
+echo '<tr><td>Undelete (Invalid) Message 1,000,000, Room 1</td>';
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'undelete', 'access_token' => $accessToken, 'roomId' => 1, 'id' => 10],
+    ['_action' => 'undelete', 'access_token' => $accessToken, 'roomId' => 1, 'id' => 1000000],
     [],
     ['exception', 'string'],
     'idNoExist'
 );
 
-echo '<h2>Send Message "Hi Bob %d" 98 Times, Room 1</h2>';
+/*echo '<tr><td>Send Message "Hi Bob %d" 98 Times, Room 1</td>';
 for ($i = 2; $i < 100; $i++) {
     curlTestPOSTEquals(
         'api/message.php',
         ['_action' => 'create', 'access_token' => $accessToken, 'roomId' => 1],
         ['message' => 'Hi Bob ' . $i],
-        ['sendMessage', 'censor'],
+        ['message', 'censor'],
         []
     );
-}
+}*/
 
-echo '<h1>Room Tests, Main User</h1>';
-echo '<h2>Get Room 1</h2>';
+echo '<thead><tr class="ui-widget-header"><th colspan="4">Room Tests, Main User</th></tr></thead>';
+echo '<tr><td>Get Room 1</td>';
 curlTestGETEquals(
     'api/room.php',
     ['access_token' => $accessToken, 'id' => 1],
-    ['rooms', 0, 'roomName'],
+    ['rooms', 1, 'name'],
     'Your Room!'
 );
 
-echo '<h2>Get Room 2</h2>';
+echo '<tr><td>Get Room 2</td>';
 curlTestGETEquals(
     'api/room.php',
     ['access_token' => $accessToken, 'id' => 2],
-    ['rooms', 0, 'roomName'],
+    ['rooms', 2, 'name'],
     'Another Room!'
 );
 
-echo '<h2>Get Room 10</h2>';
+echo '<tr><td>Get Room 100,000</td>';
 curlTestGETEquals(
     'api/room.php',
-    ['access_token' => $accessToken, 'id' => 10],
+    ['access_token' => $accessToken, 'id' => 100000],
     ['exception', 'string'],
     'idNoExist'
 );
 
-echo '<h2>Get All Rooms</h2>';
+echo '<tr><td>Get All Rooms, Testing for Rooms 1 and 2</td>';
 curlTestGETEqualsMulti(
     'api/room.php',
     ['access_token' => $accessToken],
     [
-        ['rooms', 0, 'roomName'],
-        ['rooms', 1, 'roomName'],
+        ['rooms', 1, 'name'],
+        ['rooms', 2, 'name'],
     ],
     [
         'Your Room!',
@@ -333,7 +287,8 @@ curlTestGETEqualsMulti(
     ]
 );
 
-echo '<h2>Create Room Without Name</h2>';
+echo '<thead><tr class="ui-widget-header"><th colspan="4">Room and Message Tests in New Room</th></tr></thead>';
+echo '<tr><td>Create Room Without Name</td>';
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'create'],
@@ -342,7 +297,7 @@ curlTestPOSTEquals(
     'nameRequired'
 );
 
-echo '<h2>Create Room With Short Name</h2>';
+echo '<tr><td>Create Room With Short Name</td>';
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'create'],
@@ -351,7 +306,7 @@ curlTestPOSTEquals(
     'nameMinimumLength'
 );
 
-echo '<h2>Create Room With Long Name</h2>';
+echo '<tr><td>Create Room With Long Name</td>';
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'create'],
@@ -360,41 +315,232 @@ curlTestPOSTEquals(
     'nameMaximumLength'
 );
 
-echo '<h2>Create Room "Test Unit Room"</h2>';
+$hiddenRoomName = 'Test Unit ' . substr(uniqid(), -10, 10);
+$hiddenRoomId;
+echo "<tr><td>Create Hidden Room '$hiddenRoomName'</td>";
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'create'],
-    ['name' => 'Test Unit Room'],
-    ['response', 'insertId'],
-    3
+    ['name' => $hiddenRoomName, 'hidden' => 1],
+    ['room', 'name'],
+    $hiddenRoomName,
+    function($data) {
+        global $hiddenRoomId;
+        $hiddenRoomId = $data['room']['id'];
+    }
 );
 
-echo '<h2>Create Duplicate Room "Test Unit Room"</h2>';
+$testRoomName = 'Test Unit ' . substr(uniqid(), -10, 10);
+$testRoomId;
+echo "<tr><td>Create Room '$testRoomName'</td>";
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'create'],
-    ['name' => 'Test Unit Room'],
+    ['name' => $testRoomName, 'defaultPermissions' => ['view']],
+    ['room', 'name'],
+    $testRoomName,
+    function($data) {
+        global $testRoomId;
+        $testRoomId = $data['room']['id'];
+    }
+);
+
+echo "<tr><td>Create Duplicate Room '$testRoomName'</td>";
+curlTestPOSTEquals(
+    'api/room.php',
+    ['access_token' => $accessToken, '_action' => 'create'],
+    ['name' => $testRoomName],
     ['exception', 'string'],
-    'roomNameTaken'
+    'nameTaken'
 );
 
-echo '<h2>Get Room 3</h2>';
+echo "<tr><td>Get Room $testRoomName</td>";
 curlTestGETEquals(
     'api/room.php',
-    ['access_token' => $accessToken, 'id' => 3],
-    ['rooms', 0, 'roomName'],
-    'Test Unit Room'
+    ['access_token' => $accessToken, 'id' => $testRoomId],
+    ['rooms', $testRoomId, 'name'],
+    $testRoomName
 );
 
-echo '<h2>Get All Rooms, Test for 3</h2>';
+echo '<tr><td>Get Messages, Test for Empty</td>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId],
+    ['messages'],
+    []
+);
+
+$testMessage1Id;
+echo '<tr><td>Send Message "Hi"</td>';
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken, 'roomId' => $testRoomId],
+    ['message' => 'Hi'],
+    ['message', 'censor'],
+    [],
+    function($data) {
+        global $testMessage1Id;
+        $testMessage1Id = $data['message']['id'];
+    }
+);
+
+echo '<tr><td>Get Most Recent Messages</td>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId],
+    ['messages', 0, 'text'],
+    'Hi'
+);
+
+echo '<tr><td>Get Messages Since Message 0 (Fresh Install Only)</td>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 1],
+    ['messages', 0, 'text'],
+    'Hi'
+);
+
+echo '<tr><td>Get Messages Since Message 1 (Fresh Install Only)</td>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 2],
+    ['messages'],
+    []
+);
+
+$testMessage2Id;
+echo '<tr><td>Send Message "Crazy"</td>';
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken, 'roomId' => $testRoomId],
+    ['message' => 'Crazy'],
+    ['message', 'censor'],
+    [],
+    function($data) {
+        global $testMessage2Id;
+        $testMessage2Id = $data['message']['id'];
+    }
+);
+
+echo '<tr><td>Get Messages Since Message 0</td>';
+curlTestGETEqualsMulti(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 1],
+    [
+        ['messages', 0, 'text'],
+        ['messages', 1, 'text']
+    ],
+    [
+        'Hi',
+        'Crazy'
+    ]
+);
+
+echo '<tr><td>Get Messages Since Message 1 (Fresh Install Only)</td>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 2],
+    ['messages', 0, 'text'],
+    'Crazy'
+);
+
+echo '<tr><td>Get Messages Since Message 2 (Fresh Install Only)</td>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 3],
+    ['messages'],
+    []
+);
+
+echo '<tr><td>Edit Message "Crazy"</td>';
+curlTestPOSTEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'id' => $testMessage2Id],
+    ['message' => 'Crazy For You'],
+    ['message', 'censor'],
+    []
+);
+
+echo '<tr><td>Get Edited Message</td>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'id' => $testMessage2Id],
+    ['messages', 0, 'text'],
+    'Crazy For You'
+);
+
+echo '<tr><td>Get Messages Since Message 0</td>';
+curlTestGETEqualsMulti(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 1],
+    [
+        ['messages', 0, 'text'],
+        ['messages', 1, 'text']
+    ],
+    [
+        'Hi',
+        'Crazy For You'
+    ]
+);
+
+echo '<tr><td>Delete Message "Hi"</td>';
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'delete', 'access_token' => $accessToken, 'roomId' => $testRoomId, 'id' => $testMessage1Id],
+    [],
+    ['message', 'id'],
+    $testMessage1Id
+);
+
+echo '<tr><td>Get Messages Since Message 0</td>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 0],
+    ['messages', 0, 'text'],
+    'Crazy For You'
+);
+
+echo '<tr><td>Get Even Deleted Messages Since Message 0</td>';
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 0, 'archive' => true, 'showDeleted' => true],
+    ['messages', 0, 'text'],
+    'Hi'
+);
+
+echo '<tr><td>Undelete Message "Hi"</td>';
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'undelete', 'access_token' => $accessToken, 'roomId' => $testRoomId, 'id' => $testMessage1Id],
+    [],
+    ['message', 'id'],
+    $testMessage1Id
+);
+
+// we need to use archive to get undeleted messages.
+echo '<tr><td>Get Messages Since Message 0</td>';
+curlTestGETEqualsMulti(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => $testRoomId, 'archive' => true, 'messageIdStart' => 0],
+    [
+        ['messages', 0, 'text'],
+        ['messages', 1, 'text']
+    ],
+    [
+        'Hi',
+        'Crazy For You'
+    ]
+);
+
+/*echo '<tr><td>Get All Rooms, Test for 3</td>';
 curlTestGETEquals(
     'api/room.php',
     ['access_token' => $accessToken],
-    ['rooms', 2, 'roomName'],
-    'Test Unit Room'
-);
+    ['rooms', 3, 'name'],
+    $testRoomName
+);*/
 
-echo '<h2>Create Room "Hi Room %d" 96 Times</h2>';
+/*echo '<tr><td>Create Room "Hi Room %d" 96 Times</td>';
 for ($i = 4; $i < 100; $i++) {
     curlTestPOSTEquals(
         'api/room.php',
@@ -403,85 +549,244 @@ for ($i = 4; $i < 100; $i++) {
         ['response', 'insertId'],
         $i
     );
-}
+}*/
 
 
 // todo: create admin-only room
 
 
-echo '<h1>New User and Permissions Tests</h1>';
-echo '<h2>Create User without Birthdate</h2>';
-curlTestPOSTEquals(
+echo '<thead><tr class="ui-widget-header"><th colspan="4">New User and Permissions Tests</th></tr></thead>';
+
+echo '<tr><td>Get User 100,000</td>';
+curlTestGETEquals(
     'api/user.php',
-    ['_action' => 'create'],
-    ['userName' => 'testUnitUser', 'password' => 'password', 'email' => 'bob@example.com'],
+    ['access_token' => $accessToken, 'id' => 100000],
     ['exception', 'string'],
-    'birthdateRequired'
+    'idNoExist'
 );
 
-echo '<h2>Create User With Email bob@example</h2>';
+
+$testUnitUserId;
+$testUnitUserToken;
+$testUnitUserName = "testUnitUser" . uniqid();
+
+echo '<tr><td>Create User without birthDate</td>';
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['userName' => 'testUnitUser', 'password' => 'password', 'email' => 'bob@example', 'birthdate' => time() - 14 * 365 * 3600],
+    ['name' => $testUnitUserName, 'password' => 'password', 'email' => 'bob@example.com'],
+    ['exception', 'string'],
+    'birthDateRequired'
+);
+
+echo '<tr><td>Create User With Email bob@example</td>';
+curlTestPOSTEquals(
+    'api/user.php',
+    ['_action' => 'create'],
+    ['name' => $testUnitUserName, 'password' => 'password', 'email' => 'bob@example', 'birthDate' => time() - 14 * 365 * 3600],
     ['exception', 'string'],
     'emailInvalid'
 );
 
-echo '<h2>Create COPPA User</h2>';
+echo '<tr><td>Create COPPA User</td>';
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['userName' => 'testUnitUser', 'password' => 'password', 'email' => 'bob@example.com', 'birthdate' => time() - 12 * 365 * 3600],
+    ['name' => $testUnitUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 12 * 365 * 3600],
     ['exception', 'string'],
     'ageMinimum'
 );
 
 // todo: email required
 
-echo '<h2>Create Valid User, testUnitUser</h2>';
+echo "<tr><td>Create Valid User, $testUnitUserName</td>";
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['userName' => 'testUnitUser', 'password' => 'password', 'email' => 'bob@example.com', 'birthdate' => time() - 14 * 365 * 24 * 3600],
-    ['sendUser', 'userName'],
-    'testUnitUser'
+    ['name' => $testUnitUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 14 * 365 * 24 * 3600],
+    ['user', 'name'],
+    $testUnitUserName,
+    function($data) {
+        global $testUnitUserId;
+        $testUnitUserId = $data['user']['id'];
+    }
 );
 
-echo '<h2>Create Duplicate User, testUnitUser</h2>';
+echo "<tr><td>Create Duplicate User, $testUnitUserName</td>";
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['userName' => 'testUnitUser', 'password' => 'password', 'email' => 'bob@example.com', 'birthdate' => time() - 14 * 365 * 24 * 3600],
+    ['name' => $testUnitUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 14 * 365 * 24 * 3600],
     ['exception', 'string'],
-    'userExists'
+    'nameTaken'
 );
 
-echo '<h2>Login as testUnitUser</h2>';
+echo "<tr><td>Get $testUnitUserName as admin</td>";
+curlTestGETEqualsMulti(
+    'api/user.php',
+    ['access_token' => $accessToken, 'id' => $testUnitUserId],
+    [
+        ['users', $testUnitUserId, 'name'],
+        ['users', $testUnitUserId, 'permissions', 'view'],
+        ['users', $testUnitUserId, 'permissions', 'post'],
+        ['users', $testUnitUserId, 'permissions', 'changeTopic'],
+        ['users', $testUnitUserId, 'permissions', 'createRooms'],
+        ['users', $testUnitUserId, 'permissions', 'privateRoomsFriends'],
+        ['users', $testUnitUserId, 'permissions', 'privateRoomsAll'],
+        ['users', $testUnitUserId, 'permissions', 'roomsOnline'],
+        ['users', $testUnitUserId, 'permissions', 'postCounts'],
+        ['users', $testUnitUserId, 'permissions', 'editOwnPosts'],
+        ['users', $testUnitUserId, 'permissions', 'deleteOwnPosts'],
+    ],
+    [
+        $testUnitUserName,
+        true,
+        true,
+        false,
+        false,
+        true,
+        false,
+        true,
+        true,
+        true,
+        true,
+    ]
+);
+
+echo "<tr><td>Get Room $testRoomName, Test Permissions as admin</td>";
+curlTestGETEqualsMulti(
+    'api/room.php',
+    ['access_token' => $accessToken, 'id' => $testRoomId],
+    [
+        ['rooms', $testRoomId, 'permissions', 'view'],
+        ['rooms', $testRoomId, 'permissions', 'post'],
+        ['rooms', $testRoomId, 'permissions', 'changeTopic'],
+        ['rooms', $testRoomId, 'permissions', 'properties'],
+        ['rooms', $testRoomId, 'defaultPermissions', 'view'],
+        ['rooms', $testRoomId, 'defaultPermissions', 'post'],
+        ['rooms', $testRoomId, 'defaultPermissions', 'changeTopic'],
+        ['rooms', $testRoomId, 'defaultPermissions', 'properties'],
+    ],
+    [
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false,
+        false
+    ]
+);
+
+echo '<tr><td>Login as testUnitUser</td>';
 curlTestPOSTEquals(
     'validate.php',
     [],
-    ['username' => 'testUnitUser', 'password' => 'password', 'client_id' => 'WebPro', 'grant_type' => 'password'],
-    ['login', 'userData', 'userName'],
-    'testUnitUser',
+    ['username' => $testUnitUserName, 'password' => 'password', 'client_id' => 'WebPro', 'grant_type' => 'password'],
+    ['login', 'userData', 'name'],
+    $testUnitUserName,
     function($data) {
         global $accessToken2;
         $accessToken2 = $data['login']['access_token'];
     }
 );
 
-echo '<h2>Send Message "Hi", Room 1</h2>';
+echo '<tr><td>Send Message "Hi", Room 1</td>';
 curlTestPOSTEquals(
     'api/message.php',
     ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => 1],
     ['message' => 'Hi'],
-    ['sendMessage', 'censor'],
+    ['message', 'censor'],
     []
 );
 
-// todo: unpriviledged user can post in default room
+// todo: can't view
+
+echo "<tr><td>Get Room $testRoomName, Test Permissions</td>";
+curlTestGETEqualsMulti(
+    'api/room.php',
+    ['access_token' => $accessToken2, 'id' => $testRoomId],
+    [
+        ['rooms', $testRoomId, 'permissions', 'view'],
+        ['rooms', $testRoomId, 'permissions', 'post'],
+        ['rooms', $testRoomId, 'permissions', 'changeTopic'],
+        ['rooms', $testRoomId, 'permissions', 'properties']
+    ],
+    [
+        true,
+        false,
+        false,
+        false
+    ]
+);
+
+echo "<tr><td>Get Messages in $testRoomName</td>";
+curlTestGETEqualsMulti(
+    'api/message.php',
+    ['access_token' => $accessToken2, 'roomId' => $testRoomId, 'archive' => true, 'messageIdStart' => 0],
+    [
+        ['messages', 0, 'text'],
+        ['messages', 1, 'text']
+    ],
+    [
+        'Hi',
+        'Crazy For You'
+    ]
+);
+
+echo "<tr><td>Send Message 'Hi' in $testRoomName</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoomId],
+    ['message' => 'Hi'],
+    ['exception', 'string'],
+    'noPerm'
+);
+
+echo "<tr><td>Edit Room '$testRoomName' to Allow Posting By All</td>";
+curlTestPOSTEquals(
+    'api/room.php',
+    ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoomId],
+    ['defaultPermissions' => ['view', 'post']],
+    ['room', 'id'],
+    (string) $testRoomId
+);
+
+echo "<tr><td>Get Room $testRoomName, Test Permissions</td>";
+curlTestGETEqualsMulti(
+    'api/room.php',
+    ['access_token' => $accessToken2, 'id' => $testRoomId],
+    [
+        ['rooms', $testRoomId, 'permissions', 'view'],
+        ['rooms', $testRoomId, 'permissions', 'post'],
+        ['rooms', $testRoomId, 'permissions', 'changeTopic'],
+        ['rooms', $testRoomId, 'permissions', 'properties']
+    ],
+    [
+        true,
+        true,
+        false,
+        false
+    ]
+);
+
+echo "<tr><td>Send Message 'Hi' in $testRoomName</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoomId],
+    ['message' => 'Hi'],
+    ['message', 'censor'],
+    []
+);
+echo '</table>';
 // todo: unpriviledged user can't post in admin-only room
 // todo: admin kick unpriviledged user in default room
 // todo: unpriviledged user can't post in default room
 // todo: admin unkick unpriviledged user in default room
 // todo: unpriviledged user can post in default room
+
+?>
+</div>
+</body>
+</html>
