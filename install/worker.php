@@ -21,9 +21,10 @@ require('../functions/xml.php'); // For reading the db*.xml files
 require('../functions/database.php'); // DB Operations
 require('../functions/databaseSQL.php'); // ""
 require('../functions/fimDatabase.php'); // ""
-require('../functions/fimUser.php'); // ""
-require('../functions/fimRoom.php'); // ""
-require('../functions/fimCache.php');
+require('../functions/fimUser.php'); // Creating Users
+require('../functions/fimRoom.php'); // Transformation Parameters
+require('../functions/fimConfig.php'); // Configuration
+require('../functions/fimCache.php'); // Caching
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!@ini_get('safe_mode')) {
@@ -92,15 +93,15 @@ switch ($_REQUEST['phase']) {
                     die ('You have attempted to connect to a MySQL version greater than 5. Such a thing did not exist when I was writing this code, and there is a good chance it won\'t work as expected. Either download a newer version of FreezeMessenger, or, if one does not yet exist, you can try to modify the source code of the installer script to remove this restriction. If you\'re lucky, things will still work.');
                 }
             }
-//      elseif ($driver === 'postgresql') {
-//        if ($strippedVersionParts[0] <= 7) { // PostGreSQL 7 is a no-go.
-//          die('You have attempted to connect to a PostGreSQL version 7 database. PostGreSQL 8.2+ is required for FreezeMessenger.');
-//        }
-//        elseif ($strippedVersionParts[0] == 8 && $strippedVersionParts[1] <= 1) { // PostGreSQL 8.1 or 8.2 is also a no-go.
-//          die('You have attempted to connect to an incompatible version of a PostGreSQL 8 database (PostGreSQL 8.0-8.1). PostGreSQL 8.2+ is required for FreezeMessenger.');
-//        }
-//      }
-            else {
+            elseif ($driver === 'pgsql') {
+                if ($database->versionPrimary <= 7) { // PostGreSQL 7 is a no-go.
+                    die('You have attempted to connect to a PostGreSQL version 7 database. PostGreSQL 8.2+ is required for FreezeMessenger.');
+                }
+                elseif ($database->versionPrimary == 8 && $database->versionSecondary <= 1) { // PostGreSQL 8.1 or 8.2 is also a no-go.
+                    die('You have attempted to connect to an incompatible version of a PostGreSQL 8 database (PostGreSQL 8.0-8.1). PostGreSQL 8.2+ is required for FreezeMessenger.');
+                }
+            }
+             else {
                 die('Unknown driver selected.');
             }
 
@@ -117,8 +118,7 @@ switch ($_REQUEST['phase']) {
 
 
             // Get Pre-Existing Tables So We Don't Overwrite Any of Them Later
-            $showTable = (array) $database->getTablesAsArray();
-            $showTables = array_map('strtolower', $showTable); // ...In Windows, table names may not be returned as entered (uppercase letters usually become lowercase), so this is the most efficient work-around I could come up with.
+            $showTables = array_map('strtolower', (array) $database->getTablesAsArray()); // ...In Windows, table names may not be returned as entered (uppercase letters usually become lowercase), so this is the most efficient work-around I could come up with.
 
             // Read the various XML files.
             $xmlData = new Xml2Array(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class

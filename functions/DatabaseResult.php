@@ -46,7 +46,7 @@ class databaseResult
         $this->sourceQuery = $sourceQuery;
         $this->database = $database;
 
-        if ($resultLimit > 1 && $this->functionMap('getCount', $this->queryData) > $resultLimit) {
+        if ($resultLimit > 1 && $this->functionMap('getCount') > $resultLimit) {
             $this->paginated = true;
             $this->count = $resultLimit;
         }
@@ -66,35 +66,46 @@ class databaseResult
     {
         $args = func_get_args();
         switch ($this->database->driver) {
-        case 'mysql':
-            switch ($operation) {
-            case 'fetchAsArray' :
-                return (($data = mysql_fetch_assoc($args[1])) === false ? false : $data);
+            case 'mysql':
+                switch ($operation) {
+                    case 'fetchAsArray' :
+                        return (($data = mysql_fetch_assoc($this->queryData)) === false ? false : $data);
+                    break;
+                    case 'getCount' :
+                        return mysql_num_rows($this->queryData);
+                    break;
+                }
             break;
-            case 'getCount' :
-                return mysql_num_rows($this->queryData);
-            break;
-            }
-        break;
 
-        case 'mysqli':
-            switch ($operation) {
-            case 'fetchAsArray' :
-                return (($data = $this->queryData->fetch_assoc()) === null ? false : $data);
+            case 'mysqli':
+                switch ($operation) {
+                    case 'fetchAsArray' :
+                        return (($data = $this->queryData->fetch_assoc()) === null ? false : $data);
+                    break;
+                    case 'getCount' :
+                        return $this->queryData->num_rows;
+                    break;
+                }
             break;
-            case 'getCount' :
-                return $this->queryData->num_rows;
-            break;
-            }
-        break;
 
-        case 'pdo':
-            switch ($operation) {
-            case 'fetchAsArray' :
-                return ((($data = $this->queryData->fetch(PDO::FETCH_ASSOC)) === null) ? false : $data);
+            case 'pgsql':
+                switch ($operation) {
+                    case 'fetchAsArray' :
+                        return (($data = pg_fetch_assoc($this->queryData)) === false ? false : $data);
+                    break;
+                    case 'getCount' :
+                        return pg_num_rows($this->queryData);
+                    break;
+                }
             break;
-            }
-        break;
+
+            case 'pdo':
+                switch ($operation) {
+                    case 'fetchAsArray' :
+                        return ((($data = $this->queryData->fetch(PDO::FETCH_ASSOC)) === null) ? false : $data);
+                    break;
+                }
+            break;
         }
     }
 
@@ -137,7 +148,7 @@ class databaseResult
 
         if ($this->queryData !== false) {
             if ($index) { // An index is specified, generate & return a multidimensional array. (index => [key => value], index being the value of the index for the row, key being the column name, and value being the corrosponding value).
-                while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
+                while ($row = $this->functionMap('fetchAsArray')) {
                     if ($rowNumber++ > $this->count) break; // Don't go over the pagination limit. In general, there will only be one extra result, which indicates that more results are available.
 
                     //if ($row === null || $row === false) break;
@@ -173,7 +184,7 @@ class databaseResult
             }
 
             else { // No index is present, generate a two-dimensional array (key => value, key being the column name, value being the corrosponding value).
-                $return = $this->functionMap('fetchAsArray', $this->queryData);
+                $return = $this->functionMap('fetchAsArray');
 
                 if ($return) {
                     foreach ($return AS $columnName => &$columnValue) {
@@ -196,7 +207,7 @@ class databaseResult
         $columnValues = array();
         $columns = (array) $columns;
 
-        while ($row = $this->functionMap('fetchAsArray', $this->queryData)) {
+        while ($row = $this->functionMap('fetchAsArray')) {
             $ref =& $columnValues;
             for ($i = 1; $i < count($columns); $i++) {
                 $ref =& $ref[$row[$columns[$i - 1]]];
@@ -215,7 +226,7 @@ class databaseResult
 
     public function getColumnValue($column)
     {
-        $row = $this->functionMap('fetchAsArray', $this->queryData);
+        $row = $this->functionMap('fetchAsArray');
 
         return $this->applyColumnTransformation($column, $row[$column]);
     }
@@ -247,7 +258,7 @@ class databaseResult
         $uid = 0;
 
         if ($this->queryData !== false && $this->queryData !== null) {
-            while (false !== ($row = $this->functionMap('fetchAsArray', $this->queryData))) { // Process through all rows.
+            while (false !== ($row = $this->functionMap('fetchAsArray'))) { // Process through all rows.
                 $uid++;
                 $row['uid'] = $uid; // UID is a variable that can be used as the row number in the template.
 

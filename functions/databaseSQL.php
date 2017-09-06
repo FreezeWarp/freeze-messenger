@@ -108,7 +108,7 @@ class databaseSQL extends database
     /**
      * @var int|string The secondary version (e.g. 2 in 4.2.1) of the DBMS we are connected to.
      */
-    public $versionSeconday = 0;
+    public $versionSecondary = 0;
 
     /**
      * @var int|string The tertiary version (e.g. 1 in 4.2.1) of the DBMS we are connected to.
@@ -133,9 +133,25 @@ class databaseSQL extends database
     public $mode = 'SQL';
 
     /**
-     * @var string The DBMS language being used.
+     * @var string The driver currently in use. One of "mysql", "mysqli", "pdo-mysql", "pgsql", "pdo-pgsql"
      */
-    public $language = '';
+    public $driver;
+
+    /**
+     * @var string The language currently in used. One of "mysql", "pgsql"
+     */
+    public $language;
+
+    /**
+     * @var array Maps between drivers and languages.
+     */
+    private $driverMap = array(
+        'mysql' => 'mysql',
+        'mysqli' => 'mysql',
+        'pdo-mysql' => 'mysql',
+        'pgsql' => 'pgsql',
+        'pdo-pqsql' => 'pqsql',
+    );
 
     /**
      * @var array All queries will be stored here during execution.
@@ -148,29 +164,44 @@ class databaseSQL extends database
     public $queryLogToFile = false;
 
     /**
-     * @var array The language feature set we are targeting given different drivers.
-     */
-    private $driverMap = array(
-        'mysql' => 'mysql',
-        'mysqli' => 'mysql',
-        'pdo-mysql' => 'mysql',
-        'pgsql' => 'pgsql',
-        'pdo-pqsql' => 'pqsql',
-    );
-
-    /**
-     * @var bool If enums are enabled.
-     *   true - use native ENUM(val1, val2) type.
-     *   false - simulate with strings (validation is not performed)
-     */
-    public $enumMode = false;
-
-    /**
      * @var bool If native bitfields are supported.
      *   true - use native BIT(length) type.
      *   false - simulate with integers
      */
     public $nativeBitfield = false;
+
+    /**
+     * @var bool Whether or not IF NOT EXISTS is supported in CREATE statements.
+     */
+    public $useCreateIfNotExist = false;
+
+    /**
+     * @var string {
+     *     Mode used to support column comments. Options:
+     *
+     *    'useAttributes' - Use "COMMENT=" attribute on columns/tables.
+     *    'useCommentOn' - Execute "COMMENT ON" queries after table insertion.
+     */
+    public $commentMode = false;
+
+    /**
+     * @var string {
+     *     Mode used to support index creation. Options:
+     *
+     *    'useTableAttribute' - Embed in CREATE TABLE statement.
+     *    'useCreateIndex' - Execute "CREATE INDEX" queries after table insertion.
+     */
+    public $indexMode = false;
+
+    /**
+     * @var string {
+     *     Mode used to support enums. Options:
+     *
+     *    'useEnum' - Use native ENUM(val1, val2) type.
+     *    'useCreateType' - Create a custom enumerated type with CREATE TYPE.
+     *    'useCheck' - Use a CHECK() clause when creating the type.
+     */
+    public $enumMode = false;
 
     /**
      * @var bool If rawQuery should return its query instead of executing it. Ideal for simulation and testing.
@@ -386,9 +417,9 @@ class databaseSQL extends database
      * @var array The phrases that identify the three supported key types, 'primary', 'unique', and 'index'
      */
     protected $keyTypeConstants = array(
-        'primary' => 'PRIMARY KEY',
-        'unique' => 'UNIQUE KEY',
-        'index' => 'KEY',
+        'primary' => 'PRIMARY',
+        'unique' => 'UNIQUE',
+        'index' => '',
     );
 
     /**
@@ -433,6 +464,7 @@ class databaseSQL extends database
 
                         if (!$this->connection) {
                             $this->triggerError('Connect Error: ' . $this->functionMap('error'), false, 'connection');
+
                             return false;
                         }
 
@@ -442,55 +474,57 @@ class databaseSQL extends database
 
                             return $this->connection;
                         }
-                        break;
+                    break;
 
                     case 'error':
                         return mysql_error(isset($this->connection) ? $this->connection : null);
-                        break;
+                    break;
 
                     case 'close':
                         if ($this->connection) {
                             $function = mysql_close($this->connection);
                             unset($this->connection);
+
                             return $function;
-                        } else {
+                        }
+                        else {
                             return true;
                         }
-                        break;
+                    break;
 
                     case 'selectdb':
                         return mysql_select_db($args[1], $this->connection);
-                        break;
+                    break;
 
                     case 'escape':
                         return mysql_real_escape_string($args[1], $this->connection);
-                        break;
+                    break;
 
                     case 'query':
                         return mysql_query($args[1], $this->connection);
-                        break;
+                    break;
 
                     case 'insertId':
                         return mysql_insert_id($this->connection);
-                        break;
+                    break;
 
                     case 'startTrans':
                         $this->rawQuery('START TRANSACTION');
-                        break;
+                    break;
 
                     case 'endTrans':
                         $this->rawQuery('COMMIT');
-                        break;
+                    break;
 
                     case 'rollbackTrans':
                         $this->rawQuery('ROLLBACK');
-                        break;
+                    break;
 
                     default:
-                        $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation');
-                        break;
+                        $this->triggerError("[Function Map] Unrecognised Operation", ['operation' => $operation], 'validation');
+                    break;
                 }
-                break;
+            break;
 
 
             case 'mysqli':
@@ -500,6 +534,7 @@ class databaseSQL extends database
 
                         if ($this->connection->connect_error) {
                             $this->triggerError('Connect Error (' . $this->connection->connect_errno . '): ' . $this->connection->connect_error, false, 'connection');
+
                             return false;
                         }
 
@@ -509,61 +544,64 @@ class databaseSQL extends database
 
                             return $this->connection;
                         }
-                        break;
+                    break;
 
                     case 'error':
-                        if ($this->connection->connect_errno) return $this->connection->connect_errno;
-                        else                                  return $this->connection->error;
-                        break;
+                        if ($this->connection->connect_errno)
+                            return $this->connection->connect_errno;
+                        else
+                            return $this->connection->error;
+                    break;
 
                     case 'selectdb':
                         return $this->connection->select_db($args[1]);
-                        break;
+                    break;
 
                     case 'close':    /*return $this->connection->close(); TODO? */
-                        break;
+                    break;
 
                     case 'escape':
                         return $this->connection->real_escape_string($args[1]);
-                        break;
+                    break;
 
                     case 'query':
                         return $this->connection->query($args[1]);
-                        break;
+                    break;
 
                     case 'insertId':
                         return $this->connection->insert_id;
-                        break;
+                    break;
 
                     case 'startTrans':
                         $this->connection->autocommit(false);
-                        break; // Use start_transaction in PHP 5.5 TODO
+                    break; // Use start_transaction in PHP 5.5 TODO
 
                     case 'endTrans':
                         $this->connection->commit();
                         $this->connection->autocommit(true);
-                        break;
+                    break;
 
                     case 'rollbackTrans':
                         $this->connection->rollback();
                         $this->connection->autocommit(true);
-                        break;
+                    break;
 
                     default:
-                        $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation');
-                        break;
+                        $this->triggerError("[Function Map] Unrecognised Operation", ['operation' => $operation], 'validation');
+                    break;
                 }
-                break;
+            break;
 
 
             case 'pdo':
                 switch ($operation) {
-                    case 'connect':// var_dump($args); die();
+                    case 'connect':
                         try {
                             $this->connection = new PDO("mysql:dbname=$args[5];host=$args[1]:$args[2]", $args[3], $args[4]);
                         } catch (PDOException $e) {
                             $this->connection->errorCode = $e->getMessage();
                             $this->triggerError('Connect Error: ' . $this->connection->errorCode, false, 'connection');
+
                             return false;
                         }
 
@@ -571,78 +609,84 @@ class databaseSQL extends database
                         $this->activeDatabase = $args[5];
 
                         return $this->connection;
-                        break;
+                    break;
 
                     case 'error':
                         return $this->connection->errorCode;
-                        break;
+                    break;
 
                     case 'selectdb':
                         return $this->rawQuery("USE " . $this->formatValue("database", $args[1]));
-                        break; // TODO test
+                    break; // TODO test
 
                     case 'close':
                         unset($this->connection);
+
                         return true;
-                        break;
+                    break;
 
                     case 'escape':
                         switch ($args[2]) {
                             case 'string':
                             case 'search':
                                 return $this->connection->quote($args[1], PDO::PARAM_STR);
-                                break;
+                            break;
                             case 'integer':
                             case 'timestamp':
                                 return $this->connection->quote($args[1], PDO::PARAM_STR);
-                                break;
+                            break;
                             case 'column':
                             case 'columnA':
                             case 'table':
                             case 'tableA':
                             case 'database':
                                 return $args[1];
-                                break;
+                            break;
                             default:
-                                $this->triggerError('Invalid context.', array('arguments' => $args), 'validation');
-                                break;
+                                $this->triggerError('Invalid context.', ['arguments' => $args], 'validation');
+                            break;
                         }
-                        break; // Note: long-term, we should implement this using prepared statements.
+                    break; // Note: long-term, we should implement this using prepared statements.
 
                     case 'query':
                         return $this->connection->query($args[1]);
-                        break;
+                    break;
 
                     case 'insertId':
                         return $this->connection->lastInsertId();
-                        break;
+                    break;
 
                     case 'startTrans':
                         $this->connection->beginTransaction();
-                        break; // Use start_transaction in PHP 5.5
+                    break; // Use start_transaction in PHP 5.5
 
                     case 'endTrans':
                         $this->connection->commit();
-                        break;
+                    break;
 
                     case 'rollbackTrans':
                         $this->connection->rollBack();
-                        break;
+                    break;
 
                     default:
-                        $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation');
-                        break;
+                        $this->triggerError("[Function Map] Unrecognised Operation", ['operation' => $operation], 'validation');
+                    break;
                 }
-                break;
+            break;
 
 
             case 'pgsql':
                 switch ($operation) {
                     case 'connect':
-                        $this->connection = pg_connect("host=$args[1] port=$args[2] username=$args[3] password=$args[4] dbname=$args[5]");
+                        // keep the user and password in memory to allow for reconnects with selectdb
+                        $this->connectionUser = $args[3];
+                        $this->connectionPassword = $args[4];
+
+                        $this->connection = pg_connect("host=$args[1] port=$args[2] user=$args[3] password=$args[4]" . (isset($args[5]) ? " dbname=$args[5]" : ''));
 
                         if (!$this->connection) {
                             $this->triggerError('Connect Error: ' . $this->functionMap('error'), false, 'connection');
+
                             return false;
                         }
                         else {
@@ -651,27 +695,32 @@ class databaseSQL extends database
 
                             return $this->connection;
                         }
-                        break;
+                    break;
+
+                    // Select database by creating a new connection with the database name present.
+                    case 'selectdb':
+                        return $this->functionMap('connect', pg_host($this->connection), pg_port($this->connection), $this->connectionUser, $this->connectionPassword, $args[1]);
+                    break;
 
                     case 'error':
                         return pg_last_error($this->connection);
-                        break;
+                    break;
 
                     case 'close':
                         return pg_close($this->connection);
-                        break;
+                    break;
 
                     case 'escape':
                         return pg_escape_string($this->connection, $args[1]);
-                        break;
+                    break;
 
                     case 'query':
                         return pg_query($this->connection, $args[1]);
-                        break;
+                    break;
 
                     case 'insertId':
                         return $this->rawQuery('SELECT LASTVAL()')->getAsArray(false, false, 0);
-                        break; // Note: Returning is by far the best solution, and should be considered in future versions. This would require defining the insertId column, which might be doable.
+                    break; // Note: Returning is by far the best solution, and should be considered in future versions. This would require defining the insertId column, which might be doable.
 
                     case 'startTrans':
                         $this->rawQuery('START TRANSACTION');
@@ -687,13 +736,13 @@ class databaseSQL extends database
 
                     case 'notify':
                         return pg_get_notify($this->connection);
-                        break;
+                    break;
 
                     default:
-                        $this->triggerError("[Function Map] Unrecognised Operation", array('operation' => $operation), 'validation');
-                        break;
+                        $this->triggerError("[Function Map] Unrecognised Operation", ['operation' => $operation], 'validation');
+                    break;
                 }
-                break;
+            break;
         }
     }
 
@@ -711,8 +760,7 @@ class databaseSQL extends database
 
         switch ($type) {
             case 'detect':
-                if (!$this->isTypeObject($values[1]))
-                    $values[1] = $this->auto($values[1]);
+                $values[1] = $this->auto($values[1]);
 
                 return $this->formatValue($values[1]->type, $values[1]->value);
                 break;
@@ -721,32 +769,39 @@ class databaseSQL extends database
                 return $this->stringQuoteStart . $this->stringFuzzy . $this->escape($values[1], 'search') . $this->stringFuzzy . $this->stringQuoteEnd;
                 break;
 
-            case 'string': case DatabaseTypeType::string:
+            case DatabaseTypeType::string:
                 return $this->stringQuoteStart . $this->escape($values[1], 'string') . $this->stringQuoteEnd;
                 break;
 
-            case 'bool': case DatabaseTypeType::bool:
+            case DatabaseTypeType::bool:
                 return $this->boolValues[$values[1]];
                 break;
 
-            case 'blob': case DatabaseTypeType::blob:
+            case DatabaseTypeType::blob:
                 //return 'FROM_BASE64("' . base64_encode($values[1]) . '")';
                 return '"' . $this->escape($values[1]) . '"';
                 break;
 
-            case 'integer': case DatabaseTypeType::integer:
+            case DatabaseTypeType::bitfield:
+                if ($this->nativeBitfield)
+                    return 'B\'' . decbin($this->auto($values[1])->value) . '\'';
+                else
+                    return $this->formatValue(DatabaseTypeType::integer, $values[1]);
+            break;
+
+            case DatabaseTypeType::integer:
                 return $this->intQuoteStart . (int)$this->escape($values[1], 'integer') . $this->intQuoteEnd;
                 break;
 
-            case 'float': case DatabaseTypeType::float:
+            case DatabaseTypeType::float:
                 return $this->floatQuoteStart . (float) $this->escape($values[1], 'integer') . $this->floatQuoteEnd;
             break;
 
-            case 'timestamp': case DatabaseTypeType::timestamp:
+            case DatabaseTypeType::timestamp:
                 return $this->timestampQuoteStart . (int)$this->escape($values[1], 'timestamp') . $this->timestampQuoteEnd;
                 break;
 
-            case 'column': case DatabaseTypeType::column:
+            case DatabaseTypeType::column:
                 return $this->columnQuoteStart . $this->escape($values[1], 'column') . $this->columnQuoteEnd;
                 break;
 
@@ -964,7 +1019,7 @@ class databaseSQL extends database
         $strippedVersionParts = explode('.', $strippedVersion);
 
         $this->versionPrimary = $strippedVersionParts[0];
-        $this->versionSeconday = $strippedVersionParts[1];
+        $this->versionSecondary = $strippedVersionParts[1];
         $this->versionTertiary = $strippedVersionParts[2];
 
 
@@ -1051,6 +1106,7 @@ class databaseSQL extends database
         $this->language = $this->driverMap[$this->driver];
 
         switch ($this->driver) {
+            // MySQL field tokens. They use ` for some reason.
             case 'mysql':
             case 'mysqli':
                 $this->tableQuoteStart = '`';
@@ -1067,6 +1123,7 @@ class databaseSQL extends database
                 $this->databaseAliasQuoteEnd = '`';
                 break;
 
+            // PDO field tokens. These are empty... mostly. We're not sure; it's not fully supported.
             case 'pdo':
                 $this->tableQuoteStart = '';
                 $this->tableQuoteEnd = '';
@@ -1084,6 +1141,7 @@ class databaseSQL extends database
                 $this->stringQuoteEnd = '';
                 break;
 
+            // PostGreSQL field tokens. Defaults (which are the SQL standard) should apply.
             case 'pgsql':
                 break;
         }
@@ -1155,18 +1213,26 @@ class databaseSQL extends database
 
                 $this->nativeBitfield = true;
                 $this->enumMode = 'useEnum';
+                $this->commentMode = 'useAttributes';
+                $this->indexMode = 'useTableAttribute';
+
+                $this->tableTypes = array(
+                    DatabaseEngine::general => 'InnoDB',
+                    DatabaseEngine::memory  => 'MEMORY',
+                );
                 break;
 
             case 'pgsql':
+                $this->storeTypes = array(DatabaseEngine::general);
 
                 $this->dataTypes = array(
                     'columnIntLimits' => array(
-                        1 => 'SMALLINT', 2 => 'SMALLINT', 3 => 'SMALLINT',
-                        4 => 'SMALLINT', 5 => 'INTEGER', 6 => 'INTEGER', 7 => 'INTEGER', 8 => 'INTEGER', 9 => 'INTEGER',
-                        0 => 'BIGINT',
+                        4 => 'SMALLINT',
+                        9 => 'INTEGER',
+                        'default' => 'BIGINT',
                     ),
                     'columnSerialLimits' => array(
-                        1 => 'SERIAL', 2 => 'SERIAL', 3 => 'SERIAL', 4 => 'SERIAL', 5 => 'SERIAL', 6 => 'SERIAL', 7 => 'SERIAL', 8 => 'SERIAL', 9 => 'SERIAL',
+                        9 => 'SERIAL',
                         'default' => 'BIGSERIAL',
                     ),
                     'columnStringPermLimits' => array(
@@ -1175,12 +1241,11 @@ class databaseSQL extends database
                     'columnStringNoLength' => array(
                         'TEXT', // Unused
                     ),
-                    'columnBitLimits' => array(
-                        15 =>  'SMALLINT',
-                        31 =>  'INTEGER',
-                        63 =>  'BIGINT',
-                        127 => 'NUMERIC(40,0)', // Approximately -- maybe TODO
-                        'default' => 'INTEGER',
+                    'columnBlobPermLimits' => array(
+                        'default' => 'BYTEA',
+                    ),
+                    'columnBlobNoLength' => array(
+                        'BYTEA',
                     ),
                     DatabaseTypeType::float => 'REAL',
                     DatabaseTypeType::bool => 'SMALLINT', // Note: ENUM(1,2) AS BOOLENUM better.
@@ -1194,15 +1259,9 @@ class databaseSQL extends database
 
                 $this->nativeBitfield = true;
                 $this->enumMode = 'useCreateType';
-                break;
-        }
-
-        switch ($this->language) {
-            case 'mysql':
-                $this->tableTypes = array(
-                    DatabaseEngine::general => 'InnoDB',
-                    DatabaseEngine::memory  => 'MEMORY',
-                );
+                $this->commentMode = 'useCommentOn';
+                $this->indexMode = 'useCreateIndex';
+                $this->useCreateIfNotExist = false;
                 break;
         }
     }
@@ -1388,7 +1447,17 @@ class databaseSQL extends database
 
     public function createDatabase($database)
     {
-        return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->formatValue('database', $database));
+        //return $this->rawQuery('CREATE DATABASE ' . ($this->useCreateIfNotExist ? 'IF NOT EXISTS ' : '') . $this->formatValue('database', $database));
+        if ($this->useCreateIfNotExist) {
+            return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->formatValue('database', $database));
+        }
+        else {
+            try {
+                return @$this->rawQuery('CREATE DATABASE ' . $this->formatValue('database', $database));
+            } catch (Exception $ex) {
+                return true;
+            }
+        }
     }
 
     /*********************************************************
@@ -1463,7 +1532,7 @@ class databaseSQL extends database
                 /* The column is integral. */
                 case DatabaseTypeType::integer:
                     // If we have limits of "serial" (sequential) datatypes, and we are a serial type (that is, we're autoincrementing), using the serial limits.
-                    if (isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement'])
+                    if (isset($this->dataTypes['columnSerialLimits']) && $column['autoincrement'])
                         $intLimits = $this->dataTypes['columnSerialLimits'];
 
                     // If we don't have "serial" datatype limits, or we aren't using a serial datatype (aren't autoincrementing), use normal integer limits.
@@ -1482,7 +1551,7 @@ class databaseSQL extends database
                     if (!strlen($typePiece)) $typePiece = $intLimits['default'];
 
                     // If we don't have serial limits and are autoincrementing, use the AUTO_INCREMENT orthogonal type identifier.
-                    if (!isset($this->columnSerialLimits) && $column['autoincrement']) {
+                    if (!isset($this->dataTypes['columnSerialLimits']) && $column['autoincrement']) {
                         $typePiece .= ' AUTO_INCREMENT'; // On the type itself.
                         $tableProperties .= ' AUTO_INCREMENT = ' . (int)$column['autoincrement']; // And also on the table definition.
 
@@ -1543,20 +1612,23 @@ class databaseSQL extends database
                 case DatabaseTypeType::string:
                 case DatabaseTypeType::blob:
                     // Limits may differ depending on table type and column type. Get the correct array encoding limits.
-                    $stringLimits = $this->dataTypes['column' . ($column['type'] === 'blob' || $column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
+                    $stringLimits = $this->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
 
                     // Search through the array encoding limits. This array should be keyed in increasing size.
                     foreach ($stringLimits AS $length => $type) {
                         if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
-                            if (in_array($type, $this->dataTypes['columnStringNoLength'])) $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
-                            else $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
+                            if (in_array($type, $this->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . 'NoLength']))
+                                $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
+                            else
+                                $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
 
                             break;
                         }
                     }
 
                     if (!strlen($typePiece)) { // If no type identifier was found...
-                        $typePiece = $this->dataTypes['columnStringNoLength']['default']; // Use the default.
+                        var_dump($stringLimits);
+                        $typePiece = $stringLimits['default']; // Use the default.
                     }
 
                     // TODO: decide if we want this.
@@ -1565,13 +1637,14 @@ class databaseSQL extends database
 
 
                 /* The column is an enumeration of values. */
-                case 'enum':
+                case DatabaseTypeType::enum:
                     // There are many different ways ENUMs may be supported in SQL DBMSs. Select our supported one.
                     switch ($this->enumMode) {
                         // Here, we create a special type to use as an enum. PostGreSQL does this.
                         case 'useCreateType':
-                            $this->rawQuery('CREATE TYPE ' . $this->formatValue('string', $tableName . '_' . $columnName) . ' AS ENUM' . $this->formatValue('array', $column['restrict']));
-                            $typePiece = $columnName;
+                            $typePiece = $this->formatValue('index', $tableName . '_' . $columnName);
+                            $this->rawQuery('DROP TYPE IF EXISTS ' . $typePiece . ' CASCADE ');
+                            $this->rawQuery('CREATE TYPE ' . $typePiece . ' AS ENUM' . $this->formatValue('array', $column['restrict']));
                         break;
 
                         // Here, we use the built-in SQL ENUM. MySQL does this.
@@ -1597,8 +1670,7 @@ class databaseSQL extends database
                         'tableName' => $tableName,
                         'columnName' => $columnName,
                         'columnType' => $column['type'],
-                    ), 'validationFallback');
-                    $typePiece = $this->dataTypes['columnStringNoLength']['default'];
+                    ), 'validation');
                 break;
             }
 
@@ -1608,8 +1680,22 @@ class databaseSQL extends database
                 // We use triggers here when the SQL implementation is otherwise stubborn, but FreezeMessenger is designed to only do this when it would otherwise be tedious. Manual setting of values is preferred in most cases. Right now, only __TIME__ supports them.
                 // TODO: language trigger support check
                 if ($column['default'] === '__TIME__') {
-                    $triggers[] = "DROP TRIGGER IF EXISTS {TABLENAME}_{$columnName}__TIME__;";
-                    $triggers[] = "CREATE TRIGGER {TABLENAME}_{$columnName}__TIME__ BEFORE INSERT ON {TABLENAME} FOR EACH ROW SET NEW.{$columnName} = IF(NEW.{$columnName}, NEW.{$columnName}, UNIX_TIMESTAMP(NOW()));";
+                    $triggerName = $this->formatValue('index', "{TABLENAME}_{$columnName}__TIME__");
+                    $triggers[] = "DROP TRIGGER IF EXISTS {$triggerName}" . ($this->language !== 'mysql' ? ' ON ' . $this->formatValue('table', '{TABLENAME}') : '');
+
+                    if ($this->language === 'mysql') {
+                        $triggers[] = "CREATE TRIGGER {$triggerName} BEFORE INSERT ON {TABLENAME} FOR EACH ROW SET NEW.{$columnName} = IF(NEW.{$columnName}, NEW.{$columnName}, UNIX_TIMESTAMP(NOW()))";
+                    }
+                    elseif ($this->language === 'pgsql') {
+                        $triggers[] = "CREATE OR REPLACE FUNCTION {$triggerName}_function()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.{$columnName} = IF(NEW.{$columnName}, NEW.{$columnName}, UNIX_TIMESTAMP(NOW()));
+    RETURN NEW;
+END;
+$$ language 'plpgsql';";
+                        $triggers[] = "CREATE TRIGGER {$triggerName} BEFORE INSERT ON " . $this->formatValue('table', '{TABLENAME}') . " FOR EACH ROW EXECUTE PROCEDURE {$triggerName}_function()";
+                    }
                 }
 
 
@@ -1628,13 +1714,19 @@ class databaseSQL extends database
                         $column['default'] = $this->applyTransformFunction($function, $column['default'], $typeOverride);
                     }
 
-                    $typePiece .= ' DEFAULT ' . $this->formatValue('detect', $column['default']);
+                    $typePiece .= ' DEFAULT ' . $this->formatValue($column['type'] === DatabaseTypeType::enum ? DatabaseTypeType::string : $column['type'], $column['default']);
                 }
             }
 
 
+            /* Generate COMMENT ON Statements, If Needed */
+            if ($this->commentMode === 'useCommentOn') {
+                $triggers[] = 'COMMENT ON COLUMN ' . $this->formatValue('tableColumn', '{TABLENAME}', $columnName) . ' IS ' . $this->formatValue('string', $column['comment']);
+            }
+
+
             /* Put it All Together As an SQL Statement Piece */
-            $columns[] = $this->formatValue('column', $columnName) . ' ' . $typePiece . ' COMMENT ' . $this->formatValue('string', $column['comment']);
+            $columns[] = $this->formatValue('column', $columnName) . ' ' . $typePiece . ($this->commentMode === 'useAttributes' ? ' COMMENT ' . $this->formatValue('string', $column['comment']) : '');
         }
 
         return [$columns, $triggers, $tableIndexes, $tableProperties];
@@ -1649,23 +1741,23 @@ class databaseSQL extends database
      *
      * @return string The SQL statement component representing the engine.
      */
-    private function parseEngine($tableName, $engine) {
+    private function parseEngine($engine) {
         if (!isset($this->tableTypes[$engine])) {
             $this->triggerError("Unrecognised Table Engine", array(
-                'tableName' => $tableName,
                 'engine' => $engine
             ), 'validationFallback');
 
             $engine = 'general';
         }
-        return $this->tableTypes[$engine];
+
+        if (!in_array($engine, $this->storeTypes))
+            $engine = DatabaseEngine::general;
     }
 
 
     public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes = [], $partitionColumn = false, $hardPartitionCount = 1)
     {
-        $engineName = $this->parseEngine($tableName, $engine);
-
+        $engine = $this->parseEngine($engine);
         list($columns, $triggers, $tableIndexes, $tableProperties) = $this->parseTableColumns($tableName, $tableColumns, $tableIndexes, $engine);
 
 
@@ -1686,37 +1778,69 @@ class databaseSQL extends database
                 if (strpos($indexName, ',') !== false) {
                     $indexCols = explode(',', $indexName);
 
-                    foreach ($indexCols AS &$indexCol) $indexCol = $this->formatValue('column', $indexCol);
+                    foreach ($indexCols AS &$indexCol)
+                        $indexCol = $this->formatValue('column', $indexCol);
 
                     $indexName = implode(',', $indexCols);
-                } else {
-                    $this->formatValue('index', $indexName);
+                }
+                else {
+                    $indexName = $this->formatValue('column', $indexName);
                 }
 
 
-                $indexes[] = "{$typePiece} ({$indexName})";
+                /* Generate CREATE INDEX Statements, If Needed */
+                if ($this->indexMode === 'useCreateIndex' && $index['type'] !== 'primary')
+                    $triggers[] = "CREATE {$typePiece} INDEX ON " . $this->formatValue('table', '{TABLENAME}') . " ({$indexName})";
+                elseif ($this->indexMode === 'useTableAttribute' || $index['type'] === 'primary')
+                    $indexes[] = "{$typePiece} KEY ({$indexName})";
+                else
+                    throw new Exception("Invalid index mode: {$this->indexMode}");
             }
         }
 
-        $this->startTransaction();
+
+        /* Table Comments */
+        if ($this->commentMode === 'useCommentOn')
+            $triggers[] = 'COMMENT ON TABLE ' . $this->formatValue('table', '{TABLENAME}') . ' IS ' . $this->formatValue('string', $tableComment);
+        elseif ($this->commentMode === 'useAttributes')
+            $tableProperties .= " COMMENT=" . $this->formatValue('string', $tableComment);
+        else
+            throw new Exception("Invalid comment mode: {$this->commentMode}");
+
+
+        /* Table Engine */
+        if ($this->language === 'mysql') {
+            $tableProperties .= ' ENGINE=' . $this->formatValue('string', $this->tableTypes[$engine]);
+        }
+
+        /* Table Charset */
+        // todo: postgres
+        if ($this->language === 'mysql') {
+            $tableProperties .= ' DEFAULT CHARSET=' . $this->formatValue('string', 'utf8');
+        }
+
+        /* Table Partioning */
+        if ($partitionColumn) {
+            $tableProperties .= ' PARTITION BY HASH(' . $this->formatValue('column', $partitionColumn) . ') PARTITIONS 100';
+        }
+
+
+
+        /* Perform CREATEs */
+        //$this->startTransaction();
 
         for ($i = 0; $i < $hardPartitionCount; $i++) {
             $tableNameI = $tableName . ($hardPartitionCount > 1 ? "__part$i" : '');
-
             $return = $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue('table', $tableNameI) . ' (
     ' . implode(",\n  ", $columns) . (count($indexes) > 0 ? ',
     ' . implode(",\n  ", $indexes) : '') . '
-    )'
-                . ($this->language === 'mysql' ? ' ENGINE=' . $this->formatValue('string', $engineName) : '')
-                . ' COMMENT=' . $this->formatValue('string', $tableComment)
-                . ' DEFAULT CHARSET=' . $this->formatValue('string', 'utf8') . $tableProperties
-                . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue('column', $partitionColumn) . ') PARTITIONS 100' : ''));
+    )' . $tableProperties);
 
             $return = $return &&
                 $this->executeTriggers($tableNameI, $triggers);
         }
 
-        $this->endTransaction();
+        //$this->endTransaction();
 
         return $return;
     }
@@ -1730,7 +1854,10 @@ class databaseSQL extends database
 
     public function renameTable($oldName, $newName)
     {
-        return $this->rawQuery('RENAME TABLE ' . $this->formatValue('table', $oldName) . ' TO ' . $this->formatValue('table', $newName));
+        if ($this->language === 'mysql')
+            return $this->rawQuery('RENAME TABLE ' . $this->formatValue('table', $oldName) . ' TO ' . $this->formatValue('table', $newName));
+        else
+            return $this->rawQuery('ALTER TABLE ' . $this->formatValue('table', $oldName) . ' RENAME TO ' . $this->formatValue('table', $newName));
     }
 
     // TODO: new indexes
@@ -1770,10 +1897,10 @@ class databaseSQL extends database
     }
 
     public function alterTable($tableName, $tableComment, $engine, $partitionColumn) {
-        $engineName = $this->parseEngine($tableName, $engine);
+        $engine = $this->parseEngine($engine);
 
         return $this->rawQuery('ALTER TABLE ' . $this->formatValue('table', $tableName)
-            . (!is_null($engine) && $this->language === 'mysql' ? ' ENGINE=' . $this->formatValue('string', $engineName) : '')
+            . (!is_null($engine) && $this->language === 'mysql' ? ' ENGINE=' . $this->formatValue('string', $this->tableTypes[$engine]) : '')
             . (!is_null($tableComment) ? ' COMMENT=' . $this->formatValue('string', $tableComment) : '')
             . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue('column', $partitionColumn) . ') PARTITIONS 100' : ''));
     }
@@ -1783,9 +1910,13 @@ class databaseSQL extends database
     {
         switch ($this->language) {
             case 'mysql':
-            case 'postgresql':
                 $tables = $this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'TABLES') . ' WHERE TABLE_SCHEMA = ' . $this->formatValue('string', $this->activeDatabase))->getColumnValues('TABLE_NAME');
                 break;
+            case 'pgsql':
+                $tables = $this->rawQuery('SELECT * FROM information_schema.tables WHERE TABLE_CATALOG = ' . $this->formatValue('string', $this->activeDatabase) . ' AND table_type = \'BASE TABLE\' AND table_schema NOT IN (\'pg_catalog\', \'information_schema\')')->getColumnValues('table_name');
+            break;
+            default:
+                throw new Exception('getTablesAsArray() is unsupported in the current language.');
         }
 
         return $tables;
@@ -1796,9 +1927,10 @@ class databaseSQL extends database
     {
         switch ($this->language) {
             case 'mysql':
-            case 'postgresql':
                 $columns = $this->rawQuery('SELECT * FROM ' . $this->formatValue('databaseTable', 'INFORMATION_SCHEMA', 'COLUMNS') . ' WHERE TABLE_SCHEMA = ' . $this->formatValue('string', $this->activeDatabase))->getColumnValues(['TABLE_NAME', 'COLUMN_NAME']);
                 break;
+            default:
+                throw new Exception('getTablesAsArray() is unsupported in the current language.');
         }
 
         return $columns;

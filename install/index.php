@@ -380,14 +380,6 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre><br />
                     On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
             </tr>
-            <!--      <tr class="<?php echo ($installStatusDB & INSTALL_DB_MYSQLI ? 'installedFlag' : 'uninstalledFlag'); ?>">
-        <td>MySQLi</td>
-        <td>5.0</td>
-        <td>*</td>
-        <td>Database</td>
-        <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre><br />
-          On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
-      </tr>-->
             </tbody>
             <thead>
             <tr class="ui-widget-header">
@@ -448,9 +440,9 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                             <?php
                             if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL, MySQL Driver (Discouraged)</option>';
                             if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysqli">MySQL, MySQLi Driver (Recommended for MySQL)</option>';
-                            if ($installStatusDB & INSTALL_DB_PDO_MYSQL) echo '<option value="pdo-mysql">MySQL, PDO Driver</option>';
-                            if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="pgsql">PostGreSQL, PostGreSQL Driver (Recommended for PostGreSQL)</option>';
-                            if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdo-pgsql">PostGreSQL, PDO Driver</option>';
+                            if ($installStatusDB & INSTALL_DB_PDO_MYSQL) echo '<option value="pdo-mysql">MySQL, PDO Driver (Currently Unsupported)</option>';
+                            if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="pgsql">PostGreSQL, PostGreSQL Driver (Recommended for PostGreSQL, May Not Work Yet)</option>';
+                            if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdo-pgsql">PostGreSQL, PDO Driver (Currently Unsupported)</option>';
                             ?>
                         </select><br /><small>The database and corresponding driver. If you are integrating with a forum, choose the database (either MySQL or PostgreSQL) that your forum uses. Otherwise PostgreSQL, with the PostgreSQL driver, is best if available.</small></td>
                 </tr>
@@ -460,7 +452,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 </tr>
                 <tr>
                     <td><strong>Port</strong></td>
-                    <td><input id="db_port" type="text" name="db_port" value="3306" /><br /><small>The port your database server is configured to work on. For MySQL and MySQLi, it is usually 3306.</small></td>
+                    <td><input id="db_port" type="text" name="db_port" value="3306" /><br /><small>The port your database server is configured to work on. For MySQL and MySQLi, it is usually 3306. For PostGreSQL, it is usually 5432.</small></td>
                 </tr>
                 <tr>
                     <td><strong>Username</strong></td>

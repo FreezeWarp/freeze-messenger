@@ -1214,7 +1214,9 @@ abstract class database
 
 
     public function auto($value) {
-        if (is_int($value) || ctype_digit($value))
+        if ($this->isTypeObject($value))
+            return $value;
+        elseif (is_int($value) || ctype_digit($value))
             return $this->int($value);
         else
             return $this->str($value);
