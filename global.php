@@ -75,7 +75,6 @@ elseif ($phpVersion <= 5.3) { // Removed outright in 5.4, may as well save a CPU
 
 /* Require Libraries */
 require_once(dirname(__FILE__) . '/config.php'); // Configuration Variables
-require_once(dirname(__FILE__) . '/functions/generalCache.php'); // APC Wrapper (may use for alteratives like memcached later)
 require_once(dirname(__FILE__) . '/functions/apiData.php'); // API Data output wrapper.
 require_once(dirname(__FILE__) . '/functions/database.php'); // Database
 require_once(dirname(__FILE__) . '/functions/databaseSQL.php'); // Database (SQL)
@@ -85,7 +84,7 @@ require_once(dirname(__FILE__) . '/functions/fimUser.php'); // FIM-specific Exte
 require_once(dirname(__FILE__) . '/functions/fimRoom.php'); // FIM-specific Extensions
 require_once(dirname(__FILE__) . '/functions/fimMessage.php'); // FIM-specific Extensions
 require_once(dirname(__FILE__) . '/functions/fimCache.php'); // FIM-specific Extension to APC Wrapper
-require_once(dirname(__FILE__) . '/functions/fimConfigFactory.php'); // FIM config and factory
+require_once(dirname(__FILE__) . '/functions/fimConfig.php'); // FIM config and factory
 require_once(dirname(__FILE__) . '/functions/fimError.php'); // FIM Custom Error Class
 require_once(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
 

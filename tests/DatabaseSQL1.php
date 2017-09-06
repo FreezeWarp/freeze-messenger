@@ -30,7 +30,7 @@ class databaseSQLTests1 extends databaseSQLTests {
             "integerNormal" => 5,
         ])->getAsArray(false), [
             "integerNormal" => 5,
-            "enum" => 10,
+            "enum" => 'd',
             "string" => '1234567890123456789012345678901234567890',
         ]);
         printRow("Transaction Rollback, Update", count($rollBackDiff) === 0 ? true : $rollBackDiff);
@@ -52,7 +52,7 @@ class databaseSQLTests1 extends databaseSQLTests {
 
 
     public function testCreateTable1($table) {
-        $this->databaseObj->createTable($table, "Used for unit testing.", "general", array(
+        $this->databaseObj->createTable($table, "Used for unit testing.", DatabaseEngine::general, array(
             'integerNormal' => [
                 'type' => 'int',
             ],
@@ -69,7 +69,7 @@ class databaseSQLTests1 extends databaseSQLTests {
 
             'enum' => [
                 'type' => 'enum',
-                'restrict' => [3, 10, 50],
+                'restrict' => ['a', 'd', 'af'],
             ],
 
             'string' => [
@@ -85,7 +85,7 @@ class databaseSQLTests1 extends databaseSQLTests {
         $caught = false;
         try {
             $this->databaseObj->insert($table, [
-                "enum" => 7,
+                "enum" => '7',
             ]);
         } catch(Exception $e) {
             $caught = true;
@@ -115,28 +115,28 @@ class databaseSQLTests1 extends databaseSQLTests {
     public function testQueueDelete1($table) {
         $this->databaseObj->insert($table, [
             "integerNormal" => 5,
-            "enum" => 3,
+            "enum" => 'a',
         ]);
         $this->databaseObj->insert($table, [
             "integerNormal" => 5,
-            "enum" => 50,
+            "enum" => 'af',
         ]);
         $this->databaseObj->insert($table, [
             "integerNormal" => 7,
-            "enum" => 3,
+            "enum" => 'a',
         ]);
         $this->databaseObj->insert($table, [
             "integerNormal" => 7,
-            "enum" => 10,
+            "enum" => 'd',
         ]);
 
         $this->databaseObj->autoQueue(true);
         $this->databaseObj->delete($table, [
-            "enum" => 10,
+            "enum" => 'd',
         ]);
         $this->databaseObj->delete($table, [
             "integerNormal" => 5,
-            "enum" => 50,
+            "enum" => 'af',
         ]);
         $this->databaseObj->autoQueue(false);
 
@@ -148,22 +148,22 @@ class databaseSQLTests1 extends databaseSQLTests {
         $this->databaseObj->insert($table, [
             "integerNormal" => 5,
             "string" => "hi",
-            "enum" => 3,
+            "enum" => 'a',
         ]);
         $this->databaseObj->insert($table, [
             "integerNormal" => 5,
             "string" => "bye",
-            "enum" => 50,
+            "enum" => 'af',
         ]);
         $this->databaseObj->insert($table, [
             "integerNormal" => 7,
             "string" => "hi",
-            "enum" => 3,
+            "enum" => 'a',
         ]);
         $this->databaseObj->insert($table, [
             "integerNormal" => 7,
             "string" => "hi",
-            "enum" => 10,
+            "enum" => 'd',
         ]);
 
         $this->databaseObj->autoQueue(true);
@@ -173,7 +173,7 @@ class databaseSQLTests1 extends databaseSQLTests {
             "integerNormal" => 7,
         ]);
         $this->databaseObj->update($table, [
-            "enum" => 10,
+            "enum" => 'd',
         ], [
             "integerNormal" => 7,
         ]);
@@ -188,7 +188,7 @@ class databaseSQLTests1 extends databaseSQLTests {
     public function testInsertSelect1($table) {
         $this->databaseObj->insert($table, [
             "integerNormal" => 5,
-            "enum" => 10,
+            "enum" => 'd',
             "string" => "1234567890123456789012345678901234567890",
         ]);
 
@@ -198,7 +198,7 @@ class databaseSQLTests1 extends databaseSQLTests {
 
         $diff = array_diff_assoc($row, [
             "integerNormal" => 5,
-            "enum" => 10,
+            "enum" => 'd',
             "string" => '1234567890123456789012345678901234567890',
             "integerAutoIncrement" => 1,
         ]);
@@ -410,7 +410,7 @@ class databaseSQLTests1 extends databaseSQLTests {
         $caught = false;
         try {
             $this->databaseObj->insert($table, [
-                "enum" => 7,
+                "enum" => '7',
             ]);
         } catch(Exception $e) {
             $caught = true;
@@ -422,7 +422,7 @@ class databaseSQLTests1 extends databaseSQLTests {
     public function testUpdateSelect1($table) {
         $this->databaseObj->update($table, [
             "string" => 15,
-            "enum" => 50,
+            "enum" => 'af',
         ], [
             "integerNormal" => 5
         ]);
@@ -433,7 +433,7 @@ class databaseSQLTests1 extends databaseSQLTests {
 
         $diff = array_diff_assoc($row, [
             "integerNormal" => 5,
-            "enum" => 50,
+            "enum" => 'af',
             "string" => '15',
         ]);
 

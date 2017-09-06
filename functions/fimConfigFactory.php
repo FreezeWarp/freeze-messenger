@@ -1,6 +1,4 @@
 <?php
-require_once('fimConfig.php');
-
 class fimConfigFactory {
     public static function init(fimDatabase $database) {
         if (function_exists('apc_exists') && apc_exists('fim_config')) {

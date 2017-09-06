@@ -125,7 +125,7 @@ class databaseSQL extends database
      *   'memory' is an engine that stores all or most of its data in memory, and whose data may be lost on restart
      *   'general' is an engine that stores all or most of its data on disk, and which supports transactions, permanence, and so-on.
      */
-    public $storeTypes = array('memory', 'general');
+    public $storeTypes = array(DatabaseEngine::memory, DatabaseEngine::general);
 
     /**
      * @var string The database mode. This will always be SQL for us.
@@ -711,10 +711,8 @@ class databaseSQL extends database
 
         switch ($type) {
             case 'detect':
-                if (!$this->isTypeObject($values[1])) {
-                    if (is_int($values[1]) || ctype_digit($values[1])) $values[1] = $this->int($values[1]);
-                    else $values[1] = $this->str($values[1]);
-                }
+                if (!$this->isTypeObject($values[1]))
+                    $values[1] = $this->auto($values[1]);
 
                 return $this->formatValue($values[1]->type, $values[1]->value);
                 break;
@@ -781,13 +779,31 @@ class databaseSQL extends database
             case 'array': case DatabaseTypeType::arraylist:
                 foreach ($values[1] AS &$item) {
                     if (!$this->isTypeObject($item))
-                        $item = $this->str($item);
-
-                    $item = $this->formatValue($item->type, $item->value);
+                        $item = $this->formatValue('detect', $item);
+                    else
+                        $item = $this->formatValue($item->type, $item->value);
                 }
 
                 return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
                 break;
+
+            case 'enumArray':
+                foreach ($values[1] AS &$item) {
+                    if (!$this->isTypeObject($item)) // If we don't have a type object yet, create one.
+                        $item = $this->auto($item);
+
+                    if ($item->type !== DatabaseTypeType::string) { // If our type isn't a string, throw an error.
+                        $this->triggerError("Invalid Enum Type", array(
+                            'value' => $item->value,
+                            'type' => $item->type,
+                        ), 'validation');
+                    }
+
+                    // Note that we don't want to force an integer to a string, because we won't always know that we're working with an enum type. That is, while we could correct the enum type column when it is created here, we won't be able to do so when data is being inserted. Thus, throwing an error here for the same type of data that will cause an error later is good.
+                }
+
+                return $this->formatValue('array', $values[1]);
+            break;
 
             case 'columnArray':
                 foreach ($values[1] AS &$item) $item = $this->formatValue('column', $item);
@@ -1127,10 +1143,10 @@ class databaseSQL extends database
                         'default' => 'INTEGER UNSIGNED',
                     ),
 
-                    'float' => 'REAL',
-                    'bool' => 'BIT(1)',
-                    'time' => 'INTEGER UNSIGNED',
-                    'binary' => 'BLOB',
+                    DatabaseTypeType::float => 'REAL',
+                    DatabaseTypeType::bool => 'BIT(1)',
+                    DatabaseTypeType::timestamp => 'INTEGER UNSIGNED',
+                    DatabaseTypeType::blob => 'BLOB',
                 );
 
                 $this->boolValues = array(
@@ -1166,10 +1182,10 @@ class databaseSQL extends database
                         127 => 'NUMERIC(40,0)', // Approximately -- maybe TODO
                         'default' => 'INTEGER',
                     ),
-                    'float' => 'REAL',
-                    'bool' => 'SMALLINT', // Note: ENUM(1,2) AS BOOLENUM better.
-                    'time' => 'INTEGER',
-                    'binary' => 'BYTEA',
+                    DatabaseTypeType::float => 'REAL',
+                    DatabaseTypeType::bool => 'SMALLINT', // Note: ENUM(1,2) AS BOOLENUM better.
+                    DatabaseTypeType::timestamp => 'INTEGER',
+                    DatabaseTypeType::blob => 'BYTEA',
                 );
 
                 $this->boolValues = array(
@@ -1184,8 +1200,8 @@ class databaseSQL extends database
         switch ($this->language) {
             case 'mysql':
                 $this->tableTypes = array(
-                    'general' => 'InnoDB',
-                    'memory' => 'MEMORY',
+                    DatabaseEngine::general => 'InnoDB',
+                    DatabaseEngine::memory  => 'MEMORY',
                 );
                 break;
         }
@@ -1387,11 +1403,47 @@ class databaseSQL extends database
      *********************************************************/
 
 
-
-    private function parseTableColumns($tableName, $tableColumns, $engine) {
+    /**
+     * Parses an array of column names, along with a table name and engine identifier,
+     *
+     * @param $tableName    string The name of the table whose columns are being parsed.
+     * @param $tableIndexes array  The current known table indexes that apply to the columns.
+     * @param $tableColumns array {
+     *     An array of table column properties indexed by the table column name. Valid parameters:
+     *
+     *     'restrict'      array            An array of values to restrict the column to.
+     *     'maxlen'        int              The maximum size of the data that can be put into the column.
+     *     'autoincrement' bool             If the column should be a "serial" column that increments for each row.
+     *     'default'       mixed            The default value for the column.
+     *     'comment'       string           Information about the column for documentation purposes.
+     *     'type'          DatabaseTypeType The column's type.
+     * }
+     * @param $engine DatabaseEngine The engine the table is using.
+     *
+     * @return array An array of four things: (1.) an array of SQL column statements, (2.) an array of triggers to run after creating columns (which will typically maintain default values), (3.) the array of indexes, which may have been modified, and (4.) additional SQL parameters to append to the CREATE TABLE statement, for instance "AUTO_INCREMENT=".
+     * @throws Exception If enums are not supported and need to be used.
+     */
+    private function parseTableColumns($tableName, $tableColumns, $tableIndexes = [], $engine = DatabaseEngine::general) {
+        /**
+         * Additional table parameters to be appended at the end of the CREATE TABLE statement. For instance, "AUTO_INCREMENT=".
+         */
         $tableProperties = '';
 
+        /**
+         * A list of SQL statements that contain the column components to be used with an SQL query.
+         */
+        $columns = [];
+
+        /**
+         * A list of SQL statements that contain triggers and should be run when creating a column.
+         */
+        $triggers = [];
+
+        /* Process Each Column */
         foreach ($tableColumns AS $columnName => $column) {
+            /**
+             * Our column parameters. Defaults set, but checking is not performed.
+             */
             $column = array_merge([
                 'restrict' => false,
                 'maxlen' => 10,
@@ -1399,138 +1451,177 @@ class databaseSQL extends database
                 'default' => null,
                 'comment' => '',
             ], $column);
+
+            /**
+             * The SQL type identifier, e.g. "INT"
+             */
             $typePiece = '';
 
 
+            /* Process Column Types */
             switch ($column['type']) {
-            case 'int': case DatabaseTypeType::integer:
-                if (isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement']) $intLimits = $this->dataTypes['columnSerialLimits'];
-                else $intLimits = $this->dataTypes['columnIntLimits'];
+                /* The column is integral. */
+                case DatabaseTypeType::integer:
+                    // If we have limits of "serial" (sequential) datatypes, and we are a serial type (that is, we're autoincrementing), using the serial limits.
+                    if (isset($this->columnSerialLimits) && isset($column['autoincrement']) && $column['autoincrement'])
+                        $intLimits = $this->dataTypes['columnSerialLimits'];
 
-                foreach ($intLimits AS $length => $type) {
-                    if ($column['maxlen'] <= $length) {
-                        $typePiece = $intLimits[$length];
-                        break;
-                    }
-                }
+                    // If we don't have "serial" datatype limits, or we aren't using a serial datatype (aren't autoincrementing), use normal integer limits.
+                    else
+                        $intLimits = $this->dataTypes['columnIntLimits'];
 
-                if (!strlen($typePiece)) $typePiece = $intLimits['default'];
-
-                if (!isset($this->columnSerialLimits) && $column['autoincrement']) {
-                    $typePiece .= ' AUTO_INCREMENT'; // Ya know, that thing where it sets itself.
-                    $tableProperties .= ' AUTO_INCREMENT = ' . (int)$column['autoincrement'];
-
-                    if (!isset($tableIndexes[$columnName])) {
-                        $tableIndexes[$columnName] = [
-                            'type' => 'index',
-                        ];
-                    }
-                }
-            break;
-
-
-            case 'string': case DatabaseTypeType::string:
-            case 'blob': case DatabaseTypeType::blob:
-                $stringLimits = $this->dataTypes['column' . ($column['type'] === 'blob' || $column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === 'memory' ? 'Temp' : 'Perm') . 'Limits'];
-
-                $typePiece = '';
-
-                foreach ($stringLimits AS $length => $type) {
-                    if ($column['maxlen'] <= $length) {
-                        if (in_array($type, $this->dataTypes['columnStringNoLength'])) $typePiece = $type;
-                        else $typePiece = $type . '(' . $column['maxlen'] . ')';
-
-                        break;
-                    }
-                }
-
-                if (!strlen($typePiece)) {
-                    $typePiece = $this->dataTypes['columnStringNoLength']['default'];
-                }
-
-                //        $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
-            break;
-
-
-            case 'enum':
-                switch ($this->enumMode) {
-                case 'useCreateType':
-                    $this->rawQuery('CREATE TYPE ' . $this->formatValue('string', $tableName . '_' . $columnName) . ' AS ENUM' . $this->formatValue('array', $column['restrict']));
-                    $typePiece = $columnName;
-                break;
-
-                case 'useEnum':
-                    $typePiece = 'ENUM' . $this->formatValue('array', $column['restrict']);
-                break;
-
-                case 'useCheck':
-                    $lengths = array_map('strlen', $column['restrict']);
-                    $typePiece = 'VARCHAR(' . max($lengths) . ') NOT NULL CHECK (' . $this->formatValue('column', $columnName) . ' IN' . $this->formatValue('array', $column['restrict']);
-                break;
-
-                default: throw new Exception('Enums are unsupported in the active database driver.'); break;
-
-                }
-            break;
-
-
-            case 'bitfield': case DatabaseTypeType::bitfield:
-                if ($this->nativeBitfield) {
-                    $typePiece = 'BIT(' . $column['bits'] . ')';
-                }
-
-                else {
-                    if ($column['bits']) {
-                        foreach ($this->dataTypes['columnBitLimits'] AS $bits => $type) {
-                            if ($column['bits'] <= $bits) {
-                                $typePiece = $type;
-                                break;
-                            }
+                    // Go through our integer limits (keyed by increasing order)
+                    foreach ($intLimits AS $length => $type) {
+                        if ($column['maxlen'] <= $length) {
+                            $typePiece = $intLimits[$length];
+                            break;
                         }
                     }
 
-                    if (!strlen($typePiece)) {
-                        $typePiece = $this->dataTypes['columnBitLimits']['default'];
+                    // If we haven't found a valid type identifer, use the default.
+                    if (!strlen($typePiece)) $typePiece = $intLimits['default'];
+
+                    // If we don't have serial limits and are autoincrementing, use the AUTO_INCREMENT orthogonal type identifier.
+                    if (!isset($this->columnSerialLimits) && $column['autoincrement']) {
+                        $typePiece .= ' AUTO_INCREMENT'; // On the type itself.
+                        $tableProperties .= ' AUTO_INCREMENT = ' . (int)$column['autoincrement']; // And also on the table definition.
+
+                        // And also create an index for it, if we don't already have one.
+                        if (!isset($tableIndexes[$columnName])) {
+                            $tableIndexes[$columnName] = [
+                                'type' => 'index',
+                            ];
+                        }
                     }
-                }
-            break;
+                break;
 
 
-            case 'time': case DatabaseTypeType::timestamp:
-                $typePiece = $this->dataTypes['time']; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
-            break;
+                /* The column is an integral that encodes bitwise information. */
+                case DatabaseTypeType::bitfield:
+                    // If our SQL engine support a BIT type, use it.
+                    if ($this->nativeBitfield) {
+                        $typePiece = 'BIT(' . $column['bits'] . ')';
+                    }
+
+                    // Otherwise, use a predefined type identifier.
+                    else {
+                        if ($column['bits']) { // Do we have a bit size definition?
+                            foreach ($this->dataTypes['columnBitLimits'] AS $bits => $type) { // Search through our bit limit array, which should be in ascending order of bits.
+                                if ($column['bits'] <= $bits) { // We have a definition that fits our constraint.
+                                    $typePiece = $type;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!strlen($typePiece)) { // If no type identifier was found...
+                            $typePiece = $this->dataTypes['columnBitLimits']['default']; // Use the default.
+                        }
+                    }
+                break;
 
 
-            case 'bool': case DatabaseTypeType::bool:
-                $typePiece = $this->dataTypes['bool'];
-            break;
+                /* The column encodes time information, most often using an integral and unix timestamp. */
+                case DatabaseTypeType::timestamp:
+                    $typePiece = $this->dataTypes[DatabaseTypeType::timestamp]; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
+                break;
 
 
-            case 'float':case DatabaseTypeType::float:
-                $typePiece = $this->dataTypes['float'];
-            break;
+                /* The column encodes a boolean, most often using a BIT(1) or other small integral. */
+                case DatabaseTypeType::bool:
+                    $typePiece = $this->dataTypes[DatabaseTypeType::bool];
+                break;
 
 
-            default:
-                $this->triggerError("Unrecognised Column Type", array(
-                    'tableName' => $tableName,
-                    'columnName' => $columnName,
-                    'columnType' => $column['type'],
-                ), 'validationFallback');
-                $typePiece = $this->dataTypes['columnStringNoLength']['default'];
-            break;
+                /* The column encodes a floating point, with unspecified precision. */
+                case DatabaseTypeType::float:
+                    $typePiece = $this->dataTypes[DatabaseTypeType::float];
+                break;
+
+
+                /* The column is a textual string or a binary string. */
+                case DatabaseTypeType::string:
+                case DatabaseTypeType::blob:
+                    // Limits may differ depending on table type and column type. Get the correct array encoding limits.
+                    $stringLimits = $this->dataTypes['column' . ($column['type'] === 'blob' || $column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
+
+                    // Search through the array encoding limits. This array should be keyed in increasing size.
+                    foreach ($stringLimits AS $length => $type) {
+                        if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
+                            if (in_array($type, $this->dataTypes['columnStringNoLength'])) $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
+                            else $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
+
+                            break;
+                        }
+                    }
+
+                    if (!strlen($typePiece)) { // If no type identifier was found...
+                        $typePiece = $this->dataTypes['columnStringNoLength']['default']; // Use the default.
+                    }
+
+                    // TODO: decide if we want this.
+                    // $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
+                break;
+
+
+                /* The column is an enumeration of values. */
+                case 'enum':
+                    // There are many different ways ENUMs may be supported in SQL DBMSs. Select our supported one.
+                    switch ($this->enumMode) {
+                        // Here, we create a special type to use as an enum. PostGreSQL does this.
+                        case 'useCreateType':
+                            $this->rawQuery('CREATE TYPE ' . $this->formatValue('string', $tableName . '_' . $columnName) . ' AS ENUM' . $this->formatValue('array', $column['restrict']));
+                            $typePiece = $columnName;
+                        break;
+
+                        // Here, we use the built-in SQL ENUM. MySQL does this.
+                        case 'useEnum':
+                            $typePiece = 'ENUM' . $this->formatValue('enumArray', $column['restrict']);
+                        break;
+
+                        // And here we use the CHECK() clause at the end of the type. MSSQL does this.
+                        case 'useCheck':
+                            $lengths = array_map('strlen', $column['restrict']);
+                            $typePiece = 'VARCHAR(' . max($lengths) . ') NOT NULL CHECK (' . $this->formatValue('column', $columnName) . ' IN' . $this->formatValue('array', $column['restrict']);
+                        break;
+
+                        // We don't support ENUMs in the current database mode.
+                        default: throw new Exception('Enums are unsupported in the active database driver.'); break;
+                    }
+                break;
+
+
+                /* The column type value is invalid. */
+                default:
+                    $this->triggerError("Unrecognised Column Type", array(
+                        'tableName' => $tableName,
+                        'columnName' => $columnName,
+                        'columnType' => $column['type'],
+                    ), 'validationFallback');
+                    $typePiece = $this->dataTypes['columnStringNoLength']['default'];
+                break;
             }
 
 
+            /* Process Defaults (only if column default is specified) */
             if ($column['default'] !== null) {
-                // We use triggers here when the SQL implementation is otherwise stubborn, but FreezeMessenger is designed to only do this when it would otherwise be tedious. Manual setting of values is preferred in most cases.
+                // We use triggers here when the SQL implementation is otherwise stubborn, but FreezeMessenger is designed to only do this when it would otherwise be tedious. Manual setting of values is preferred in most cases. Right now, only __TIME__ supports them.
+                // TODO: language trigger support check
                 if ($column['default'] === '__TIME__') {
                     $triggers[] = "DROP TRIGGER IF EXISTS {TABLENAME}_{$columnName}__TIME__;";
                     $triggers[] = "CREATE TRIGGER {TABLENAME}_{$columnName}__TIME__ BEFORE INSERT ON {TABLENAME} FOR EACH ROW SET NEW.{$columnName} = IF(NEW.{$columnName}, NEW.{$columnName}, UNIX_TIMESTAMP(NOW()));";
                 }
-                else if (isset($this->defaultPhrases[$column['default']]))
+
+
+                // If we have a valid identifier for the default, use it. (For instance, __TIME__ could be CURRENT_TIMESTAMP.)
+                elseif (isset($this->defaultPhrases[$column['default']])) {
                     $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
+                }
+
+
+                // Finally, just normal default constants.
                 else {
+                    // If we have transformation parameters set for the column, transform our default value first.
                     if (@isset($this->encode[$tableName][$columnName])) {
                         list($function, $typeOverride) = $this->encode[$tableName][$columnName];
 
@@ -1541,12 +1632,23 @@ class databaseSQL extends database
                 }
             }
 
+
+            /* Put it All Together As an SQL Statement Piece */
             $columns[] = $this->formatValue('column', $columnName) . ' ' . $typePiece . ' COMMENT ' . $this->formatValue('string', $column['comment']);
         }
 
-        return [$columns, $triggers, $tableProperties];
+        return [$columns, $triggers, $tableIndexes, $tableProperties];
     }
 
+
+    /**
+     * Given a table name and DatabaseEngine constant, produces the SQL string representing that engine.
+     *
+     * @param string         $tableName The name of the table.
+     * @param DatabaseEngine $engine    The engine used for the table.
+     *
+     * @return string The SQL statement component representing the engine.
+     */
     private function parseEngine($tableName, $engine) {
         if (!isset($this->tableTypes[$engine])) {
             $this->triggerError("Unrecognised Table Engine", array(
@@ -1564,7 +1666,7 @@ class databaseSQL extends database
     {
         $engineName = $this->parseEngine($tableName, $engine);
 
-        list($columns, $triggers, $tableProperties) = $this->parseTableColumns($tableName, $tableColumns, $engine);
+        list($columns, $triggers, $tableIndexes, $tableProperties) = $this->parseTableColumns($tableName, $tableColumns, $tableIndexes, $engine);
 
 
         $indexes = [];
@@ -1631,8 +1733,9 @@ class databaseSQL extends database
         return $this->rawQuery('RENAME TABLE ' . $this->formatValue('table', $oldName) . ' TO ' . $this->formatValue('table', $newName));
     }
 
-    public function createTableColumns($tableName, $tableColumns, $engine = 'general') {
-        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns, $engine);
+    // TODO: new indexes
+    public function createTableColumns($tableName, $tableColumns, $engine = DatabasEengine::general) {
+        list ($columns, $triggers, $tableIndexes) = $this->parseTableColumns($tableName, $tableColumns, null, $engine);
 
         array_walk($columns, function(&$column) { $column = 'ADD ' . $column; });
 
@@ -1640,8 +1743,9 @@ class databaseSQL extends database
             && $this->executeTriggers($tableName, $triggers);
     }
 
-    public function alterTableColumns($tableName, $tableColumns, $engine = 'general') {
-        list ($columns, $triggers) = $this->parseTableColumns($tableName, $tableColumns, $engine);
+    // TODO: new indexes
+    public function alterTableColumns($tableName, $tableColumns, $engine = DatabaseEngine::general) {
+        list ($columns, $triggers, $tableIndexes) = $this->parseTableColumns($tableName, $tableColumns, null, $engine);
 
         array_walk($columns, function(&$column) { $column = 'MODIFY ' . $column; });
 
@@ -1660,6 +1764,7 @@ class databaseSQL extends database
         return $return;
     }
 
+    // TODO
     public function createTableIndexes($tableName, $tableIndexes) {
 
     }

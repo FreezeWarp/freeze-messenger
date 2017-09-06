@@ -12,7 +12,7 @@ class databaseSQLTests2 extends databaseSQLTests {
             ]
         ], [
             $table => [
-                'roomName' => ['fimDatabase::makeSearchable', false, 'roomNameSearchable']
+                'roomName' => [[$this->databaseObj, 'makeSearchable'], false, 'roomNameSearchable']
             ],
         ], [
             $table => 'id',
@@ -27,7 +27,7 @@ class databaseSQLTests2 extends databaseSQLTests {
             ]
         ], [
             $table => [
-                'roomName' => ['fimDatabase::makeSearchable', false, 'roomNameSearchable']
+                'roomName' => [[$this->databaseObj, 'makeSearchable'], false, 'roomNameSearchable']
             ],
         ], [
             $table => 'id',
@@ -129,7 +129,7 @@ class databaseSQLTests2 extends databaseSQLTests {
 
 
     public function testCreateTable1($table) {
-        $this->databaseObj->createTable($table, "", "general", array(
+        $this->databaseObj->createTable($table, "", DatabaseEngine::general, array(
             'id' => [
                 'type' => 'int',
                 'maxlen' => 2,

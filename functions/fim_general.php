@@ -349,7 +349,7 @@ function fim_sanitizeGPC($type, $data) {
                     throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
 
                 elseif ($metaName === 'cast'
-                    && !in_array($metaData, array('int', 'bool', 'string', 'json', 'list', 'dict', 'ascii128', 'alphanum', 'bitfieldShift', 'roomId')))
+                    && !in_array($metaData, array('int', 'bool', 'string', 'json', 'list', 'dict', 'alphanum', 'bitfieldShift', 'roomId')))
                     throw new Exception("Invalid 'cast' (value = $metaData) in data in fim_sanitizeGPC.");
 
                 elseif ($metaName === 'cast'

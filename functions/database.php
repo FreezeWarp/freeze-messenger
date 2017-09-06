@@ -227,7 +227,7 @@ abstract class database
      *
      * @return bool - True if a connection was successfully established, false otherwise.
      */
-    abstract public function connect($host, $port, $user, $password, $database, $driver, $tablePrefix);
+    abstract public function connect($host, $port, $user, $password, $database, $driver, $tablePrefix = '');
 
 
     /**
@@ -303,11 +303,11 @@ abstract class database
                     )));
                 }
                 else {
-                    throw new Exception('A database error has occurred (' . $this->getLastError() . '). Additional Data: "' . $errorData . '"');
+                    throw new Exception('A database error has occurred (' . $this->getLastError() . '). Additional Data: "' . print_r($errorData, true) . '"');
                 }
             }
             else {
-                throw new Exception('A database error has occured.');
+                throw new Exception('A database error has occurred.');
             }
         }
     }
@@ -520,7 +520,7 @@ abstract class database
      *
      * @return bool     True on success, false on failure.
      */
-    abstract public function createTable($tableName, $tableComment, $storeType, $tableColumns, $tableIndexes);
+    abstract public function createTable($tableName, $tableComment, $storeType, $tableColumns, $tableIndexes = []);
 
 
     /**
@@ -1212,6 +1212,14 @@ abstract class database
         return $this->type('equation', $value);
     }
 
+
+    public function auto($value) {
+        if (is_int($value) || ctype_digit($value))
+            return $this->int($value);
+        else
+            return $this->str($value);
+    }
+
     /*********************************************************
      ************************* END ***************************
      **************** Type-Casting Functions *****************
@@ -1273,6 +1281,7 @@ abstract class database
 }
 
 require('DatabaseResult.php');
+require('DatabaseEngine.php');
 require('DatabaseType.php');
 require('DatabaseTypeType.php');
 require('DatabaseTypeComparison.php');

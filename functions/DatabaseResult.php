@@ -112,9 +112,12 @@ class databaseResult
     }
 
 
+    /**
+     * @return int the number of rows in the resultset.
+     */
     public function getCount()
     {
-        return $this->functionMap('getCount', $this->queryData); // Todo: this->count?
+        return $this->count;
     }
 
 

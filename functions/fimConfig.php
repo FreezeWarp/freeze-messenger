@@ -669,5 +669,6 @@ class fimConfig implements ArrayAccess {
     }
 }
 
+require('fimConfigFactory.php');
 require('fimDatabaseAndConfigFactory.php');
 ?>
