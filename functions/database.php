@@ -510,13 +510,8 @@ abstract class database
      * @param string    $tableName      The name of the table.
      * @param string    $tableComment   A table comment, used for documentation and related purposes.
      * @param string    $storeType      The class of database engine to use for the table, either "memory" or "general". The "memory" type should be used for tables that contain cache data, or otherwise where the table could be emptied without issue.
-     * @param array     $tableColumns   The columns of the table as an array in which all entries should be <code>array(columnName => columnProperties)</code>. The following is a list of allowed indexes for any given "type" index:
-     *  - "int" type: INT "maxlen", BOOL "autoincrement"
-     *  - "string" type: INT "maxlen", ARRAY "restrict"
-     *  - "bitfield" type: INT "bits"
-     *  - "time" type: none
-     *  - "bool" type: none
-     * @param array     $tableIndexes    The indexes of the table.
+     * @param array $tableColumns       The columns of the table. Refer to {@link database#createTableColumns()} for the format of this parameter.
+     * @param array     $tableIndexes   The indexes of the table. See {@link database#createTableIndexes()} for the format.
      *
      * @return bool     True on success, false on failure.
      */
@@ -573,7 +568,14 @@ abstract class database
      * ```
      *
      * @param string    $tableName     The table to to add columns to.
-     * @param string    $tableColumns  An array of new columns to create, of the same format as {@link database::createTable()}
+     * @param string    $tableColumns  {
+     *     The columns of the table as an array in which all entries should be <code>array(columnName => columnProperties)</code>. The following is a list of allowed indexes for any given "type" index:
+     *     - "int" type: INT "maxlen", BOOL "autoincrement"
+     *     - "string" type: INT "maxlen", ARRAY "restrict"
+     *     - "bitfield" type: INT "bits"
+     *     - "time" type: none
+     *     - "bool" type: none
+     * }
      *
      * @return bool     True on success, false on failure.
      */
@@ -601,6 +603,26 @@ abstract class database
      * @return bool     True on success, false on failure.
      */
     abstract public function alterTableColumns($tableName, $tableColumns);
+
+
+    /**
+     * Adds new indexes to an existing table. Does not support primary indexes (the abstraction layer does not support changes to the primary table key).
+     *
+     * In this example, the table named "table1" will have a new index added that covers columns column1 and column2, as well as a new unique index covering column3.
+     *
+     * ```php
+     * $db->createTableIndexes('table1', [
+     *   'column1,column2' => DatabaseIndexType::index,
+     *   'column3' => DatabaseIndexType::unique
+     * ]);
+     * ```
+     *
+     * @param string    $tableName     The table to to add columns to.
+     * @param string    $tableColumns  An array of new index to add. They should be indexed by a table column name (or possibly multiple, seperated by commas), with their value being an identifier from {@link DatabaseIndexType}
+     *
+     * @return bool     True on success, false on failure.
+     */
+    abstract public function createTableIndexes($tableName, $tableColumns);
 
 
     /**
@@ -1216,7 +1238,7 @@ abstract class database
     public function auto($value) {
         if ($this->isTypeObject($value))
             return $value;
-        elseif (is_int($value) || ctype_digit($value))
+        elseif (is_int($value) || (ctype_digit($value) && strlen($value) < 10))
             return $this->int($value);
         else
             return $this->str($value);
@@ -1284,6 +1306,7 @@ abstract class database
 
 require('DatabaseResult.php');
 require('DatabaseEngine.php');
+require('DatabaseIndexType.php');
 require('DatabaseType.php');
 require('DatabaseTypeType.php');
 require('DatabaseTypeComparison.php');

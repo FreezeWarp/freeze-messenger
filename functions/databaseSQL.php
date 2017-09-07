@@ -417,9 +417,9 @@ class databaseSQL extends database
      * @var array The phrases that identify the three supported key types, 'primary', 'unique', and 'index'
      */
     protected $keyTypeConstants = array(
-        'primary' => 'PRIMARY',
-        'unique' => 'UNIQUE',
-        'index' => '',
+        DatabaseIndexType::primary => 'PRIMARY',
+        DatabaseIndexType::unique => 'UNIQUE',
+        DatabaseIndexType::index => '',
     );
 
     /**
@@ -1751,49 +1751,20 @@ $$ language 'plpgsql';";
         list($columns, $triggers, $tableIndexes, $tableProperties) = $this->parseTableColumns($tableName, $tableColumns, $tableIndexes, $engine);
 
 
-        $indexes = [];
-        if (count($tableIndexes)) {
-            foreach ($tableIndexes AS $indexName => $index) {
-                if (!isset($this->keyTypeConstants[$index['type']])) {
-                    $this->triggerError("Unrecognised Index Type", array(
-                        'tableName' => $tableName,
-                        'indexName' => $indexName,
-                        'indexType' => $index['type'],
-                    ), 'validationFallback');
-                    $index['type'] = 'index';
-                }
-                $typePiece = $this->keyTypeConstants[$index['type']];
-
-
-                if (strpos($indexName, ',') !== false) {
-                    $indexCols = explode(',', $indexName);
-
-                    foreach ($indexCols AS &$indexCol)
-                        $indexCol = $this->formatValue('column', $indexCol);
-
-                    $indexName = implode(',', $indexCols);
-                }
-                else {
-                    $indexName = $this->formatValue('column', $indexName);
-                }
-
-
-                /* Generate CREATE INDEX Statements, If Needed */
-                if ($this->indexMode === 'useCreateIndex' && $index['type'] !== 'primary')
-                    $triggers[] = "CREATE {$typePiece} INDEX ON " . $this->formatValue('table', '{TABLENAME}') . " ({$indexName})";
-                elseif ($this->indexMode === 'useTableAttribute' || $index['type'] === 'primary')
-                    $indexes[] = "{$typePiece} KEY ({$indexName})";
-                else
-                    throw new Exception("Invalid index mode: {$this->indexMode}");
-            }
-        }
+        list($indexes, $indexTriggers) = $this->createTableIndexes($tableName, $tableIndexes, true);
+        $triggers = array_merge($triggers, $indexTriggers);
 
 
         /* Table Comments */
+        // In this mode, we add comments with separate SQL statements at the end.
         if ($this->commentMode === 'useCommentOn')
             $triggers[] = 'COMMENT ON TABLE ' . $this->formatValue('table', '{TABLENAME}') . ' IS ' . $this->formatValue('string', $tableComment);
+
+        // In this mode, we define comments as attributes on the table.
         elseif ($this->commentMode === 'useAttributes')
             $tableProperties .= " COMMENT=" . $this->formatValue('string', $tableComment);
+
+        // Invalid comment mode
         else
             throw new Exception("Invalid comment mode: {$this->commentMode}");
 
@@ -1803,11 +1774,13 @@ $$ language 'plpgsql';";
             $tableProperties .= ' ENGINE=' . $this->formatValue('string', $this->tableTypes[$engine]);
         }
 
+
         /* Table Charset */
         // todo: postgres
         if ($this->language === 'mysql') {
             $tableProperties .= ' DEFAULT CHARSET=' . $this->formatValue('string', 'utf8');
         }
+
 
         /* Table Partioning */
         if ($partitionColumn) {
@@ -1815,9 +1788,8 @@ $$ language 'plpgsql';";
         }
 
 
-
         /* Perform CREATEs */
-        //$this->startTransaction();
+        $this->startTransaction();
 
         for ($i = 0; $i < $hardPartitionCount; $i++) {
             $tableNameI = $tableName . ($hardPartitionCount > 1 ? "__part$i" : '');
@@ -1830,7 +1802,7 @@ $$ language 'plpgsql';";
                 $this->executeTriggers($tableNameI, $triggers);
         }
 
-        //$this->endTransaction();
+        $this->endTransaction();
 
         return $return;
     }
@@ -1850,7 +1822,7 @@ $$ language 'plpgsql';";
             return $this->rawQuery('ALTER TABLE ' . $this->formatValue('table', $oldName) . ' RENAME TO ' . $this->formatValue('table', $newName));
     }
 
-    // TODO: new indexes
+
     public function createTableColumns($tableName, $tableColumns, $engine = DatabasEengine::general) {
         list ($columns, $triggers, $tableIndexes) = $this->parseTableColumns($tableName, $tableColumns, null, $engine);
 
@@ -1860,7 +1832,7 @@ $$ language 'plpgsql';";
             && $this->executeTriggers($tableName, $triggers);
     }
 
-    // TODO: new indexes
+
     public function alterTableColumns($tableName, $tableColumns, $engine = DatabaseEngine::general) {
         list ($columns, $triggers, $tableIndexes) = $this->parseTableColumns($tableName, $tableColumns, null, $engine);
 
@@ -1870,6 +1842,16 @@ $$ language 'plpgsql';";
             && $this->executeTriggers($tableName, $triggers);
     }
 
+
+    /**
+     * Run a series of SQL statements in sequence, returning true if all run successfully.
+     * {TABLENAME} will be converted to $tableName, if present in any trigger.
+     *
+     * @param $tableName string The SQL tablename.
+     * @param $triggers array List of SQL statements.
+     *
+     * @return bool true if all queries successful, false if any fails
+     */
     public function executeTriggers($tableName, $triggers) {
         $return = true;
 
@@ -1881,10 +1863,58 @@ $$ language 'plpgsql';";
         return $return;
     }
 
-    // TODO
-    public function createTableIndexes($tableName, $tableIndexes) {
 
+    /**
+     * @param bool   $duringTableCreation If during table creation, this will return an array of (1.) an array containing index SQL identifiers to use with a CREATE TABLE statement and (2.) an array of SQL statements to run after a table creation is complete.
+     */
+    public function createTableIndexes($tableName, $tableIndexes, $duringTableCreation = false) {
+        foreach ($tableIndexes AS $indexName => $index) {
+            if (!isset($this->keyTypeConstants[$index['type']])) {
+                $this->triggerError("Unrecognised Index Type", array(
+                    'tableName' => $tableName,
+                    'indexName' => $indexName,
+                    'indexType' => $index['type'],
+                ), 'validationFallback');
+                $index['type'] = 'index';
+            }
+            $typePiece = $this->keyTypeConstants[$index['type']];
+
+
+            if (strpos($indexName, ',') !== false) {
+                $indexCols = explode(',', $indexName);
+
+                foreach ($indexCols AS &$indexCol)
+                    $indexCol = $this->formatValue('column', $indexCol);
+
+                $indexName = implode(',', $indexCols);
+            }
+            else {
+                $indexName = $this->formatValue('column', $indexName);
+            }
+
+
+            /* Generate CREATE INDEX Statements, If Needed */
+            // use CREATE INDEX ON statements if the table already exists, or we are in useCreateIndex mode. However, don't do so if it's a primary key.
+            if ((!$duringTableCreation || $this->indexMode === 'useCreateIndex') && $index['type'] !== 'primary')
+                $triggers[] = "CREATE {$typePiece} INDEX ON " . $this->formatValue('table', '{TABLENAME}') . " ({$indexName})";
+
+            // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
+            elseif (($duringTableCreation && $this->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
+                $indexes[] = "{$typePiece} KEY ({$indexName})";
+
+            // Throw an exception if the index mode is unrecognised.
+            else
+                throw new Exception("Invalid index mode: {$this->indexMode}");
+        }
+
+        if ($duringTableCreation) {
+            return [$indexes, $triggers];
+        }
+        else {
+            $this->executeTriggers($tableName, $triggers);
+        }
     }
+
 
     public function alterTable($tableName, $tableComment, $engine, $partitionColumn) {
         $engine = $this->parseEngine($engine);
