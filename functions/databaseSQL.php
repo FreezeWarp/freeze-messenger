@@ -760,9 +760,9 @@ class databaseSQL extends database
 
         switch ($type) {
             case 'detect':
-                $values[1] = $this->auto($values[1]);
+                $item = $this->auto($values[1]);
 
-                return $this->formatValue($values[1]->type, $values[1]->value);
+                return $this->formatValue($item->type, $item->value);
                 break;
 
             case 'search':
@@ -784,7 +784,7 @@ class databaseSQL extends database
 
             case DatabaseTypeType::bitfield:
                 if ($this->nativeBitfield)
-                    return 'B\'' . decbin($this->auto($values[1])->value) . '\'';
+                    return 'B\'' . decbin((int) $values[1]) . '\'';
                 else
                     return $this->formatValue(DatabaseTypeType::integer, $values[1]);
             break;
@@ -833,24 +833,18 @@ class databaseSQL extends database
 
             case 'array': case DatabaseTypeType::arraylist:
                 foreach ($values[1] AS &$item) {
-                    if (!$this->isTypeObject($item))
-                        $item = $this->formatValue('detect', $item);
-                    else
-                        $item = $this->formatValue($item->type, $item->value);
+                    $item = $this->auto($item);
+                    $item = $this->formatValue($item->type, $item->value);
                 }
 
                 return $this->arrayQuoteStart . implode($this->arraySeperator, $values[1]) . $this->arrayQuoteEnd; // Combine as list.
                 break;
 
             case 'enumArray':
-                foreach ($values[1] AS &$item) {
-                    if (!$this->isTypeObject($item)) // If we don't have a type object yet, create one.
-                        $item = $this->auto($item);
-
-                    if ($item->type !== DatabaseTypeType::string) { // If our type isn't a string, throw an error.
+                foreach ($values[1] AS $item) {
+                    if ($this->auto($item)->type !== DatabaseTypeType::string) { // Make sure none of the values are detected to be non-strings.
                         $this->triggerError("Invalid Enum Type", array(
-                            'value' => $item->value,
-                            'type' => $item->type,
+                            'value' => $item,
                         ), 'validation');
                     }
 
@@ -927,13 +921,7 @@ class databaseSQL extends database
             // Values
             foreach ($values[3] AS &$item) {
                 if (!$this->isTypeObject($item)) {
-                    // TODO: reuse
-                    if (is_int($item)) {
-                        $item = $this->int($item);
-                    }
-                    else {
-                        $item = $this->str($item);
-                    }
+                    $item = $this->auto($item);
                 }
 
                 $item = $this->formatValue($item->type, $item->value);
@@ -1187,7 +1175,7 @@ class databaseSQL extends database
                         65535 => 'VARBINARY'
                     ),
 
-                    'columnStringNoLength' => array(
+                    'columnNoLength' => array(
                         'MEDIUMTEXT', 'LONGTEXT',
                         'MEDIUMBLOB', 'LONGBLOB',
                     ),
@@ -1238,14 +1226,11 @@ class databaseSQL extends database
                     'columnStringPermLimits' => array(
                         'default' => 'VARCHAR',
                     ),
-                    'columnStringNoLength' => array(
-                        'TEXT', // Unused
+                    'columnNoLength' => array(
+                        'TEXT', 'BYTEA'
                     ),
                     'columnBlobPermLimits' => array(
                         'default' => 'BYTEA',
-                    ),
-                    'columnBlobNoLength' => array(
-                        'BYTEA',
                     ),
                     DatabaseTypeType::float => 'REAL',
                     DatabaseTypeType::bool => 'SMALLINT', // Note: ENUM(1,2) AS BOOLENUM better.
@@ -1617,7 +1602,7 @@ class databaseSQL extends database
                     // Search through the array encoding limits. This array should be keyed in increasing size.
                     foreach ($stringLimits AS $length => $type) {
                         if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
-                            if (in_array($type, $this->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . 'NoLength']))
+                            if (in_array($type, $this->dataTypes['columnNoLength']))
                                 $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
                             else
                                 $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
@@ -1713,8 +1698,11 @@ $$ language 'plpgsql';";
 
                         $column['default'] = $this->applyTransformFunction($function, $column['default'], $typeOverride);
                     }
+                    else {
+                        $column['default'] = new DatabaseType($column['type'], $column['default'], DatabaseTypeComparison::__default);
+                    }
 
-                    $typePiece .= ' DEFAULT ' . $this->formatValue($column['type'] === DatabaseTypeType::enum ? DatabaseTypeType::string : $column['type'], $column['default']);
+                    $typePiece .= ' DEFAULT ' . $this->formatValue($column['default']->type === DatabaseTypeType::enum ? DatabaseTypeType::string : $column['default']->type, $column['default']->value);
                 }
             }
 
@@ -1747,11 +1735,13 @@ $$ language 'plpgsql';";
                 'engine' => $engine
             ), 'validationFallback');
 
-            $engine = 'general';
+            return DatabaseEngine::general;
         }
 
         if (!in_array($engine, $this->storeTypes))
-            $engine = DatabaseEngine::general;
+            return DatabaseEngine::general;
+
+        return $engine;
     }
 
 
