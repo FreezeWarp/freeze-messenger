@@ -1868,6 +1868,9 @@ $$ language 'plpgsql';";
      * @param bool   $duringTableCreation If during table creation, this will return an array of (1.) an array containing index SQL identifiers to use with a CREATE TABLE statement and (2.) an array of SQL statements to run after a table creation is complete.
      */
     public function createTableIndexes($tableName, $tableIndexes, $duringTableCreation = false) {
+        $triggers = [];
+        $indexes = [];
+
         foreach ($tableIndexes AS $indexName => $index) {
             if (!isset($this->keyTypeConstants[$index['type']])) {
                 $this->triggerError("Unrecognised Index Type", array(

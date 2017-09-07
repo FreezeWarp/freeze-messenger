@@ -111,7 +111,7 @@ if (isset($requestHead['id'])) {
     if ($requestHead['_action'] === 'create') // ID shouldn't be used here.
         new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
 
-    if (!($room = $database->getRoom($requestHead['id']))->roomExists())
+    elseif (!($room = $database->getRoom($requestHead['id']))->roomExists() || !($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
         new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.');
 }
 

@@ -1615,6 +1615,51 @@ class fimDatabase extends databaseSQL
     }
 
 
+    public function setPermission($roomId, $attribute, $param, $permissionsMask) {
+        /* Start Transaction */
+        $this->startTransaction();
+
+        /* Modlog */
+        $this->modLog('setPermission', "$roomId,$attribute,$param,$permissionsMask");
+
+        /* Insert or Replace The Old Permission Setting */
+        $this->upsert($this->sqlPrefix . 'roomPermissions', array(
+            'permissions' => $this->type(DatabaseTypeType::bitfield, $permissionsMask)
+        ), array(
+            'roomId' => $roomId,
+            'attribute' => $attribute,
+            'param' => $param,
+            'permissions' => $this->type(DatabaseTypeType::bitfield, $permissionsMask)
+        ));
+
+        /* Delete Permissions Cache */
+        if ($attribute === 'user')
+            $this->deletePermissionsCache($roomId, $param);
+        elseif ($attribute === 'group')
+            $this->deleteGroupPermissionsCache($roomId, $param);
+
+        /* End Transaction */
+        $this->endTransaction();
+    }
+
+
+    public function clearPermission($roomId, $attribute, $param) {
+        $this->startTransaction();
+
+        $this->modLog('deletePermission', "$roomId,$attribute,$param");
+
+        $this->delete($this->sqlPrefix . 'roomPermissions', array(
+            'roomId' => $roomId,
+            'attribute' => $attribute,
+            'param' => $param,
+        ));
+
+        $this->deletePermissionsCache($roomId, $attribute, $param);
+
+        $this->endTransaction();
+    }
+
+
     /**
      * Gets the a user's cached permission bitfield for a room, or -1 if none/expired.
      *
@@ -1687,19 +1732,11 @@ class fimDatabase extends databaseSQL
      *
      * @todo still a work in progress
      */
-    public function deletePermissionCacheFromEntry($roomId, $attribute, $param) {
-        switch ($attribute) {
-            case 'user':
-                $users = array($param);
-            break;
-
-            case 'group':
-                $users = $this->getSocialGroupMembers(array(
-                    'groupIds' => array($param),
-                    'type' => array('member', 'moderator')
-                ))->getColumnValues('userId');
-            break;
-        }
+    public function deleteGroupPermissionsCache($roomId, $groupId) {
+        $users = $this->getSocialGroupMembers(array(
+            'groupIds' => array($groupId),
+            'type' => array('member', 'moderator')
+        ))->getColumnValues('userId');
 
         $this->delete($this->prefix . 'roomPermissionsCache', array(
             'roomId' => $roomId,
@@ -2048,48 +2085,6 @@ class fimDatabase extends databaseSQL
             elseif (!$listEnable && isset($dbLists[$listId])) // the list shouldn't be enabled but is currently
                 $this->setCensorList($roomId, $listId, 'unblock');
         }
-    }
-
-
-
-    public function setPermission($roomId, $attribute, $param, $permissionsMask) {
-        /* Start Transaction */
-        $this->startTransaction();
-
-        /* Modlog */
-        $this->modLog('setPermission', "$roomId,$attribute,$param,$permissionsMask");
-
-        /* Insert or Replace The Old Permission Setting */
-        $this->insert($this->sqlPrefix . 'roomPermissions', array(
-            'roomId' => $roomId,
-            'attribute' => $attribute,
-            'param' => $param,
-            'permissions' => $permissionsMask
-        ), array(
-            'permissions' => $permissionsMask
-        ));
-
-        /* Delete Permissions Cache */
-        $this->deletePermissionsCache($roomId, $attribute, $param);
-
-        /* End Transaction */
-        $this->endTransaction();
-    }
-
-    public function clearPermission($roomId, $attribute, $param) {
-        $this->startTransaction();
-
-        $this->modLog('deletePermission', "$roomId,$attribute,$param");
-
-        $this->delete($this->sqlPrefix . 'roomPermissions', array(
-            'roomId' => $roomId,
-            'attribute' => $attribute,
-            'param' => $param,
-        ));
-
-        $this->deletePermissionsCache($roomId, $attribute, $param);
-
-        $this->endTransaction();
     }
 
 

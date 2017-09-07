@@ -436,12 +436,6 @@ function fim_sanitizeGPC($type, $data) {
                         $config['jsonDecodeRecursionLimit'],
                         JSON_BIGINT_AS_STRING
                     );
-
-                    /* Newer Code -- Breaks Conventions Because I'm Not Sure Which Conventions I Want Yet */
-                    $holder = array();
-                    foreach ($newData[$indexName] AS $key => $value) {
-                        $holder[fim_cast($indexMetaData['filterKey'] ? $indexMetaData['filterKey'] : 'string', $key)] = fim_cast($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string', $key);
-                    }
                 break;
 
 
@@ -506,8 +500,12 @@ function fim_sanitizeGPC($type, $data) {
                             $bitfield = 0;
 
                             foreach ($newData[$indexName] AS $name) {
-                                if (!isset($indexMetaData['bitTable'][$name])) throw new Exception("Bad API data: '$name' is not a recognized value for field '$indexName'");
-                                else $bitfield |= $indexMetaData['bitTable'][$name];
+                                if (!$name)
+                                    continue; // Allow empty values.
+                                elseif (!isset($indexMetaData['bitTable'][$name]))
+                                    throw new Exception("Bad API data: '$name' is not a recognized value for field '$indexName'");
+                                else
+                                    $bitfield |= $indexMetaData['bitTable'][$name];
                             }
 
                             $newData[$indexName] = $bitfield;

@@ -701,8 +701,6 @@ curlTestPOSTEquals(
     []
 );
 
-// todo: can't view
-
 echo "<tr><td>Get Room $testRoomName, Test Permissions</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
@@ -779,6 +777,108 @@ curlTestPOSTEquals(
     ['message', 'censor'],
     []
 );
+
+$testRoom2Name = 'Test Unit ' . substr(uniqid(), -10, 10);
+$testRoom2Id;
+echo "<tr><td>Create Room '$testRoom2Name'</td>";
+curlTestPOSTEquals(
+    'api/room.php',
+    ['access_token' => $accessToken, '_action' => 'create'],
+    ['name' => $testRoom2Name, 'defaultPermissions' => ['']],
+    ['room', 'name'],
+    $testRoom2Name,
+    function($data) {
+        global $testRoom2Id;
+        $testRoom2Id = $data['room']['id'];
+    }
+);
+
+echo "<tr><td>Send Message 'Huh' in $testRoom2Name as admin</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken, 'roomId' => $testRoom2Id],
+    ['message' => 'Huh'],
+    ['message', 'censor'],
+    []
+);
+
+echo "<tr><td>Get Room $testRoom2Name as $testUnitUserName, Test for idNoExist</td>";
+curlTestGETEquals(
+    'api/room.php',
+    ['access_token' => $accessToken2, 'id' => $testRoom2Id],
+    ['exception', 'string'],
+    'idNoExist'
+);
+
+echo "<tr><td>Get Messages in $testRoom2Name as $testUnitUserName, Test for idNoExist</td>";
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
+    ['exception', 'string'],
+    'idNoExist'
+);
+
+echo "<tr><td>Send Message 'Hi' in $testRoom2Name as $testUnitUserName, Test for idNoExist</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoom2Id],
+    ['message' => 'Hi'],
+    ['exception', 'string'],
+    'idNoExist'
+);
+
+echo "<tr><td>Edit Room '$testRoom2Name' to Allow Viewing by '$testUnitUserName'</td>";
+curlTestPOSTEquals(
+    'api/room.php',
+    ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoom2Id],
+    ['userPermissions' => "{\"+{$testUnitUserId}\" : [\"view\"]}"],
+    ['room', 'id'],
+    (string) $testRoom2Id
+);
+
+echo "<tr><td>Get Messages in $testRoom2Name</td>";
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
+    ['messages', 0, 'text'],
+    'Huh'
+);
+
+echo "<tr><td>Send Message 'Hi' in $testRoom2Name</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoom2Id],
+    ['message' => 'Hi'],
+    ['exception', 'string'],
+    'noPerm'
+);
+
+echo "<tr><td>Edit Room '$testRoom2Name' to Allow Posting by '$testUnitUserName'</td>";
+curlTestPOSTEquals(
+    'api/room.php',
+    ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoom2Id],
+    ['userPermissions' => "{\"+{$testUnitUserId}\" : [\"post\"]}"],
+    ['room', 'id'],
+    (string) $testRoom2Id
+);
+
+echo "<tr><td>Get Messages in $testRoom2Name</td>";
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
+    ['messages', 0, 'text'],
+    'Huh'
+);
+
+echo "<tr><td>Send Message 'Hi' in $testRoom2Name</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoom2Id],
+    ['message' => 'Hi'],
+    ['message', 'censor'],
+    []
+);
+
 echo '</table>';
 // todo: unpriviledged user can't post in admin-only room
 // todo: admin kick unpriviledged user in default room

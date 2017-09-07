@@ -621,8 +621,8 @@ class fimConfig implements ArrayAccess {
 
 
     public function __destruct() {
-        if (function_exists('apc_store')) apc_store('fim_config', $this, 86400);
-        elseif (function_exists('apcu_store')) apcu_store('fim_config', $this, 86400);
+        if (function_exists('apc_add')) apc_add('fim_config', $this, 86400);
+        elseif (function_exists('apcu_add')) apcu_add('fim_config', $this, 86400);
     }
 
     /**

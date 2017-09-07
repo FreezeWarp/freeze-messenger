@@ -1076,6 +1076,10 @@ abstract class database
                 return new DatabaseType(DatabaseTypeType::bool, (bool)$value, DatabaseTypeComparison::equals);
                 break;
 
+            case 'bit': case DatabaseTypeType::bitfield:
+                return new DatabaseType(DatabaseTypeType::bitfield, (int)$value, DatabaseTypeComparison::equals);
+            break;
+
             case 'empty': case DatabaseTypeType::null:
                 return new DatabaseType(DatabaseTypeType::null, DatabaseType::null, DatabaseTypeComparison::equals);
                 break;
@@ -1110,6 +1114,17 @@ abstract class database
     public function in($value)
     {
         return $this->type('arr', $value, 'in');
+    }
+
+    /**
+     * A value is a bitfield.
+     *
+     * @param $mixed value
+     * @return DatabaseType
+     */
+    public function bit($value)
+    {
+        return $this->type(DatabaseTypeType::bitfield, $value);
     }
 
     /**

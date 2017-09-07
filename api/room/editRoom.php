@@ -37,6 +37,8 @@ function getPermissionsField($permissionsArray)
     foreach (fimRoom::$permArray AS $string => $byte) {
         if (in_array($string, $permissionsArray)) $permissionsField |= $byte;
     }
+
+    return $permissionsField;
 }
 
 /**
@@ -51,16 +53,19 @@ function alterRoomPermissions($roomId, $userArray, $groupArray)
 {
     global $database;
 
-    foreach (['users' => $userArray, 'groups' => $groupArray] AS $attribute => $array) {
+    foreach (['user' => $userArray, 'group' => $groupArray] AS $attribute => $array) {
         foreach ((array)$array AS $code => $permissionsArray) {
             $operation = substr($code, 0, 1); // The first character of the code is going to be either '+', '-', or '*', representing which action we are taking.
             $param = (int)substr($code, 1); // Everything after the first character represents either a group or user ID.
 
             $permissionsField = getPermissionsField($permissionsArray);
-            $databasePermissionsField = 0;
 
-            if ($attribute === 'users') $databasePermissionsField = $database->getPermissionsField($roomId, $param);
-            elseif ($attribute === 'groups') $databasePermissionsField = $database->getPermissionsField($roomId, [], $param);
+            if ($attribute === 'user')
+                $databasePermissionsField = $database->getPermissionsField($roomId, $param);
+            elseif ($attribute === 'group')
+                $databasePermissionsField = $database->getPermissionsField($roomId, [], $param);
+
+            if ($databasePermissionsField === -1) $databasePermissionsField = 0;
 
             switch ($operation) {
                 case '+':
@@ -225,6 +230,6 @@ $database->endTransaction();
 
 
 /* Output Data */
-$xmlData = ['room' => fim_objectArrayFilterKeys($room, ['id', 'name'])];
+$xmlData = ['room' => fim_objectArrayFilterKeys($room, ['id', 'name']), 'request' => $request];
 echo new apiData($xmlData);
 ?>

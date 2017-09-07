@@ -678,6 +678,9 @@ class fimRoom {
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->setDatabase on private rooms.');
 
+        if (!count($roomParameters))
+            return;
+
         fim_removeNullValues($roomParameters);
         $this->populateFromArray($roomParameters);
 

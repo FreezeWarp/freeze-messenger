@@ -85,8 +85,8 @@ $requestHead = fim_sanitizeGPC('g', [
 
 
 /* Early Validation */
-if (!($room = new fimRoom($requestHead['roomId']))->roomExists()) // Make sure we have a valid room.
-    new fimError('roomIdNoExist', 'The specified room does not exist.'); // Room doesn't exist.
+if (!($room = new fimRoom($requestHead['roomId']))->roomExists() || !($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
+    new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.'); // Make sure we have a valid room.
 
 if (isset($requestHead['id'])) {
     if ($requestHead['_action'] == 'create') // ID shouldn't be used here.
