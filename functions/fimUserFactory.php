@@ -22,14 +22,14 @@ class fimUserFactory {
             throw new Exception('Userdata must contain id');
         }
 
-        elseif (function_exists('apc_fetch') && apc_exists('fim_fimUser_' . $userData['userId'])) {
-            $user = apc_fetch('fim_fimUser_' . $userData['userId']);
+        elseif (function_exists('apc_fetch') && apc_exists('fim_fimUser_' . $userData['id'])) {
+            $user = apc_fetch('fim_fimUser_' . $userData['id']);
             $user->populateFromArray($userData);
             return $user;
         }
 
-        elseif (function_exists('apcu_fetch') && apcu_exists('fim_fimUser_' . $userData['userId'])) {
-            $user = apcu_fetch('fim_fimUser_' . $userData['userId']);
+        elseif (function_exists('apcu_fetch') && apcu_exists('fim_fimUser_' . $userData['id'])) {
+            $user = apcu_fetch('fim_fimUser_' . $userData['id']);
             $user->populateFromArray($userData);
             return $user;
         }
