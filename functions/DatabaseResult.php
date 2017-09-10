@@ -133,9 +133,11 @@ class databaseResult
 
 
     /**
-     * Get Database Object as an Associative Array. An empty array will be returned if an error occurs.
+     * Get database resultset as a single associative array or multiple associative arrays. An empty array will be returned if an error occurs.
      *
-     * @param mixed $index
+     * @param bool|string $index When this is a string, it corresponds to a column whose value will be used to index the returned arrays. When it is true, the returned arrays will be indexed automatically, starting at 0. When it is false, only one array will be returned.
+     * @param bool $group If true, results will be grouped by the index, e.g. if you group on "entries", [1 => [["id" => 1, "entries" => 1], ["id" => 2, "entries" => 1]]] will be returned. If $group were false, [1 => ["id" => 1, "entries" => 1]] would be returned instead.
+     *
      * @return array
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */

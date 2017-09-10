@@ -721,6 +721,14 @@ function fim_arrayFilterKeys(array $array, array $keys) : array {
 }
 
 
+function fim_dbCastArrayEntry(array &$array, $key, $cast) {
+    if (isset($array[$key]))
+       $array[$key] = new DatabaseType($cast, $array[$key]);
+
+    return $array;
+}
+
+
 /**
  * Tranforms and object into an array consisting only of the specified keys.
  *

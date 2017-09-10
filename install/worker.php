@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-error_reporting(E_ALL ^ E_NOTICE); // Report All Potential Errors
+error_reporting(E_ALL); // Report All Potential Errors
 ini_set('display_errors', 1);
 
 require('../functions/xml.php'); // For reading the db*.xml files
@@ -60,13 +60,7 @@ switch ($_REQUEST['phase']) {
 
         $database = new fimDatabase();
         $database->setErrorLevel(E_USER_WARNING);
-        $database->getVersion = true;
-        //$database->printErrors = true;
 
-//  if ($driver === 'postgresql' && $createdb) {
-//    die('PostGreSQL is unable to create databases. Please manually create the database before you continue.');
-//  }
-//  else {
         try {
             $database->connect($host, $port, $userName, $password, $createdb ? false : $databaseName, $driver, $prefix);
         } catch (Exception $exception) {
@@ -81,6 +75,7 @@ switch ($_REQUEST['phase']) {
         }
         else {
             require('../databaseParameters.php');
+            $database->loadVersion();
 
             if ($driver === 'mysql' || $driver === 'mysqli') {
                 if ($database->versionPrimary <= 4) { // MySQL 4 is a no-go.
@@ -146,7 +141,7 @@ switch ($_REQUEST['phase']) {
                 foreach ($xmlData['database'][0]['table'] AS $table) { // Run through each table from the XML
                     $tableType = isset($table['@type']) ? $table['@type'] : 'general';
                     $tableName = $prefix . $table['@name'];
-                    $tableComment = $table['@comment'];
+                    $tableComment = $table['@comment'] ?? '';
 
                     $tableColumns = array();
                     $tableIndexes = array();
@@ -191,7 +186,7 @@ switch ($_REQUEST['phase']) {
                 $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
 
                 foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
-                    if ($table['@mode'] === 'dev' && !isset($_GET['db_usedev'])) // Don't insert dev data, unless asked.
+                    if (isset($table['@mode']) && $table['@mode'] === 'dev' && !isset($_GET['db_usedev'])) // Don't insert dev data, unless asked.
                         continue;
 
                     $columns = array(); // We will use this to store the column fragments that will be implode()d into the final query.
@@ -199,7 +194,7 @@ switch ($_REQUEST['phase']) {
                     $insertData = array();
 
                     foreach ($table['column'] AS $column) {
-                        $insertData[$column['@name']] = (ctype_digit($column['@value']) ? (int) $column['@value'] : $column['@value']); // This is a bit silly, but deals with cases where MySQL mangles putting strings into integer-like columns (mostly bitfields).
+                        $insertData[$column['@name']] = (isset($column['@type']) ? new DatabaseType($column['@type'], $column['@value']) : $database->auto($column['@value']));
                     }
 
                     if (!$database->insert($prefix . $table['@name'], $insertData)) {
@@ -213,15 +208,12 @@ switch ($_REQUEST['phase']) {
         $database->close();
 
         echo 'success';
-//  }
-
         break;
 
+    // Note: This writes a file to the server, which is a very sensitive action (and for a reason is never done elsewhere). This is NOT secure, but should only be used by users wishing to install the product.
     case 2: // Config File
         require('../functions/fim_general.php');
 
-        // Note: This writes a file to the server, which is a very sensitive action (and for a reason is never done elsewhere). This is NOT secure, but should only be used by users wishing to install the product.
-//var_dump($_GET); die();
         $driver = urldecode($_GET['db_driver']);
         $host = urldecode($_GET['db_host']);
         $port = urldecode($_GET['db_port']);
@@ -237,7 +229,7 @@ switch ($_REQUEST['phase']) {
         $encryptSalt = urldecode($_GET['encrypt_salt']);
         $enableEncrypt = (int) $_GET['enable_encrypt'];
 
-        $recaptchaKey = urldecode($_GET['recaptcha_key']);
+        $recaptchaKey = urldecode($_GET['recaptcha_key'] ?? '');
 
         $adminUsername = urldecode($_GET['admin_userName']);
         $adminPassword = urldecode($_GET['admin_password']);
@@ -251,6 +243,7 @@ switch ($_REQUEST['phase']) {
         if ($forum == 'vanilla') {
             try {
                 list ($database, $config) = fimDatabaseAndConfigFactory::init($host, $port, $userName, $password, $databaseName, $driver, $prefix);
+                $config->displayBacktrace = true;
                 $generalCache = new fimCache(null, 'none', $database);
 
                 $user = new fimUser(1);
@@ -259,6 +252,7 @@ switch ($_REQUEST['phase']) {
                     'password' => $adminPassword,
                     'privs' => 0x7FFFFFFF,
                 ))) {
+                    //var_dump($database->errors);
                     die("Could not create user.");
                 }
             } catch(Exception $ex) {
@@ -297,8 +291,6 @@ switch ($_REQUEST['phase']) {
 );',
             '$encrypt = true;',
             '$encryptUploads = true;',
-            '$enableUploads = true;',
-            '$enableGeneralUploads = true;',
             '$tmpDir = \'\';'
         );
 
@@ -321,8 +313,6 @@ switch ($_REQUEST['phase']) {
 );',
             '$encrypt = ' . ($enableEncrypt & 1 ? 'true' : 'false') . ';',
             '$encryptUploads = ' . ($enableEncrypt & 2 ? 'true' : 'false') . ';',
-            '$enableUploads = ' . ($enableUploads & 1 ? 'true' : 'false') . ';',
-            '$enableGeneralUploads = ' . ($enableUploads & 2 ? 'true' : 'false') . ';',
             '$tmpDir = \'' . $tmpDir . '\';'
         );
 

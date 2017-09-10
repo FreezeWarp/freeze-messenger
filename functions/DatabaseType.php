@@ -6,7 +6,7 @@ class DatabaseType {
     public $value;
     public $comparison;
 
-    public function __construct($type, $value, $comparison) {
+    public function __construct($type, $value, $comparison = DatabaseTypeComparison::__default) {
         /* Validation Checks */
         if ($type === DatabaseTypeType::arraylist && !($comparison === DatabaseTypeComparison::in || $comparison === DatabaseTypeComparison::notin))
             throw new Exception('Arrays can only be compared with in and notin.');

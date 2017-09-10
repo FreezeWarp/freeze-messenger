@@ -436,7 +436,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 <tbody>
                 <tr>
                     <td width="20%"><strong>Database & Driver</strong></td>
-                    <td width="80%"><select name="db_driver">
+                    <td width="80%"><select name="db_driver" onchange="switch (this.value) { case 'mysql': case 'mysqli': case 'pdo-mysql': document.getElementById('db_port').value = '3306'; break; case 'pgsql': case 'pdo-pgsql': document.getElementById('db_port').value = '5432'; break; };">
                             <?php
                             if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL, MySQL Driver (Discouraged)</option>';
                             if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysqli">MySQL, MySQLi Driver (Recommended for MySQL)</option>';

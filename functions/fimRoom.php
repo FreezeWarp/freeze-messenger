@@ -616,11 +616,8 @@ class fimRoom {
      * @return bool
      * @throws fimError
      */
-    private function populateFromArray(array $roomData, bool $overwrite = false): bool {
+    private function populateFromArray(array $roomData): bool {
         if ($roomData) {
-             // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
-            if ($overwrite) $this->resolved = array_diff($this->resolved, array_keys($roomData));
-
             foreach ($roomData AS $attribute => $value) {
                 $this->__set($attribute, $value);
             }
@@ -709,7 +706,7 @@ class fimRoom {
 
         else {
             $database->insert($database->sqlPrefix . "rooms", $roomParameters);
-            return $this->id = $database->insertId;
+            return $this->id = $database->getLastInsertId();
         }
     }
 

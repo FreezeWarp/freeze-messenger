@@ -786,6 +786,7 @@ class fimUser
         }
 
         $this->populateFromArray($databaseFields, true);
+        $databaseFields = fim_dbCastArrayEntry($databaseFields, 'privs', DatabaseTypeType::bitfield);
 
         if ($this->id) {
             $database->startTransaction();
@@ -815,7 +816,7 @@ class fimUser
 
             $return = $database->insert($database->sqlPrefix . "users", $databaseFields);
 
-            $this->id = $database->insertId;
+            $this->id = $database->getLastInsertId();
 
             return $return;
         }

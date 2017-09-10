@@ -18,6 +18,11 @@ class DatabaseTypeType {
     const blob = 'blob';
 
     /**
+     * A string using search globs.
+     */
+    const search = 'search';
+
+    /**
      * An integral.
      */
     const integer = 'int';

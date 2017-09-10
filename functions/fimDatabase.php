@@ -2172,7 +2172,7 @@ class fimDatabase extends databaseSQL
             $this->insert($this->sqlPrefix . "messages", array(
                 'roomId'   => $message->room->id,
             ));
-            $message->id = $this->insertId;
+            $message->id = $this->getLastInsertId();
         }
         else {
             $this->insert($this->sqlPrefix . "messages", array(
@@ -2186,7 +2186,7 @@ class fimDatabase extends databaseSQL
                 'flag'     => $message->flag,
                 'time'     => $this->now(),
             ));
-            $message->id = $this->insertId;
+            $message->id = $this->getLastInsertId();
         }
 
 
@@ -2212,7 +2212,7 @@ class fimDatabase extends databaseSQL
                 'time'              => $this->now(),
             ));
         }
-        $messageCacheId = $this->insertId;
+        $messageCacheId = $this->getLastInsertId();
 
 
         // Generate (and Insert) Key Words, Unless an Off-the-Record Room
@@ -2451,7 +2451,7 @@ class fimDatabase extends databaseSQL
             'creationTime' => time(),
             'fileSize' => $file->size,
         ));
-        $fileId = $this->insertId;
+        $fileId = $this->getLastInsertId();
 
         $this->insert($this->sqlPrefix . "fileVersions", array(
             'fileId' => $fileId,
@@ -2462,7 +2462,7 @@ class fimDatabase extends databaseSQL
             'contents' => $this->blob($contentsEncrypted),
             'time' => time(),
         ));
-        $versionId = $this->insertId;
+        $versionId = $this->getLastInsertId();
 
         $this->update($this->sqlPrefix . "users", array(
             'fileCount' => $this->type('equation', '$fileCount + 1'),
@@ -2603,7 +2603,7 @@ class fimDatabase extends databaseSQL
                 $this->insert($this->sqlPrefix . "searchPhrases", array(
                     'phraseName' => $piece,
                 ));
-                $phraseId = $this->insertId;
+                $phraseId = $this->getLastInsertId();
             } else {
                 $phraseId = $phraseData[$piece]['phraseId'];
             }

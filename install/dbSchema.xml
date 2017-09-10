@@ -742,8 +742,8 @@
             <column name="privs" type="bitfield" bits="31" />
 
             <!-- Parental Controls -->
-            <column name="userParentalFlags" type="string" maxlen="255" />
-            <column name="userParentalAge" type="int" maxlen="2" />
+            <column name="parentalFlags" type="string" maxlen="255" />
+            <column name="parentalAge" type="int" maxlen="2" />
 
             <column name="changeTime" type="time" default="__TIME__" comment="The time at which the above information was altered." />
 
