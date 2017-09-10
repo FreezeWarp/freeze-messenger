@@ -22,8 +22,8 @@ class fimRoomFactory {
             throw new Exception('Roomdata must contain id');
         }
 
-        elseif (function_exists('apc_fetch') && apc_exists('fim_fimRoom_' . $roomData['roomId'])) {
-            $room = apc_fetch('fim_fimRoom_' . $roomData['roomId']);
+        elseif (function_exists('apc_fetch') && apc_exists('fim_fimRoom_' . $roomData['id'])) {
+            $room = apc_fetch('fim_fimRoom_' . $roomData['id']);
             $room->populateFromArray($roomData);
             return $room;
         }
