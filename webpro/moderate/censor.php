@@ -184,7 +184,7 @@ else {
                     );
 
                     $database->insert("{$sqlPrefix}censorLists", $list);
-                    $list['listId'] = $database->insertId;
+                    $list['listId'] = $database->getLastInsertId();
 
                     $database->modLog('addCensorList', $list['listId']);
                     $database->fullLog('addCensorList', array('list' => $list));
@@ -332,9 +332,9 @@ else {
                     );
 
                     $database->insert("{$sqlPrefix}censorWords", $word);
-                    $word['wordId'] = $database->insertId;
+                    $word['wordId'] = $database->getLastInsertId();
 
-                    $database->modLog('addCensorWord', $request['listId'] . ',' . $database->insertId);
+                    $database->modLog('addCensorWord', $request['listId'] . ',' . $database->getLastInsertId());
                     $database->fullLog('addCensorWord', array('word' => $word, 'list' => $list));
 
                     echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');

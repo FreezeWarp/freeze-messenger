@@ -160,7 +160,7 @@ else {
         );
 
         $database->insert("{$sqlPrefix}configuration", $config2);
-        $config2['directive'] = $database->insertId;
+        $config2['directive'] = $database->getLastInsertId();
 
         $database->modLog('createConfigDirective', $config2['directive']);
         $database->fullLog('createConfigDirective', array('config' => $config2));

@@ -67,6 +67,11 @@ class databaseSQLTests1 extends databaseSQLTests {
                 'default' => 2000,
             ],
 
+            'bitfield' => [
+                'type' => 'bitfield',
+                'bits' => 10,
+            ],
+
             'enum' => [
                 'type' => 'enum',
                 'restrict' => ['a', 'd', 'af'],
@@ -84,8 +89,8 @@ class databaseSQLTests1 extends databaseSQLTests {
     public function testInsertBadEnum($table) {
         $caught = false;
         try {
-            $this->databaseObj->insert($table, [
-                "enum" => '7',
+            @$this->databaseObj->insert($table, [
+                "enum" => 'ad',
             ]);
         } catch(Exception $e) {
             $caught = true;
@@ -97,7 +102,7 @@ class databaseSQLTests1 extends databaseSQLTests {
     public function testInsertBadString($table) {
         $caught = false;
         try {
-            $this->databaseObj->insert($table, [
+            @$this->databaseObj->insert($table, [
                 "string" => "12345678901234567890123456789012345678901",
             ]);
         } catch(Exception $e) {
@@ -207,30 +212,49 @@ class databaseSQLTests1 extends databaseSQLTests {
     }
 
     public function testInsertSelect2($table) {
-        $this->databaseObj->insert($table, [
-            "integerNormal" => 5,
-            "string" => 12,
-        ]);
+        $datasets = [
+            0 => [
+                "integerNormal" => 5,
+                "bitfield" => $this->databaseObj->bit(5),
+                "string" => 12,
+            ],
 
-        $this->databaseObj->insert($table, [
-            "integerNormal" => 7,
-            "string" => "hello",
-        ]);
+            1 => [
+                "integerNormal" => 7,
+                "bitfield" => $this->databaseObj->bit(7),
+                "string" => "hello",
+            ],
 
-        $this->databaseObj->insert($table, [
-            "integerNormal" => 10,
-            "string" => "hell",
-        ]);
+            2 => [
+                "integerNormal" => 10,
+                "bitfield" => $this->databaseObj->bit(10),
+                "string" => "hell",
+            ],
 
-        $this->databaseObj->insert($table, [
-            "integerNormal" => 12,
-            "string" => "are you sure?",
-        ]);
+            3 => [
+                "integerNormal" => 12,
+                "bitfield" => $this->databaseObj->bit(12),
+                "string" => "are you sure?",
+            ],
 
-        $this->databaseObj->insert($table, [
-            "integerNormal" => 12,
-            "string" => "本気ですか?",
-        ]);
+            4 => [
+                "integerNormal" => 12,
+                "bitfield" => $this->databaseObj->bit(12),
+                "string" => "本気ですか?",
+            ]
+        ];
+
+        $resultsets = [];
+        foreach ($datasets AS $setNum => $dataset) {
+            $resultsets[$setNum] = $dataset;
+            $resultsets[$setNum]['bitfield'] = $resultsets[$setNum]['bitfield']->value;
+        }
+
+        $this->databaseObj->insert($table, $datasets[0]);
+        $this->databaseObj->insert($table, $datasets[1]);
+        $this->databaseObj->insert($table, $datasets[2]);
+        $this->databaseObj->insert($table, $datasets[3]);
+        $this->databaseObj->insert($table, $datasets[4]);
 
         $testCaseDescriptions = [
             "SELECT *",
@@ -252,13 +276,16 @@ class databaseSQLTests1 extends databaseSQLTests {
             "SELECT * WHERE string SEARCH 'hell'",
 
             "SELECT * WHERE string IN ('hell', 'are you sure?', 12)",
-            "SELECT * WHERE integerNormal & 1",
-            "SELECT * WHERE integerNormal & 5",
-            "SELECT * WHERE integerNormal & 8",
-            "SELECT * WHERE integerNormal & 16",
+            "SELECT * WHERE bitfield & 1",
+            "SELECT * WHERE bitfield & 5",
+            "SELECT * WHERE bitfield & 8",
+            "SELECT * WHERE bitfield & 16",
 
-            "SELECT * WHERE integerNormal & 4 OR integerNormal & 1",
-            "SELECT * WHERE integerNormal & 4 AND integerNormal & 1",
+            "SELECT * WHERE bitfield & 4 OR bitfield & 1",
+            "SELECT * WHERE bitfield & 4 AND bitfield & 1",
+            "SELECT * WHERE bitfield = 5",
+            "SELECT * WHERE bitfield > 5",
+
             "SELECT * WHERE string IN ('hell', 'are you sure?', 12) OR integerNormal = 12",
             "SELECT * WHERE string IN ('hell', 'are you sure?', 12) AND integerNormal = 12",
             "SELECT * WHERE (string = 'are you sure?' AND integerNormal = 12) OR integerNormal = 5",
@@ -272,10 +299,10 @@ class databaseSQLTests1 extends databaseSQLTests {
             ["integerNormal" => $this->databaseObj->in([5, 7, 19])],
 
             ["integerNormal" => $this->databaseObj->in([5, 12])],
-            ["integerNormal" => $this->databaseObj->int(10, 'gt')],
-            ["integerNormal" => $this->databaseObj->int(10, 'gte')],
-            ["integerNormal" => $this->databaseObj->int(10, 'lte')],
-            ["integerNormal" => $this->databaseObj->int(10, 'lt')],
+            ["integerNormal" => $this->databaseObj->int(10, DatabaseTypeComparison::greaterThan)],
+            ["integerNormal" => $this->databaseObj->int(10, DatabaseTypeComparison::greaterThanEquals)],
+            ["integerNormal" => $this->databaseObj->int(10, DatabaseTypeComparison::lessThanEquals)],
+            ["integerNormal" => $this->databaseObj->int(10, DatabaseTypeComparison::lessThan)],
 
             ["string" => 12],
             ["string" => "hello"],
@@ -283,27 +310,30 @@ class databaseSQLTests1 extends databaseSQLTests {
             ["string" => "本気ですか?"],
             ["string" => $this->databaseObj->search("hell")],
 
-            ["string" => $this->databaseObj->in(["hell", "are you sure?", 12])],
-            ["integerNormal" => $this->databaseObj->int(1, 'bAnd')],
-            ["integerNormal" => $this->databaseObj->int(5, 'bAnd')],
-            ["integerNormal" => $this->databaseObj->int(8, 'bAnd')],
-            ["integerNormal" => $this->databaseObj->int(16, 'bAnd')],
+            ["string" => $this->databaseObj->in(["hell", "are you sure?", $this->databaseObj->str(12)])],
+            ["bitfield" => $this->databaseObj->bit(1, DatabaseTypeComparison::binaryAnd)],
+            ["bitfield" => $this->databaseObj->bit(5, DatabaseTypeComparison::binaryAnd)],
+            ["bitfield" => $this->databaseObj->bit(8, DatabaseTypeComparison::binaryAnd)],
+            ["bitfield" => $this->databaseObj->bit(16, DatabaseTypeComparison::binaryAnd)],
 
             ['either' => [
-                ["integerNormal" => $this->databaseObj->int(4, 'bAnd')],
-                ["integerNormal" => $this->databaseObj->int(1, 'bAnd')],
+                ["bitfield" => $this->databaseObj->bit(4, DatabaseTypeComparison::binaryAnd)],
+                ["bitfield" => $this->databaseObj->bit(1, DatabaseTypeComparison::binaryAnd)],
             ]],
             ['both' => [
-                ["integerNormal" => $this->databaseObj->int(4, 'bAnd')],
-                ["integerNormal" => $this->databaseObj->int(1, 'bAnd')],
+                ["bitfield" => $this->databaseObj->bit(4, DatabaseTypeComparison::binaryAnd)],
+                ["bitfield" => $this->databaseObj->bit(1, DatabaseTypeComparison::binaryAnd)],
             ]],
+            ["bitfield" => $this->databaseObj->bit(5)],
+            ["bitfield" => $this->databaseObj->bit(5, DatabaseTypeComparison::greaterThan)],
+            
             ['either' => [
                 "integerNormal" => $this->databaseObj->int(12),
-                "string" => $this->databaseObj->in(["hell", "are you sure?", 12]),
+                "string" => $this->databaseObj->in(["hell", "are you sure?", $this->databaseObj->str(12)]),
             ]],
             [
                 "integerNormal" => $this->databaseObj->int(12),
-                "string" => $this->databaseObj->in(["hell", "are you sure?", 12]),
+                "string" => $this->databaseObj->in(["hell", "are you sure?", $this->databaseObj->str(12)]),
             ],
             ['either' => [
                 "integerNormal" => $this->databaseObj->int(5),
@@ -335,34 +365,91 @@ class databaseSQLTests1 extends databaseSQLTests {
 
             3,
             2,
-            4,
+            2,
             3,
             0,
 
             4,
             2,
+            1,
+            4,
+            
             4,
             1,
             2,
         ];
 
         foreach ($testCases AS $i => $testCase) {
-            $rows = $this->databaseObj->select([$table => "integerNormal, string"], $testCase);
+            $rows = $this->databaseObj->select([$table => "integerNormal, string, bitfield"], $testCase);
 
             printRow($testCaseDescriptions[$i], ($rows->getCount() === $testCaseExpectedRows[$i] ? true : $rows->getAsArray(true)), $rows->sourceQuery);
         }
 
 
         $testCaseDescriptions = [
+            "SELECT * ORDER BY integerNormal ASC LIMIT 1",
+            "SELECT * ORDER BY integerNormal ASC LIMIT 1 OFFSET 1",
+            "SELECT * ORDER BY integerNormal ASC LIMIT 1 OFFSET 2",
+
+            "SELECT * ORDER BY integerNormal DESC LIMIT 2",
+            "SELECT * ORDER BY integerNormal DESC LIMIT 2 OFFSET 2",
+            "SELECT * ORDER BY integerNormal DESC LIMIT 2 OFFSET 4",
+        ];
+        $testCasesSort = [
+            ['integerNormal' => 'asc'],
+            ['integerNormal' => 'asc'],
+            ['integerNormal' => 'asc'],
+
+            ['integerNormal' => 'desc'],
+            ['integerNormal' => 'desc'],
+            ['integerNormal' => 'desc'],
+        ];
+        $testCasesLimit = [
+            1,
+            1,
+            1,
+
+            2,
+            2,
+            2,
+        ];
+        $testCasesPage = [
+            0,
+            1,
+            2,
+
+            0,
+            1,
+            2,
+        ];
+        $testCaseResultsets = [
+            [$resultsets[0]],
+            [$resultsets[1]],
+            [$resultsets[2]],
+
+            [$resultsets[3], $resultsets[4]],
+            [$resultsets[1], $resultsets[2]],
+            [$resultsets[0]],
+        ];
+
+        foreach ($testCaseDescriptions AS $i => $testCaseDesc) {
+            $query = $this->databaseObj->select([$table => "integerNormal, bitfield, string"], false, $testCasesSort[$i], $testCasesLimit[$i], $testCasesPage[$i]);
+            $rows = $query->getAsArray(true);
+
+            printRow($testCaseDescriptions[$i], ($rows == $testCaseResultsets[$i] ? true : [$testCaseResultsets[$i], $rows]), $query->sourceQuery);
+        }
+
+
+        $testCaseDescriptions = [
             "DELETE WHERE integerNormal IN (3, 5, 7)",
             "DELETE WHERE string SEARCH 'e'",
-            "DELETE WHERE integerNormal & 8",
+            "DELETE WHERE bitfield & 8",
         ];
 
         $testCases = [
             ["integerNormal" => $this->databaseObj->in([3, 5, 7])],
             ["string" => $this->databaseObj->search('e')],
-            ["integerNormal" => $this->databaseObj->int(8, 'bAnd')],
+            ["bitfield" => $this->databaseObj->bit(8, DatabaseTypeComparison::binaryAnd)],
         ];
 
         $testCaseExpectedRows = [
@@ -409,8 +496,8 @@ class databaseSQLTests1 extends databaseSQLTests {
     public function testUpdateBadEnum($table) {
         $caught = false;
         try {
-            $this->databaseObj->insert($table, [
-                "enum" => '7',
+            @$this->databaseObj->update($table, [
+                "enum" => 'g',
             ]);
         } catch(Exception $e) {
             $caught = true;

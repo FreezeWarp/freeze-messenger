@@ -1015,19 +1015,37 @@ abstract class database
      *
      * @return DatabaseType A special representation of a column int only for use in database functions.
      */
-    public function type($type, $value = '', $comp = 'e')
+    public function type($type, $value = '', $comp = DatabaseTypeComparison::equals)
     {
         // TODO: get rid of all that.
         switch ($comp) {
-            case 'e':      $typeComp = DatabaseTypeComparison::equals;            break;
-            case 'lt':     $typeComp = DatabaseTypeComparison::lessThan;          break;
-            case 'lte':    $typeComp = DatabaseTypeComparison::lessThanEquals;    break;
-            case 'gt':     $typeComp = DatabaseTypeComparison::greaterThan;       break;
-            case 'gte':    $typeComp = DatabaseTypeComparison::greaterThanEquals; break;
-            case 'search': $typeComp = DatabaseTypeComparison::search;            break;
-            case 'in':     $typeComp = DatabaseTypeComparison::in;                break;
-            case 'notin':  $typeComp = DatabaseTypeComparison::notin;             break;
-            case 'bAnd':   $typeComp = DatabaseTypeComparison::binaryAnd;         break;
+            case 'e': case DatabaseTypeComparison::equals:
+                $typeComp = DatabaseTypeComparison::equals;
+                break;
+            case 'lt': case DatabaseTypeComparison::lessThan:
+                $typeComp = DatabaseTypeComparison::lessThan;
+                break;
+            case 'lte': case DatabaseTypeComparison::lessThanEquals:
+                $typeComp = DatabaseTypeComparison::lessThanEquals;
+                break;
+            case 'gt': case DatabaseTypeComparison::greaterThan:
+                $typeComp = DatabaseTypeComparison::greaterThan;
+                break;
+            case 'gte': case DatabaseTypeComparison::greaterThanEquals:
+                $typeComp = DatabaseTypeComparison::greaterThanEquals;
+                break;
+            case 'search': case DatabaseTypeComparison::search:
+                $typeComp = DatabaseTypeComparison::search;
+                break;
+            case 'in': case DatabaseTypeComparison::in:
+                $typeComp = DatabaseTypeComparison::in;
+                break;
+            case 'notin': case DatabaseTypeComparison::notin:
+                $typeComp = DatabaseTypeComparison::notin;
+                break;
+            case 'bAnd':case DatabaseTypeComparison::binaryAnd:
+                $typeComp = DatabaseTypeComparison::binaryAnd;
+                break;
 
             default:
                 throw new Exception("Invalid comparison '$comp'");
@@ -1062,7 +1080,7 @@ abstract class database
                 break;
 
             case 'bit': case DatabaseTypeType::bitfield:
-                return new DatabaseType(DatabaseTypeType::bitfield, (int)$value, DatabaseTypeComparison::equals);
+                return new DatabaseType(DatabaseTypeType::bitfield, (int)$value, $typeComp);
             break;
 
             case 'empty': case DatabaseTypeType::null:
@@ -1098,7 +1116,7 @@ abstract class database
      */
     public function in($value)
     {
-        return $this->type(DatabaseTypeType::arraylist, $value, 'in');
+        return $this->type(DatabaseTypeType::arraylist, $value, DatabaseTypeComparison::in);
     }
 
     /**
@@ -1107,9 +1125,9 @@ abstract class database
      * @param $mixed value
      * @return DatabaseType
      */
-    public function bit($value)
+    public function bit($value, $comp = DatabaseTypeComparison::equals)
     {
-        return $this->type(DatabaseTypeType::bitfield, $value);
+        return $this->type(DatabaseTypeType::bitfield, $value, $comp);
     }
 
     /**
@@ -1120,7 +1138,7 @@ abstract class database
      */
     public function search($value)
     {
-        return $this->type(DatabaseTypeType::string, $value, 'search');
+        return $this->type(DatabaseTypeType::string, $value, DatabaseTypeComparison::search);
     }
 
     /**
@@ -1152,7 +1170,7 @@ abstract class database
      * @param string $comp
      * @return DatabaseType
      */
-    public function int($value, $comp = 'e')
+    public function int($value, $comp = DatabaseTypeComparison::equals)
     {
         return $this->type(DatabaseTypeType::integer, $value, $comp);
     }
@@ -1165,7 +1183,7 @@ abstract class database
      * @param string $comp
      * @return DatabaseType
      */
-    public function float($value, $comp = 'e')
+    public function float($value, $comp = DatabaseTypeComparison::equals)
     {
         return $this->type(DatabaseTypeType::float, $value, $comp);
     }
@@ -1178,7 +1196,7 @@ abstract class database
      * @param string $comp
      * @return DatabaseType
      */
-    public function ts($value, $comp = 'e')
+    public function ts($value, $comp = DatabaseTypeComparison::equals)
     {
         return $this->type(DatabaseTypeType::timestamp, $value, $comp);
     }
@@ -1191,7 +1209,7 @@ abstract class database
      * @param string $comp
      * @return DatabaseType
      */
-    public function now($offset = 0, $comp = 'e')
+    public function now($offset = 0, $comp = DatabaseTypeComparison::equals)
     {
         return $this->ts(time() + $offset, $comp);
     }
@@ -1204,9 +1222,9 @@ abstract class database
      * @param string $comp
      * @return DatabaseType
      */
-    public function str($value, $comp = 'e')
+    public function str($value, $comp = DatabaseTypeComparison::equals)
     {
-        return $this->type('str', (string)$value, $comp);
+        return $this->type(DatabaseTypeType::string, (string)$value, $comp);
     }
 
 
@@ -1217,9 +1235,9 @@ abstract class database
      * @param string $comp
      * @return DatabaseType
      */
-    public function col($value, $comp = 'e')
+    public function col($value, $comp = DatabaseTypeComparison::equals)
     {
-        return $this->type('col', $value, $comp);
+        return $this->type(DatabaseTypeType::column, $value, $comp);
     }
 
 
@@ -1231,7 +1249,7 @@ abstract class database
      * @return DatabaseType
      */
     public function equation($value) {
-        return $this->type('equation', $value);
+        return $this->type(DatabaseTypeType::equation, $value);
     }
 
 

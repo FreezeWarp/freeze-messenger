@@ -1771,7 +1771,6 @@ class databaseSQL extends database
                     }
 
                     if (!strlen($typePiece)) { // If no type identifier was found...
-                        var_dump($stringLimits);
                         $typePiece = $stringLimits['default']; // Use the default.
                     }
 
@@ -2432,20 +2431,26 @@ class databaseSQL extends database
 
 
         /* Generate Final Query */
-        $finalQueryText = 'SELECT
-  ' . implode(',
-  ', $finalQuery['columns']) . '
-FROM
-  ' . implode(', ', $finalQuery['tables']) . ($finalQuery['join'] ? '
-LEFT JOIN
-  ' . implode("\n", $finalQuery['join']) : '') . ($finalQuery['where'] ? '
-WHERE
-  ' . $finalQuery['where'] : '') . ($finalQuery['sort'] ? '
-ORDER BY
-  ' . $finalQuery['sort'] : '') . ($finalQuery['limit'] ? '
-LIMIT
- ' . $finalQuery['limit'] * $finalQuery['page'] . ',
-  ' . ($finalQuery['limit'] > 1 ? $finalQuery['limit'] + 1 : $finalQuery['limit']) : '');
+        $finalQueryText = 'SELECT '
+            . implode(', ', $finalQuery['columns'])
+            . ' FROM '
+            . implode(', ', $finalQuery['tables'])
+            . ($finalQuery['join']
+                ? ' LEFT JOIN '
+                    . implode("\n", $finalQuery['join'])
+                : ''
+            ) . ($finalQuery['where']
+                ? ' WHERE '
+                    . $finalQuery['where']
+                : ''
+            ) . ($finalQuery['sort']
+                ? ' ORDER BY ' . $finalQuery['sort']
+                : ''
+            ) . ($finalQuery['limit']
+                ? ' LIMIT ' . ($finalQuery['limit'] > 1 ? $finalQuery['limit'] + 1 : $finalQuery['limit'])
+                    . ' OFFSET ' . ($finalQuery['limit'] * $finalQuery['page'])
+                : ''
+            );
 
         /* And Run the Query */
         return $this->rawQuery($finalQueryText, $reverseAlias, $finalQuery['limit']);
@@ -2557,6 +2562,11 @@ LIMIT
                 // Combine l and rvalues
                 if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
                     $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
+
+                    // Special case: postgres binaryAnd
+                    if ($value->comparison === DatabaseTypeComparison::binaryAnd && $this->language === 'pgsql') {
+                        $sideTextFull[$i] = "(((lpad({$sideText['left']}::text, greatest(length({$sideText['left']}), length({$sideText['right']})),'0')::bit varying) & (lpad({$sideText['right']}::text, greatest(length({$sideText['left']}), length({$sideText['right']})),'0')::bit varying)) = (lpad({$sideText['right']}::text, greatest(length({$sideText['left']}), length({$sideText['right']})),'0')::bit varying))";
+                    }
                 }
 
                 else {
