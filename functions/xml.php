@@ -22,143 +22,141 @@
  */
 
 class Xml2Array {
-  /**
-   * XML Dom instance
-   *
-   * @var XML DOM Instance
-   */
-  private $xmlDom;
+    /**
+     * XML Dom instance
+     *
+     * @var XML DOM Instance
+     */
+    private $xmlDom;
 
 
-  /**
-   * Array representing xml
-   *
-   * @var array
-   */
-  private $xmlArray;
+    /**
+     * Array representing xml
+     *
+     * @var array
+     */
+    private $xmlArray;
 
 
-  /**
-   * XML data
-   *
-   * @var String
-   */
-  private $xml;
+    /**
+     * XML data
+     *
+     * @var String
+     */
+    private $xml;
 
 
-  /**
-   * Construct
-   *
-   * @param string xml
-   * @return void
-   */
-  public function __construct($xml = '') {
-    $this->xml = $xml;
-  }
-
-
-  /**
-   * Set the XML Data
-   *
-   * @param string xml
-   * @return void
-   */
-  public function setXml($xml) {
-    if (!empty($xml)) {
-      $this->xml = $xml;
-    }
-  }
-
-  /**
-   * Change xml data-to-array
-   *
-   * @return Array
-   */
-  public function getAsArray() {
-    if ($this->getDom() === false) {
-      return false;
+    /**
+     * Construct
+     *
+     * @param string xml
+     * @return void
+     */
+    public function __construct($xml = '') {
+        $this->xml = $xml;
     }
 
-    $this->xmlArray = array();
-    $root_element = $this->xmlDom->firstChild;
-    $this->xmlArray[$root_element->tagName] = $this->node2Array($root_element);
 
-    return $this->xmlArray;
-  }
-
-
-  /**
-   * Converts a node to an array
-   *
-   * @param DOMNode dom_element
-   * @return array
-   */
-  private function node2Array($dom_element) {
-    if ($dom_element->nodeType != XML_ELEMENT_NODE) {
-      return false;
-    }
-
-    $children = $dom_element->childNodes;
-
-    foreach ($children as $child) {
-      if ($child->nodeType != XML_ELEMENT_NODE) {
-          continue;
-      }
-
-      $prefix = ($child->prefix) ? $child->prefix . ':' : '';
-
-      if (!is_array($result[$prefix . $child->nodeName])) {
-        foreach ($children as $test_node) {
-          if ($child->nodeName == $test_node->nodeName && !$child->isSameNode($test_node)) {
-            break;
-          }
+    /**
+     * Set the XML Data
+     *
+     * @param string xml
+     * @return void
+     */
+    public function setXml($xml) {
+        if (!empty($xml)) {
+            $this->xml = $xml;
         }
-      }
-
-      $result[$prefix . $child->nodeName][] = $this->node2Array($child);
     }
 
-    if (!is_array($result)) {
-      $result['#text'] = $this->decodeEntities($dom_element->nodeValue);
+    /**
+     * Change xml data-to-array
+     *
+     * @return Array
+     */
+    public function getAsArray() {
+        if ($this->getDom() === false) {
+            return false;
+        }
+
+        $this->xmlArray = array();
+        $root_element = $this->xmlDom->firstChild;
+        $this->xmlArray[$root_element->tagName] = $this->node2Array($root_element);
+
+        return $this->xmlArray;
     }
 
-    if ($dom_element->hasAttributes()) {
-      foreach ($dom_element->attributes as $attrib) {
-        $prefix = ($attrib->prefix) ? $attrib->prefix . ':' : '';
-        $result["@" . $prefix . $attrib->nodeName] = $attrib->nodeValue;
-      }
+
+    /**
+     * Converts a node to an array
+     *
+     * @param DOMNode dom_element
+     * @return array
+     */
+    private function node2Array($dom_element) {
+        if ($dom_element->nodeType != XML_ELEMENT_NODE) {
+            return false;
+        }
+
+        $children = $dom_element->childNodes;
+
+        $result = [];
+
+        foreach ($children as $child) {
+            if ($child->nodeType != XML_ELEMENT_NODE) {
+                continue;
+            }
+
+            $prefix = ($child->prefix) ? $child->prefix . ':' : '';
+
+            if (!isset($result[$prefix . $child->nodeName])) {
+                $result[$prefix . $child->nodeName] = [];
+            }
+
+            $result[$prefix . $child->nodeName][] = $this->node2Array($child);
+        }
+
+        if (!is_array($result)) {
+            $result['#text'] = $this->decodeEntities($dom_element->nodeValue);
+        }
+
+        if ($dom_element->hasAttributes()) {
+            foreach ($dom_element->attributes as $attrib) {
+                $prefix = ($attrib->prefix) ? $attrib->prefix . ':' : '';
+                $result["@" . $prefix . $attrib->nodeName] = $attrib->nodeValue;
+            }
+        }
+
+        return $result;
     }
 
-    return $result;
-  }
 
+    /**
+     * Decode entities
+     * @author Joseph T. Parsons <josephtparsons@gmail.com>
+     */
+    private function decodeEntities($value) {
+        $value = str_replace(array('&amp', '&lt;', '&gt;', '&quot;', '&apos;'),
+            array('&', '<', '>', '"', '\''),
+            $value);
 
-  /**
-   * Decode entities
-   * @author Joseph T. Parsons <josephtparsons@gmail.com>
-   */
-  private function decodeEntities($value) {
-    $value = str_replace(array('&amp', '&lt;', '&gt;', '&quot;', '&apos;'),
-      array('&', '<', '>', '"', '\''),
-      $value);
-
-    return $value;
-  }
-
-
-  /**
-   * Generated XML Dom
-   *
-   */
-  private function getDom() {
-    $this->xmlDom = @DOMDocument::loadXML($this->xml);
-
-    if ($this->xmlDom) {
-      return $this->xmlDom;
+        return $value;
     }
-    else {
-      throw new Exception('Invalid XML Data');
+
+
+    /**
+     * Generated XML Dom
+     *
+     */
+    private function getDom() {
+        $this->xmlDom = @DOMDocument::loadXML($this->xml);
+
+        if ($this->xmlDom) {
+            return $this->xmlDom;
+        }
+        else {
+            throw new Exception('Invalid XML Data');
+        }
     }
-  }
 }
 ?>
