@@ -257,7 +257,7 @@ fimApi.prototype.sendMessage = function(roomId, params, requestSettings) {
             'access_token' : window.sessionHash,
             'roomId' : roomId
         }),
-        type: 'PUT',
+        type: 'POST',
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache
@@ -277,6 +277,7 @@ fimApi.prototype.editMessage = function(roomId, messageId, params, requestSettin
 
     $.ajax({
         url: directory + 'api/message.php?' + $.param({
+            '_action' : 'edit',
             'access_token': window.sessionHash,
             'id' : messageId,
             'roomId' : roomId
@@ -294,11 +295,12 @@ fimApi.prototype.deleteMessage = function(roomId, messageId, requestSettings) {
 
     $.ajax({
         url: directory + 'api/message.php?' + $.param({
+            '_action' : 'delete',
             'access_token': window.sessionHash,
             'id' : messageId,
             'roomId' : roomId
         }),
-        type: 'DELETE',
+        type: 'POST',
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache
@@ -317,7 +319,7 @@ fimApi.prototype.getUnreadMessages = function(params, requestSettings) {
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.mergeDefaults({
         'timeout': 30000,
-        'refresh': 30000,
+        'refresh': 30000
     }, fimApi.requestDefaults));
 
     function getUnreadMessages_query() {
@@ -466,7 +468,7 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
 
         $.ajax({
             type: 'get',
-            url: directory + 'api/getActiveUsers.php',
+            url: directory + 'api/userStatus.php',
             data: fimApi.mergeDefaults(params, {
                 'access_token' : window.sessionHash,
                 'fim3_format' : 'json',
@@ -677,19 +679,20 @@ fimApi.prototype.editRoomPermissionGroup = function(roomId, groupId, permissions
 }
 
 
-fimApi.prototype.editUserStatus = function(params, requestSettings) {
+fimApi.prototype.editUserStatus = function(roomId, params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
-        'access_token': window.sessionHash,
-        'fim3_format': 'json',
-        'roomIds' : null,
         'status': null,
-        'typing': null,
+        'typing': null
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
     $.ajax({
-        url: directory + 'api/editUserStatus.php',
+        url: directory + 'api/userStatus.php?' + $.param({
+            '_action' : 'edit',
+            'access_token': window.sessionHash,
+            'roomIds' : [roomId]
+        }),
         type: 'POST',
         data: params,
         timeout: requestSettings.timeout,
@@ -700,9 +703,7 @@ fimApi.prototype.editUserStatus = function(params, requestSettings) {
 
 
 fimApi.prototype.ping = function(roomId, requestSettings) {
-    this.editUserStatus({
-        'roomIds' : [roomId]
-    }, requestSettings);
+    this.editUserStatus(roomId, {}, requestSettings);
 }
 
 

@@ -17,29 +17,21 @@
 /**
  * Sets a User's Activity Status
  *
- * @param roomIds - A list of room IDs to update a user's status to.
- * @param status - While this can be set, it can not currently be retrieved (and other support may be missing). It should be one of "away," "busy," "available," "invisible," and "offline." The former three are primarily cosmetic; "invisible" indicates that a user will only appear as an active user in the active users list of a private room (and thus is not shown in general room active users lists, or the global active users list), and offline indicates that a user is logging off or exiting a room. If sent, a user's previous status (whatever it is) will be removed.
- * @param typing - Whether a user is typing. In practice, this should only be called for a single room, though we don't necessarily enforce the change. (If used with "offline", it is discarded. If used with any other status, it will be exposed in the active users list unless a user is invisible and in a non-private room.)
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  */
 
-$apiRequest = true;
 
-require('../global.php');
+/* Prevent Direct Access of File */
+if (!defined('API_INUSERSTATUS'))
+    die();
 
 
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', array(
-    'roomIds' => array(
-        'cast' => 'list',
-        'filter' => 'roomId',
-        'require' => true,
-    ),
-
     'status' => array(
         'default' => 'available',
         'valid' => array('away', 'busy', 'available', 'invisible', 'offline')
@@ -55,7 +47,7 @@ $database->accessLog('editUserStatus', $request);
 
 
 /* Get Room Data */
-foreach ($request['roomIds'] AS $roomId) {
+foreach ($requestHead['roomIds'] AS $roomId) {
     $room = new fimRoom($roomId);
 
     if ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)

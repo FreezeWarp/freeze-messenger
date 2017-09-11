@@ -22,17 +22,12 @@
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  * @todo Support Private Rooms
- *
- * =GET Parameters=
- * @param csv rooms - Comma-separated list of rooms to obtain active users for. [[Required.]]
- * @param int onlineThreshold - How recent the user's last ping must be to be considered active. The default is generally recommended, but for special purposes you may wish to increase or decrease this.
- * @param csv users - Restrict the active users result to these users, if specified.
  */
 
-$apiRequest = true;
 
-require('../global.php');
-
+/* Prevent Direct Access of File */
+if (!defined('API_INUSERSTATUS'))
+    die();
 
 
 /* Get Request Data */
@@ -44,11 +39,6 @@ $request = fim_sanitizeGPC('g', array(
         'evaltrue' => true,
     ),
 
-    'onlineThreshold' => array(
-        'default' => (int) $config['defaultOnlineThreshold'],
-        'cast' => 'int',
-    ),
-
     'userIds' => array(
         'default' => [],
         'cast' => 'list',
@@ -56,6 +46,7 @@ $request = fim_sanitizeGPC('g', array(
         'evaltrue' => true,
     ),
 ));
+
 $database->accessLog('getActiveUsers', $request);
 
 
@@ -70,7 +61,6 @@ if (count($request['roomIds']) > 0) {
 }
 
 
-
 /* Data Predefine */
 $xmlData = array(
     'users' => array()
@@ -78,7 +68,7 @@ $xmlData = array(
 
 
 $activeUsers = $database->getActiveUsers(array(
-    'onlineThreshold' => $request['onlineThreshold'],
+    'onlineThreshold' => $config['defaultOnlineThreshold'],
     'roomIds' => $request['roomIds'],
     'userIds' => $request['userIds']
 ))->getAsArray(true);

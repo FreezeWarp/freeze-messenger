@@ -353,11 +353,11 @@ class fimDatabase extends databaseSQL
         );
 
 
-        if (count($options['roomIds']) > 0) $conditions['both']['proomId'] = $this->in($options['roomIds']);
-        if (count($options['userIds']) > 0) $conditions['both']['puserId'] = $this->in($options['userIds']);
-        if (count($options['statuses']) > 0) $conditions['both']['status'] = $this->in($options['statuses']);
+        if (count($options['roomIds']) > 0)  $conditions['both']['proomId'] = $this->in($options['roomIds']);
+        if (count($options['userIds']) > 0)  $conditions['both']['puserId'] = $this->in($options['userIds']);
+        if (count($options['statuses']) > 0) $conditions['both']['status']  = $this->in($options['statuses']);
 
-        if (isset($options['typing'])) $conditions['both']['typing'] = $this->bool($options['typing']);
+        if (isset($options['typing']))       $conditions['both']['typing']  = $this->bool($options['typing']);
 
 
         $conditions['both'] = array(

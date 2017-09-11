@@ -90,7 +90,7 @@ if (!($room = new fimRoom($requestHead['roomId']))->roomExists() || !($database-
 
 if (isset($requestHead['id'])) {
     if ($requestHead['_action'] == 'create') // ID shouldn't be used here.
-        new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
+        new fimError('idExtra', 'Parameter ID should not be used with POST/create requests.');
 
     try {
         $message = $database->getMessage($room, $requestHead['id']); // Get message object.
