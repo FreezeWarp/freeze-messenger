@@ -207,7 +207,7 @@ curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => 100000, 'id' => 1],
     ['exception', 'string'],
-    'roomIdNoExist'
+    'idNoExist'
 );
 
 // mutually exclusive
@@ -392,7 +392,7 @@ curlTestGETEquals(
     'Hi'
 );
 
-echo '<tr><td>Get Messages Since Message 0 (Fresh Install Only)</td>';
+echo '<tr><td>Get Messages Since Message 0</td>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 1],
@@ -400,7 +400,7 @@ curlTestGETEquals(
     'Hi'
 );
 
-echo '<tr><td>Get Messages Since Message 1 (Fresh Install Only)</td>';
+echo '<tr><td>Get Messages Since Message 1</td>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 2],
@@ -880,12 +880,15 @@ curlTestPOSTEquals(
 );
 
 echo '</table>';
-// todo: unpriviledged user can't post in admin-only room
+
 // todo: admin kick unpriviledged user in default room
 // todo: unpriviledged user can't post in default room
 // todo: admin unkick unpriviledged user in default room
 // todo: unpriviledged user can post in default room
 
+// todo: user message formatting
+// todo: user friends/ignore list and private messages
+// todo: file uploads and enumerations
 ?>
 </div>
 </body>
