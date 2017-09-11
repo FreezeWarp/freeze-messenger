@@ -76,7 +76,7 @@ class apiData implements ArrayAccess {
 
             case 'jsonp':
                 header('Content-type: application/json');
-                return 'fim3_jsonp.parse(' . $this->outputJson($this->data) . ')';
+                return 'fim_jsonp.parse(' . $this->outputJson($this->data) . ')';
                 break; // Javascript Object Notion for Cross-Origin Requests
 
             case 'json':

@@ -819,7 +819,7 @@ function fim_exceptionHandler($exception) {
         }
     }
     else {
-        header('HTTP/1.1 500 Internal Server Error'); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
+        header(fimError::HTTP_500_INTERNAL); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
 
         $errorData = array_merge($errorData, array(
             'string' => $exception->getMessage(),

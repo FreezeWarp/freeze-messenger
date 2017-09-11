@@ -18,6 +18,9 @@
  * An error class that is intended to communicate the error to a client user or client developer. In some cases, it may be used to communicate errors to the FreezeMessenger developer, but such communication usually uses normally exceptions.
  */
 class fimError extends Exception {
+    const HTTP_403_FORBIDDEN = "HTTP/1.1 403 Forbidden";
+    const HTTP_429_TOO_MANY = "HTTP/1.1 429 Too Many Requests";
+    const HTTP_500_INTERNAL = "HTTP/1.1 500 Internal Server Error";
     /**
      * fimErrorThrown constructor.
      * @param string $code {@link fimErrorThrown::$code}
@@ -26,7 +29,7 @@ class fimError extends Exception {
      * @param array $context {@link fimErrorThrown::$context}
      * @param string $httpError {@link fimErrorThrown::$httpError}
      */
-    public function __construct($code = false, $string = false, $context = array(), $return = false, $httpError = 'HTTP/1.1 403 Forbidden') {
+    public function __construct($code = false, $string = false, $context = array(), $return = false, $httpError = fimError::HTTP_403_FORBIDDEN) {
         if ($code && !$return) throw new fimErrorThrown($code, $string, $context, $httpError);
         else return new fimErrorThrown($code, $string, $context, $httpError);
     }
