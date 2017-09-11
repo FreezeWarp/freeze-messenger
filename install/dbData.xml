@@ -1,286 +1,291 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <dbData version="3.0">
-  <database>
-    <table name="configuration" mode="dev">
-      <column name="directive" value="displayBacktrace" />
-      <column name="value" value="true" />
-      <column name="type" value="bool" />
-    </table>
-    <table name="configuration" mode="dev">
-      <column name="directive" value="logQueries" />
-      <column name="value" value="true" />
-      <column name="type" value="bool" />
-    </table>
+    <database>
+        <table name="configuration" mode="dev">
+            <column name="directive" value="displayBacktrace" />
+            <column name="value" value="true" />
+            <column name="type" value="bool" />
+        </table>
+        <table name="configuration" mode="dev">
+            <column name="directive" value="logQueries" />
+            <column name="value" value="true" />
+            <column name="type" value="bool" />
+        </table>
+        <table name="configuration" mode="dev">
+            <column name="directive" value="dev" />
+            <column name="value" value="true" />
+            <column name="type" value="bool" />
+        </table>
 
-    <!-- Table censorLists -->
-    <table name="censorLists">
-      <column name="listId" value="1" />
-      <column name="listName" value="Example Censor" />
-      <column name="listType" value="white" />
-      <column name="options" value="3" type="bitfield" />
-    </table>
-    <table name="censorLists" mode="dev">
-      <column name="listId" value="2" />
-      <column name="listName" value="Really Bad Words" />
-      <column name="listType" value="white" />
-      <column name="options" value="3" type="bitfield" />
-    </table>
-    <table name="censorLists" mode="dev">
-      <column name="listId" value="3" />
-      <column name="listName" value="IBF" />
-      <column name="listType" value="black" />
-      <column name="options" value="3" type="bitfield" />
-    </table>
-
-
-
-    <!-- Table censorBlackWhiteLists -->
-    <table name="censorBlackWhiteLists" mode="dev">
-      <column name="listId" value="1" />
-      <column name="roomId" value="2" />
-      <column name="status" value="unblock" />
-    </table>
-    <table name="censorBlackWhiteLists" mode="dev">
-      <column name="listId" value="1" />
-      <column name="roomId" value="3" />
-      <column name="status" value="unblock" />
-    </table>
-    <table name="censorBlackWhiteLists" mode="dev">
-      <column name="listId" value="2" />
-      <column name="roomId" value="2" />
-      <column name="status" value="unblock" />
-    </table>
-    <table name="censorBlackWhiteLists" mode="dev">
-      <column name="listId" value="3" />
-      <column name="roomId" value="3" />
-      <column name="status" value="block" />
-    </table>
-    <table name="censorBlackWhiteLists" mode="dev">
-      <column name="listId" value="3" />
-      <column name="roomId" value="4" />
-      <column name="status" value="block" />
-    </table>
+        <!-- Table censorLists -->
+        <table name="censorLists">
+            <column name="listId" value="1" />
+            <column name="listName" value="Example Censor" />
+            <column name="listType" value="white" />
+            <column name="options" value="3" type="bitfield" />
+        </table>
+        <table name="censorLists" mode="dev">
+            <column name="listId" value="2" />
+            <column name="listName" value="Really Bad Words" />
+            <column name="listType" value="white" />
+            <column name="options" value="3" type="bitfield" />
+        </table>
+        <table name="censorLists" mode="dev">
+            <column name="listId" value="3" />
+            <column name="listName" value="IBF" />
+            <column name="listType" value="black" />
+            <column name="options" value="3" type="bitfield" />
+        </table>
 
 
-    <!-- Table censorWords -->
-    <table name="censorWords">
-      <column name="listId" value="1" />
-      <column name="word" value="exomorphic" />
-      <column name="severity" value="block" />
-    </table>
-    <table name="censorWords">
-      <column name="listId" value="1" />
-      <column name="word" value="endomorphic" />
-      <column name="severity" value="block" />
-    </table>
-    <table name="censorWords">
-      <column name="listId" value="1" />
-      <column name="word" value="objectivism" />
-      <column name="severity" value="warn" />
-      <column name="param" value="Objectivism is a philosophy generally associated with Ayn Rand. It is not about potted plants." />
-    </table>
-    <table name="censorWords">
-      <column name="listId" value="1" />
-      <column name="word" value="#YOLO" />
-      <column name="severity" value="confirm" />
-      <column name="param" value="...Are you sure? Are you, like, really, really sure you want to say hashtag-YOLO?" />
-    </table>
-    <table name="censorWords">
-      <column name="listId" value="1" />
-      <column name="word" value="Eunux" />
-      <column name="severity" value="replace" />
-      <column name="param" value="Unix" />
-    </table>
 
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="2" />
-      <column name="word" value="faggot" />
-      <column name="severity" value="block" />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="2" />
-      <column name="word" value="cuntmeister" />
-      <column name="severity" value="block" />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="2" />
-      <column name="word" value="fag" />
-      <column name="severity" value="warn" />
-      <column name="param" value="You better be talking about a cigarrette or annoying biker gangs..." />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="2" />
-      <column name="word" value="cock" />
-      <column name="severity" value="confirm" />
-      <column name="param" value="Are you talking about a bird? If not, please don't say that." />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="2" />
-      <column name="word" value="no homo" />
-      <column name="severity" value="replace" />
-      <column name="param" value="marry me" />
-    </table>
-
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="2" />
-      <column name="word" value="faggot" />
-      <column name="severity" value="block" />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="2" />
-      <column name="word" value="cuntmeister" />
-      <column name="severity" value="block" />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="2" />
-      <column name="word" value="fag" />
-      <column name="severity" value="warn" />
-      <column name="param" value="You better be talking about a cigarrette or annoying biker gangs..." />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="2" />
-      <column name="word" value="cock" />
-      <column name="severity" value="confirm" />
-      <column name="param" value="Are you talking about a bird? If not, please don't say that." />
-    </table>
-
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="3" />
-      <column name="word" value="bug" />
-      <column name="severity" value="replace" />
-      <column name="param" value="feature" />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="3" />
-      <column name="word" value="crash" />
-      <column name="severity" value="replace" />
-      <column name="param" value="restart" />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="3" />
-      <column name="word" value="piece of shit" />
-      <column name="severity" value="replace" />
-      <column name="param" value="pile of chocolate" />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="3" />
-      <column name="word" value="monkey" />
-      <column name="severity" value="warn" />
-      <column name="param" value="kitty!" />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="3" />
-      <column name="word" value="lucille 2" />
-      <column name="severity" value="confirm" />
-      <column name="param" value="Who?" />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="3" />
-      <column name="word" value="ann" />
-      <column name="severity" value="replace" />
-      <column name="param" value="egg" />
-    </table>
-    <table name="censorWords" mode="dev">
-      <column name="listId" value="3" />
-      <column name="word" value="Google" />
-      <column name="severity" value="block" />
-      <column name="param" value="We're not allowed to show that. (Also, are my AD referrences horrible or what?)" />
-    </table>
+        <!-- Table censorBlackWhiteLists -->
+        <table name="censorBlackWhiteLists" mode="dev">
+            <column name="listId" value="1" />
+            <column name="roomId" value="2" />
+            <column name="status" value="unblock" />
+        </table>
+        <table name="censorBlackWhiteLists" mode="dev">
+            <column name="listId" value="1" />
+            <column name="roomId" value="3" />
+            <column name="status" value="unblock" />
+        </table>
+        <table name="censorBlackWhiteLists" mode="dev">
+            <column name="listId" value="2" />
+            <column name="roomId" value="2" />
+            <column name="status" value="unblock" />
+        </table>
+        <table name="censorBlackWhiteLists" mode="dev">
+            <column name="listId" value="3" />
+            <column name="roomId" value="3" />
+            <column name="status" value="block" />
+        </table>
+        <table name="censorBlackWhiteLists" mode="dev">
+            <column name="listId" value="3" />
+            <column name="roomId" value="4" />
+            <column name="status" value="block" />
+        </table>
 
 
-    <!-- Table counters -->
-    <table name="counters">
-      <column name="counterName" value="uploads" />
-      <column name="counterValue" value="0" />
-    </table>
-    <table name="counters">
-      <column name="counterName" value="uploadSize" />
-      <column name="counterValue" value="0" />
-    </table>
-    <table name="counters">
-      <column name="counterName" value="messages" />
-      <column name="counterValue" value="0" />
-    </table>
-    <table name="counters">
-      <column name="counterName" value="rooms" />
-      <column name="counterValue" value="0" />
-    </table>
+        <!-- Table censorWords -->
+        <table name="censorWords">
+            <column name="listId" value="1" />
+            <column name="word" value="exomorphic" />
+            <column name="severity" value="block" />
+        </table>
+        <table name="censorWords">
+            <column name="listId" value="1" />
+            <column name="word" value="endomorphic" />
+            <column name="severity" value="block" />
+        </table>
+        <table name="censorWords">
+            <column name="listId" value="1" />
+            <column name="word" value="objectivism" />
+            <column name="severity" value="warn" />
+            <column name="param" value="Objectivism is a philosophy generally associated with Ayn Rand. It is not about potted plants." />
+        </table>
+        <table name="censorWords">
+            <column name="listId" value="1" />
+            <column name="word" value="#YOLO" />
+            <column name="severity" value="confirm" />
+            <column name="param" value="...Are you sure? Are you, like, really, really sure you want to say hashtag-YOLO?" />
+        </table>
+        <table name="censorWords">
+            <column name="listId" value="1" />
+            <column name="word" value="Eunux" />
+            <column name="severity" value="replace" />
+            <column name="param" value="Unix" />
+        </table>
+
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="2" />
+            <column name="word" value="faggot" />
+            <column name="severity" value="block" />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="2" />
+            <column name="word" value="cuntmeister" />
+            <column name="severity" value="block" />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="2" />
+            <column name="word" value="fag" />
+            <column name="severity" value="warn" />
+            <column name="param" value="You better be talking about a cigarrette or annoying biker gangs..." />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="2" />
+            <column name="word" value="cock" />
+            <column name="severity" value="confirm" />
+            <column name="param" value="Are you talking about a bird? If not, please don't say that." />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="2" />
+            <column name="word" value="no homo" />
+            <column name="severity" value="replace" />
+            <column name="param" value="marry me" />
+        </table>
+
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="2" />
+            <column name="word" value="faggot" />
+            <column name="severity" value="block" />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="2" />
+            <column name="word" value="cuntmeister" />
+            <column name="severity" value="block" />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="2" />
+            <column name="word" value="fag" />
+            <column name="severity" value="warn" />
+            <column name="param" value="You better be talking about a cigarrette or annoying biker gangs..." />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="2" />
+            <column name="word" value="cock" />
+            <column name="severity" value="confirm" />
+            <column name="param" value="Are you talking about a bird? If not, please don't say that." />
+        </table>
+
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="3" />
+            <column name="word" value="bug" />
+            <column name="severity" value="replace" />
+            <column name="param" value="feature" />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="3" />
+            <column name="word" value="crash" />
+            <column name="severity" value="replace" />
+            <column name="param" value="restart" />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="3" />
+            <column name="word" value="piece of shit" />
+            <column name="severity" value="replace" />
+            <column name="param" value="pile of chocolate" />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="3" />
+            <column name="word" value="monkey" />
+            <column name="severity" value="warn" />
+            <column name="param" value="kitty!" />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="3" />
+            <column name="word" value="lucille 2" />
+            <column name="severity" value="confirm" />
+            <column name="param" value="Who?" />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="3" />
+            <column name="word" value="ann" />
+            <column name="severity" value="replace" />
+            <column name="param" value="egg" />
+        </table>
+        <table name="censorWords" mode="dev">
+            <column name="listId" value="3" />
+            <column name="word" value="Google" />
+            <column name="severity" value="block" />
+            <column name="param" value="We're not allowed to show that. (Also, are my AD referrences horrible or what?)" />
+        </table>
 
 
-    <table name="oauth_clients">
-      <column name="client_id" value="WebPro" />
-    </table>
-
-    <table name="oauth_clients">
-        <column name="client_id" value="WebProAdmin" />
-    </table>
-
-
-    <!-- Table rooms -->
-    <table name="rooms">
-      <column name="id" value="1" />
-      <column name="name" value="Your Room!" />
-      <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-      <column name="ownerId" value="0" />
-      <column name="options" value="1" type="bitfield" />
-    </table>
-    <table name="rooms">
-      <column name="id" value="2" />
-      <column name="name" value="Another Room!" />
-      <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-      <column name="ownerId" value="0" />
-      <column name="options" value="1" type="bitfield" />
-    </table>
-    <table name="rooms" mode="dev">
-      <column name="id" value="3" />
-      <column name="name" value="Hidden Room" />
-      <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-      <column name="ownerId" value="1" />
-      <column name="options" value="8" type="bitfield" />
-    </table>
+        <!-- Table counters -->
+        <table name="counters">
+            <column name="counterName" value="uploads" />
+            <column name="counterValue" value="0" />
+        </table>
+        <table name="counters">
+            <column name="counterName" value="uploadSize" />
+            <column name="counterValue" value="0" />
+        </table>
+        <table name="counters">
+            <column name="counterName" value="messages" />
+            <column name="counterValue" value="0" />
+        </table>
+        <table name="counters">
+            <column name="counterName" value="rooms" />
+            <column name="counterValue" value="0" />
+        </table>
 
 
-    <table name="emoticons">
-      <column name="emoticonText" value=":|" />
-      <column name="emoticonFile" value="webpro/client/smilies/icon_neutral.gif" />
-    </table>
-    <table name="emoticons">
-      <column name="emoticonText" value=":(" />
-      <column name="emoticonFile" value="webpro/client/smilies/icon_e_sad.gif" />
-    </table>
-    <table name="emoticons">
-      <column name="emoticonText" value=":)" />
-      <column name="emoticonFile" value="webpro/client/smilies/icon_e_smile.gif" />
-    </table>
-    <table name="emoticons">
-      <column name="emoticonText" value="8)" />
-      <column name="emoticonFile" value="webpro/client/smilies/icon_cool.gif" />
-    </table>
-    <table name="emoticons">
-      <column name="emoticonText" value=":D" />
-      <column name="emoticonFile" value="webpro/client/smilies/icon_e_biggrin.gif" />
-    </table>
+        <table name="oauth_clients">
+            <column name="client_id" value="WebPro" />
+        </table>
+
+        <table name="oauth_clients">
+            <column name="client_id" value="WebProAdmin" />
+        </table>
 
 
-    <!-- Table users -->
-    <!-- The addUser function should be tested separately (as with addRoom, etc.) -->
-    <table name="users">
-      <column name="id" value="-1" />
-      <column name="name" value="Anonymous" />
-      <column name="privs" value="1" type="bitfield" />
-    </table>
-    <table name="users" mode="dev">
-      <column name="id" value="3" />
-      <column name="name" value="Test Bot 1" />
-      <column name="birthDate" value="1175052655" />
-      <column name="passwordHash" value="pass1" /><!-- Unhashed passwords are only used for testing. -->
-      <column name="passwordFormat" value="plaintext" />
-      <column name="avatar" value="" /><!-- TODO -->
-      <column name="profile" value="http://www.josephtparsons.com/" />
-      <column name="nameFormat" value="color: red;" />
-      <column name="defaultRoomId" value="3" />
-      <column name="parentalFlags" value="" />
-    </table>
-  </database>
+        <!-- Table rooms -->
+        <table name="rooms">
+            <column name="id" value="1" />
+            <column name="name" value="Your Room!" />
+            <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
+            <column name="ownerId" value="0" />
+            <column name="options" value="1" type="bitfield" />
+        </table>
+        <table name="rooms">
+            <column name="id" value="2" />
+            <column name="name" value="Another Room!" />
+            <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
+            <column name="ownerId" value="0" />
+            <column name="options" value="1" type="bitfield" />
+        </table>
+        <table name="rooms" mode="dev">
+            <column name="id" value="3" />
+            <column name="name" value="Hidden Room" />
+            <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
+            <column name="ownerId" value="1" />
+            <column name="options" value="8" type="bitfield" />
+        </table>
+
+
+        <table name="emoticons">
+            <column name="emoticonText" value=":|" />
+            <column name="emoticonFile" value="webpro/client/smilies/icon_neutral.gif" />
+        </table>
+        <table name="emoticons">
+            <column name="emoticonText" value=":(" />
+            <column name="emoticonFile" value="webpro/client/smilies/icon_e_sad.gif" />
+        </table>
+        <table name="emoticons">
+            <column name="emoticonText" value=":)" />
+            <column name="emoticonFile" value="webpro/client/smilies/icon_e_smile.gif" />
+        </table>
+        <table name="emoticons">
+            <column name="emoticonText" value="8)" />
+            <column name="emoticonFile" value="webpro/client/smilies/icon_cool.gif" />
+        </table>
+        <table name="emoticons">
+            <column name="emoticonText" value=":D" />
+            <column name="emoticonFile" value="webpro/client/smilies/icon_e_biggrin.gif" />
+        </table>
+
+
+        <!-- Table users -->
+        <!-- The addUser function should be tested separately (as with addRoom, etc.) -->
+        <table name="users">
+            <column name="id" value="-1" />
+            <column name="name" value="Anonymous" />
+            <column name="privs" value="1" type="bitfield" />
+        </table>
+        <table name="users" mode="dev">
+            <column name="id" value="3" />
+            <column name="name" value="Test Bot 1" />
+            <column name="birthDate" value="1175052655" />
+            <column name="passwordHash" value="pass1" /><!-- Unhashed passwords are only used for testing. -->
+            <column name="passwordFormat" value="plaintext" />
+            <column name="avatar" value="" /><!-- TODO -->
+            <column name="profile" value="http://www.josephtparsons.com/" />
+            <column name="nameFormat" value="color: red;" />
+            <column name="defaultRoomId" value="3" />
+            <column name="parentalFlags" value="" />
+        </table>
+    </database>
 </dbData>

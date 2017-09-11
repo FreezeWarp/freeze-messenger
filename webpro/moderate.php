@@ -308,7 +308,7 @@ require('../global.php');
 
     <?php
     if (!$user->id) {
-        echo container('Please Login',($message ? $message : 'You have not logged in. Please login:') . '<br /><br />
+        echo container('Please Login',(isset($message) ? $message : 'You have not logged in. Please login:') . '<br /><br />
 
   <form action="moderate.php" method="post">
     <table>
@@ -327,7 +327,9 @@ require('../global.php');
   </form>');
     }
     else {
-        switch ($_GET['do']) {
+        $database->startTransaction();
+
+        switch ($_GET['do'] ?? '') {
             case 'phrases': require('./moderate/phrases.php'); break;
             case 'templates': require('./moderate/templates.php'); break;
 
@@ -359,6 +361,8 @@ require('../global.php');
         }
 
         $database->accessLog('moderate', $request);
+
+        $database->endTransaction();
     }
     ?>
 </div>

@@ -25,7 +25,7 @@ else {
     ));
 
     if ($user->hasPriv('modPrivs')) {
-        switch($_GET['tool']) {
+        switch($_GET['tool'] ?? false) {
             case false:
                 echo container('Please Choose a Tool','<ul>
                     <li><a href="./moderate.php?do=tools&tool=viewCache">View Cache</a> - This shows all cache entries available to the current server. APC caches for other servers will not be displayed.</li>

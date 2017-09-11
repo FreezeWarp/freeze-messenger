@@ -45,7 +45,14 @@ class apiData implements ArrayAccess {
 
 
     public function replaceData($data) {
+        global $config, $database;
+
         $this->data = $data;
+
+        // Include query log and configuration with all requests when in dev mode.
+        if ($config['dev']) {
+            $this->data['queryLog'] = $database->queryLog;
+        }
     }
 
 
@@ -56,13 +63,26 @@ class apiData implements ArrayAccess {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function __toString() {
-        header('FIM-API-VERSION: 3b4dev');
+        header('FIM-API-VERSION: 1.0.nightlies1');
 
         switch ($this->format) {
-            case 'phparray':                                                return $this->outputArray($this->data); break; // print_r
-            case 'keys':                                                    return $this->outputKeys($this->data);  break; // HTML List format for the keys only (documentation thing)
-            case 'jsonp':         header('Content-type: application/json'); return 'fim3_jsonp.parse(' . $this->outputJson($this->data) . ')'; break; // Javascript Object Notion for Cross-Origin Requests
-            case 'json': default: header('Content-type: application/json'); return $this->outputJson($this->data);  break; // Javascript Object Notion
+            case 'phparray':
+                return $this->outputArray($this->data);
+                break; // print_r
+
+            case 'keys':
+                return $this->outputKeys($this->data);
+                break; // HTML List format for the keys only (documentation thing)
+
+            case 'jsonp':
+                header('Content-type: application/json');
+                return 'fim3_jsonp.parse(' . $this->outputJson($this->data) . ')';
+                break; // Javascript Object Notion for Cross-Origin Requests
+
+            case 'json':
+                default: header('Content-type: application/json');
+                return $this->outputJson($this->data);
+                break; // Javascript Object Notion
         }
     }
 
@@ -118,6 +138,7 @@ class apiData implements ArrayAccess {
                 return '[]';
             }
         }
+
         elseif (is_object($value) && get_class($value) === 'apiOutputList') {
             $values = $value->getArray();
 
@@ -129,21 +150,32 @@ class apiData implements ArrayAccess {
                 return '[]';
             }
         }
+
         elseif (is_object($value))
             return $this->formatJsonValue(get_object_vars($value), $depth + 1);
+
         elseif ($value === true)
             return 'true';
+
         elseif ($value === false)
             return 'false';
+
         elseif (is_string($value))
             // mb_convert_encoding removes non-UTF8 characters, ensuring that json_encode doesn't fail.
-            return json_encode(function_exists("mb_convert_encoding") ? mb_convert_encoding($value, "UTF-8", "UTF-8") : $value, JSON_PARTIAL_OUTPUT_ON_ERROR, 1);
+            return json_encode(
+                function_exists("mb_convert_encoding") ? mb_convert_encoding($value, "UTF-8", "UTF-8") : $value,
+                JSON_PARTIAL_OUTPUT_ON_ERROR,
+                1
+            );
+
         elseif (is_int($value) || is_float($value))
             return $value;
+
         elseif ($value == '')
             return '""';
-        //else
-        //    die('Unrecognised value type:' . gettype($value)); // We die() instead of throwing here in order to avoid recursion with the stacktrace.
+
+        else
+            die('Unrecognised value type:' . gettype($value)); // We die() instead of throwing here in order to avoid recursion with the stacktrace.
     }
 
 
