@@ -32,8 +32,6 @@ function stream_event($streamSource, $queryId, $lastEvent) {
             fim_flush();
             $outputStarted = true;
         }
-
-        fim_flush(); // Force the server to flush.
     }
 
     unset($events); // Free memory.
@@ -88,7 +86,6 @@ if (!$config['serverSentEvents']) {
 else {
     /* Send Proper Headers */
     header('Content-Type: text/event-stream');
-//  header('Content-Type: text/plain');
     header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
 
     @set_time_limit($config['serverSentTimeLimit']);
@@ -125,9 +122,9 @@ else {
         $serverSentRetries++;
 
         switch ($request['streamType']) {
-        case 'messages': $request['lastEvent'] = stream_messages($request['queryId'], $request['lastEvent']);      break;
-        case 'user':     $request['lastEvent'] = stream_event('user', $request['queryId'], $request['lastEvent']); break;
-        case 'room':     $request['lastEvent'] = stream_event('room', $request['queryId'], $request['lastEvent']); break;
+            case 'messages': $request['lastEvent'] = stream_messages($request['queryId'], $request['lastEvent']);      break;
+            case 'user':     $request['lastEvent'] = stream_event('user', $request['queryId'], $request['lastEvent']); break;
+            case 'room':     $request['lastEvent'] = stream_event('room', $request['queryId'], $request['lastEvent']); break;
         }
 
         if ($config['dev']) {

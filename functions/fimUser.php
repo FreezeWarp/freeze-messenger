@@ -531,51 +531,57 @@ class fimUser
      * @return bool True if the password match, false otherwise.
      * @throws Exception If the user's passwordFormat is not understood.
      */
-    public function checkPassword($password)
+    public function checkPasswordAndLockout($password)
     {
         global $database;
 
         if ($database->lockoutActive()) {
-
+            new fimError('lockoutActive', 'You have attempted to login too many times. Please wait a while and then try again.');
+            return false;
         }
         else {
-            $database->lockoutIncrement();
-            /* TODO: IP limit to calling this function. */
-
-            switch ($this->passwordFormat) {
-                case 'phpass':
-                    if (!isset($this->passwordHash)) {
-                        throw new Exception('User object was not generated with password hash information.');
-                    }
-
-                    else {
-                        require_once('PasswordHash.php');
-                        $h = new PasswordHash(8, FALSE);
-                        return $h->CheckPassword($password, $this->passwordHash);
-                    }
-                    break;
-
-                case 'vbmd5':
-                    if (!isset($this->passwordHash, $this->passwordSalt))
-                        throw new Exception('User object was not generated with password hash information.');
-                    else
-                        return ($this->passwordHash === md5(md5($password) . $this->passwordSalt));
-                    break;
-
-                case 'plaintext':
-                    return ($this->__get('passwordHash') === $password);
-                    break;
-
-                case 'phpbb':
-                    return strlen($password) > 0 && $this->phpbb_check_hash($password, $this->__get('passwordHash'));
-                    break;
-
-                default:
-                    throw new Exception('Invalid password format: ' . $this->passwordFormat);
-                    break;
+            if ($this->checkPassword($password)) {
+                return true;
             }
+            else {
+                $database->lockoutIncrement();
+                return false;
+            }
+        }
+    }
 
-            return false;
+    public function checkPassword($password) {
+        switch ($this->passwordFormat) {
+            case 'phpass':
+                if (!isset($this->passwordHash)) {
+                    throw new Exception('User object was not generated with password hash information.');
+                }
+
+                else {
+                    require_once('PasswordHash.php');
+                    $h = new PasswordHash(8, FALSE);
+                    return $h->CheckPassword($password, $this->passwordHash);
+                }
+            break;
+
+            case 'vbmd5':
+                if (!isset($this->passwordHash, $this->passwordSalt))
+                    throw new Exception('User object was not generated with password hash information.');
+                else
+                    return ($this->passwordHash === md5(md5($password) . $this->passwordSalt));
+            break;
+
+            case 'plaintext':
+                return ($this->__get('passwordHash') === $password);
+            break;
+
+            case 'phpbb':
+                return strlen($password) > 0 && $this->phpbb_check_hash($password, $this->__get('passwordHash'));
+            break;
+
+            default:
+                throw new Exception('Invalid password format: ' . $this->passwordFormat);
+            break;
         }
     }
 

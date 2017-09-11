@@ -264,7 +264,7 @@ class FIMDatabaseOAuth implements
 
     protected function checkPassword($user, $password)
     {
-        return $user['userObj']->checkPassword($password);
+        return $user['userObj']->checkPasswordAndLockout($password);
     }
 
     public function getUser($username)

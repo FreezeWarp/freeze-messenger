@@ -1131,8 +1131,8 @@ class fimDatabase extends databaseSQL
         if (!$options['showDeleted'] && $options['archive'])
             $conditions['deleted'] = $this->bool(false);
 
-        //if (count($options['messageIds']) > 0)
-        //    $conditions['either']['id'] = $this->in($options['messageIds']);
+        if (count($options['messageIds']) > 0)
+            $conditions['either']['id'] = $this->in($options['messageIds']);
 
         if (count($options['userIds']) > 0)
             $conditions['userId'] = $this->in($options['userIds']);
