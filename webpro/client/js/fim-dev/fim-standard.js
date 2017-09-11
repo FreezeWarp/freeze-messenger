@@ -261,7 +261,7 @@ standard.prototype.getMessages = function() {
             function getMessages_query() {
                 fimApi.getMessages({
                     'roomId': roomId,
-                    'initialRequest': (requestSettings.firstRequest ? 1 : 0),
+                    'archive': (requestSettings.firstRequest ? 1 : 0),
                     'messageIdStart': requestSettings.lastMessage + 1
                 }, {
                     'reverseEach' : true,

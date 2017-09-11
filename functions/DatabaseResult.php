@@ -32,6 +32,17 @@ class databaseResult
     public $count = 0;
 
     /**
+     * @var int The result number we are currently pointing to.
+     */
+    public $resultIndex = 0;
+
+
+    /**
+     * @var array An array containing the field numbers corresponding to all binary columns in the current resultset.
+     */
+    public $binaryFields = [];
+
+    /**
      * Construct
      *
      * @param object $queryData - The database object.
@@ -53,6 +64,15 @@ class databaseResult
         else {
             $this->count = $this->functionMap('getCount');
         }
+
+        if ($this->database->driver === 'pgsql') {
+            $num = pg_num_fields($this->queryData);
+            for ($i = 0; $i < $num; $i++) {
+                if (pg_field_type($this->queryData, $i) === 'bytea') {
+                    $this->binaryFields[] = pg_field_name($this->queryData, $i);
+                }
+            }
+        }
     }
 
 
@@ -64,6 +84,14 @@ class databaseResult
      */
     public function functionMap($operation)
     {
+        switch ($operation) {
+            case 'fetchAsArray':
+                if ($this->resultIndex++ >= $this->count) {
+                    return false;
+                }
+            break;
+        }
+
         $args = func_get_args();
         switch ($this->database->driver) {
             case 'mysql':
@@ -91,7 +119,27 @@ class databaseResult
             case 'pgsql':
                 switch ($operation) {
                     case 'fetchAsArray' :
-                        return (($data = pg_fetch_assoc($this->queryData)) === false ? false : $data);
+                        $data = pg_fetch_assoc($this->queryData);
+
+                        // Decode bytea values
+                        if ($data) {
+                            /*
+                            $columns = array_keys($data);
+                            foreach ($columns AS $i => $column) {
+                                echo $column . ':' . pg_field_type($this->queryData, $i) . "\n";
+                                if (pg_field_type($this->queryData, $i) === 'bytea') {
+                                    $data[$column] = pg_unescape_bytea($data[$column]);
+                                }
+                            }*/
+
+                            foreach ($this->binaryFields AS $field) {
+                                $data[$field] = pg_unescape_bytea($data[$field]);
+                            }
+                            //var_dump($data);
+                            //var_dump(debug_backtrace());
+                        }
+
+                        return $data;
                     break;
                     case 'getCount' :
                         return pg_num_rows($this->queryData);
@@ -119,7 +167,7 @@ class databaseResult
      */
     public function setQuery($queryData)
     {
-        $this->queryData = $queryData;
+        //$this->queryData = $queryData;
     }
 
 

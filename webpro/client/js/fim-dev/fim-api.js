@@ -219,14 +219,9 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
         'page' : null,
         'messageTextSearch' : null,
         'archive' : false,
-        'initialRequest' : false,
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
-
-    if (params.initialRequest) {
-        params.archive = 1;
-    }
 
     function getMessages_query() {
         $.ajax({

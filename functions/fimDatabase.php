@@ -425,21 +425,12 @@ class fimDatabase extends databaseSQL
         );
 
         if ($options['includeStatus']) {
-            $subColumns = [
-                $this->sqlPrefix . 'censorBlackWhiteLists' => 'listId, roomId, status'
-            ];
-            $subConditions = [];
-            if ($options['includeStatus']) $subConditions['both']['roomId'] = $options['includeStatus'];
-
-            $columns['sub ' . $this->sqlPrefix . "censorBlackWhiteLists"] = $this->subSelect($subColumns, $subConditions);
-
-            $columns[$this->sqlPrefix . "censorBlackWhiteLists"] = [
-                'listId' => [
-                    'alias'  => 'bwListId',
-                    'joinOn' => 'listId',
-                ],
-                'roomId',
-                'status',
+            $columns['join ' . $this->sqlPrefix . "censorBlackWhiteLists"] = [
+                'columns' => 'listId bwlistId, roomId, status',
+                'conditions' => [
+                    'roomId' => $options['includeStatus'],
+                    'bwlistId' => $this->col('listId')
+                ]
             ];
         }
 
@@ -1140,8 +1131,8 @@ class fimDatabase extends databaseSQL
         if (!$options['showDeleted'] && $options['archive'])
             $conditions['deleted'] = $this->bool(false);
 
-        if (count($options['messageIds']) > 0)
-            $conditions['either']['id'] = $this->in($options['messageIds']);
+        //if (count($options['messageIds']) > 0)
+        //    $conditions['either']['id'] = $this->in($options['messageIds']);
 
         if (count($options['userIds']) > 0)
             $conditions['userId'] = $this->in($options['userIds']);
@@ -1805,6 +1796,8 @@ class fimDatabase extends databaseSQL
         ), array(
             'attempts' => $this->equation('$attempts + 1'),
             'expires' => $this->now($this->config['lockoutExpires']) // TOOD: Config
+        ), array(
+            'attempts' => 1,
         ));
 
         return true;
@@ -2115,7 +2108,7 @@ class fimDatabase extends databaseSQL
         );
 
         $data = array(
-            'time' => $this->now()
+            'time' => $this->now(),
         );
 
         if (!is_null($typing)) $data['typing'] = (bool) $typing;
@@ -2272,10 +2265,11 @@ class fimDatabase extends databaseSQL
                 'userId' => $message->user->id,
                 'roomId' => $roomId,
                 'time' => $minute,
-                'messages' => 1,
             ), array(
                 'ip' => $_SERVER['REMOTE_ADDR'],
                 'messages' => $this->equation('$messages + 1'),
+            ), array(
+                'messages' => 1,
             ));
         }
 
@@ -2294,6 +2288,8 @@ class fimDatabase extends databaseSQL
             'roomId'   => $message->room->id,
         ), array(
             'messages' => $this->equation('$messages + 1')
+        ), array(
+            'messages' => 1
         ));
 
 

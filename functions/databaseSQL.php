@@ -694,6 +694,8 @@ class databaseSQL extends database
                             return false;
                         }
                         else {
+                            $this->rawQuery('SET bytea_output = "escape"');
+
                             return $this->connection;
                         }
                     break;
@@ -917,8 +919,11 @@ class databaseSQL extends database
                 break;
 
             case DatabaseTypeType::equation:  // Only partially implemented, because equations are stupid. Don't use them if possible.
-                return preg_replace_callback('/\$([a-zA-Z]+)/', function ($matches) {
-                    return $matches[1];
+                return preg_replace_callback('/\$(([a-zA-Z_]+)\.|)([a-zA-Z]+)/', function ($matches) {
+                    if ($matches[1])
+                        return $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN, $matches[2], $matches[3]);
+                    else
+                        return $this->formatValue(DatabaseTypeType::column, $matches[3]);
                 }, $values[1]);
             break;
 
@@ -1392,8 +1397,15 @@ class databaseSQL extends database
                     'columnBlobPermLimits' => array(
                         'default' => 'BYTEA',
                     ),
+
+                    'columnBitLimits' => array(
+                        15 => 'SMALLINT',
+                        31 => 'INTEGER',
+                        63 => 'BIGINT',
+                        'default' => 'INTEGER',
+                    ),
                     DatabaseTypeType::float => 'REAL',
-                    DatabaseTypeType::bool => 'SMALLINT', // Note: ENUM(1,2) AS BOOLENUM better.
+                    DatabaseTypeType::bool => 'SMALLINT', // TODO: ENUM(1,2) AS BOOLENUM better.
                     DatabaseTypeType::timestamp => 'INTEGER',
                     DatabaseTypeType::blob => 'BYTEA',
                 );
@@ -1402,7 +1414,7 @@ class databaseSQL extends database
                     true => 1, false => 0,
                 );
 
-                $this->nativeBitfield = true;
+                $this->nativeBitfield = false; // Requires too many workarounds.
                 $this->enumMode = 'useCreateType';
                 $this->commentMode = 'useCommentOn';
                 $this->indexMode = 'useCreateIndex';
@@ -1713,7 +1725,7 @@ class databaseSQL extends database
                 case DatabaseTypeType::bitfield:
                     // If our SQL engine support a BIT type, use it.
                     if ($this->nativeBitfield) {
-                        $typePiece = 'BIT VARYING(' . $column['bits'] . ')';
+                        $typePiece = 'BIT(' . $column['bits'] . ')';
                     }
 
                     // Otherwise, use a predefined type identifier.
@@ -1896,6 +1908,40 @@ class databaseSQL extends database
         }
 
         return [$columns, $triggers, $tableIndexes, $tableProperties];
+    }
+
+
+    private function parseSelectColumns($tableCols) {
+        if (is_array($tableCols))
+            return $tableCols;
+
+        elseif (is_string($tableCols)) { // Table columns have been defined with a string list, e.g. "a,b,c"
+            $columnArray = [];
+
+            $colParts = explode(',', $tableCols); // Split the list into an array, delimited by commas
+
+            foreach ($colParts AS $colPart) { // Run through each list item
+                $colPart = trim($colPart); // Remove outside whitespace from the item
+
+                if (strpos($colPart, ' ') !== false) { // If a space is within the part, then the part is formatted as "columnName columnAlias"
+                    $colPartParts = explode(' ', $colPart); // Divide the piece
+
+                    $colPartName = $colPartParts[0]; // Set the name equal to the first part of the piece
+                    $colPartAlias = $colPartParts[1]; // Set the alias equal to the second part of the piece
+                }
+                else { // Otherwise, the column name and alias are one in the same.
+                    $colPartName = $colPart; // Set the name and alias equal to the piece
+                    $colPartAlias = $colPart;
+                }
+
+                $columnArray[$colPartName] = $colPartAlias;
+            }
+
+            return $columnArray;
+        }
+
+        else
+            throw new Exception('Unrecognised table column format.');
     }
 
 
@@ -2194,7 +2240,7 @@ class databaseSQL extends database
             'limit' => 0
         );
         $reverseAlias = array();
-        $subQueries = array();
+        $joins = array();
 
 
 
@@ -2251,15 +2297,15 @@ class databaseSQL extends database
             }
 
 
+            if (strpos($tableName, 'join ') === 0) { // If the table is identified as being part of a join.
+                $tableName = substr($tableName, 5);
 
-            if (strpos($tableName, 'sub ') === 0) { // If the table is identified as being part of a subquery. (TODO)
-                $subQueries[substr($tableName, 4)] = $tableCols;
+                /*foreach ($this->parseSelectColumns($tableCols['columns']) AS $columnAlias => $columnName) {
+                    $finalQuery['columns'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS, $tableName, $columnAlias, $columnName);
+                }*/
 
-                continue;
-            }
-
-            elseif (isset($subQueries[$tableName])) { // If the table was earlier defined as a subquery. (TODO)
-                $finalQuery['tables'][] = '(' . $subQueries[$tableName] . ') AS ' . $tableName; // TODO: Format value?
+                $joins[$tableName] = $tableCols['conditions'];
+                $tableCols = $tableCols['columns'];
             }
 
             elseif (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
@@ -2291,70 +2337,38 @@ class databaseSQL extends database
             }
 
 
+            $tableCols = $this->parseSelectColumns($tableCols);
 
-            if (is_array($tableCols)) { // Table columns have been defined with an array, e.g. ["a", "b", "c"]
-                foreach ($tableCols AS $colName => $colAlias) {
-                    if (is_int($colName)) $colName = $colAlias;
+            foreach ($tableCols AS $colName => $colAlias) {
+                if (is_int($colName)) $colName = $colAlias;
 
-                    if (strlen($colName) > 0) {
-                        if (strstr($colName, ' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
-                            $colParts = explode(' ', $colName);
-                            $colName = $colParts[0];
+                if (strlen($colName) > 0) {
+                    if (strstr($colName, ' ') !== false) { // A space can be used to create identical columns in different contexts, which is sometimes required for different queries.
+                        $colParts = explode(' ', $colName);
+                        $colName = $colParts[0];
+                    }
+
+                    if (is_array($colAlias)) { // Used for advance structures and function calls.
+                        if (isset($colAlias['context'])) {
+                            throw new Exception('Deprecated context.'); // TODO
                         }
 
-                        if (is_array($colAlias)) { // Used for advance structures and function calls.
-                            if (isset($colAlias['context'])) {
-                                throw new Exception('Deprecated context.'); // TODO
-                            }
+                        $finalQuery['columns'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS, $tableName, $colName, $colAlias['alias']);
 
-
-                            if ($colAlias['joinOn']) {
-                                $joinTableName = array_pop($finalQuery['tables']);;
-
-                                $finalQuery['join'][] = $joinTableName . ' ON ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$colAlias['joinOn']][0], $reverseAlias[$colAlias['joinOn']][1]) . ' = ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN, $tableName, $colName);
-                            }
-
-                            else {
-                                $finalQuery['columns'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS, $tableName, $colName, $colAlias['alias']);
-                            }
-
-                            $reverseAlias[$colAlias['alias']] = [$tableName, $colName];
-                        }
-
-                        else {
-                            $finalQuery['columns'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS, $tableName, $colName, $colAlias);
-                            $reverseAlias[$colAlias] = [$tableName, $colName];
-                        }
+                        $reverseAlias[$colAlias['alias']] = [$tableName, $colName];
                     }
 
                     else {
-                        $this->triggerError('Invalid Select Array (Empty Column Name)', array(
-                            'tableName' => $tableName,
-                            'columnName' => $colName,
-                        ), 'validation');
+                        $finalQuery['columns'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS, $tableName, $colName, $colAlias);
+                        $reverseAlias[$colAlias] = [$tableName, $colName];
                     }
                 }
-            }
 
-            elseif (is_string($tableCols)) { // Table columns have been defined with a string list, e.g. "a,b,c"
-                $colParts = explode(',', $tableCols); // Split the list into an array, delimited by commas
-
-                foreach ($colParts AS $colPart) { // Run through each list item
-                    $colPart = trim($colPart); // Remove outside whitespace from the item
-
-                    if (strpos($colPart, ' ') !== false) { // If a space is within the part, then the part is formatted as "columnName columnAlias"
-                        $colPartParts = explode(' ', $colPart); // Divide the piece
-
-                        $colPartName = $colPartParts[0]; // Set the name equal to the first part of the piece
-                        $colPartAlias = $colPartParts[1]; // Set the alias equal to the second part of the piece
-                    }
-                    else { // Otherwise, the column name and alias are one in the same.
-                        $colPartName = $colPart; // Set the name and alias equal to the piece
-                        $colPartAlias = $colPart;
-                    }
-
-                    $finalQuery['columns'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS, $tableName, $colPartName, $colPartAlias);
-                    $reverseAlias[$colPartAlias] = [$tableName, $colPartName];
+                else {
+                    $this->triggerError('Invalid Select Array (Empty Column Name)', array(
+                        'tableName' => $tableName,
+                        'columnName' => $colName,
+                    ), 'validation');
                 }
             }
         }
@@ -2363,6 +2377,16 @@ class databaseSQL extends database
         /* Process Conditions (Must be Array) */
         if (is_array($conditionArray) && count($conditionArray)) {
             $finalQuery['where'] = $this->recurseBothEither($conditionArray, $reverseAlias, 'both');
+        }
+
+
+        /* Process Joins */
+        if (count($joins) > 0) {
+            foreach ($joins AS $table => $join) {
+                $finalQuery['join'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $table)
+                    . ' ON '
+                    . $this->recurseBothEither($join, $reverseAlias);
+            }
         }
 
 
@@ -2474,6 +2498,10 @@ class databaseSQL extends database
         $this->returnQueryString = false;
         return $return;
     }
+    public function subJoin($columns, $conditionArray = false)
+    {
+        return $this->formatValue();
+    }
 
 
     /**
@@ -2564,8 +2592,8 @@ class databaseSQL extends database
                     $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
 
                     // Special case: postgres binaryAnd
-                    if ($value->comparison === DatabaseTypeComparison::binaryAnd && $this->language === 'pgsql') {
-                        $sideTextFull[$i] = "(((lpad({$sideText['left']}::text, greatest(length({$sideText['left']}), length({$sideText['right']})),'0')::bit varying) & (lpad({$sideText['right']}::text, greatest(length({$sideText['left']}), length({$sideText['right']})),'0')::bit varying)) = (lpad({$sideText['right']}::text, greatest(length({$sideText['left']}), length({$sideText['right']})),'0')::bit varying))";
+                    if ($value->comparison === DatabaseTypeComparison::binaryAnd) {
+                        $sideTextFull[$i] = "({$sideTextFull[$i]} = {$sideText['right']})";
                     }
                 }
 
@@ -2598,8 +2626,8 @@ class databaseSQL extends database
      *
      * @return array
      */
-    private function reverseAliasFromConditionArray($tableName, $conditionArray, $originalTableName = false) {
-        $reverseAlias = [];
+    private function reverseAliasFromConditionArray($tableName, $conditionArray, $originalTableName = false, $combineReverseAlias = []) {
+        $reverseAlias = $combineReverseAlias;
         foreach ($conditionArray AS $column => $value) {
             if ($column === 'either' || $column === 'both') {
                 foreach ($value AS $subValue) {
@@ -2779,6 +2807,16 @@ class databaseSQL extends database
         }
 
 
+        if ($this->language === 'pgsql') {
+            // Workaround for equations to use unambiguous excluded dataset.
+            foreach ($dataArray AS &$dataElement) {
+                if ($this->isTypeObject($dataElement) && $dataElement->type === DatabaseTypeType::equation) {
+                    $dataElement->value = str_replace('$', "\${$tableName}.", $dataElement->value);
+                }
+            }
+        }
+
+
         if ($this->autoQueue)
             return $this->queueUpdate($tableName, $dataArray, $conditionArray);
         else
@@ -2836,6 +2874,13 @@ class databaseSQL extends database
                 $this->loadVersion();
 
                 if (($this->versionPrimary == 9 && $this->versionSecondary >= 5) || $this->versionPrimary >= 9) {
+                    // Workaround for equations to use unambiguous excluded dataset.
+                    foreach ($dataArray AS &$dataElement) {
+                        if ($this->isTypeObject($dataElement) && $dataElement->type === DatabaseTypeType::equation) {
+                            $dataElement = $this->equation(str_replace('$', 'excluded.$', $dataElement->value)); // We create a new one because we don't want to update the one pointed to in allArray.
+                        }
+                    }
+
                     $query = 'INSERT INTO ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName)
                         . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $allColumns, $allValues)
                         . ' ON CONFLICT '

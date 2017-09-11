@@ -2,15 +2,15 @@
 class DatabaseTypeComparison {
     const __default = self::equals;
 
-    const notin = -4;
-    const lessThan = -2;
-    const lessThanEquals = -1;
-    const equals = 0;
-    const greaterThan = 1;
-    const greaterThanEquals = 2;
-    const search = 3;
-    const in = 4;
-    const binaryAnd = 5;
+    const notin = 'notin';
+    const lessThan = 'lt';
+    const lessThanEquals = 'lte';
+    const equals = 'e';
+    const greaterThan = 'gt';
+    const greaterThanEquals = 'gte';
+    const search = 'search';
+    const in = 'in';
+    const binaryAnd = 'bAnd';
 
     const assignment = 1000;
 }

@@ -1,14 +1,14 @@
 <?php
 class databaseSQLTests2 extends databaseSQLTests {
-    public static function passthru($value) {
+    public function passthru($value) {
         return bin2hex($value);
     }
 
     public function enableEncodeOnly($table) {
         $this->databaseObj->setTransformationParameters([
             $table => [
-                'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'databaseSQLTests2::passthru'],
-                'list' => ['fimDatabase::packList', DatabaseTypeType::blob, 'databaseSQLTests2::passthru'],
+                'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, [$this, 'passthru']],
+                'list' => ['fimDatabase::packList', DatabaseTypeType::blob, [$this, 'passthru']],
             ]
         ], [
             $table => [
@@ -86,9 +86,9 @@ class databaseSQLTests2 extends databaseSQLTests {
             "id" => 3,
         ])->getAsArray(false)["roomId"], "ff5f8f15f0");
 
-        $this->enableEncodeDecode($table);
 
         // Lists, Decode
+        $this->enableEncodeDecode($table);/*
         printCompRow("Insert List and Decode", $this->databaseObj->select([$table => "id, list"], [
             "id" => 1,
         ])->getAsArray(false)["list"], [20, 100, 50]);
@@ -120,10 +120,10 @@ class databaseSQLTests2 extends databaseSQLTests {
 
         printCompRow("Insert RoomName, Get Searchable", $this->databaseObj->select([$table => "id, roomNameSearchable"], [
             "id" => 3,
-        ])->getAsArray(false)["roomNameSearchable"], "cafe");
+        ])->getAsArray(false)["roomNameSearchable"], "cafe");*/
 
 
-        printRow("Delete Table", $this->testCreateTable1($table));
+        //printRow("Delete Table", $this->testCreateTable1($table));
         endTable();
     }
 

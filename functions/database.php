@@ -1019,32 +1019,15 @@ abstract class database
     {
         // TODO: get rid of all that.
         switch ($comp) {
-            case 'e': case DatabaseTypeComparison::equals:
-                $typeComp = DatabaseTypeComparison::equals;
-                break;
-            case 'lt': case DatabaseTypeComparison::lessThan:
-                $typeComp = DatabaseTypeComparison::lessThan;
-                break;
-            case 'lte': case DatabaseTypeComparison::lessThanEquals:
-                $typeComp = DatabaseTypeComparison::lessThanEquals;
-                break;
-            case 'gt': case DatabaseTypeComparison::greaterThan:
-                $typeComp = DatabaseTypeComparison::greaterThan;
-                break;
-            case 'gte': case DatabaseTypeComparison::greaterThanEquals:
-                $typeComp = DatabaseTypeComparison::greaterThanEquals;
-                break;
-            case 'search': case DatabaseTypeComparison::search:
-                $typeComp = DatabaseTypeComparison::search;
-                break;
-            case 'in': case DatabaseTypeComparison::in:
-                $typeComp = DatabaseTypeComparison::in;
-                break;
-            case 'notin': case DatabaseTypeComparison::notin:
-                $typeComp = DatabaseTypeComparison::notin;
-                break;
-            case 'bAnd':case DatabaseTypeComparison::binaryAnd:
-                $typeComp = DatabaseTypeComparison::binaryAnd;
+            case DatabaseTypeComparison::equals:
+            case DatabaseTypeComparison::lessThan:
+            case DatabaseTypeComparison::lessThanEquals:
+            case DatabaseTypeComparison::greaterThan:
+            case DatabaseTypeComparison::greaterThanEquals:
+            case DatabaseTypeComparison::search:
+            case DatabaseTypeComparison::in:
+            case DatabaseTypeComparison::notin:
+            case DatabaseTypeComparison::binaryAnd:
                 break;
 
             default:
@@ -1056,23 +1039,23 @@ abstract class database
         // TODO: get rid of all this.
         switch ($type) {
             case 'integer': case DatabaseTypeType::integer:
-                return new DatabaseType(DatabaseTypeType::integer, (int)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::integer, (int)$value, $comp);
                 break;
 
             case 'ts': case DatabaseTypeType::timestamp:
-                return new DatabaseType(DatabaseTypeType::timestamp, (int)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::timestamp, (int)$value, $comp);
                 break;
 
             case 'str': case DatabaseTypeType::string:
-                return new DatabaseType(DatabaseTypeType::string, (string)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::string, (string)$value, $comp);
                 break;
 
             case 'col': case DatabaseTypeType::column:
-                return new DatabaseType(DatabaseTypeType::column, (string)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::column, (string)$value, $comp);
                 break;
 
             case DatabaseTypeType::float:
-                return new DatabaseType(DatabaseTypeType::float, (string)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::float, (string)$value, $comp);
                 break;
 
             case DatabaseTypeType::bool:
@@ -1080,7 +1063,7 @@ abstract class database
                 break;
 
             case 'bit': case DatabaseTypeType::bitfield:
-                return new DatabaseType(DatabaseTypeType::bitfield, (int)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::bitfield, (int)$value, $comp);
             break;
 
             case 'empty': case DatabaseTypeType::null:
@@ -1088,18 +1071,18 @@ abstract class database
                 break;
 
             case DatabaseTypeType::equation:
-                return new DatabaseType(DatabaseTypeType::equation, (string)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::equation, (string)$value, $comp);
                 break;
 
             case 'binary': case DatabaseTypeType::blob:
-                return new DatabaseType(DatabaseTypeType::blob, $value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::blob, $value, $comp);
                 break;
 
             case 'arr': case 'array': case DatabaseTypeType::arraylist:
                 if (count($value) === 0)
                     $this->triggerError('An empty array was specified.', false, 'validationFallback');
 
-                return new DatabaseType(DatabaseTypeType::arraylist, (array)$value, $typeComp);
+                return new DatabaseType(DatabaseTypeType::arraylist, (array)$value, $comp);
                 break;
 
             default:
@@ -1256,6 +1239,8 @@ abstract class database
     public function auto($value) {
         if ($this->isTypeObject($value))
             return $value;
+        elseif ($value === true || $value === false)
+            return $this->bool($value);
         elseif (is_int($value) || (ctype_digit($value) && strlen($value) < 10))
             return $this->int($value);
         else

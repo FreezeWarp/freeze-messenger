@@ -1,32 +1,44 @@
 <?php
 class databaseSQLTests1 extends databaseSQLTests {
+    private $table = "test_1";
+
+    private function recursive_sort_array($a) {
+        if(!is_array($a))
+            return $a;
+        $a = array_map([$this, 'recursive_sort_array'], $a);
+        sort($a);
+        return array_values($a);
+    }
+
+    private function arrays_different($a, $b) {
+        return $this->recursive_sort_array($a) === $this->recursive_sort_array($b);
+    }
+
     public function __construct($databaseObj) {
         parent::__construct($databaseObj);
-
-        $table = "test_1";
 
         startTable();
         printHeader('DatabaseSQL Test Suite 1');
         printHeader('Tests A Single Table For Everything');
-        printRow("Create Table", $this->testCreateTable1($table));
-        printRow("Insert, Bad Enum", $this->testInsertBadEnum($table));
+        printRow("Create Table", $this->testCreateTable1());
+        printRow("Insert, Bad Enum", $this->testInsertBadEnum());
 
         $this->databaseObj->startTransaction();
-        printRow("Insert and Select", $this->testInsertSelect1($table));
+        printRow("Insert and Select", $this->testInsertSelect1());
         $this->databaseObj->rollbackTransaction();
-        printRow("Transaction Rollback, Insert", $this->databaseObj->select($table, [
+        printRow("Transaction Rollback, Insert", $this->databaseObj->select($this->table, [
                 "integerNormal" => 5,
             ])->getCount() === 0);
 
-        $this->testInsertSelect1($table);
+        $this->testInsertSelect1();
 
-        printRow("Update, Bad Enum", $this->testUpdateBadEnum($table));
+        printRow("Update, Bad Enum", $this->testUpdateBadEnum());
 
         $this->databaseObj->startTransaction();
-        printRow("Update and Select", $this->testUpdateSelect1($table));
+        printRow("Update and Select", $this->testUpdateSelect1());
 
         $this->databaseObj->rollbackTransaction();
-        $rollBackDiff = array_diff_assoc($this->databaseObj->select([$table => "integerNormal, enum, string"], [
+        $rollBackDiff = array_diff_assoc($this->databaseObj->select([$this->table => "integerNormal, enum, string"], [
             "integerNormal" => 5,
         ])->getAsArray(false), [
             "integerNormal" => 5,
@@ -35,24 +47,24 @@ class databaseSQLTests1 extends databaseSQLTests {
         ]);
         printRow("Transaction Rollback, Update", count($rollBackDiff) === 0 ? true : $rollBackDiff);
 
-        $this->databaseObj->delete($table);
-        printRow("Truncate", $this->databaseObj->select([$table => "integerNormal"])->getCount() === 0);
+        $this->databaseObj->delete($this->table);
+        printRow("Truncate", $this->databaseObj->select([$this->table => "integerNormal"])->getCount() === 0);
         printHeader('Advanced Select Sort/Etc. Tests:');
-        $this->testInsertSelect2($table);
+        $this->testInsertSelect2();
 
-        $this->databaseObj->delete($table);
-        printRow("Truncate", $this->databaseObj->select([$table => "integerNormal"])->getCount() === 0);
+        $this->databaseObj->delete($this->table);
+        printRow("Truncate", $this->databaseObj->select([$this->table => "integerNormal"])->getCount() === 0);
         printHeader('Advanced Select Query Tests:');
-        $this->testInsertSelect3($table);
+        $this->testInsertSelect3();
 
-        printRow("Delete", $this->testDelete1($table));
-        printRow("Delete Table", $this->testDeleteTable1($table));
+        printRow("Delete", $this->testDelete1());
+        printRow("Delete Table", $this->testDeleteTable1());
         endTable();
     }
 
 
-    public function testCreateTable1($table) {
-        $this->databaseObj->createTable($table, "Used for unit testing.", DatabaseEngine::general, array(
+    public function testCreateTable1() {
+        $this->databaseObj->createTable($this->table, "Used for unit testing.", DatabaseEngine::general, array(
             'integerNormal' => [
                 'type' => 'int',
             ],
@@ -83,13 +95,13 @@ class databaseSQLTests1 extends databaseSQLTests {
             ]
         ));
 
-        return in_array($table, $this->getTestTables());
+        return in_array($this->table, $this->getTestTables());
     }
 
-    public function testInsertBadEnum($table) {
+    public function testInsertBadEnum() {
         $caught = false;
         try {
-            @$this->databaseObj->insert($table, [
+            @$this->databaseObj->insert($this->table, [
                 "enum" => 'ad',
             ]);
         } catch(Exception $e) {
@@ -99,10 +111,10 @@ class databaseSQLTests1 extends databaseSQLTests {
         return $caught;
     }
 
-    public function testInsertBadString($table) {
+    public function testInsertBadString() {
         $caught = false;
         try {
-            @$this->databaseObj->insert($table, [
+            @$this->databaseObj->insert($this->table, [
                 "string" => "12345678901234567890123456789012345678901",
             ]);
         } catch(Exception $e) {
@@ -114,90 +126,90 @@ class databaseSQLTests1 extends databaseSQLTests {
 
     /**
      * The DAL does not guarantee the order the queue will run in, merely that all queries get run. Thus, we don't want to run order-dependant queries here.
-     * @param $table
+     * @param $this->table
      * @return mixed
      */
-    public function testQueueDelete1($table) {
-        $this->databaseObj->insert($table, [
+    public function testQueueDelete1() {
+        $this->databaseObj->insert($this->table, [
             "integerNormal" => 5,
             "enum" => 'a',
         ]);
-        $this->databaseObj->insert($table, [
+        $this->databaseObj->insert($this->table, [
             "integerNormal" => 5,
             "enum" => 'af',
         ]);
-        $this->databaseObj->insert($table, [
+        $this->databaseObj->insert($this->table, [
             "integerNormal" => 7,
             "enum" => 'a',
         ]);
-        $this->databaseObj->insert($table, [
+        $this->databaseObj->insert($this->table, [
             "integerNormal" => 7,
             "enum" => 'd',
         ]);
 
         $this->databaseObj->autoQueue(true);
-        $this->databaseObj->delete($table, [
+        $this->databaseObj->delete($this->table, [
             "enum" => 'd',
         ]);
-        $this->databaseObj->delete($table, [
+        $this->databaseObj->delete($this->table, [
             "integerNormal" => 5,
             "enum" => 'af',
         ]);
         $this->databaseObj->autoQueue(false);
 
-        return $this->databaseObj->select([$table => "integerNormal"])->getCount() === 2;
+        return $this->databaseObj->select([$this->table => "integerNormal"])->getCount() === 2;
     }
 
 
-    public function testQueueUpdate1($table) {
-        $this->databaseObj->insert($table, [
+    public function testQueueUpdate1() {
+        $this->databaseObj->insert($this->table, [
             "integerNormal" => 5,
             "string" => "hi",
             "enum" => 'a',
         ]);
-        $this->databaseObj->insert($table, [
+        $this->databaseObj->insert($this->table, [
             "integerNormal" => 5,
             "string" => "bye",
             "enum" => 'af',
         ]);
-        $this->databaseObj->insert($table, [
+        $this->databaseObj->insert($this->table, [
             "integerNormal" => 7,
             "string" => "hi",
             "enum" => 'a',
         ]);
-        $this->databaseObj->insert($table, [
+        $this->databaseObj->insert($this->table, [
             "integerNormal" => 7,
             "string" => "hi",
             "enum" => 'd',
         ]);
 
         $this->databaseObj->autoQueue(true);
-        $this->databaseObj->update($table, [
+        $this->databaseObj->update($this->table, [
             "string" => "bye",
         ], [
             "integerNormal" => 7,
         ]);
-        $this->databaseObj->update($table, [
+        $this->databaseObj->update($this->table, [
             "enum" => 'd',
         ], [
             "integerNormal" => 7,
         ]);
         $this->databaseObj->autoQueue(false);
 
-        return $this->databaseObj->select([$table => "integerNormal"], [
+        return $this->databaseObj->select([$this->table => "integerNormal"], [
             "string" => "bye",
             "integerNormal" => 7,
         ])->getCount() === 3;
     }
 
-    public function testInsertSelect1($table) {
-        $this->databaseObj->insert($table, [
+    public function testInsertSelect1() {
+        $this->databaseObj->insert($this->table, [
             "integerNormal" => 5,
             "enum" => 'd',
             "string" => "1234567890123456789012345678901234567890",
         ]);
 
-        $row = $this->databaseObj->select([$table => "integerNormal, integerAutoIncrement, enum, string"], [
+        $row = $this->databaseObj->select([$this->table => "integerNormal, integerAutoIncrement, enum, string"], [
             "integerNormal" => 5,
         ])->getAsArray(false);
 
@@ -211,7 +223,7 @@ class databaseSQLTests1 extends databaseSQLTests {
         return (count($diff) === 0 ? true : $diff);
     }
 
-    public function testInsertSelect2($table) {
+    public function testInsertSelect2() {
         $datasets = [
             0 => [
                 "integerNormal" => 5,
@@ -250,11 +262,11 @@ class databaseSQLTests1 extends databaseSQLTests {
             $resultsets[$setNum]['bitfield'] = $resultsets[$setNum]['bitfield']->value;
         }
 
-        $this->databaseObj->insert($table, $datasets[0]);
-        $this->databaseObj->insert($table, $datasets[1]);
-        $this->databaseObj->insert($table, $datasets[2]);
-        $this->databaseObj->insert($table, $datasets[3]);
-        $this->databaseObj->insert($table, $datasets[4]);
+        $this->databaseObj->insert($this->table, $datasets[0]);
+        $this->databaseObj->insert($this->table, $datasets[1]);
+        $this->databaseObj->insert($this->table, $datasets[2]);
+        $this->databaseObj->insert($this->table, $datasets[3]);
+        $this->databaseObj->insert($this->table, $datasets[4]);
 
         $testCaseDescriptions = [
             "SELECT *",
@@ -380,7 +392,7 @@ class databaseSQLTests1 extends databaseSQLTests {
         ];
 
         foreach ($testCases AS $i => $testCase) {
-            $rows = $this->databaseObj->select([$table => "integerNormal, string, bitfield"], $testCase);
+            $rows = $this->databaseObj->select([$this->table => "integerNormal, string, bitfield"], $testCase);
 
             printRow($testCaseDescriptions[$i], ($rows->getCount() === $testCaseExpectedRows[$i] ? true : $rows->getAsArray(true)), $rows->sourceQuery);
         }
@@ -433,10 +445,10 @@ class databaseSQLTests1 extends databaseSQLTests {
         ];
 
         foreach ($testCaseDescriptions AS $i => $testCaseDesc) {
-            $query = $this->databaseObj->select([$table => "integerNormal, bitfield, string"], false, $testCasesSort[$i], $testCasesLimit[$i], $testCasesPage[$i]);
+            $query = $this->databaseObj->select([$this->table => "integerNormal, bitfield, string"], false, $testCasesSort[$i], $testCasesLimit[$i], $testCasesPage[$i]);
             $rows = $query->getAsArray(true);
 
-            printRow($testCaseDescriptions[$i], ($rows == $testCaseResultsets[$i] ? true : [$testCaseResultsets[$i], $rows]), $query->sourceQuery);
+            printRow($testCaseDescriptions[$i], (!$this->arrays_different($rows, $testCaseResultsets[$i]) ? true : $rows), $query->sourceQuery);
         }
 
 
@@ -459,44 +471,43 @@ class databaseSQLTests1 extends databaseSQLTests {
         ];
 
         foreach ($testCases AS $i => $testCase) {
-            $this->databaseObj->delete($table, $testCase);
-            $rows = $this->databaseObj->select([$table => "integerNormal"]);
+            $this->databaseObj->delete($this->table, $testCase);
+            $rows = $this->databaseObj->select([$this->table => "integerNormal"]);
 
             printRow($testCaseDescriptions[$i], ($rows->getCount() === $testCaseExpectedRows[$i] ? true : $rows->getAsArray(true)), $rows->sourceQuery);
         }
     }
 
-    public function testInsertSelect3($table) {
+    public function testInsertSelect3() {
         for ($i = 0; $i < 100; $i++) {
-            $this->databaseObj->insert($table, [
+            $this->databaseObj->insert($this->table, [
                 "integerNormal" => $i + 15,
                 "integerDefault" => $i%45,
             ]);
         }
 
-        $value = $this->databaseObj->select([$table => "integerNormal"], null, ["integerNormal" => "desc"], 1)->getColumnValue('integerNormal');
-        printRow("Select Descending (15-114)", $value == 114, $value);
+        $this->testInsertSelect3SortTest("Select Descending (15-114)", null, ["integerNormal" => "desc"], 114);
+        $this->testInsertSelect3SortTest("Select Ascending (15-114)", null, ["integerNormal" => "asc"], 15);
+        $this->testInsertSelect3SortTest("Select Ascending (15-114, >55)", ["integerNormal" => $this->databaseObj->int(55, DatabaseTypeComparison::greaterThan)], ["integerNormal" => "asc"], 56);
+        $this->testInsertSelect3SortTest("Select Ascending (15-114, <=45)", ["integerNormal" => $this->databaseObj->int(45, DatabaseTypeComparison::lessThanEquals)], ["integerNormal" => "desc"], 45);
 
-        $value = $this->databaseObj->select([$table => "integerNormal"], null, ["integerNormal" => "asc"], 1)->getColumnValue('integerNormal');
-        printRow("Select Ascending (15-114)", $value == 15, $value);
-
-        $value = $this->databaseObj->select([$table => "integerNormal"], ["integerNormal" => $this->databaseObj->int(55, "gt")], ["integerNormal" => "asc"], 1)->getColumnValue('integerNormal');
-        printRow("Select Ascending (15-114, >55)", $value == 56, $value);
-
-        $value = $this->databaseObj->select([$table => "integerNormal"], ["integerNormal" => $this->databaseObj->int(45, "lte")], ["integerNormal" => "desc"], 1)->getColumnValue('integerNormal');
-        printRow("Select Ascending (15-114, <=45)", $value == 45, $value);
-
-        $rows = $this->databaseObj->select([$table => "integerNormal, integerDefault"], null, ["integerDefault" => "desc", "integerNormal" => "asc"], 5)->getAsArray(true);
-        printRow("Select i%45 Descending, i Ascending (i: 15-114)", $rows[2]["integerDefault"] == 43 && $rows[2]["integerNormal"] == 58 && $rows[3]["integerDefault"] == 43 && $rows[3]["integerNormal"] == 103, $rows);
-
-        $value = $this->databaseObj->select([$table => "integerNormal"], null, false, 11)->getCount();
+        $value = $this->databaseObj->select([$this->table => "integerNormal"], null, false, 11)->getCount();
         printRow("Select Limit 11", $value == 11, $value);
+        $rows = $this->databaseObj->select([$this->table => "integerNormal, integerDefault"], null, ["integerDefault" => "desc", "integerNormal" => "asc"], 5)->getAsArray(true);
+        printRow("Select i%45 Descending, i Ascending (i: 15-114)", $rows[2]["integerDefault"] == 43 && $rows[2]["integerNormal"] == 58 && $rows[3]["integerDefault"] == 43 && $rows[3]["integerNormal"] == 103, $rows);
     }
 
-    public function testUpdateBadEnum($table) {
+    public function testInsertSelect3SortTest($name, $conditionArray, $sortArray, $expectedValue) {
+        $query = $this->databaseObj->select([$this->table => "integerNormal"], $conditionArray, $sortArray, 1);
+        $value = $query->getColumnValue('integerNormal');
+
+        printRow($name, ($value == $expectedValue ? true : $value), $query->sourceQuery);
+    }
+
+    public function testUpdateBadEnum() {
         $caught = false;
         try {
-            @$this->databaseObj->update($table, [
+            @$this->databaseObj->update($this->table, [
                 "enum" => 'g',
             ]);
         } catch(Exception $e) {
@@ -506,15 +517,15 @@ class databaseSQLTests1 extends databaseSQLTests {
         return $caught;
     }
 
-    public function testUpdateSelect1($table) {
-        $this->databaseObj->update($table, [
+    public function testUpdateSelect1() {
+        $this->databaseObj->update($this->table, [
             "string" => 15,
             "enum" => 'af',
         ], [
             "integerNormal" => 5
         ]);
 
-        $row = $this->databaseObj->select([$table => "integerNormal, enum, string"], [
+        $row = $this->databaseObj->select([$this->table => "integerNormal, enum, string"], [
             "integerNormal" => 5,
         ])->getAsArray(false);
 
@@ -527,18 +538,18 @@ class databaseSQLTests1 extends databaseSQLTests {
         return (count($diff) === 0 ? true : $diff);
     }
 
-    public function testDelete1($table) {
-        $this->databaseObj->delete($table, [
+    public function testDelete1() {
+        $this->databaseObj->delete($this->table, [
             "integerNormal" => 5
         ]);
 
-        return $this->databaseObj->select($table, [
+        return $this->databaseObj->select($this->table, [
             "integerNormal" => 5,
         ])->getCount() === 0;
     }
 
-    public function testDeleteTable1($table) {
-        $this->databaseObj->deleteTable($table);
-        return !in_array($table, $this->getTestTables());
+    public function testDeleteTable1() {
+        $this->databaseObj->deleteTable($this->table);
+        return !in_array($this->table, $this->getTestTables());
     }
 }
