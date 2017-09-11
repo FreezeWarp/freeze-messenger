@@ -1,0 +1,142 @@
+<?php
+/* FreezeMessenger Copyright © 2017 Joseph Todd Parsons
+
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+function stream_event($streamSource, $queryId, $lastEvent) {
+    global $database;
+
+    if ($streamSource === 'user') $events = $database->getUserEventsForId($queryId, $lastEvent)->getAsArray('eventId');
+    elseif ($streamSource === 'room') $events = $database->getRoomEventsForId($queryId, $lastEvent)->getAsArray('eventId');
+
+    if (count($events) > 0) {
+        foreach ($events AS $eventId => $event) {
+            if ($eventId > $lastEvent) $lastEvent = $eventId;
+
+            echo "id: " . (int) $eventId . "\n";
+            echo "event: " . $event['eventName'] . "\n";
+            echo "data: " . json_encode($event) . "\n\n";
+
+            fim_flush();
+            $outputStarted = true;
+        }
+    }
+
+    unset($events); // Free memory.
+
+    return $lastEvent;
+}
+
+
+function stream_messages($roomId, $lastEvent) {
+    global $database, $user;
+
+    if (!($database->hasPermission($user, new fimRoom($roomId)) & fimRoom::ROOM_PERMISSION_VIEW))
+        new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
+
+    else {
+        $database->markMessageRead($roomId, $user->id);
+
+        $messages = $database->getMessages(array(
+            'room' => new fimRoom($roomId),
+            'messageIdStart' => $lastEvent + 1,
+        ), array('id' => 'asc'))->getAsMessages();
+
+
+        foreach ($messages AS $messageId => $message) {
+            if ($messageId > $lastEvent) $lastEvent = $messageId;
+
+            echo "\nid: " . (int) $message->id . "\n";
+            echo "event: message\n";
+            echo "data: " . json_encode(array_merge([
+                    'roomId' => $message->room->id,
+                    'userId' => $message->user->id,
+                ], fim_objectArrayFilterKeys($message, ['id', 'time', 'text', 'flag']))) . "\n\n";
+
+            fim_flush(); // Force the server to flush.
+        }
+
+        unset($messages); // Free memory.
+    }
+
+    return $lastEvent;
+}
+
+
+
+$streamRequest = true;
+define('FIM_EVENTSOURCE', true);
+require('global.php');
+
+if (!$config['serverSentEvents']) {
+    die('Not Supported');
+}
+else {
+    /* Send Proper Headers */
+    header('Content-Type: text/event-stream');
+    header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
+
+    @set_time_limit($config['serverSentTimeLimit']);
+
+    $serverSentRetries = 0;
+
+
+    /* Get Request Data */
+    $request = fim_sanitizeGPC('g', array(
+        'queryId' => array(
+            'require' => true,
+            'cast' => 'roomId',
+            'evaltrue' => true,
+        ),
+        'streamType' => array(
+            'require' => true,
+            'valid' => array('messages', 'user', 'room'),
+        ),
+        'lastEvent' => array(
+            'require' => false,
+            'default' => 0,
+            'cast' => 'int',
+            'evaltrue' => false,
+        )
+    ));
+
+
+    if (isset($_SERVER['HTTP_LAST_EVENT_ID'])) {
+        $request['lastEvent'] = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
+    }
+
+
+    while ($serverSentRetries < $config['serverSentMaxRetries']) {
+        $serverSentRetries++;
+
+        switch ($request['streamType']) {
+            case 'messages': $request['lastEvent'] = stream_messages($request['queryId'], $request['lastEvent']);      break;
+            case 'user':     $request['lastEvent'] = stream_event('user', $request['queryId'], $request['lastEvent']); break;
+            case 'room':     $request['lastEvent'] = stream_event('room', $request['queryId'], $request['lastEvent']); break;
+        }
+
+        if ($config['dev']) {
+            $time = date('r');
+            echo "event: time\n";
+            echo "data: {$time}\n\n";
+            fim_flush();
+        }
+
+        usleep($config['serverSentEventsWait'] * 1000000); // Wait before re-requesting. usleep delays in microseconds (millionths of seconds).
+    }
+}
+
+echo "retry: 0\n";
+?>
