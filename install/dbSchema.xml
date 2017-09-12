@@ -411,7 +411,7 @@
             <column name="userId" type="int" maxlen="8" comment="The ID of the user." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room." />
             <column name="time" type="time" default="__TIME__" comment="The time of the ping." />
-            <column name="status" type="enum" restrict="away,busy,available,invisible,offline," comment="The user's status." />
+            <column name="status" type="enum" restrict="away,busy,available,invisible,offline," default="available" comment="The user's status." />
             <column name="typing" type="bool" default="0" comment="Whether or not the user is typing." />
 
             <key name="userId,roomId" type="primary" />

@@ -78,24 +78,20 @@ foreach ($activeUsers AS $activeUser) {
     if (!isset($xmlData['users']['user ' . $activeUser['userId']])) {
         $xmlData['users']['user ' . $activeUser['userId']] = array(
             'userData' => array(
-                'userId' => (int) $activeUser['userId'],
-                'userName' => (string) $activeUser['userName'],
-                'userNameFormat' => (string) $activeUser['userNameFormat'],
+                'id' => (int) $activeUser['userId'],
+                'name' => (string) $activeUser['userName'],
+                'nameFormat' => (string) $activeUser['userNameFormat'],
             ),
             'rooms' => array(),
         );
     }
 
     $xmlData['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']] = array(
-        'roomId' => (int) $activeUser['roomId'],
-        'roomName' => (string) $activeUser['roomName'],
-        'status' => (bool) $activeUser['status']
+        'id' => (int) $activeUser['roomId'],
+        'name' => (string) $activeUser['roomName'],
+        'status' => $activeUser['pstatus'] ?: $activeUser['status'],
+        'typing' => (bool) $activeUser['typing']
     );
-
-    // Data that is only applicable on a per-room basis.
-    if (count($request['roomIds']) > 0) {
-        $xmlData['users']['user ' . $activeUser['userId']]['rooms']['room ' . $activeUser['roomId']]['typing'] = (bool) $activeUser['typing'];
-    }
 }
 
 

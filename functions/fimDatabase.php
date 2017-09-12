@@ -345,7 +345,6 @@ class fimDatabase extends databaseSQL
             'statuses'        => array()
         ), $options);
 
-
         $columns = array(
             $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId',
             $this->sqlPrefix . "rooms" => 'id roomId, idEncoded roomIdEncoded, name roomName, ownerId, defaultPermissions, options',
@@ -353,18 +352,16 @@ class fimDatabase extends databaseSQL
         );
 
 
-        if (count($options['roomIds']) > 0)  $conditions['both']['proomId'] = $this->in($options['roomIds']);
-        if (count($options['userIds']) > 0)  $conditions['both']['puserId'] = $this->in($options['userIds']);
+        if (count($options['roomIds']) > 0)  $conditions['both']['proomId 1'] = $this->in($options['roomIds']);
+        if (count($options['userIds']) > 0)  $conditions['both']['puserId 1'] = $this->in($options['userIds']);
         if (count($options['statuses']) > 0) $conditions['both']['status']  = $this->in($options['statuses']);
 
         if (isset($options['typing']))       $conditions['both']['typing']  = $this->bool($options['typing']);
 
 
-        $conditions['both'] = array(
-            'ptime'   => $this->int(time() - $options['onlineThreshold'], 'gt'),
-            'proomId' => $this->col('roomIdEncoded'),
-            'puserId' => $this->col('userId'),
-        );
+        $conditions['both']['ptime'] = $this->int(time() - $options['onlineThreshold'], 'gt');
+        $conditions['both']['proomId 2'] = $this->col('roomIdEncoded');
+        $conditions['both']['puserId 2'] = $this->col('userId');
 
 
         return $this->select($columns, $conditions, $sort, $limit, $page);

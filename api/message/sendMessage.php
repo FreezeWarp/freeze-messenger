@@ -73,6 +73,8 @@ elseif ($request['flag'] === 'email'
     new fimError('badEmail', 'The sent email is invalid.'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 
 else {
+    $database->setUserStatus($room->id); // The user seems active to me...
+
     switch ($requestHead['_action']) {
         case 'edit':
             if ($message->text == $request['message'] && $message->flag == $request['flag'])

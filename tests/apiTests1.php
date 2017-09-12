@@ -107,13 +107,21 @@ function curlTestCommon($input, $jsonIndexes, $expectedValues, $callback = null)
     }
 }
 
+function formatOutput($output) {
+    $newOutput = json_decode($output);
+
+    if (json_last_error() == JSON_ERROR_NONE)
+        return json_encode($newOutput, JSON_PRETTY_PRINT);
+    else
+        return $output;
+}
 function curlTestGETEquals($path, $params, $jsonIndex, $expectedValue, $callback = false) {
     global $host;
     echo '<td>' . $path . '?' . http_build_query($params) . '</td>';
 
     $request = (new curlRequest("{$host}{$path}", $params))->executeGET();
 
-    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . $request->response . '</textarea></td>';
+    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
 
     curlTestCommon($request->getAsJson(), [$jsonIndex], [$expectedValue], $callback);
 }
@@ -124,7 +132,7 @@ function curlTestGETEqualsMulti($path, $params, $jsonIndexes, $expectedValues, $
 
     $request = (new curlRequest("{$host}{$path}", $params))->executeGET();
 
-    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . $request->response . '</textarea></td>';
+    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
 
     curlTestCommon($request->getAsJson(), $jsonIndexes, $expectedValues, $callback);
 }
@@ -135,7 +143,7 @@ function curlTestPOSTEquals($path, $params, $body, $jsonIndex, $expectedValue, $
 
     $request = (new curlRequest("{$host}{$path}", $params, $body))->executePOST();
 
-    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . $request->response . '</textarea></td>';
+    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
 
     curlTestCommon($request->getAsJson(), [$jsonIndex], [$expectedValue], $callback);
 }
@@ -146,7 +154,7 @@ function curlTestPOSTEqualsMulti($path, $params, $body, $jsonIndexes, $expectedV
 
     $request = (new curlRequest("{$host}{$path}", $params, $body))->executePOST();
 
-    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . $request->response . '</textarea></td>';
+    echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
 
     curlTestCommon($request->getAsJson(), $jsonIndexes, $expectedValues, $callback);
 }
@@ -877,6 +885,24 @@ curlTestPOSTEquals(
     ['message' => 'Hi'],
     ['message', 'censor'],
     []
+);
+
+echo "<tr><td>Get Active Users in $testRoom2Name</td>";
+curlTestGETEqualsMulti(
+    'api/userStatus.php',
+    ['access_token' => $accessToken2, 'roomIds' => [$testRoom2Id]],
+    [
+        ['users', 'user 1', 'userData', 'name'],
+        ['users', 'user 1', 'rooms'],
+        ['users', 'user ' . $testUnitUserId, 'userData', 'name'],
+//        ['users', 'user ' . $testUnitUserId2, 'userData', 'name'],
+    ],
+    [
+        'admin',
+        ['room ' . $testRoom2Id => ['id' => $testRoom2Id, 'name' => $testRoom2Name, 'status' => 'available', 'typing' => false]],
+        $testUnitUserName,
+        //null
+    ]
 );
 
 echo '</table>';

@@ -2589,12 +2589,13 @@ class databaseSQL extends database
                     // Apply transform function, if set
 
                     if (isset($reverseAlias[$column])) { // If we have reverse alias data for the column...
+                        $transformColumnName = $reverseAlias[$column][1] ?? $column;
                         $transformTableName = $reverseAlias[$column][2] ?? $reverseAlias[$column][0]; // If the second index is set, it is storing the "original" table name, in case of a partition. Otherwise, the 0th index, containing the regular table name, is used.
 
-                        if (isset($this->encode[$transformTableName][$column])) { // Do we have conversion data available?
-                            list($function, $typeOverride) = $this->encode[$transformTableName][$column]; // Fetch the function used for transformation, and the type override if available.
+                        if (isset($this->encode[$transformTableName][$transformColumnName])) { // Do we have conversion data available?
+                            list($function, $typeOverride) = $this->encode[$transformTableName][$transformColumnName]; // Fetch the function used for transformation, and the type override if available.
 
-                            $value = $this->applyTransformFunction($function, $value->value, $typeOverride); // Apply the transformation to the value for usage in our query.
+                            $value = $this->applyTransformFunction($function, $value, $typeOverride); // Apply the transformation to the value for usage in our query.
                         }
                     }
 
