@@ -82,26 +82,27 @@ else {
                 $xmlData = $xmlData['dbSchema']; // Get the contents of the root node
 
                 foreach ($xmlData['database'][0]['table'] AS $table) { // Run through each table from the XML
-                    $tablePartitions = isset($table['@hardPartitions']) ? $table['@hardPartitions'] : 1;
+                    $tableComment = $table['@comment'] ?? '';
+                    $tablePartition = $table['@partitionBy'] ?? false;
+                    $tableType = $table['@type'] ?? 'general';
+
+                    $tablePartitions = $table['@hardPartitions'] ?? 1;
 
                     for ($i = 0; $i < $tablePartitions; $i++) {
-                        $tableType = isset($table['@type']) ? $table['@type'] : 'general';
                         $tableName = $database->sqlPrefix . $table['@name'] . ($tablePartitions > 1 ? '__part' . $i : '');
-                        $tableComment = $table['@comment'];
 
                         $tableColumns = [];
                         $tableIndexes = [];
 
-
                         foreach ($table['column'] AS $column) {
                             $tableColumns[$column['@name']] = [
                                 'type'          => $column['@type'],
-                                'autoincrement' => (isset($column['@autoincrement']) ? $column['@autoincrement'] : false),
+                                'autoincrement' => $column['@autoincrement'] ?? false,
                                 'restrict'      => (isset($column['@restrict']) ? explode(',', $column['@restrict']) : false),
-                                'maxlen'        => (isset($column['@maxlen']) ? $column['@maxlen'] : false),
-                                'bits'          => (isset($column['@bits']) ? $column['@bits'] : false),
-                                'default'       => (isset($column['@default']) ? $column['@default'] : null),
-                                'comment'       => (isset($column['@comment']) ? $column['@comment'] : false),
+                                'maxlen'        => $column['@maxlen'] ?? false,
+                                'bits'          => $column['@bits'] ?? false,
+                                'default'       => $column['@default'] ?? null,
+                                'comment'       => $column['@comment'] ?? false,
                             ];
                         }
 
@@ -115,19 +116,19 @@ else {
                         }
 
                         if (in_array(strtolower($tableName), $showTables)) {
-                            echo 'Update: ' . $tableName . ': ' . $database->alterTable($tableName, $table['@comment'], $table['@type']) . '<br />';
+                            echo 'Update: ' . $tableName . ': ' . $database->alterTable($tableName, $tableComment, $tableType) . '<br />';
 
                             foreach ($tableColumns AS $name => $column) {
                                 if (in_array(strtolower($name), $showColumns[strtolower($tableName)])) {
-                                    echo 'Update: ' . $tableName . ',' . $name . ': ' . $database->alterTableColumns($tableName, [$name => $column], $table['@type']) . '<br />';
+                                    echo 'Update: ' . $tableName . ',' . $name . ': ' . $database->alterTableColumns($tableName, [$name => $column], $tableType) . '<br />';
                                 }
                                 else {
-                                    echo 'Create: ' . $tableName . ',' . $name . ': ' . $database->createTableColumns($tableName, [$name => $column], $table['@type']) . '<br />';
+                                    echo 'Create: ' . $tableName . ',' . $name . ': ' . $database->createTableColumns($tableName, [$name => $column], $tableType) . '<br />';
                                 }
                             }
                         }
                         else {
-                            if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes, isset($table['@partitionBy']) ? $table['@partitionBy'] : false, isset($table['@hardPartitions']) ? $table['@hardPartitions'] : 1)) {
+                            if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes, $tablePartition)) {
                                 die("Could not create table.\n" . $database->getLastError());
                             }
                             else {
