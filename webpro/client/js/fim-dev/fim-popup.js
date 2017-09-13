@@ -1071,11 +1071,11 @@ popup = {
                 'begin' : function() {
                     $('#onlineUsers').html('');
                 },
-                'each' : function(user) { console.log(user);
+                'each' : function(user) {
                     var roomData = [];
-                    for (room in user.rooms) roomData.push('<a href="#room=' + user.rooms[room].roomId + '">' + user.rooms[room].roomName + '</a>');
+                    for (room in user.rooms) roomData.push('<a href="#room=' + user.rooms[room].id + '">' + user.rooms[room].name + '</a>');
 
-                    $('#onlineUsers').append('<tr><td><span class="userName" data-userId="' + user.userData.userId + '" style=""' + user.userData.userNameFormat + '"">' + user.userData.userName + '</span></td><td>' + roomData.join(', ') + '</td></tr>');
+                    $('#onlineUsers').append('<tr><td><span class="userName" data-userId="' + user.userData.id + '" style=""' + user.userData.nameFormat + '"">' + user.userData.name + '</span></td><td>' + roomData.join(', ') + '</td></tr>');
                 },
                 'end' : function() {
                     contextMenuParseUser('#onlineUsers');

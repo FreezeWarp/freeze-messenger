@@ -1432,6 +1432,7 @@ var dia = {
             autoOpen: autoOpen,
             open: function () {
                 if (typeof options.oF !== 'undefined') options.oF();
+                windowDraw();
             },
             close: function () {
                 $('#' + options.id).empty().remove(); // Housecleaning, needed if we want the next dialouge to work properly.
@@ -1468,10 +1469,10 @@ var dia = {
 
                     dialog.html(content);
 
-                    if (options.tabs) dialog.tabbedDialog(dialogOptions, tabsOptions);
-                    else dialog.dialog(dialogOptions);
-
-                    windowDraw();
+                    if (options.tabs)
+                        dialog.tabbedDialog(dialogOptions, tabsOptions);
+                    else
+                        dialog.dialog(dialogOptions);
 
                     return false;
                 },
@@ -1488,10 +1489,10 @@ var dia = {
             });
         }
         else {
-            if (options.tabs) dialog.tabbedDialog(dialogOptions, tabsOptions);
-            else dialog.dialog(dialogOptions);
-
-            //windowDraw();
+            if (options.tabs)
+                dialog.tabbedDialog(dialogOptions, tabsOptions);
+            else
+                dialog.dialog(dialogOptions);
         }
     }
 };

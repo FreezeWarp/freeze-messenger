@@ -78,6 +78,7 @@ standard.prototype.archive = {
                 else {
                     $('#archiveNext').button({ disabled : false });
                 }
+                windowDraw();
             }
         });
     },
@@ -140,6 +141,8 @@ standard.prototype.login = function(options) {
                     fim_showMissedMessage(message);
                 }});
             }
+
+            $.cookie('webpro_sessionHash', window.sessionHash);
 
 
             if (options.finish) options.finish();

@@ -94,8 +94,9 @@ foreach ($totalPosts AS $room) {
                 'userId' => (int) $totalPoster['userId'],
                 'userName' => $totalPoster['userName'],
                 'userNameFormat' => $totalPoster['userNameFormat'],
+                'avatar' => $totalPoster['avatar'],
             ),
-            'messageCount' => (int) $totalPoster['messageCount'],
+            'messageCount' => (int) $totalPoster['messages'],
         );
     }
 }

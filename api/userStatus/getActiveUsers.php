@@ -81,6 +81,7 @@ foreach ($activeUsers AS $activeUser) {
                 'id' => (int) $activeUser['userId'],
                 'name' => (string) $activeUser['userName'],
                 'nameFormat' => (string) $activeUser['userNameFormat'],
+                'avatar' => (string) $activeUser['avatar'],
             ),
             'rooms' => array(),
         );

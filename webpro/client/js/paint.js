@@ -421,6 +421,14 @@ $.when(
                 }
             });
         }
+        else if ($.cookie('webpro_sessionHash')) {
+            standard.login({
+                sessionHash : $.cookie('webpro_sessionHash'),
+                error : function() {
+                    if (!window.userId) popup.login(); // The user is not actively logged in.
+                }
+            });
+        }
         else if ($.cookie('webpro_username')) {
             standard.login({
                 username : $.cookie('webpro_username'),

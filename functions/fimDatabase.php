@@ -348,7 +348,7 @@ class fimDatabase extends databaseSQL
         $columns = array(
             $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId',
             $this->sqlPrefix . "rooms" => 'id roomId, idEncoded roomIdEncoded, name roomName, ownerId, defaultPermissions, options',
-            $this->sqlPrefix . "users" => 'id userId, name userName, nameFormat userNameFormat, status',
+            $this->sqlPrefix . "users" => 'id userId, name userName, nameFormat userNameFormat, status, avatar',
         );
 
 
@@ -1232,8 +1232,8 @@ class fimDatabase extends databaseSQL
 
         $columns = array(
             $this->sqlPrefix . 'roomStats' => 'roomId sroomId, userId suserId, messages',
-            $this->sqlPrefix . 'users'     => 'userId, userName, privs, userNameFormat, userParentalFlags, userParentalAge',
-            $this->sqlPrefix . 'rooms'     => 'roomId, roomIdEncoded, roomName, ownerId, defaultPermissions, roomParentalFlags, roomParentalAge, options, messageCount',
+            $this->sqlPrefix . 'users'     => 'id userId, name userName, nameFormat userNameFormat, avatar',
+            $this->sqlPrefix . 'rooms'     => 'id roomId, idEncoded roomIdEncoded, name roomName',
         );
 
 
@@ -1243,8 +1243,8 @@ class fimDatabase extends databaseSQL
         );
 
 
-        if (count($options['roomIds']) > 0) $conditions['both']['sroomId a'] = $this->in($options['roomIds']);
-        if (count($options['userIds']) > 0) $conditions['both']['suserId a'] = $this->in($options['userIds']);
+        if (count($options['roomIds']) > 0) $conditions['both']['sroomId 2'] = $this->in($options['roomIds']);
+        if (count($options['userIds']) > 0) $conditions['both']['suserId 2'] = $this->in($options['userIds']);
 
 
         return $this->select($columns, $conditions, $sort);
