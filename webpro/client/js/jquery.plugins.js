@@ -1491,7 +1491,7 @@ var dia = {
             if (options.tabs) dialog.tabbedDialog(dialogOptions, tabsOptions);
             else dialog.dialog(dialogOptions);
 
-            windowDraw();
+            //windowDraw();
         }
     }
 };
