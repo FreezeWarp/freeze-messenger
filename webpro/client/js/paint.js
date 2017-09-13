@@ -398,13 +398,10 @@ $.when(
 
 
         /*** Process Enter for Message Input ***/
-        $('#messageInput').bind('keydown', function(e) {
-            if (e.keyCode === 13 && !e.shiftKey) { // Enter w/o shift
-                $('#sendForm').submit();
-                return false;
-            }
+        $('#messageInput').onEnter(function() {
+            $('#sendForm').submit();
 
-            return true;
+            return false;
         });
 
 
@@ -416,7 +413,15 @@ $.when(
 
 
         /*** Initial Login ***/
-        if ($.cookie('webpro_username')) {
+        if (window.location.hash.match(/\#sessionHash=/)) {
+            standard.login({
+                sessionHash : window.location.hash.match(/\#sessionHash=([^\#]+)/)[1],
+                error : function() {
+                    if (!window.userId) popup.login(); // The user is not actively logged in.
+                }
+            });
+        }
+        else if ($.cookie('webpro_username')) {
             standard.login({
                 username : $.cookie('webpro_username'),
                 password : $.cookie('webpro_password'),

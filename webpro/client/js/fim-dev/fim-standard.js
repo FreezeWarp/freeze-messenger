@@ -121,6 +121,7 @@ standard.prototype.login = function(options) {
     fimApi.login({
         'username' : options.username,
         'password' : options.password,
+        'access_token' : options.sessionHash,
         'client_id' : 'WebPro'
     }, {
         end : function(activeLogin) {
@@ -141,38 +142,15 @@ standard.prototype.login = function(options) {
             }
 
 
-            // As soon as we have a token, populate active users.
-            fimApi.getActiveUsers({
-                'roomIds' : [1]
-            }, {
-                'refresh' : 15000,
-                'exception' : function(exception) { console.log(exception);
-                    // noLogin exceptions will commonly happen if the user is switching logins. We could either surpress the errors, as we do here, or disable the refresh until the user relogins in, which is more trouble than it's really worth.
-                    if (exception.string !== 'noLogin') {
-                        fimApi.getDefaultExceptionHandler()(exception);
-                    }
-                },
-                'begin' : function() {
-                    $('#activeUsers').html('<ul></ul>');
-                },
-                'each' : function(user) {
-                    $('#activeUsers > ul').append('<li><span class="userName" data-userId="' + user.userData.userId + '" style=""' + user.userData.userNameFormat + '"">' + user.userData.userName + '</span></li>');
-                },
-                'end' : function() {
-                    contextMenuParseUser('#activeUsers');
-                }
-            });
-
-
             if (options.finish) options.finish();
 
 
-            if (!roomId) {
-                fim_hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+            fim_hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
 
-                /*** A Hack of Sorts to Open Dialogs onLoad ***/
-                if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
-            }
+            /*** A Hack of Sorts to Open Dialogs onLoad ***/
+            if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
+
+
             return false;
         },
         error: function(data) {
@@ -342,11 +320,7 @@ standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
 
 
 standard.prototype.changeRoom = function(roomId) {
-    if (!roomId) {
-        console.log("Failed changeRoom.");
-        return false;
-    }
-    var intervalPing, intervalWhosOnline;
+    var intervalPing;
 
     if (roomId[0] === 'p' || roomId[0] === 'o') {
         fimApi.getPrivateRoom({
@@ -392,6 +366,30 @@ standard.prototype.changeRoom = function(roomId) {
             }
         }});
     }
+
+
+    /* Populate Active Users for the Room */
+    fimApi.getActiveUsers({
+        'roomIds' : [roomId]
+    }, {
+        'refresh' : 15000,
+        'timerId' : 1,
+        'exception' : function(exception) { console.log(exception);
+            // noLogin exceptions will commonly happen if the user is switching logins. We could either surpress the errors, as we do here, or disable the refresh until the user relogins in, which is more trouble than it's really worth.
+            if (exception.string !== 'noLogin') {
+                fimApi.getDefaultExceptionHandler()(exception);
+            }
+        },
+        'begin' : function() {
+            $('#activeUsers').html('<ul></ul>');
+        },
+        'each' : function(user) {
+            $('#activeUsers > ul').append('<li><span class="userName" data-userId="' + user.userData.userId + '" style=""' + user.userData.userNameFormat + '"">' + user.userData.userName + '</span></li>');
+        },
+        'end' : function() {
+            contextMenuParseUser('#activeUsers');
+        }
+    });
 };
 
 

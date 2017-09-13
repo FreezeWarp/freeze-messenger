@@ -64,8 +64,9 @@ fimApi.prototype.login = function (params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'fim3_format' : 'json',
             'grant_type' : 'password',
-            'username' : '',
-            'password' : '',
+            'username' : null,
+            'password' : null,
+            'access_token' : null,
             'client_id' : ''
         });
 
@@ -490,7 +491,10 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
 
     else {
         getActiveUsers_query();
-        if (requestSettings.refresh > -1) fimApi.timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
+        if (requestSettings.refresh > -1) {
+            clearInterval(fimApi.timers['getActiveUsers_' + requestSettings.timerId]);
+            fimApi.timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
+        }
     }
 };
 

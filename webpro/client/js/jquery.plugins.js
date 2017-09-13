@@ -4,6 +4,17 @@
  * The copyright of each piece is listed directly above the section. It should be easy enough to distinguish between sections. */
 
 
+(function($) {
+    $.fn.onEnter = function(func) {
+        this.bind('keypress', function(e) {
+            if (e.keyCode == 13 && !e.shiftKey) {
+                func.apply(this, [e]);
+                e.preventDefault();
+            }
+        });
+        return this;
+    };
+})(jQuery);
 
 
 // ######################################################################################################### //

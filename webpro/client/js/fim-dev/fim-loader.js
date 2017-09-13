@@ -300,6 +300,33 @@ function fim_messageFormat(json, format) {
         }
     }
 
+
+    function buildEditableSpan(text, messageId, userId, roomId, messageTime, style) {
+        return $('<span>').attr({
+            'style': style,
+            'class': 'messageText' + (window.userId == userId && window.permissions.editOwnPosts ? ' editable' : ''),
+            'data-messageId': messageId,
+            'data-roomId': roomId,
+            'data-time': messageTime,
+            'tabindex': 1000
+        }).html(text).on('dblclick', function() {
+            var textarea = $('<textarea>').text($(this).text()).onEnter(function() {
+                fimApi.editMessage(roomId, messageId, {
+                    'message' : textarea.val()
+                });
+
+                $(this).replaceWith(buildEditableSpan(textarea.val(), messageId, userId, roomId, messageTime, style));
+            });
+
+            $.each(this.attributes, function() {
+                textarea.attr(this.name, this.value);
+            });
+
+            $(this).replaceWith(textarea);
+        })
+    }
+
+
     function whenUserNameAvailable() {
         switch (format) {
             case 'table':
@@ -321,7 +348,6 @@ function fim_messageFormat(json, format) {
                         'data-roomId': roomId,
                         'data-avatar': avatar,
                         'class': window.userId == userId && window.permissions.editOwnPosts ? 'editable' : '',
-                        'contenteditable': (window.userId == userId && window.permissions.editOwnPosts ? "true" : "false")
                     }).html(text)
                 ).append(
                     $('<td>').append(
@@ -347,7 +373,7 @@ function fim_messageFormat(json, format) {
                             settings.showAvatars ?
                                 $('<img>').attr({
                                     'alt': userName,
-                                    'src': avatar
+                                    'src': avatar ? avatar : 'client/images/blankperson.png'
                                 }) :
                                 $('<span>').text(userName)
                         )
@@ -357,19 +383,7 @@ function fim_messageFormat(json, format) {
                             : ''
                     )
                 ).append(
-                    $('<span>').attr({
-                        'style': style,
-                        'class': 'messageText' + (window.userId == userId && window.permissions.editOwnPosts ? ' editable' : ''),
-                        'data-messageId': messageId,
-                        'data-roomId': roomId,
-                        'data-time': messageTime,
-                        'tabindex': 1000,
-                        'contenteditable': (window.userId == userId && window.permissions.editOwnPosts ? "true" : "false"),
-                    }).blur(function() {
-                        fimApi.editMessage(roomId, messageId, {
-                            'message' : $(this).text(),
-                        });
-                    }).html(text)
+                    buildEditableSpan(text, messageId, userId, roomId, messageTime, style)
                 );
                 break;
         }
@@ -527,34 +541,29 @@ function fim_newMessage(messageText, messageId) {
  * @copyright Joseph T. Parsons 2017
  */
 function fim_hashParse(options) {
-    var urlHash = window.location.hash,
-        urlHashComponents = urlHash.split('#'),
-        page = '', // String
-        i = 0,
-        componentPieces = [],
-        messageId = 0,
-        roomIdLocal,
-        messageId;
+    var urlHashComponents = window.location.hash.split('#'),
+        page, messageId, roomId;
 
-    for (i = 0; i < urlHashComponents.length; i += 1) {
-        if (urlHashComponents[i]) {
-            componentPieces = urlHashComponents[i].split('=');
-            switch (componentPieces[0]) {
-                case 'page': page = componentPieces[1]; break;
-                case 'room': roomIdLocal = componentPieces[1]; break;
-                case 'message': messageId = componentPieces[1]; break;
-            }
+
+    for (var i in urlHashComponents) {
+        var componentPieces = urlHashComponents[i].split('=');
+
+        switch (componentPieces[0]) {
+            case 'page': page = componentPieces[1]; break;
+            case 'room': roomId = componentPieces[1]; break;
+            case 'message': messageId = componentPieces[1]; break;
         }
     }
 
-    if (roomIdLocal && messageId)
+
+    if (roomId && messageId)
         page = 'archive';
 
     switch (page) {
         case 'archive':
             prepopup = function() {
                 popup.archive({
-                    'roomId' : roomIdLocal,
+                    'roomId' : roomId,
                     'firstMessage' : messageId - 1
                 });
             };
@@ -565,9 +574,12 @@ function fim_hashParse(options) {
             break;
     }
 
-    if (!roomIdLocal && options.defaultRoomId) roomIdLocal = options.defaultRoomId;
 
-    if (roomId !== roomIdLocal) standard.changeRoom(roomIdLocal); // If the room is different than current, change it.
+    if (!roomId && options.defaultRoomId)
+        roomId = options.defaultRoomId;
+
+    if (roomId !== window.roomId)
+        standard.changeRoom(roomId); // If the room is different than current, change it.
 }
 
 /*********************************************************
