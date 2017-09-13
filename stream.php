@@ -127,13 +127,6 @@ else {
             case 'room':     $request['lastEvent'] = stream_event('room', $request['queryId'], $request['lastEvent']); break;
         }
 
-        if ($config['dev']) {
-            $time = date('r');
-            echo "event: time\n";
-            echo "data: {$time}\n\n";
-            fim_flush();
-        }
-
         usleep($config['serverSentEventsWait'] * 1000000); // Wait before re-requesting. usleep delays in microseconds (millionths of seconds).
     }
 }

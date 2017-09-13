@@ -59,7 +59,7 @@ standard.prototype.archive = {
         fimApi.getMessages({
             'roomId' : standard.archive.options.roomId,
             'userIds' : [standard.archive.options.searchUser],
-            'search' : standard.archive.options.searchText,
+            'messageTextSearch' : standard.archive.options.searchText,
             'messageIdStart' : standard.archive.options.firstMessage,
             'archive' : 1,
             'page' : standard.archive.options.page
