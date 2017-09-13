@@ -2180,7 +2180,7 @@ class databaseSQL extends database
     }
 
 
-    public function alterTable($tableName, $tableComment, $engine, $partitionColumn) {
+    public function alterTable($tableName, $tableComment, $engine, $partitionColumn = false) {
         $engine = $this->parseEngine($engine);
 
         return $this->rawQuery('ALTER TABLE ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName)

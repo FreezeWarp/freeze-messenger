@@ -609,6 +609,10 @@
         <table name="users" type="general" comment="The users.">
             <!-- General -->
             <column name="id" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
+
+            <column name="integrationId" type="string" maxlen="30" comment="The user's ID that is unique in the integration system." />
+            <column name="integrationMethod" type="string" maxlen="10" comment="The integration system corresponding with integrationId. Current supported values: 'google'" />
+
             <column name="name" type="string" maxlen="50" comment="The user's name." />
             <column name="mainGroupId" type="int" maxlen="6" default="1" comment="The admin-set socialGroup ID of the user." />
             <column name="socialGroupIds" type="blob" maxlen="10000" comment="A cache of the IDs of all groups the user has joined." />
@@ -663,10 +667,12 @@
 
             <!-- Parental Controls -->
             <column name="parentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to restrict access to." />
-            <column name="parentalAge" type="int" maxlen="2" comment="Content rated above this rating should be blocked." />
+            <column name="parentalAge" type="int" maxlen="2" default="0" comment="Content rated above this rating should be blocked." />
 
 
             <key name="id" type="primary" />
+            <key name="integrationMethod,integrationId" type="unique" />
+
             <key name="name" type="index" />
             <key name="mainGroupId" type="index" />
             <key name="lastSync" type="index" />
@@ -724,7 +730,6 @@
             <column name="id" type="int" maxlen="8" />
             <column name="name" type="string" maxlen="50" />
             <column name="mainGroupId" type="int" maxlen="6" default="1" />
-            <column name="socialGroupIds" type="string" maxlen="1000" />
             <column name="options" type="bitfield" bits="16" />
             <column name="messageFormatting" type="string" maxlen="300" />
 

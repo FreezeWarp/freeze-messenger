@@ -26,8 +26,9 @@ else {
 
     // Redirect to the default interface if possible. Note that an interface could be an interface-select screen, should someone desire. As this is part of FIMCore, we don't want to do that check.
     if (is_dir($config['defaultInterface'])) {
-        header("Location: {$config['defaultInterface']}/");
-        die("Redirecting to <a href=\"{$config['defaultInterface']}/\">default interface.</a>");
+        $location = $config['defaultInterface'] . '/' . (isset($_REQUEST['sessionHash']) ? '#sessionHash=' . $_REQUEST['sessionHash'] : '');
+        header("Location: $location");
+        die("Redirecting to <a href=\"$location\">default interface.</a>");
     }
     else {
         die('No web-accessible interface found.');

@@ -29,16 +29,34 @@
  *
  */
 
-///* Require Base *///
 
+/******
+ * Require base files.
+ ******/
 require_once(dirname(__FILE__) . '/global.php');
 
-if (!isset($ignoreLogin)) $ignoreLogin = false; // pages without login
-if (!isset($apiRequest)) $apiRequest = false; // /api/ functions
-if (!isset($streamRequest)) $streamRequest = false; // /apiRequest/ functions
-if (!isset($hookLogin)) $hookLogin = false; // pages with custom login
 
 
+/**
+ * When set, login is disabled.
+ */
+$ignoreLogin = $ignoreLogin ?? false;
+
+/**
+ * When set, execution continues with validation present. (That is, we're being included from another PHP script.)
+ */
+$hookLogin = $hookLogin ?? $apiRequest ?? false;
+
+/**
+ * When true, the script will create an access token for an integration login (e.g. with Google).
+ */
+$doIntegrationLogin = false;
+
+
+
+/******
+ * Parse request information.
+ ******/
 $request = fim_sanitizeGPC('r', array(
     'userId' => array('cast' => 'int'),
     'userName' => array(),
@@ -54,108 +72,233 @@ $request = fim_sanitizeGPC('r', array(
 ));
 
 
-///* Some Pre-Stuff *///
-$loginDefs['syncMethods'] = array('phpbb', 'vbulletin3', 'vbulletin4');
 
 /* Default user object.
  * Note: As of now, this object should never be used. In all cases the script either quits or the user object is filled with anonymous information or information corresponding with a real user. However, this object is useful for dev purposes, and if a script wants to use $ignoreLogin. */
 $user = new fimUser(0);
 
-/* If a username and password have been passed to the PHP directly, use them for OAuth authentication. */
-if (is_array($hookLogin) && isset($hookLogin['accessToken'])) {
-    $_REQUEST['access_token'] = $hookLogin['accessToken'];
-    $_GET['access_token'] = $hookLogin['accessToken'];
-}
 
 
-/* Begin OAuth Server
- * We have not yet added any Grant Types. We add these instead in the next section. */
-require_once('functions/oauth2-server-php/src/OAuth2/Autoloader.php');
-OAuth2\Autoloader::register();
 
-$oauthStorage = new OAuth2\Storage\FIMDatabaseOAuth($database, 'fimError');
-$oauthServer = new OAuth2\Server($oauthStorage); // Pass a storage object or array of storage objects to the OAuth2 server class
-$oauthRequest = OAuth2\Request::createFromGlobals();
+if (!$ignoreLogin) {
+    /******
+     * Process special login information.
+     ******/
 
-/* If $ignoreLogin is set, we run things without processing any logins. */
-if ($ignoreLogin) {
-
-}
-
-/* If grant_type is not set, we're granting a token, not evaluating. */
-else if (isset($_REQUEST['grant_type']) && $_REQUEST['grant_type'] !== 'access_token') {
-    $database->cleanSessions();
-    /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
-    switch ($_REQUEST['grant_type']) {
-        case 'password': // User authentication
-            $oauthServer->addGrantType($userC = new OAuth2\GrantType\UserCredentials($oauthStorage));
-            break;
-
-        case 'anonymous':
-            global $anonId; // Because we don't want to significantly rearchitect the OAuth code, we use a global that is set by the Anonymous GrantType, and read by the FIMDatabase Storage, in order to support anonymous users
-            $oauthServer->addGrantType($userC = new OAuth2\GrantType\Anonymous($oauthStorage));
-            break;
+    /*
+     * If an access token has been passed to the PHP directly (through hook login), use them for OAuth authentication.
+     */
+    if (is_array($hookLogin) && isset($hookLogin['accessToken'])) {
+        $_REQUEST['access_token'] = $hookLogin['accessToken'];
+        $_GET['access_token'] = $hookLogin['accessToken'];
     }
 
-    global $anonId;
 
-    $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
-    $user = fimUserFactory::getFromId((int) $userC->getUserId());
-    $user->anonId = $anonId;
-    $user->sessionHash = $oauthResponse->getParameter('access_token');
-    $user->clientCode = $oauthResponse->getParameter('client_id');
 
-    if ($oauthResponse->getStatusCode() === 200) {
-        /* Send Data to API */
+    /*
+     * Process Google/etc. logins.
+     * We'll create a new user if needed, and then defer to the grant token code below.
+     */
+    else if (isset($_REQUEST['googleLogin'])) {
+        if (!isset($loginConfig['extraMethods']['google']['clientId'], $loginConfig['extraMethods']['google']['clientSecret'])) {
+            new fimError('googleLoginDisabled', 'Google logins are not currently enabled.');
+        }
+        else {
+            require_once('vendor/autoload.php');
+
+            // create our client credentials
+            $client = new Google_Client();
+
+            $client->setApplicationName("FlexMessenger Login");
+            $client->setDeveloperKey("AIzaSyDxK4wHgx7NAy6NU3CcSsQ2D3JX3K6FwVs");
+            $client->setClientId($loginConfig['extraMethods']['google']['clientId']);
+            $client->setClientSecret($loginConfig['extraMethods']['google']['clientSecret']);
+            $client->setRedirectUri($installUrl . 'validate.php?googleLogin');
+            $client->addScope([
+                Google_Service_Oauth2::USERINFO_EMAIL,
+                Google_Service_Oauth2::USERINFO_PROFILE,
+            ]);
+
+            if (isset($_GET['code'])) {
+                $client->fetchAccessTokenWithAuthCode($_GET['code']); // verify returned code
+
+                $access_token = $client->getAccessToken();
+                if (!$access_token)
+                    new fimError('failedLogin', 'We were unable to login to the Google server.');
+
+                // get user info
+                $googleUser = new Google_Service_Oauth2($client);
+                $userInfo = $googleUser->userinfo->get();
+                //var_dump($userInfo);
+
+                if (!$userInfo->getId())
+                    new fimError('invalidIntegrationId', 'The Google server did not respond with a valid user ID. Login cannot continue.');
+
+                elseif (!$userInfo->getName())
+                    new fimError('invalidIntegrationName', 'The Google server did not respond with a valid user name. Login cannot continue.');
+
+                // store user info...
+                $integrationUser = new fimUser([
+                    'integrationMethod' => 'google',
+                    'integrationId' => $userInfo->getId(),
+                ]);
+                $integrationUser->resolveAll(); // This will resolve the ID if the user exists.
+                $integrationUser->setDatabase([
+                    'integrationMethod' => 'google',
+                    'integrationId' => $userInfo->getId(),
+                    'email' => $userInfo->getEmail(),
+                    'name' => $userInfo->getName(),
+                    'avatar' => $userInfo->getPicture()
+                ]); // If the ID wasn't resolved above, a new user will be created.
+
+                $doIntegrationLogin = true;
+            }
+
+            else {
+                // redirect to the login URL
+                $auth_url = $client->createAuthUrl();
+                header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
+                die();
+            }
+        }
+    }
+
+
+
+    /*
+     * Begin OAuth Server
+     * We have not yet added any Grant Types. We add these instead in the next section.
+     */
+    require_once('functions/oauth2-server-php/src/OAuth2/Autoloader.php');
+    OAuth2\Autoloader::register();
+
+    /**
+     * How our OAuth data is stored.
+     */
+    $oauthStorage = new OAuth2\Storage\FIMDatabaseOAuth($database, 'fimError');
+
+    /**
+     * How our OAuth processes requests.
+     */
+    $oauthServer = new OAuth2\Server($oauthStorage); // Pass a storage object or array of storage objects to the OAuth2 server class
+
+    /**
+     * Our OAuth request, created from the globals passed to this page.
+     */
+    $oauthRequest = OAuth2\Request::createFromGlobals();
+
+
+
+    /*
+     * Process login information previously set for Google, etc.
+     */
+    if ($doIntegrationLogin) {
+        $oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
+        $oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
+        $oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
+        $oauthServer->addGrantType($userC = new OAuth2\GrantType\IntegrationLogin($oauthStorage, $integrationUser));
+
+        $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
+
+        if ($oauthResponse->getStatusCode() !== 200) {
+            new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
+        }
+        else {
+            header('Location: ' . $installUrl . '#sessionHash=' . $oauthResponse->getParameter('access_token'));
+        }
+
+        die();
+    }
+
+
+    /*
+     * Verify an access token. Typically used for API logins.
+     */
+    elseif (isset($_REQUEST['access_token'])) {
+        if (!$attempt = $oauthServer->verifyResourceRequest($oauthRequest)) {
+            $oauthServer->getResponse()->send();
+            die();
+        }
+
+        else {
+            $token = $oauthServer->getResourceController()->getToken();
+
+            $user = fimUserFactory::getFromId((int) $token['user_id']);
+            $user->anonId = $token['anon_id'] ?? 0;
+            $user->sessionHash = $token['access_token'];
+            $user->clientCode = $token['client_id'];
+            $tokenExpires = $token['expires'];
+        }
+    }
+
+
+    /**
+     * grant_type is set (and not "access_token"), so issue a new access token.
+     */
+    elseif (isset($_REQUEST['grant_type'])) {
+        $database->cleanSessions();
+
+         /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
+        switch ($_REQUEST['grant_type']) {
+            case 'password': // User authentication
+                $oauthServer->addGrantType($userC = new OAuth2\GrantType\UserCredentials($oauthStorage));
+                break;
+
+            case 'anonymous':
+                $oauthServer->addGrantType($userC = new OAuth2\GrantType\Anonymous($oauthStorage));
+                break;
+        }
+
+
+        $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
+        $user = fimUserFactory::getFromId((int) $userC->getUserId());
+        $user->sessionHash = $oauthResponse->getParameter('access_token');
+        $user->clientCode = $oauthResponse->getParameter('client_id');
+        $tokenExpires = $oauthResponse->getParameter('expires_in');
+
+        if ($_REQUEST['grant_type'] === 'anonymous') {
+            $user->anonId = $userC->getAnonymousUserId();
+        }
+
+
+        if ($oauthResponse->getStatusCode() !== 200) {
+            new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
+        }
+    }
+
+
+    /*
+     * No verification method found.
+     */
+    else {
+        new fimError('noLogin', 'Please specify login credentials.');
+    }
+
+
+
+    /*
+     * Send Data to API unless we are continuing the script.
+     */
+    if (!$hookLogin) {
         $user->resolveAll();
 
         $apiData = new apiData();
         $apiData->replaceData(array(
             'login' => array(
                 'access_token' => $user->sessionHash,
-                'expires' => $oauthResponse->getParameter('expires_in'),
+                'expires' => $tokenExpires ?? 0,
                 'anonId' => $user->anonId,
                 'defaultRoomId' => $user->defaultRoomId,
                 'userData' => array_merge([
-                        'socialGroupIds' => new apiOutputList($user->socialGroupIds),
-                        'parentalFlags' => new apiOutputList($user->parentalFlags),
-                    ], fim_objectArrayFilterKeys($user, ['id', 'name', 'nameFormat', 'mainGroupId', 'avatar', 'profile', 'messageFormatting', 'parentalAge'])
-                ),
+                    'socialGroupIds' => new apiOutputList($user->socialGroupIds),
+                    'parentalFlags' => new apiOutputList($user->parentalFlags),
+                ], fim_objectArrayFilterKeys($user, ['id', 'name', 'nameFormat', 'mainGroupId', 'avatar', 'profile', 'messageFormatting', 'parentalAge'])),
                 'permissions' => $user->getPermissionsArray()
             ),
         ));
 
-        if (!$hookLogin)
-            echo $apiData;
+        die($apiData);
     }
-
-    else {
-        throw new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
-    }
-
-    if (!$hookLogin)
-        die();
-}
-
-/* If access_token has been passed, then we are evaluating a token. */
-elseif (isset($_REQUEST['access_token'])) {
-    if (!$attempt = $oauthServer->verifyResourceRequest($oauthRequest)) {
-        $oauthServer->getResponse()->send();
-        die();
-    }
-
-    else {
-        $token = $oauthServer->getResourceController()->getToken();
-
-        $user = fimUserFactory::getFromId((int) $token['user_id']);
-        $user->anonId = $token['anon_id'] ?? 0;
-        $user->sessionHash = $token['access_token'];
-        $user->clientCode = $token['client_id'];
-    }
-}
-
-else {
-    throw new fimError('noLogin', 'Please specify login credentials.');
 }
 
 

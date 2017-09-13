@@ -130,9 +130,21 @@ class fimUser
     public $id = 0;
 
     /**
+     * @var int The user's integration ID.
+     */
+    public $integrationId = 0;
+
+    /**
+     * @var int The user's integration method.
+     */
+    public $integrationMethod = false;
+
+
+    /**
      * @var string The user's name.
      */
     private $name = "MISSINGno.";
+
 
     /**
      * @var array The list of social group IDs the user belongs to.
@@ -315,9 +327,8 @@ class fimUser
      */
     public function __construct($userData)
     {
-        if (is_int($userData)) {
+        if (is_int($userData))
             $this->id = $userData;
-        }
 
         elseif (is_array($userData))
             $this->populateFromArray($userData); // TODO: test contents
@@ -342,7 +353,7 @@ class fimUser
         if (!property_exists($this, $property))
             throw new Exception("Invalid property accessed in fimUser: $property");
 
-        if ($this->id && !in_array($property, $this->resolved)) {
+        if ($this->id && !in_array($property, $this->resolved) && $property !== 'anonId') {
             if ($property === 'passwordSalt') {
                 throw new Exception('Not yet implemented: fetching passwordSalt from integration database.');
             }
@@ -710,10 +721,17 @@ class fimUser
     {
         global $database;
 
-        if (count($columns) > 0)
-            return $this->populateFromArray($database->where(array('id' => $this->id))->select(array($database->sqlPrefix . 'users' => array_merge(array('id'), $columns)))->getAsArray(false));
-        else
+        if (count($columns) == 0)
             return true;
+
+        elseif ($this->id) // We can fetch data given the user's unique ID.
+            return $this->populateFromArray($database->where(['id' => $this->id])->select([$database->sqlPrefix . 'users' => array_merge(['id'], $columns)])->getAsArray(false));
+
+        elseif ($this->integrationId && $this->integrationMethod) // We can fetch data given the user's unique pair of integration ID and integration method.
+            return $this->populateFromArray($database->where(['integrationMethod' => $this->integrationMethod, 'integrationId' => $this->integrationId])->select([$database->sqlPrefix . 'users' => array_merge(['integrationId', 'integrationMethod'], $columns)])->getAsArray(false));
+
+        else
+            throw new Exception('fimUser does not have uniquely identifying information required to perform database retrieval.');
     }
 
 
@@ -802,7 +820,7 @@ class fimUser
                     'userIds' => array($this->id),
                     'columns' => $database->userHistoryColumns,
                 ))->getAsArray(false)) {
-                    $database->insert($database->sqlPrefix . "userHistory", fim_arrayFilterKeys($existingUserData, ['id', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'socialGroupIds', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
+                    $database->insert($database->sqlPrefix . "userHistory", fim_arrayFilterKeys($existingUserData, ['id', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
                 }
             }
 

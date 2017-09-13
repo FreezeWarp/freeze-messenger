@@ -76,7 +76,7 @@ function stream_messages($roomId, $lastEvent) {
 
 
 
-$streamRequest = true;
+$apiRequest = true;
 define('FIM_EVENTSOURCE', true);
 require('global.php');
 

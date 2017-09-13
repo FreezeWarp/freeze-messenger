@@ -13,6 +13,7 @@ use OAuth2\ResponseInterface;
 class Anonymous implements GrantTypeInterface
 {
     private $userInfo;
+    private $anonId;
     protected $storage;
 
     /**
@@ -30,8 +31,6 @@ class Anonymous implements GrantTypeInterface
 
     public function validateRequest(RequestInterface $request, ResponseInterface $response)
     {
-        global $anonId;
-
         /* Use cache if possible, since the anonymous user will be queried quite frequently.
          * getUser(), which is called by getUserDetails(), may also implement a general cache of all users, but since cache is redundancy to begin with, I tend not to avoid it. */
         $cache = new \generalCache();
@@ -51,7 +50,7 @@ class Anonymous implements GrantTypeInterface
 
 
         /* Return */
-        $anonId = rand(1000, 9999);
+        $this->anonId = rand(1000, 9999);
         $this->userInfo = $userInfo;
         return true;
     }
@@ -64,6 +63,11 @@ class Anonymous implements GrantTypeInterface
     public function getUserId()
     {
         return \fimUser::ANONYMOUS_USER_ID;
+    }
+
+    public function getAnonymousUserId()
+    {
+        return $this->anonId;
     }
 
     public function getScope()

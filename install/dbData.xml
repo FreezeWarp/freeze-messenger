@@ -221,6 +221,10 @@
             <column name="client_id" value="WebProAdmin" />
         </table>
 
+        <table name="oauth_clients">
+            <column name="client_id" value="IntegrationLogin" />
+        </table>
+
 
         <!-- Table rooms -->
         <table name="rooms">

@@ -89,8 +89,8 @@
  */
 
 /* Common Resources */
-require('../global.php');
 $apiRequest = true;
+require('../global.php');
 define('API_INROOM', true);
 
 
