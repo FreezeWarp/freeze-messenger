@@ -107,6 +107,8 @@ popup = {
                         $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
                             standard.deleteRoom($(this).attr('data-roomId'));
                         });
+
+                        windowDraw();
                     }
                 });
             }

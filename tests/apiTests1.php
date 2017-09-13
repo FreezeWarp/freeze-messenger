@@ -861,13 +861,65 @@ curlTestPOSTEquals(
     'noPerm'
 );
 
-echo "<tr><td>Edit Room '$testRoom2Name' to Allow Posting by '$testUnitUserName'</td>";
+echo "<tr><td>Get All Rooms, Testing for Rooms $testRoomName, $testRoom2Name</td>";
+curlTestGETEqualsMulti(
+    'api/room.php',
+    ['access_token' => $accessToken],
+    [
+        ['rooms', $testRoomId, 'name'],
+        ['rooms', $testRoom2Id, 'name'],
+    ],
+    [
+        $testRoomName,
+        $testRoom2Name
+    ]
+);
+
+echo "<tr><td>Edit Room '$testRoom2Name' to Allow Posting by '$testUnitUserName', Make Hidden</td>";
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoom2Id],
-    ['userPermissions' => "{\"+{$testUnitUserId}\" : [\"post\"]}"],
+    ['userPermissions' => "{\"+{$testUnitUserId}\" : [\"post\"]}", 'hidden' => true],
     ['room', 'id'],
     (string) $testRoom2Id
+);
+
+// TODO: moderator can't set hidden, official flags
+
+echo "<tr><td>Get Room '$testRoom2Name', testing for changes</td>";
+curlTestGETEqualsMulti(
+    'api/room.php',
+    ['access_token' => $accessToken, 'id' => $testRoom2Id],
+    [
+        ['rooms', $testRoom2Id, 'name'],
+        ['rooms', $testRoom2Id, 'hidden'],
+        ['rooms', $testRoom2Id, 'userPermissions', $testUnitUserId, 'view'],
+        ['rooms', $testRoom2Id, 'userPermissions', $testUnitUserId, 'post'],
+        ['rooms', $testRoom2Id, 'userPermissions', $testUnitUserId, 'moderate'],
+        ['rooms', $testRoom2Id, 'userPermissions', $testUnitUserId, 'grant'],
+    ],
+    [
+        $testRoom2Name,
+        true,
+        true,
+        true,
+        false,
+        false
+    ]
+);
+
+echo "<tr><td>Get All Rooms, Testing for Rooms $testRoomName, $testRoom2Name</td>";
+curlTestGETEqualsMulti(
+    'api/room.php',
+    ['access_token' => $accessToken],
+    [
+        ['rooms', $testRoomId, 'name'],
+        ['rooms', $testRoom2Id],
+    ],
+    [
+        $testRoomName,
+        null
+    ]
 );
 
 echo "<tr><td>Get Messages in $testRoom2Name</td>";

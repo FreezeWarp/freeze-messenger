@@ -113,10 +113,10 @@ do {
         if ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
             foreach ($database->getRoomPermissions([$room->id], 'user')->getAsArray() AS $row) {
                 //var_dump($row);
-                $xmlData['rooms']['room' . $room->id]['userPermissions'][$row['param']] = $row['permissions'];
+                $xmlData['rooms']['room' . $room->id]['userPermissions'][$row['param']] = $room->getPermissionsArray($row['permissions']);
             }
             foreach ($database->getRoomPermissions([$room->id], 'group')->getAsArray() AS $row) {
-                $xmlData['rooms']['room' . $room->id]['groupPermissions'][$row['param']] = $row['permissions'];
+                $xmlData['rooms']['room' . $room->id]['groupPermissions'][$row['param']] = $room->getPermissionsArray($row['permissions']);
             }
         }
     }

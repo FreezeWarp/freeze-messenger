@@ -331,11 +331,11 @@ standard.prototype.changeRoom = function(roomId) {
         }, {
             'begin' : function(roomData) { console.log(roomData);
                 enableSender();
-                window.roomId = roomData.roomId;
+                window.roomId = roomData.id;
 
-                $('#roomName').html(roomData.roomName); // Update the room name.
+                $('#roomName').html(roomData.name); // Update the room name.
 
-                standard.populateMessages(roomData.roomId);
+                standard.populateMessages(roomData.id);
             }
         });
     }

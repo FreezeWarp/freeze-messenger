@@ -40,13 +40,13 @@ switch ($request['list']) {
   case 'users':
     $entries = new apiOutputDict($slaveDatabase->getUsers(array(
       'userNameSearch' => $request['search'],
-    ))->getColumnValues('userName', 'userId'));
+    ))->getColumnValues('name', 'id'));
     break;
 
   case 'rooms':
     $entries = new apiOutputDict($slaveDatabase->getRooms(array(
       'roomNameSearch' => $request['search'],
-    ))->getColumnValues('roomName', 'roomId'));
+    ))->getColumnValues('name', 'id'));
      break;
 
 }

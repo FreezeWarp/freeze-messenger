@@ -182,17 +182,19 @@ switch ($requestHead['_action']) {
 
 
         // Handle Options Flags
-        $requestOptions = fim_sanitizeGPC('p', [
-            'options' => [
-                'cast'      => 'bitfieldShift',
-                'source'    => $room->options,
-                'flipTable' => [
-                    fimRoom::ROOM_HIDDEN   => 'hidden',
-                    fimRoom::ROOM_OFFICIAL => 'official',
+        if ($user->hasPriv('modRooms')) {
+            $requestOptions = fim_sanitizeGPC('p', [
+                'options' => [
+                    'cast'      => 'bitfieldShift',
+                    'source'    => $room->options,
+                    'flipTable' => [
+                        fimRoom::ROOM_HIDDEN   => 'hidden',
+                        fimRoom::ROOM_OFFICIAL => 'official',
+                    ]
                 ]
-            ]
-        ]);
-        $room->options = $requestOptions['options'];
+            ]);
+            $room->options = $requestOptions['options'];
+        }
 
 
         // Handle Room Properties
