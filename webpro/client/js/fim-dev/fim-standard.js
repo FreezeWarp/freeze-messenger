@@ -387,7 +387,7 @@ standard.prototype.changeRoom = function(roomId) {
             $('#activeUsers').html('<ul></ul>');
         },
         'each' : function(user) {
-            $('#activeUsers > ul').append('<li><span class="userName" data-userId="' + user.userData.userId + '" style=""' + user.userData.userNameFormat + '"">' + user.userData.userName + '</span></li>');
+            $('#activeUsers > ul').append('<li><span class="userName" data-userId="' + user.userData.id + '" style=""' + user.userData.nameFormat + '"">' + user.userData.name + '</span></li>');
         },
         'end' : function() {
             contextMenuParseUser('#activeUsers');
