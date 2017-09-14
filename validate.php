@@ -224,9 +224,12 @@ if (!$ignoreLogin) {
             $token = $oauthServer->getResourceController()->getToken();
 
             $user = fimUserFactory::getFromId((int) $token['user_id']);
-            $user->anonId = $token['anon_id'] ?? 0;
-            $user->sessionHash = $token['access_token'];
-            $user->clientCode = $token['client_id'];
+
+            if ($token['anon_id'] ?? false)
+                $user->setAnonId($token['anon_id']);
+
+            $user->setSessionHash($token['access_token']);
+            $user->setClientCode($token['client_id']);
             $tokenExpires = $token['expires'];
         }
     }
@@ -252,12 +255,12 @@ if (!$ignoreLogin) {
 
         $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
         $user = fimUserFactory::getFromId((int) $userC->getUserId());
-        $user->sessionHash = $oauthResponse->getParameter('access_token');
-        $user->clientCode = $oauthResponse->getParameter('client_id');
+        $user->setSessionHash($oauthResponse->getParameter('access_token'));
+        $user->setClientCode($oauthResponse->getParameter('client_id'));
         $tokenExpires = $oauthResponse->getParameter('expires_in');
 
         if ($_REQUEST['grant_type'] === 'anonymous') {
-            $user->anonId = $userC->getAnonymousUserId();
+            $user->setAnonId($userC->getAnonymousUserId());
         }
 
 

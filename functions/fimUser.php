@@ -164,7 +164,7 @@ class fimUser
     /**
      * @var int The age cutoff of content the user wishes to see.
      */
-    private $parentalAge = 0;
+    private $parentalAge = 255;
 
     /**
      * @var int The priviledges the user has (as bitfield)
@@ -386,97 +386,148 @@ class fimUser
     }
 
 
-    /*
-     * The first time data is loaded,
+    /**
+     * Invokes setters, or sets by property. Adds properties to list of resolved properties.
+     *
+     * @param $property string The property to set.
+     * @param $value mixed The value to set the property to.
+     *
+     * @throws Exception If a property doesn't exist.
      */
-    public function __set($property, $value)
+    private function set($property, $value)
     {
-        global $config, $loginConfig, $database, $generalCache;
+        global $config;
 
-        if (property_exists($this, $property))
-            $this->{$property} = $value;
+        if (!property_exists($this, $property))
+            throw new Exception('Invalid property to set in fimUser: ' . $property);
+
+        $setterName = 'set' . ucfirst($property);
+
+        if (method_exists($this, 'set' . ucfirst($property)))
+            $this->$setterName($value);
         else
-            throw new Exception("fimUser does not have property '$property'");
+            $this->{$property} = $value;
 
-        // If we've already processed the value once, it generally won't need to be reprocessed. Permissions, for instance, may be altered intentionally. We do make an exception for setting integers to what should be arrays -- we will reprocess in this case.
-        if (!in_array($property, $this->resolved)) {
+        if (!in_array($property, $this->resolved))
             $this->resolved[] = $property;
+    }
 
+    private function setParentalAge($age) {
+        global $config;
 
-            // Parental Flags: Convert CSV to Array, or empty if disabled
-            if ($property === 'parentalFlags') {
-                if ($config['parentalEnabled']) $this->parentalFlags = fim_emptyExplode(',', $value);
-                else                            $this->parentalFlags = array();
+        if ($config['parentalEnabled'])
+            $this->parentalAge = $age;
+    }
+
+    private function setParentalFlags($flags) {
+        global $config;
+
+        if ($config['parentalEnabled'])
+            $this->parentalFlags = fim_emptyExplode(',', $flags);
+    }
+    
+    private function setSocialGroupIds($socialGroupIds) {
+        $this->setList('socialGroupIds', $socialGroupIds);
+    }
+    private function setFavRooms($favRooms) {
+        $this->setList('favRooms', $favRooms);
+    }
+    private function setWatchRooms($watchRooms) {
+        global $config;
+
+        if ($config['enableWatchRooms']) {
+            $this->setList('watchRooms', $watchRooms);
+        }
+    }
+    private function setFriendsList($friendsList) {
+        $this->setList('friendsList', $friendsList);
+    }
+    private function setIgnoreList($ignoreList) {
+        $this->setList('ignoreList', $ignoreList);
+    }
+    
+    private function setList($listName, $value) {
+        global $database, $generalCache;
+
+        /* The returned value was "incomplete," indicating that it was truncated by the database software.
+         * We check to see if it exists in a database list cache (Redis), and then invoke the database wrapper's relevant method to retrieve it from the full table.
+         * Performance note: I would argue that performing the Redis check first will typically be faster, but that would require a fairly large rearchitecture of the User class. */
+        if ($value === fimDatabase::decodeError) {
+            $cacheIndex = 'fim_' . $listName . '_' . $this->id;
+
+            if ($generalCache->exists($cacheIndex, 'redis')) {
+                throw new Exception('Redis activated.');
+
+                $this->{$property} = $generalCache->get($cacheIndex, 'redis');
             }
+            else {
+                $this->{$property} = call_user_func([$database, 'getUser' . ucfirst($listName)], $this->id);
 
+                throw new Exception('User data corrupted: ' . $cacheIndex . '; fallback refused. (Note: this error is for development purposes. A fallback is available, we\'re just not using it. Recovery data found as: ' + print_r($this->{$property}, true));
 
-            // Parental Age: Disable if feature is disabled.
-            elseif ($property === 'parentalAge') {
-                if ($config['parentalEnabled']) $this->parentalAge = $value;
-                else                            $this->parentalAge = 255;
-            }
-
-
-            // Room and user lists
-            elseif ($property === 'socialGroupIds' || $property === 'favRooms' || $property === 'watchRooms' || $property === 'friendsList' || $property === 'ignoreList') {
-                if (!$config['enableWatchRooms'] && $property === 'watchRooms')
-                    $this->watchRooms = [];
-
-                /* The returned value was "incomplete," indicating that it was truncated by the database software.
-                 * We check to see if it exists in a database list cache (Redis), and then invoke the database wrapper's relevant method to retrieve it from the full table.
-                 * Performance note: I would argue that performing the Redis check first will typically be faster, but that would require a fairly large rearchitecture of the User class. */
-                elseif ($value === fimDatabase::decodeError) {
-                    $cacheIndex = 'fim_' . $property . '_' . $this->id;
-
-                    if ($generalCache->exists($cacheIndex, 'redis')) {
-                        throw new Exception('Redis activated.');
-
-                        $this->{$property} = $generalCache->get($cacheIndex, 'redis');
-                    }
-                    else {
-                        $this->{$property} = call_user_func([$database, 'getUser' . ucfirst($property)], $this->id);
-
-                        throw new Exception('User data corrupted: ' . $cacheIndex . '; fallback refused. (Note: this error is for development purposes. A fallback is available, we\'re just not using it. Recovery data found as: ' + print_r($this->{$property}, true));
-
-                        $generalCache->setAdd($cacheIndex, $this->{$property});
-                    }
-                }
-
-                elseif (!is_array($value))
-                    throw new Exception( "The following list was passed as something other than an array to fimUser:" . $property);
-            }
-
-
-            // Privileges: modify based on global permissions, inconsistencies, and superuser status.
-            elseif ($property === 'privs') {
-                // If certain features are disabled, remove user priviledges. The bitfields should be maintained, however, for when a feature is reenabled.
-                if (!$config['userRoomCreation'])
-                    $this->privs &= ~fimUser::USER_PRIV_CREATE_ROOMS;
-                if (!$config['userPrivateRoomCreation'])
-                    $this->privs &= ~(fimUser::USER_PRIV_PRIVATE_ALL | fimUser::USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
-                if ($config['disableTopic'])
-                    $this->privs &= ~fimUser::USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
-
-                // Certain bits imply other bits. Make sure that these are consistent.
-                if ($this->privs & fimUser::USER_PRIV_PRIVATE_ALL)
-                    $this->privs |= fimUser::USER_PRIV_PRIVATE_FRIENDS;
-
-                // Superuser override (note that any user with GRANT or in the $config superuser array is automatically given all permissions, and is marked as protected. The only way, normally, to remove a user's GRANT status, because they are automatically protected, is to do so directly in the database.)
-                // LoginConfig is not guranteed to be set here (e.g. during installation), which is why we cast.
-                if (in_array($this->id, (array) $loginConfig['superUsers']) || ($this->privs & fimUser::ADMIN_GRANT))
-                    $this->privs = 0x7FFFFFFF;
-                elseif ($this->privs & fimUser::ADMIN_ROOMS)
-                    $this->privs |= (fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
-            }
-
-            elseif ($property === 'avatar') {
-                if (!$this->defaultRoomId) $this->defaultRoomId = $config['avatarDefault'];
-            }
-
-            elseif ($property === 'defaultRoomId') {
-                if (!$this->defaultRoomId) $this->defaultRoomId = $config['defaultRoomId'];
+                $generalCache->setAdd($cacheIndex, $this->{$property});
             }
         }
+
+        elseif (!is_array($value))
+            throw new Exception( "The following list was passed as something other than an array to fimUser:" . $listName);
+
+        else
+            $this->{$listName} = $value;
+    }
+
+    private function setDefaultRoomId($roomId) {
+        global $config;
+
+        $this->defaultRoomId = $roomId ?: $config['defaultRoomId'];
+    }
+
+
+    private function setPrivs($privs) {
+        global $config, $loginConfig;
+
+        $this->privs = $privs;
+
+        // If certain features are disabled, remove user privileges. The bitfields should be maintained, however, for when a feature is reenabled.
+        if (!$config['userRoomCreation'])
+            $this->privs &= ~fimUser::USER_PRIV_CREATE_ROOMS;
+
+        // Superuser override (note that any user with GRANT or in the $config superuser array is automatically given all permissions, and is marked as protected. The only way, normally, to remove a user's GRANT status, because they are automatically protected, is to do so directly in the database.)
+        // LoginConfig is not guranteed to be set here (e.g. during installation), which is why we cast.
+        if (in_array($this->id, (array) $loginConfig['superUsers']) || ($this->privs & fimUser::ADMIN_GRANT))
+            $this->privs = 0x7FFFFFFF;
+        elseif ($this->privs & fimUser::ADMIN_ROOMS)
+            $this->privs |= (fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
+
+        // Note that we set these after setting admin privs, becuase we don't want admins using these functionalities when they are disabled.
+        if (!$config['userPrivateRoomCreation'])
+            $this->privs &= ~(fimUser::USER_PRIV_PRIVATE_ALL | fimUser::USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
+        if ($config['disableTopic'])
+            $this->privs &= ~fimUser::USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
+
+        // Certain bits imply other bits. Make sure that these are consistent.
+        if ($this->privs & fimUser::USER_PRIV_PRIVATE_ALL)
+            $this->privs |= fimUser::USER_PRIV_PRIVATE_FRIENDS;
+
+    }
+
+    public function setAnonId($anonId) {
+        if (!$this->isAnonymousUser())
+            throw new Exception('Can\'t set anonymous user ID on non-anonymous users.');
+
+        $this->anonId = $anonId;
+    }
+
+    public function setSessionHash($hash) {
+        $this->sessionHash = $hash;
+
+        $this->resolved[] = 'sessionHash';
+    }
+
+    public function setClientCode($code) {
+        $this->clientCode = $code;
+
+        $this->resolved[] = 'clientCode';
     }
 
 
@@ -596,7 +647,7 @@ class fimUser
         }
     }
 
-    function phpbb_hash_crypt_private($password, $setting, &$itoa64) {
+    public static function phpbb_hash_crypt_private($password, $setting, &$itoa64) {
         $itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
         $output = '*';
 
@@ -624,7 +675,7 @@ class fimUser
         } while (--$count);
 
         $output = substr($setting, 0, 12);
-        $output .= phpbb_hash_encode64($hash, 16, $itoa64);
+        $output .= fimUser::phpbb_hash_encode64($hash, 16, $itoa64);
 
         return $output;
     }
@@ -642,7 +693,6 @@ class fimUser
      * @license http://opensource.org/licenses/gpl-license.php GNU Public License
      *
      */
-    function phpbb_hash_encode64($input, $count, &$itoa64) {
         $output = '';
         $i = 0;
 
@@ -744,11 +794,11 @@ class fimUser
     public function populateFromArray(array $userData, bool $overwrite = false) : bool
     {
         if ($userData) {
-            // The resolution process in __set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when __set fires.
+            // The resolution process in set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when set fires.
             if ($overwrite) $this->resolved = array_diff($this->resolved, array_keys($userData));
 
             foreach ($userData AS $attribute => $value) {
-                $this->__set($attribute, $value);
+                $this->set($attribute, $value);
             }
 
             return true;
