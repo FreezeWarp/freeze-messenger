@@ -29,7 +29,7 @@ $database->accessLog('markMessageRead', $request);
 
 /* Data Predefine */
 $xmlData = array(
-    'editUserOptions' => array(
+    'markMessageRead' => array(
     ),
 );
 

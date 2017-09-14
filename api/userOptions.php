@@ -180,6 +180,7 @@ $xmlData = array(
     'editUserOptions' => array(
     ),
 );
+$updateArray = [];
 
 
 
@@ -396,29 +397,28 @@ $database->autoQueue(true);
 
 /* Watch Rooms (used for notifications of new messages, which are placed in unreadMessages) */
 
-if (count($request['watchRooms'])) {
-    $database->editRoomList('watchRooms', $user, $request['watchRooms'], $requestHead['_action']);
+if (isset($request['watchRooms'])) {
+    $user->editList('watchRooms', $request['watchRooms'], $requestHead['_action']);
 }
 
 
 
 /* Fav List */
-if (count($request['favRooms'])) {
-    $database->editRoomList('favRooms', $user, $request['favRooms'], $requestHead['_action']);
+if (isset($request['favRooms'])) {
+    $user->editList('favRooms', $request['favRooms'], $requestHead['_action']);
 }
 
 
 
 /* Ignore List */
-if (count($request['ignoreList'])) {
-    $database->editUserList('ignoreList', $user, $request['ignoreList'], $requestHead['_action']);
+if (isset($request['ignoreList'])) {
+    $user->editList('ignoreList', $request['ignoreList'], $requestHead['_action']);
 }
 
 
 
-/* Friends List */
-if (count($request['friendsList'])) {
-    $database->editUserList('friendsList', $user, $request['friendsList'], $requestHead['_action']);
+if (isset($request['friendsList'])) {
+    $user->editList('friendsList', $request['friendsList'], $requestHead['_action']);
 }
 
 $database->autoQueue(false);

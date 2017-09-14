@@ -939,7 +939,7 @@ curlTestGETEquals(
     '小さい問題'
 );
 
-echo '<thead><tr class="ui-widget-header"><th colspan="4">Another New User and Room Moderation, Activity Tests</th></tr></thead>';
+echo '<thead><tr class="ui-widget-header"><th colspan="4">Another New User and Activity Tests</th></tr></thead>';
 
 $testUnit2UserId;
 $testUnit2UserToken;
@@ -1113,6 +1113,121 @@ curlTestGETEqualsMulti(
         $testRoomName,
         $testRoom2Name,
     ]
+);
+
+echo '<thead><tr class="ui-widget-header"><th colspan="4">Watch Rooms Test</th></tr></thead>';
+
+echo "<tr><td>Get Unread Messages for '$testUnitUserName'</td>";
+curlTestGETEquals(
+    'api/unreadMessages.php',
+    ['access_token' => $accessToken2],
+    ['unreadMessages'],
+    []
+);
+
+echo "<tr><td>'$testUnitUserName' Watches Room '$testRoomName'</td>";
+curlTestPOSTEquals(
+    'api/userOptions.php',
+    ['access_token' => $accessToken2, '_action' => 'create'],
+    ['watchRooms' => [$testRoomId]],
+    ['editUserOptions'],
+    []
+);
+
+echo "<tr><td>Get Unread Messages for '$testUnitUserName'</td>";
+curlTestGETEquals(
+    'api/unreadMessages.php',
+    ['access_token' => $accessToken2],
+    ['unreadMessages'],
+    []
+);
+
+echo "<tr><td>Send Message 'Hello' in '$testRoomName' as '$testUnit2UserName'</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken3, 'roomId' => $testRoomId],
+    ['message' => 'バカ'],
+    ['message', 'censor'],
+    []
+);
+
+echo "<tr><td>Send Message 'Goodbye' in '$testRoom2Name' as '$testUnit2UserName'</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken3, 'roomId' => $testRoom2Id],
+    ['message' => 'バカ'],
+    ['message', 'censor'],
+    []
+);
+
+for ($i = 0; $i < 2; $i++) {
+    echo "<tr><td>Get Unread Messages for '$testUnitUserName'</td>";
+    curlTestGETEqualsMulti(
+        'api/unreadMessages.php',
+        ['access_token' => $accessToken2],
+        [
+            ['unreadMessages', 0, 'senderName'],
+            ['unreadMessages', 0, 'roomName'],
+            ['unreadMessages', 1]
+        ],
+        [
+            $testUnit2UserName,
+            $testRoomName,
+            null
+        ]
+    );
+}
+
+echo "<tr><td>Get Unread Messages for '$testUnit2UserName'</td>";
+curlTestGETEquals(
+    'api/unreadMessages.php',
+    ['access_token' => $accessToken3],
+    ['unreadMessages'],
+    []
+);
+
+echo "<tr><td>'$testUnitUserName' Marks Message Read</td>";
+// todo: make delete
+curlTestPOSTEquals(
+    'api/markMessageRead.php',
+    ['access_token' => $accessToken2],
+    ['roomId' => $testRoomId],
+    ['markMessageRead'],
+    []
+);
+
+echo "<tr><td>Get Unread Messages for '$testUnitUserName'</td>";
+curlTestGETEquals(
+    'api/unreadMessages.php',
+    ['access_token' => $accessToken2],
+    ['unreadMessages'],
+    []
+);
+
+echo "<tr><td>'$testUnitUserName' Stops Watching Room '$testRoomName'</td>";
+curlTestPOSTEquals(
+    'api/userOptions.php',
+    ['access_token' => $accessToken2, '_action' => 'edit'],
+    ['watchRooms' => ['']],
+    ['editUserOptions'],
+    []
+);
+
+echo "<tr><td>Send Message 'Goodbye' in '$testRoomName' as '$testUnit2UserName'</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $accessToken3, 'roomId' => $testRoomId],
+    ['message' => 'バカ'],
+    ['message', 'censor'],
+    []
+);
+
+echo "<tr><td>Get Unread Messages for '$testUnitUserName'</td>";
+curlTestGETEquals(
+    'api/unreadMessages.php',
+    ['access_token' => $accessToken2],
+    ['unreadMessages'],
+    []
 );
 
 echo '</table>';

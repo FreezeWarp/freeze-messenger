@@ -44,22 +44,13 @@ $database->setHardPartitions([
 
 /* These maintain collections. */
 $database->setCollectionTriggers([
-    $database->sqlPrefix . 'userFavRooms' => [
-        ['userId', 'roomId', [$database, 'triggerUserFavRoomIds']],
-    ],
     $database->sqlPrefix . 'watchRooms' => [
-        ['userId', 'roomId', [$database, 'triggerUserWatchedRoomIds']],
-//            ['roomId', 'userId', 'fimDatabase:triggerRoomWatchedByIds'],
-    ],
-    $database->sqlPrefix . 'userIgnoreList' => [
-        ['userId', 'subjectId', [$database, 'triggerUserIgnoredUserIds']],
-    ],
-    $database->sqlPrefix . 'userFriendsList' => [
-        ['userId', 'subjectId', [$database, 'triggerUserFriendedUserIds']],
-    ],
-    $database->sqlPrefix . 'socialGroupMembers' => [
-        ['userId', 'groupId', [$database, 'triggerUserMemberOfGroupIds']],
+        ['roomId', 'userId', [$database, 'triggerRoomWatchedByIds']],
+    ]
+        // TODO: do this in fimUser
+        //$database->sqlPrefix . 'socialGroupMembers' => [
+        //['userId', 'groupId', [$database, 'triggerUserMemberOfGroupIds']],
         //['groupId', 'userId', 'fimDatabase:triggerGroupMemberIds'],
-    ],
+        //],
 ]);
 ?>

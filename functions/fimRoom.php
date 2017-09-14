@@ -184,7 +184,7 @@ class fimRoom extends fimDynamicObject {
     /**
      * @var array A list of users watching this room. TODO: user instances?
      */
-    protected $watchedByUsers;
+    protected $watchedByUsers = [];
 
     /**
      * @var mixed The room data the room was initialised with.
@@ -451,7 +451,7 @@ class fimRoom extends fimDynamicObject {
         global $config;
 
         if (!$config['enableWatchRooms'])
-            $this->watchedByUsers = [];
+            return;
 
         elseif ($users === fimDatabase::decodeError) {
             // TODO: regenerate and cache to APC
@@ -474,6 +474,10 @@ class fimRoom extends fimDynamicObject {
             ], [
                 "id" => $this->id,
             ]);
+        }
+
+        else {
+            $this->watchedByUsers = $users;
         }
     }
 

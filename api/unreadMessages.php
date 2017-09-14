@@ -48,11 +48,7 @@ if (!$user->isValid() || $user->isAnonymousUser())
     throw new fimError('loginRequired', 'You must be logged in to get your unread messages.');
 
 
-$unreadMessages = $database->getUnreadMessages()->getAsArray(true);
-
-foreach ($unreadMessages AS $unreadMessage) {
-    $xmlData['unreadMessages']['unreadMessage ' . $unreadMessage['messageId']] = $unreadMessage;
-}
+$xmlData['unreadMessages'] = $database->getUnreadMessages()->getAsArray(true);
 
 
 /* Output Data */

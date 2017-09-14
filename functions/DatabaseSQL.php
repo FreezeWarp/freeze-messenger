@@ -2274,15 +2274,15 @@ class DatabaseSQL extends Database
         }
 
         if ($this->limit) {
-            if ($limit !== false) throw new Exception("Limit declared both in sort() and select().");
+            if ($limit !== false) throw new Exception("Limit declared both in limit() and select().");
 
-            $limit = $this->limit; $this->limit = array();
+            $limit = $this->limit; $this->limit = false;
         }
 
         if ($this->page) {
-            if ($page !== false) throw new Exception("Page declared both in sort() and select().");
+            if ($page !== 0) throw new Exception("Page declared both in page() and select().");
 
-            $limit = $this->page; $this->page = false;
+            $page = $this->page; $this->page = 0;
         }
 
 

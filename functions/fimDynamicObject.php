@@ -10,7 +10,7 @@ class fimDynamicObject {
      */
     protected function set($property, $value) {
         if (!property_exists($this, $property))
-            throw new Exception('Invalid property to set in fimRoom: ' . $property);
+            throw new Exception('Invalid property to set in ' . get_called_class() . ': ' . $property);
 
         $setterName = 'set' . ucfirst($property);
 

@@ -450,6 +450,84 @@ class fimUser extends fimDynamicObject
             $this->{$listName} = $value;
     }
 
+    public function editList($listName, $ids, $action) {
+        global $database;
+
+        $tableNames = [
+            'favRooms' => 'userFavRooms',
+            'watchRooms' => 'watchRooms',
+            'ignoreList' => 'userIgnoreList',
+            'friendsList' => 'userFriendsList'
+        ];
+
+
+        if ($listName === 'favRooms' || $listName === 'watchRooms') {
+            $items = $database->getRooms(array(
+                'roomIds' => $ids
+            ))->getAsRooms();
+            $columnName = 'roomId';
+        }
+        elseif ($listName === 'ignoreList' || $listName === 'friendsList') {
+            $items = $database->getUsers(array(
+                'userIds' => $ids
+            ))->getAsUsers();
+            $columnName = 'subjectId';
+        }
+        else {
+            throw new Exception('Unrecognised list.');
+        }
+
+
+        $table = $database->sqlPrefix . $tableNames[$listName];
+
+
+        if ($action === 'delete') {
+            foreach ($items AS $id => $item) {
+                $database->delete($table, array(
+                    'userId' => $this->id,
+                    $columnName => $id,
+                ));
+
+                if(($key = array_search($id, $this->{$listName})) !== false) {
+                    unset($this->{$listName}[$key]);
+                }
+            }
+        }
+
+        if ($action === 'edit') {
+            foreach ($this->{$listName} AS $id) {
+                $database->delete($table, array(
+                    'userId' => $this->id,
+                    $columnName => $id,
+                ));
+            }
+
+            $this->{$listName} = [];
+        }
+
+        if ($action === 'create' || $action === 'edit') {
+            foreach ($items AS $id => $item) {
+                if ($listName === 'favRooms' || $listName === 'watchRooms') {
+                    if (!($database->hasPermission($this, $item) & fimRoom::ROOM_PERMISSION_VIEW)) {
+                        continue;
+                    }
+
+                    // TODO: If it is the friends list, status should be request
+
+                    $database->insert($table, array(
+                        'userId' => $this->id,
+                        $columnName => $id,
+                    ));
+
+                    // TODO: If it is the friends list, create a friendRequest event
+
+                    $this->{$listName}[] = $id;
+                }
+            }
+        }
+    }
+
+
     protected function setDefaultRoomId($roomId) {
         global $config;
 

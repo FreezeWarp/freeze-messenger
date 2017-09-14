@@ -1260,7 +1260,7 @@ class fimDatabase extends DatabaseSQL
      * @param int $pagination
      * @return bool|object|resource
      */
-    public function getRooms($options, $sort = array('id' => 'asc'), $limit = 50, $page = 0)
+    public function getRooms($options, $sort = array('id' => 'asc'), $limit = 50, $pagination = 0)
     {
         $options = $this->argumentMerge(array(
             'roomIds'            => [],
@@ -1306,7 +1306,7 @@ class fimDatabase extends DatabaseSQL
 
 
         // Perform Query
-        return $this->where($conditions)->sortBy($sort)->limit($limit)->page($page)->select($columns);
+        return $this->where($conditions)->sortBy($sort)->limit($limit)->page($pagination)->select($columns);
     }
 
 
@@ -1320,7 +1320,7 @@ class fimDatabase extends DatabaseSQL
 
 
 
-    public function getUsers($options = array(), $sort = array('id' => 'asc'), $limit = 0, $pagination = 1)
+    public function getUsers($options = array(), $sort = array('id' => 'asc'), $limit = 0, $pagination = 0)
     {
         $options = $this->argumentMerge(array(
             'userIds'        => array(),
@@ -1825,114 +1825,6 @@ class fimDatabase extends DatabaseSQL
     /********************************************************
      ******************* LISTS ******************************
      ********************************************************/
-
-    /**
-     * @param        $roomList - Either 'watchRooms' or 'userFavRooms' (representing those tables)
-     * @param        $userData
-     * @param        $roomIds
-     * @param string $method
-     */
-    public function editRoomList(string $roomListName, fimUser $userData, array $roomIds, string $action = 'create') {
-        $rooms = $this->getRooms(array(
-            'roomIds' => $roomIds
-        ))->getAsRooms();
-
-
-        $table = $this->sqlPrefix . ($roomListName === 'favRooms' ? 'userFavRooms' : $roomListName);
-
-
-        if ($action === 'delete') {
-            foreach ($rooms AS $roomId => $room) {
-                $this->delete($table, array(
-                    'userId' => $userData->id,
-                    'roomId' => $roomId,
-                ));
-            }
-        }
-
-        if ($action === 'edit') {
-            foreach ($rooms AS $roomId => $room) {
-                $this->delete($table, array(
-                    'userId' => $userData->id,
-                ));
-            }
-        }
-
-        if ($action === 'create' || $action === 'edit') {
-            foreach ($rooms AS $roomId => $room) {
-                if ($this->hasPermission($userData, $room) & fimRoom::ROOM_PERMISSION_VIEW) {
-                    $this->insert($table, array(
-                        'userId' => $userData->id,
-                        'roomId' => $roomId,
-                    ));
-                }
-            }
-        }
-    }
-
-
-
-    public function editUserList(string $userListName, fimUser $user, array $userIds, string $action = 'create') {
-        $tableNames = [
-            'favRooms' => 'userFavRooms',
-            'watchRooms' => 'watchRoom',
-            'ignoreList' => 'userIgnoreList',
-            'friendsList' => 'userFriendsList'
-        ];
-
-
-        /* Get the user data corresponding with $userIds
-         * This will filter out any non-existing userIds, as well. */
-        $userIds = $this->getUsers(array(
-            'userIds' => $userIds,
-            'columns' => 'userId'
-        ))->getColumnValues('userId');
-
-
-        $table = $this->sqlPrefix . $tableNames[$userListName];
-
-
-        /* If the action is delete, delete users in $userIds */
-        if ($action === 'delete') {
-            foreach ($userIds AS $userId) {
-                $this->delete($table, array(
-                    'userId' => $user->id,
-                    'subjectId' => $userId,
-                ));
-            }
-        }
-
-
-        /* If the action is edit (which replaces existing users), delete all existing users. */
-        if ($action === 'edit') {
-            $this->delete($table, array(
-                'userId' => $user->id,
-            ));
-        }
-
-
-        /* If the action is either edit or create, add users from $userIds */
-        if ($action === 'edit' || $action === 'create') {
-            foreach ($userIds AS $userId) {
-                // Base data
-                $dataArray = array(
-                    'userId' => $user->id,
-                    'subjectId' => $userId,
-                );
-
-                // TODO: If it is the friends list, status should be request
-                // if ($userListName === 'friendsList')
-                //    $dataArray['status'] = 'request';
-
-                // Perform insertion
-                $this->insert($table, $dataArray);
-
-                // TODO: If it is the friends list, create a friendRequest event
-                // if ($userListName === 'friendsList')
-                //    $this->createUserEvent('friendRequest', $userId, $user->id);
-            }
-        }
-    }
 
     /**
      * Gets an array list of all room IDs a user has favorited.
@@ -2799,34 +2691,18 @@ class fimDatabase extends DatabaseSQL
 
 
     /****** TRIGGERS ******/
-    public function triggerUserFavRoomIds($set, $dataChanges) {
-        $this->triggerUserListCache($set, "favRooms", $dataChanges);
-    }
-    public function triggerUserWatchedRoomIds($set, $dataChanges) {
-        $this->triggerUserListCache($set, "watchRooms", $dataChanges);
-    }
-    public function triggerUserIgnoredUserIds($set, $dataChanges) {
-        $this->triggerUserListCache($set, "ignoreList", $dataChanges);
-    }
-    public function triggerUserFriendedUserIds($set, $dataChanges) {
-        $this->triggerUserListCache($set, "friendsList", $dataChanges);
+    public function triggerRoomWatchedByIds($set, $dataChanges) {
+        $this->triggerRoomListCache($set, "watchedByUsers", $dataChanges);
     }
 
-    public function triggerUserListCache($userId, $cacheColumn, $dataChanges) {
+    public function triggerRoomListCache($roomId, $cacheColumn, $dataChanges) {
         global $generalCache, $config;
 
-        $userColNames = [
-            'favRooms' => 'favRoomIds',
-            'watchRooms' => 'watchRoomIds',
-            'ignoreList' => 'ignoredUserIds',
-            'friendsList' => 'friendedUserIds'
-        ];
+        $room = fimRoomFactory::getFromId((int) $roomId);
+        $listEntries = $room->{$cacheColumn};
 
-        $user = fimUserFactory::getFromId((int) $userId);
-        $listEntries = $user->__get($cacheColumn);
-
-        if (count($listEntries) > $config['databaseCollectionMaxEntries']) {
-            $cacheIndex = 'fim_' . $cacheColumn . '_' . $userId;
+        /*if (count($listEntries) > $config['databaseCollectionMaxEntries']) {
+            $cacheIndex = 'fim_' . $cacheColumn . '_' . $roomId;
 
             if (!$generalCache->exists($cacheIndex, 'redis')) {
                 $generalCache->setAdd($cacheIndex, $listEntries);
@@ -2834,36 +2710,36 @@ class fimDatabase extends DatabaseSQL
 
             foreach ($dataChanges AS $operation => $values) {
                 switch ($operation) {
-                case 'delete':
-                    if (is_string($values) && $values === '*')
-                        $generalCache->clear($cacheIndex, 'redis');
+                    case 'delete':
+                        if (is_string($values) && $values === '*')
+                            $generalCache->clear($cacheIndex, 'redis');
 
-                    else
-                        $generalCache->setRemove($cacheIndex, $listEntries);
-                break;
+                        else
+                            $generalCache->setRemove($cacheIndex, $listEntries);
+                    break;
 
-                case 'insert':
-                    $generalCache->setAdd($cacheIndex, $values);
-                break;
+                    case 'insert':
+                        $generalCache->setAdd($cacheIndex, $values);
+                    break;
                 }
             }
         }
 
-        else { // Use database
+        else { // Use database*/
             foreach ($dataChanges AS $operation => $values) {
                 switch ($operation) {
-                case 'delete':
-                    $listEntries = is_string($values) && $values === '*' ? [] : array_diff($listEntries, $values);
-                break;
-                case 'insert':
-                    $listEntries = array_merge($listEntries, $values);
-                break;
+                    case 'delete':
+                        $listEntries = is_string($values) && $values === '*' ? [] : array_diff($listEntries, $values);
+                    break;
+                    case 'insert':
+                        $listEntries = array_merge($listEntries, $values);
+                    break;
                 }
             }
-        }
+        //}
 
-        $user->setDatabase([
-            $userColNames[$cacheColumn] => $listEntries
+        $room->setDatabase([
+            $cacheColumn => $listEntries
         ]);
     }
 
