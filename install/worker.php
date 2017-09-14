@@ -19,7 +19,7 @@ ini_set('display_errors', 1);
 
 require('../functions/xml.php'); // For reading the db*.xml files
 require('../functions/Database.php'); // DB Operations
-require('../functions/databaseSQL.php'); // ""
+require('../functions/DatabaseSQL.php'); // ""
 require('../functions/fimDatabase.php'); // ""
 require('../functions/fimUser.php'); // Creating Users
 require('../functions/fimRoom.php'); // Transformation Parameters

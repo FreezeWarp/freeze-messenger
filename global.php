@@ -77,7 +77,7 @@ elseif ($phpVersion <= 5.3) { // Removed outright in 5.4, may as well save a CPU
 require_once(dirname(__FILE__) . '/config.php'); // Configuration Variables
 require_once(dirname(__FILE__) . '/functions/ApiData.php'); // API Data output wrapper.
 require_once(dirname(__FILE__) . '/functions/Database.php'); // Database
-require_once(dirname(__FILE__) . '/functions/databaseSQL.php'); // Database (SQL)
+require_once(dirname(__FILE__) . '/functions/DatabaseSQL.php'); // Database (SQL)
 require_once(dirname(__FILE__) . '/functions/fimDatabase.php'); // FIM-specific Extensions
 require_once(dirname(__FILE__) . '/functions/fimDatabaseUAC.php'); // FIM-specific Extensions, UAC (it gets its own file because it might be shipped seperately to support additional intgration methods.)
 require_once(dirname(__FILE__) . '/functions/fimUser.php'); // FIM-specific Extensions

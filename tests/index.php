@@ -54,7 +54,7 @@ require_once('../functions/fimCache.php');
 
 echo "Requiring Database Files...<br />";
 require_once('../functions/Database.php');
-require_once('../functions/databaseSQL.php');
+require_once('../functions/DatabaseSQL.php');
 require_once('../functions/fimDatabase.php');
 
 echo "Requiring Test Suites...<br />";

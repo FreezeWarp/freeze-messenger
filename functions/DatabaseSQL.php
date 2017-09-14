@@ -88,7 +88,7 @@
  * 9.2: Index-only scans, cascading replication, range data types, JSON data type,
  */
 
-class databaseSQL extends Database
+class DatabaseSQL extends Database
 {
     public $classVersion = 3;
     public $classProduct = 'fim';
@@ -872,7 +872,7 @@ class databaseSQL extends Database
         $values = func_get_args();
 
         switch ($type) {
-            case databaseSQL::FORMAT_VALUE_DETECT:
+            case DatabaseSQL::FORMAT_VALUE_DETECT:
                 $item = $this->auto($values[1]);
 
                 return $this->formatValue($item->type, $item->value);
@@ -937,7 +937,7 @@ class databaseSQL extends Database
             case DatabaseTypeType::equation:  // Only partially implemented, because equations are stupid. Don't use them if possible.
                 return preg_replace_callback('/\$(([a-zA-Z_]+)\.|)([a-zA-Z]+)/', function ($matches) {
                     if ($matches[1])
-                        return $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN, $matches[2], $matches[3]);
+                        return $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $matches[2], $matches[3]);
                     else
                         return $this->formatValue(DatabaseTypeType::column, $matches[3]);
                 }, $values[1]);
@@ -954,37 +954,37 @@ class databaseSQL extends Database
                     . $this->arrayQuoteEnd;
             break;
 
-            case databaseSQL::FORMAT_VALUE_COLUMN_ALIAS:
+            case DatabaseSQL::FORMAT_VALUE_COLUMN_ALIAS:
                 return $this->columnAliasQuoteStart
                     . $this->escape($values[1], $type)
                     . $this->columnAliasQuoteEnd;
                 break;
 
-            case databaseSQL::FORMAT_VALUE_TABLE:
+            case DatabaseSQL::FORMAT_VALUE_TABLE:
                 return $this->tableQuoteStart
                     . $this->escape($values[1], $type)
                     . $this->tableQuoteEnd;
                 break;
 
-            case databaseSQL::FORMAT_VALUE_TABLE_ALIAS:
+            case DatabaseSQL::FORMAT_VALUE_TABLE_ALIAS:
                 return $this->tableAliasQuoteStart
                     . $this->escape($values[1], $type)
                     . $this->tableAliasQuoteEnd;
                 break;
 
-            case databaseSQL::FORMAT_VALUE_DATABASE:
+            case DatabaseSQL::FORMAT_VALUE_DATABASE:
                 return $this->databaseQuoteStart
                     . $this->escape($values[1], $type)
                     . $this->databaseQuoteEnd;
                 break;
 
-            case databaseSQL::FORMAT_VALUE_INDEX:
+            case DatabaseSQL::FORMAT_VALUE_INDEX:
                 return $this->indexQuoteStart
                     . $this->escape($values[1], $type)
                     . $this->indexQuoteEnd;
                 break;
 
-            case databaseSQL::FORMAT_VALUE_ENUM_ARRAY:
+            case DatabaseSQL::FORMAT_VALUE_ENUM_ARRAY:
                 foreach ($values[1] AS $item) {
                     if ($this->auto($item)->type !== DatabaseTypeType::string) { // Make sure none of the values are detected to be non-strings.
                         $this->triggerError("Invalid Enum Type", array(
@@ -998,7 +998,7 @@ class databaseSQL extends Database
                 return $this->formatValue(DatabaseTypeType::arraylist, $values[1]);
             break;
 
-            case databaseSQL::FORMAT_VALUE_COLUMN_ARRAY:
+            case DatabaseSQL::FORMAT_VALUE_COLUMN_ARRAY:
                 foreach ($values[1] AS &$item)
                     $item = $this->formatValue(DatabaseTypeType::column, $item);
 
@@ -1007,45 +1007,45 @@ class databaseSQL extends Database
                     . $this->arrayQuoteEnd;
                 break;
 
-            case databaseSQL::FORMAT_VALUE_UPDATE_ARRAY:
+            case DatabaseSQL::FORMAT_VALUE_UPDATE_ARRAY:
                 $update = array();
 
                 foreach ($values[1] AS $column => $value) {
                     $update[] = $this->formatValue(DatabaseTypeType::column, $column)
                         . $this->comparisonTypes[DatabaseTypeComparison::assignment]
-                        . $this->formatValue(databaseSQL::FORMAT_VALUE_DETECT, $value);
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value);
                 }
 
                 return implode($update, $this->statementSeperator);
                 break;
 
-            case databaseSQL::FORMAT_VALUE_TABLE_COLUMN:
-                return $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $values[1])
+            case DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN:
+                return $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $values[1])
                     . $this->tableColumnDivider
                     . $this->formatValue(DatabaseTypeType::column, $values[2]);
                 break;
 
-            case databaseSQL::FORMAT_VALUE_DATABASE_TABLE:
-                return $this->formatValue(databaseSQL::FORMAT_VALUE_DATABASE, $values[1])
+            case DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE:
+                return $this->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE, $values[1])
                     . $this->databaseTableDivider
-                    . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $values[2]);
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $values[2]);
                 break;
 
-            case databaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS:
-                return $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $values[1])
+            case DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS:
+                return $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $values[1])
                     . $this->tableColumnDivider
                     . $this->formatValue(DatabaseTypeType::column, $values[2])
                     . $this->columnAliasDivider
-                    . $this->formatValue(databaseSQL::FORMAT_VALUE_COLUMN_ALIAS, $values[3]);
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_COLUMN_ALIAS, $values[3]);
                 break;
 
-            case databaseSQL::FORMAT_VALUE_TABLE_NAME_ALIAS:
-                return $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $values[1])
+            case DatabaseSQL::FORMAT_VALUE_TABLE_NAME_ALIAS:
+                return $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $values[1])
                     . $this->tableAliasDivider
-                    . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_ALIAS, $values[2]);
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_ALIAS, $values[2]);
                 break;
 
-            case databaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES:
+            case DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES:
                 $tableName = $values[1];
 
                 /* Copy & transform values
@@ -1094,7 +1094,7 @@ class databaseSQL extends Database
                     . $this->arrayQuoteEnd;
             break;
 
-            case databaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY:
+            case DatabaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY:
                 $tableName = $values[1];
                 $update = array();
 
@@ -1124,7 +1124,7 @@ class databaseSQL extends Database
                     /* Format and add the column/value pair to our list */
                     $update[] = $this->formatValue(DatabaseTypeType::column, $column)
                         . $this->comparisonTypes[DatabaseTypeComparison::assignment]
-                        . $this->formatValue(databaseSQL::FORMAT_VALUE_DETECT, $value);
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value);
                 }
 
                 /* Return our list of paired values as an string */
@@ -1621,11 +1621,11 @@ class databaseSQL extends Database
     public function createDatabase($database)
     {
         if ($this->useCreateIfNotExist) {
-            return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->formatValue(databaseSQL::FORMAT_VALUE_DATABASE, $database));
+            return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE, $database));
         }
         else {
             try {
-                return @$this->rawQuery('CREATE DATABASE ' . $this->formatValue(databaseSQL::FORMAT_VALUE_DATABASE, $database));
+                return @$this->rawQuery('CREATE DATABASE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE, $database));
             } catch (Exception $ex) {
                 return true;
             }
@@ -1813,14 +1813,14 @@ class databaseSQL extends Database
                     switch ($this->enumMode) {
                         // Here, we create a special type to use as an enum. PostGreSQL does this.
                         case 'useCreateType':
-                            $typePiece = $this->formatValue(databaseSQL::FORMAT_VALUE_INDEX, $tableName . '_' . $columnName);
+                            $typePiece = $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $tableName . '_' . $columnName);
                             $this->rawQuery('DROP TYPE IF EXISTS ' . $typePiece . ' CASCADE');
                             $this->rawQuery('CREATE TYPE ' . $typePiece . ' AS ENUM' . $this->formatValue(DatabaseTypeType::arraylist, $column['restrict']));
                         break;
 
                         // Here, we use the built-in SQL ENUM. MySQL does this.
                         case 'useEnum':
-                            $typePiece = 'ENUM' . $this->formatValue(databaseSQL::FORMAT_VALUE_ENUM_ARRAY, $column['restrict']);
+                            $typePiece = 'ENUM' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_ENUM_ARRAY, $column['restrict']);
                         break;
 
                         // And here we use the CHECK() clause at the end of the type. MSSQL does this.
@@ -1857,8 +1857,8 @@ class databaseSQL extends Database
                 // We use triggers here when the SQL implementation is otherwise stubborn, but FreezeMessenger is designed to only do this when it would otherwise be tedious. Manual setting of values is preferred in most cases. Right now, only __TIME__ supports them.
                 // TODO: language trigger support check
                 if ($column['default'] === '__TIME__') {
-                    $triggerName = $this->formatValue(databaseSQL::FORMAT_VALUE_INDEX, "{TABLENAME}_{$columnName}__TIME__");
-                    $triggers[] = "DROP TRIGGER IF EXISTS {$triggerName}" . ($this->language !== 'mysql' ? ' ON ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}') : '');
+                    $triggerName = $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, "{TABLENAME}_{$columnName}__TIME__");
+                    $triggers[] = "DROP TRIGGER IF EXISTS {$triggerName}" . ($this->language !== 'mysql' ? ' ON ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}') : '');
 
                     if ($this->language === 'mysql') {
                         $triggers[] = "CREATE TRIGGER {$triggerName} BEFORE INSERT ON {TABLENAME} FOR EACH ROW SET NEW.{$columnName} = IF(NEW.{$columnName}, NEW.{$columnName}, UNIX_TIMESTAMP(NOW()))";
@@ -1875,7 +1875,7 @@ class databaseSQL extends Database
                             $$ language 'plpgsql';";
 
                         $triggers[] = "CREATE TRIGGER {$triggerName} BEFORE INSERT ON "
-                            . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
+                            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
                             . " FOR EACH ROW EXECUTE PROCEDURE {$triggerName}_function()";
                     }
                 }
@@ -1911,7 +1911,7 @@ class databaseSQL extends Database
             /* Generate COMMENT ON Statements, If Needed */
             if ($this->commentMode === 'useCommentOn') {
                 $triggers[] = 'COMMENT ON COLUMN '
-                    . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN, '{TABLENAME}', $columnName)
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, '{TABLENAME}', $columnName)
                     . ' IS '
                     . $this->formatValue(DatabaseTypeType::string, $column['comment']);
             }
@@ -1999,7 +1999,7 @@ class databaseSQL extends Database
         // In this mode, we add comments with separate SQL statements at the end.
         if ($this->commentMode === 'useCommentOn')
             $triggers[] = 'COMMENT ON TABLE '
-                . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
                 . ' IS '
                 . $this->formatValue(DatabaseTypeType::string, $tableComment);
 
@@ -2036,7 +2036,7 @@ class databaseSQL extends Database
 
         for ($i = 0; $i < $hardPartitionCount; $i++) {
             $tableNameI = $tableName . ($hardPartitionCount > 1 ? "__part$i" : '');
-            $return = $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableNameI) . ' (
+            $return = $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableNameI) . ' (
     ' . implode(",\n  ", $columns) . (count($indexes) > 0 ? ',
     ' . implode(",\n  ", $indexes) : '') . '
     )' . $tableProperties);
@@ -2054,7 +2054,7 @@ class databaseSQL extends Database
     public function deleteTable($tableName)
     {
         return $this->rawQuery('DROP TABLE '
-            . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName)
+            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
         );
     }
 
@@ -2063,15 +2063,15 @@ class databaseSQL extends Database
     {
         if ($this->language === 'mysql')
             return $this->rawQuery('RENAME TABLE '
-                . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $oldName)
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
                 . ' TO '
-                . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $newName)
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $newName)
             );
         else
             return $this->rawQuery('ALTER TABLE '
-                . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $oldName)
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
                 . ' RENAME TO '
-                . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $newName)
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $newName)
             );
     }
 
@@ -2082,7 +2082,7 @@ class databaseSQL extends Database
         array_walk($columns, function(&$column) { $column = 'ADD ' . $column; });
 
         return $this->rawQuery('ALTER TABLE '
-                . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
                 . ' '
                 . implode($columns, ', ')
             )
@@ -2096,7 +2096,7 @@ class databaseSQL extends Database
         array_walk($columns, function(&$column) { $column = 'MODIFY ' . $column; });
 
         return $this->rawQuery('ALTER TABLE '
-                . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
                 . ' '
                 . implode($columns, ', ')
             )
@@ -2160,7 +2160,7 @@ class databaseSQL extends Database
             /* Generate CREATE INDEX Statements, If Needed */
             // use CREATE INDEX ON statements if the table already exists, or we are in useCreateIndex mode. However, don't do so if it's a primary key.
             if ((!$duringTableCreation || $this->indexMode === 'useCreateIndex') && $index['type'] !== 'primary')
-                $triggers[] = "CREATE {$typePiece} INDEX ON " . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}') . " ({$indexName})";
+                $triggers[] = "CREATE {$typePiece} INDEX ON " . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}') . " ({$indexName})";
 
             // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
             elseif (($duringTableCreation && $this->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
@@ -2183,7 +2183,7 @@ class databaseSQL extends Database
     public function alterTable($tableName, $tableComment, $engine, $partitionColumn = false) {
         $engine = $this->parseEngine($engine);
 
-        return $this->rawQuery('ALTER TABLE ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName)
+        return $this->rawQuery('ALTER TABLE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
             . (!is_null($engine) && $this->language === 'mysql' ? ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->tableTypes[$engine]) : '')
             . (!is_null($tableComment) ? ' COMMENT=' . $this->formatValue(DatabaseTypeType::string, $tableComment) : '')
             . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100' : ''));
@@ -2196,7 +2196,7 @@ class databaseSQL extends Database
         switch ($this->language) {
             case 'mysql':
                 $tables = $this->rawQuery('SELECT * FROM '
-                    . $this->formatValue(databaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'TABLES')
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'TABLES')
                     . ' WHERE TABLE_SCHEMA = '
                     . $this->formatValue(DatabaseTypeType::string, $this->activeDatabase)
                 )->getColumnValues('TABLE_NAME');
@@ -2220,7 +2220,7 @@ class databaseSQL extends Database
         switch ($this->language) {
             case 'mysql':
                 $columns = $this->rawQuery('SELECT * FROM '
-                    . $this->formatValue(databaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'COLUMNS')
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'COLUMNS')
                     . ' WHERE TABLE_SCHEMA = '
                     . $this->formatValue(DatabaseTypeType::string, $this->activeDatabase)
                 )->getColumnValues(['TABLE_NAME', 'COLUMN_NAME']);
@@ -2327,7 +2327,7 @@ class databaseSQL extends Database
             elseif (strstr($tableName, ' ') !== false) { // A space can be used to create a table alias, which is sometimes required for different queries.
                 $tableParts = explode(' ', $tableName);
 
-                $finalQuery['tables'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_NAME_ALIAS, $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]; note: may be removed if the table is part of a join.
+                $finalQuery['tables'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_NAME_ALIAS, $tableParts[0], $tableParts[1]); // Identify the table as [tableName] AS [tableAlias]; note: may be removed if the table is part of a join.
 
                 $tableName = $tableParts[1];
             }
@@ -2344,10 +2344,10 @@ class databaseSQL extends Database
                         $this->triggerError("Selecting from a hard partioned table, " . $tableName . ", without the partition column, " . $column . " at the top level is unsupported. It likely won't ever be supported, since any boolean logic is likely to require cross-partition selection, which is far too complicated a feature for this DAL. Use native RDBMS partioning for that if you can.");
 
                     // I'm not a fan of this hack at all, but I'd really have to rewrite to
-                    $finalQuery['tables'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_NAME_ALIAS, $tableName . "__part" . $found % $partitionCount, $tableName);
+                    $finalQuery['tables'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_NAME_ALIAS, $tableName . "__part" . $found % $partitionCount, $tableName);
                 }
                 else {
-                    $finalQuery['tables'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName); // Identify the table as [tableName]; note: may be removed if the table is part of a join.
+                    $finalQuery['tables'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName); // Identify the table as [tableName]; note: may be removed if the table is part of a join.
                 }
 
             }
@@ -2369,13 +2369,13 @@ class databaseSQL extends Database
                             throw new Exception('Deprecated context.'); // TODO
                         }
 
-                        $finalQuery['columns'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS, $tableName, $colName, $colAlias['alias']);
+                        $finalQuery['columns'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS, $tableName, $colName, $colAlias['alias']);
 
                         $reverseAlias[$colAlias['alias']] = [$tableName, $colName];
                     }
 
                     else {
-                        $finalQuery['columns'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS, $tableName, $colName, $colAlias);
+                        $finalQuery['columns'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS, $tableName, $colName, $colAlias);
                         $reverseAlias[$colAlias] = [$tableName, $colName];
                     }
                 }
@@ -2399,7 +2399,7 @@ class databaseSQL extends Database
         /* Process Joins */
         if (count($joins) > 0) {
             foreach ($joins AS $table => $join) {
-                $finalQuery['join'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $table)
+                $finalQuery['join'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $table)
                     . ' ON '
                     . $this->recurseBothEither($join, $reverseAlias);
             }
@@ -2420,7 +2420,7 @@ class databaseSQL extends Database
                                 default: $directionSym = $this->sortOrderAsc; break;
                             }
 
-                            $finalQuery['sort'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$sortColumn][0], $reverseAlias[$sortColumn][1]) . " $directionSym";
+                            $finalQuery['sort'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$sortColumn][0], $reverseAlias[$sortColumn][1]) . " $directionSym";
                         }
                         else {
                             $this->triggerError('Unrecognised Sort Column', array(
@@ -2451,7 +2451,7 @@ class databaseSQL extends Database
                         $directionSym = $this->sortOrderAsc; // Set the alias equal to the default, ascending.
                     }
 
-                    $finalQuery['sort'][] = $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$sortColumn], $reverseAlias[$sortColumn]) . " $directionSym";
+                    $finalQuery['sort'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$sortColumn], $reverseAlias[$sortColumn]) . " $directionSym";
                 }
             }
 
@@ -2565,7 +2565,7 @@ class databaseSQL extends Database
 
                 // lvalue
                 $column = ($this->startsWith($key, '!') ? substr($key, 1) : $key);
-                $sideText['left'] = ($reverseAlias ? $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$column][0], $reverseAlias[$column][1]) : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
+                $sideText['left'] = ($reverseAlias ? $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$column][0], $reverseAlias[$column][1]) : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
 
 
                 // comparison operator
@@ -2577,7 +2577,7 @@ class databaseSQL extends Database
                     $sideText['right'] = 'IS NULL';
 
                 elseif ($value->type === DatabaseTypeType::column)
-                    $sideText['right'] = ($reverseAlias ? $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$value->value][0], $reverseAlias[$value->value][1]) : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
+                    $sideText['right'] = ($reverseAlias ? $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$value->value][0], $reverseAlias[$value->value][1]) : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
 
                 elseif ($value->type === DatabaseTypeType::arraylist && count($value->value) === 0) {
                     $this->triggerError('Array nullified', false, 'validationFallback');
@@ -2730,9 +2730,9 @@ class databaseSQL extends Database
         $values = array_values($dataArray);
 
         $query = 'INSERT INTO '
-            . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $this->getTableNameTransformation($tableName, $dataArray))
+            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $this->getTableNameTransformation($tableName, $dataArray))
             . ' '
-            . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $columns, $values);
+            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $columns, $values);
 
         if ($queryData = $this->rawQuery($query)) {
             $this->insertIdCallback($tableName);
@@ -2799,7 +2799,7 @@ class databaseSQL extends Database
     private function deleteCore($tableName, $conditionArray = false, $originalTableName = false)
     {
         return $this->rawQuery(
-            'DELETE FROM ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName) .
+            'DELETE FROM ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName) .
             ' WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, $this->reverseAliasFromConditionArray($tableName, $conditionArray, $originalTableName), 'both', $tableName) : 'TRUE')
         );
     }
@@ -2835,8 +2835,8 @@ class databaseSQL extends Database
             return $this->queueUpdate($tableName, $dataArray, $conditionArray);
         else
             return $this->rawQuery(
-                'UPDATE ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName) .
-                ' SET ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray) .
+                'UPDATE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName) .
+                ' SET ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray) .
                 ' WHERE ' . $this->recurseBothEither($conditionArray, $this->reverseAliasFromConditionArray($tableName, $conditionArray, $originalTableName), 'both', $tableName)
             );
     }
@@ -2872,9 +2872,9 @@ class databaseSQL extends Database
 
         switch ($this->language) {
             case 'mysql':
-                $query = 'INSERT INTO ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName)
-                    . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $allColumns, $allValues)
-                    . ' ON DUPLICATE KEY UPDATE ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray);
+                $query = 'INSERT INTO ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $allColumns, $allValues)
+                    . ' ON DUPLICATE KEY UPDATE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray);
 
                 if ($queryData = $this->rawQuery($query)) {
                     $this->insertIdCallback($tableName);
@@ -2895,11 +2895,11 @@ class databaseSQL extends Database
                         }
                     }
 
-                    $query = 'INSERT INTO ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE, $tableName)
-                        . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $allColumns, $allValues)
+                    $query = 'INSERT INTO ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $allColumns, $allValues)
                         . ' ON CONFLICT '
-                        . $this->formatValue(databaseSQL::FORMAT_VALUE_COLUMN_ARRAY, array_keys($conditionArray))
-                        . ' DO UPDATE SET ' . $this->formatValue(databaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray);
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_COLUMN_ARRAY, array_keys($conditionArray))
+                        . ' DO UPDATE SET ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray);
 
                     if ($queryData = $this->rawQuery($query)) {
                         $this->insertIdCallback($tableName);

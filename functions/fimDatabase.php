@@ -31,7 +31,7 @@
  *
  * @author Joseph T. Parsons <josephtparsons@gmail.com>
  */
-class fimDatabase extends databaseSQL
+class fimDatabase extends DatabaseSQL
 {
     /**
      * @var string The columns containing all user data.
