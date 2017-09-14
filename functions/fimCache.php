@@ -36,7 +36,7 @@ class fimCache extends generalCache {
      *
      * @param string method - The database method, required by fimCache's construct.
      * @param mixed servers - The server information we are using, mainly for memcached. Obviously, if we aren't using memcached, there won't really be anything here.
-     * @param object database - A fimDatabase object to use for queries.
+     * @param object Database - A fimDatabase object to use for queries.
      * @param object slaveDatabase - A fimData object to use for slave-enabled queries.
      */
     function __construct($method, $servers, $database, $slaveDatabase = false) {

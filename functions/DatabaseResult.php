@@ -17,7 +17,7 @@ class databaseResult
     public $sourceQuery;
 
     /**
-     * @var database The database object used to generate this result.
+     * @var Database The database object used to generate this result.
      */
     public $database;
 
@@ -50,7 +50,7 @@ class databaseResult
      * @return void
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function __construct($queryData, $reverseAlias, $sourceQuery, database $database, int $resultLimit = 0)
+    public function __construct($queryData, $reverseAlias, $sourceQuery, Database $database, int $resultLimit = 0)
     {
         $this->queryData = $queryData;
         $this->reverseAlias = $reverseAlias;

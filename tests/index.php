@@ -22,7 +22,7 @@ function printCompRow($name, $result, $expectedResult) {
 class databaseSQLTests
 {
     /**
-     * @var database
+     * @var Database
      */
     protected $databaseObj;
 
@@ -53,7 +53,7 @@ require_once('../functions/fimConfig.php');
 require_once('../functions/fimCache.php');
 
 echo "Requiring Database Files...<br />";
-require_once('../functions/database.php');
+require_once('../functions/Database.php');
 require_once('../functions/databaseSQL.php');
 require_once('../functions/fimDatabase.php');
 

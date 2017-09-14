@@ -29,7 +29,7 @@
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-abstract class database
+abstract class Database
 {
     /**
      * @var int The number of queries this instance of the database has executed.
@@ -1295,16 +1295,16 @@ abstract class database
     /**
      * Opens a database result object using the specified parameters.
      *
-     * @param object $queryData {@see databaseResult::$queryData}
-     * @param string $reverseAlias {@see databaseResult::$reverseAlias}
-     * @param string $sourceQuery {@see databaseResult::$sourceQuery}
-     * @param database $database {@see databaseResult::$database}
-     * @param bool $paginated {@see databaseResult::$paginated}
+     * @param object   $queryData    {@see databaseResult::$queryData}
+     * @param string   $reverseAlias {@see databaseResult::$reverseAlias}
+     * @param string   $sourceQuery  {@see databaseResult::$sourceQuery}
+     * @param Database $database     {@see databaseResult::$database}
+     * @param bool     $paginated    {@see databaseResult::$paginated}
      *
      * @return databaseResult
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    abstract protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, database $database, int $paginated = 0);
+    abstract protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, Database $database, int $paginated = 0);
 }
 
 require('DatabaseResult.php');

@@ -88,7 +88,7 @@
  * 9.2: Index-only scans, cascading replication, range data types, JSON data type,
  */
 
-class databaseSQL extends database
+class databaseSQL extends Database
 {
     public $classVersion = 3;
     public $classProduct = 'fim';
@@ -1496,9 +1496,9 @@ class databaseSQL extends database
 
 
     /**
-     * @see database::databaseResultPipe()
+     * @see Database::databaseResultPipe()
      */
-    protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, database $database, int $paginated = 0)
+    protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, Database $database, int $paginated = 0)
     {
         return new databaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
     }

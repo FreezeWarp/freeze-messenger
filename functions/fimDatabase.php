@@ -2872,9 +2872,9 @@ class fimDatabase extends databaseSQL
 
     /**
      * Overrides the normal function to use fimDatabaseResult instead.
-     * @see database::databaseResultPipe()
+     * @see Database::databaseResultPipe()
      */
-    protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, database $database, int $paginated = 0) {
+    protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, Database $database, int $paginated = 0) {
         return new fimDatabaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
     }
 }

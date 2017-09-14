@@ -18,7 +18,7 @@ error_reporting(E_ALL); // Report All Potential Errors
 ini_set('display_errors', 1);
 
 require('../functions/xml.php'); // For reading the db*.xml files
-require('../functions/database.php'); // DB Operations
+require('../functions/Database.php'); // DB Operations
 require('../functions/databaseSQL.php'); // ""
 require('../functions/fimDatabase.php'); // ""
 require('../functions/fimUser.php'); // Creating Users
