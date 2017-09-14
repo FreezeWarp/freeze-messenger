@@ -58,13 +58,11 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'int',
     ),
 ));
-$includeThumbnails = $request['thumbnailHeight'] || $request['thumbnailWidth'];
+$includeThumbnails = isset($request['thumbnailHeight']) || isset($request['thumbnailWidth']);
 
 
 $file = $database->getFiles(array(
     'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
-    'fileIds' => $request['fileId'] ? array($request['fileId']) : array(),
-    'vfileIds' => $request['vfileId'] ? array($request['vfileId']) : array(),
     'includeContent' => ($includeThumbnails ? false : true),
     'includeThumbnails' => ($includeThumbnails ? true : false),
 ))->getAsArray($includeThumbnails ? true : false);
@@ -76,8 +74,6 @@ if ($includeThumbnails) {
     if (count($file) === 0) {
         $file = $database->getFiles(array(
             'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
-            'fileIds' => $request['fileId'] ? array($request['fileId']) : array(),
-            'vfileIds' => $request['vfileId'] ? array($request['vfileId']) : array(),
             'includeContent' => true,
         ))->getAsArray(false);
     }
@@ -105,6 +101,9 @@ if ($includeThumbnails) {
         $file['fileType'] = 'image/jpeg';
     }
 }
+else {
+    $file['contents'] = fim_decrypt($file['contents'], $file['salt'], $file['iv']);
+}
 
 
 
@@ -128,7 +127,7 @@ header("Cache-Control: public, max-age=365000000, immutable");
 
 /* Start Processing */
 
-
+$parentalBlock = false;
 if ($config['parentalEnabled']) {
     if ($file['parentalAge'] > $request['parentalAge']) $parentalBlock = true;
     elseif (fim_inArray($request['parentalFlags'], explode(',', $file['parentalFlags']))) $parentalBlock = true;
@@ -141,8 +140,6 @@ if ($parentalBlock) {
     echo $file['contents'];
 }
 else {
-    $file['contents'] = fim_decrypt($file['contents'], $file['salt'], $file['iv']);
-
     header('Content-Type: ' . $file['fileType']);
     echo $file['contents'];
 }

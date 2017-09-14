@@ -405,8 +405,13 @@ function fim_sanitizeGPC($type, $data) {
                     elseif (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'dict')
                         throw new Exception("A 'valid' parameter was specified for '$indexName', but the 'dict' cast type does not support this parameter.");
 
-                    elseif (!in_array($activeGlobal[$indexName], $indexMetaData['valid']))
-                        throw new Exception("Invalid value for '$indexName': {$activeGlobal[$indexName]}");
+                    elseif (!in_array($activeGlobal[$indexName], $indexMetaData['valid'])) {
+                        if (isset($indexMetaData['default']))
+                            $activeGlobal[$indexName] = $indexMetaData['default'];
+
+                        else
+                            throw new Exception("Invalid value for '$indexName': {$activeGlobal[$indexName]}");
+                    }
                 }
 
                 // If the global is _not_ provided, then use the default if available.

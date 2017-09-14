@@ -165,7 +165,7 @@ case 'edit': case 'create':
 
     if ($requestHead['_action'] === 'create') {
         /* Get Room Data, if Applicable */
-        if ($request['roomId']) $roomData = new fimRoom($request['roomId']);
+        if ($request['roomId']) $roomData = fimRoomFactory::getFromId($request['roomId']);
         else $roomData = false;
 
 
@@ -264,7 +264,12 @@ case 'edit': case 'create':
 
         /* Upload or Redirect, if Sha256 Match Found */
         if (count($prefile) > 0) { // The odds of a collision are astronomically low unless the server is handling an absolutely massive number of files. ...We could make the effort to detect the collision by actually comparing file contents, but it hardly seems worth the processing power.
-            if ($roomData) $database->storeMessage($file->webLocation, $file->container, $user, $roomData);
+            if ($roomData) $database->storeMessage(new fimMessage([
+                    'room'        => $roomData,
+                    'user'        => $user,
+                    'text'        => $file->webLocation,
+                    'flag'        => $file->container,
+                ]));
         }
         else {
             $database->storeFile($file, $user, $roomData);

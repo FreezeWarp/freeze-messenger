@@ -693,19 +693,21 @@ class fimDatabase extends databaseSQL
             'parentalAgeMax'  => 0,
             'includeContent'  => false,
             'includeThumbnails'=> false,
+            'sizeMin' => 0,
+            'sizeMax' => 0,
         ), $options);
 
 
         $columns = array(
-            $this->sqlPrefix . "files"        => 'fileId, fileName, fileType, creationTime, userId, fileParentalAge, fileParentalFlags, roomIdLink, source',
-            $this->sqlPrefix . "fileVersions" => 'fileId vfileId, sha256hash, size',
+            $this->sqlPrefix . "files"        => 'fileId, fileName, fileType, creationTime, userId, fileParentalAge parentalAge, fileParentalFlags parentalFlags, roomIdLink, source',
+            $this->sqlPrefix . "fileVersions" => 'fileId versionId, sha256hash, size',
         );
 
         if ($options['includeContent']) $columns[$this->sqlPrefix . 'fileVersions'] .= ', salt, iv, contents';
 
 
         // This is a method of optimisation I'm trying. Basically, if a very small sample is requested, then we can optimise by doing those first. Otherwise, the other filters are usually better performed first.
-        foreach (array('fileIds' => 'fileId', 'vfileIds' => 'vfileId', 'sha256hashes' => 'sha256hash') AS $group => $key) {
+        foreach (array('fileIds' => 'fileId', 'versionIds' => 'versionId', 'sha256hashes' => 'sha256hash') AS $group => $key) {
             if (count($options[$group]) > 0 && count($options[$group]) <= 10) {
                 $conditions['both'][$key] = $this->in($options[$group]);
             }
@@ -717,21 +719,21 @@ class fimDatabase extends databaseSQL
         if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
         if (count($options['roomIds']) > 0) $conditions['both']['roomLinkId'] = $this->in($options['roomIds']);
 
-        if ($options['parentalAgeMin'] > 0) $conditions['both']['fileParentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
-        if ($options['parentalAgeMax'] > 0) $conditions['both']['fileParentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
+        if ($options['parentalAgeMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
+        if ($options['parentalAgeMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
 
         if ($options['creationTimeMin'] > 0) $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'gte');
         if ($options['creationTimeMax'] > 0) $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'lte');
         if (count($options['fileTypes']) > 0) $conditions['both']['fileType'] = $this->in($options['fileTypes']);
-        if ($options['fileNameSearch']) $conditions['both']['filelName'] = $this->type('string', $options['fileNameSearch'], 'search');
+        if ($options['fileNameSearch']) $conditions['both']['fileName'] = $this->type('string', $options['fileNameSearch'], 'search');
 
 
         // Match files to fileVersions.
-        $conditions['both']['fileId'] = $this->col('vfileId');
+        $conditions['both']['fileId'] = $this->col('versionId');
 
 
         // Narrow down fileVersions _after_ it has been restricted to matched files.
-        if (!isset($conditions['both']['vfileIds']) && count($options['vfileIds']) > 0) $conditions['both']['vfileId'] = $this->in($options['vfileIds']);
+        if (!isset($conditions['both']['versionIds']) && count($options['versionIds']) > 0) $conditions['both']['versionId'] = $this->in($options['versionIds']);
         if (!isset($conditions['both']['sha256hashes']) && count($options['sha256hashes']) > 0) $conditions['both']['sha256hash'] = $this->in($options['sha256hashes']);
 
         if ($options['sizeMin'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'gte');
@@ -1222,7 +1224,7 @@ class fimDatabase extends databaseSQL
      *
      * @return bool|object|resource
      */
-    public function getPostStats($options, $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit = 0, $pagination = 1)
+    public function getPostStats($options, $sort = array('messages' => 'desc', 'roomId' => 'asc', 'userId' => 'asc'))
     {
         $options = $this->argumentMerge(array(
             'userIds' => array(),
@@ -2470,7 +2472,12 @@ class fimDatabase extends databaseSQL
         $this->incrementCounter('uploadSize', $file->size);
 
         if ($room->id)
-            $this->storeMessage($file->webLocation, $file->container, $user, $room);
+            $this->storeMessage(new fimMessage([
+                'room'        => $room,
+                'user'        => $user,
+                'text'        => $file->webLocation,
+                'flag'        => $file->container,
+            ]));
 
         if (in_array($file->extension, $this->config['imageTypes'])) {
             list($width, $height) = getimagesizefromstring($file->contents);
