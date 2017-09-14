@@ -245,7 +245,7 @@ standard.prototype.getMessages = function() {
                     'archive': (requestSettings.firstRequest ? 1 : 0),
                     'messageIdStart': requestSettings.lastMessage + 1
                 }, {
-                    'reverseEach' : true,
+                    'reverseEach' : false,
                     'each': function (messageData) {
                         $.when(fim_messageFormat(messageData, 'list')).then(function(messageText) {
                             fim_newMessage(messageText, Number(messageData.id));

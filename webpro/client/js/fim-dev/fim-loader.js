@@ -315,7 +315,7 @@ function fim_messageFormat(json, format) {
                     'message' : textarea.val()
                 });
 
-                $(this).replaceWith(buildEditableSpan(textarea.val(), messageId, userId, roomId, messageTime, style));
+                $(this).replaceWith(buildEditableSpan(text, messageId, userId, roomId, messageTime, style));
             });
 
             $.each(this.attributes, function() {
@@ -433,8 +433,10 @@ function fim_newMessage(messageText, messageId) {
 
     if (messageId > requestSettings.lastMessage) requestSettings.lastMessage = messageId; // Update the internal lastMessage.
 
-    if (settings.reversePostOrder) $('#messageList').append(messageText); // Put the data at the end of the list if reversePostOrder.
-    else $('#messageList').prepend(messageText); // Otherwise, put it at top.
+    if (settings.reversePostOrder)
+        $('#messageList').prepend(messageText); // Put the data at the beginning of the list if reversePostOrder.
+    else
+        $('#messageList').append(messageText); // Otherwise, put it at top.
 
     messageIndex.push(requestSettings.lastMessage); // Update the internal messageIndex array.
 
@@ -444,7 +446,7 @@ function fim_newMessage(messageText, messageId) {
         messageIndex = messageIndex.slice(1,99);
     }
 
-    if (settings.reversePostOrder) fim_toBottom();
+    if (!settings.reversePostOrder) fim_toBottom();
 
     if (window.isBlurred) {
         if (settings.audioDing) snd.play();
