@@ -1069,16 +1069,16 @@ curlTestGETEqualsMulti(
 echo "<tr><td>Ping '$testRoomName' as '$testUnit2UserName', typing = true</td>";
 curlTestPOSTEquals(
     'api/userStatus.php',
-    ['_action' => 'edit', 'access_token' => $accessToken3, 'roomIds' => [$testRoom2Id]],
-    ['message' => 'バカ'],
-    ['message', 'censor'],
+    ['_action' => 'edit', 'access_token' => $accessToken3, 'roomIds' => [$testRoomId]],
+    ['typing' => true],
+    ['response'],
     []
 );
 
 echo "<tr><td>Get Active Users in '$testRoomName'</td>";
 curlTestGETEqualsMulti(
     'api/userStatus.php',
-    ['access_token' => $accessToken2, 'roomIds' => [$testRoom2Id]],
+    ['access_token' => $accessToken2, 'roomIds' => [$testRoomId]],
     [
         ['users', 'user 1', 'userData', 'name'],
         ['users', 'user 1', 'rooms'],
@@ -1090,7 +1090,7 @@ curlTestGETEqualsMulti(
         'admin',
         ['room ' . $testRoomId => ['id' => $testRoomId, 'name' => $testRoomName, 'status' => 'available', 'typing' => false]],
         $testUnitUserName,
-        $testUnit2UserId,
+        $testUnit2UserName,
         ['room ' . $testRoomId => ['id' => $testRoomId, 'name' => $testRoomName, 'status' => 'available', 'typing' => true]],
     ]
 );
@@ -1101,14 +1101,14 @@ curlTestGETEqualsMulti(
     ['access_token' => $accessToken2, 'userIds' => [$testUnit2UserId]],
     [
         ['users', 'user 1'],
-        ['users', 'user ' . $testUnitUserId, 'userData', 'name'],
+        ['users', 'user ' . $testUnit2UserId, 'userData', 'name'],
         ['users', 'user ' . $testUnit2UserId, 'rooms', 'room 1', 'name'],
         ['users', 'user ' . $testUnit2UserId, 'rooms', 'room ' . $testRoomId, 'name'],
         ['users', 'user ' . $testUnit2UserId, 'rooms', 'room ' . $testRoom2Id, 'name'],
     ],
     [
         null,
-        $testUnitUserName,
+        $testUnit2UserName,
         null,//'Your Room!',
         $testRoomName,
         $testRoom2Name,
