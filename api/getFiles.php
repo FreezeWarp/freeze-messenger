@@ -66,9 +66,8 @@ foreach ($files AS $file) {
         'fileSize' => (int) $file['size'],
         'fileSizeFormatted' => fim_formatSize($file['size']),
         'fileName' => $file['fileName'],
-        'mime' => $file['mime'],
-        'parentalAge' => $file['fileParentalAge'],
-        'parentalFlags' => explode(',', $file['fileParentalFlags']),
+        'parentalAge' => $file['parentalAge'],
+        'parentalFlags' => explode(',', $file['parentalFlags']),
         'sha256hash' => $file['sha256hash'],
     );
 }

@@ -755,48 +755,51 @@ popup = {
             oF : function() {
                 fimApi.getFiles({
                     'userIds' : [window.userId]
-                }, {'each': function(active) {
-                    var parentalFlagsFormatted = [];
+                }, {
+                    'each': function(active) {
+                        var parentalFlagsFormatted = [];
 
-                    for (i in active.parentalFlags) {
-                        if (active.parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + active.parentalFlags[i])); // Yes, this is a very weird line.
-                    }
+                        for (i in active.parentalFlags) {
+                            if (active.parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + active.parentalFlags[i])); // Yes, this is a very weird line.
+                        }
 
-                    $('#viewUploadsBody').append(
-                        $('<tr>').append(
-                            $('<td align="center">').append(
-                                $('<img style="max-width: 200px; max-height: 200px;" />').attr('src', directory + 'file.php?' + $.param({
-                                        'sha256hash': active.sha256hash,
-                                        'thumbnailWidth': 200,
-                                        'thumbnailHeight': 200
-                                    }))
-                            ).append('<br />').append($('<span>').text(active.fileName))
-                        ).append(
-                            $('<td align="center">').text(active.fileSizeFormatted)
-                        ).append(
-                            $('<td align="center">').text($l('parentalAges.' + active.parentalAge))
-                                .append('<br />')
-                                .append(parentalFlagsFormatted.join(', '))
-                        ).append(
-                            $('<td align="center">').append(
-                                $('<button>').click(function() {
-                                    fimApi.editUserOptions({
-                                        'avatar': serverSettings.installUrl + "file.php?sha256hash=" + active.sha256hash + '&thumbnailWidth=200&thumbnailHeight=200',
-                                    }, {
-                                        'end' : function(response) {
-                                            if ("avatar" in response) {
-                                                dia.error(response.avatar.string);
+                        $('#viewUploadsBody').append(
+                            $('<tr>').append(
+                                $('<td align="center">').append(
+                                    $('<img style="max-width: 200px; max-height: 200px;" />').attr('src', directory + 'file.php?' + $.param({
+                                            'sha256hash': active.sha256hash,
+                                            'thumbnailWidth': 200,
+                                            'thumbnailHeight': 200
+                                        }))
+                                ).append('<br />').append($('<span>').text(active.fileName))
+                            ).append(
+                                $('<td align="center">').text(active.fileSizeFormatted)
+                            ).append(
+                                $('<td align="center">').text($l('parentalAges.' + active.parentalAge))
+                                    .append('<br />')
+                                    .append(parentalFlagsFormatted.join(', '))
+                            ).append(
+                                $('<td align="center">').append(
+                                    $('<button>').click(function() {
+                                        fimApi.editUserOptions({
+                                            'avatar': serverSettings.installUrl + "file.php?sha256hash=" + active.sha256hash + '&thumbnailWidth=200&thumbnailHeight=200',
+                                        }, {
+                                            'end' : function(response) {
+                                                if ("avatar" in response) {
+                                                    dia.error(response.avatar.string);
+                                                }
+                                                else {
+                                                    dia.info('Your avatar has been updated. It will not appear in your old messages.');
+                                                }
                                             }
-                                            else {
-                                                dia.info('Your avatar has been updated. It will not appear in your old messages.');
-                                            }
-                                        }
-                                    });
-                                }).text('Set to Avatar')
+                                        });
+                                    }).text('Set to Avatar')
+                                )
                             )
-                        )
-                    );
-                }});
+                        );
+                    },
+                    'end' : windowDraw
+                });
             }
         });
     },
