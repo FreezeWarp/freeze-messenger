@@ -83,6 +83,11 @@ class fimRoom {
      */
     const ROOM_TYPE_OTR = 'otr';
 
+    /*
+     * The room is a general room.
+     */
+    const ROOM_TYPE_GENERAL = 'general';
+
     
     /**
      * @var mixed The ID of the room.
@@ -232,10 +237,10 @@ class fimRoom {
 
 
         if (is_int($roomData))
-            $this->__set('id', $roomData);
+            $this->set('id', $roomData);
 
         elseif (is_string($roomData) && $this->isPrivateRoomId($roomData))
-            $this->__set('id', $roomData);
+            $this->set('id', $roomData);
 
         elseif (is_array($roomData))
             $this->populateFromArray($roomData); // TODO: test contents
@@ -337,7 +342,7 @@ class fimRoom {
      * @return bool
      */
     public function isGeneralRoom() {
-        return $this->type === 'general';
+        return $this->type === fimRoom::ROOM_TYPE_GENERAL;
     }
 
     /**
@@ -345,7 +350,7 @@ class fimRoom {
      * @return bool
      */
     public function isPrivateRoom() {
-        return $this->type === 'private' || $this->type === 'otr';
+        return $this->type === fimRoom::ROOM_TYPE_PRIVATE || $this->type === fimRoom::ROOM_TYPE_OTR;
     }
 
 
@@ -368,7 +373,7 @@ class fimRoom {
      * @throws Exception
      */
     public function getPrivateRoomMemberIds() {
-        if ($this->type !== 'private' && $this->type !== 'otr')
+        if (!$this->isPrivateRoom())
             throw new Exception('Call to fimRoom->getPrivateRoomMemberIds only supported on instances of a private room.');
 
         return array_unique(explode(',', substr($this->id, 1)));
@@ -383,7 +388,7 @@ class fimRoom {
     public function getPrivateRoomMembers() : array {
         global $database;
 
-        if ($this->type !== 'private' && $this->type !== 'otr')
+        if (!$this->isPrivateRoom())
             throw new Exception('Call to fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
 
         return $database->getUsers(array(
@@ -391,30 +396,27 @@ class fimRoom {
         ))->getAsUsers();
     }
 
+    public function getEncodedId() {
+        return fimRoom::encodeId($this->id);
+    }
+
 
     /**
-     * Returns the object's property, fetching from the database or cache if needed.
+     * This is a common getter for all fimRoom parameters.
+     * It returns the object's property, fetching from the database or cache if needed.
+     * Notably, it exposes all private variables to be publically read.
      *
      * @param $property
+     *
      * @return mixed
      * @throws Exception
      */
     public function __get($property) {
-        global $config;
-
         if (!property_exists($this, $property))
             throw new Exception("Invalid property accessed in fimRoom: $property");
 
         if ($this->id && !in_array($property, $this->resolved)) {
-            if ($property === 'encodeId') {
-                $this->__set('encodedId', $this->encodeId($this->id));
-            }
-
-            elseif ($property === 'watchedByUsers' && !$config['enableWatchRooms']) {
-                $this->__set('watchedByUsers', []);
-            }
-
-            elseif ($property === 'deleted' || $property === 'archived' || $property === 'hidden' || $property === 'official') {
+            if ($property === 'deleted' || $property === 'archived' || $property === 'hidden' || $property === 'official') {
                 $this->resolveFromPullGroup("options");
             }
 
@@ -426,8 +428,8 @@ class fimRoom {
                             foreach($this->getPrivateRoomMembers() AS $user)
                                 $userNames[] = $user->name;
 
-                            $name = ($this->type === 'private' ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
-                            $this->__set('name', $name);
+                            $name = ($this->type === fimRoom::ROOM_TYPE_PRIVATE ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
+                            $this->set('name', $name);
                             return $name;
                             break;
                     }
@@ -444,100 +446,109 @@ class fimRoom {
 
 
     /**
-     * Sets the object's property, applying filters and config preferences.
+     * Invokes setters, or sets by property. Adds properties to list of resolved properties.
      *
-     * @param $property
-     * @param $value
+     * @param $property string The property to set.
+     * @param $value mixed The value to set the property to.
+     *
+     * @throws Exception If a property doesn't exist.
      */
-    public function __set($property, $value)
-    {
+    private function set($property, $value) {
+        if (!property_exists($this, $property))
+            throw new Exception('Invalid property to set in fimRoom: ' . $property);
+
+        $setterName = 'set' . ucfirst($property);
+
+        if (method_exists($this, 'set' . ucfirst($property)))
+            $this->$setterName($value);
+        else
+            $this->{$property} = $value;
+
+        if (!in_array($property, $this->resolved))
+            $this->resolved[] = $property;
+    }
+
+
+    private function setWatchedByUsers($users) {
         global $config;
 
+        if (!$config['enableWatchRooms'])
+            $this->watchedByUsers = [];
 
-        if (!property_exists($this, $property)) {
-            throw new Exception("fimRoom does not have property '$property'");
+        elseif ($users === fimDatabase::decodeError) {
+            // TODO: regenerate and cache to APC
+            global $database;
+            $this->watchedByUsers = $database->getWatchRoomUsers($this->id);
+
+            $database->update($database->sqlPrefix . "rooms", [
+                "watchedByUsers" => $this->watchedByUsers
+            ], [
+                "id" => $this->id,
+            ]);
         }
 
+        elseif ($users === fimDatabase::decodeExpired) {
+            global $database;
+            $this->watchedByUsers = $database->getWatchRoomUsers($this->id);
 
-        $this->{$property} = $value;
-        $this->resolved[] = $property;
-
-
-        if ($property === 'id') {
-            if (fimRoom::isPrivateRoomId($value)) {
-                if ($value[0] === 'p')
-                    $this->__set('type', 'private');
-                elseif ($value[0] === 'o')
-                    $this->__set('type', 'otr');
-
-                $this->__set('options', 0);
-                $this->__set('parentalAge', 0);
-                $this->__set('parentalFlags', []);
-                $this->__set('topic', '');
-                $this->__set('ownerId', 0);
-                $this->__set('defaultPermissions', 0);
-            }
-            else {
-                $this->__set('type', 'general');
-            }
+            $database->update($database->sqlPrefix . "rooms", [
+                "watchedByUsers" => $this->watchedByUsers
+            ], [
+                "id" => $this->id,
+            ]);
         }
+    }
 
+    private function setId($id) {
+        $this->id = $id;
 
-        // Parental Flags: Convert CSV to Array, or empty if disabled
-        elseif ($property === 'parentalFlags') {
-            if (!$config['parentalEnabled'])
-                $this->parentalFlags = array();
-            elseif (is_string($value))
-                $this->parentalFlags = fim_emptyExplode(',', $value);
+        if (fimRoom::isPrivateRoomId($id)) {
+            if ($id[0] === 'p')
+                $this->set('type', fimRoom::ROOM_TYPE_PRIVATE);
+            elseif ($id[0] === 'o')
+                $this->set('type', fimRoom::ROOM_TYPE_OTR);
+
+            $this->set('options', 0);
+            $this->set('parentalAge', 0);
+            $this->set('parentalFlags', []);
+            $this->set('topic', '');
+            $this->set('ownerId', 0);
+            $this->set('defaultPermissions', 0);
         }
-
-
-        // Parental Age: Disable if feature is disabled.
-        elseif ($property === 'parentalAge' && !$config['parentalEnabled']) {
-            $this->parentalAge = 0;
+        else {
+            $this->set('type', fimRoom::ROOM_TYPE_GENERAL);
         }
+    }
 
 
-        elseif ($property === 'watchedByUsers') {
-            if (!$config['enableWatchRooms'])
-                $this->watchedByUsers = [];
+    private function setOptions($options) {
+        global $config;
 
-            elseif ($value === fimDatabase::decodeError) {
-                // TODO: regenerate and cache to APC
-                global $database;
-                $this->watchedByUsers = $database->getWatchRoomUsers($this->id);
+        $this->options = $options;
 
-                $database->update($database->sqlPrefix . "rooms", [
-                    "watchedByUsers" => $this->watchedByUsers
-                ], [
-                    "id" => $this->id,
-                ]);
-            }
+        $this->deleted  = ($this->options & fimRoom::ROOM_DELETED);
+        $this->archived = ($this->options & fimRoom::ROOM_ARCHIVED);
+        $this->official = ($this->options & fimRoom::ROOM_OFFICIAL) && $config['officialRooms'];
+        $this->hidden   = ($this->options & fimRoom::ROOM_HIDDEN) && $config['hiddenRooms'];
+    }
 
-            elseif ($value === fimDatabase::decodeExpired) {
-                global $database;
-                $this->watchedByUsers = $database->getWatchRoomUsers($this->id);
+    private function setTopic($topic) {
+        global $config;
 
-                $database->update($database->sqlPrefix . "rooms", [
-                    "watchedByUsers" => $this->watchedByUsers
-                ], [
-                    "id" => $this->id,
-                ]);
-            }
-        }
+        $this->topic = $config['disableTopic'] ? '' : $topic;
+    }
 
+    private function setParentalAge($age) {
+        global $config;
 
-        else if ($property === 'topic' && $config['disableTopic']) {
-            $this->topic = '';
-        }
+        $this->parentalAge = $config['parentalEnabled'] ? (int) $age : 0;
+    }
 
+    private function setParentalFlags($parentalFlags) {
+        global $config;
 
-        else if ($property === 'options') {
-            $this->deleted  = ($this->options & fimRoom::ROOM_DELETED);
-            $this->archived = ($this->options & fimRoom::ROOM_ARCHIVED);
-            $this->official = ($this->options & fimRoom::ROOM_OFFICIAL) && $config['officialRooms'];
-            $this->hidden   = ($this->options & fimRoom::ROOM_HIDDEN) && $config['hiddenRooms'];
-        }
+        if ($config['parentalEnabled'] && is_string($parentalFlags))
+            $this->parentalFlags = fim_emptyExplode(',', $parentalFlags);
     }
 
 
@@ -554,8 +565,10 @@ class fimRoom {
 
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->getColumns on private room.');
+
         elseif (count($columns) > 0)
             return $this->populateFromArray($database->where(array('id' => $this->id))->select(array($database->sqlPrefix . 'rooms' => array_merge(array('id'), $columns)))->getAsArray(false));
+
         else
             return true;
     }
@@ -623,7 +636,7 @@ class fimRoom {
     private function populateFromArray(array $roomData): bool {
         if ($roomData) {
             foreach ($roomData AS $attribute => $value) {
-                $this->__set($attribute, $value);
+                $this->set($attribute, $value);
             }
 
             return true;
