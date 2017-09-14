@@ -290,7 +290,7 @@ $.when(
      $('#stylesv2').text(response);
      }),*/
     $.ajax({
-        url: window.directory + 'api/getServerStatus.php?fim3_format=json',
+        url: window.directory + 'api/serverStatus.php?fim3_format=json',
         dataType: 'json',
         success: function(json) {
             window.serverSettings = json.serverStatus;

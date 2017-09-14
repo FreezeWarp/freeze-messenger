@@ -298,7 +298,7 @@ fimApi.prototype.getUnreadMessages = function(params, requestSettings) {
     function getUnreadMessages_query() {
         $.ajax({
             type: 'get',
-            url: directory + 'api/getUnreadMessages.php',
+            url: directory + 'api/unreadMessages.php',
             data: params,
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
@@ -329,7 +329,7 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
         function getFiles_query() {
             $.ajax({
                 type: 'get',
-                url: directory + 'api/getFiles.php',
+                url: directory + 'api/files.php',
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
@@ -358,7 +358,7 @@ fimApi.prototype.getStats = function(params, requestSettings) {
         function getStats_query() {
             $.ajax({
                 type: 'get',
-                url: directory + 'api/getStats.php',
+                url: directory + 'api/stats.php',
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache

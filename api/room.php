@@ -60,8 +60,8 @@
  * @param json   $userPermissions    A special JSON representation of allowed users. It should be an object containing properties such that the name of the property is either "+ID", "-ID", or "*ID", where ID is the ID of a user, and the value of the property is the list of permissions to add (if "+ID"), remove (if "-ID"), or replace with "*ID".
  * @param json   $groupPermissions   A special JSON representation of allowed groups, in the same format as userPermissions.
  * @param dict   $censorLists        A list of censor lists to enable or disable. The index of the dictionary should be the list ID, while the value should be boolean (true to enable, false to disable). If a list is not included, it's state will not be changed. Active lists can be found through getCensorLists.php.
- * @param int    $parentalAge        The parental age corresponding to the room. This will default to a site-configured value. Possibilities can be fetched with getServerStatus.php.
- * @param list   $parentalFlag       A list of parental flags that will apply to the room. This will default to a site-configured value. Possibilities can be fetched with getServerStatus.php.
+ * @param int    $parentalAge        The parental age corresponding to the room. This will default to a site-configured value. Possibilities can be fetched with serverStatus.php.
+ * @param list   $parentalFlag       A list of parental flags that will apply to the room. This will default to a site-configured value. Possibilities can be fetched with serverStatus.php.
  * @param list   $options            {
  *     A list of special options to apply to the room. Options:
  *
