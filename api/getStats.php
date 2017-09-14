@@ -35,14 +35,14 @@ require('../global.php');
 
 /* Get Request */
 $request = fim_sanitizeGPC('g', array(
-    'rooms' => array(
+    'roomIds' => array(
         'default' => [],
         'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
     ),
 
-    'users' => array(
+    'userIds' => array(
         'default' => [],
         'cast' => 'list',
         'filter' => 'int',
@@ -68,17 +68,17 @@ $xmlData = array(
 /* Start Processing */
 
 $totalPosts = $database->getPostStats(array(
-    'roomIds' => $request['rooms'],
+    'roomIds' => $request['roomIds'],
 ))->getAsArray(array('roomId', 'userId'), false);
 
 
-foreach ($totalPosts AS $room) {
-    foreach ($room AS $roomId => $totalPoster) {
-        // Users must be able to view the room to see the respective post counts.
-        if (!($database->hasPermission($user, new fimRoom($roomId)) & fimRoom::ROOM_PERMISSION_VIEW)) {
-            continue;
-        }
+foreach ($totalPosts AS $roomId => $room) {
+    // Users must be able to view the room to see the respective post counts.
+    if (!($database->hasPermission($user, fimRoomFactory::getFromId($roomId)) & fimRoom::ROOM_PERMISSION_VIEW)) {
+        continue;
+    }
 
+    foreach ($room AS $userId => $totalPoster) {
         if (!isset($xmlData['roomStats']['room ' . $totalPoster['roomId']])) {
             $xmlData['roomStats']['room ' . $totalPoster['roomId']] = array(
                 'roomData' => array(

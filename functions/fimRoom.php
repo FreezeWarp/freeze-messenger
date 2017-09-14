@@ -722,4 +722,6 @@ class fimRoom {
         }
     }
 }
+
+require_once('fimRoomFactory.php');
 ?>
