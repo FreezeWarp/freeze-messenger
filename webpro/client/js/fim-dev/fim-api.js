@@ -62,7 +62,6 @@ var fimApi = function() {
 
 fimApi.prototype.login = function (params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
-            'fim3_format' : 'json',
             'grant_type' : 'password',
             'username' : null,
             'password' : null,
@@ -105,7 +104,6 @@ fimApi.prototype.getUsers = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
         'info' : ['self', 'groups', 'profile'],
         'access_token' : window.sessionHash,
-        'fim3_format' : 'json',
         'userIds' : null,
         'userNames' : null,
         'userNameSearch' : null
@@ -131,7 +129,6 @@ fimApi.prototype.getUsers = function(params, requestSettings) {
 fimApi.prototype.getRooms = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
-            'fim3_format' : 'json',
             'id' : null,
             'roomIds' : null,
             'roomNames' : null,
@@ -287,7 +284,6 @@ fimApi.prototype.deleteMessage = function(roomId, messageId, requestSettings) {
 fimApi.prototype.getUnreadMessages = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
         'access_token' : window.sessionHash,
-        'fim3_format' : 'json',
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.mergeDefaults({
@@ -318,7 +314,6 @@ fimApi.prototype.getUnreadMessages = function(params, requestSettings) {
 fimApi.prototype.getFiles = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
-            'fim3_format' : 'json',
             'userIds' : '',
             'fileIds' : ''
         });
@@ -347,7 +342,6 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
 fimApi.prototype.getStats = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
-            'fim3_format' : 'json',
             'roomIds' : '',
             'number' : 10
         });
@@ -377,7 +371,6 @@ fimApi.prototype.getStats = function(params, requestSettings) {
 fimApi.prototype.getKicks = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
-            'fim3_format' : 'json',
             'roomIds' : null,
             'userIds' : null
         });
@@ -407,7 +400,6 @@ fimApi.prototype.getKicks = function(params, requestSettings) {
 fimApi.prototype.getCensorLists = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
-            'fim3_format' : 'json',
             'roomId' : null,
             'listIds' : null,
             'includeWords' : 1 // true
@@ -444,7 +436,6 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
             url: directory + 'api/userStatus.php',
             data: fimApi.mergeDefaults(params, {
                 'access_token' : window.sessionHash,
-                'fim3_format' : 'json',
                 'roomIds' : null,
                 'userIds' : null,
                 'onlineThreshold' : null
@@ -478,7 +469,6 @@ fimApi.prototype.acHelper = function(list) {
             url: directory + 'api/acHelper.php',
             data: {
                 'access_token' : window.sessionHash,
-                'fim3_format' : 'json',
                 'list' : list,
                 'search' : search.term
             },
@@ -499,7 +489,6 @@ fimApi.prototype.acHelper = function(list) {
 fimApi.prototype.kickUser = function(userId, roomId, length, requestSettings) {
     var params = {
         'access_token' : window.sessionHash,
-        'fim3_format' : 'json',
         'roomId' : roomId,
         'userId' : userId,
         'length' : length,
@@ -521,7 +510,6 @@ fimApi.prototype.kickUser = function(userId, roomId, length, requestSettings) {
 fimApi.prototype.unkickUser = function(userId, roomId, requestSettings) {
     var params = {
         'access_token' : window.sessionHash,
-        'fim3_format' : 'json',
         'roomId' : roomId,
         'userId' : userId,
         'action' : 'unkickUser',
@@ -542,7 +530,6 @@ fimApi.prototype.unkickUser = function(userId, roomId, requestSettings) {
 fimApi.prototype.markMessageRead = function(roomId, requestSettings) {
     var params = {
         'access_token' : window.sessionHash,
-        'fim3_format' : 'json',
         'roomId' : roomId,
     };
 
@@ -560,7 +547,6 @@ fimApi.prototype.markMessageRead = function(roomId, requestSettings) {
 fimApi.prototype.editUserOptions = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
         'access_token' : window.sessionHash,
-        'fim3_format' : 'json',
         '_action' : "edit",
         'defaultFormatting' : null,
         'defaultColor' : null,

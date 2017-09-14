@@ -2,7 +2,7 @@ $(document).ready(function() {
   var directory = window.location.pathname.split('/').splice(0, window.location.pathname.split('/').length - 2).join('/') + '/'; // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
 
   $.ajax({
-    url: directory + 'api/serverStatus.php?fim3_format=json',
+    url: directory + 'api/serverStatus.php',
     type: 'GET',
     timeout: 1000,
     dataType: 'json',

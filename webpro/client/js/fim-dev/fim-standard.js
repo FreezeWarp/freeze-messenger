@@ -406,7 +406,7 @@ standard.prototype.populateMessages = function(roomId) {
 
 
 standard.prototype.deleteRoom = function(roomIdLocal) {
-    $.post(directory + 'api/editRoom.php', 'action=delete&messageId=' + messageId + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
+    $.post(directory + 'api/editRoom.php', 'action=delete&messageId=' + messageId + '&access_token=' + sessionHash, function(json) {
         var errStr = json.editRoom.errStr,
             errDesc = json.editRoom.errDesc;
 
@@ -421,13 +421,13 @@ standard.prototype.deleteRoom = function(roomIdLocal) {
 };
 
 standard.prototype.favRoom = function(roomIdLocal) {
-    $.post(directory + 'api/editRoomLists.php', 'action=add&roomListName=favRooms&roomIds=' + roomIdLocal + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
+    $.post(directory + 'api/editRoomLists.php', 'action=add&roomListName=favRooms&roomIds=' + roomIdLocal + '&access_token=' + sessionHash, function(json) {
         return false;
     });
 };
 
 standard.prototype.unfavRoom = function(roomIdLocal) {
-    $.post(directory + 'api/editRoomLists.php', 'action=remove&roomListName=favRooms&roomIds=' + roomIdLocal + '&access_token=' + sessionHash + '&fim3_format=json', function(json) {
+    $.post(directory + 'api/editRoomLists.php', 'action=remove&roomListName=favRooms&roomIds=' + roomIdLocal + '&access_token=' + sessionHash, function(json) {
         return false;
     });
 };
