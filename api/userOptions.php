@@ -89,12 +89,12 @@ These parameters are, where applicable, documented in the SQL documentation.
  * =PUT/POST/DELETE Examples=
  * Note that when using PUT, every directive is supported. When using POST and DELETE, only the four lists are supported.
  *
- * PUT editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == replaces the list of watch rooms with the new list, [1,2,3]
- * PUT editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3&defaultHighlight=0,0,0 == replaces the list of watch rooms with the new list, [1,2,3]. Sets the default highlight color to black.
- * POST editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == adds rooms 1, 2, and 3 from the watch rooms list
- * POST editUserOptions.php watchRooms[]=1&favRooms[]=2&friendsLists[]=3 == adds room 1 to the watch rooms, room 2 to the favourite rooms, and user 3 to the friends list.
- * POST editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3&defaultHighlight=0,0,0 == adds room 1 to the watch rooms, room 2 to the favourite rooms, and user 3 to the friends list. Though defaultHighlight is specified, this is a POST request, and it will thus be ignored.
- * DELETE editUserOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == removes rooms 1, 2, and 3 from the watch rooms list
+ * PUT userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == replaces the list of watch rooms with the new list, [1,2,3]
+ * PUT userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3&defaultHighlight=0,0,0 == replaces the list of watch rooms with the new list, [1,2,3]. Sets the default highlight color to black.
+ * POST userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == adds rooms 1, 2, and 3 from the watch rooms list
+ * POST userOptions.php watchRooms[]=1&favRooms[]=2&friendsLists[]=3 == adds room 1 to the watch rooms, room 2 to the favourite rooms, and user 3 to the friends list.
+ * POST userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3&defaultHighlight=0,0,0 == adds room 1 to the watch rooms, room 2 to the favourite rooms, and user 3 to the friends list. Though defaultHighlight is specified, this is a POST request, and it will thus be ignored.
+ * DELETE userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == removes rooms 1, 2, and 3 from the watch rooms list
  */
 
 $apiRequest = true;

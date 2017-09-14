@@ -564,7 +564,7 @@ fimApi.prototype.editUserOptions = function(params, requestSettings) {
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
     $.ajax({
-        url: directory + 'api/editUserOptions.php',
+        url: directory + 'api/userOptions.php',
         type: 'POST',
         data: params,
         timeout: requestSettings.timeout,

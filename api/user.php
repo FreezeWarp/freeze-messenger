@@ -20,7 +20,7 @@
  ** When used with a GET request, this will retrieve users. If a user ID is provided, it will retrieve a single user, otherwise it will retrieve users who match certain parameters. Unlike GET message.php and GET room.php, it is not possible to page through users, as such functionality should not be necessary. api/acHelper.php is available to search users by username.
  ** When used with a PUT request, this will create a new user.
  *
- * To edit a user's options, use api/editUserOptions.php.
+ * To edit a user's options, use api/userOptions.php.
  *
  * =Directives=
  * ==Common Directives (must be in URL parameters):==
