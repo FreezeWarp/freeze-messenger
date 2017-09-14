@@ -1,5 +1,5 @@
 <?php
-class apiOutputDict {
+class ApiOutputDict {
     private $array;
 
     function __construct($array) {

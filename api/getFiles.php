@@ -79,5 +79,5 @@ if ($config['dev']) $xmlData['request'] = $request;
 
 
 /* Output Data */
-echo new apiData($xmlData);
+echo new ApiData($xmlData);
 ?>

@@ -838,7 +838,7 @@ function fim_exceptionHandler($exception) {
         }
     }
 
-    echo new apiData(array(
+    echo new ApiData(array(
         'exception' => $errorData,
     ));
     die();

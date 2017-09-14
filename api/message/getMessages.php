@@ -147,8 +147,8 @@ else {
 }
 
 
-$xmlData['messages'] = new apiOutputList($xmlData['messages']); // output the messages as a list
+$xmlData['messages'] = new ApiOutputList($xmlData['messages']); // output the messages as a list
 
 /* Output Data */
-echo new apiData($xmlData);
+echo new ApiData($xmlData);
 ?>

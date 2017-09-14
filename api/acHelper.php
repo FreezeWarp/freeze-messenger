@@ -38,13 +38,13 @@ $database->accessLog('acHelper', $request);
 switch ($request['list']) {
 
   case 'users':
-    $entries = new apiOutputDict($slaveDatabase->getUsers(array(
+    $entries = new ApiOutputDict($slaveDatabase->getUsers(array(
       'userNameSearch' => $request['search'],
     ))->getColumnValues('name', 'id'));
     break;
 
   case 'rooms':
-    $entries = new apiOutputDict($slaveDatabase->getRooms(array(
+    $entries = new ApiOutputDict($slaveDatabase->getRooms(array(
       'roomNameSearch' => $request['search'],
     ))->getColumnValues('name', 'id'));
      break;
@@ -60,5 +60,5 @@ $xmlData = array(
 
 
 /* Output Data */
-echo new apiData($xmlData);
+echo new ApiData($xmlData);
 ?>

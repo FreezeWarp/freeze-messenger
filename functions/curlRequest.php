@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-require_once('apiData.php');
+require_once('ApiData.php');
 require_once('fimError.php');
 require('curlRequestMethod.php');
 

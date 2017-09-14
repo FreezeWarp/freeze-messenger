@@ -98,5 +98,5 @@ foreach ($activeUsers AS $activeUser) {
 
 
 /* Output Data */
-echo new apiData($xmlData);
+echo new ApiData($xmlData);
 ?>

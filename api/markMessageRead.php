@@ -37,4 +37,4 @@ $database->markMessageRead($request['roomId'], $user->id);
 
 
 /* Output Data */
-echo new apiData($xmlData);
+echo new ApiData($xmlData);

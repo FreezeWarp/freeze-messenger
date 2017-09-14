@@ -1,6 +1,6 @@
 <?php
 
-class apiOutputList {
+class ApiOutputList {
     private $array;
 
     function __construct($array) {

@@ -285,7 +285,7 @@ if (!$ignoreLogin) {
     if (!$hookLogin) {
         $user->resolveAll();
 
-        $apiData = new apiData();
+        $apiData = new ApiData();
         $apiData->replaceData(array(
             'login' => array(
                 'access_token' => $user->sessionHash,
@@ -293,8 +293,8 @@ if (!$ignoreLogin) {
                 'anonId' => $user->anonId,
                 'defaultRoomId' => $user->defaultRoomId,
                 'userData' => array_merge([
-                    'socialGroupIds' => new apiOutputList($user->socialGroupIds),
-                    'parentalFlags' => new apiOutputList($user->parentalFlags),
+                    'socialGroupIds' => new ApiOutputList($user->socialGroupIds),
+                    'parentalFlags' => new ApiOutputList($user->parentalFlags),
                 ], fim_objectArrayFilterKeys($user, ['id', 'name', 'nameFormat', 'mainGroupId', 'avatar', 'profile', 'messageFormatting', 'parentalAge'])),
                 'permissions' => $user->getPermissionsArray()
             ),

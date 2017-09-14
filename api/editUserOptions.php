@@ -427,5 +427,5 @@ $database->autoQueue(false);
 
 
 /* Output Data */
-echo new apiData($xmlData);
+echo new ApiData($xmlData);
 ?>

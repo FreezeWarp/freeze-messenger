@@ -91,7 +91,7 @@ else {
 
 
 /* Output Data */
-echo new apiData([
+echo new ApiData([
     'user' => [
         'id' => $newUser->id,
         'name' => $newUser->name,

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-class apiData implements ArrayAccess {
+class ApiData implements ArrayAccess {
     private $format;
     private $data;
     public $jsonDepthLimit = 15;
@@ -127,7 +127,7 @@ class apiData implements ArrayAccess {
             return $this->outputJson($value, $depth + 1);
         }
 
-        elseif (is_object($value) && get_class($value) === 'apiOutputDict') {
+        elseif (is_object($value) && get_class($value) === 'ApiOutputDict') {
             $values = $value->getArray();
 
             if (count($values)) {
@@ -139,7 +139,7 @@ class apiData implements ArrayAccess {
             }
         }
 
-        elseif (is_object($value) && get_class($value) === 'apiOutputList') {
+        elseif (is_object($value) && get_class($value) === 'ApiOutputList') {
             $values = $value->getArray();
 
             if (count($values)) {
@@ -220,6 +220,6 @@ class apiData implements ArrayAccess {
     }
 }
 
-require('apiOutputList.php');
-require('apiOutputDict.php');
+require('ApiOutputList.php');
+require('ApiOutputDict.php');
 ?>

@@ -80,7 +80,7 @@ if (count($smilies)) {
 }
 
 
-echo new apiData(
+echo new ApiData(
     [
         'serverStatus' => array(
             'activeUser' => array(
@@ -95,8 +95,8 @@ echo new apiData(
             'parentalControls' => array(
                 'parentalEnabled' => $config['parentalEnabled'],
                 'parentalAgeChangeable' => $config['parentalAgeChangeable'],
-                'parentalFlags' => new apiOutputList($config['parentalFlags']),
-                'parentalAges' => new apiOutputList($config['parentalAges']),
+                'parentalFlags' => new ApiOutputList($config['parentalFlags']),
+                'parentalAges' => new ApiOutputList($config['parentalAges']),
                 'enableCensor' => $config['censorEnabled'],
             ),
 
@@ -123,8 +123,8 @@ echo new apiData(
                 'maxUser' => (int) $config['uploadMaxUserFiles'],
                 'chunkSize' => (int) $config['fileUploadChunkSize'],
                 'orphanFiles' => (bool) $config['allowOrphanFiles'],
-                'allowedExtensions' => new apiOutputList($config['allowedExtensions']),
-                'mimes' => new apiOutputList($config['uploadMimes']),
+                'allowedExtensions' => new ApiOutputList($config['allowedExtensions']),
+                'mimes' => new ApiOutputList($config['uploadMimes']),
                 'extensionChanges' => $config['extensionChanges'],
                 'fileContainers' => $config['fileContainers'],
                 'fileProofs' => $config['uploadMimeProof'],

@@ -95,5 +95,5 @@ foreach ($kicks AS $kick) {
 
 
 /* Output Data */
-echo new apiData($xmlData);
+echo new ApiData($xmlData);
 ?>

@@ -75,7 +75,7 @@ elseif ($phpVersion <= 5.3) { // Removed outright in 5.4, may as well save a CPU
 
 /* Require Libraries */
 require_once(dirname(__FILE__) . '/config.php'); // Configuration Variables
-require_once(dirname(__FILE__) . '/functions/apiData.php'); // API Data output wrapper.
+require_once(dirname(__FILE__) . '/functions/ApiData.php'); // API Data output wrapper.
 require_once(dirname(__FILE__) . '/functions/database.php'); // Database
 require_once(dirname(__FILE__) . '/functions/databaseSQL.php'); // Database (SQL)
 require_once(dirname(__FILE__) . '/functions/fimDatabase.php'); // FIM-specific Extensions

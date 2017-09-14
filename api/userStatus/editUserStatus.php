@@ -62,5 +62,5 @@ $xmlData = array(
 
 
 /* Output Data */
-echo new apiData($xmlData);
+echo new ApiData($xmlData);
 ?>
