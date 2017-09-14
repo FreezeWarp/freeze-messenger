@@ -14,12 +14,13 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+require_once('fimDynamicObject.php');
 
 /**
  * Class fimUser
  * Stores user data.
  */
-class fimUser
+class fimUser extends fimDynamicObject
 {
     /**
      * The user may view rooms.
@@ -99,7 +100,7 @@ class fimUser
     const ADMIN_CENSOR = 0x1000000;
 
 
-    /**
+       /**
      * The id reserved for anonymous users.
      */
     const ANONYMOUS_USER_ID = -1;
@@ -108,20 +109,20 @@ class fimUser
      * @var string The user's session hash.
      * @todo: remove, shouldn't be cached
      */
-    private $sessionHash;
+    protected $sessionHash;
 
     /**
      * @var string The user's client code.
      * @todo: remove
      */
-    private $clientCode;
+    protected $clientCode;
 
 
     /**
      * @var int The user's anonymous user ID.
      * @todo: prevent caching?
      */
-    private $anonId;
+    protected $anonId;
 
 
     /**
@@ -143,152 +144,152 @@ class fimUser
     /**
      * @var string The user's name.
      */
-    private $name = "MISSINGno.";
+    protected $name = "MISSINGno.";
 
 
     /**
      * @var array The list of social group IDs the user belongs to.
      */
-    private $socialGroupIds;
+    protected $socialGroupIds;
 
     /**
      * @var int The primary group the user belongs to, mainly for integration purposes.
      */
-    private $mainGroupId;
+    protected $mainGroupId;
 
     /**
      * @var array The list of parental flags the user is blocking.
      */
-    private $parentalFlags = [];
+    protected $parentalFlags = [];
 
     /**
      * @var int The age cutoff of content the user wishes to see.
      */
-    private $parentalAge = 255;
+    protected $parentalAge = 255;
 
     /**
      * @var int The priviledges the user has (as bitfield)
      */
-    private $privs = 0;
+    protected $privs = 0;
 
     /**
      * @var int The last time the user's data was synced with an integration service.
      */
-    private $lastSync;
+    protected $lastSync;
 
     /**
      * @var string The user's avatar; URL.
      */
-    private $avatar;
+    protected $avatar;
 
     /**
      * @var string The user's name formatting; CSS.
      */
-    private $nameFormat;
+    protected $nameFormat;
 
     /**
      * @var string The default message formatting applied to the user's messages; CSS.
      */
-    private $messageFormatting;
+    protected $messageFormatting;
 
     /**
      * @var int The room the user would like to be loaded by default.
      */
-    private $defaultRoomId = 1;
+    protected $defaultRoomId = 1;
 
     /**
      * @var string The user's profile page; URL.
      */
-    private $profile;
+    protected $profile;
 
     /**
      * @var int A bitfield of options the user has set.
      */
-    private $options;
+    protected $options;
 
     /**
      * @var string The user's email address.
      */
-    private $email;
+    protected $email;
 
     /**
      * @var int The date the user joined the integration service (possibly the date they created a messenger account, if vanilla logins).
      */
-    private $joinDate;
+    protected $joinDate;
 
     /**
      * @var int The user's birthdate, for content settings.
      */
-    private $birthDate = 0;
+    protected $birthDate = 0;
 
     /**
      * @var array An integer list of rooms the user has favourited.
      * TODO: evaluate performance of making list of fimRoom objects
      */
-    private $favRooms = [];
+    protected $favRooms = [];
 
     /**
      * @var array An integer list of rooms the user is watching (wants to know when new messages are made in).
      * TODO: evaluate performance of making list of fimRoom objects
      */
-    private $watchRooms = [];
+    protected $watchRooms = [];
 
     /**
-     * @var array An integer list of users the user is ignoring (doesn't want private messages from).
+     * @var array An integer list of users the user is ignoring (doesn't want protected messages from).
      * TODO: evaluate performance of making list of fimUser objects
      */
-    private $ignoredUsers = [];
+    protected $ignoredUsers = [];
 
     /**
      * @var array An integer list of users the user is friends with.
      * TODO: evaluate performance of making list of fimUser objects
      */
-    private $friendedUsers = [];
+    protected $friendedUsers = [];
 
     /**
      * @var string The user's password, hashed. Only in vanilla logins.
      */
-    private $passwordHash;
+    protected $passwordHash;
 
     /**
      * @var string The user's password's salt. Only in vanilla logins.
      */
-    private $passwordSalt;
+    protected $passwordSalt;
 
     /**
      * @var string The user's password hasing algorithm. Only in vanilla logins.
      */
-    private $passwordFormat;
+    protected $passwordFormat;
 
     /**
      * @var string The last time the user's password was changed. Only in vanilla logins.
      */
-    private $passwordLastReset;
+    protected $passwordLastReset;
 
     /**
      * @var string If the user's password must be changed immediately. Usually only in vanilla logins.
      */
-    private $passwordResetNow = false;
+    protected $passwordResetNow = false;
 
     /**
      * @var int The number of files the user has uploaded.
      */
-    private $fileCount;
+    protected $fileCount;
 
     /**
      * @var int The number of rooms the user has created.
      */
-    private $ownedRooms;
+    protected $ownedRooms;
 
     /**
      * @var int The number of messages the user has posted.
      */
-    private $messageCount;
+    protected $messageCount;
 
     /**
      * @var string The total size of the files the user has uploaded.
      */
-    private $fileSize;
+    protected $fileSize;
 
     /**
      * @var fimCache The caching object.
@@ -304,7 +305,7 @@ class fimUser
     /**
      * @var array The list of fields that have been resolved on this user object.
      */
-    private $resolved = array();
+    protected $resolved = array();
 
     /**
      * @var array User data fields that should be resolved together when a resolution is needed.
@@ -385,64 +386,37 @@ class fimUser
         return $this->$property;
     }
 
-
-    /**
-     * Invokes setters, or sets by property. Adds properties to list of resolved properties.
-     *
-     * @param $property string The property to set.
-     * @param $value mixed The value to set the property to.
-     *
-     * @throws Exception If a property doesn't exist.
-     */
-    private function set($property, $value)
-    {
-        global $config;
-
-        if (!property_exists($this, $property))
-            throw new Exception('Invalid property to set in fimUser: ' . $property);
-
-        $setterName = 'set' . ucfirst($property);
-
-        if (method_exists($this, 'set' . ucfirst($property)))
-            $this->$setterName($value);
-        else
-            $this->{$property} = $value;
-
-        if (!in_array($property, $this->resolved))
-            $this->resolved[] = $property;
-    }
-
-    private function setParentalAge($age) {
+    protected function setParentalAge($age) {
         global $config;
 
         if ($config['parentalEnabled'])
             $this->parentalAge = $age;
     }
 
-    private function setParentalFlags($flags) {
+    protected function setParentalFlags($flags) {
         global $config;
 
         if ($config['parentalEnabled'])
             $this->parentalFlags = fim_emptyExplode(',', $flags);
     }
     
-    private function setSocialGroupIds($socialGroupIds) {
+    protected function setSocialGroupIds($socialGroupIds) {
         $this->setList('socialGroupIds', $socialGroupIds);
     }
-    private function setFavRooms($favRooms) {
+    protected function setFavRooms($favRooms) {
         $this->setList('favRooms', $favRooms);
     }
-    private function setWatchRooms($watchRooms) {
+    protected function setWatchRooms($watchRooms) {
         global $config;
 
         if ($config['enableWatchRooms']) {
             $this->setList('watchRooms', $watchRooms);
         }
     }
-    private function setFriendsList($friendsList) {
+    protected function setFriendsList($friendsList) {
         $this->setList('friendsList', $friendsList);
     }
-    private function setIgnoreList($ignoreList) {
+    protected function setIgnoreList($ignoreList) {
         $this->setList('ignoreList', $ignoreList);
     }
     
@@ -476,14 +450,14 @@ class fimUser
             $this->{$listName} = $value;
     }
 
-    private function setDefaultRoomId($roomId) {
+    protected function setDefaultRoomId($roomId) {
         global $config;
 
         $this->defaultRoomId = $roomId ?: $config['defaultRoomId'];
     }
 
 
-    private function setPrivs($privs) {
+    protected function setPrivs($privs) {
         global $config, $loginConfig;
 
         $this->privs = $privs;
@@ -693,6 +667,7 @@ class fimUser
      * @license http://opensource.org/licenses/gpl-license.php GNU Public License
      *
      */
+    public static function phpbb_hash_encode64($input, $count, &$itoa64) {
         $output = '';
         $i = 0;
 
@@ -767,7 +742,7 @@ class fimUser
      * @return bool Returns true on success, false on failure.
      * @throws Exception
      */
-    private function getColumns(array $columns) : bool
+    protected function getColumns(array $columns) : bool
     {
         global $database;
 
@@ -893,15 +868,6 @@ class fimUser
             $this->id = $database->getLastInsertId();
 
             return $return;
-        }
-    }
-
-    public function __destruct() {
-        if ($this->id !== 0) {
-            if (function_exists('apc_store'))
-                apc_store('fim_fimUser_' . $this->id, $this, 500);
-            elseif (function_exists('apcu_store'))
-                apcu_store('fim_fimUser_' . $this->id, $this, 500);
         }
     }
 }

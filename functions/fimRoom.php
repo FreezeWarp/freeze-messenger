@@ -15,11 +15,13 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
+require_once('fimDynamicObject.php');
+
 /**
  * Class fimRoom
  * The data for a room object.
  */
-class fimRoom {
+class fimRoom extends fimDynamicObject {
 
     /**
      * The room is official, and will receive special prominence in room searches.
@@ -97,92 +99,92 @@ class fimRoom {
     /**
      * @var string The name of the room.
      */
-    private $name = "Missingname.";
+    protected $name = "Missingname.";
 
-    /**
+        /**
      * @var int A bitfield containing options for delete, official, hidden, and archive.
      */
-    private $options;
+    protected $options;
 
     /**
      * @var bool Whether or not the room is deleted.
      */
-    private $deleted;
+    protected $deleted;
 
     /**
      * @var bool Whether or not the room is "official" and should be displayed with special prominence (typically, they are stickied).
      */
-    private $official;
+    protected $official;
 
     /**
      * @var bool Whether or not the room is hidden and won't be shown in a room search except to admins (but will otherwise be accessible).
      */
-    private $hidden;
+    protected $hidden;
 
     /**
      * @var bool Whether or not the room is archived and can't be posted in.
      */
-    private $archived;
+    protected $archived;
 
     /**
      * @var bool The ID of the owner of the room. TODO: make user object?
      */
-    private $ownerId = 0;
+    protected $ownerId = 0;
 
     /**
      * @var string The topic of the room.
      */
-    private $topic;
+    protected $topic;
 
     /**
      * @var string The room's type, e.g. "private"
      */
-    private $type = 'unknown';
+    protected $type = 'unknown';
 
     /**
      * @var array An array of parental flags applied to the room.
      */
-    private $parentalFlags = [];
+    protected $parentalFlags = [];
 
     /**
      * @var int The room's parental age (that is, the age a user should be to participate in a room).
      */
-    private $parentalAge = 0;
+    protected $parentalAge = 0;
 
     /**
      * @var int The default permission bitfield for the room.
      */
-    private $defaultPermissions;
+    protected $defaultPermissions;
 
     /**
      * @var int The ID of the last message that was posted in this room.
      */
-    private $lastMessageId;
+    protected $lastMessageId;
 
     /**
      * @var int The time of the last message that was posted in this room.
      */
-    private $lastMessageTime;
+    protected $lastMessageTime;
 
     /**
      * @var int The number of messages that have been posted in this room.
      */
-    private $messageCount;
+    protected $messageCount;
 
     /**
      * @var array A list of flags for this room. TODO: what are they for?
      */
-    private $flags;
+    protected $flags;
 
     /**
      * @var string The room's ID encoded for binary storage.
      */
-    private $encodedId;
+    protected $encodedId;
 
     /**
      * @var array A list of users watching this room. TODO: user instances?
      */
-    private $watchedByUsers;
+    protected $watchedByUsers;
 
     /**
      * @var mixed The room data the room was initialised with.
@@ -192,7 +194,7 @@ class fimRoom {
     /**
      * @var array The parameters that have been resolved for this instance of fimRoom. If an unresolved parameter is accessed, it will be resolved.
      */
-    private $resolved = array();
+    protected $resolved = array();
 
 
     /**
@@ -445,31 +447,7 @@ class fimRoom {
     }
 
 
-    /**
-     * Invokes setters, or sets by property. Adds properties to list of resolved properties.
-     *
-     * @param $property string The property to set.
-     * @param $value mixed The value to set the property to.
-     *
-     * @throws Exception If a property doesn't exist.
-     */
-    private function set($property, $value) {
-        if (!property_exists($this, $property))
-            throw new Exception('Invalid property to set in fimRoom: ' . $property);
-
-        $setterName = 'set' . ucfirst($property);
-
-        if (method_exists($this, 'set' . ucfirst($property)))
-            $this->$setterName($value);
-        else
-            $this->{$property} = $value;
-
-        if (!in_array($property, $this->resolved))
-            $this->resolved[] = $property;
-    }
-
-
-    private function setWatchedByUsers($users) {
+    protected function setWatchedByUsers($users) {
         global $config;
 
         if (!$config['enableWatchRooms'])
@@ -499,7 +477,7 @@ class fimRoom {
         }
     }
 
-    private function setId($id) {
+    protected function setId($id) {
         $this->id = $id;
 
         if (fimRoom::isPrivateRoomId($id)) {
@@ -521,7 +499,7 @@ class fimRoom {
     }
 
 
-    private function setOptions($options) {
+    protected function setOptions($options) {
         global $config;
 
         $this->options = $options;
@@ -532,19 +510,19 @@ class fimRoom {
         $this->hidden   = ($this->options & fimRoom::ROOM_HIDDEN) && $config['hiddenRooms'];
     }
 
-    private function setTopic($topic) {
+    protected function setTopic($topic) {
         global $config;
 
         $this->topic = $config['disableTopic'] ? '' : $topic;
     }
 
-    private function setParentalAge($age) {
+    protected function setParentalAge($age) {
         global $config;
 
         $this->parentalAge = $config['parentalEnabled'] ? (int) $age : 0;
     }
 
-    private function setParentalFlags($parentalFlags) {
+    protected function setParentalFlags($parentalFlags) {
         global $config;
 
         if ($config['parentalEnabled'] && is_string($parentalFlags))
@@ -559,7 +537,7 @@ class fimRoom {
      * @return bool
      * @throws Exception
      */
-    private function getColumns(array $columns) : bool
+    protected function getColumns(array $columns) : bool
     {
         global $database;
 
@@ -633,7 +611,7 @@ class fimRoom {
      * @return bool
      * @throws fimError
      */
-    private function populateFromArray(array $roomData): bool {
+    protected function populateFromArray(array $roomData): bool {
         if ($roomData) {
             foreach ($roomData AS $attribute => $value) {
                 $this->set($attribute, $value);
@@ -726,16 +704,6 @@ class fimRoom {
         else {
             $database->insert($database->sqlPrefix . "rooms", $roomParameters);
             return $this->id = $database->getLastInsertId();
-        }
-    }
-
-
-    public function __destruct() {
-        if ($this->id !== 0) {
-            if (function_exists('apc_store'))
-                apc_store('fim_fimRoom_' . $this->id, $this, 500);
-            else if (function_exists('apcu_store'))
-                apcu_store('fim_fimRoom_' . $this->id, $this, 500);
         }
     }
 }
