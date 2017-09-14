@@ -2606,12 +2606,9 @@ class databaseSQL extends database
 
                 // Combine l and rvalues
                 if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
-                    $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']})";
-
-                    // Special case: postgres binaryAnd
-                    if ($value->comparison === DatabaseTypeComparison::binaryAnd) {
-                        $sideTextFull[$i] = "({$sideTextFull[$i]} = {$sideText['right']})";
-                    }
+                    $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']}"
+                        . ($value->comparison === DatabaseTypeComparison::binaryAnd ? "= {$sideText['right']}" : '') // Special case: postgres binaryAnd
+                        . ")";
                 }
 
                 else {

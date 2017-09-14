@@ -183,7 +183,7 @@ switch ($requestHead['_action']) {
 
         // Handle Options Flags
         if ($user->hasPriv('modRooms')) {
-            $requestOptions = fim_sanitizeGPC('p', [
+            $request = array_merge($request, fim_sanitizeGPC('p', [
                 'options' => [
                     'cast'      => 'bitfieldShift',
                     'source'    => $room->options,
@@ -192,8 +192,7 @@ switch ($requestHead['_action']) {
                         fimRoom::ROOM_OFFICIAL => 'official',
                     ]
                 ]
-            ]);
-            $room->options = $requestOptions['options'];
+            ]));
         }
 
 
