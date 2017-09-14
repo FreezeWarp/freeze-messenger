@@ -411,6 +411,9 @@ popup = {
 
                             i++;
                         }
+                    },
+                    'end' : function() {
+                        windowDraw();
                     }
                 });
             }
@@ -1081,6 +1084,7 @@ popup = {
                 },
                 'end' : function() {
                     contextMenuParseUser('#onlineUsers');
+                    windowDraw();
                 }
             }),
             cF : function() {
