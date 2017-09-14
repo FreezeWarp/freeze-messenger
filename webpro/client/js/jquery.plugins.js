@@ -1179,15 +1179,17 @@ jQuery.fn.extend({autocompleteHelper : function(resourceName) {
     this.autocomplete({
         source: fimApi.acHelper(resourceName),
         select: function (event, ui) {
-            lastValue = ui.item.label;
-
             $(event.target).val(ui.item.label);
             $(event.target).attr('data-id', ui.item.value);
+            $(event.target).attr('data-value', ui.item.label);
 
             return false;
         },
         change : function(event) {
-            $(event.target).attr('data-id', '');
+            if ($(event.target).attr('data-value') != $(event.target).val()) {
+                $(event.target).attr('data-id', '');
+                $(event.target).attr('data-value', '');
+            }
         }
     });
 

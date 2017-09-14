@@ -3,7 +3,7 @@
  * Class fimRoomFactory
  */
 class fimRoomFactory {
-    public static function getFromId(int $roomId) {
+    public static function getFromId($roomId) {
         if (function_exists('apc_fetch') && apc_exists('fim_fimRoom_' . $roomId)) {
             return apc_fetch('fim_fimRoom_' . $roomId);
         }

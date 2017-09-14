@@ -1042,10 +1042,27 @@ popup = {
             id : 'privateRoomDialogue',
             width : 1000,
             oF : function() {
-                $('#userName').autocompleteHelper('users')
+                $('#userName').autocompleteHelper('users');
 
                 $("#privateRoomForm").submit(function() {
-                    standard.changeRoom("p" + [window.userId, $("#privateRoomForm > #userName").attr('data-id')].join(','), true);
+                    var userName = $("#privateRoomForm > #userName").val();
+                    var userId = $("#privateRoomForm > #userName").attr('data-id');
+
+                    whenUserIdAvailable = function(userId) {
+                        standard.changeRoom("p" + [window.userId, userId].join(','), true);
+                    };
+
+                    if (!userId && userName) {
+                        whenUserIdAvailable(userId);
+                    }
+                    else if (!userName) {
+                        dia.error('Please enter a username.');
+                    }
+                    else {
+                        var userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
+                            whenUserIdAvailable(pairs[userName].id);
+                        }));
+                    }
 
                     return false; // Don't submit the form.
                 });

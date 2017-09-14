@@ -100,7 +100,7 @@ $requestHead = fim_sanitizeGPC('g', [
 ]);
 $requestHead = array_merge($requestHead, (array)fim_sanitizeGPC('g', [
     'id' => [
-        'cast' => 'int',
+        'cast' => 'roomId',
         'require' => $requestHead['_action'] == 'edit'
     ],
 ]));
@@ -111,7 +111,7 @@ if (isset($requestHead['id'])) {
     if ($requestHead['_action'] === 'create') // ID shouldn't be used here.
         new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
 
-    elseif (!($room = $database->getRoom($requestHead['id']))->roomExists() || !($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
+    elseif (!($room = fimRoomFactory::getFromId($requestHead['id']))->roomExists() || !($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
         new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.');
 }
 

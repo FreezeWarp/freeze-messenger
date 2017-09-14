@@ -325,50 +325,35 @@ standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
 standard.prototype.changeRoom = function(roomId) {
     var intervalPing;
 
-    if (roomId[0] === 'p' || roomId[0] === 'o') {
-        fimApi.getPrivateRoom({
-            'roomId' : roomId,
-        }, {
-            'begin' : function(roomData) { console.log(roomData);
-                enableSender();
-                window.roomId = roomData.id;
 
-                $('#roomName').html(roomData.name); // Update the room name.
-
-                standard.populateMessages(roomData.id);
-            }
-        });
-    }
-    else { // Normal procedure otherwise.
-        fimApi.getRooms({
-            'roomIds' : [roomId],
-            'permLevel' : 'view'
-        }, {'each' : function(roomData) {
-            if (!roomData.permissions.view) { // If we can not view the room
-                window.roomId = false; // Set the global roomId false.
-                popup.selectRoom(); // Prompt the user to select a new room.
-                dia.error('You have been restricted access from this room. Please select a new room.');
-            }
-            else if (!roomData.permissions.post) { // If we can view, but not post
-                dia.error('You are not allowed to post in this room. You will be able to view it, though.');
-                disableSender();
-            }
-            else { // If we can both view and post.
-                enableSender();
-            }
+    fimApi.getRooms({
+        'id' : roomId,
+        'permLevel' : 'view'
+    }, {'each' : function(roomData) {
+        if (!roomData.permissions.view) { // If we can not view the room
+            window.roomId = false; // Set the global roomId false.
+            popup.selectRoom(); // Prompt the user to select a new room.
+            dia.error('You have been restricted access from this room. Please select a new room.');
+        }
+        else if (!roomData.permissions.post) { // If we can view, but not post
+            dia.error('You are not allowed to post in this room. You will be able to view it, though.');
+            disableSender();
+        }
+        else { // If we can both view and post.
+            enableSender();
+        }
 
 
-            if (roomData.permissions.view) { // If we can view the room...
-                window.roomId = roomData.id;
+        if (roomData.permissions.view) { // If we can view the room...
+            window.roomId = roomData.id;
 
-                $('#roomName').html(roomData.name); // Update the room name.
-                $('#topic').html(roomData.topic); // Update the room topic.
+            $('#roomName').html(roomData.name); // Update the room name.
+            $('#topic').html(roomData.topic); // Update the room topic.
 
-               /*** Get Messages (TODO: Streamline) ***/
-                standard.populateMessages(roomData.id);
-            }
-        }});
-    }
+           /*** Get Messages (TODO: Streamline) ***/
+            standard.populateMessages(roomData.id);
+        }
+    }});
 
 
     /* Populate Active Users for the Room */

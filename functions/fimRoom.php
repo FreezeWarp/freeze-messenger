@@ -231,16 +231,18 @@ class fimRoom {
         $this->generalCache = $generalCache;
 
 
-        if (is_int($roomData)) {
+        if (is_int($roomData))
             $this->__set('id', $roomData);
-        }
-        elseif (is_string($roomData) && $this->isPrivateRoomId($roomData)) {
+
+        elseif (is_string($roomData) && $this->isPrivateRoomId($roomData))
             $this->__set('id', $roomData);
-        }
+
         elseif (is_array($roomData))
             $this->populateFromArray($roomData); // TODO: test contents
+
         elseif ($roomData === false)
             $this->id = false;
+
         else
             throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.) Passed: ' . print_r($roomData, true));
 
@@ -250,7 +252,10 @@ class fimRoom {
 
     /* Returns true if and only if $id is a private or off-the-record room ID string, e.g. "o1,2" or "p5,60". The user IDs must be greater than 0 for this to return true. Duplicates are not checked for, though they will be flagged by hasPermission _and_ will be removed by fimRoom->getPrivateRoomMembers(). */
     public static function isPrivateRoomId(string $id) {
-        if ($id[0] === 'p' || $id[0] === 'o') {
+        if (!isset($id[0])) {
+            return false;
+        }
+        else if ($id[0] === 'p' || $id[0] === 'o') {
             $idList = explode(',', substr($id, 1));
 
             if (count($idList) < 2)
@@ -416,19 +421,15 @@ class fimRoom {
             else {
                 if ($this->isPrivateRoom()) {
                     switch ($property) {
-                    case 'name':
-                        $userNames = [];
-                        foreach($this->getPrivateRoomMembers() AS $user)
-                            $userNames[] = $user->name;
+                        case 'name':
+                            $userNames = [];
+                            foreach($this->getPrivateRoomMembers() AS $user)
+                                $userNames[] = $user->name;
 
-                        $name = ($this->type === 'private' ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
-                        $this->__set('name', $name);
-                        return $name;
-                        break;
-
-                    default:
-                        throw new Exception("Unhandled property '$property' in fimRoom.");
-                        break;
+                            $name = ($this->type === 'private' ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
+                            $this->__set('name', $name);
+                            return $name;
+                            break;
                     }
                  }
 
@@ -568,6 +569,9 @@ class fimRoom {
      * @throws Exception
      */
     public function resolve($properties) {
+        if ($this->isPrivateRoom())
+            return;
+
         return $this->getColumns(array_diff($properties, $this->resolved));
     }
 

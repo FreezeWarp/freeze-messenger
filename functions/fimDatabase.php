@@ -1356,7 +1356,7 @@ class fimDatabase extends databaseSQL
         if (count($options['userNames']) > 0)
             $conditions['both']['either']['name 1'] = $this->in($options['userNames']);
         if ($options['userNameSearch'])
-            $conditions['both']['either']['name 2'] = $this->type('string', $options['nameSearch'], 'search');
+            $conditions['both']['either']['name 2'] = $this->type('string', $options['userNameSearch'], 'search');
 
 
         return $this->select($columns, $conditions, $sort);
@@ -2419,7 +2419,7 @@ class fimDatabase extends databaseSQL
             ), array(
                 'senderId'          => $user->id,
                 'senderName'        => $user->name,
-                'senderNameFormat'  => $user->userNameFormat,
+                'senderNameFormat'  => $user->nameFormat,
                 'roomName'          => $room->name,
                 'messageId'         => $messageId,
                 'otherMessages'     => 0,

@@ -132,6 +132,7 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
         var params = fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
             'fim3_format' : 'json',
+            'id' : null,
             'roomIds' : null,
             'roomNames' : null,
             'roomNameSearch' : null,
@@ -155,35 +156,6 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
 
         getRooms_query();
         if (requestSettings.refresh > -1) fimApi.timers['getRooms_' + requestSettings.timerId] = setInterval(getRooms_query, requestSettings.refresh);
-};
-
-
-fimApi.prototype.getPrivateRoom = function(params, requestSettings) {
-    var params = fimApi.mergeDefaults(params, {
-        'access_token' : window.sessionHash,
-        'fim3_format' : 'json',
-        'roomId' : null,
-        'userIds' : null,
-        'otr' : null,
-    });
-
-    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
-
-    function getRooms_query() {
-        $.ajax({
-            type: 'get',
-            url: directory + 'api/getPrivateRoom.php',
-            data: params,
-            timeout: requestSettings.timeout,
-            cache: requestSettings.cache
-        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
-    }
-
-
-    if (requestSettings.close) clearInterval(fimApi.timers['getRooms_' + requestSettings.timerId]);
-
-    getRooms_query();
-    if (requestSettings.refresh > -1) fimApi.timers['getRooms_' + requestSettings.timerId] = setInterval(getRooms_query, requestSettings.refresh);
 };
 
 
