@@ -297,38 +297,6 @@ $.when(
         }
     })
 ).then(function() {
-    $(window).load(function() {
-        /*** Initial Login ***/
-        if (window.location.hash.match(/\#sessionHash=/)) {
-            standard.login({
-                sessionHash : window.location.hash.match(/\#sessionHash=([^\#]+)/)[1],
-                error : function() {
-                    if (!window.userId) popup.login(); // The user is not actively logged in.
-                }
-            });
-        }
-        else if ($.cookie('webpro_sessionHash')) {
-            standard.login({
-                sessionHash : $.cookie('webpro_sessionHash'),
-                error : function() {
-                    if (!window.userId) popup.login(); // The user is not actively logged in.
-                }
-            });
-        }
-        else if ($.cookie('webpro_username')) {
-            standard.login({
-                username : $.cookie('webpro_username'),
-                password : $.cookie('webpro_password'),
-                error : function() {
-                    if (!window.userId) popup.login(); // The user is not actively logged in.
-                }
-            });
-        }
-        else {
-            popup.login();
-        }
-    });
-
     /* Our handful of global objects */
     window.fimApi = new fimApi();
     fimApi.registerDefaultExceptionHandler(function(exception) {
@@ -356,8 +324,7 @@ $.when(
      * @copyright Joseph T. Parsons 2017
      */
     $(document).ready(function() {
-        $('body').append($t('main'));
-        $('body').append($t('contextMenu'));
+        $('body').append($t('main')).append($t('contextMenu'));
 
 
         if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');
@@ -376,6 +343,13 @@ $.when(
                 $.cookie('webpro_menustate', sid, { expires: 14 });
             }
         });
+
+
+        /*** Window Manipulation (see below) ***/
+        $(window).bind('resize', windowResize);
+        $(window).bind('blur', windowBlur);
+        $(window).bind('focus', windowFocus);
+        $(window).bind('hashchange', fim_hashParse);
 
 
         /*** Image Buttons! ***/
@@ -437,12 +411,38 @@ $.when(
         });
 
 
-        /*** Window Manipulation (see below) ***/
-        $(window).bind('resize', windowResize);
-        $(window).bind('blur', windowBlur);
-        $(window).bind('focus', windowFocus);
-        $(window).bind('hashchange', fim_hashParse);
-
+        showLogin = function() {
+            /*** Initial Login ***/
+            if (window.location.hash.match(/\#sessionHash=/)) {
+                standard.login({
+                    sessionHash : window.location.hash.match(/\#sessionHash=([^\#]+)/)[1],
+                    error : function() {
+                        if (!window.userId) popup.login(); // The user is not actively logged in.
+                    }
+                });
+            }
+            else if ($.cookie('webpro_sessionHash')) {
+                standard.login({
+                    sessionHash : $.cookie('webpro_sessionHash'),
+                    error : function() {
+                        if (!window.userId) popup.login(); // The user is not actively logged in.
+                    }
+                });
+            }
+            else if ($.cookie('webpro_username')) {
+                standard.login({
+                    username : $.cookie('webpro_username'),
+                    password : $.cookie('webpro_password'),
+                    error : function() {
+                        if (!window.userId) popup.login(); // The user is not actively logged in.
+                    }
+                });
+            }
+            else {
+                popup.login();
+            }
+        }
+        showLogin();
 
         return false;
     });
