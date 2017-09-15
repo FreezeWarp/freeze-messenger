@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-require('Stream.php');
+require(__DIR__ . '/Stream.php');
 
 class StreamFactory {
     private static $instance;
@@ -37,13 +37,13 @@ class StreamFactory {
                     case 'pgsql':
                         require('PgSQLStream.php');
                         global $database;
-                        StreamFactory::$instance = new PgSQLStream($database);
+                        return StreamFactory::$instance = new PgSQLStream($database);
                     break;
 
                     default:
                         require('DatabaseStream.php');
                         global $database;
-                        StreamFactory::$instance = new DatabaseStream($database);
+                        return StreamFactory::$instance = new DatabaseStream($database);
                     break;
                 }
             }

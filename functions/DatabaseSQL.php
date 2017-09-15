@@ -2053,7 +2053,7 @@ class DatabaseSQL extends Database
 
     public function deleteTable($tableName)
     {
-        return $this->rawQuery('DROP TABLE '
+        return $this->rawQuery('DROP TABLE IF EXISTS '
             . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
         );
     }

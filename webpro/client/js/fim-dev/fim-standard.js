@@ -184,7 +184,6 @@ standard.prototype.getMessages = function() {
 
         if (requestSettings.serverSentEvents && !requestSettings.firstRequest) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
             roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&lastEvent=' + requestSettings.lastEvent + '&access_token=' + sessionHash);
-            console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage)
 
             roomSource.addEventListener('newMessage', function(e) {
                 var active = JSON.parse(e.data);
@@ -209,26 +208,9 @@ standard.prototype.getMessages = function() {
                 return false;
             }, false);
 
-            /*        roomSource.addEventListener('deletedMessage', function(e)     {
-             var active = JSON.parse(e.data)    ;
-
-             $('#topic').html(active.param1    );
-             console.log('Event (Topic Change): ' + active.param1)    ;
-
-             requestSettings.lastEvent = active.eventId    ;
-
-             return fals    e;
-             }, false);    */
-
-            /*        eventSource.addEventListener('missedMessage', function(e)     {
-             var active = JSON.parse(e.data)    ;
-
-             requestSettings.lastEvent = active.eventId;
-             $.jGrowl('Missed Message', 'New messages have been made in:<br /><br /><a href="#room=' + active.roomId + '">' + active.roomName + '</a>'    );
-             console.log('Event (Missed Message): ' + active.messageId)    ;
-
-             return false;
-             }, false);*/
+            // TODO
+            roomSource.addEventListener('deletedMessage', function(e) {
+            });
         }
         else {
             var timeout = 5000;

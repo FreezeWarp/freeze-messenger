@@ -133,11 +133,13 @@ table#fileUploadInfo td {
   min-width: 140px;
 }
 
+#messageListTD {
+    vertical-align: bottom;
+}
 #messageListContainer {
     padding: 0px 5px;
 }
 #messageList {
-  height: 440px;
   overflow-y: auto;
     overflow-x: hidden;
 

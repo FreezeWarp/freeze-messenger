@@ -392,12 +392,7 @@ function fim_messageFormat(json, format) {
     }
 
     /* Format for Table/List Display */
-    if (typeof userName === "undefined") {
-        return $.when(userNameDeferred).then(whenUserNameAvailable);
-    }
-    else {
-        return $.when(whenUserNameAvailable);
-    }
+    return $.when(userNameDeferred).then(whenUserNameAvailable);
 }
 
 
@@ -705,7 +700,7 @@ function windowResize() {
     var windowWidth = $(window).width(); // Get the browser window "viewport" width, excluding scrollbars.
     var windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
 
-    $('#messageList').css('height', Math.floor(windowHeight -
+    $('#messageListTD').css('height', Math.floor(windowHeight -
         $('#textentryBoxMessage').height() -
         $('#messageList').parents().eq(4).children('thead').height() -
         50)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
