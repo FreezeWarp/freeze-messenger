@@ -50,7 +50,7 @@ switch ($_REQUEST['phase']) {
         $userName = urldecode($_GET['db_userName']);
         $password = urldecode($_GET['db_password']);
         $databaseName = urldecode($_GET['db_database']);
-        $createdb = urldecode($_GET['db_createdb']);
+        $createdb = isset($_GET['db_createdb']);
         $prefix = urldecode($_GET['db_tableprefix']);
 
 
