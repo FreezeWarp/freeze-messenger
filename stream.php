@@ -13,77 +13,15 @@
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
-
-
-function stream_event($streamSource, $queryId, $lastEvent) {
-    global $database;
-
-    if ($streamSource === 'user') $events = $database->getUserEventsForId($queryId, $lastEvent)->getAsArray('eventId');
-    elseif ($streamSource === 'room') $events = $database->getRoomEventsForId($queryId, $lastEvent)->getAsArray('eventId');
-
-    if (count($events) > 0) {
-        foreach ($events AS $eventId => $event) {
-            if ($eventId > $lastEvent) $lastEvent = $eventId;
-
-            echo "id: " . (int) $eventId . "\n";
-            echo "event: " . $event['eventName'] . "\n";
-            echo "data: " . json_encode($event) . "\n\n";
-
-            fim_flush();
-            $outputStarted = true;
-        }
-    }
-
-    unset($events); // Free memory.
-
-    return $lastEvent;
-}
-
-
-function stream_messages($roomId, $lastEvent) {
-    global $database, $user;
-
-    if (!($database->hasPermission($user, new fimRoom($roomId)) & fimRoom::ROOM_PERMISSION_VIEW))
-        new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
-
-    else {
-        $database->markMessageRead($roomId, $user->id);
-
-        $messages = $database->getMessages(array(
-            'room' => new fimRoom($roomId),
-            'messageIdStart' => $lastEvent + 1,
-        ), array('id' => 'asc'))->getAsMessages();
-
-
-        foreach ($messages AS $messageId => $message) {
-            if ($messageId > $lastEvent) $lastEvent = $messageId;
-
-            echo "\nid: " . (int) $message->id . "\n";
-            echo "event: message\n";
-            echo "data: " . json_encode(array_merge([
-                    'roomId' => $message->room->id,
-                    'userId' => $message->user->id,
-                ], fim_objectArrayFilterKeys($message, ['id', 'time', 'text', 'flag']))) . "\n\n";
-
-            fim_flush(); // Force the server to flush.
-        }
-
-        unset($messages); // Free memory.
-    }
-
-    return $lastEvent;
-}
-
-
-
 $apiRequest = true;
-define('FIM_EVENTSOURCE', true);
 require('global.php');
 
 if (!$config['serverSentEvents']) {
     die('Not Supported');
 }
 else {
+    require_once('functions/StreamFactory.php');
+
     /* Send Proper Headers */
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
@@ -112,22 +50,26 @@ else {
         )
     ));
 
+    if ($request['streamType'] === 'messages') {
+        if (!($database->hasPermission($user, new fimRoom($roomId)) & fimRoom::ROOM_PERMISSION_VIEW))
+            new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
+    }
+
 
     if (isset($_SERVER['HTTP_LAST_EVENT_ID'])) {
         $request['lastEvent'] = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
     }
 
+    while ($messages = StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent'])) {
+        foreach ($messages AS $message) {
+            //$database->markMessageRead($roomId, $user->id);
+            echo "\nid: " . (int)$message['id'] . "\n";
+            echo "event: " . $message['eventName'] . "\n";
+            echo "data: " . json_encode($message['data']) . "\n\n";
+            fim_flush();
 
-    while ($serverSentRetries < $config['serverSentMaxRetries']) {
-        $serverSentRetries++;
-
-        switch ($request['streamType']) {
-            case 'messages': $request['lastEvent'] = stream_messages($request['queryId'], $request['lastEvent']);      break;
-            case 'user':     $request['lastEvent'] = stream_event('user', $request['queryId'], $request['lastEvent']); break;
-            case 'room':     $request['lastEvent'] = stream_event('room', $request['queryId'], $request['lastEvent']); break;
+            if ($message['id'] > $request['lastEvent']) $request['lastEvent'] = $message['id'];
         }
-
-        usleep($config['serverSentEventsWait'] * 1000000); // Wait before re-requesting. usleep delays in microseconds (millionths of seconds).
     }
 }
 

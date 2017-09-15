@@ -183,16 +183,10 @@ standard.prototype.getMessages = function() {
         var encrypt = 'base64';
 
         if (requestSettings.serverSentEvents && !requestSettings.firstRequest) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
-            messageSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=messages&lastEvent=' + requestSettings.lastMessage + '&access_token=' + sessionHash);
             roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&lastEvent=' + requestSettings.lastEvent + '&access_token=' + sessionHash);
             console.log('Starting EventSource; roomId: ' + roomId + '; lastEvent: ' + requestSettings.lastEvent + '; lastMessage: ' + requestSettings.lastMessage)
 
-            messageSource.addEventListener('time', function(e) {
-                console.log('The current time is: ' + e.data);
-                return false;
-            }, false);
-
-            messageSource.addEventListener('message', function(e) {
+            roomSource.addEventListener('newMessage', function(e) {
                 var active = JSON.parse(e.data);
 
                 console.log('Event (New Message): ' + Number(active.id));

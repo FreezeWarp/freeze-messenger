@@ -590,6 +590,15 @@
         </table>
 
 
+        <table name="streams" type="general" comment="An index tracking all of our streams. In most cases, this table will be unused, but with some stream implementations (for instance, when creating tables for event streams), this will be used to determine old tables in need of dropping.">
+            <column name="streamName" type="string" maxlen="10" comment="The ID of the phrase found in the message." />
+            <column name="lastEvent" type="time" default="__TIME__" comment="The ID of the message." />
+
+            <key name="streamName" type="primary" />
+            <key name="lastEvent" type="index" />
+        </table>
+
+
         <table name="unreadMessages" type="general" comment="Unread private messages and messages made to watched rooms. Only the least recent message should be included.">
             <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who has yet to read the message." />
             <column name="senderId" type="int" maxlen="8" fkey="users.userId" comment="The ID of the user who sent the message." />

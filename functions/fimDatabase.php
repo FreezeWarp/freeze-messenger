@@ -2190,6 +2190,15 @@ class fimDatabase extends DatabaseSQL
         $this->incrementCounter('messages');
 
 
+        // Enter message into stream
+        require_once('StreamFactory.php');
+        StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
+            'id' => $message->id,
+            'text' => $message->text,
+            'userId' => $message->user->id,
+        ]);
+
+
         // Delete old messages from the cache, based on the maximum allowed rows. (TODO: test)
         if ($messageCacheId > $this->config['messageCacheTableMaxRows']) {
             $this->partitionAt(['roomId' => $message->room->id])->delete($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? 'Private' : ''), [
