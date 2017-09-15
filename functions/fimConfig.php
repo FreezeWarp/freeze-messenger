@@ -615,6 +615,9 @@ class fimConfig implements ArrayAccess {
     /** @var string The default interface to redirect to when the FreezeMessenger "root" directory is visited. */
     public $defaultInterface = 'webpro';
 
+    /** @var int The number of kilobytes to send when flushing the output buffer. On most hosts, 4 is more than sufficient. However, values as high as 100 have been observed helpful. */
+    public $outputFlushPaddingKilobytes = 4;
+
     public $recaptchaPublicKey = '';
     public $recaptchaPrivateKey = '';
 

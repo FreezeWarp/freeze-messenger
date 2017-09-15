@@ -850,9 +850,11 @@ function fim_exceptionHandler($exception) {
  * Flushes The Output Buffer
  */
 function fim_flush() {
-    echo str_repeat(' ', 4 * 1024); // TODO: Config
+    global $config;
 
-    if (ob_get_level()) ob_flush(); // Flush output buffer if enabled.
+    echo str_repeat(' ', 4 * $config['outputFlushPaddingKilobytes']);
+
+    @ob_flush();
     flush();
 
 }

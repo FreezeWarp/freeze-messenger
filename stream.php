@@ -22,6 +22,11 @@ if (!$config['serverSentEvents']) {
 else {
     require_once('functions/StreamFactory.php');
 
+    /* Possibly Helpful:
+	ini_set('output_buffering', 'off');
+	ini_set('zlib.output_compression', false);
+    while (@ob_end_flush()); */
+
     /* Send Proper Headers */
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
