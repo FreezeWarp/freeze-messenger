@@ -52,7 +52,7 @@ function fim_eXMLAttr(str) { // Escapes data that is stored via doublequote-enca
  * @copyright Joseph T. Parsons 2017
  */
 function fim_toBottom() { // Scrolls the message list to the bottom.
-    document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
+    document.getElementById('messageListContainer').scrollTop = document.getElementById('messageListContainer').scrollHeight;
 }
 
 
