@@ -6,6 +6,8 @@
  * The fimConfig class is used to reference all configuration variables. It is not currently optimised, but we may eventually cache config variables seperately, lowering the memory footprint.
  */
 class fimConfig implements ArrayAccess {
+    private $disableDestruction = false;
+
     /** @var int A bitfield consisting of some combination of fimUser::USER_PRIV_VIEW, fimUser::USER_PRIV_POST, fimUser::USER_PRIV_TOPIC, fimUser::USER_PRIV_CREATE_ROOMS, fimUser::USER_PRIV_PRIVATE_FRIENDS, fimUser::USER_PRIV_PRIVATE_ALL, fimUser::USER_PRIV_ACTIVE_USERS, and fimUser::USER_PRIV_POST_COUNTS. fimUser::USER_PRIV_TOPIC and fimUser::USER_PRIV_PRIVATE_ALL are omitted by default. */
     public $defaultUserPrivs = fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_CREATE_ROOMS | fimUser::USER_PRIV_PRIVATE_FRIENDS | fimUser::USER_PRIV_ACTIVE_USERS | fimUser::USER_PRIV_POST_COUNTS;
 
@@ -555,13 +557,6 @@ class fimConfig implements ArrayAccess {
     public $enableEvents = true;
 
     /* XML Output */
-    public $encodeXmlEntitiesFind = array('&', '\'', '<', '>', '"');
-    public $encodeXmlEntitiesReplace = array('&amp', '&apos', '&lt', '&gt', '&quot');
-    public $encodeXmlAttrEntitiesFind = array('&', '\'', '<', '>', '"');
-    public $encodeXmlAttrEntitiesReplace = array('&amp', '&apos', '&lt', '&gt', '&quot');
-
-    public $compactXmlStringsFind = array('/\ {2,}/', "/(\n|\n\r|\t|\r)/", "/\<\!-- (.+?) --\>/", "/\>(( )+?)\</");
-    public $compactXmlStringsReplace = array('', '', '', '><');
     public $compactJsonStringsFind = array('/\ {2,}/', "/(\n|\n\r|\t|\r)/");
     public $compactJsonStringsReplace = array('', '');
 
@@ -623,9 +618,15 @@ class fimConfig implements ArrayAccess {
 
 
 
+    public function disableDestruction() {
+        $this->disableDestruction = true;
+    }
+
     public function __destruct() {
-        if (function_exists('apc_add')) apc_add('fim_config', $this, 86400);
-        elseif (function_exists('apcu_add')) apcu_add('fim_config', $this, 86400);
+        if (!$this->disableDestruction) {
+            if (function_exists('apc_add')) apc_add('fim_config', $this, 86400);
+            elseif (function_exists('apcu_add')) apcu_add('fim_config', $this, 86400);
+        }
     }
 
     /**
