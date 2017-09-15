@@ -85,12 +85,12 @@ $cacheConnectMethods['disk'] = [
 
 /* $cacheConnectMethods['redis']
  * If specified, this will enable Redis caching. */
-$cacheConnectMethods['redis'] = [
+/*$cacheConnectMethods['redis'] = [
     'host' => '127.0.0.1',
     'port' => 6379,
     'timeout' => 0,
     'password' => false,
-];
+];*/
 
 /* $cacheConnectMethods['memcached']
  * If specified, this will enable memcached with the attached list of servers to use in the connection pool. */

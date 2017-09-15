@@ -207,9 +207,9 @@ class DatabaseSQL extends Database
     public $returnQueryString = false;
 
     /**
-     * @var object An object that points to our active driver connection.
+     * @var object|resource An object that points to our active driver connection.
      */
-    protected $connection = null;
+    public $connection = null;
 
     /**
      * @var object An object that points to our active driver result.
@@ -867,7 +867,7 @@ class DatabaseSQL extends Database
      *
      * @throws Exception
      */
-    private function formatValue($type)
+    public function formatValue($type)
     {
         $values = func_get_args();
 
@@ -1467,7 +1467,7 @@ class DatabaseSQL extends Database
      * @return resource|bool - The database resource returned by the query, or false on failure.
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    protected function rawQuery($query, $reverseAlias = false, int $paginate = 0)
+    public function rawQuery($query, $reverseAlias = false, int $paginate = 0)
     {
         if ($this->returnQueryString)
             return $query;
