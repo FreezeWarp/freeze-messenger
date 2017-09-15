@@ -700,7 +700,7 @@ function windowResize() {
     var windowWidth = $(window).width(); // Get the browser window "viewport" width, excluding scrollbars.
     var windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
 
-    $('#messageListTD').css('height', Math.floor(windowHeight -
+    $('#messageListContainer').css('height', Math.floor(windowHeight -
         $('#textentryBoxMessage').height() -
         $('#messageList').parents().eq(4).children('thead').height() -
         50)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
