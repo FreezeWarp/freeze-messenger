@@ -852,7 +852,7 @@ function fim_exceptionHandler($exception) {
 function fim_flush() {
     global $config;
 
-    echo str_repeat(' ', 4 * $config['outputFlushPaddingKilobytes']);
+    echo str_repeat(' ', 1024 * $config['outputFlushPaddingKilobytes']);
 
     @ob_flush();
     flush();
