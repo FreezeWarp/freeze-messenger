@@ -571,11 +571,10 @@ function fim_hashParse(options) {
             break;
     }
 
-
-    if (!roomId && options.defaultRoomId)
+    if (!window.roomId && options.defaultRoomId)
         roomId = options.defaultRoomId;
 
-    if (roomId !== window.roomId)
+    if (roomId && roomId !== window.roomId)
         standard.changeRoom(roomId); // If the room is different than current, change it.
 }
 
