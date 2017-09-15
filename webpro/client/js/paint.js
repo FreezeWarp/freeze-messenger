@@ -411,36 +411,37 @@ $.when(
         $(window).bind('focus', windowFocus);
         $(window).bind('hashchange', fim_hashParse);
 
-
-        /*** Initial Login ***/
-        if (window.location.hash.match(/\#sessionHash=/)) {
-            standard.login({
-                sessionHash : window.location.hash.match(/\#sessionHash=([^\#]+)/)[1],
-                error : function() {
-                    if (!window.userId) popup.login(); // The user is not actively logged in.
-                }
-            });
-        }
-        else if ($.cookie('webpro_sessionHash')) {
-            standard.login({
-                sessionHash : $.cookie('webpro_sessionHash'),
-                error : function() {
-                    if (!window.userId) popup.login(); // The user is not actively logged in.
-                }
-            });
-        }
-        else if ($.cookie('webpro_username')) {
-            standard.login({
-                username : $.cookie('webpro_username'),
-                password : $.cookie('webpro_password'),
-                error : function() {
-                    if (!window.userId) popup.login(); // The user is not actively logged in.
-                }
-            });
-        }
-        else {
-            popup.login();
-        }
+        $(window).load(function() {
+            /*** Initial Login ***/
+            if (window.location.hash.match(/\#sessionHash=/)) {
+                standard.login({
+                    sessionHash : window.location.hash.match(/\#sessionHash=([^\#]+)/)[1],
+                    error : function() {
+                        if (!window.userId) popup.login(); // The user is not actively logged in.
+                    }
+                });
+            }
+            else if ($.cookie('webpro_sessionHash')) {
+                standard.login({
+                    sessionHash : $.cookie('webpro_sessionHash'),
+                    error : function() {
+                        if (!window.userId) popup.login(); // The user is not actively logged in.
+                    }
+                });
+            }
+            else if ($.cookie('webpro_username')) {
+                standard.login({
+                    username : $.cookie('webpro_username'),
+                    password : $.cookie('webpro_password'),
+                    error : function() {
+                        if (!window.userId) popup.login(); // The user is not actively logged in.
+                    }
+                });
+            }
+            else {
+                popup.login();
+            }
+        });
 
 
         return false;
