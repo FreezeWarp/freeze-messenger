@@ -32,7 +32,7 @@ class fimDynamicObject {
      * Note as well the usage of "apc_add" instead of "apc_store". This ensures that the cache does eventually become stale and get reread; otherwise, the cache may keep getting refreshed _from cached data_.
      */
     public function __destruct() {
-        $key = 'fim_' . get_called_class();
+        $key = 'fim_' . get_called_class() . '_' . $this->id;
 
         if ($this->id !== 0) {
             if (function_exists('apc_store'))
