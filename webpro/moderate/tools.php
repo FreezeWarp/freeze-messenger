@@ -61,6 +61,8 @@ else {
                 break;
 
             case 'clearCache':
+                unset($config);
+
                 if ($generalCache->clearAll())
                     echo container('Cache Cleared','The cache has been cleared.<br /><br /><form action="moderate.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
 
