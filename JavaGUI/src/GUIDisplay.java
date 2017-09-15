@@ -130,7 +130,7 @@ public class GUIDisplay extends Application {
         } catch (Exception ex) {
         }
 
-        api = new MessengerAPI("http://localhost/messenger/");
+        api = new MessengerAPI("http://josephtparsons.com/messenger/");
 
         if (!api.login(user.getName(), user.getPassword())) {
             primaryStage.setTitle("JavaFX Welcome");
