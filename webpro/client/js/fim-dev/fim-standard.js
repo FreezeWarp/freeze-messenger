@@ -215,12 +215,16 @@ standard.prototype.getMessages = function() {
         else {
             var timeout = 5000;
 
+            var queryParameters = {
+                'roomId': roomId,
+                'archive': (requestSettings.firstRequest ? 1 : 0),
+            };
+            if (!requestSettings.firstRequest) {
+                queryParameters['messageIdStart'] = requestSettings.lastMessage + 1;
+            }
+
             function getMessages_query() {
-                fimApi.getMessages({
-                    'roomId': roomId,
-                    'archive': (requestSettings.firstRequest ? 1 : 0),
-                    'messageIdStart': requestSettings.lastMessage + 1
-                }, {
+                fimApi.getMessages(queryParameters, {
                     'reverseEach' : false,
                     'each': function (messageData) {
                         $.when(fim_messageFormat(messageData, 'list')).then(function(messageText) {
