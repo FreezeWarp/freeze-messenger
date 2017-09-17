@@ -2407,56 +2407,71 @@ class DatabaseSQL extends Database
 
 
 
-        /* Process Sorting (Must be Array)
-         * TODO: Combine the array and string routines to be more effective. */
+        /* Process Sorting (Must be Array) */
         if ($sort !== false) {
-            if (is_array($sort)) {
-                if (count($sort) > 0) {
-                    foreach ($sort AS $sortColumn => $direction) {
-                        if (isset($reverseAlias[$sortColumn])) {
-                            switch (strtolower($direction)) {
-                                case 'asc': $directionSym = $this->sortOrderAsc; break;
-                                case 'desc': $directionSym = $this->sortOrderDesc; break;
-                                default: $directionSym = $this->sortOrderAsc; break;
-                            }
-
-                            $finalQuery['sort'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$sortColumn][0], $reverseAlias[$sortColumn][1]) . " $directionSym";
-                        }
-                        else {
-                            $this->triggerError('Unrecognised Sort Column', array(
-                                'sortColumn' => $sortColumn,
-                            ), 'validation');
-                        }
-                    }
-                }
-            }
-            elseif (is_string($sort)) {
+            if (is_string($sort)) {
                 $sortParts = explode(',', $sort); // Split the list into an array, delimited by commas
+                $sort = [];
 
                 foreach ($sortParts AS $sortPart) { // Run through each list item
                     $sortPart = trim($sortPart); // Remove outside whitespace from the item
 
                     if (strpos($sortPart,' ') !== false) { // If a space is within the part, then the part is formatted as "columnName direction"
-                        $sortPartParts = explode(' ',$sortPart); // Divide the piece
+                        $sortPartParts = explode(' ', $sortPart); // Divide the piece
 
                         $sortColumn = $sortPartParts[0]; // Set the name equal to the first part of the piece
-                        switch (strtolower($sortPartParts[1])) {
-                            case 'asc':  $directionSym = $this->sortOrderAsc;  break;
-                            case 'desc': $directionSym = $this->sortOrderDesc; break;
-                            default:     $directionSym = $this->sortOrderAsc;  break;
-                        }
+                        $directionSym = $sortPartParts[1];
                     }
                     else { // Otherwise, we assume asscending
                         $sortColumn = $sortPart; // Set the name equal to the sort part.
-                        $directionSym = $this->sortOrderAsc; // Set the alias equal to the default, ascending.
+                        $directionSym = 'asc'; // Set the alias equal to the default, ascending.
                     }
 
-                    $finalQuery['sort'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$sortColumn], $reverseAlias[$sortColumn]) . " $directionSym";
+                    $sort[$sortColumn] = $directionSym;
                 }
             }
 
-            $finalQuery['sort'] = implode(', ', $finalQuery['sort']);
+            if (count($sort) > 0) {
+                foreach ($sort AS $sortColumn => $direction) {
+                    $sortColumn = explode(' ', $sortColumn)[0];
+
+                    if ($direction instanceof DatabaseType) {
+                        if ($direction->type == DatabaseTypeType::arraylist) {
+                            if (count($direction->value) == 0) continue;
+
+                            if ($this->language == 'mysql') {
+                                $list = $direction->value;
+                                rsort($list);
+                                $list = array_merge([$this->col($sortColumn)], $list);
+
+                                $finalQuery['sort'][] = 'FIELD' . $this->formatValue(DatabaseTypeType::arraylist, $list) . ' ' . $this->sortOrderDesc;
+                            }// todo: postgresql using case
+                        }
+                        else {
+                            $finalQuery['sort'][] = $this->recurseBothEither([$sortColumn => $direction]) . ' ' . $this->sortOrderDesc ;
+                        }
+                    }
+
+                    elseif (isset($reverseAlias[$sortColumn])) {
+                        switch (strtolower($direction)) {
+                            case 'asc': $directionSym = $this->sortOrderAsc; break;
+                            case 'desc': $directionSym = $this->sortOrderDesc; break;
+                            default: $directionSym = $this->sortOrderAsc; break;
+                        }
+
+                        $finalQuery['sort'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$sortColumn][0], $reverseAlias[$sortColumn][1]) . " $directionSym";
+                    }
+
+                    else {
+                        $this->triggerError('Unrecognised Sort Column', array(
+                            'sortColumn' => $sortColumn,
+                        ), 'validation');
+                    }
+                }
+            }
         }
+
+        $finalQuery['sort'] = implode(', ', $finalQuery['sort']);
 
 
 

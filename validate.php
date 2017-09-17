@@ -290,13 +290,14 @@ if (!$ignoreLogin) {
             'login' => array(
                 'access_token' => $user->sessionHash,
                 'expires' => $tokenExpires ?? 0,
-                'anonId' => $user->anonId,
-                'defaultRoomId' => $user->defaultRoomId,
                 'userData' => array_merge([
-                    'socialGroupIds' => new ApiOutputList($user->socialGroupIds),
-                    'parentalFlags' => new ApiOutputList($user->parentalFlags),
-                ], fim_objectArrayFilterKeys($user, ['id', 'name', 'nameFormat', 'mainGroupId', 'avatar', 'profile', 'messageFormatting', 'parentalAge'])),
-                'permissions' => $user->getPermissionsArray()
+                    'permissions' => $user->getPermissionsArray()
+                ], fim_castArrayEntry(
+                    fim_objectArrayFilterKeys(
+                        $user,
+                        ['id', 'anonId', 'name', 'nameFormat', 'mainGroupId', 'socialGroupIds', 'avatar', 'profile', 'parentalAge', 'parentalFlags', 'messageFormatting', 'defaultRoomId', 'options', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms']
+                    ), ['socialGroupIds', 'parentalFlags', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms'], 'ApiOutputList'
+                ))
             ),
         ));
 

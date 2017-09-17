@@ -9,8 +9,8 @@ class fimDatabaseResult extends databaseResult {
         $rooms = $this->getAsArray('id');
         $return = array();
 
-        foreach ($rooms AS $roomId => $room) {
-            $return[$roomId] = new fimRoom($room);
+        foreach ($rooms AS $room) {
+            $return[] = new fimRoom($room);
         }
 
         return $return;
@@ -33,8 +33,8 @@ class fimDatabaseResult extends databaseResult {
         $users = $this->getAsArray('id');
         $return = array();
 
-        foreach ($users AS $userId => $user) {
-            $return[$userId] = fimUserFactory::getFromData($user);
+        foreach ($users AS $user) {
+            $return[] = fimUserFactory::getFromData($user);
         }
 
         return $return;
@@ -55,8 +55,8 @@ class fimDatabaseResult extends databaseResult {
         $groups = $this->getAsArray('groupId');
         $return = array();
 
-        foreach ($groups AS $groupId => $group) {
-            $return[$groupId] = fimGroupFactory::getFromData($group);
+        foreach ($groups AS $group) {
+            $return[] = fimGroupFactory::getFromData($group);
         }
 
         return $return;
@@ -78,7 +78,7 @@ class fimDatabaseResult extends databaseResult {
 
         for ($i = 0; $i < $this->count; $i++) {
             $message = new fimMessage($this);
-            $return[$message->id] = $message;
+            $return[] = $message;
         }
 
         return $return;

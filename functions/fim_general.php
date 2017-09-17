@@ -726,9 +726,21 @@ function fim_arrayFilterKeys(array $array, array $keys) : array {
 }
 
 
-function fim_dbCastArrayEntry(array &$array, $key, $cast) {
-    if (isset($array[$key]))
-       $array[$key] = new DatabaseType($cast, $array[$key]);
+function fim_dbCastArrayEntry(array &$array, $keys, $cast) {
+    foreach ((array) $keys AS $key) {
+        if (isset($array[$key]))
+           $array[$key] = new DatabaseType($cast, $array[$key]);
+    }
+
+    return $array;
+}
+
+function fim_castArrayEntry(array $array, $keys, $cast) {
+    foreach ((array) $keys AS $key) {
+        if (isset($array[$key])) {
+            $array[$key] = new $cast($array[$key]);
+        }
+    }
 
     return $array;
 }

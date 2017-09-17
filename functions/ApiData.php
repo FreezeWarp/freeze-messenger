@@ -45,13 +45,15 @@ class ApiData implements ArrayAccess {
 
 
     public function replaceData($data) {
-        global $config, $database;
+        global $config;
 
         $this->data = $data;
 
         // Include query log and configuration with all requests when in dev mode.
         if ($config['dev']) {
+            global $request, $database;
             $this->data['queryLog'] = $database->queryLog;
+            $this->data['request'] = $request;
         }
     }
 

@@ -432,10 +432,10 @@ class fimUser extends fimDynamicObject
             if ($generalCache->exists($cacheIndex, 'redis')) {
                 throw new Exception('Redis activated.');
 
-                $this->{$property} = $generalCache->get($cacheIndex, 'redis');
+                $this->{$listName} = $generalCache->get($cacheIndex, 'redis');
             }
             else {
-                $this->{$property} = call_user_func([$database, 'getUser' . ucfirst($listName)], $this->id);
+                $this->{$listName} = call_user_func([$database, 'getUser' . ucfirst($listName)], $this->id);
 
                 throw new Exception('User data corrupted: ' . $cacheIndex . '; fallback refused. (Note: this error is for development purposes. A fallback is available, we\'re just not using it. Recovery data found as: ' + print_r($this->{$property}, true));
 
@@ -448,10 +448,14 @@ class fimUser extends fimDynamicObject
 
         else
             $this->{$listName} = $value;
+
+        sort($this->{$listName});
     }
 
     public function editList($listName, $ids, $action) {
         global $database;
+
+        $this->resolve([$listName]);
 
         $tableNames = [
             'favRooms' => 'userFavRooms',
@@ -482,13 +486,13 @@ class fimUser extends fimDynamicObject
 
 
         if ($action === 'delete') {
-            foreach ($items AS $id => $item) {
+            foreach ($items AS $item) {
                 $database->delete($table, array(
                     'userId' => $this->id,
-                    $columnName => $id,
+                    $columnName => $item->id,
                 ));
 
-                if(($key = array_search($id, $this->{$listName})) !== false) {
+                if(($key = array_search($item->id, $this->{$listName})) !== false) {
                     unset($this->{$listName}[$key]);
                 }
             }
@@ -506,7 +510,7 @@ class fimUser extends fimDynamicObject
         }
 
         if ($action === 'create' || $action === 'edit') {
-            foreach ($items AS $id => $item) {
+            foreach ($items AS $item) {
                 if ($listName === 'favRooms' || $listName === 'watchRooms') {
                     if (!($database->hasPermission($this, $item) & fimRoom::ROOM_PERMISSION_VIEW)) {
                         continue;
@@ -516,15 +520,23 @@ class fimUser extends fimDynamicObject
 
                     $database->insert($table, array(
                         'userId' => $this->id,
-                        $columnName => $id,
+                        $columnName => $item->id,
                     ));
 
                     // TODO: If it is the friends list, create a friendRequest event
 
-                    $this->{$listName}[] = $id;
+                    $this->{$listName}[] = $item->id;
                 }
             }
         }
+
+
+        sort($this->{$listName});
+
+
+        $this->setDatabase([
+            $listName => $this->{$listName}
+        ]);
     }
 
 

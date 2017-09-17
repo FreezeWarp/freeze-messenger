@@ -119,9 +119,10 @@ foreach ($users AS $userData) {
     if (($userData->id === $user->id || $user->hasPriv('modUsers')
         && in_array('self', $request['info']))) {
         $xmlData['users'][$userData->id] = array_merge($xmlData['users'][$userData->id], [
-            'permissions' => $userData->getPermissionsArray()
+            'permissions' => $userData->getPermissionsArray(),
+            'parentalFlags' => new ApiOutputList($user->parentalFlags),
         ]);
-        $returnFields = array_merge($returnFields, ['defaultRoomId', 'options', 'parentalAge', 'parentalFlags', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms']);
+        $returnFields = array_merge($returnFields, ['defaultRoomId', 'options', 'parentalAge', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms']);
     }
 
     $xmlData['users'][$userData->id] = array_merge($xmlData['users'][$userData->id], fim_objectArrayFilterKeys($userData, $returnFields));

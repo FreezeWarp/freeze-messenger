@@ -544,10 +544,8 @@ fimApi.prototype.markMessageRead = function(roomId, requestSettings) {
     }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
 };
 
-fimApi.prototype.editUserOptions = function(params, requestSettings) {
+fimApi.prototype.editUserOptions = function(action, params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
-        'access_token' : window.sessionHash,
-        '_action' : "edit",
         'defaultFormatting' : null,
         'defaultColor' : null,
         'defaultHighlight' : null,
@@ -565,7 +563,10 @@ fimApi.prototype.editUserOptions = function(params, requestSettings) {
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
     $.ajax({
-        url: directory + 'api/userOptions.php',
+        url: directory + 'api/userOptions.php?' + $.param({
+            'access_token' : window.sessionHash,
+            '_action' : (action ? action : "edit")
+        }),
         type: 'POST',
         data: params,
         timeout: requestSettings.timeout,
@@ -575,15 +576,13 @@ fimApi.prototype.editUserOptions = function(params, requestSettings) {
 
 
 fimApi.prototype.favRoom = function(roomId) {
-    this.editUserOptions({
-        '_action' : 'create',
+    this.editUserOptions('create', {
         'favRooms' : [roomId]
     });
 };
 
 fimApi.prototype.unfavRoom = function(roomId) {
-    this.editUserOptions({
-        '_action' : 'delete',
+    this.editUserOptions('delete', {
         'favRooms' : [roomId]
     });
 };

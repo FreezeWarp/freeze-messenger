@@ -106,10 +106,12 @@ popup = {
                                 icons : {primary : 'ui-icon-star'},
                             }).bind('click', function() {
                                 if (window.activeLogin.userData.favRooms.indexOf(roomId) === -1) {
+                                    window.activeLogin.userData.favRooms.push(roomId);
                                     fimApi.favRoom(roomId);
                                     $(this).addClass("ui-state-highlight");
                                 }
                                 else {
+                                    window.activeLogin.userData.favRooms.remove(roomId);
                                     fimApi.unfavRoom(roomId);
                                     $(this).removeClass("ui-state-highlight");
                                 }
@@ -722,7 +724,7 @@ popup = {
                         parentalFlags.push($(b).attr('data-name'));
                     });
 
-                    fimApi.editUserOptions({
+                    fimApi.editUserOptions('edit', {
                         "defaultFontface" : $('#defaultFace option:selected').val(),
                         "defaultFormatting" : defaultFormatting,
                         "defaultHighlight" : ($('#fontPreview').css('background-color') === 'rgba(0, 0, 0, 0)' ? null : $('#fontPreview').css('background-color').slice(4,-1)),
@@ -807,7 +809,7 @@ popup = {
                             ).append(
                                 $('<td align="center">').append(
                                     $('<button>').click(function() {
-                                        fimApi.editUserOptions({
+                                        fimApi.editUserOptions('edit', {
                                             'avatar': serverSettings.installUrl + "file.php?sha256hash=" + active.sha256hash + '&thumbnailWidth=200&thumbnailHeight=200',
                                         }, {
                                             'end' : function(response) {
