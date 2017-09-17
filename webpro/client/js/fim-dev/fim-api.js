@@ -587,6 +587,18 @@ fimApi.prototype.unfavRoom = function(roomId) {
     });
 };
 
+fimApi.prototype.watchRoom = function(roomId) {
+    this.editUserOptions('create', {
+        'watchRooms' : [roomId]
+    });
+};
+
+fimApi.prototype.unwatchRoom = function(roomId) {
+    this.editUserOptions('delete', {
+        'watchRooms' : [roomId]
+    });
+};
+
 
 fimApi.prototype.editRoom = function(id, params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {

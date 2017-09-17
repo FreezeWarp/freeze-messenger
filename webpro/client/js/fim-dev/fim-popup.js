@@ -91,6 +91,7 @@ popup = {
                                         : ''
                                     ), $('<button>').attr('data-roomId', roomData.id).attr('class', 'archiveMulti standard')
                                     , $('<button>').attr('data-roomId', roomData.id).attr('class', 'favRoomMulti standard')
+                                    , $('<button>').attr('data-roomId', roomData.id).attr('class', 'watchRoomMulti standard')
                                 )
                             )
                         );
@@ -99,28 +100,37 @@ popup = {
                         $('button.editRoomMulti, button.favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
 
                         /* Favorites */
-                        $('#roomTableHtml button.favRoomMulti').each(function() {
-                            var roomId = $(this).attr('data-roomId');
+                        var roomLists = {
+                            'favRoom' : window.activeLogin.userData.favRooms,
+                            'watchRoom' : window.activeLogin.userData.watchRooms
+                        };
 
-                            $(this).button({
-                                icons : {primary : 'ui-icon-star'},
-                            }).bind('click', function() {
-                                if (window.activeLogin.userData.favRooms.indexOf(roomId) === -1) {
-                                    window.activeLogin.userData.favRooms.push(roomId);
-                                    fimApi.favRoom(roomId);
+                        for (i in roomLists) {
+                            $('#roomTableHtml button.' + i + 'Multi').each(function() {
+                                var roomId = $(this).attr('data-roomId');
+
+                                $(this).button({
+                                    icons : {primary : (i == 'favRoom' ? 'ui-icon-star' : 'ui-icon-search')},
+                                }).bind('click', function() {
+                                    if (roomLists[i].indexOf(roomId) === -1) {
+                                        dia.info("You will now be notified of new messages made in this room.");
+                                        roomLists[i].push(roomId);
+                                        fimApi[i](roomId);
+                                        $(this).addClass("ui-state-highlight");
+                                    }
+
+                                    else {
+                                        roomLists[i].remove(roomId);
+                                        fimApi["un" + i](roomId);
+                                        $(this).removeClass("ui-state-highlight");
+                                    }
+                                });
+
+                                if (roomLists[i].indexOf(roomId) !== -1) {
                                     $(this).addClass("ui-state-highlight");
                                 }
-                                else {
-                                    window.activeLogin.userData.favRooms.remove(roomId);
-                                    fimApi.unfavRoom(roomId);
-                                    $(this).removeClass("ui-state-highlight");
-                                }
                             });
-
-                            if (window.activeLogin.userData.favRooms.indexOf(roomId) !== -1) {
-                                $(this).addClass("ui-state-highlight");
-                            }
-                        });
+                        }
 
                         $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
                             popup.editRoom($(this).attr('data-roomId'));
@@ -131,7 +141,7 @@ popup = {
                         });
 
                         $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
-                            if (dia.confirm("Delete Room", "Are you sure you want to delete this room?")) {
+                            if (dia.confirm("Are you sure you want to delete this room?")) {
                                 standard.deleteRoom($(this).attr('data-roomId'));
                             }
                         });
