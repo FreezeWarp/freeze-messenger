@@ -9,9 +9,6 @@
 .ui-dialog .ui-dialog-titlebar-close {
     width: 22px !important;
 }
-.ui-dialog .ui-dialog-titlebar-close span {
-    margin: 0px !important;
-}
 button.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-icon-only.ui-dialog-titlebar-close span.ui-button-icon-primary.ui-icon.ui-icon-closethick {
     top: 4px;
     left: 2px;
@@ -22,8 +19,12 @@ button.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-icon-only.ui
 }
 
 
-.ui-dialog-titlebar-close {
-  height: 24px !important; 
+.ui-dialog .ui-dialog-titlebar-close {
+  height: 24px !important;
+  margin-top: 5px;
+}
+.ui-dialog .ui-dialog-titlebar-close span {
+  display: none;
 }
 ul.ui-tabs-nav > li > a {
   margin-top: 0px !important; 
@@ -131,9 +132,9 @@ body {
   font-size: 11px;
   color: #fff;
   padding: 4px 8px;
-  
+
   text-shadow: 0 0 2px #000;
-  
+
   border: 1px solid rgb(0,0,255);
   border: 1px solid rgba(0,0,255,0.25);
 

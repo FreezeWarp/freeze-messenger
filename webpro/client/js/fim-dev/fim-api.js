@@ -553,6 +553,7 @@ fimApi.prototype.editUserOptions = function(params, requestSettings) {
         'defaultHighlight' : null,
         'defaultRoomId' : null,
         'watchRooms' : null,
+        'favRooms' : null,
         'ignoreList': null,
         'profile': null,
         'defaultFontface': null,
@@ -572,6 +573,20 @@ fimApi.prototype.editUserOptions = function(params, requestSettings) {
     }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
 };
 
+
+fimApi.prototype.favRoom = function(roomId) {
+    this.editUserOptions({
+        '_action' : 'create',
+        'favRooms' : [roomId]
+    });
+};
+
+fimApi.prototype.unfavRoom = function(roomId) {
+    this.editUserOptions({
+        '_action' : 'delete',
+        'favRooms' : [roomId]
+    });
+};
 
 
 fimApi.prototype.editRoom = function(id, params, requestSettings) {

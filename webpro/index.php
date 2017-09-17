@@ -34,7 +34,7 @@
     <!--[if gte IE 9]><!--><script src="client/js/jquery-2.1.0.min.js"></script><!--<![endif]-->
 
 
-    <script src="client/js/jquery-ui-1.10.4.custom.min.js" type="text/javascript"></script>
+    <script src="client/js/jquery-ui-1.12.1.min.js" type="text/javascript"></script>
     <script src="client/js/jquery.plugins.js" type="text/javascript"></script>
     <script src="client/js/encrypt.js" type="text/javascript"></script>
     <script src="client/js/paint.js" type="text/javascript"></script>

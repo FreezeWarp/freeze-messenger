@@ -107,6 +107,11 @@ if (!Array.prototype.indexOf) {
     };
 }
 
+Array.prototype.remove = function() {
+    return this.splice(this.indexOf(item), 1);
+};
+
+
 
 // Base64 encode/decode
 if (!window.btoa) window.btoa = $.base64.encode;
@@ -192,6 +197,14 @@ $('<link>', {
     rel: 'stylesheet',
     type: 'text/css',
     href: 'client/css/' + window.webproDisplay.theme + '/jquery-ui-1.8.16.custom.css'
+}).appendTo('head');
+
+// Transitional note: the newer jQuery structure file overrides the older jQueryUI themes, but they still need to be updated as well.
+$('<link>', {
+    id: 'stylesjQ',
+    rel: 'stylesheet',
+    type: 'text/css',
+    href: 'client/css/jquery-ui-1.12.1.structure.min.css'
 }).appendTo('head');
 $('<link>', {
     id: 'stylesv2',

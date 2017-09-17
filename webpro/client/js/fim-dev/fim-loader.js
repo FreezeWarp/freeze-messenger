@@ -542,7 +542,7 @@ function fim_hashParse(options) {
         page, messageId, roomId;
 
 
-    for (var i in urlHashComponents) {
+    for (var i = 0; i < urlHashComponents.length; i++) {
         var componentPieces = urlHashComponents[i].split('=');
 
         switch (componentPieces[0]) {
@@ -718,8 +718,8 @@ function windowResize() {
     });
 
     if ($(".ui-dialog-content").dialog("option", "width") > windowWidth) $(".ui-dialog-content").dialog("option", "width", windowWidth);
-    if ($(".ui-dialog-content").dialog("option", "height") > windowHeight) $(".ui-dialog-content").dialog("option", "height", windowHeight);
-    $(".ui-dialog-content").dialog("option", "position", "center");
+    if ($(".ui-dialog-content").dialog("option", "height") > windowHeight || $(".ui-dialog-content").height() > windowHeight) $(".ui-dialog-content").dialog("option", "height", windowHeight);
+    $(".ui-dialog-content").dialog("option", "position", { my: "center", at: "center", of: window });
 }
 
 
@@ -925,7 +925,7 @@ autoEntry.prototype = {
 
         var _this = this;
         $.when(this.options.resolveFromIds(entryList)).then(function(entries) {
-            for (i in entryList) {
+            for (var i = 0; i < entryList.length; i++) {
                 _this.addEntry(entryList[i], entries[entryList[i]].name);
             }
         });

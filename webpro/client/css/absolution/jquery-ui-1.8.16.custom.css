@@ -2694,19 +2694,6 @@ button::-moz-focus-inner {
   float: left;
   margin: 0 1em 0 0;
 }
-/* line 17, ../development/jquery/_dialog.scss */
-.ui-dialog .ui-dialog-titlebar-close {
-  position: absolute;
-  right: .6em;
-  top: 50%;
-  width: 19px;
-  height: 18px;
-}
-/* line 25, ../development/jquery/_dialog.scss */
-.ui-dialog .ui-dialog-titlebar-close span {
-  display: block;
-  margin: 1px;
-}
 /* line 32, ../development/jquery/_dialog.scss */
 .ui-dialog .ui-dialog-content {
   position: relative;

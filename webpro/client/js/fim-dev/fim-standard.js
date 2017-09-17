@@ -128,9 +128,9 @@ standard.prototype.login = function(options) {
         end : function(activeLogin) {
             window.activeLogin = activeLogin;
             window.userId = activeLogin.userData.id;
-            window.anonId = activeLogin.anonId;
+            window.anonId = activeLogin.userData.anonId;
+            window.permissions = activeLogin.userData.permissions;
             window.sessionHash = activeLogin.access_token;
-            window.permissions = activeLogin.permissions;
 
             if (!anonId) {
                 $.cookie('webpro_username', options.username, { expires : 14 });
@@ -148,7 +148,7 @@ standard.prototype.login = function(options) {
             if (options.finish) options.finish();
 
 
-            fim_hashParse({defaultRoomId : activeLogin.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+            fim_hashParse({defaultRoomId : activeLogin.userData.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
 
             /*** A Hack of Sorts to Open Dialogs onLoad ***/
             if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
@@ -398,18 +398,6 @@ standard.prototype.deleteRoom = function(roomIdLocal) {
 
         return false;
     }); // Send the form data via AJAX.
-};
-
-standard.prototype.favRoom = function(roomIdLocal) {
-    $.post(directory + 'api/editRoomLists.php', 'action=add&roomListName=favRooms&roomIds=' + roomIdLocal + '&access_token=' + sessionHash, function(json) {
-        return false;
-    });
-};
-
-standard.prototype.unfavRoom = function(roomIdLocal) {
-    $.post(directory + 'api/editRoomLists.php', 'action=remove&roomListName=favRooms&roomIds=' + roomIdLocal + '&access_token=' + sessionHash, function(json) {
-        return false;
-    });
 };
 
 standard.prototype.kick = function(userId, roomId, length) {

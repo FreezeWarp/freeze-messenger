@@ -76,25 +76,49 @@ popup = {
             oF : function() {
                 fimApi.getRooms({}, {
                     'each' : function(roomData) {
-                        $('#roomTableHtml').append('<tr id="room' + roomData.id + '"><td><a href="#room=' + roomData.id + '">' + roomData.name + '</a></td><td>' + roomData.topic + '</td><td>' + (roomData.permissions.properties ? '<button data-roomId="' + roomData.id + '" class="editRoomMulti standard"></button><button data-roomId="' + roomData.id + '" class="deleteRoomMulti standard"></button>' : '') + '<button data-roomId="' + roomData.id + '" class="archiveMulti standard"></button><input type="checkbox" data-roomId="' + roomData.id + '" class="favRoomMulti" id="favRoom' + roomData.id + '" /><label for="favRoom' + roomData.id + '" class="standard"></label></td></tr>');
+                        $('#roomTableHtml').append(
+                            $('<tr>').attr('id', 'room' + roomData.id).append(
+                                $('<td>').append(
+                                    $('<a>').attr('href','#room=' + roomData.id).text(roomData.name)
+                                ),
+                                $('<td>').text(roomData.topic),
+                                $('<td>').append(
+                                    (roomData.permissions.properties
+                                        ? $('<button>').attr('data-roomId', roomData.id).attr('class', 'editRoomMulti standard')
+                                        : ''
+                                    ), (roomData.permissions.properties
+                                        ? $('<button>').attr('data-roomId', roomData.id).attr('class', 'deleteRoomMulti standard')
+                                        : ''
+                                    ), $('<button>').attr('data-roomId', roomData.id).attr('class', 'archiveMulti standard')
+                                    , $('<button>').attr('data-roomId', roomData.id).attr('class', 'favRoomMulti standard')
+                                )
+                            )
+                        );
                     },
                     'end' : function() {
-                        $('button.editRoomMulti, input[type=checkbox].favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
+                        $('button.editRoomMulti, button.favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
 
                         /* Favorites */
-                        if ('favRooms' in roomLists) {
-                            $('input[type=checkbox].favRoomMulti').each(function() {
-                                if (roomLists.favRooms.indexOf($(this).attr('data-roomid')) !== -1) $(this).attr('checked', 'checked');
+                        $('#roomTableHtml button.favRoomMulti').each(function() {
+                            var roomId = $(this).attr('data-roomId');
 
-                                $(this).button({icons : {primary : 'ui-icon-star'}, text : false}).bind('change', function() {
-                                    if ($(this).is(':checked')) { standard.favRoom($(this).attr('data-roomId')); }
-                                    else { standard.unfavRoom($(this).attr('data-roomId')); }
-                                });
+                            $(this).button({
+                                icons : {primary : 'ui-icon-star'},
+                            }).bind('click', function() {
+                                if (window.activeLogin.userData.favRooms.indexOf(roomId) === -1) {
+                                    fimApi.favRoom(roomId);
+                                    $(this).addClass("ui-state-highlight");
+                                }
+                                else {
+                                    fimApi.unfavRoom(roomId);
+                                    $(this).removeClass("ui-state-highlight");
+                                }
                             });
-                        }
-                        else {
-                            $('input[type=checkbox].favRoomMulti').remove();
-                        }
+
+                            if (window.activeLogin.userData.favRooms.indexOf(roomId) !== -1) {
+                                $(this).addClass("ui-state-highlight");
+                            }
+                        });
 
                         $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
                             popup.editRoom($(this).attr('data-roomId'));
@@ -105,7 +129,9 @@ popup = {
                         });
 
                         $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
-                            standard.deleteRoom($(this).attr('data-roomId'));
+                            if (dia.confirm("Delete Room", "Are you sure you want to delete this room?")) {
+                                standard.deleteRoom($(this).attr('data-roomId'));
+                            }
                         });
 
                         windowDraw();
@@ -160,7 +186,7 @@ popup = {
                 else {
                     serverSettings.fileUploads.extensionChangesReverse = new Object();
 
-                    for (i in serverSettings.fileUploads.extensionChanges) {
+                    for (var i = 0; i < serverSettings.fileUploads.extensionChanges.length; i++) {
                         var extension = serverSettings.fileUploads.extensionChanges[i];
 
                         if (!(extension in serverSettings.fileUploads.extensionChangesReverse))
@@ -169,7 +195,7 @@ popup = {
                         serverSettings.fileUploads.extensionChangesReverse[extension].push(i);
                     }
 
-                    for (i in serverSettings.fileUploads.allowedExtensions) {
+                    for (var i = 0; i < serverSettings.fileUploads.allowedExtensions.length; i++) {
                         var maxFileSize = serverSettings.fileUploads.sizeLimits[serverSettings.fileUploads.allowedExtensions[i]],
                             fileContainer = serverSettings.fileUploads.fileContainers[serverSettings.fileUploads.allowedExtensions[i]],
                             fileExtensions = serverSettings.fileUploads.extensionChangesReverse[serverSettings.fileUploads.allowedExtensions[i]];
@@ -188,11 +214,11 @@ popup = {
                             $('#insertDocParentalAge, #insertDocParentalFlags').remove();
                         }
                         else {
-                            for (i in serverSettings.parentalControls.parentalAges) {
+                            for (var i = 0; i < serverSettings.parentalControls.parentalAges.length; i++) {
                                 $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
                             }
 
-                            for (i in serverSettings.parentalControls.parentalFlags) {
+                            for (var i = 0; i < serverSettings.parentalControls.parentalFlags.length; i++) {
                                 $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' + $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label>');
                             }
                         }
@@ -406,7 +432,7 @@ popup = {
 
                         var i = 0;
 
-                        for (var j in room.users) { console.log(room.users[j]);
+                        for (var j = 0; j < room.users.length; j++) { console.log(room.users[j]);
                             $('table#viewStats > tbody > tr').eq(i).append('<td><span class="userName userNameTable" data-userId="' + room.users[j].userData.userId + '" style="' + room.users[j].userData.userNameFormat + '">' + room.users[j].userData.userName + '</span> (' + room.users[j].messageCount + ')</td>');
 
                             i++;
@@ -559,7 +585,7 @@ popup = {
                     fimApi.getRooms({'roomIds' : [active.defaultRoomId]}, {'each' : function(roomData) { $('#defaultRoom').val(roomData.roomName).attr('data-id', roomData.roomId); }});
 
                     // Parental Control Flags
-                    for (i in active.parentalFlags) {
+                    for (var i = 0; i < active.parentalFlags.length; i++) {
                         $('input[data-cat=parentalFlag][data-name=' + active.parentalFlags[i] + ']').attr('checked', true);
                     }
                     $('select#parentalAge option[value=' + active.parentalAge + ']').attr('selected', 'selected');
@@ -594,7 +620,7 @@ popup = {
                 $("#defaultRoom").autocompleteHelper('rooms');
 
                 // Populate Fontface Checkbox
-                for (i in window.serverSettings.formatting.fonts) {
+                for (var i = 0; i < window.serverSettings.formatting.fonts.length; i++) {
                     $('#defaultFace').append('<option value="' + i + '" style="' + window.serverSettings.formatting.fonts[i] + '" data-font="' + window.serverSettings.formatting.fonts[i] + '">' + i + '</option>')
                 }
 
@@ -603,10 +629,10 @@ popup = {
                     $('a[href="#settings5"]').parent().remove();
                 }
                 else {
-                    for (i in window.serverSettings.parentalControls.parentalAges) {
+                    for (var i = 0; i < window.serverSettings.parentalControls.parentalAges.length; i++) {
                         $('#parentalAge').append('<option value="' + window.serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + window.serverSettings.parentalControls.parentalAges[i]) + '</option>');
                     }
-                    for (i in window.serverSettings.parentalControls.parentalFlags) {
+                    for (var i = 0; i < window.serverSettings.parentalControls.parentalFlags.length; i++) {
                         $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + window.serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + window.serverSettings.parentalControls.parentalFlags[i] + '" />' +  $l('parentalFlags.' + window.serverSettings.parentalControls.parentalFlags[i]) + '</label>');
                     }
                 }
@@ -720,7 +746,7 @@ popup = {
                         'error' : function(errors) {
                             errorsList = [];
 
-                            for (i in errors.responseJSON.editUserOptions) {
+                            for (var i = 0; i < errors.responseJSON.editUserOptions.length; i++) {
                                 errorsList.push("<li>" + i + ": " + errors.responseJSON.editUserOptions[i].exception.details + "</li>")
                             }
                             dia.error('Some of your settings have been updated. However, the following values were unable to be processed:<ul>' + errorsList.join() + '</ul>')
@@ -759,7 +785,7 @@ popup = {
                     'each': function(active) {
                         var parentalFlagsFormatted = [];
 
-                        for (i in active.parentalFlags) {
+                        for (var i = 0; i < active.parentalFlags.length; i++) {
                             if (active.parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + active.parentalFlags[i])); // Yes, this is a very weird line.
                         }
 
@@ -817,6 +843,13 @@ popup = {
         if (roomIdLocal) var action = 'edit';
         else var action = 'create';
 
+        dia.full({
+            content : $t('help'),
+            title : 'helpDialogue',
+            width : 1000,
+            position : 'top',
+            tabs : true
+        });
         dia.full({
             content : $t('editRoomForm'),
             id : 'editRoomDialogue',
@@ -884,10 +917,10 @@ popup = {
                     $('#editRoom1ParentalAge, #editRoom1ParentalFlags').remove();
                 }
                 else {
-                    for (i in serverSettings.parentalControls.parentalAges) {
+                    for (var i = 0; i < serverSettings.parentalControls.parentalAges.length; i++) {
                         $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
                     }
-                    for (i in serverSettings.parentalControls.parentalFlags) {
+                    for (var i = 0; i < serverSettings.parentalControls.parentalFlags.length; i++) {
                         $('#parentalFlagsList').append('<label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label><br />');
                     }
                 }
@@ -920,9 +953,9 @@ popup = {
                             moderatorsArray = [],
                             allowedGroupsArray = [];
 
-                        for (var j in roomData.allowedUsers) { /* TODO? */
-                            if (roomData.allowedUsers[j] & 15 === 15) { moderatorsArray.push(j); } // Are all bits up to 8 present?
-                            if (roomData.allowedUsers[j] & 7 === 7) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
+                        for (var i = 0; i < roomData.allowedUsers.length; i++) { /* TODO? */
+                            if (roomData.allowedUsers[i] & 15 === 15) { moderatorsArray.push(j); } // Are all bits up to 8 present?
+                            if (roomData.allowedUsers[i] & 7 === 7) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
                         }
 
                         // Name
@@ -934,7 +967,7 @@ popup = {
 
                         // Parental Data
                         console.log(roomData.parentalFlags);
-                        for (i in roomData.parentalFlags) {
+                        for (var i = 0; i < roomData.parentalFlags.length; i++) {
                             $('input[data-cat=parentalFlag][data-name=' + roomData.parentalFlags[i] + ']').attr('checked', true);
                         }
                         $('select#parentalAge option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
@@ -1098,7 +1131,7 @@ popup = {
                 },
                 'each' : function(user) {
                     var roomData = [];
-                    for (room in user.rooms) roomData.push('<a href="#room=' + user.rooms[room].id + '">' + user.rooms[room].name + '</a>');
+                    for (var room = 0; room < user.rooms.length; room++) roomData.push('<a href="#room=' + user.rooms[room].id + '">' + user.rooms[room].name + '</a>');
 
                     $('#onlineUsers').append('<tr><td><span class="userName" data-userId="' + user.userData.id + '" style=""' + user.userData.nameFormat + '"">' + user.userData.name + '</span></td><td>' + roomData.join(', ') + '</td></tr>');
                 },
