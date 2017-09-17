@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #fffffff;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <ImageView fitHeight="93.0" fitWidth="506.0" layoutX="68.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../ICS%20499/flexchatblue.png" />
+         </image>
+      </ImageView>
+      <Label layoutX="184.0" layoutY="157.0" text="Username" textFill="#69747c">
+         <font>
+            <Font name="Arial" size="24.0" />
+         </font>
+      </Label>
+      <TextField layoutX="184.0" layoutY="184.0">
+         <font>
+            <Font name="Arial" size="18.0" />
+         </font>
+      </TextField>
+      <Label layoutX="184.0" layoutY="228.0" text="Password" textFill="#69747c">
+         <font>
+            <Font name="Arial" size="24.0" />
+         </font>
+      </Label>
+      <PasswordField layoutX="184.0" layoutY="255.0" prefHeight="33.0" prefWidth="226.0" />
+      <Label layoutX="184.0" layoutY="306.0" text="Not a member?" textFill="#69747c">
+         <font>
+            <Font name="Arial Bold" size="14.0" />
+         </font>
+      </Label>
+      <Hyperlink layoutX="281.0" layoutY="302.0" text="Click Here to Register" textFill="#2696a4">
+         <font>
+            <Font name="Arial Bold" size="15.0" />
+         </font>
+      </Hyperlink>
+      <Button layoutX="182.0" layoutY="328.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="136.0" style="-fx-background-color: transparent; -fx-text-fill: transparent;" text="Google Login Button" />
+      <ImageView fitHeight="35.0" fitWidth="143.0" layoutX="180.0" layoutY="325.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../../../ICS%20499/btn_google_signin_dark_normal_web@2x.png" />
+         </image>
+         <effect>
+            <DropShadow color="#1b1e19" height="2.55" offsetX="1.0" offsetY="1.0" radius="0.72" width="2.33" />
+         </effect>
+      </ImageView>
+   </children>
+</AnchorPane>
