@@ -216,7 +216,7 @@ if (!$ignoreLogin) {
      */
     elseif (isset($_REQUEST['access_token'])) {
         if (!$attempt = $oauthServer->verifyResourceRequest($oauthRequest)) {
-            $oauthServer->getResponse()->send();
+            new fimError($oauthServer->getResponse()->getParameter('error'), $oauthServer->getResponse()->getParameter('error_description'));
             die();
         }
 

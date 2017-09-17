@@ -1143,9 +1143,17 @@ popup = {
                 },
                 'each' : function(user) {
                     var roomData = [];
-                    for (var room = 0; room < user.rooms.length; room++) roomData.push('<a href="#room=' + user.rooms[room].id + '">' + user.rooms[room].name + '</a>');
+                    jQuery.each(user.rooms, function(roomId, room) {
+                        if (roomData.length) roomData.push($('<span>').text(', '));
 
-                    $('#onlineUsers').append('<tr><td><span class="userName" data-userId="' + user.userData.id + '" style=""' + user.userData.nameFormat + '"">' + user.userData.name + '</span></td><td>' + roomData.join(', ') + '</td></tr>');
+                        roomData.push($('<a>').attr('href', '"#room=' + room.id).text(room.name));
+                    });
+
+                    $('#onlineUsers').append($('<tr>').append(
+                        $('<td>').append(
+                            $('<span>').attr('class', 'userName').attr('data-userId', user.userData.id).attr('style', user.userData.nameFormat).text(user.userData.name)
+                        )
+                    ).append($('<td>').append(roomData)));
                 },
                 'end' : function() {
                     contextMenuParseUser('#onlineUsers');

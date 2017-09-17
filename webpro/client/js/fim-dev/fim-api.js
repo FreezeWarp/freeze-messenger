@@ -20,10 +20,10 @@ var fimApi = function() {
 
     this.timers = {};
 
-    this.done = function(requestSettings) {
+    this.done = function(requestSettings, firstIndex) {
         return function (json) {
             // This digs into the tree a bit to where the array is. Perhaps somewhat inelegant, but it will work for our purposes, and does so quite simply.
-            var firstElement = json["firstIndex" in requestSettings ? requestSettings.firstIndex : Object.keys(json)[0]];
+            var firstElement = json[firstIndex ? firstIndex : Object.keys(json)[0]];
             //var secondElement = firstElement["secondIndex" in requestSettings ? requestSettings.secondIndex : Object.keys(firstElement)[0]];
 
             requestSettings.begin(firstElement);
@@ -36,12 +36,22 @@ var fimApi = function() {
         }
     };
 
-    this.fail = function(requestSettings) {
+    this.fail = function(requestSettings, functionName, functionArgs) {
         return function(response) {
             if (!("responseJSON" in response)) response.responseJSON = JSON.parse(response.responseText);
 
-            if ("exception" in response.responseJSON)
-                return requestSettings.exception(response.responseJSON.exception);
+            if ("exception" in response.responseJSON) {
+                if (response.responseJSON.exception.details == 'The access token provided has expired') {
+                    standard.login({
+                        'username' : $.cookie('webpro_username'),
+                        'password' : $.cookie('webpro_username'),
+                        'finish' : functionName.apply(functionArgs)
+                    });
+                }
+                else {
+                    return requestSettings.exception(response.responseJSON.exception);
+                }
+            }
             else
                 return requestSettings.error(response);
         }
@@ -119,7 +129,7 @@ fimApi.prototype.getUsers = function(params, requestSettings) {
             data: params,
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
-        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.getUsers, [params, requestSettings]));
     }
 
     getUsers_query();
@@ -145,7 +155,7 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.getRooms, [params, requestSettings]));
         }
 
 
@@ -231,7 +241,7 @@ fimApi.prototype.sendMessage = function(roomId, params, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.sendMessage, [roomId, params, requestSettings]));
 };
 
 
@@ -256,7 +266,7 @@ fimApi.prototype.editMessage = function(roomId, messageId, params, requestSettin
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.editMessage, [roomId, messageId, params, requestSettings]));
 }
 
 
@@ -274,7 +284,7 @@ fimApi.prototype.deleteMessage = function(roomId, messageId, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.deleteMessage, [roomId, messageId, requestSettings]));
 }
 
 
@@ -328,7 +338,7 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.getFiles, [params. requestSettings]));
         }
 
 
@@ -340,30 +350,24 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
 
 
 fimApi.prototype.getStats = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(params, {
-            'access_token' : window.sessionHash,
-            'roomIds' : '',
-            'number' : 10
-        });
+    var params = fimApi.mergeDefaults(params, {
+        'access_token' : window.sessionHash,
+        'roomIds' : '',
+        'number' : 10
+    });
 
-        var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
-
-
-        function getStats_query() {
-            $.ajax({
-                type: 'get',
-                url: directory + 'api/stats.php',
-                data: params,
-                timeout: requestSettings.timeout,
-                cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
-        }
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
 
-        if (requestSettings.close) clearInterval(fimApi.timers['getStats_' + requestSettings.timerId]);
-
-        getStats_query();
-        if (requestSettings.refresh > -1) fimApi.timers['getStats_' + requestSettings.timerId] = setInterval(getStats_query, requestSettings.refresh);
+    function getStats_query() {
+        $.ajax({
+            type: 'get',
+            url: directory + 'api/stats.php',
+            data: params,
+            timeout: requestSettings.timeout,
+            cache: requestSettings.cache
+        }).done(fimApi.done(requestSettings, 'stats')).fail(fimApi.fail(requestSettings, fimApi.getStats, [params, requestSettings]));
+    }
 };
 
 
@@ -385,7 +389,7 @@ fimApi.prototype.getKicks = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.getKicks, [params, requestSettings]));
         }
 
 
@@ -415,7 +419,7 @@ fimApi.prototype.getCensorLists = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));;
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.getCensorLists, [params, requestSettings]));
         }
 
 
@@ -442,7 +446,7 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
             }),
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
-        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+        }).done(fimApi.done(requestSettings, 'users')).fail(fimApi.fail(requestSettings, fimApi.getActiveUsers, [params, requestSettings]));
     }
 
 
@@ -503,7 +507,7 @@ fimApi.prototype.kickUser = function(userId, roomId, length, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.kickUser, [userId, roomId, length, requestSettings]));
 };
 
 
@@ -523,7 +527,7 @@ fimApi.prototype.unkickUser = function(userId, roomId, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.unkickUser, [userId, roomId, requestSettings]));
 };
 
 
@@ -541,7 +545,7 @@ fimApi.prototype.markMessageRead = function(roomId, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.markMessageRead, [roomId, requestSettings]));
 };
 
 fimApi.prototype.editUserOptions = function(action, params, requestSettings) {
@@ -571,7 +575,7 @@ fimApi.prototype.editUserOptions = function(action, params, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.editUserOptions, [action, params, requestSettings]));
 };
 
 
@@ -623,7 +627,7 @@ fimApi.prototype.editRoom = function(id, params, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.editRoom, [id, params, requestSettings]));
 };
 
 
@@ -685,7 +689,7 @@ fimApi.prototype.editUserStatus = function(roomId, params, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.editUserStatus, [roomId, params, requestSettings]));
 }
 
 
