@@ -48,7 +48,9 @@ public class MainPane {
         timer.schedule(new RefreshMessages(), 0, 1000);
 
         // align messages to bottom
-        messageListScroll.setFitToHeight(true);
+        messageListScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        messageListScroll.setFitToWidth(true);
+
         messageList.minHeightProperty().bind(Bindings.createDoubleBinding(() -> messageListScroll.getViewportBounds().getHeight(), messageListScroll.viewportBoundsProperty()));
 
         // todo: shift+enter
@@ -69,6 +71,7 @@ public class MainPane {
     class RefreshMessages extends TimerTask {
         public void run() {
             JsonNode messages = GUIDisplay.api.getMessages(currentRoom.getId(), currentRoom.getLastMessageId(), !currentRoom.isArchiveFetched());
+
             currentRoom.setArchiveFetched(true);
 
             if (messages.isArray()) {

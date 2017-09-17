@@ -126,7 +126,7 @@ public class GUIDisplay extends Application {
             primaryStage.setTitle("Message Interface");
             primaryStage.show();
         } catch (Exception ex) {
-            System.out.println("Exception: " + ex);
+            ex.printStackTrace();
         }
     }
 
