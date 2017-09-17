@@ -12,7 +12,7 @@
 <?import javafx.scene.text.Font?>
 
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #fffffff;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #fffffff;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="LoginGUI">
    <children>
       <ImageView fitHeight="93.0" fitWidth="506.0" layoutX="68.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -24,7 +24,7 @@
             <Font name="Arial" size="24.0" />
          </font>
       </Label>
-      <TextField layoutX="184.0" layoutY="166.0">
+      <TextField layoutX="184.0" layoutY="166.0" fx:id="username">
          <font>
             <Font name="Arial" size="18.0" />
          </font>
@@ -34,7 +34,7 @@
             <Font name="Arial" size="24.0" />
          </font>
       </Label>
-      <PasswordField layoutX="184.0" layoutY="234.0" prefHeight="33.0" prefWidth="226.0" />
+      <PasswordField layoutX="184.0" layoutY="234.0" prefHeight="33.0" prefWidth="226.0" fx:id="password" />
       <Label layoutX="183.0" layoutY="321.0" text="Not a member?" textFill="#69747c">
          <font>
             <Font name="Arial Bold" size="14.0" />
@@ -45,7 +45,7 @@
             <Font name="Arial Bold" size="15.0" />
          </font>
       </Hyperlink>
-      <Button layoutX="184.0" layoutY="339.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="135.0" style="-fx-background-color: transparent; -fx-text-fill: transparent;" text="Google Login Button" />
+      <Button layoutX="184.0" layoutY="339.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="135.0" style="-fx-background-color: transparent; -fx-text-fill: transparent;" text="Google Login Button" fx:id="googleButton" />
       <ImageView fitHeight="35.0" fitWidth="143.0" layoutX="180.0" layoutY="336.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../../../ICS%20499/btn_google_signin_dark_normal_web@2x.png" />
@@ -54,7 +54,7 @@
             <DropShadow color="#1b1e19" height="2.55" offsetX="1.0" offsetY="1.0" radius="0.72" width="2.33" />
          </effect>
       </ImageView>
-      <Button layoutX="185.0" layoutY="274.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="105.0" style="-fx-background-color: #2696a4;" text="Enter" textFill="#daf7ff">
+      <Button layoutX="185.0" layoutY="274.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="105.0" style="-fx-background-color: #2696a4;" text="Enter" textFill="#daf7ff" fx:id="loginButton">
          <effect>
             <DropShadow height="3.11" offsetX="1.0" offsetY="1.0" radius="0.7774999999999999" width="2.0" />
          </effect>
