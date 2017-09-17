@@ -2985,17 +2985,17 @@ class DatabaseSQL extends Database
                         // Trigger column present -- that is, we are deleting data belonging to a specific list.
                         if (isset($deleteCondition[$triggerColumn])) {
                             // Don't try to add entries if the whole list has been marked for deletion.
-                            if ($triggerCallbacks[$tableName][$entry]['delete'] === '*')
+                            if (@$triggerCallbacks[$tableName][$entry][$deleteCondition[$triggerColumn]]['delete'] === '*')
                                 continue;
 
                             // Aggregate column present -- we will be narrowly deleting a pair of [triggerColumn, aggregateColumn]
                             elseif (isset($deleteCondition[$aggregateColumn])) {
-                                $triggerCallbacks[$tableName][$entry]['delete'][] = $deleteCondition[$aggregateColumn];
+                                @$triggerCallbacks[$tableName][$entry][$deleteCondition[$triggerColumn]]['delete'][] = $deleteCondition[$aggregateColumn];
                             }
 
                             // Aggregate column NOT present -- we will be deleting the entire collection belonging to triggerColumn. Mark it for de
                             else {
-                                $triggerCallbacks[$tableName][$entry]['delete'] = '*';
+                                @$triggerCallbacks[$tableName][$entry][$deleteCondition[$triggerColumn]]['delete'] = '*';
                             }
                         }
 
@@ -3034,7 +3034,7 @@ class DatabaseSQL extends Database
                     foreach ($dataArrays AS $dataArray) {
                         // We are inserting a specific value (aggregateColumn) into the collection (triggerColumn)
                         if (isset($dataArray[$triggerColumn], $dataArray[$aggregateColumn])) {
-                            $triggerCallbacks[$tableName][$entry]['insert'][] = $dataArray[$aggregateColumn];
+                            @$triggerCallbacks[$tableName][$entry][$dataArray[$triggerColumn]]['insert'][] = $dataArray[$aggregateColumn];
                         }
                     }
                 }
@@ -3046,10 +3046,12 @@ class DatabaseSQL extends Database
         }
 
         foreach ($triggerCallbacks AS $table => $collectionTriggers) {
-            foreach ($collectionTriggers AS $entry => $dataOperations) {
-                list($triggerColumn, $aggregateColumn, $function) = $this->collectionTriggers[$table][$entry];
+            foreach ($collectionTriggers AS $entry => $entryPair) {
+                foreach ($entryPair AS $entryValue => $dataOperations) {
+                    list($triggerColumn, $aggregateColumn, $function) = $this->collectionTriggers[$table][$entry];
 
-                call_user_func($function, $dataArray[$triggerColumn], $dataOperations);
+                    call_user_func($function, $entryValue, $dataOperations);
+                }
             }
         }
 

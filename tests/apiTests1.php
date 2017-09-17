@@ -68,13 +68,25 @@
 <?php
 //todo: change config. maybe custom WebPro API?
 
-error_reporting(0);
+error_reporting(E_ALL);
 ini_set('display_errors', '0');
-ini_set('display_startup_errors', '0');
+ini_set('display_startup_errors', '1');
 require('../functions/curlRequest.php');
 require('../config.php');
 
 $host = $installUrl;
+
+class ArrayPosition {
+    public $pos = 0;
+
+    public function __construct($pos) {
+        $this->pos = $pos;
+    }
+
+    public function __toString() {
+        return "ArrayPosition({$this->pos})";
+    }
+}
 
 function curlTestCommon($input, $jsonIndexes, $expectedValues, $callback = null) {
     $good = true;
@@ -85,6 +97,10 @@ function curlTestCommon($input, $jsonIndexes, $expectedValues, $callback = null)
         $requestNarrow = $input;
 
         foreach ($jsonIndex AS $index) {
+            if ($index instanceof ArrayPosition) {
+                $index = array_keys($requestNarrow)[$index->pos];
+            }
+
             if (!@isset($requestNarrow[$index])) {
                 $noset = true;
                 break;
@@ -96,7 +112,7 @@ function curlTestCommon($input, $jsonIndexes, $expectedValues, $callback = null)
         if ($noset && $expectedValues[$indexNum] === null) {
         }
         elseif ($requestNarrow !== $expectedValues[$indexNum]) {
-            $return .= red(implode(',', $jsonIndex) . ': Expected ' . htmlentities(print_r($expectedValues[$indexNum], true)) . ', found ' . htmlentities(print_r($requestNarrow, true)) . '<br />');
+            $return .= red(implode(',', $jsonIndex) . ': Expected ' . htmlentities(print_r($expectedValues[$indexNum], true)) . ', found ' . ($noset ? '_unset_' : htmlentities(print_r($requestNarrow, true))) . '<br />');
             $good = false;
         }
     }
@@ -268,7 +284,7 @@ echo '<tr><td>Get Room 1</td>';
 curlTestGETEquals(
     'api/room.php',
     ['access_token' => $accessToken, 'id' => 1],
-    ['rooms', 1, 'name'],
+    ['rooms', "room 1", 'name'],
     'Your Room!'
 );
 
@@ -276,7 +292,7 @@ echo '<tr><td>Get Room 2</td>';
 curlTestGETEquals(
     'api/room.php',
     ['access_token' => $accessToken, 'id' => 2],
-    ['rooms', 2, 'name'],
+    ['rooms', "room 2", 'name'],
     'Another Room!'
 );
 
@@ -288,13 +304,13 @@ curlTestGETEquals(
     'idNoExist'
 );
 
-echo '<tr><td>Get All Rooms, Testing for Rooms 1 and 2</td>';
+echo '<tr><td>Get All Rooms, Testing for Rooms 1 and 2 (Only at Installation)</td>';
 curlTestGETEqualsMulti(
     'api/room.php',
     ['access_token' => $accessToken],
     [
-        ['rooms', 1, 'name'],
-        ['rooms', 2, 'name'],
+        ['rooms', "room 1", 'name'],
+        ['rooms', "room 2", 'name'],
     ],
     [
         'Your Room!',
@@ -354,11 +370,11 @@ curlTestPOSTEquals(
     'nameTaken'
 );
 
-echo "<tr><td>Get Room $testRoomName</td>";
+echo "<tr><td>Get Room '$testRoomName'</td>";
 curlTestGETEquals(
     'api/room.php',
     ['access_token' => $accessToken, 'id' => $testRoomId],
-    ['rooms', $testRoomId, 'name'],
+    ['rooms', "room $testRoomId", 'name'],
     $testRoomName
 );
 
@@ -653,19 +669,19 @@ curlTestGETEqualsMulti(
     ]
 );
 
-echo "<tr><td>Get Room $testRoomName, Test Permissions as admin</td>";
+echo "<tr><td>Get Room '$testRoomName', Test Permissions as 'admin'</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
     ['access_token' => $accessToken, 'id' => $testRoomId],
     [
-        ['rooms', $testRoomId, 'permissions', 'view'],
-        ['rooms', $testRoomId, 'permissions', 'post'],
-        ['rooms', $testRoomId, 'permissions', 'changeTopic'],
-        ['rooms', $testRoomId, 'permissions', 'properties'],
-        ['rooms', $testRoomId, 'defaultPermissions', 'view'],
-        ['rooms', $testRoomId, 'defaultPermissions', 'post'],
-        ['rooms', $testRoomId, 'defaultPermissions', 'changeTopic'],
-        ['rooms', $testRoomId, 'defaultPermissions', 'properties'],
+        ['rooms', "room $testRoomId", 'permissions', 'view'],
+        ['rooms', "room $testRoomId", 'permissions', 'post'],
+        ['rooms', "room $testRoomId", 'permissions', 'changeTopic'],
+        ['rooms', "room $testRoomId", 'permissions', 'properties'],
+        ['rooms', "room $testRoomId", 'defaultPermissions', 'view'],
+        ['rooms', "room $testRoomId", 'defaultPermissions', 'post'],
+        ['rooms', "room $testRoomId", 'defaultPermissions', 'changeTopic'],
+        ['rooms', "room $testRoomId", 'defaultPermissions', 'properties'],
     ],
     [
         true,
@@ -701,15 +717,15 @@ curlTestPOSTEquals(
     []
 );
 
-echo "<tr><td>Get Room $testRoomName, Test Permissions</td>";
+echo "<tr><td>Get Room '$testRoomName', Test Permissions</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
     ['access_token' => $accessToken2, 'id' => $testRoomId],
     [
-        ['rooms', $testRoomId, 'permissions', 'view'],
-        ['rooms', $testRoomId, 'permissions', 'post'],
-        ['rooms', $testRoomId, 'permissions', 'changeTopic'],
-        ['rooms', $testRoomId, 'permissions', 'properties']
+        ['rooms', "room $testRoomId", 'permissions', 'view'],
+        ['rooms', "room $testRoomId", 'permissions', 'post'],
+        ['rooms', "room $testRoomId", 'permissions', 'changeTopic'],
+        ['rooms', "room $testRoomId", 'permissions', 'properties']
     ],
     [
         true,
@@ -751,15 +767,15 @@ curlTestPOSTEquals(
     (string) $testRoomId
 );
 
-echo "<tr><td>Get Room $testRoomName, Test Permissions</td>";
+echo "<tr><td>Get Room '$testRoomName', Test Permissions</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
     ['access_token' => $accessToken2, 'id' => $testRoomId],
     [
-        ['rooms', $testRoomId, 'permissions', 'view'],
-        ['rooms', $testRoomId, 'permissions', 'post'],
-        ['rooms', $testRoomId, 'permissions', 'changeTopic'],
-        ['rooms', $testRoomId, 'permissions', 'properties']
+        ['rooms', "room $testRoomId", 'permissions', 'view'],
+        ['rooms', "room $testRoomId", 'permissions', 'post'],
+        ['rooms', "room $testRoomId", 'permissions', 'changeTopic'],
+        ['rooms', "room $testRoomId", 'permissions', 'properties']
     ],
     [
         true,
@@ -802,7 +818,7 @@ curlTestPOSTEquals(
     []
 );
 
-echo "<tr><td>Get Room $testRoom2Name as $testUnitUserName, Test for idNoExist</td>";
+echo "<tr><td>Get Room '$testRoom2Name' as '$testUnitUserName', Test for idNoExist</td>";
 curlTestGETEquals(
     'api/room.php',
     ['access_token' => $accessToken2, 'id' => $testRoom2Id],
@@ -810,7 +826,7 @@ curlTestGETEquals(
     'idNoExist'
 );
 
-echo "<tr><td>Get Messages in $testRoom2Name as $testUnitUserName, Test for idNoExist</td>";
+echo "<tr><td>Get Messages in '$testRoom2Name' as '$testUnitUserName', Test for idNoExist</td>";
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
@@ -818,7 +834,7 @@ curlTestGETEquals(
     'idNoExist'
 );
 
-echo "<tr><td>Send Message 'Hi' in $testRoom2Name as $testUnitUserName, Test for idNoExist</td>";
+echo "<tr><td>Send Message 'Hi' in '$testRoom2Name' as '$testUnitUserName', Test for idNoExist</td>";
 curlTestPOSTEquals(
     'api/message.php',
     ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoom2Id],
@@ -836,7 +852,7 @@ curlTestPOSTEquals(
     (string) $testRoom2Id
 );
 
-echo "<tr><td>Get Messages in $testRoom2Name</td>";
+echo "<tr><td>Get Messages in '$testRoom2Name'</td>";
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
@@ -844,7 +860,7 @@ curlTestGETEquals(
     'Huh'
 );
 
-echo "<tr><td>Send Message 'Hi' in $testRoom2Name</td>";
+echo "<tr><td>Send Message 'Hi' in '$testRoom2Name'</td>";
 curlTestPOSTEquals(
     'api/message.php',
     ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoom2Id],
@@ -853,13 +869,13 @@ curlTestPOSTEquals(
     'noPerm'
 );
 
-echo "<tr><td>Get All Rooms, Testing for Rooms $testRoomName, $testRoom2Name</td>";
+echo "<tr><td>Get All Rooms as '$testUnitUserName', Testing for Rooms '$testRoomName', '$testRoom2Name' (Only At Installation)</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
-    ['access_token' => $accessToken],
+    ['access_token' => $accessToken2],
     [
-        ['rooms', $testRoomId, 'name'],
-        ['rooms', $testRoom2Id, 'name'],
+        ['rooms', "room $testRoomId", 'name'],
+        ['rooms', "room $testRoom2Id", 'name'],
     ],
     [
         $testRoomName,
@@ -869,31 +885,28 @@ curlTestGETEqualsMulti(
 
 sleep(1); // Logging may prevent saves more than every second. (This is a TODO on its own terms.)
 
-echo "<tr><td>Edit Room '$testRoom2Name' to Allow Posting by '$testUnitUserName', Make Hidden</td>";
+echo "<tr><td>Edit Room '$testRoom2Name' to Allow Posting by '$testUnitUserName'</td>";
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoom2Id],
-    ['userPermissions' => "{\"+{$testUnitUserId}\" : [\"post\"]}", 'hidden' => true],
+    ['userPermissions' => "{\"+{$testUnitUserId}\" : [\"post\"]}"],
     ['room', 'id'],
     (string) $testRoom2Id
 );
-// TODO: moderator can't set hidden, official flags
 
 echo "<tr><td>Get Room '$testRoom2Name', testing for changes</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
     ['access_token' => $accessToken, 'id' => $testRoom2Id],
     [
-        ['rooms', $testRoom2Id, 'name'],
-        ['rooms', $testRoom2Id, 'hidden'],
-        ['rooms', $testRoom2Id, 'userPermissions', $testUnitUserId, 'view'],
-        ['rooms', $testRoom2Id, 'userPermissions', $testUnitUserId, 'post'],
-        ['rooms', $testRoom2Id, 'userPermissions', $testUnitUserId, 'moderate'],
-        ['rooms', $testRoom2Id, 'userPermissions', $testUnitUserId, 'grant'],
+        ['rooms', "room $testRoom2Id", 'name'],
+        ['rooms', "room $testRoom2Id", 'userPermissions', $testUnitUserId, 'view'],
+        ['rooms', "room $testRoom2Id", 'userPermissions', $testUnitUserId, 'post'],
+        ['rooms', "room $testRoom2Id", 'userPermissions', $testUnitUserId, 'moderate'],
+        ['rooms', "room $testRoom2Id", 'userPermissions', $testUnitUserId, 'grant'],
     ],
     [
         $testRoom2Name,
-        true,
         true,
         true,
         false,
@@ -901,21 +914,7 @@ curlTestGETEqualsMulti(
     ]
 );
 
-echo "<tr><td>Get All Rooms, Testing for Rooms $testRoomName, $testRoom2Name</td>";
-curlTestGETEqualsMulti(
-    'api/room.php',
-    ['access_token' => $accessToken],
-    [
-        ['rooms', $testRoomId, 'name'],
-        ['rooms', $testRoom2Id],
-    ],
-    [
-        $testRoomName,
-        null
-    ]
-);
-
-echo "<tr><td>Get Messages in $testRoom2Name</td>";
+echo "<tr><td>Get Messages in '$testRoom2Name'</td>";
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
@@ -923,7 +922,7 @@ curlTestGETEquals(
     'Huh'
 );
 
-echo "<tr><td>Send Message '小さい問題' in $testRoom2Name</td>";
+echo "<tr><td>Send Message '小さい問題' in '$testRoom2Name'</td>";
 curlTestPOSTEquals(
     'api/message.php',
     ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoom2Id],
@@ -932,7 +931,7 @@ curlTestPOSTEquals(
     []
 );
 
-echo "<tr><td>Get Messages in $testRoom2Name</td>";
+echo "<tr><td>Get Messages in '$testRoom2Name'</td>";
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
@@ -1004,7 +1003,7 @@ curlTestGETEqualsMulti(
     ]
 );
 
-echo "<tr><td>Get Active Users in $testRoom2Name</td>";
+echo "<tr><td>Get Active Users in '$testRoom2Name'</td>";
 curlTestGETEqualsMulti(
     'api/userStatus.php',
     ['access_token' => $accessToken2, 'roomIds' => [$testRoom2Id]],
@@ -1115,6 +1114,116 @@ curlTestGETEqualsMulti(
         $testRoom2Name,
     ]
 );
+
+
+echo '<thead><tr class="ui-widget-header"><th colspan="4">Fav Rooms Test</th></th></tr></thead>';
+echo "<tr><td>'$testUnitUserName' Favs Room '$testRoomName'</td>";
+curlTestPOSTEquals(
+    'api/userOptions.php',
+    ['access_token' => $accessToken2, '_action' => 'create'],
+    ['favRooms' => [$testRoomId]],
+    ['editUserOptions'],
+    []
+);
+
+echo "<tr><td>Get Rooms, Checking for '$testRoomName' at Top</td>";
+curlTestGETEquals(
+    'api/room.php',
+    ['access_token' => $accessToken2],
+    ['rooms', new ArrayPosition(0), 'name'],
+    $testRoomName
+);
+
+echo "<tr><td>'$testUnitUserName' Replaces Fav Rooms With 'Another Room!', '$testRoom2Name'</td>";
+curlTestPOSTEquals(
+    'api/userOptions.php',
+    ['access_token' => $accessToken2, '_action' => 'edit'],
+    ['favRooms' => [2, $testRoom2Id]],
+    ['editUserOptions'],
+    []
+);
+
+echo "<tr><td>Get Rooms, Checking for 'Another Room!', '$testRoom2Name', 'Your Room!' at Top</td>";
+curlTestGETEqualsMulti(
+    'api/room.php',
+    ['access_token' => $accessToken2],
+    [
+        ['rooms', new ArrayPosition(0), 'name'],
+        ['rooms', new ArrayPosition(1), 'name'],
+        ['rooms', new ArrayPosition(2), 'name'],
+    ],
+    [
+        'Another Room!',
+        $testRoom2Name,
+        'Your Room!'
+    ]
+);
+
+echo "<tr><td>'$testUnitUserName' Unfavs Room '$testRoom2Name'</td>";
+curlTestPOSTEquals(
+    'api/userOptions.php',
+    ['access_token' => $accessToken2, '_action' => 'delete'],
+    ['favRooms' => [$testRoom2Id]],
+    ['editUserOptions'],
+    []
+);
+
+echo "<tr><td>Get Rooms, Checking for 'Another Room!', 'Your Room!' at Top</td>";
+curlTestGETEqualsMulti(
+    'api/room.php',
+    ['access_token' => $accessToken2],
+    [
+        ['rooms', new ArrayPosition(0), 'name'],
+        ['rooms', new ArrayPosition(1), 'name'],
+    ],
+    [
+        'Another Room!',
+        'Your Room!'
+    ]
+);
+
+echo '<thead><tr class="ui-widget-header"><th colspan="4">Hidden Rooms Test</th></tr></thead>';
+
+echo "<tr><td>Edit Room '$testRoom2Name' to Make Hidden</td>";
+curlTestPOSTEquals(
+    'api/room.php',
+    ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoom2Id],
+    ['hidden' => true],
+    ['room', 'id'],
+    (string) $testRoom2Id
+);
+
+// TODO: moderator can't set hidden, official flags
+
+echo "<tr><td>Get Room '$testRoom2Name', testing for changes</td>";
+curlTestGETEqualsMulti(
+    'api/room.php',
+    ['access_token' => $accessToken, 'id' => $testRoom2Id],
+    [
+        ['rooms', "room $testRoom2Id", 'name'],
+        ['rooms', "room $testRoom2Id", 'hidden'],
+    ],
+    [
+        $testRoom2Name,
+        true,
+    ]
+);
+
+echo "<tr><td>Get All Rooms, Testing for Rooms '$testRoomName', '$testRoom2Name' (Only At Installation)</td>";
+curlTestGETEqualsMulti(
+    'api/room.php',
+    ['access_token' => $accessToken],
+    [
+        ['rooms', "room $testRoomId", 'name'],
+        ['rooms', "room $testRoom2Id"],
+    ],
+    [
+        $testRoomName,
+        null
+    ]
+);
+
+// TODO: don't include hidden rooms in active users
 
 echo '<thead><tr class="ui-widget-header"><th colspan="4">Watch Rooms Test</th></tr></thead>';
 

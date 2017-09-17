@@ -464,23 +464,24 @@ class fimUser extends fimDynamicObject
             'friendsList' => 'userFriendsList'
         ];
 
-
         if ($listName === 'favRooms' || $listName === 'watchRooms') {
-            $items = $database->getRooms(array(
-                'roomIds' => $ids
-            ))->getAsRooms();
+            $items = (count($ids) > 0
+                ? $database->getRooms(array(
+                    'roomIds' => $ids
+                ))->getAsRooms()
+                : []);
+
             $columnName = 'roomId';
         }
         elseif ($listName === 'ignoreList' || $listName === 'friendsList') {
-            $items = $database->getUsers(array(
-                'userIds' => $ids
-            ))->getAsUsers();
+            $items = (count($ids) > 0
+                ? $database->getUsers(array(
+                    'userIds' => $ids
+                ))->getAsUsers()
+                : []);
+
             $columnName = 'subjectId';
         }
-        else {
-            throw new Exception('Unrecognised list.');
-        }
-
 
         $table = $database->sqlPrefix . $tableNames[$listName];
 
