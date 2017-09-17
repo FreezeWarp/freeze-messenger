@@ -23,9 +23,6 @@ button.ui-button.ui-widget.ui-state-default.ui-corner-all.ui-button-icon-only.ui
     height: 24px !important;
     margin-top: 5px;
 }
-.ui-dialog .ui-dialog-titlebar-close span {
-    display: none;
-}
 ul.ui-tabs-nav > li > a {
     margin-top: 0px !important;
 }

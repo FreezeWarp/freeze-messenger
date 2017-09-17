@@ -717,9 +717,15 @@ function windowResize() {
         $(this).width(windowWidth);
     });
 
-    if ($(".ui-dialog-content").dialog("option", "width") > windowWidth) $(".ui-dialog-content").dialog("option", "width", windowWidth);
-    if ($(".ui-dialog-content").dialog("option", "height") > windowHeight || $(".ui-dialog-content").height() > windowHeight) $(".ui-dialog-content").dialog("option", "height", windowHeight);
-    $(".ui-dialog-content").dialog("option", "position", { my: "center", at: "center", of: window });
+    $('.ui-dialog-content').each(function() {
+        if ($(this).dialog("option", "width") > windowWidth)
+            $(this).dialog("option", "width", windowWidth);
+
+        if ($(this).dialog("option", "height") > windowHeight || $(this).height() > windowHeight)
+            $(this).dialog("option", "height", windowHeight);
+
+        $(this).dialog("option", "position", { my: "center", at: "center", of: window });
+    });
 }
 
 

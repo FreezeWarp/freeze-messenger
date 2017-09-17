@@ -107,7 +107,7 @@ if (!Array.prototype.indexOf) {
     };
 }
 
-Array.prototype.remove = function() {
+Array.prototype.remove = function(item) {
     return this.splice(this.indexOf(item), 1);
 };
 
