@@ -78,9 +78,9 @@ function $t(templateName, substitutions) {
 
 /* Requirements
  * All of these are pretty universal, but I want to be explicit with them. */
-if (typeof Date === 'undefined') { window.location.href = 'browser.php'; }
-else if (typeof Math === 'undefined') { window.location.href = 'browser.php'; }
-else if (false === ('encodeURIComponent' in window || 'escape' in window)) { window.location.href = 'browser.php'; }
+if (typeof Date === 'undefined') { window.location.href = 'browser.html'; }
+else if (typeof Math === 'undefined') { window.location.href = 'browser.html'; }
+else if (false === ('encodeURIComponent' in window || 'escape' in window)) { window.location.href = 'browser.html'; }
 
 
 
