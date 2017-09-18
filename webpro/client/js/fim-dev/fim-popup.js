@@ -35,7 +35,7 @@ popup = {
             oF : function() {
                 $("#loginForm").submit(function() {
                     var loginForm = $('#loginForm');
-                    standard.login({
+                    standard.initialLogin({
                         username : $('#userName', loginForm).val(),
                         password : $('#password', loginForm).val(),
                         rememberMe : $('#rememberme', loginForm).is('checked'),
@@ -697,9 +697,8 @@ popup = {
                         $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
                     }
 
-                    requestSettings.firstRequest = true;
-                    requestSettings.lastMessage = 0;
-                    messageIndex = [];
+                    // TODO: test
+                    standard.changeRoom(window.roomId);
                 });
 
                 // Various Settings -- Update onChange

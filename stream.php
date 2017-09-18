@@ -45,19 +45,23 @@ else {
         ),
         'streamType' => array(
             'require' => true,
-            'valid' => array('messages', 'user', 'room'),
+            'valid' => array('user', 'room'),
         ),
         'lastEvent' => array(
-            'require' => false,
             'default' => 0,
             'cast' => 'int',
-            'evaltrue' => false,
+        ),
+        'lastMessage' => array(
+            'default' => 0,
+            'cast' => 'int',
         )
     ));
 
-    if ($request['streamType'] === 'messages') {
-        if (!($database->hasPermission($user, new fimRoom($roomId)) & fimRoom::ROOM_PERMISSION_VIEW))
+    if ($request['streamType'] === 'room') {
+        if (!($database->hasPermission($user, new fimRoom($request['queryId'])) & fimRoom::ROOM_PERMISSION_VIEW))
             new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
+
+        $database->markMessageRead($request['queryId'], $user->id);
     }
 
 
@@ -67,7 +71,10 @@ else {
 
     while ($messages = StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent'])) {
         foreach ($messages AS $message) {
-            //$database->markMessageRead($roomId, $user->id);
+            if ($request['streamType'] === 'room') {
+                if ($message['data']['id'] <= $request['lastMessage']) continue;
+            }
+
             echo "\nid: " . (int)$message['id'] . "\n";
             echo "event: " . $message['eventName'] . "\n";
             echo "data: " . json_encode($message['data']) . "\n\n";

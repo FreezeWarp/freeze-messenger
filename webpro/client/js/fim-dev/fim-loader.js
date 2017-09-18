@@ -426,8 +426,6 @@ function fim_messagePreview(container, content) {
 function fim_newMessage(messageText, messageId) {
     if ($.inArray(messageId, messageIndex) > -1) { return; } // Double post hack
 
-    if (messageId > requestSettings.lastMessage) requestSettings.lastMessage = messageId; // Update the internal lastMessage.
-
     if (settings.reversePostOrder)
         $('#messageList').prepend(messageText); // Put the data at the beginning of the list if reversePostOrder.
     else
