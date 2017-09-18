@@ -15,7 +15,7 @@
    <children>
       <ImageView fitHeight="93.0" fitWidth="506.0" layoutX="68.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@../Images/flexchatblue.png" />
+            <Image url="@Images/flexchatblue.png" />
          </image>
          <effect>
             <DropShadow color="#0000004a" height="11.0" offsetX="3.0" offsetY="3.0" radius="6.25" width="16.0" />
@@ -50,7 +50,7 @@
       <Button fx:id="googleButton" layoutX="289.0" layoutY="274.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="159.0" style="-fx-background-color: transparent; -fx-text-fill: transparent;" text="Google Login Button" />
       <ImageView fitHeight="41.0" fitWidth="163.0" layoutX="287.0" layoutY="271.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@../Images/btn_google_signin_dark_normal_web@2x.png" />
+            <Image url="@Images/btn_google_signin_dark_normal_web@2x.png" />
          </image>
       </ImageView>
       <Button fx:id="loginButton" layoutX="185.0" layoutY="274.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="99.0" style="-fx-background-color: #2696a4;" text="Enter" textFill="#daf7ff">
