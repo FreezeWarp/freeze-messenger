@@ -16,6 +16,7 @@ var fimApi = function() {
         'async' : true,
 //        'method' : null,
         'action' : null,
+        'autoId' : false
     };
 
     this.timers = {};
@@ -36,7 +37,7 @@ var fimApi = function() {
         }
     };
 
-    this.fail = function(requestSettings, functionName, functionArgs) {
+    this.fail = function(requestSettings, callback) {
         return function(response) {
             if (!("responseJSON" in response)) response.responseJSON = JSON.parse(response.responseText);
 
@@ -45,7 +46,7 @@ var fimApi = function() {
                     standard.login({
                         'username' : $.cookie('webpro_username'),
                         'password' : $.cookie('webpro_username'),
-                        'finish' : functionName.apply(functionArgs)
+                        'finish' : callback
                     });
                 }
                 else {
@@ -55,18 +56,36 @@ var fimApi = function() {
             else
                 return requestSettings.error(response);
         }
-    }
+    };
+
+    this.timer = function(requestSettings, name, query) {
+        if (requestSettings.close) {
+            console.log("close " + name + '_' + requestSettings.timerId, fimApi.timers)
+            clearInterval(fimApi.timers[name + '_' + requestSettings.timerId]);
+            delete fimApi.timers[name + '_' + requestSettings.timerId];
+        }
+        else {
+            query(requestSettings);
+
+            if (requestSettings.refresh > -1) {
+                clearInterval(fimApi.timers[name + '_' + requestSettings.timerId]);
+                fimApi.timers[name + '_' + requestSettings.timerId] = setInterval(function() {
+                    query(requestSettings)
+                }, requestSettings.refresh);
+            }
+        }
+    };
 
     this.registerDefaultExceptionHandler = function (exceptionHandler) {
         this.requestDefaults.exception = exceptionHandler;
-    },
+    };
 
     this.getDefaultExceptionHandler = function () {
         return this.requestDefaults.exception;
-    }
+    };
 
     return;
-}
+};
 
 
 
@@ -129,7 +148,9 @@ fimApi.prototype.getUsers = function(params, requestSettings) {
             data: params,
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
-        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.getUsers, [params, requestSettings]));
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+            fimApi.getUsers(params, requestSettings)
+        }));
     }
 
     getUsers_query();
@@ -155,14 +176,12 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.getRooms, [params, requestSettings]));
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+                fimApi.getRooms(params, requestSettings)
+            }));
         }
 
-
-        if (requestSettings.close) clearInterval(fimApi.timers['getRooms_' + requestSettings.timerId]);
-
         getRooms_query();
-        if (requestSettings.refresh > -1) fimApi.timers['getRooms_' + requestSettings.timerId] = setInterval(getRooms_query, requestSettings.refresh);
 };
 
 
@@ -190,35 +209,52 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
 
 /* Messages */
 fimApi.prototype.getMessages = function(params, requestSettings) {
-    var params = fimApi.mergeDefaults(params, {
-        'access_token' : window.sessionHash,
-        'roomId' : null,
-        'userIds' : null,
-        'messageIdEnd' : null,
-        'messageIdStart' : null,
-        'page' : null,
-        'messageTextSearch' : null,
-        'archive' : false,
-    });
-
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
-    function getMessages_query() {
+    function getMessages_query(requestSettings) {
+        if (requestSettings.autoId && window.requestSettings.firstRequest) {
+            requestSettings.reverseEach = true;
+        }
+
         $.ajax({
             type: 'get',
             url: directory + 'api/message.php',
-            data: params,
+            data: fimApi.mergeDefaults(params, {
+                'access_token' : window.sessionHash,
+                'roomId' : null,
+                'userIds' : null,
+                'messageIdEnd' : null,
+                'messageIdStart' : (requestSettings.autoId && window.requestSettings.lastMessage ? window.requestSettings.lastMessage + 1 : null),
+                'page' : null,
+                'messageTextSearch' : null,
+                'archive' : (requestSettings.autoId ? window.requestSettings.firstRequest : false)
+            }),
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
-        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+        }).done(function(response) {
+            if (requestSettings.autoId) {
+                if (window.requestSettings.firstRequest)
+                    window.requestSettings.firstRequest = false;
+
+                for (var i in response["messages"]) {
+                    if (response["messages"][i]["id"])
+                        window.requestSettings.lastMessage = (!(Number.isNaN(Number(window.requestSettings.lastMessage))) ? Math.max(response["messages"][i]["id"], window.requestSettings.lastMessage) : response["messages"][i]["id"]);
+                }
+            }
+
+            fimApi.done(requestSettings)(response);
+        }).fail(function(response) {
+            if (requestSettings.refresh) {
+                fimApi.getMessages(null, {close : true});
+            }
+
+            fimApi.fail(requestSettings, function() {
+                fimApi.getMessages(params, requestSettings)
+            })(response);
+        });
     }
 
-
-    if (requestSettings.close) clearInterval(fimApi.timers['getMessages_' + requestSettings.timerId]);
-    else {
-        getMessages_query();
-        if (requestSettings.refresh > -1) fimApi.timers['getMessages_' + requestSettings.timerId] = setInterval(getMessages_query, requestSettings.refresh);
-    }
+    fimApi.timer(requestSettings, "getMessages", getMessages_query);
 };
 
 
@@ -241,7 +277,9 @@ fimApi.prototype.sendMessage = function(roomId, params, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.sendMessage, [roomId, params, requestSettings]));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+        fimApi.sendMessage(roomId, params, requestSettings)
+    }));
 };
 
 
@@ -266,7 +304,9 @@ fimApi.prototype.editMessage = function(roomId, messageId, params, requestSettin
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.editMessage, [roomId, messageId, params, requestSettings]));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+        fimApi.editMessage(roomId, messageId, params, requestSettings)
+    }));
 }
 
 
@@ -284,7 +324,9 @@ fimApi.prototype.deleteMessage = function(roomId, messageId, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.deleteMessage, [roomId, messageId, requestSettings]));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+        fimApi.deleteMessage(roomId, messageId, requestSettings)
+    }));
 }
 
 
@@ -292,31 +334,32 @@ fimApi.prototype.deleteMessage = function(roomId, messageId, requestSettings) {
 /* Unread Messages */
 
 fimApi.prototype.getUnreadMessages = function(params, requestSettings) {
-    var params = fimApi.mergeDefaults(params, {
-        'access_token' : window.sessionHash,
-    });
-
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.mergeDefaults({
         'timeout': 30000,
         'refresh': 30000
     }, fimApi.requestDefaults));
 
-    function getUnreadMessages_query() {
+    function getUnreadMessages_query(requestSettings) {
         $.ajax({
             type: 'get',
             url: directory + 'api/unreadMessages.php',
-            data: params,
+            data: fimApi.mergeDefaults(params, {
+                'access_token' : window.sessionHash,
+            }),
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
-        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings));
+        }).done(fimApi.done(requestSettings)).fail(function(response) {
+            if (requestSettings.refresh) {
+                fimApi.getUnreadMessages(null, {close : true});
+            }
+
+            fimApi.fail(requestSettings, function() {
+                fimApi.getUnreadMessages(params, requestSettings)
+            })(response);
+        });
     }
 
-
-    if (requestSettings.close) clearInterval(fimApi.timers['getUnreadMessages_' + requestSettings.timerId]);
-    else {
-        getUnreadMessages_query();
-        if (requestSettings.refresh > -1) fimApi.timers['getUnreadMessages_' + requestSettings.timerId] = setInterval(getUnreadMessages_query, requestSettings.refresh);
-    }
+    fimApi.timer(requestSettings, "getUnreadMessages", getUnreadMessages_query);
 };
 
 
@@ -338,7 +381,9 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.getFiles, [params. requestSettings]));
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+                fimApi.getFiles(params. requestSettings)
+            }));
         }
 
 
@@ -366,7 +411,9 @@ fimApi.prototype.getStats = function(params, requestSettings) {
             data: params,
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
-        }).done(fimApi.done(requestSettings, 'stats')).fail(fimApi.fail(requestSettings, fimApi.getStats, [params, requestSettings]));
+        }).done(fimApi.done(requestSettings, 'stats')).fail(fimApi.fail(requestSettings, function() {
+            fimApi.getStats(params, requestSettings)
+        }));
     }
 };
 
@@ -389,14 +436,12 @@ fimApi.prototype.getKicks = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.getKicks, [params, requestSettings]));
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+                fimApi.getKicks(params, requestSettings)
+            }));
         }
 
-
-        if (requestSettings.close) clearInterval(fimApi.timers['getKicks_' + requestSettings.timerId]);
-
         getKicks_query();
-        if (requestSettings.refresh > -1) fimApi.timers['getKicks_' + requestSettings.timerId] = setInterval(getKicks_query, requestSettings.refresh);
 };
 
 
@@ -419,22 +464,20 @@ fimApi.prototype.getCensorLists = function(params, requestSettings) {
                 data: params,
                 timeout: requestSettings.timeout,
                 cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.getCensorLists, [params, requestSettings]));
+            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+                fimApi.getCensorLists(params, requestSettings)
+            }));
         }
 
-
-        if (requestSettings.close) clearInterval(fimApi.timers['getCensorLists_' + requestSettings.timerId]);
-
         getCensorLists_query();
-        if (requestSettings.refresh > -1) fimApi.timers['getCensorLists_' + requestSettings.timerId] = setInterval(getCensorLists_query, requestSettings.refresh);
 };
 
 
 
 fimApi.prototype.getActiveUsers = function(params, requestSettings) {
-    function getActiveUsers_query() {
-        requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
+    function getActiveUsers_query(requestSettings) {
         $.ajax({
             type: 'get',
             url: directory + 'api/userStatus.php',
@@ -446,23 +489,18 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
             }),
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
-        }).done(fimApi.done(requestSettings, 'users')).fail(fimApi.fail(requestSettings, fimApi.getActiveUsers, [params, requestSettings]));
+        }).done(fimApi.done(requestSettings, 'users')).fail(function(response) {
+            if (requestSettings.refresh) {
+                fimApi.getActiveUsers(null, {close : true});
+            }
+
+            fimApi.fail(requestSettings, function() {
+                fimApi.getActiveUsers(params, requestSettings)
+            })(response);
+        });
     }
 
-
-    if (!window.sessionHash)
-        console.log("Get active users called without window.sessionHash being set. Please retry once set.");
-
-    else if (requestSettings.close)
-        clearInterval(fimApi.timers['getActiveUsers_' + requestSettings.timerId]);
-
-    else {
-        getActiveUsers_query();
-        if (requestSettings.refresh > -1) {
-            clearInterval(fimApi.timers['getActiveUsers_' + requestSettings.timerId]);
-            fimApi.timers['getActiveUsers_' + requestSettings.timerId] = setInterval(getActiveUsers_query, requestSettings.refresh);
-        }
-    }
+    fimApi.timer(requestSettings, "getActiveUsers", getActiveUsers_query);
 };
 
 
@@ -507,7 +545,9 @@ fimApi.prototype.kickUser = function(userId, roomId, length, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.kickUser, [userId, roomId, length, requestSettings]));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+        fimApi.kickUser(userId, roomId, length, requestSettings)
+    }));
 };
 
 
@@ -527,7 +567,9 @@ fimApi.prototype.unkickUser = function(userId, roomId, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.unkickUser, [userId, roomId, requestSettings]));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+        fimApi.unkickUser(userId, roomId, requestSettings)
+    }));
 };
 
 
@@ -545,7 +587,9 @@ fimApi.prototype.markMessageRead = function(roomId, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.markMessageRead, [roomId, requestSettings]));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+        fimApi.markMessageRead(roomId, requestSettings)
+    }));
 };
 
 fimApi.prototype.editUserOptions = function(action, params, requestSettings) {
@@ -575,7 +619,9 @@ fimApi.prototype.editUserOptions = function(action, params, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.editUserOptions, [action, params, requestSettings]));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+        fimApi.editUserOptions(action, params, requestSettings)
+    }));
 };
 
 
@@ -627,7 +673,9 @@ fimApi.prototype.editRoom = function(id, params, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.editRoom, [id, params, requestSettings]));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+        fimApi.editRoom(id, params, requestSettings)
+    }));
 };
 
 
@@ -689,7 +737,9 @@ fimApi.prototype.editUserStatus = function(roomId, params, requestSettings) {
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
-    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, fimApi.editUserStatus, [roomId, params, requestSettings]));
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+        fimApi.editUserStatus(roomId, params, requestSettings)
+    }));
 }
 
 

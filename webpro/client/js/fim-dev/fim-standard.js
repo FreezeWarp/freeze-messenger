@@ -115,6 +115,25 @@ standard.prototype.archive = {
 };
 
 
+standard.prototype.initialLogin = function(options) {
+    options.finish = function() {
+        if (!window.anonId) {
+            $.cookie('webpro_username', options.username, { expires : 14 });
+            $.cookie('webpro_password', options.password, { expires : 14 });
+
+            // As soon as we have a valid login, we start polling getUnreadMessages.
+            fimApi.getUnreadMessages(null, {'each' : function(message) {
+                fim_showMissedMessage(message);
+            }});
+        }
+
+        fim_hashParse({defaultRoomId : window.activeLogin.userData.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+    };
+
+    standard.login(options);
+}
+
+
 /* Trigger a login using provided data. This will open a login form if neccessary. */
 standard.prototype.login = function(options) {
     if (options.start) options.start();
@@ -132,27 +151,12 @@ standard.prototype.login = function(options) {
             window.permissions = activeLogin.userData.permissions;
             window.sessionHash = activeLogin.access_token;
 
-            if (!anonId) {
-                $.cookie('webpro_username', options.username, { expires : 14 });
-                $.cookie('webpro_password', options.password, { expires : 14 });
-
-                // As soon as we have a valid login, we start polling getUnreadMessages.
-                fimApi.getUnreadMessages(null, {'each' : function(message) {
-                    fim_showMissedMessage(message);
-                }});
-            }
-
             $.cookie('webpro_sessionHash', window.sessionHash);
-
 
             if (options.finish) options.finish();
 
-
-            fim_hashParse({defaultRoomId : activeLogin.userData.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
-
             /*** A Hack of Sorts to Open Dialogs onLoad ***/
             if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
-
 
             return false;
         },
@@ -169,10 +173,56 @@ standard.prototype.logout = function() {
     $.cookie('webpro_username', null);
     $.cookie('webpro_password', null);
 
-    fimApi.getMessages(null, {close : true}); // TODO: others
+    fimApi.getMessages(null, {close : true});
+    fimApi.getActiveUsers(null, {close : true});
     fimApi.getUnreadMessages(null, {close : true});
+    // TODO: others?
 
     popup.login();
+};
+
+
+standard.prototype.roomEventListener = function(roomId) {
+    var roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&lastEvent=' + window.requestSettings.lastEvent + '&lastMessage=' + window.requestSettings.lastMessage + '&access_token=' + window.sessionHash);
+    var eventHandler = function(callback) {
+        return function(event) {
+            if (event.id > requestSettings.lastEvent) {
+                window.requestSettings.lastEvent = event.id;
+            }
+
+            callback(JSON.parse(event.data));
+        }
+    };
+
+    roomSource.onerror = function(e) {
+        e.target.close();
+
+        standard.loginExpires();
+        standard.login({
+            'username' : $.cookie('webpro_username'),
+            'password' : $.cookie('webpro_username'),
+            'finish' : function() {
+                standard.roomEventListener(roomId);
+            }
+        });
+    };
+
+    roomSource.addEventListener('newMessage', eventHandler(function(active) {
+        requestSettings.lastMessage = Math.max(requestSettings.lastMessage, active.id);
+
+        $.when(fim_messageFormat(active, 'list')).then(function(messageText) {
+            fim_newMessage(messageText, Number(active.id));
+        });
+    }), false);
+
+    roomSource.addEventListener('topicChange', eventHandler(function(active) {
+        $('#topic').html(active.param1);
+        console.log('Event (Topic Change): ' + active.param1);
+    }), false);
+
+    // TODO
+    roomSource.addEventListener('deletedMessage', function(e) {
+    });
 };
 
 
@@ -180,73 +230,24 @@ standard.prototype.getMessages = function() {
     console.log("Getting messages from roomId: " + window.roomId);
 
     if (window.roomId) {
-        var encrypt = 'base64';
-
-        if (requestSettings.serverSentEvents && !requestSettings.firstRequest) { // Note that the event subsystem __requires__ serverSentEvents for various reasons. If you use polling, these events will no longer be fully compatible.
-            roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&lastEvent=' + requestSettings.lastEvent + '&access_token=' + sessionHash);
-
-            roomSource.addEventListener('newMessage', function(e) {
-                var active = JSON.parse(e.data);
-
-                console.log('Event (New Message): ' + Number(active.id));
-
-                $.when(fim_messageFormat(JSON.parse(e.data), 'list')).then(function(messageText) {
-                    fim_newMessage(messageText, Number(active.id));
+        fimApi.getMessages({
+            'roomId': roomId,
+        }, {
+            autoId : true,
+            refresh : (window.requestSettings.serverSentEvents ? 3000 : 3000),
+            each: function (messageData) {
+                $.when(fim_messageFormat(messageData, 'list')).then(function(messageText) {
+                    fim_newMessage(messageText, Number(messageData.id));
                 });
+            },
+            end: function () {
+                if (window.requestSettings.serverSentEvents) {
+                    fimApi.getMessages(null, {'close' : true});
 
-                return false;
-            }, false);
-
-            roomSource.addEventListener('topicChange', function(e) {
-                var active = JSON.parse(e.data);
-
-                $('#topic').html(active.param1);
-                console.log('Event (Topic Change): ' + active.param1);
-
-                requestSettings.lastEvent = active.eventId;
-
-                return false;
-            }, false);
-
-            // TODO
-            roomSource.addEventListener('deletedMessage', function(e) {
-            });
-        }
-        else {
-            var timeout = 5000;
-
-            var queryParameters = {
-                'roomId': roomId,
-                'archive': (requestSettings.firstRequest ? 1 : 0),
-            };
-            if (!requestSettings.firstRequest) {
-                queryParameters['messageIdStart'] = requestSettings.lastMessage + 1;
+                    standard.roomEventListener(window.roomId);
+                }
             }
-
-            function getMessages_query() {
-                fimApi.getMessages(queryParameters, {
-                    'reverseEach' : false,
-                    'each': function (messageData) {
-                        $.when(fim_messageFormat(messageData, 'list')).then(function(messageText) {
-                            fim_newMessage(messageText, Number(messageData.id));
-                        });
-                    },
-                    'end': function () {
-                        if (requestSettings.firstRequest) requestSettings.firstRequest = false;
-                        timeout = 5000;
-
-                        window.setTimeout(standard.getMessages, timeout);
-                    },
-                    'error': function () {
-                        if (timeout < 60000) timeout += 5000;
-
-                        window.setTimeout(standard.getMessages, timeout);
-                    }
-                });
-            }
-
-            getMessages_query();
-        }
+        });
     }
     else {
         console.log('Not requesting messages; room undefined.');
@@ -342,12 +343,6 @@ standard.prototype.changeRoom = function(roomId) {
     }, {
         'refresh' : 15000,
         'timerId' : 1,
-        'exception' : function(exception) { console.log(exception);
-            // noLogin exceptions will commonly happen if the user is switching logins. We could either surpress the errors, as we do here, or disable the refresh until the user relogins in, which is more trouble than it's really worth.
-            if (exception.string !== 'noLogin') {
-                fimApi.getDefaultExceptionHandler()(exception);
-            }
-        },
         'begin' : function() {
             $('#activeUsers').html('<ul></ul>');
         },
@@ -366,7 +361,6 @@ standard.prototype.populateMessages = function(roomId) {
         $('#messageList').html(''); // Clear the message list.
 
         requestSettings.firstRequest = true;
-        requestSettings.lastMessage = 0;
         messageIndex = [];
 
         standard.getMessages();

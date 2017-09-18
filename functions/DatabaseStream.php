@@ -91,7 +91,7 @@ class DatabaseStream implements Stream {
         } while (usleep($config['serverSentEventsWait'] * 1000000) || (count($output) == 0 && $this->retries++ < $config['serverSentMaxRetries']));
 
         foreach ($output AS &$entry) {
-            $entry['data'] = json_decode($entry['data']);
+            $entry['data'] = json_decode($entry['data'], true);
         }
 
         return $output;

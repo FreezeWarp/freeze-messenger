@@ -12,7 +12,7 @@
 <?import javafx.scene.text.Font?>
 
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #fffffff;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #fffffff;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="LoginGUI">
    <children>
       <ImageView fitHeight="93.0" fitWidth="506.0" layoutX="68.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -27,7 +27,11 @@
             <Font name="Arial" size="24.0" />
          </font>
       </Label>
+<<<<<<< HEAD:LoginGUI/LoginGUI.fxml
       <TextField layoutX="184.0" layoutY="166.0" prefHeight="33.0" prefWidth="263.0">
+=======
+      <TextField layoutX="184.0" layoutY="166.0" fx:id="username">
+>>>>>>> d5688b4f10cdb7564b0a5384e2f1601c870b6957:JavaGUI/src/LoginGUI.fxml
          <font>
             <Font name="Arial" size="18.0" />
          </font>
@@ -37,8 +41,13 @@
             <Font name="Arial" size="24.0" />
          </font>
       </Label>
+<<<<<<< HEAD:LoginGUI/LoginGUI.fxml
       <PasswordField layoutX="184.0" layoutY="234.0" prefHeight="33.0" prefWidth="264.0" />
       <Label layoutX="184.0" layoutY="324.0" text="Not a member?" textFill="#69747c">
+=======
+      <PasswordField layoutX="184.0" layoutY="234.0" prefHeight="33.0" prefWidth="226.0" fx:id="password" />
+      <Label layoutX="183.0" layoutY="321.0" text="Not a member?" textFill="#69747c">
+>>>>>>> d5688b4f10cdb7564b0a5384e2f1601c870b6957:JavaGUI/src/LoginGUI.fxml
          <font>
             <Font name="Arial Bold" size="14.0" />
          </font>
@@ -48,8 +57,13 @@
             <Font name="Arial Bold" size="15.0" />
          </font>
       </Hyperlink>
+<<<<<<< HEAD:LoginGUI/LoginGUI.fxml
       <Button layoutX="289.0" layoutY="274.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="159.0" style="-fx-background-color: transparent; -fx-text-fill: transparent;" text="Google Login Button" />
       <ImageView fitHeight="41.0" fitWidth="163.0" layoutX="287.0" layoutY="271.0" pickOnBounds="true" preserveRatio="true">
+=======
+      <Button layoutX="184.0" layoutY="339.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="135.0" style="-fx-background-color: transparent; -fx-text-fill: transparent;" text="Google Login Button" fx:id="googleButton" />
+      <ImageView fitHeight="35.0" fitWidth="143.0" layoutX="180.0" layoutY="336.0" pickOnBounds="true" preserveRatio="true">
+>>>>>>> d5688b4f10cdb7564b0a5384e2f1601c870b6957:JavaGUI/src/LoginGUI.fxml
          <image>
             <Image url="@../../../ICS%20499/btn_google_signin_dark_normal_web@2x.png" />
          </image>
@@ -57,7 +71,11 @@
             <DropShadow color="#171a16d8" height="2.0" offsetX="1.0" offsetY="1.0" radius="0.5" width="2.0" />
          </effect>
       </ImageView>
+<<<<<<< HEAD:LoginGUI/LoginGUI.fxml
       <Button layoutX="185.0" layoutY="274.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="99.0" style="-fx-background-color: #2696a4;" text="Enter" textFill="#daf7ff">
+=======
+      <Button layoutX="185.0" layoutY="274.0" mnemonicParsing="false" prefHeight="22.0" prefWidth="105.0" style="-fx-background-color: #2696a4;" text="Enter" textFill="#daf7ff" fx:id="loginButton">
+>>>>>>> d5688b4f10cdb7564b0a5384e2f1601c870b6957:JavaGUI/src/LoginGUI.fxml
          <effect>
             <DropShadow color="#000000c5" height="2.0" offsetX="1.0" offsetY="1.0" radius="0.5" width="2.0" />
          </effect>

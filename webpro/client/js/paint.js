@@ -427,25 +427,25 @@ $.when(
         showLogin = function() {
             /*** Initial Login ***/
             if (window.location.hash.match(/\#sessionHash=/)) {
-                standard.login({
+                standard.initialLogin({
                     sessionHash : window.location.hash.match(/\#sessionHash=([^\#]+)/)[1],
                     error : function() {
                         if (!window.userId) popup.login(); // The user is not actively logged in.
                     }
                 });
             }
-            else if ($.cookie('webpro_sessionHash')) {
-                standard.login({
-                    sessionHash : $.cookie('webpro_sessionHash'),
+            else if ($.cookie('webpro_username')) {
+                standard.initialLogin({
+                    username : $.cookie('webpro_username'),
+                    password : $.cookie('webpro_password'),
                     error : function() {
                         if (!window.userId) popup.login(); // The user is not actively logged in.
                     }
                 });
             }
-            else if ($.cookie('webpro_username')) {
-                standard.login({
-                    username : $.cookie('webpro_username'),
-                    password : $.cookie('webpro_password'),
+            else if ($.cookie('webpro_sessionHash')) {
+                standard.initialLogin({
+                    sessionHash : $.cookie('webpro_sessionHash'),
                     error : function() {
                         if (!window.userId) popup.login(); // The user is not actively logged in.
                     }
