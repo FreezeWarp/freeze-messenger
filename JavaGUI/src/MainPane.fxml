@@ -13,7 +13,7 @@
 <AnchorPane minHeight="300.0" minWidth="400.0" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainPane">
 <children>
     <GridPane prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <!--above is main grid-->
+         <!--above is main grid - Mike-->
         <columnConstraints>
             <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" maxWidth="250.0" minWidth="10.0" prefWidth="200.0" />
             <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" prefWidth="412.0" />
@@ -30,8 +30,11 @@
               <rowConstraints>
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
+
+                <!-- Start tableview for roomList (left side) - Mike -->
+
                <children>
-                  <TableView fx:id="newRoom" prefHeight="200.0" prefWidth="200.0">
+                  <TableView fx:id="roomList" prefHeight="200.0" prefWidth="200.0" styleClass="hide-header" stylesheets="@FXcss.css">
                     <columns>
                       <TableColumn prefWidth="195.0" text="Rooms" />
                     </columns>
@@ -66,8 +69,11 @@
               <rowConstraints>
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
+
+                <!-- Start tableview userList (right side) - Mike -->
+
                <children>
-                  <TableView prefHeight="200.0" prefWidth="200.0">
+                  <TableView fx:id="userList" prefHeight="200.0" prefWidth="200.0" styleClass="hide-header" stylesheets="@FXcss.css">
                     <columns>
                       <TableColumn fx:id="avatar" prefWidth="58.0" text="Avatar" />
                       <TableColumn fx:id="username" prefWidth="137.0" text="Username" />
