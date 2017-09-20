@@ -67,11 +67,11 @@ class DatabaseStream implements Stream {
         ]);
 
         /* Delete All Channels That Are More Than 5 Minutes Old */
-        foreach ($this->database->select([$this->database->sqlPrefix . 'streams' => 'lastEvent, streamName'], [
-            'lastEvent' => $this->database->now(-60 * 5, DatabaseTypeComparison::lessThan)
-        ])->getColumnValues('streamName') AS $oldStream) {
+        $condition = ['lastEvent' => $this->database->now(-60 * 5, DatabaseTypeComparison::lessThan)];
+        foreach ($this->database->select([$this->database->sqlPrefix . 'streams' => 'lastEvent, streamName'], $condition)->getColumnValues('streamName') AS $oldStream) {
             $this->database->deleteTable($this->database->sqlPrefix . 'stream_' . $oldStream);
         }
+        $this->database->delete($this->database->sqlPrefix . 'streams', $condition);
     }
 
     public function subscribe($stream, $lastId) {
