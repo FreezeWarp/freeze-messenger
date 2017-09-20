@@ -259,6 +259,7 @@ popup = {
 //                                .error(function (jqXHR, textStatus, errorThrown) {})
 //                                .complete(function (result, textStatus, jqXHR) {});
                             $('#fileUpload').fileupload('destroy');
+                            $('#insertDoc').dialog('close');
                             return false;
                         });
 
@@ -313,43 +314,6 @@ popup = {
                                 }
                             }
                         });
-
-
-                        /* Submit Upload */
-/*                        $('#uploadFileForm').bind('submit', function() {
-                            parentalAge = $('#parentalAge option:selected').val(),
-                                parentalFlags = [];
-
-                            $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
-                                parentalFlags.push($(b).attr('data-name'));
-                            });
-
-                            fim_showLoader();
-
-                            fimApi.editFile({
-                                'action' : 'create',
-                                'dataEncode' : 'base64',
-                                'uploadMethod' : 'raw',
-                                'autoInsert' : true,
-                                'roomId' : window.roomId,
-                                'fileName' : fileName,
-                                'fileData' : fileContent,
-                                'parentalAge' : parentalAge,
-                                'parentalFlags' : parentalFlags,
-                                'md5hash' : md5hash
-                            }, {
-                                'end' : function(json) {
-                                    fim_hideLoader();
-                                    $('#insertDoc').dialog('close');
-                                },
-                                'error' : function() {
-                                    fim_hideLoader();
-                                    dia.error($l('uploadErrors.other')); // TODO: error string
-                                }
-                            });
-
-                            return false;
-                        });*/
                     }
                 }
 
