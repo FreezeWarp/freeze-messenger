@@ -141,8 +141,8 @@ public class MessengerAPI {
 
         try {
             String json = Request.Get(serverUrl + path)
-                    .connectTimeout(1000)
-                    .socketTimeout(1000)
+                    .connectTimeout(5000)
+                    .socketTimeout(5000)
                     .execute().handleResponse(responseHandler);
 
             System.out.println(json);
