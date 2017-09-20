@@ -1182,33 +1182,38 @@ popup = {
             title : 'Manage/View Kicked Users',
             width : 1000,
             oF : function() {
-                fimApi.getKicks({
-                    'roomIds': ('roomId' in params ? [params.roomId] : null),
-                    'userIds': ('userId' in params ? [params.userId] : null)
-                }, {
-                    'each' : function(kick) { console.log(kick);
-                        $('#kickedUsers').append(
-                            $('<tr>').append(
-                                $('<td>').append(
-                                    $('<span class="userName userNameTable">').attr({'data-userId' : kick.userData.userId, 'style' : kick.userData.userNameFormat}).text(kick.userData.userName)
+                fimApi.getKicks(params, {
+                    'each' : function(kick) {
+                        jQuery.each(kick.kicks, function(kickId, kickData) {
+                            console.log(kickData);
+                            $('#kickedUsers').append(
+                                $('<tr>').append(
+                                    $('<td>').append(
+                                        $('<span class="userName userNameTable">').attr({'data-userId' : kick.userId, 'style' : kick.userNameFormat}).text(kick.userName)
+                                    )
+                                ).append(
+                                    $('<td>').append(
+                                        $('<span class="userName userNameTable">').attr({'data-userId' : kickData.kickerId, 'style' : kickData.kickerNameFormat}).text(kickData.kickerName)
+                                    )
+                                ).append(
+                                    $('<td>').append(
+                                        $('<span class="roomName roomNameTable">').attr({'data-roomId' : kickData.roomId}).text(kickData.roomName)
+                                    )
+                                ).append(
+                                    $('<td>').text(fim_dateFormat(kickData.set, dateOptions))
+                                ).append(
+                                    $('<td>').text(fim_dateFormat(kickData.expires, dateOptions))
+                                ).append(
+                                    $('<td>').append(
+                                        $('<button>').click(function() {
+                                            standard.unkick(kick.userId, kickData.roomId)
+                                        }).text('Unkick')
+                                    )
                                 )
-                            ).append(
-                                $('<td>').append(
-                                    $('<span class="userName userNameTable">').attr({'data-userId' : kick.kickerData.userId, 'style' : kick.kickerData.userNameFormat}).text(kick.kickerData.userName)
-                                )
-                            ).append(
-                                $('<td>').text(fim_dateFormat(kick.set, dateOptions))
-                            ).append(
-                                $('<td>').text(fim_dateFormat(kick.expires, dateOptions))
-                            ).append(
-                                $('<td>').append(
-                                    $('<button>').click(function() {
-                                        standard.unkick(kick.userData.userId, kick.roomData.roomId)
-                                    }).text('Unkick')
-                                )
-                            )
-                        );
-                    }
+                            );
+                        });
+                    },
+                    'end' : windowDraw
                 });
             }
         });
@@ -1226,27 +1231,39 @@ popup = {
             content : $t('kick'),
             title : 'Kick User',
             id : 'kickUserDialogue',
-            width : 1000,
+            width : 500,
             oF : function() {
                 $('#userName').autocompleteHelper('users');
                 $('#roomNameKick').autocompleteHelper('rooms');
 
                 $("#kickUserForm").submit(function() {
-                    var userName = $('#userName').val();
-                    var roomName = $('#roomNameKick').val();
-                    var length = Math.floor(Number($('#time').val() * Number($('#interval > option:selected').attr('value'))));
+                    var userName = $('#kickUserForm > #userName').val();
+                    var userId = $("#kickUserForm > #userName").attr('data-id');
+                    var roomName = $('#kickUserForm > #roomNameKick').val();
+                    var roomId = $("#kickUserForm > #roomNameKick").attr('data-id');
+                    var length = Math.floor(Number($('#kickUserForm > #time').val() * Number($('#kickUserForm > #interval > option:selected').attr('value'))));
 
-                    $.when(
-                        Resolver.resolveUsersFromNames([userName]),
-                        Resolver.resolveRoomsFromNames([roomName])
-                    ).then(function(userPairs, roomPairs) { console.log(["pairs", userPairs, roomPairs]);
-                        standard.kick(userPairs[userName].userId, roomPairs[roomName].roomId, length);
+                    var userIdDeferred = true;
+                    var roomIdDeferred = true;
+
+                    if (roomName && !roomId) {
+                        userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
+                            userId = pairs[userName].id;
+                        }));
+                    }
+
+                    if (roomName && !roomId) {
+                        roomIdDeferred = $.when(Resolver.resolveRoomsFromNames([roomName]).then(function(pairs) {
+                            roomId = pairs[roomName].id;
+                        }));
+                    }
+
+                    $.when(userIdDeferred, roomIdDeferred).then(function() {
+                        standard.kick(userId, roomId, length);
                     });
 
-                    return false; // Don't submit the form.
+                    return false;
                 });
-
-                return false;
             }
         });
 

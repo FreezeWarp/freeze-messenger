@@ -420,28 +420,25 @@ fimApi.prototype.getStats = function(params, requestSettings) {
 
 
 fimApi.prototype.getKicks = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(params, {
-            'access_token' : window.sessionHash,
-            'roomIds' : null,
-            'userIds' : null
-        });
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
-        var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+    function getKicks_query() {
+        $.ajax({
+            type: 'get',
+            url: directory + 'api/kick.php',
+            data: fimApi.mergeDefaults(params, {
+                'access_token' : window.sessionHash,
+                'roomId' : null,
+                'userId' : null
+            }),
+            timeout: requestSettings.timeout,
+            cache: requestSettings.cache
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+            fimApi.getKicks(params, requestSettings)
+        }));
+    }
 
-
-        function getKicks_query() {
-            $.ajax({
-                type: 'get',
-                url: directory + 'api/getKicks.php',
-                data: params,
-                timeout: requestSettings.timeout,
-                cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
-                fimApi.getKicks(params, requestSettings)
-            }));
-        }
-
-        getKicks_query();
+    getKicks_query();
 };
 
 
@@ -521,30 +518,27 @@ fimApi.prototype.acHelper = function(list) {
                         value: key
                     };
                 }));
-            },
-
+            }
         });
     }
 };
 
 
 fimApi.prototype.kickUser = function(userId, roomId, length, requestSettings) {
-    var params = {
-        'access_token' : window.sessionHash,
-        'roomId' : roomId,
-        'userId' : userId,
-        'length' : length,
-        'action' : 'kickUser',
-    };
-
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
     $.ajax({
-        url: directory + 'api/moderate.php',
+        url: directory + 'api/kick.php?' + $.param({
+            'access_token' : window.sessionHash,
+            'roomId' : roomId,
+            'userId' : userId
+        }),
         type: 'POST',
-        data: params,
+        data: {
+            'length' : length
+        },
         timeout: requestSettings.timeout,
-        cache: requestSettings.cache,
+        cache: requestSettings.cache
     }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
         fimApi.kickUser(userId, roomId, length, requestSettings)
     }));
@@ -552,21 +546,18 @@ fimApi.prototype.kickUser = function(userId, roomId, length, requestSettings) {
 
 
 fimApi.prototype.unkickUser = function(userId, roomId, requestSettings) {
-    var params = {
-        'access_token' : window.sessionHash,
-        'roomId' : roomId,
-        'userId' : userId,
-        'action' : 'unkickUser',
-    };
-
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
     $.ajax({
-        url: directory + 'api/moderate.php',
+        url: directory + 'api/kick.php?' + $.param({
+            'access_token' : window.sessionHash,
+            '_action' : 'delete',
+            'roomId' : roomId,
+            'userId' : userId
+        }),
         type: 'POST',
-        data: params,
         timeout: requestSettings.timeout,
-        cache: requestSettings.cache,
+        cache: requestSettings.cache
     }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
         fimApi.unkickUser(userId, roomId, requestSettings)
     }));

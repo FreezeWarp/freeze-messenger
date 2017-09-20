@@ -220,7 +220,10 @@ function fim_messageFormat(json, format) {
         messageId = json.id,
         userId = Number(json.userId),
         style = (settings.disableFormatting ? "" : json.formatting),
-        flag = json.flag;
+        flag = json.flag,
+        userName,
+        userNameFormat,
+        avatar;
 
     var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId]).then(function(pairs) {
         console.log(pairs);
@@ -285,7 +288,9 @@ function fim_messageFormat(json, format) {
                 if (/^\/me/.test(text)) {
                     text = text.replace(/^\/me/,'');
 
-                    text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + userName + ' ' + text).prop('outerHTML');
+                    $.when(userNameDeferred).then(function() {
+                        text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + userName + ' ' + text).prop('outerHTML');
+                    });
                 }
 
                 // "/topic" parse
@@ -294,7 +299,9 @@ function fim_messageFormat(json, format) {
 
                     $('#topic').html(text);
 
-                    text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + userName + ' changed the topic to "' + text + '".').prop('outerHTML');
+                    $.when(userNameDeferred).then(function() {
+                       text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + userName + ' changed the topic to "' + text + '".').prop('outerHTML');
+                    });
                 }
                 break;
         }

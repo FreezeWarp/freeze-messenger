@@ -47,32 +47,37 @@ $xmlData = [
 
 
 /* Start Processing */
-if (!isset($requestHead['roomId'])) {
-    if ((!isset($requestHead['userId']) || $requestHead['userId'] != $user->id)
-        && (!$user->hasPriv('modRooms')))
-        new fimError('roomIdRequired', 'A roomId must be included unless you are a site administrator.');
-}
+if (!isset($requestHead['roomId']) && !$user->hasPriv('modRooms'))
+    new fimError('roomIdRequired', 'A roomId must be included unless you are a site administrator.');
 
-/* Get Kicks from Database */
-$kicks = $database->getKicks([
-    'userIds' => isset($kickUser) ? [$kickUser->id] : [],
-    'roomIds' => isset($room) ? [$room->id] : [],
-])->getAsArray(true);
+else {
+    /* Get Kicks from Database */
+    $kicks = $database->getKicks([
+        'userIds' => isset($kickUser) ? [$kickUser->id] : [],
+        'roomIds' => isset($room) ? [$room->id] : [],
+    ])->getAsArray(true);
 
 
-/* Process Kicks from Database */
-foreach ($kicks AS $kick) {
-    if (!isset($xmlData['kicks']['user ' . $kick['userId']])) {
-        $xmlData['kicks']['user ' . $kick['userId']] = [
-            'userId'         => (int)$kick['userId'],
-            'userName'       => $kick['userName'],
-            'userAvatar'     => $kick['userAvatar'],
-            'userNameFormat' => $kick['userNameFormat'],
-            'kicks'          => []
-        ];
+    /* Process Kicks from Database */
+    foreach ($kicks AS $kick) {
+        if (!isset($xmlData['kicks']['user ' . $kick['userId']])) {
+            $xmlData['kicks']['user ' . $kick['userId']] = [
+                'userId'         => (int)$kick['userId'],
+                'userName'       => $kick['userName'],
+                'userAvatar'     => $kick['userAvatar'],
+                'userNameFormat' => $kick['userNameFormat'],
+                'kicks'          => []
+            ];
+        }
+
+        $xmlData['kicks']['user ' . $kick['userId']]['kicks']['room ' . $kick['roomId']] = array_merge(
+            fim_arrayFilterKeys($kick, ['roomId', 'roomName', 'kickerId', 'kickerName', 'kickerNameFormat', 'kickerAvatar', 'length']),
+            [
+                'set'              => (int)$kick['time'],
+                'expires'          => (int)($kick['time'] + $kick['length']),
+            ]
+        );
     }
-
-    $xmlData['kicks']['user ' . $kick['userId']]['kicks']['room ' . $kick['roomId']] = fim_arrayFilterKeys($kick, ['roomId', 'roomName', 'kickerId', 'kickerName', 'kickerNameFormat', 'kickerAvatar', 'length', 'set', 'expires']);
 }
 
 

@@ -396,17 +396,6 @@ standard.prototype.deleteRoom = function(roomIdLocal) {
 
 standard.prototype.kick = function(userId, roomId, length) {
     fimApi.kickUser(userId, roomId, length, {
-        'exception' : function(exception) {
-            switch (exception.string) {
-                case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
-                case 'nokickuser': dia.error('That user may not be kicked!'); break;
-                case 'baduser': dia.error('The user specified does not exist.'); break;
-                case 'badroom': dia.error('The room specified does not exist.'); break;
-                default:
-                    fimApi.getDefaultExceptionHandler()(exception);
-                break;
-            }
-        },
         'end' : function() {
             dia.info('The user has been kicked.', 'Success');
             $("#kickUserDialogue").dialog('close');
