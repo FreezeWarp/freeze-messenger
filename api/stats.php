@@ -81,23 +81,19 @@ foreach ($totalPosts AS $roomId => $room) {
     foreach ($room AS $userId => $totalPoster) {
         if (!isset($xmlData['roomStats']['room ' . $totalPoster['roomId']])) {
             $xmlData['roomStats']['room ' . $totalPoster['roomId']] = array(
-                'roomData' => array(
-                    'roomId' => (int) $totalPoster['roomId'],
-                    'roomName' => $totalPoster['roomName'],
-                ),
+                'id' => (int) $totalPoster['roomId'],
+                'name' => $totalPoster['roomName'],
                 'users' => array(),
             );
         }
 
-        $xmlData['roomStats']['room ' . $totalPoster['roomId']]['users']['user ' . $totalPoster['userId']] = array(
-            'userData' => array(
-                'userId' => (int) $totalPoster['userId'],
-                'userName' => $totalPoster['userName'],
-                'userNameFormat' => $totalPoster['userNameFormat'],
-                'avatar' => $totalPoster['avatar'],
-            ),
+        $xmlData['roomStats']['room ' . $totalPoster['roomId']]['users']['user ' . $totalPoster['userId']] = [
+            'id' => (int) $totalPoster['userId'],
+            'name' => $totalPoster['userName'],
+            'format' => $totalPoster['userNameFormat'],
+            'avatar' => $totalPoster['avatar'],
             'messageCount' => (int) $totalPoster['messages'],
-        );
+        ];
     }
 }
 

@@ -437,18 +437,35 @@ popup = {
                 }
 
                 fimApi.getStats({
-                    'roomIds' : [window.roomId] // TODO
+                    'roomIds' : [window.roomId]
                 }, {
-                    'each' : function(room) {
-                        $('table#viewStats > thead > tr').append('<th>' + room.roomData.roomName + '</th>');
+                    each : function(room) {
+                        $('table#viewStats > thead > tr').append(
+                            $('<th>').append(
+                                $('<span>').attr({
+                                    'class' : 'roomName',
+                                    'data-roomId' : room.id
+                                }).text(room.name)
+                            )
+                        );
 
                         var i = 0;
-
-                        for (var j = 0; j < room.users.length; j++) { console.log(room.users[j]);
-                            $('table#viewStats > tbody > tr').eq(i).append('<td><span class="userName userNameTable" data-userId="' + room.users[j].userData.userId + '" style="' + room.users[j].userData.userNameFormat + '">' + room.users[j].userData.userName + '</span> (' + room.users[j].messageCount + ')</td>');
+                        jQuery.each(room.users, function(userId, user) {
+                            $('table#viewStats > tbody > tr').eq(i).append(
+                                $('<td>').append(
+                                    $('<span>').attr({
+                                        'class' : 'userName',
+                                        'data-userId' : user.id,
+                                        'style' : user.nameFormat
+                                    }).text(user.name)
+                                    .append($('<span>').text(' ('))
+                                    .append($('<span>').text(user.messageCount))
+                                    .append($('<span>').text(')'))
+                                )
+                            );
 
                             i++;
-                        }
+                        });
                     },
                     'end' : function() {
                         windowDraw();

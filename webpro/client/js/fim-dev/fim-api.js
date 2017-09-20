@@ -395,26 +395,21 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
 
 
 fimApi.prototype.getStats = function(params, requestSettings) {
-    var params = fimApi.mergeDefaults(params, {
-        'access_token' : window.sessionHash,
-        'roomIds' : '',
-        'number' : 10
-    });
-
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
-
-    function getStats_query() {
-        $.ajax({
-            type: 'get',
-            url: directory + 'api/stats.php',
-            data: params,
-            timeout: requestSettings.timeout,
-            cache: requestSettings.cache
-        }).done(fimApi.done(requestSettings, 'stats')).fail(fimApi.fail(requestSettings, function() {
-            fimApi.getStats(params, requestSettings)
-        }));
-    }
+    $.ajax({
+        type: 'get',
+        url: directory + 'api/stats.php',
+        data: fimApi.mergeDefaults(params, {
+            'access_token' : window.sessionHash,
+            'roomIds' : null,
+            'number' : 10
+        }),
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(fimApi.done(requestSettings, 'roomStats')).fail(fimApi.fail(requestSettings, function() {
+        fimApi.getStats(params, requestSettings)
+    }));
 };
 
 
