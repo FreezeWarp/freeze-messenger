@@ -24,6 +24,10 @@
  */
 
 
+if (!defined('API_INROOM'))
+    die();
+
+
 /* Helper Functions */
 /**
  * Generates a permissions bitfield from a list of permission strings.
