@@ -2228,6 +2228,7 @@ class fimDatabase extends DatabaseSQL
         StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
             'id' => $message->id,
             'text' => $message->text,
+            'flag' => $message->flag,
             'userId' => $message->user->id,
         ]);
 
