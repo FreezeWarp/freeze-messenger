@@ -168,8 +168,10 @@ class fimConfig implements ArrayAccess {
 
 
     /* Kick Functionality */
-    /** @var bool If true, whenever a user is kicked a message will be sent by the kicking moderator informing the room of the action.  */
+    /** @var bool If true, whenever a user is kicked a message will be sent by the kicking moderator informing the room of the action. */
     public $kickSendMessage = true;
+    /** @var int The minimum number of seconds a user can be kicked for. */
+    public $kickMinimumLength = 10;
     /** @var bool If true, whenever a user is unkicked a message will be sent by the unkicking moderator informing the room of the action. */
     public $unkickSendMessage = true;
 

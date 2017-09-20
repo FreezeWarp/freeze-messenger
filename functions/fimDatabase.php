@@ -778,9 +778,9 @@ class fimDatabase extends DatabaseSQL
      *      @param array ['lengthMin']         A lower-range for duration of the kick to filter by.
      *      @param array ['timeMax']           An upper-range for the time of the start of the kick to filter by.
      *      @param array ['timeMin']           A lower-range for the time of the end of the kick to filter by.
-     *      @param bool  ['includeUserData']   Whether to include the userdata of the kickee: columns users.kuserId, users.userName, users.userNameFormat
-     *      @param bool  ['includeKickerData'] Whether to include the userdata of the kicker: columns users.kkickerId, users. kickerName, users.kickerNameFormat
-     *      @param bool  ['includeRoomData']   Whether to include the rooomdata of the room the kick occurred in: columns rooms.kroomId, rooms.roomName, rooms.ownerId, rooms.options, rooms.defaultPermissions, rooms.roomParentalFlags, rooms.roomParentalAge
+     *      @param bool  ['includeUserData']   Whether to include the userdata of the kickee: columns users.id AS kuserId, users.name AS userName, users.nameFormat AS userNameFormat
+     *      @param bool  ['includeKickerData'] Whether to include the userdata of the kicker: columns users.id AS kkickerId, users.name AS kickerName, users.nameFormat AS kickerNameFormat
+     *      @param bool  ['includeRoomData']   Whether to include the rooomdata of the room the kick occurred in: columns rooms.id AS kroomId, rooms.name AS roomName, rooms.ownerId, rooms.options, rooms.defaultPermissions, rooms.roomParentalFlags, rooms.roomParentalAge
      * }
      * @param array $sort        Sort columns (see standard definition).
      * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
@@ -814,18 +814,17 @@ class fimDatabase extends DatabaseSQL
 
 
         // Modify Columns (and Joins)
-        // Todo: replace joins with only enough info for searches
         if ($options['includeUserData']) {
-            $columns[$this->sqlPrefix . "users user"]  = 'id kuserId, name userName';
-            $conditions['both']['userId'] = $this->col('kuserId');
+            $columns[$this->sqlPrefix . "users user"]  = 'id kuserId, name userName, nameFormat userNameFormat, avatar userAvatar';
+            $conditions['both']['userId 0'] = $this->col('kuserId');
         }
         if ($options['includeKickerData']) {
-            $columns[$this->sqlPrefix . "users kicker"] = 'id kkickerId, name kickerName';
-            $conditions['both']['kickerId'] = $this->col('kkickerId');
+            $columns[$this->sqlPrefix . "users kicker"] = 'id kkickerId, name kickerName, nameFormat kickerNameFormat, avatar kickerAvatar';
+            $conditions['both']['kickerId 0'] = $this->col('kkickerId');
         }
         if ($options['includeRoomData']) {
-            $columns[$this->sqlPrefix . "rooms"] = 'id kroomId, nameSearchable roomName';
-            $conditions['both']['roomId'] = $this->col('kroomId');
+            $columns[$this->sqlPrefix . "rooms"] = 'id kroomId, name roomName';
+            $conditions['both']['roomId 0'] = $this->col('kroomId');
         }
 
 
@@ -1475,17 +1474,17 @@ class fimDatabase extends DatabaseSQL
         if ($room->isPrivateRoom()) {
             $userIds = $room->getPrivateRoomMemberIds();
 
-            if ($room->type === 'otr' && !$this->config['otrRoomsEnabled'])
+            if ($room->type === fimRoom::ROOM_TYPE_OTR && !$this->config['otrRoomsEnabled']) // Disallow OTR rooms if disabled.
                 return 0;
 
-            elseif ($room->type === 'private' && !$this->config['privateRoomsEnabled'])
+            elseif ($room->type === fimRoom::ROOM_TYPE_PRIVATE && !$this->config['privateRoomsEnabled']) // Disallow private rooms if disabled.
                 return 0;
 
-            elseif (count($userIds) > $this->config['privateRoomMaxUsers'])
+            elseif (count($userIds) > $this->config->privateRoomMaxUsers) // Disallow private rooms with too many members.
                 return 0;
 
             else {
-                $users = $room->getPrivateRoomMembers(); // TODO: rewrite to use cached $user->exists() checks
+                $users = $room->getPrivateRoomMembers();
 
                 if (count($users) !== count($userIds)) // This checks for invalid users, as getPrivateRoomMembers() will only return members who exist in the database, while getPrivateRoomMemberIds() returns all ids who were specified when the fimRoom object was created.
                     return 0;
@@ -1498,34 +1497,68 @@ class fimDatabase extends DatabaseSQL
             }
         }
         else {
+            /* Check for Cached Entry */
             $permissionsCached = $this->getPermissionCache($room->id, $user->id);
-            if ($permissionsCached > -1) return $permissionsCached; // -1 equals an outdated permission.
+            if ($permissionsCached > -1) // -1 equals an outdated permission.
+                return $permissionsCached;
 
-            if (!$user->resolve(array('socialGroupIds', 'parentalAge', 'parentalFlags'))) throw new Exception('hasPermission was called without a valid user.'); // Make sure we know the room type and alias in addition to ID.
 
-            /* Obtain Data from roomPermissions Table
-             * This table is seen as the "final word" on matters. */
+            /* Resolve Needed User Parameters */
+            if (!$user->resolve(array('socialGroupIds', 'parentalAge', 'parentalFlags')))
+                throw new Exception('hasPermission was called without a valid user.'); // Make sure we know the room type and alias in addition to ID.
+
+
+            /* Obtain Data from roomPermissions Table */
             $permissionsBitfield = $this->getPermissionsField($room->id, $user->id, $user->socialGroupIds);
 
+
             /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
-            if ($user->hasPriv('modRooms')) $returnBitfield = 65535; // Super moderators have all permissions.
-            elseif (in_array($user->mainGroupId, $this->config['bannedUserGroups'])) $returnBitfield = 0; // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
-            elseif ($room->ownerId === $user->id) $returnBitfield = 65535; // Owners have all permissions.
-            elseif ($room->parentalAge > $user->parentalAge
-                //|| fim_inArray($user->parentalFlags, $room->parentalFlags)
-                || ($kicks = $this->getKicks(array(
+            // Super moderators have all permissions (and can't be banned).
+            if ($user->hasPriv('modRooms'))
+                $returnBitfield = 65535;
+
+            // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
+            elseif (in_array($user->mainGroupId, $this->config['bannedUserGroups']))
+                $returnBitfield = 0;
+
+            // Owners have all permissions (but can still be banned).
+            elseif ($room->ownerId === $user->id)
+                $returnBitfield = 65535;
+
+            // A user blocked by parental controls has no permissions. This cannot apply to the room owner.
+            elseif ($room->parentalAge > $user->parentalAge) //|| fim_inArray($user->parentalFlags, $room->parentalFlags) TODO!
+                $returnBitfield = 0;
+
+            else {
+                if ($permissionsBitfield === -1) // No permissions bitfield was found in the permission's table, use the room's default.
+                    $returnBitfield = $room->defaultPermissions;
+                else
+                    $returnBitfield = $permissionsBitfield;
+
+                // Kicked users may ONLY view.
+                if ($this->getKicks(array(
                         'userIds' => array($user->id),
-                        'roomIds' => array($room->id)
-                    ))->getCount() > 0)) $returnBitfield = 0; // A kicked user (or one blocked by parental controls) has no permissions. This cannot apply to the room owner.
-            elseif ($permissionsBitfield === -1) $returnBitfield = $room->defaultPermissions;
-            else $returnBitfield = $permissionsBitfield;
+                        'roomIds' => array($room->id),
+                        'includeUserData' => false,
+                        'includeKickerData' => false,
+                        'includeRoomData' => false,
+                    ))->getCount() > 0) {
+                    $returnBitfield &= fimRoom::ROOM_PERMISSION_VIEW;
+                }
+            }
 
 
             /* Remove priviledges under certain circumstances. */
             // Remove priviledges that a user does not have for any room.
-            if (!($user->hasPriv('view'))) $returnBitfield &= ~fimRoom::ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
-            if (!($user->hasPriv('post'))) $returnBitfield &= ~fimRoom::ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
-            if (!($user->hasPriv('changeTopic'))) $returnBitfield &= ~fimRoom::ROOM_PERMISSION_TOPIC;
+            if (!($user->hasPriv('view')))
+                $returnBitfield &= ~fimRoom::ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
+
+            if (!($user->hasPriv('post')))
+                $returnBitfield &= ~fimRoom::ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
+
+            if (!($user->hasPriv('changeTopic')))
+                $returnBitfield &= ~fimRoom::ROOM_PERMISSION_TOPIC;
+
 
             // Deleted and archived rooms act similarly: no one may post in them, while only admins can view deleted rooms.
             if ($room->deleted || $room->archived) { // that is, check if a room is either deleted or archived.

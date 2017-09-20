@@ -111,7 +111,7 @@ function curlTestCommon($input, $jsonIndexes, $expectedValues, $callback = null)
 
         if ($noset && $expectedValues[$indexNum] === null) {
         }
-        elseif ($requestNarrow !== $expectedValues[$indexNum]) {
+        elseif ($requestNarrow != $expectedValues[$indexNum]) {
             $return .= red(implode(',', $jsonIndex) . ': Expected ' . htmlentities(print_r($expectedValues[$indexNum], true)) . ', found ' . ($noset ? '_unset_' : htmlentities(print_r($requestNarrow, true))) . '<br />');
             $good = false;
         }
@@ -582,15 +582,15 @@ curlTestGETEquals(
 );
 
 
-$testUnitUserId;
-$testUnitUserToken;
-$testUnitUserName = "testUnitUser" . uniqid();
+$testUserId;
+$testUserToken;
+$testUserName = "testUnitUser" . uniqid();
 
 echo '<tr><td>Create User without birthDate</td>';
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['name' => $testUnitUserName, 'password' => 'password', 'email' => 'bob@example.com'],
+    ['name' => $testUserName, 'password' => 'password', 'email' => 'bob@example.com'],
     ['exception', 'string'],
     'birthDateRequired'
 );
@@ -599,7 +599,7 @@ echo '<tr><td>Create User With Email bob@example</td>';
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['name' => $testUnitUserName, 'password' => 'password', 'email' => 'bob@example', 'birthDate' => time() - 14 * 365 * 3600],
+    ['name' => $testUserName, 'password' => 'password', 'email' => 'bob@example', 'birthDate' => time() - 14 * 365 * 3600],
     ['exception', 'string'],
     'emailInvalid'
 );
@@ -608,54 +608,54 @@ echo '<tr><td>Create COPPA User</td>';
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['name' => $testUnitUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 12 * 365 * 3600],
+    ['name' => $testUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 12 * 365 * 3600],
     ['exception', 'string'],
     'ageMinimum'
 );
 
 // todo: email required
 
-echo "<tr><td>Create Valid User, $testUnitUserName</td>";
+echo "<tr><td>Create Valid User, $testUserName</td>";
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['name' => $testUnitUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 14 * 365 * 24 * 3600],
+    ['name' => $testUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 14 * 365 * 24 * 3600],
     ['user', 'name'],
-    $testUnitUserName,
+    $testUserName,
     function($data) {
-        global $testUnitUserId;
-        $testUnitUserId = $data['user']['id'];
+        global $testUserId;
+        $testUserId = $data['user']['id'];
     }
 );
 
-echo "<tr><td>Create Duplicate User, $testUnitUserName</td>";
+echo "<tr><td>Create Duplicate User, $testUserName</td>";
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['name' => $testUnitUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 14 * 365 * 24 * 3600],
+    ['name' => $testUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 14 * 365 * 24 * 3600],
     ['exception', 'string'],
     'nameTaken'
 );
 
-echo "<tr><td>Get $testUnitUserName as admin</td>";
+echo "<tr><td>Get $testUserName as admin</td>";
 curlTestGETEqualsMulti(
     'api/user.php',
-    ['access_token' => $accessToken, 'id' => $testUnitUserId],
+    ['access_token' => $accessToken, 'id' => $testUserId],
     [
-        ['users', $testUnitUserId, 'name'],
-        ['users', $testUnitUserId, 'permissions', 'view'],
-        ['users', $testUnitUserId, 'permissions', 'post'],
-        ['users', $testUnitUserId, 'permissions', 'changeTopic'],
-        ['users', $testUnitUserId, 'permissions', 'createRooms'],
-        ['users', $testUnitUserId, 'permissions', 'privateRoomsFriends'],
-        ['users', $testUnitUserId, 'permissions', 'privateRoomsAll'],
-        ['users', $testUnitUserId, 'permissions', 'roomsOnline'],
-        ['users', $testUnitUserId, 'permissions', 'postCounts'],
-        ['users', $testUnitUserId, 'permissions', 'editOwnPosts'],
-        ['users', $testUnitUserId, 'permissions', 'deleteOwnPosts'],
+        ['users', $testUserId, 'name'],
+        ['users', $testUserId, 'permissions', 'view'],
+        ['users', $testUserId, 'permissions', 'post'],
+        ['users', $testUserId, 'permissions', 'changeTopic'],
+        ['users', $testUserId, 'permissions', 'createRooms'],
+        ['users', $testUserId, 'permissions', 'privateRoomsFriends'],
+        ['users', $testUserId, 'permissions', 'privateRoomsAll'],
+        ['users', $testUserId, 'permissions', 'roomsOnline'],
+        ['users', $testUserId, 'permissions', 'postCounts'],
+        ['users', $testUserId, 'permissions', 'editOwnPosts'],
+        ['users', $testUserId, 'permissions', 'deleteOwnPosts'],
     ],
     [
-        $testUnitUserName,
+        $testUserName,
         true,
         true,
         false,
@@ -699,19 +699,19 @@ echo '<tr><td>Login as testUnitUser</td>';
 curlTestPOSTEquals(
     'validate.php',
     [],
-    ['username' => $testUnitUserName, 'password' => 'password', 'client_id' => 'WebPro', 'grant_type' => 'password'],
+    ['username' => $testUserName, 'password' => 'password', 'client_id' => 'WebPro', 'grant_type' => 'password'],
     ['login', 'userData', 'name'],
-    $testUnitUserName,
+    $testUserName,
     function($data) {
-        global $accessToken2;
-        $accessToken2 = $data['login']['access_token'];
+        global $testUserToken;
+        $testUserToken = $data['login']['access_token'];
     }
 );
 
 echo '<tr><td>Send Message "Hi", Room 1</td>';
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => 1],
+    ['_action' => 'create', 'access_token' => $testUserToken, 'roomId' => 1],
     ['message' => 'Hi'],
     ['message', 'censor'],
     []
@@ -720,7 +720,7 @@ curlTestPOSTEquals(
 echo "<tr><td>Get Room '$testRoomName', Test Permissions</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
-    ['access_token' => $accessToken2, 'id' => $testRoomId],
+    ['access_token' => $testUserToken, 'id' => $testRoomId],
     [
         ['rooms', "room $testRoomId", 'permissions', 'view'],
         ['rooms', "room $testRoomId", 'permissions', 'post'],
@@ -738,7 +738,7 @@ curlTestGETEqualsMulti(
 echo "<tr><td>Get Messages in $testRoomName</td>";
 curlTestGETEqualsMulti(
     'api/message.php',
-    ['access_token' => $accessToken2, 'roomId' => $testRoomId, 'archive' => true, 'messageIdStart' => 0],
+    ['access_token' => $testUserToken, 'roomId' => $testRoomId, 'archive' => true, 'messageIdStart' => 0],
     [
         ['messages', 0, 'text'],
         ['messages', 1, 'text']
@@ -752,7 +752,7 @@ curlTestGETEqualsMulti(
 echo "<tr><td>Send Message 'Hi' in $testRoomName</td>";
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoomId],
+    ['_action' => 'create', 'access_token' => $testUserToken, 'roomId' => $testRoomId],
     ['message' => 'Hi'],
     ['exception', 'string'],
     'noPerm'
@@ -770,7 +770,7 @@ curlTestPOSTEquals(
 echo "<tr><td>Get Room '$testRoomName', Test Permissions</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
-    ['access_token' => $accessToken2, 'id' => $testRoomId],
+    ['access_token' => $testUserToken, 'id' => $testRoomId],
     [
         ['rooms', "room $testRoomId", 'permissions', 'view'],
         ['rooms', "room $testRoomId", 'permissions', 'post'],
@@ -788,7 +788,7 @@ curlTestGETEqualsMulti(
 echo "<tr><td>Send Message 'Hi' in $testRoomName</td>";
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoomId],
+    ['_action' => 'create', 'access_token' => $testUserToken, 'roomId' => $testRoomId],
     ['message' => 'Hi'],
     ['message', 'censor'],
     []
@@ -818,36 +818,36 @@ curlTestPOSTEquals(
     []
 );
 
-echo "<tr><td>Get Room '$testRoom2Name' as '$testUnitUserName', Test for idNoExist</td>";
+echo "<tr><td>Get Room '$testRoom2Name' as '$testUserName', Test for idNoExist</td>";
 curlTestGETEquals(
     'api/room.php',
-    ['access_token' => $accessToken2, 'id' => $testRoom2Id],
+    ['access_token' => $testUserToken, 'id' => $testRoom2Id],
     ['exception', 'string'],
     'idNoExist'
 );
 
-echo "<tr><td>Get Messages in '$testRoom2Name' as '$testUnitUserName', Test for idNoExist</td>";
+echo "<tr><td>Get Messages in '$testRoom2Name' as '$testUserName', Test for idNoExist</td>";
 curlTestGETEquals(
     'api/message.php',
-    ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
+    ['access_token' => $testUserToken, 'roomId' => $testRoom2Id, 'archive' => true],
     ['exception', 'string'],
     'idNoExist'
 );
 
-echo "<tr><td>Send Message 'Hi' in '$testRoom2Name' as '$testUnitUserName', Test for idNoExist</td>";
+echo "<tr><td>Send Message 'Hi' in '$testRoom2Name' as '$testUserName', Test for idNoExist</td>";
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoom2Id],
+    ['_action' => 'create', 'access_token' => $testUserToken, 'roomId' => $testRoom2Id],
     ['message' => 'Hi'],
     ['exception', 'string'],
     'idNoExist'
 );
 
-echo "<tr><td>Edit Room '$testRoom2Name' to Allow Viewing by '$testUnitUserName'</td>";
+echo "<tr><td>Edit Room '$testRoom2Name' to Allow Viewing by '$testUserName'</td>";
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoom2Id],
-    ['userPermissions' => "{\"+{$testUnitUserId}\" : [\"view\"]}"],
+    ['userPermissions' => "{\"+{$testUserId}\" : [\"view\"]}"],
     ['room', 'id'],
     (string) $testRoom2Id
 );
@@ -855,7 +855,7 @@ curlTestPOSTEquals(
 echo "<tr><td>Get Messages in '$testRoom2Name'</td>";
 curlTestGETEquals(
     'api/message.php',
-    ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
+    ['access_token' => $testUserToken, 'roomId' => $testRoom2Id, 'archive' => true],
     ['messages', 0, 'text'],
     'Huh'
 );
@@ -863,16 +863,16 @@ curlTestGETEquals(
 echo "<tr><td>Send Message 'Hi' in '$testRoom2Name'</td>";
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoom2Id],
+    ['_action' => 'create', 'access_token' => $testUserToken, 'roomId' => $testRoom2Id],
     ['message' => 'Hi'],
     ['exception', 'string'],
     'noPerm'
 );
 
-echo "<tr><td>Get All Rooms as '$testUnitUserName', Testing for Rooms '$testRoomName', '$testRoom2Name' (Only At Installation)</td>";
+echo "<tr><td>Get All Rooms as '$testUserName', Testing for Rooms '$testRoomName', '$testRoom2Name' (Only At Installation)</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
-    ['access_token' => $accessToken2],
+    ['access_token' => $testUserToken],
     [
         ['rooms', "room $testRoomId", 'name'],
         ['rooms', "room $testRoom2Id", 'name'],
@@ -885,11 +885,11 @@ curlTestGETEqualsMulti(
 
 sleep(1); // Logging may prevent saves more than every second. (This is a TODO on its own terms.)
 
-echo "<tr><td>Edit Room '$testRoom2Name' to Allow Posting by '$testUnitUserName'</td>";
+echo "<tr><td>Edit Room '$testRoom2Name' to Allow Posting by '$testUserName'</td>";
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoom2Id],
-    ['userPermissions' => "{\"+{$testUnitUserId}\" : [\"post\"]}"],
+    ['userPermissions' => "{\"+{$testUserId}\" : [\"post\"]}"],
     ['room', 'id'],
     (string) $testRoom2Id
 );
@@ -900,10 +900,10 @@ curlTestGETEqualsMulti(
     ['access_token' => $accessToken, 'id' => $testRoom2Id],
     [
         ['rooms', "room $testRoom2Id", 'name'],
-        ['rooms', "room $testRoom2Id", 'userPermissions', $testUnitUserId, 'view'],
-        ['rooms', "room $testRoom2Id", 'userPermissions', $testUnitUserId, 'post'],
-        ['rooms', "room $testRoom2Id", 'userPermissions', $testUnitUserId, 'moderate'],
-        ['rooms', "room $testRoom2Id", 'userPermissions', $testUnitUserId, 'grant'],
+        ['rooms', "room $testRoom2Id", 'userPermissions', $testUserId, 'view'],
+        ['rooms', "room $testRoom2Id", 'userPermissions', $testUserId, 'post'],
+        ['rooms', "room $testRoom2Id", 'userPermissions', $testUserId, 'moderate'],
+        ['rooms', "room $testRoom2Id", 'userPermissions', $testUserId, 'grant'],
     ],
     [
         $testRoom2Name,
@@ -917,7 +917,7 @@ curlTestGETEqualsMulti(
 echo "<tr><td>Get Messages in '$testRoom2Name'</td>";
 curlTestGETEquals(
     'api/message.php',
-    ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
+    ['access_token' => $testUserToken, 'roomId' => $testRoom2Id, 'archive' => true],
     ['messages', 0, 'text'],
     'Huh'
 );
@@ -925,7 +925,7 @@ curlTestGETEquals(
 echo "<tr><td>Send Message '小さい問題' in '$testRoom2Name'</td>";
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken2, 'roomId' => $testRoom2Id],
+    ['_action' => 'create', 'access_token' => $testUserToken, 'roomId' => $testRoom2Id],
     ['message' => '小さい問題'],
     ['message', 'censor'],
     []
@@ -934,65 +934,64 @@ curlTestPOSTEquals(
 echo "<tr><td>Get Messages in '$testRoom2Name'</td>";
 curlTestGETEquals(
     'api/message.php',
-    ['access_token' => $accessToken2, 'roomId' => $testRoom2Id, 'archive' => true],
+    ['access_token' => $testUserToken, 'roomId' => $testRoom2Id, 'archive' => true],
     ['messages', 0, 'text'],
     '小さい問題'
 );
 
 echo '<thead><tr class="ui-widget-header"><th colspan="4">Another New User and Activity Tests</th></tr></thead>';
 
-$testUnit2UserId;
-$testUnit2UserToken;
-$testUnit2UserName = "testUnitUser" . uniqid();
-$accessToken3 = '';
+$testUser2Id;
+$testUser2Token;
+$testUser2Name = "testUnitUser" . uniqid();
 
-echo "<tr><td>Create Valid User, '$testUnit2UserName'</td>";
+echo "<tr><td>Create Valid User, '$testUser2Name'</td>";
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['name' => $testUnit2UserName, 'password' => '小さい問題', 'email' => 'billy@example.com', 'birthDate' => time() - 16 * 365 * 24 * 3600],
+    ['name' => $testUser2Name, 'password' => '小さい問題', 'email' => 'billy@example.com', 'birthDate' => time() - 16 * 365 * 24 * 3600],
     ['user', 'name'],
-    $testUnit2UserName,
+    $testUser2Name,
     function($data) {
-        global $testUnit2UserId;
-        $testUnit2UserId = $data['user']['id'];
+        global $testUser2Id;
+        $testUser2Id = $data['user']['id'];
     }
 );
 
-echo "<tr><td>Login as '$testUnit2UserName'</td>";
+echo "<tr><td>Login as '$testUser2Name'</td>";
 curlTestPOSTEquals(
     'validate.php',
     [],
-    ['username' => $testUnit2UserName, 'password' => '小さい問題', 'client_id' => 'WebPro', 'grant_type' => 'password'],
+    ['username' => $testUser2Name, 'password' => '小さい問題', 'client_id' => 'WebPro', 'grant_type' => 'password'],
     ['login', 'userData', 'name'],
-    $testUnit2UserName,
+    $testUser2Name,
     function($data) {
-        global $accessToken3;
-        $accessToken3 = $data['login']['access_token'];
+        global $testUser2Token;
+        $testUser2Token = $data['login']['access_token'];
     }
 );
 
 sleep(1); // Logging may prevent saves more than every second. (This is a TODO on its own terms.)
 
-echo "<tr><td>Edit Room '$testRoom2Name' to Allow Posting by '$testUnit2UserName'</td>";
+echo "<tr><td>Edit Room '$testRoom2Name' to Allow Posting by '$testUser2Name'</td>";
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoom2Id],
-    ['userPermissions' => "{\"+{$testUnit2UserId}\" : [\"view\", \"post\"]}"],
+    ['userPermissions' => "{\"+{$testUser2Id}\" : [\"view\", \"post\"]}"],
     ['room', 'id'],
     (string) $testRoom2Id
 );
 
-echo "<tr><td>Get Rooms '$testUnit2UserName' is Active In</td>";
+echo "<tr><td>Get Rooms '$testUser2Name' is Active In</td>";
 curlTestGETEqualsMulti(
     'api/userStatus.php',
-    ['access_token' => $accessToken2, 'userIds' => [$testUnit2UserId]],
+    ['access_token' => $testUserToken, 'userIds' => [$testUser2Id]],
     [
         ['users'],
         ['users', 'user 1'],
-        ['users', 'user ' . $testUnit2UserId, 'rooms', 'room 1', 'name'],
-        ['users', 'user ' . $testUnit2UserId, 'rooms', 'room ' . $testRoomId, 'name'],
-        ['users', 'user ' . $testUnit2UserId, 'rooms', 'room ' . $testRoom2Id, 'name'],
+        ['users', 'user ' . $testUser2Id, 'rooms', 'room 1', 'name'],
+        ['users', 'user ' . $testUser2Id, 'rooms', 'room ' . $testRoomId, 'name'],
+        ['users', 'user ' . $testUser2Id, 'rooms', 'room ' . $testRoom2Id, 'name'],
     ],
     [
         [],
@@ -1006,25 +1005,25 @@ curlTestGETEqualsMulti(
 echo "<tr><td>Get Active Users in '$testRoom2Name'</td>";
 curlTestGETEqualsMulti(
     'api/userStatus.php',
-    ['access_token' => $accessToken2, 'roomIds' => [$testRoom2Id]],
+    ['access_token' => $testUserToken, 'roomIds' => [$testRoom2Id]],
     [
         ['users', 'user 1', 'userData', 'name'],
         ['users', 'user 1', 'rooms'],
-        ['users', 'user ' . $testUnitUserId, 'userData', 'name'],
-        ['users', 'user ' . $testUnit2UserId, 'userData', 'name'],
+        ['users', 'user ' . $testUserId, 'userData', 'name'],
+        ['users', 'user ' . $testUser2Id, 'userData', 'name'],
     ],
     [
         'admin',
         ['room ' . $testRoom2Id => ['id' => $testRoom2Id, 'name' => $testRoom2Name, 'status' => 'available', 'typing' => false]],
-        $testUnitUserName,
+        $testUserName,
         null
     ]
 );
 
-echo "<tr><td>Send Message 'バカ' in '$testRoom2Name' as '$testUnit2UserName'</td>";
+echo "<tr><td>Send Message 'バカ' in '$testRoom2Name' as '$testUser2Name'</td>";
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken3, 'roomId' => $testRoom2Id],
+    ['_action' => 'create', 'access_token' => $testUser2Token, 'roomId' => $testRoom2Id],
     ['message' => 'バカ'],
     ['message', 'censor'],
     []
@@ -1033,43 +1032,43 @@ curlTestPOSTEquals(
 echo "<tr><td>Get Active Users in '$testRoom2Name'</td>";
 curlTestGETEqualsMulti(
     'api/userStatus.php',
-    ['access_token' => $accessToken2, 'roomIds' => [$testRoom2Id]],
+    ['access_token' => $testUserToken, 'roomIds' => [$testRoom2Id]],
     [
         ['users', 'user 1', 'userData', 'name'],
         ['users', 'user 1', 'rooms'],
-        ['users', 'user ' . $testUnitUserId, 'userData', 'name'],
-        ['users', 'user ' . $testUnit2UserId, 'userData', 'name'],
+        ['users', 'user ' . $testUserId, 'userData', 'name'],
+        ['users', 'user ' . $testUser2Id, 'userData', 'name'],
     ],
     [
         'admin',
         ['room ' . $testRoom2Id => ['id' => $testRoom2Id, 'name' => $testRoom2Name, 'status' => 'available', 'typing' => false]],
-        $testUnitUserName,
-        $testUnit2UserName
+        $testUserName,
+        $testUser2Name
     ]
 );
 
 echo "<tr><td>Get Active Users in '$testRoomName'</td>";
 curlTestGETEqualsMulti(
     'api/userStatus.php',
-    ['access_token' => $accessToken2, 'roomIds' => [$testRoomId]],
+    ['access_token' => $testUserToken, 'roomIds' => [$testRoomId]],
     [
         ['users', 'user 1', 'userData', 'name'],
         ['users', 'user 1', 'rooms'],
-        ['users', 'user ' . $testUnitUserId, 'userData', 'name'],
-        ['users', 'user ' . $testUnit2UserId, 'userData', 'name'],
+        ['users', 'user ' . $testUserId, 'userData', 'name'],
+        ['users', 'user ' . $testUser2Id, 'userData', 'name'],
     ],
     [
         'admin',
         ['room ' . $testRoomId => ['id' => $testRoomId, 'name' => $testRoomName, 'status' => 'available', 'typing' => false]],
-        $testUnitUserName,
+        $testUserName,
         null
     ]
 );
 
-echo "<tr><td>Ping '$testRoomName' as '$testUnit2UserName', typing = true</td>";
+echo "<tr><td>Ping '$testRoomName' as '$testUser2Name', typing = true</td>";
 curlTestPOSTEquals(
     'api/userStatus.php',
-    ['_action' => 'edit', 'access_token' => $accessToken3, 'roomIds' => [$testRoomId]],
+    ['_action' => 'edit', 'access_token' => $testUser2Token, 'roomIds' => [$testRoomId]],
     ['typing' => true],
     ['response'],
     []
@@ -1078,37 +1077,37 @@ curlTestPOSTEquals(
 echo "<tr><td>Get Active Users in '$testRoomName'</td>";
 curlTestGETEqualsMulti(
     'api/userStatus.php',
-    ['access_token' => $accessToken2, 'roomIds' => [$testRoomId]],
+    ['access_token' => $testUserToken, 'roomIds' => [$testRoomId]],
     [
         ['users', 'user 1', 'userData', 'name'],
         ['users', 'user 1', 'rooms'],
-        ['users', 'user ' . $testUnitUserId, 'userData', 'name'],
-        ['users', 'user ' . $testUnit2UserId, 'userData', 'name'],
-        ['users', 'user ' . $testUnit2UserId, 'rooms'],
+        ['users', 'user ' . $testUserId, 'userData', 'name'],
+        ['users', 'user ' . $testUser2Id, 'userData', 'name'],
+        ['users', 'user ' . $testUser2Id, 'rooms'],
     ],
     [
         'admin',
         ['room ' . $testRoomId => ['id' => $testRoomId, 'name' => $testRoomName, 'status' => 'available', 'typing' => false]],
-        $testUnitUserName,
-        $testUnit2UserName,
+        $testUserName,
+        $testUser2Name,
         ['room ' . $testRoomId => ['id' => $testRoomId, 'name' => $testRoomName, 'status' => 'available', 'typing' => true]],
     ]
 );
 
-echo "<tr><td>Get Rooms '$testUnit2UserName' is Active In</td>";
+echo "<tr><td>Get Rooms '$testUser2Name' is Active In</td>";
 curlTestGETEqualsMulti(
     'api/userStatus.php',
-    ['access_token' => $accessToken2, 'userIds' => [$testUnit2UserId]],
+    ['access_token' => $testUserToken, 'userIds' => [$testUser2Id]],
     [
         ['users', 'user 1'],
-        ['users', 'user ' . $testUnit2UserId, 'userData', 'name'],
-        ['users', 'user ' . $testUnit2UserId, 'rooms', 'room 1', 'name'],
-        ['users', 'user ' . $testUnit2UserId, 'rooms', 'room ' . $testRoomId, 'name'],
-        ['users', 'user ' . $testUnit2UserId, 'rooms', 'room ' . $testRoom2Id, 'name'],
+        ['users', 'user ' . $testUser2Id, 'userData', 'name'],
+        ['users', 'user ' . $testUser2Id, 'rooms', 'room 1', 'name'],
+        ['users', 'user ' . $testUser2Id, 'rooms', 'room ' . $testRoomId, 'name'],
+        ['users', 'user ' . $testUser2Id, 'rooms', 'room ' . $testRoom2Id, 'name'],
     ],
     [
         null,
-        $testUnit2UserName,
+        $testUser2Name,
         null,//'Your Room!',
         $testRoomName,
         $testRoom2Name,
@@ -1117,10 +1116,10 @@ curlTestGETEqualsMulti(
 
 
 echo '<thead><tr class="ui-widget-header"><th colspan="4">Fav Rooms Test</th></th></tr></thead>';
-echo "<tr><td>'$testUnitUserName' Favs Room '$testRoomName'</td>";
+echo "<tr><td>'$testUserName' Favs Room '$testRoomName'</td>";
 curlTestPOSTEquals(
     'api/userOptions.php',
-    ['access_token' => $accessToken2, '_action' => 'create'],
+    ['access_token' => $testUserToken, '_action' => 'create'],
     ['favRooms' => [$testRoomId]],
     ['editUserOptions'],
     []
@@ -1129,15 +1128,15 @@ curlTestPOSTEquals(
 echo "<tr><td>Get Rooms, Checking for '$testRoomName' at Top</td>";
 curlTestGETEquals(
     'api/room.php',
-    ['access_token' => $accessToken2],
+    ['access_token' => $testUserToken],
     ['rooms', new ArrayPosition(0), 'name'],
     $testRoomName
 );
 
-echo "<tr><td>'$testUnitUserName' Replaces Fav Rooms With 'Another Room!', '$testRoom2Name'</td>";
+echo "<tr><td>'$testUserName' Replaces Fav Rooms With 'Another Room!', '$testRoom2Name'</td>";
 curlTestPOSTEquals(
     'api/userOptions.php',
-    ['access_token' => $accessToken2, '_action' => 'edit'],
+    ['access_token' => $testUserToken, '_action' => 'edit'],
     ['favRooms' => [2, $testRoom2Id]],
     ['editUserOptions'],
     []
@@ -1146,7 +1145,7 @@ curlTestPOSTEquals(
 echo "<tr><td>Get Rooms, Checking for 'Another Room!', '$testRoom2Name', 'Your Room!' at Top</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
-    ['access_token' => $accessToken2],
+    ['access_token' => $testUserToken],
     [
         ['rooms', new ArrayPosition(0), 'name'],
         ['rooms', new ArrayPosition(1), 'name'],
@@ -1159,10 +1158,10 @@ curlTestGETEqualsMulti(
     ]
 );
 
-echo "<tr><td>'$testUnitUserName' Unfavs Room '$testRoom2Name'</td>";
+echo "<tr><td>'$testUserName' Unfavs Room '$testRoom2Name'</td>";
 curlTestPOSTEquals(
     'api/userOptions.php',
-    ['access_token' => $accessToken2, '_action' => 'delete'],
+    ['access_token' => $testUserToken, '_action' => 'delete'],
     ['favRooms' => [$testRoom2Id]],
     ['editUserOptions'],
     []
@@ -1171,7 +1170,7 @@ curlTestPOSTEquals(
 echo "<tr><td>Get Rooms, Checking for 'Another Room!', 'Your Room!' at Top</td>";
 curlTestGETEqualsMulti(
     'api/room.php',
-    ['access_token' => $accessToken2],
+    ['access_token' => $testUserToken],
     [
         ['rooms', new ArrayPosition(0), 'name'],
         ['rooms', new ArrayPosition(1), 'name'],
@@ -1227,131 +1226,398 @@ curlTestGETEqualsMulti(
 
 echo '<thead><tr class="ui-widget-header"><th colspan="4">Watch Rooms Test</th></tr></thead>';
 
-echo "<tr><td>Get Unread Messages for '$testUnitUserName'</td>";
+echo "<tr><td>Get Unread Messages for '$testUserName'</td>";
 curlTestGETEquals(
     'api/unreadMessages.php',
-    ['access_token' => $accessToken2],
+    ['access_token' => $testUserToken],
     ['unreadMessages'],
     []
 );
 
-echo "<tr><td>'$testUnitUserName' Watches Room '$testRoomName'</td>";
+echo "<tr><td>'$testUserName' Watches Room '$testRoomName'</td>";
 curlTestPOSTEquals(
     'api/userOptions.php',
-    ['access_token' => $accessToken2, '_action' => 'create'],
+    ['access_token' => $testUserToken, '_action' => 'create'],
     ['watchRooms' => [$testRoomId]],
     ['editUserOptions'],
     []
 );
 
-echo "<tr><td>Get Unread Messages for '$testUnitUserName'</td>";
+echo "<tr><td>Get Unread Messages for '$testUserName'</td>";
 curlTestGETEquals(
     'api/unreadMessages.php',
-    ['access_token' => $accessToken2],
+    ['access_token' => $testUserToken],
     ['unreadMessages'],
     []
 );
 
-echo "<tr><td>Send Message 'Hello' in '$testRoomName' as '$testUnit2UserName'</td>";
+echo "<tr><td>Send Message 'Hello' in '$testRoomName' as '$testUser2Name'</td>";
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken3, 'roomId' => $testRoomId],
+    ['_action' => 'create', 'access_token' => $testUser2Token, 'roomId' => $testRoomId],
     ['message' => 'バカ'],
     ['message', 'censor'],
     []
 );
 
-echo "<tr><td>Send Message 'Goodbye' in '$testRoom2Name' as '$testUnit2UserName'</td>";
+echo "<tr><td>Send Message 'Goodbye' in '$testRoom2Name' as '$testUser2Name'</td>";
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken3, 'roomId' => $testRoom2Id],
+    ['_action' => 'create', 'access_token' => $testUser2Token, 'roomId' => $testRoom2Id],
     ['message' => 'バカ'],
     ['message', 'censor'],
     []
 );
 
 for ($i = 0; $i < 2; $i++) {
-    echo "<tr><td>Get Unread Messages for '$testUnitUserName'</td>";
+    echo "<tr><td>Get Unread Messages for '$testUserName'</td>";
     curlTestGETEqualsMulti(
         'api/unreadMessages.php',
-        ['access_token' => $accessToken2],
+        ['access_token' => $testUserToken],
         [
             ['unreadMessages', 0, 'senderName'],
             ['unreadMessages', 0, 'roomName'],
             ['unreadMessages', 1]
         ],
         [
-            $testUnit2UserName,
+            $testUser2Name,
             $testRoomName,
             null
         ]
     );
 }
 
-echo "<tr><td>Get Unread Messages for '$testUnit2UserName'</td>";
+echo "<tr><td>Get Unread Messages for '$testUser2Name'</td>";
 curlTestGETEquals(
     'api/unreadMessages.php',
-    ['access_token' => $accessToken3],
+    ['access_token' => $testUser2Token],
     ['unreadMessages'],
     []
 );
 
-echo "<tr><td>'$testUnitUserName' Marks Message Read</td>";
+echo "<tr><td>'$testUserName' Marks Message Read</td>";
 // todo: make delete
 curlTestPOSTEquals(
     'api/markMessageRead.php',
-    ['access_token' => $accessToken2],
+    ['access_token' => $testUserToken],
     ['roomId' => $testRoomId],
     ['markMessageRead'],
     []
 );
 
-echo "<tr><td>Get Unread Messages for '$testUnitUserName'</td>";
+echo "<tr><td>Get Unread Messages for '$testUserName'</td>";
 curlTestGETEquals(
     'api/unreadMessages.php',
-    ['access_token' => $accessToken2],
+    ['access_token' => $testUserToken],
     ['unreadMessages'],
     []
 );
 
-echo "<tr><td>'$testUnitUserName' Stops Watching Room '$testRoomName'</td>";
+echo "<tr><td>'$testUserName' Stops Watching Room '$testRoomName'</td>";
 curlTestPOSTEquals(
     'api/userOptions.php',
-    ['access_token' => $accessToken2, '_action' => 'edit'],
+    ['access_token' => $testUserToken, '_action' => 'edit'],
     ['watchRooms' => ['']],
     ['editUserOptions'],
     []
 );
 
-echo "<tr><td>Send Message 'Goodbye' in '$testRoomName' as '$testUnit2UserName'</td>";
+echo "<tr><td>Send Message 'Goodbye' in '$testRoomName' as '$testUser2Name'</td>";
 curlTestPOSTEquals(
     'api/message.php',
-    ['_action' => 'create', 'access_token' => $accessToken3, 'roomId' => $testRoomId],
+    ['_action' => 'create', 'access_token' => $testUser2Token, 'roomId' => $testRoomId],
     ['message' => 'バカ'],
     ['message', 'censor'],
     []
 );
 
-echo "<tr><td>Get Unread Messages for '$testUnitUserName'</td>";
+echo "<tr><td>Get Unread Messages for '$testUserName'</td>";
 curlTestGETEquals(
     'api/unreadMessages.php',
-    ['access_token' => $accessToken2],
+    ['access_token' => $testUserToken],
     ['unreadMessages'],
     []
 );
 
-echo '</table>';
 
-// todo: admin kick unpriviledged user in default room
-// todo: unpriviledged user can't post in default room
-// todo: admin unkick unpriviledged user in default room
-// todo: unpriviledged user can post in default room
+echo '<thead><tr class="ui-widget-header"><th colspan="4">Kicks</th></tr></thead>';
+
+echo "<tr><td>Get Kicks as 'admin', Checking for '$testUserName', '$testUser2Name'</td>";
+curlTestGETEqualsMulti(
+    'api/kick.php',
+    ['access_token' => $accessToken],
+    [
+        ['kicks', 'user ' . $testUserId],
+        ['kicks', 'user ' . $testUser2Id],
+    ],
+    [
+        null,
+        null
+    ]
+);
+
+echo "<tr><td>Kick 'admin' as 'admin'</td>";
+curlTestPOSTEquals(
+    'api/kick.php',
+    ['access_token' => $accessToken, 'userId' => 1, 'roomId' => 1],
+    ['length' => 60],
+    ['exception', 'string'],
+    'unkickableUser'
+);
+
+echo "<tr><td>Get Messages in '$testRoomName' as '$testUserName'</td>";
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $testUserToken, 'roomId' => $testRoomId],
+    ['messages', 0, 'text'],
+    true
+);
+
+echo "<tr><td>Send Message 'Hello' in '$testRoomName' as '$testUserName'</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $testUserToken, 'roomId' => $testRoomId],
+    ['message' => 'Hello'],
+    ['message', 'censor'],
+    []
+);
+
+echo "<tr><td>Kick '$testUserName' without length as 'admin' in '$testRoomName'</td>";
+curlTestPOSTEquals(
+    'api/kick.php',
+    ['access_token' => $accessToken, 'userId' => $testUserId, 'roomId' => $testRoomId],
+    [],
+    ['exception', 'string'],
+    ['lengthRequired']
+);
+
+echo "<tr><td>Kick '$testUserName' as 'admin' in '$testRoomName'</td>";
+curlTestPOSTEquals(
+    'api/kick.php',
+    ['access_token' => $accessToken, 'userId' => $testUserId, 'roomId' => $testRoomId],
+    ['length' => 60],
+    ['kick'],
+    []
+);
+
+echo "<tr><td>Get All Kicks as 'admin'</td>";
+curlTestGETEqualsMulti(
+    'api/kick.php',
+    ['access_token' => $accessToken],
+    [
+        ['kicks', 'user ' . $testUserId, 'userId'],
+        ['kicks', 'user ' . $testUserId, 'userName'],
+        ['kicks', 'user ' . $testUserId, 'userNameFormat'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'roomId'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'roomName'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'kickerId'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'kickerName'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'kickerNameFormat'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'length'],
+    ],
+    [
+        $testUserId,
+        $testUserName,
+        '', // TODO: test
+        $testRoomId,
+        $testRoomName,
+        1,
+        'admin',
+        '', // TODO: test
+        60
+    ]
+);
+
+echo "<tr><td>Get Messages in '$testRoomName' as '$testUserName'</td>";
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $testUserToken, 'roomId' => $testRoomId],
+    ['messages', 0, 'text'],
+    "/me kicked $testUserName"
+);
+
+echo "<tr><td>Send Message 'Hello' in '$testRoomName' as '$testUserName'</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $testUserToken, 'roomId' => $testRoomId],
+    ['message' => 'Hello'],
+    ['exception', 'string'],
+    'noPerm'
+);
+
+
+echo "<tr><td>Send Message 'Hello' in 'Your Room!' as '$testUser2Name'</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $testUser2Token, 'roomId' => 1],
+    ['message' => 'Hello'],
+    ['message', 'censor'],
+    []
+);
+
+echo "<tr><td>Kick '$testUser2Name' as 'admin' in 'Your Room!'</td>";
+curlTestPOSTEquals(
+    'api/kick.php',
+    ['access_token' => $accessToken, 'userId' => $testUser2Id, 'roomId' => 1],
+    ['length' => 120],
+    ['kick'],
+    []
+);
+
+echo "<tr><td>Get All Kicks as 'admin'</td>";
+curlTestGETEqualsMulti(
+    'api/kick.php',
+    ['access_token' => $accessToken],
+    [
+        ['kicks', 'user ' . $testUserId, 'userName'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'roomName'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'kickerName'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'length'],
+        ['kicks', 'user ' . $testUser2Id, 'userName'],
+        ['kicks', 'user ' . $testUser2Id, 'kicks', 'room ' . 1, 'roomName'],
+        ['kicks', 'user ' . $testUser2Id, 'kicks', 'room ' . 1, 'kickerName'],
+        ['kicks', 'user ' . $testUser2Id, 'kicks', 'room ' . 1, 'length'],
+    ],
+    [
+        $testUserName,
+        $testRoomName,
+        'admin',
+        60,
+        $testUser2Name,
+        'Your Room!',
+        'admin',
+        120
+    ]
+);
+
+echo "<tr><td>Send Message 'Hello' in 'Your Room!' as '$testUser2Name'</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['_action' => 'create', 'access_token' => $testUser2Token, 'roomId' => 1],
+    ['message' => 'Hello'],
+    ['exception', 'string'],
+    'noPerm'
+);
+
+echo "<tr><td>Get All Kicks as '$testUser2Name'</td>";
+curlTestGETEquals(
+    'api/kick.php',
+    ['access_token' => $testUser2Token],
+    ['exception', 'string'],
+    'roomIdRequired'
+);
+
+echo "<tr><td>Get Room '$testRoomName' kicks as '$testUser2Name'</td>";
+curlTestGETEquals(
+    'api/kick.php',
+    ['access_token' => $testUser2Token, 'roomId' => $testRoomId],
+    ['exception', 'string'],
+    'noPerm'
+);
+
+echo "<tr><td>Get '$testUserName's kicks as '$testUser2Name'</td>";
+curlTestGETEquals(
+    'api/kick.php',
+    ['access_token' => $testUser2Token, 'userId' => $testUserId],
+    ['exception', 'string'],
+    'roomIdRequired'
+);
+
+echo "<tr><td>Get '$testUserName's kicks in '$testRoomName' as '$testUser2Name'</td>";
+curlTestGETEquals(
+    'api/kick.php',
+    ['access_token' => $testUser2Token, 'roomId' => $testRoomId, 'userId' => $testUserId],
+    ['exception', 'string'],
+    'noPerm'
+);
+
+echo "<tr><td>Get '$testUserName's kicks as '$testUserName'</td>";
+curlTestGETEqualsMulti(
+    'api/kick.php',
+    ['access_token' => $testUserToken, 'userId' => $testUserId],
+    [
+        ['kicks', 'user ' . $testUser2Id],
+        ['kicks', 'user ' . $testUserId, 'userName'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'roomName'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'kickerName'],
+        ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'length'],
+    ],
+    [
+        null,
+        $testUserName,
+        $testRoomName,
+        'admin',
+        60,
+    ]
+);
+
+echo "<tr><td>Get '$testUser2Name's kicks as '$testUser2Name'</td>";
+curlTestGETEqualsMulti(
+    'api/kick.php',
+    ['access_token' => $testUser2Token, 'userId' => $testUser2Id],
+    [
+        //['kicks', 'user ' . $testUserId],
+        ['kicks', 'user ' . $testUser2Id, 'userName'],
+        ['kicks', 'user ' . $testUser2Id, 'kicks', 'room ' . 1, 'roomName'],
+        ['kicks', 'user ' . $testUser2Id, 'kicks', 'room ' . 1, 'kickerName'],
+        ['kicks', 'user ' . $testUser2Id, 'kicks', 'room ' . 1, 'length'],
+    ],
+    [
+        //null,
+        $testUser2Name,
+        'Your Room!',
+        'admin',
+        120
+    ]
+);
+
+echo "<tr><td>Unkick '$testUser2Name' as '$testUserName' in 'Your Room!'</td>";
+curlTestPOSTEquals(
+    'api/kick.php',
+    ['access_token' => $testUserToken, '_action' => 'delete', 'userId' => $testUser2Id, 'roomId' => 1],
+    [],
+    ['exception', 'string'],
+    'noPerm'
+);
+
+echo "<tr><td>Unkick '$testUser2Name' as '$testUser2Name' in 'Your Room!'</td>";
+curlTestPOSTEquals(
+    'api/kick.php',
+    ['access_token' => $testUser2Token, '_action' => 'delete', 'userId' => $testUser2Id, 'roomId' => 1],
+    [],
+    ['exception', 'string'],
+    'noPerm'
+);
+
+echo "<tr><td>Unkick '$testUser2Name' as 'admin' in 'Your Room!'</td>";
+curlTestPOSTEquals(
+    'api/kick.php',
+    ['access_token' => $accessToken, '_action' => 'delete', 'userId' => $testUser2Id, 'roomId' => 1],
+    [],
+    ['kick'],
+    []
+);
+
+echo "<tr><td>Send Message 'Hello' in 'Your Room!' as '$testUser2Name'</td>";
+curlTestPOSTEquals(
+    'api/message.php',
+    ['access_token' => $testUser2Token, 'roomId' => 1],
+    ['message' => 'Hello'],
+    ['message', 'censor'],
+    []
+);
+
+// todo: test kick natural expiration
+
+echo '</table>';
 
 // todo: message/room text search
 
 // todo: user message formatting
 // todo: user friends/ignore list and private messages
 // todo: file uploads and enumerations
+
+// todo: age content restrictions on rooms, files
 ?>
 </div>
 </body>
