@@ -1,5 +1,16 @@
 <?php
-class fimDynamicObject {
+abstract class fimDynamicObject {
+    /**
+     * @var array The parameters that have been resolved for this instance of fimRoom. If an unresolved parameter is accessed, it will be resolved.
+     */
+    protected $resolved = array();
+
+    /**
+     * @var int Whether or not the object is known to have a corresponding entry in the database. (For now, true means it does, false either means we're not sure or it doesn't.)
+     */
+    protected $exists = false;
+
+
     /**
      * Invokes setters, or sets by property. Adds properties to list of resolved properties.
      *
@@ -41,5 +52,29 @@ class fimDynamicObject {
                 apcu_store($key, $this, 500);
         }
     }
+
+
+    abstract protected function getColumns(array $columns) : bool;
+
+
+    /**
+     * Resolves the list of properties from the database. Previously resolved properties are left alone.
+     *
+     * @param $properties array list of properties ot resolve
+     */
+    public function resolve(array $properties) {
+        return $this->getColumns(array_diff($properties, $this->resolved));
+    }
+
+    /**
+     * Resolves all database properties.
+     */
+    abstract public function resolveAll();
+
+
+    /**
+     * @return bool true when the object has a corresponding entry in the database, false otherwise
+     */
+    abstract public function exists() : bool;
 }
 ?>

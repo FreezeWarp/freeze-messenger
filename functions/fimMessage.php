@@ -122,7 +122,9 @@ class fimMessage
             $this->flag = $messageData['flag'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have flag column.');
             $this->time = $messageData['time'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');
             $this->formatting = $messageData['messageFormatting'] ?? '';// todo: ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have messageFormatting column.');
-        } // When creating a new message.
+        }
+
+        // When creating a new message.
         else if (is_array($messageData)) {
             $this->user = $messageData['user'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain user.');
             $this->room = $messageData['room'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain room.');
@@ -136,7 +138,9 @@ class fimMessage
             }
 
             list($this->textEncrypted, $this->iv, $this->salt) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
-        } elseif ($messageData !== null) {
+        }
+
+        elseif ($messageData !== null) {
             throw new Exception('Invalid message data specified -- must be an associative array corresponding to a table row. Passed: ' . print_r($messageData, true));
         }
     }

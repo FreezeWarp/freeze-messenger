@@ -191,11 +191,6 @@ class fimRoom extends fimDynamicObject {
      */
     protected $roomData;
 
-    /**
-     * @var array The parameters that have been resolved for this instance of fimRoom. If an unresolved parameter is accessed, it will be resolved.
-     */
-    protected $resolved = array();
-
 
     /**
      * @var array A map of string permissions to their bits in a bitfield.
@@ -230,6 +225,7 @@ class fimRoom extends fimDynamicObject {
      */
     private $generalCache;
 
+
     /**
      * @param $roomData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
      */
@@ -257,27 +253,39 @@ class fimRoom extends fimDynamicObject {
     }
 
 
-    /* Returns true if and only if $id is a private or off-the-record room ID string, e.g. "o1,2" or "p5,60". The user IDs must be greater than 0 for this to return true. Duplicates are not checked for, though they will be flagged by hasPermission _and_ will be removed by fimRoom->getPrivateRoomMembers(). */
+    /**
+     * Returns true iif $id is a private or off-the-record room ID string, e.g. "o1,2" or "p5,60". The user IDs must be greater than 0 for this to return true. Duplicates are not checked for, though they will be flagged by hasPermission _and_ will be removed by fimRoom->getPrivateRoomMembers(). (Well, almost: the first two entries are checked for duplication. If they are duplicates, the string is rejected. This ensures that at least two non-duplicate IDs exist.)
+     *
+     * @param string $id The ID string to check.
+     *
+     * @return bool True if the ID string can be evaluated as a private room ID string, false otherwise.
+     */
     public static function isPrivateRoomId(string $id) {
-        if (!isset($id[0])) {
+        if (strlen($id) == 0) {
             return false;
         }
-        else if ($id[0] === 'p' || $id[0] === 'o') {
+
+        elseif ($id[0] === 'p' || $id[0] === 'o') {
             $idList = explode(',', substr($id, 1));
 
             if (count($idList) < 2)
                 return false;
 
-            foreach ($idList AS $id) {
-                if ((int) $id < 1)
-                    return false;
+            elseif ($idList[0] == $idList[1]) // This checks to see if the first two entries are duplicates. This does not check all duplicates, merely ensuring that there are at least two non-duplicate entries (and rejecting the string if the very first two entries are duplicates).
+                return false;
 
-                if (!ctype_digit($id))
-                    return false;
+            else {
+                foreach ($idList AS $id) {
+                    if ((int) $id < 1)
+                        return false;
+                    elseif (!ctype_digit($id))
+                        return false;
+                }
             }
 
             return true;
         }
+
         else {
             return false;
         }
@@ -285,9 +293,15 @@ class fimRoom extends fimDynamicObject {
 
 
     /**
-     * Packs the ID into hexadecimal, with the ID's number being unchanged, but either 'A' or 'B' being prepended to signify a private/off-the-record room, and with an 'A' character delimiting userIds for a private/otr room.
-     * @param $id
-     * @return string
+     * Packs the ID into hexadecimal, using the following scheme:
+     * - if multiple "userIds" in the ID, convert them all into a series of base-15 numbers. If only a single roomId, convert it into base-15.
+     * - if private room, prepend "f". If off-the-record room, prepend "ff".
+     * - append each of our ids in turn, with 'f' appended at the end.
+     *
+     * For instance, "p1,2,100" is encoded at 0xF1F2F6AF. "o1,2,100" is encoded as 0xFF1F2F6AF. "100" is encoded as 0x6AF.
+     *
+     * @param $id string The roomId to encode.
+     * @return string The roomId encoded.
      */
     public static function encodeId($id) {
         $packString = '';
@@ -312,6 +326,12 @@ class fimRoom extends fimDynamicObject {
     }
 
 
+    /**
+     * Decodes a packed roomId into its string representation by {@link fimRoom::encodeId()}.
+     *
+     * @param $id string The roomId encoded.
+     * @return string The roomId decoded, e.g. "12" or "p1,3"
+     */
     public static function decodeId($id) {
         $unpackString = '';
 
@@ -357,15 +377,14 @@ class fimRoom extends fimDynamicObject {
 
 
     /**
-     * Returns true if the room has valid data in the database, or should otherwise be treated as "existing" (e.g. is a private room).
-     * TODO: caching
+     * @link fimDynamicObject::exists()
      */
-    public function roomExists() {
+    public function exists() : bool {
         global $database;
 
-        return $this->isPrivateRoom() || (count($database->getRooms([
+        return $this->exists = ($this->exists || $this->isPrivateRoom() || (count($database->getRooms([
             'roomIds' => $this->id,
-        ])->getAsArray(false)) > 0);
+        ])->getAsArray(false)) > 0));
     }
 
 
@@ -383,6 +402,7 @@ class fimRoom extends fimDynamicObject {
 
     /**
      * Returns an array of fimUser objects corresponding with those returned by getPrivateRoomMemberIds(), though only valid members (those that exist in the database) will be returned. Thus, the count of this may differ from the count of getPrivateRoomMemberIds(), and this fact can be used to check if the room exists solely of valid members.
+     * TODO: rewrite to use cached $user->exists() checks
      *
      * @return fimUser[]
      * @throws Exception
@@ -557,13 +577,9 @@ class fimRoom extends fimDynamicObject {
 
 
     /**
-     * Resolves an array of database properties. It will not resolve already-resolved properties.
-     *
-     * @param array $columns
-     * @return bool
-     * @throws Exception
+     * @link fimDynamicObject::resolve
      */
-    public function resolve($properties) {
+    public function resolve(array $properties) {
         if ($this->isPrivateRoom())
             return;
 
@@ -577,7 +593,7 @@ class fimRoom extends fimDynamicObject {
      * @throws Exception
      */
     public function resolveAll() {
-        return $this->resolve('id', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge', 'lastMessageTime', 'lastMessageId', 'messageCount', 'flags', 'watchedByUsers');
+        return $this->resolve(['id', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge', 'lastMessageTime', 'lastMessageId', 'messageCount', 'flags', 'watchedByUsers']);
     }
 
 
@@ -592,7 +608,6 @@ class fimRoom extends fimDynamicObject {
         $groupPointer = false;
 
         foreach (fimRoom::$roomDataPullGroups AS $group) {
-            //var_dump(["get-1", $needle, $group, in_array($needle, $group)]);
             if (in_array($needle, $group)) {
                 $groupPointer =& $group;
                 break;
@@ -648,6 +663,13 @@ class fimRoom extends fimDynamicObject {
     }
 
 
+    /**
+     * Gets a displayable array of permsisions based on a permissions bitfield.
+     *
+     * @param $field int The bitfield storing the permissions.
+     *
+     * @return array An associative array corresponding to the permissions user has based on their bitfield. Keys are "view", "post", "moderate", etc., and values are true if the user has the given permission, false otherwise.
+     */
     public function getPermissionsArray($field) {
         $returnArray = [];
 
@@ -662,12 +684,9 @@ class fimRoom extends fimDynamicObject {
     /**
      * Modify or create a room.
      *
-     * @param $roomParameters - The room's data.
-     * @param $dbNameMapping - Set this to true if $databaseFields is using column names (e.g. roomParentalAge) instead of class property names (e.g. parentalAge)
+     * @param $roomParameters array Data to set. These values will be set both in the fimRoom object and in the database.
      *
-     * TODO: remove $roomParameters
-     *
-     * @return bool|resource
+     * @return mixed The room's ID if inserted, otherwise true if success/false if failure.
      */
     public function setDatabase(array $roomParameters)
     {

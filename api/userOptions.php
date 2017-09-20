@@ -274,7 +274,7 @@ if ($requestHead['_action'] === 'edit') {
     if (isset($request['defaultRoomId'])) {
         $defaultRoom = new fimRoom($request['defaultRoomId']);
 
-        if (!$defaultRoom->roomExists())
+        if (!$defaultRoom->exists())
             $xmlData['editUserOptions']['defaultRoom'] = (new fimError('invalidRoom', 'The room specified does not exist.', null, true))->value();
 
         elseif (!($database->hasPermission($user, $defaultRoom) & fimRoom::ROOM_PERMISSION_VIEW))

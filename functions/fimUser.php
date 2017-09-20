@@ -876,16 +876,6 @@ class fimUser extends fimDynamicObject
 
 
     /**
-     * Resolves the list of properties from the database.
-     *
-     * @param $properties list of properties ot resolve
-     */
-    public function resolve(array $properties) {
-        return $this->getColumns(array_diff($properties, $this->resolved));
-    }
-
-
-    /**
      * Resolves all user data from the database.
      */
     public function resolveAll() {
@@ -893,14 +883,15 @@ class fimUser extends fimDynamicObject
     }
 
 
-    /* Do I even remember what this was going to be for? Not really. */
-    public function syncUser()
-    {
-        global $database, $config;
+    /**
+     * @link fimDynamicObject::exists()
+     */
+    public function exists() : bool {
+        global $database;
 
-        if ($this->lastSync >= (time() - $config['userSyncThreshold'])) { // This updates various caches every so often. In general, it is a rather slow process, and as such does tend to take a rather long time (that is, compared to normal - it won't exceed 500 miliseconds, really).
-            $database->updateUserCaches($this); // TODO
-        }
+        return $this->exists = ($this->exists || (count($database->getUsers([
+            'userIds' => $this->id,
+        ])->getAsArray(false)) > 0));
     }
 
 
