@@ -116,6 +116,11 @@ class FIMDatabaseOAuth implements
 
         // TODO: if a user has more than x tokens, delete the oldest.
 
+        // Delete tokens that expired more than a minute ago.
+        $this->db->delete($this->config['access_token_table'], [
+            'expires' => $this->db->now(-60, 'lt')
+        ]);
+
         return $this->db->upsert($this->config['access_token_table'], array(
             'access_token' => $access_token
         ), array(
