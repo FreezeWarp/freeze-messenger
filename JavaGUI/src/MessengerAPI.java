@@ -131,6 +131,41 @@ public class MessengerAPI {
 
 
     /**
+     * Get a single user's data. Returns the JSON data.
+     * @param userId The ID of the user to retrieve.
+     * @throws IOException
+     */
+    public JsonNode getUser(int userId) {
+        try {
+            JsonNode json = httpGET("api/user.php?access_token=" + sessionToken + "&id=" + userId).get("users").get(Integer.toString(userId));
+
+            return json;
+        } catch (Exception ex) {
+            System.err.println("Exception: " + ex);
+        }
+
+        return null;
+    }
+
+
+    /**
+     * Get a all user's currently online. Returns the JSON data.
+     * @throws IOException
+     */
+    public JsonNode getActiveUsers() {
+        try {
+            JsonNode json = httpGET("api/userStatus.php?access_token=" + sessionToken).get("users");
+
+            return json;
+        } catch (Exception ex) {
+            System.err.println("Exception: " + ex);
+        }
+
+        return null;
+    }
+
+
+    /**
      * Performs simple HTTP GET request, returning JSON body.
      * @param path The URL (relative to {@link MessengerAPI#serverUrl} to use.
      * @return The JSON response to the request.
