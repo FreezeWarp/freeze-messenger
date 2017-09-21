@@ -211,6 +211,22 @@ if (!$ignoreLogin) {
     }
 
 
+    elseif (isset($_REQUEST['refresh_token'])) {
+        $oauthServer->addGrantType($userC = new OAuth2\GrantType\RefreshToken($oauthStorage, [
+            'always_issue_new_refresh_token' => true
+        ]));
+        $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
+
+        die(new ApiData([
+            'login' => [
+                'access_token' => $oauthResponse->getParameter('access_token'),
+                'refresh_token' => $oauthResponse->getParameter('refresh_token'),
+                'expires' => $oauthResponse->getParameter('expires_in'),
+            ]
+        ]));
+    }
+
+
     /*
      * Verify an access token. Typically used for API logins.
      */
@@ -258,6 +274,7 @@ if (!$ignoreLogin) {
         $user->setSessionHash($oauthResponse->getParameter('access_token'));
         $user->setClientCode($oauthResponse->getParameter('client_id'));
         $tokenExpires = $oauthResponse->getParameter('expires_in');
+        $refreshToken = $oauthResponse->getParameter('refresh_token');
 
         if ($_REQUEST['grant_type'] === 'anonymous') {
             $user->setAnonId($userC->getAnonymousUserId());
@@ -289,6 +306,7 @@ if (!$ignoreLogin) {
         $apiData->replaceData(array(
             'login' => array(
                 'access_token' => $user->sessionHash,
+                'refresh_token' => $refreshToken ?? 0,
                 'expires' => $tokenExpires ?? 0,
                 'userData' => array_merge([
                     'permissions' => $user->getPermissionsArray()

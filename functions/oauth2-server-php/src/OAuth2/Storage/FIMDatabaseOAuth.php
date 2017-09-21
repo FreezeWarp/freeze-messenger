@@ -125,7 +125,7 @@ class FIMDatabaseOAuth implements
             'access_token' => $access_token
         ), array(
             'client_id' => $client_id,
-            'expires' => $expires,
+            'expires' => $this->db->now(30),
             'user_id' => $user_id,
             'scope' => $scope,
             'http_user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''  ,
@@ -251,6 +251,11 @@ class FIMDatabaseOAuth implements
 
     public function setRefreshToken($refresh_token, $client_id, $user_id, $expires, $scope = null)
     {
+        // Delete tokens that expired more than a day ago.
+        $this->db->delete($this->config['access_token_table'], [
+            'expires' => $this->db->now(-60 * 60 * 24, 'lt')
+        ]);
+
         return $this->db->insert($this->config['refresh_token_table'], array(
             'refresh_token' => $refresh_token,
             'client_id' => $client_id,

@@ -43,11 +43,17 @@ var fimApi = function() {
 
             if ("exception" in response.responseJSON) {
                 if (response.responseJSON.exception.details == 'The access token provided has expired') {
-                    standard.login({
-                        'username' : $.cookie('webpro_username'),
-                        'password' : $.cookie('webpro_username'),
-                        'finish' : callback
-                    });
+                    if ($.cookie('webpro_username')) {
+                        standard.login({
+                            'username' : $.cookie('webpro_username'),
+                            'password' : $.cookie('webpro_username'),
+                            'finish' : callback
+                        });
+                    }
+                    else {
+                        standard.logout();
+                        dia.error("Your login has expired. Please login again.");
+                    }
                 }
                 else {
                     return requestSettings.exception(response.responseJSON.exception);
@@ -95,6 +101,7 @@ fimApi.prototype.login = function (params, requestSettings) {
             'username' : null,
             'password' : null,
             'access_token' : null,
+            'refresh_token' : null,
             'client_id' : ''
         });
 
@@ -752,7 +759,7 @@ fimApi.prototype.mergeDefaults = function(object, defaults) {
             throw 'Invalid data in object call: ' + i;
         }
 
-        if (object[i] !== null) returnObject[i] = object[i];
+        if (object[i] !== null && object[i] !== undefined) returnObject[i] = object[i];
     }
 
     for (var i in defaults) {

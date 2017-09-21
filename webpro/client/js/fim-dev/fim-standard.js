@@ -139,19 +139,39 @@ standard.prototype.login = function(options) {
     if (options.start) options.start();
 
     fimApi.login({
+        'grant_type' : options.grantType,
         'username' : options.username,
         'password' : options.password,
         'access_token' : options.sessionHash,
+        'refresh_token' : options.refreshToken,
         'client_id' : 'WebPro'
     }, {
         end : function(activeLogin) {
-            window.activeLogin = activeLogin;
-            window.userId = activeLogin.userData.id;
-            window.anonId = activeLogin.userData.anonId;
-            window.permissions = activeLogin.userData.permissions;
-            window.sessionHash = activeLogin.access_token;
+            if ('userData' in activeLogin) { // A new set of user information is available.
+                window.activeLogin = activeLogin;
+                window.userId = activeLogin.userData.id;
+                window.anonId = activeLogin.userData.anonId;
+                window.permissions = activeLogin.userData.permissions;
+            }
+            else if (!window.activeLogin) { // If we already have an activeLogin, we can continue to use it. Otherwise, we must error.
+                dia.error("The login did not return proper information. The page will reload in 3 seconds...");
 
+                setTimeout(function() {
+                    location.reload();
+                }, 3000);
+            }
+
+            window.sessionHash = activeLogin.access_token;
             $.cookie('webpro_sessionHash', window.sessionHash);
+
+            if (activeLogin.expires && activeLogin.refresh_token) {
+                setTimeout(function() {
+                    standard.login({
+                        grantType : 'refresh_token',
+                        refreshToken : activeLogin.refresh_token
+                    });
+                }, activeLogin.expires / 2)
+            }
 
             if (options.finish) options.finish();
 
@@ -192,19 +212,6 @@ standard.prototype.roomEventListener = function(roomId) {
 
             callback(JSON.parse(event.data));
         }
-    };
-
-    roomSource.onerror = function(e) {
-        e.target.close();
-
-        standard.loginExpires();
-        standard.login({
-            'username' : $.cookie('webpro_username'),
-            'password' : $.cookie('webpro_username'),
-            'finish' : function() {
-                standard.roomEventListener(roomId);
-            }
-        });
     };
 
     roomSource.addEventListener('newMessage', eventHandler(function(active) {
