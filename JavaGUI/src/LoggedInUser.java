@@ -18,17 +18,12 @@ public class LoggedInUser extends User implements Serializable {
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        // default serialization
-        oos.defaultWriteObject();
-        // write the object
         oos.writeObject(getName());
-        //oos.writeObject(getPassword());
+        oos.writeObject(getPassword());
     }
 
     private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
-        // default deserialization
-        ois.defaultReadObject();
         setName((String) ois.readObject());
-        //setPassword((String) ois.readObject());
+        setPassword((String) ois.readObject());
     }
 }

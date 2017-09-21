@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Created by Administrator on 9/3/2017.
  */
-public class User implements Serializable {
+public class User {
     /**
      * A map between image URLs and image objects. Used mainly for caching.
      */
