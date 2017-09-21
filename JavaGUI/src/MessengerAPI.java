@@ -109,7 +109,7 @@ public class MessengerAPI {
      */
     public boolean login(String sessionHash) {
         try {
-            JsonNode json = httpPOST("validate.php","client_id=" + clientId + "grant_type=access_token&access_token=" + sessionHash).get("login");
+            JsonNode json = httpPOST("validate.php","client_id=" + clientId + "&grant_type=access_token&access_token=" + sessionHash).get("login");
             return loginCommon(json);
         } catch (Exception ex) {
             System.err.println("Exception: " + ex);
