@@ -104,7 +104,6 @@ if (!$ignoreLogin) {
             new fimError('googleLoginDisabled', 'Google logins are not currently enabled.');
         }
         else {
-            die('Doing google login.');
             require_once('vendor/autoload.php');
 
             // create our client credentials
@@ -121,6 +120,7 @@ if (!$ignoreLogin) {
             ]);
 
             if (isset($_GET['code'])) {
+                die('Doing google login with code.');
                 $client->fetchAccessTokenWithAuthCode($_GET['code']); // verify returned code
 
                 $access_token = $client->getAccessToken();
