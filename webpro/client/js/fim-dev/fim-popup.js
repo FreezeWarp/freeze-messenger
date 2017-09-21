@@ -816,7 +816,9 @@ popup = {
                             )
                         );
                     },
-                    'end' : windowDraw
+                    'end' : function() {
+                        $("#viewUploadsBody img").load(windowDraw);
+                    }
                 });
             }
         });
