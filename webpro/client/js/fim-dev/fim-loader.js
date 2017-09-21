@@ -168,7 +168,7 @@ function fim_formatAsUrl(url) {
         return $('<span>').text('[Broken Link: ' + url + ']');
 }
 
-function fim_showMissedMessage(message) { console.log(window.roomId)
+function fim_showMissedMessage(message) {
     if (message.roomId == window.roomId) {
         // we'll eventually probably want to do something fancy here, like offering to scroll to the last-viewed message.
     }
@@ -212,8 +212,6 @@ function fim_showMissedMessage(message) { console.log(window.roomId)
  * @copyright Joseph T. Parsons 2017
  */
 function fim_messageFormat(json, format) {
-    console.log(["message format", format, json]);
-
     var data,
         text = json.text,
         messageTime = fim_dateFormat(json.time),
@@ -226,7 +224,6 @@ function fim_messageFormat(json, format) {
         avatar;
 
     var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId]).then(function(pairs) {
-        console.log(pairs);
         userName = pairs[userId].name;
         userNameFormat = pairs[userId].nameFormat;
         avatar = pairs[userId].avatar;
@@ -433,14 +430,37 @@ function fim_messagePreview(container, content) {
 function fim_newMessage(messageText, messageId) {
     if ($.inArray(messageId, messageIndex) > -1) { return; } // Double post hack
 
-    if (settings.reversePostOrder)
-        $('#messageList').prepend(messageText); // Put the data at the beginning of the list if reversePostOrder.
-    else
-        $('#messageList').append(messageText); // Otherwise, put it at top.
+    var foundMatch = false;
+    $('#messageList .messageLine').each(function() {
+        if (settings.reversePostOrder) {
+            if ($('.messageText', this).attr('data-messageId') < messageId) {
+                $(messageText).insertBefore(this);
+                foundMatch = true;
+                return false; // break each
+            }
+        }
+        else {
+            if ($('.messageText', this).attr('data-messageId') > messageId) {
+                $(messageText).insertBefore(this);
+                foundMatch = true;
+                return false;
+            }
+        }
+    });
 
-    messageIndex.push(requestSettings.lastMessage); // Update the internal messageIndex array.
+    if (!foundMatch) {
+        if (settings.reversePostOrder) {
+            $('#messageList').prepend(messageText);
+        }
+        else {
+            $('#messageList').append(messageText);
+        }
+    }
 
-    if (messageIndex.length === 100) { // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
+
+    // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
+    messageIndex.push(messageId); // Update the internal messageIndex array.
+    if (messageIndex.length >= 100) {
         var messageOut = messageIndex[0];
         $('#message' + messageOut).remove();
         messageIndex = messageIndex.slice(1,99);
@@ -498,7 +518,7 @@ function fim_newMessage(messageText, messageId) {
 
                 fimApi.getUsers({
                     'userIds' : [userId]
-                }, {'each' : function(userData) { console.log(userData);
+                }, {'each' : function(userData) {
                     if (userData.userTitle)
                         content.append($('<br>').append($('<span>').text(userData.userTitle)))
 
