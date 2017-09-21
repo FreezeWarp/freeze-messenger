@@ -125,7 +125,7 @@ class FIMDatabaseOAuth implements
             'access_token' => $access_token
         ), array(
             'client_id' => $client_id,
-            'expires' => $this->db->now(30),
+            'expires' => $expires,
             'user_id' => $user_id,
             'scope' => $scope,
             'http_user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''  ,
