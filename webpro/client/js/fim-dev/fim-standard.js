@@ -199,7 +199,7 @@ standard.prototype.login = function(options) {
                         $('#watchRoomsList').append(html);
 
                     //TODO
-                    //if (roomData.options.official)
+                    //if (roomData.official)
                     //    $('#officialRoomsList').append(html);
                 }
             });

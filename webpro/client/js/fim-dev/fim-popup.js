@@ -833,17 +833,10 @@ popup = {
 
     /*** START Create Room ***/
 
-    editRoom : function(roomIdLocal) {
-        if (roomIdLocal) var action = 'edit';
+    editRoom : function(roomId) {
+        if (roomId) var action = 'edit';
         else var action = 'create';
 
-        dia.full({
-            content : $t('help'),
-            title : 'helpDialogue',
-            width : 1000,
-            position : 'top',
-            tabs : true
-        });
         dia.full({
             content : $t('editRoomForm'),
             id : 'editRoomDialogue',
@@ -877,7 +870,7 @@ popup = {
                     'resolveFromNames' : Resolver.resolveUsersFromNames
                 });
 
-                allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
+                /*allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
                     'name' : 'allowedGroups',
                     'list' : 'groups',
                     'onAdd' : function(id) {
@@ -888,7 +881,7 @@ popup = {
                     },
                     'resolveFromIds' : Resolver.resolveGroupsFromIds,
                     'resolveFromNames' : Resolver.resolveGroupsFromNames
-                });
+                });*/
 
                 $('#allowPosting').change(function() {
                     if ($(this).is(':checked')) {
@@ -922,7 +915,7 @@ popup = {
 
                 /* Censor Lists */
                 fimApi.getCensorLists({
-                    'roomId' : roomIdLocal ? roomIdLocal : 0,
+                    'roomId' : roomId ? roomId : 0,
                     'includeWords' : 0,
                 }, {
                     'each' : function(listData) {
@@ -939,37 +932,36 @@ popup = {
 
 
                 /* Prepopulate Data if Editing a Room */
-                if (roomIdLocal) {
+                if (roomId) {
                     fimApi.getRooms({
-                        'roomIds' : [roomIdLocal]
-                    }, {'each' : function(roomData) {
+                        'roomIds' : [roomId]
+                    }, {'each' : function(roomData) { console.log(roomData);
                         var allowedUsersArray = [],
                             moderatorsArray = [],
                             allowedGroupsArray = [];
 
-                        for (var i = 0; i < roomData.allowedUsers.length; i++) { /* TODO? */
-                            if (roomData.allowedUsers[i] & 15 === 15) { moderatorsArray.push(j); } // Are all bits up to 8 present?
-                            if (roomData.allowedUsers[i] & 7 === 7) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
-                        }
+                        jQuery.each(roomData.userPermissions, function(userId, privs) {
+                            if (privs.moderate && privs.properties && privs.grant) { moderatorsArray.push(j); } // Are all bits up to 8 present?
+                            if (privs.post) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
+                        });
 
                         // Name
-                        $('#name').val(roomData.roomName);
+                        $('#name').val(roomData.name);
 
                         // Options
                         $('#allowOfficial').attr('checked', roomData.official);
                         $('#allowHidden').attr('checked', roomData.hidden);
 
                         // Parental Data
-                        console.log(roomData.parentalFlags);
-                        for (var i = 0; i < roomData.parentalFlags.length; i++) {
-                            $('input[data-cat=parentalFlag][data-name=' + roomData.parentalFlags[i] + ']').attr('checked', true);
-                        }
+                        jQuery.each(roomData.parentalFlags, function(index, flag) {
+                            $('input[data-cat=parentalFlag][data-name=' + flag + ']').attr('checked', true);
+                        });
                         $('select#parentalAge option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
 
                         // Permissions
                         allowedUsersList.displayEntries(allowedUsersArray);
                         moderatorsList.displayEntries(moderatorsArray);
-                        allowedGroupsList.displayEntries(allowedGroupsArray);
+                        //allowedGroupsList.displayEntries(allowedGroupsArray);
 
                         // Default Permissions
                         if (roomData.defaultPermissions == 7) $('#allowAllUsers').attr('checked', true); // If all users are currently allowed, check the box (which triggers other stuff above).
@@ -993,9 +985,9 @@ popup = {
                         moderatorsList.getList().forEach(function(user) {
                             combinedUserPermissions["+" + user] = ['post', 'moderate'];
                         });
-                        allowedGroupsList.getList().forEach(function(group) {
+                        /*allowedGroupsList.getList().forEach(function(group) {
                             combinedGroupPermissions["+" + group] = ['post'];
-                        });
+                        });*/
                     }
 
                     $('input[data-checkType="list"]').each(function() {
@@ -1010,7 +1002,7 @@ popup = {
                     if ($('#allowViewing').is(':checked')) defaultPermissions.push("view");
                     if ($('#allowPosting').is(':checked')) defaultPermissions.push("post");
 
-                    fimApi.editRoom(roomIdLocal, {
+                    fimApi.editRoom(roomId, {
                         "name" : name,
                         "defaultPermissions" : defaultPermissions,
                         "userPermissions" : combinedUserPermissions,
