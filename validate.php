@@ -104,6 +104,7 @@ if (!$ignoreLogin) {
             new fimError('googleLoginDisabled', 'Google logins are not currently enabled.');
         }
         else {
+            die('Doing google login.');
             require_once('vendor/autoload.php');
 
             // create our client credentials
@@ -193,6 +194,7 @@ if (!$ignoreLogin) {
      * Process login information previously set for Google, etc.
      */
     if ($doIntegrationLogin) {
+        die('2');
         $oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
         $oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
         $oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
