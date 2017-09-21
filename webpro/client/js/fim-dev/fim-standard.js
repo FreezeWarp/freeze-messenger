@@ -134,7 +134,7 @@ standard.prototype.initialLogin = function(options) {
 }
 
 
-/* Trigger a login using provided data. This will open a login form if neccessary. */
+/* Trigger a login using provided data. This will open a login form if necessary. */
 standard.prototype.login = function(options) {
     if (options.start) options.start();
 
@@ -172,6 +172,38 @@ standard.prototype.login = function(options) {
                     });
                 }, activeLogin.expires / 2)
             }
+
+
+            // TODO: only once
+            fimApi.getRooms({
+                roomIds : window.activeLogin.userData.favRooms
+            }, {
+                begin : function() {
+                    $('#favRoomsList').html('');
+                },
+                each : function(roomData) {
+                    console.log(roomData);
+
+                    var html = $('<li>').append(
+                        $('<a>').attr('href', '#room=' + roomData.id).text(roomData.name)
+                    );
+
+                    //TODO
+                    //if (roomData.ownerId = window.activeLogin.userId)
+                    //    $('#ownedRoomsList').append(html);
+
+                    if (window.activeLogin.userData.favRooms.indexOf(roomData.id) != -1)
+                        $('#favRoomsList').append(html);
+
+                    if (window.activeLogin.userData.watchRooms.indexOf(roomData.id) != -1)
+                        $('#watchRoomsList').append(html);
+
+                    //TODO
+                    //if (roomData.options.official)
+                    //    $('#officialRoomsList').append(html);
+                }
+            });
+
 
             if (options.finish) options.finish();
 
@@ -261,6 +293,32 @@ standard.prototype.getMessages = function() {
     }
 
     return false;
+};
+
+
+standard.prototype.populateMessages = function(roomId) {
+    $(document).ready(function() {
+        // Clear the message list.
+        $('#messageList').html('');
+        requestSettings.lastMessage = null;
+        requestSettings.firstRequest = true;
+        messageIndex = [];
+
+        // Get New Messages
+        standard.getMessages();
+
+        // TODO
+        if (typeof intervalPing !== "undefined")
+            clearInterval(intervalPing);
+
+        fimApi.ping(roomId);
+        intervalPing = window.setInterval(function() {
+            fimApi.ping(roomId)
+        }, 5 * 60 * 1000);
+
+        windowDraw();
+        windowDynaLinks();
+    });
 };
 
 
@@ -361,29 +419,6 @@ standard.prototype.changeRoom = function(roomId) {
         }
     });
 };
-
-
-standard.prototype.populateMessages = function(roomId) {
-    $(document).ready(function() {
-        $('#messageList').html(''); // Clear the message list.
-
-        requestSettings.firstRequest = true;
-        messageIndex = [];
-
-        standard.getMessages();
-
-        if (typeof intervalPing !== "undefined")
-            clearInterval(intervalPing);
-
-        fimApi.ping(roomId);
-        intervalPing = window.setInterval(function() {
-            fimApi.ping(roomId)
-        }, 5 * 60 * 1000);
-
-        windowDraw();
-        windowDynaLinks();
-    });
-}
 
 
 standard.prototype.deleteRoom = function(roomIdLocal) {

@@ -1193,15 +1193,6 @@ function windowDynaLinks() {
     // Remove Link Categories If They Are to Appear Empty (the counter is incremented in the above code block)
     if (noAdminCounter === 8) { $('li > #modGeneral').parent().hide(); }
     if (noModCounter === 3 && noAdminCounter === 8) { $('#moderateCat').hide(); }
-
-
-    // Room Lists (this is a bit slow -- we should optimise (TODO)
-    $('#roomListLong > ul').html('<li>My Rooms<ul id="myRooms1"></ul></li>');
-    $('#roomListShort > ul').html('<li>My Rooms<ul id="myRooms2"></ul></li>');
-
-    /* TODO: List Owned Rooms */
-
-    /* TODO: Room Lists */
 }
 
 
