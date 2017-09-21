@@ -156,7 +156,7 @@ if (!$ignoreLogin) {
             else {
                 // redirect to the login URL
                 $auth_url = $client->createAuthUrl();
-                header('HTTP/1.1 307 Temporary Redirect');
+                header('HTTP/1.1 302 Found');
                 header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
                 die();
             }
