@@ -43,11 +43,26 @@ public class MainPane {
     @FXML
     public TableColumn username = new TableColumn<User, String>("User Name");
 
+    /**
+     * A list of users currently considered active. userList monitors this for changes, and updates accordingly.
+     */
     ObservableList<User> activeUsers =  FXCollections.observableArrayList();
 
+    /**
+     * A map between user IDs and user objects. Used mainly for caching.
+     */
     public static Map<Integer, User> users = new HashMap<>();
+
+    /**
+     * A map between image URLs and image objects. Used mainly for caching.
+     */
     public static Map<String, Image> images = new HashMap<>();
 
+    /**
+     * Get an ImageView representation of an avatar.
+     * @param avatar The source URL.
+     * @return An ImageView containing the source URL, resized.
+     */
     public static ImageView getAvatar(String avatar) {
         if (!images.containsKey(avatar)) {
             images.put(avatar, new Image(avatar, 24, 24, false, true));
@@ -58,7 +73,12 @@ public class MainPane {
                 .build();
     }
 
-    public User getUser(int userId) {
+    /**
+     * Get a User object from a userId.
+     * @param userId The user's ID.
+     * @return A corresponding User object.
+     */
+    public static User getUser(int userId) {
         if (!users.containsKey(userId)) {
             JsonNode user = GUIDisplay.api.getUser(userId);
             User newUser = new User();
@@ -84,26 +104,40 @@ public class MainPane {
     Room currentRoom = new Room(1);
 
 
+    /**
+     * A timer object used for recurring queries.
+     */
     static Timer timer = new Timer();
 
 
     public void initialize() {
-        // UserList SetUp
+        /* UserList SetUp */
+        // Bind the username column to the "name" property from a User object.
         username.setCellValueFactory(new PropertyValueFactory<User, String>("name"));
+
+        // Bind the avatar column to the "avatarImageView" property from a User object.
         avatar.setCellValueFactory(new PropertyValueFactory<User, String>("avatarImageView"));
+
+        // Bind the table's data to the activeUsers list.
         userList.setItems(activeUsers);
 
-        // Recurring GETs
+
+        /* Recurring GETs */
+        // Check for new messages every 3 seconds.
         timer.schedule(new RefreshMessages(), 0, 3000);
+
+        // Check the currently active users every 10 seconds.
         timer.schedule(new RefreshUsers(), 0, 10000);
 
-        // align messages to bottom
+
+        /* Align messages to bottom */
         messageListScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         messageListScroll.setFitToWidth(true);
 
         messageList.minHeightProperty().bind(Bindings.createDoubleBinding(() -> messageListScroll.getViewportBounds().getHeight(), messageListScroll.viewportBoundsProperty()));
 
-        // Send Message Bind
+
+        /* Send Message On Enter */
         // todo: shift+enter
         newMessageText.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
@@ -118,6 +152,9 @@ public class MainPane {
     }
 
 
+    /**
+     * Runner to check for new messages.
+     */
     class RefreshMessages extends TimerTask {
         public void run() {
             JsonNode messages = GUIDisplay.api.getMessages(currentRoom.getId(), currentRoom.getLastMessageId(), !currentRoom.isArchiveFetched());
@@ -153,6 +190,10 @@ public class MainPane {
         }
     }
 
+
+    /**
+     * Runner to check for active users.
+     */
     class RefreshUsers extends TimerTask {
         public void run() {
             JsonNode users = GUIDisplay.api.getActiveUsers();

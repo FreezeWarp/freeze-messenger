@@ -9,10 +9,26 @@ import java.io.Serializable;
  * Created by Administrator on 9/3/2017.
  */
 public class User implements Serializable {
+    /**
+     * The user's ID.
+     */
     private IntegerProperty id = new SimpleIntegerProperty();
+
+    /**
+     * The user's name.
+     */
     private StringProperty name = new SimpleStringProperty("");
+
+    /**
+     * The user's avatar URL.
+     */
     private StringProperty avatar = new SimpleStringProperty("");
+
+    /**
+     * The user's avatar, as an ImageView.
+     */
     private ObjectProperty<ImageView> avatarImageView = new SimpleObjectProperty<>();
+
 
     public int getId() {
         return id.get();
