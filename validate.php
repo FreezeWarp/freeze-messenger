@@ -200,11 +200,9 @@ if (!$ignoreLogin) {
         $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
 
         if ($oauthResponse->getStatusCode() !== 200) {
-            die("Error: " . $oauthResponse->getParameters()['error_description']);
             new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
         }
         else {
-            die("hello. You would have been redirected to: " . $installUrl . '?sessionHash=' . $oauthResponse->getParameter('access_token'));
             header('Location: ' . $installUrl . '?sessionHash=' . $oauthResponse->getParameter('access_token'));
         }
 
