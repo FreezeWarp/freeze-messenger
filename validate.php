@@ -120,7 +120,6 @@ if (!$ignoreLogin) {
             ]);
 
             if (isset($_GET['code'])) {
-                die('Doing google login with code.');
                 $client->fetchAccessTokenWithAuthCode($_GET['code']); // verify returned code
 
                 $access_token = $client->getAccessToken();
@@ -130,7 +129,6 @@ if (!$ignoreLogin) {
                 // get user info
                 $googleUser = new Google_Service_Oauth2($client);
                 $userInfo = $googleUser->userinfo->get();
-                //var_dump($userInfo);
 
                 if (!$userInfo->getId())
                     new fimError('invalidIntegrationId', 'The Google server did not respond with a valid user ID. Login cannot continue.');
@@ -194,7 +192,7 @@ if (!$ignoreLogin) {
      * Process login information previously set for Google, etc.
      */
     if ($doIntegrationLogin) {
-        die('2');
+        die('Doing integration login.');
         $oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
         $oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
         $oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
