@@ -1,6 +1,8 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -20,6 +22,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.util.Callback;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -52,26 +55,6 @@ public class MainPane {
      * A map between user IDs and user objects. Used mainly for caching.
      */
     public static Map<Integer, User> users = new HashMap<>();
-
-    /**
-     * A map between image URLs and image objects. Used mainly for caching.
-     */
-    public static Map<String, Image> images = new HashMap<>();
-
-    /**
-     * Get an ImageView representation of an avatar.
-     * @param avatar The source URL.
-     * @return An ImageView containing the source URL, resized.
-     */
-    public static ImageView getAvatar(String avatar) {
-        if (!images.containsKey(avatar)) {
-            images.put(avatar, new Image(avatar, 24, 24, false, true));
-        }
-
-        return ImageViewBuilder.create()
-                .image(images.get(avatar))
-                .build();
-    }
 
     /**
      * Get a User object from a userId.
@@ -116,7 +99,12 @@ public class MainPane {
         username.setCellValueFactory(new PropertyValueFactory<User, String>("name"));
 
         // Bind the avatar column to the "avatarImageView" property from a User object.
-        avatar.setCellValueFactory(new PropertyValueFactory<User, String>("avatarImageView"));
+        avatar.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<User, String>, ObservableValue<ImageView>>() {
+            @Override
+            public ObservableValue<ImageView> call(TableColumn.CellDataFeatures<User, String> user) {
+                return new SimpleObjectProperty<ImageView>(user.getValue().getAvatarImageView());
+            }
+        });
 
         // Bind the table's data to the activeUsers list.
         userList.setItems(activeUsers);
@@ -159,27 +147,35 @@ public class MainPane {
         public void run() {
             JsonNode messages = GUIDisplay.api.getMessages(currentRoom.getId(), currentRoom.getLastMessageId(), !currentRoom.isArchiveFetched());
 
+            // Indicate that we shouldn't refetch the archive in the future.
             currentRoom.setArchiveFetched(true);
 
             if (messages.isArray()) {
                 for (final JsonNode message : messages) {
+                    // Tell the room about the new message.
                     currentRoom.addNewMessage(message);
 
+                    // Parse the user object.
                     int userId = message.get("userId").asInt();
                     User user = getUser(userId);
-                    ImageView avatar = user.getAvatarImageView();
+
+                    // Create the username for display.
                     final Text userName = new Text(user.getName());
                     userName.setFont(Font.font(null, FontWeight.BOLD, -1));
 
+                    // Parse the message time.
                     Calendar c = Calendar.getInstance(Locale.getDefault());
                     c.setTimeInMillis(message.get("time").asLong() * 1000);
                     final Text messageTime = new Text((new SimpleDateFormat()).format(c.getTime()));
+
+                    // Create the message text for display.
                     final Text messageText = new Text(message.get("text").asText());
 
+                    // Add the new message once we're back on the JavaFX thread.
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
-                            messageList.getChildren().add(new TextFlow(avatar, userName, new Text(" @ "), messageTime, new Text(": "), messageText));
+                            messageList.getChildren().add(new TextFlow(user.getAvatarImageView(), userName, new Text(" @ "), messageTime, new Text(": "), messageText));
                         }
                     });
 
@@ -190,9 +186,8 @@ public class MainPane {
         }
     }
 
-
     /**
-     * Runner to check for active users.
+     * Runner to check for active users .
      */
     class RefreshUsers extends TimerTask {
         public void run() {

@@ -1,14 +1,23 @@
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.property.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.ImageViewBuilder;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Administrator on 9/3/2017.
  */
-public class User {
+public class User implements Serializable {
+    /**
+     * A map between image URLs and image objects. Used mainly for caching.
+     */
+    public static Map<String, Image> images = new HashMap<>();
+
     /**
      * The user's ID.
      */
@@ -61,18 +70,23 @@ public class User {
 
     public void setAvatar(String avatar) {
         this.avatar.set(avatar);
-        this.avatarImageView.set(MainPane.getAvatar(getAvatar()));
-    }
-
-    public ImageView getAvatarImageView() {
-        return this.avatarImageView.get();
-    }
-
-    public ObjectProperty<ImageView> getAvatarImageViewProperty() {
-        return this.avatarImageView;
     }
 
     public StringProperty avatarProperty() {
         return this.avatar;
+    }
+
+    /**
+     * Get an ImageView representation of the user's avatar. Note that ImageViews should not be reused.
+     * @return An ImageView containing the user's avatar URL, resized.
+     */
+    public ImageView getAvatarImageView() {
+        if (!images.containsKey(getAvatar())) {
+            images.put(getAvatar(), new Image(getAvatar(), 24, 24, false, true));
+        }
+
+        return ImageViewBuilder.create()
+                .image(images.get(getAvatar()))
+                .build();
     }
 }
