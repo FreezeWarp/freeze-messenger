@@ -16,9 +16,15 @@ public class URLInterceptorHttp extends sun.net.www.protocol.http.Handler {
         this.callback = callback;
     }
 
+    public void setCallback(URLCallback callback) {
+        this.callback = callback;
+    }
+
     @Override
     protected URLConnection openConnection(URL url) throws IOException {
-        callback.run(url);
+        if (callback != null) {
+            callback.run(url);
+        }
 
         System.out.println("Requested:" + url);
         return super.openConnection(url);

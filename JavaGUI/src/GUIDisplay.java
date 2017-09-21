@@ -89,6 +89,11 @@ public class GUIDisplay extends Application {
      */
     TextField newMessageTextField = new TextField();
 
+    /**
+     * The factory used to monitor construct URL requests. It is used here to monitor URL requests.
+     */
+    URLInterceptorFactory urlInterceptorFactory = new URLInterceptorFactory(null);
+
 
     /*################################
      * Program Entry-Point
@@ -139,10 +144,13 @@ public class GUIDisplay extends Application {
 
     public void loginScene(Stage primaryStage) {
         try {
+            /* Load the Login Scene FXML */
             FXMLLoader loader = new FXMLLoader(getClass().getResource("LoginGUI.fxml"));
             Parent root = loader.load();
             LoginGUI loginController = loader.getController();
 
+
+            /* Process Normal Logins on Button Press */
             loginController.loginButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent e) {
@@ -158,34 +166,40 @@ public class GUIDisplay extends Application {
                 }
             });
 
+
+            /* Process Google Logins on Button Press */
             loginController.googleButton.setOnAction(new EventHandler<ActionEvent>() {
+                /**
+                 * The browser used to display web pages.
+                 */
+                WebView browser = new WebView();
+
                 @Override
                 public void handle(ActionEvent e) {
-                    WebView browser = new WebView();
-                    WebEngine webEngine = browser.getEngine();
+                    URL.setURLStreamHandlerFactory(urlInterceptorFactory);
 
-                    // Custom URL stream factory to watch for redirects.
-                    URL.setURLStreamHandlerFactory(new URLInterceptorFactory(url -> {
-                        System.out.println("Saw: " + url);  
+                    // Watch for redirects.
+                    urlInterceptorFactory.setCallback(url -> {
                         if (url.toString().startsWith(GUIDisplay.api.getServerUrl() + "?sessionHash=")) {
                             String hash = url.toString().replace(GUIDisplay.api.getServerUrl() + "?sessionHash=", "");
-                            System.out.println("Got hash: " + hash);
 
                             Platform.runLater(() -> {
-                                webEngine.load(null);
+                                browser.getEngine().load(null); // Clear the webEngine from memory.
+                                urlInterceptorFactory.setCallback(null); // Unset the URL interception callback.
 
                                 if (api.login(hash)) {
-                                    mainScene(primaryStage);
+                                    mainScene(primaryStage); // If the login is successful, switch to the main scene.
                                 } else {
-                                    loginScene(primaryStage);
+                                    loginScene(primaryStage); // If the login fails, return to the login scene.
                                 }
                             });
                         }
-                    }));
+                    });
 
-                    // Browser Interface
-                    webEngine.load(GUIDisplay.api.getServerUrl() + "validate.php?googleLogin");
+                    // Load the googleLogin webpage.
+                    browser.getEngine().load(GUIDisplay.api.getServerUrl() + "validate.php?googleLogin");
 
+                    // Display the browser in a new scene.
                     Scene scene = new Scene(browser);
                     primaryStage.setResizable(true);
                     primaryStage.setMinWidth(800);
@@ -194,6 +208,8 @@ public class GUIDisplay extends Application {
                 }
             });
 
+
+            // Display the login scene.
             Scene scene = new Scene(root);
             primaryStage.setResizable(false);
             primaryStage.setScene(scene);
