@@ -192,7 +192,6 @@ if (!$ignoreLogin) {
      * Process login information previously set for Google, etc.
      */
     if ($doIntegrationLogin) {
-        die('Doing integration login.');
         $oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
         $oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
         $oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
@@ -201,6 +200,7 @@ if (!$ignoreLogin) {
         $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
 
         if ($oauthResponse->getStatusCode() !== 200) {
+            die("Error: " . $oauthResponse->getParameters()['error_description']);
             new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
         }
         else {
