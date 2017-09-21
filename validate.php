@@ -204,10 +204,10 @@ if (!$ignoreLogin) {
             new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
         }
         else {
-            header('Location: ' . $installUrl . '#sessionHash=' . $oauthResponse->getParameter('access_token'));
+            die("hello. You would have been redirected to: " . $installUrl . '?sessionHash=' . $oauthResponse->getParameter('access_token'));
+            header('Location: ' . $installUrl . '?sessionHash=' . $oauthResponse->getParameter('access_token'));
         }
 
-        die();
     }
 
 
