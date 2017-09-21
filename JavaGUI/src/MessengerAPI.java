@@ -60,6 +60,11 @@ public class MessengerAPI {
     private String sessionToken;
 
     /**
+     * A refresh token that can be used to obtain a new session token. Will be set by login().
+     */
+    private String refreshToken;
+
+    /**
      * The user's current permissions.
      */
     private UserPermissions permissions;
@@ -83,14 +88,88 @@ public class MessengerAPI {
     public boolean login(String username, String password) {
         try {
             JsonNode json = httpPOST("validate.php","client_id=" + clientId + "&grant_type=password&username=" + username + "&password=" + password).get("login");
-            sessionToken = json.get("access_token").asText();
-            permissions = mapper.treeToValue(json.get("permissions"), UserPermissions.class);
+            return loginCommon(json);
         } catch (Exception ex) {
             System.err.println("Exception: " + ex);
+            ex.printStackTrace();
             return false;
         }
+    }
 
-        return true;
+
+    /**
+     * Login and obtain user information. The session token will be stored to {@link MessengerAPI#sessionToken},...
+     * @param sessionHash An existing sessionHash to use.
+     * @throws IOException
+     */
+    public boolean login(String sessionHash) {
+        try {
+            JsonNode json = httpPOST("validate.php","client_id=" + clientId + "&access_token=" + sessionHash).get("login");
+            return loginCommon(json);
+        } catch (Exception ex) {
+            System.err.println("Exception: " + ex);
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+
+    /**
+     * Refresh an existing login with a refreshToken.
+     * @param refreshToken The refresh token provided with the previous access token.
+     * @throws IOException
+     */
+    public boolean loginRefresh(String refreshToken) {
+        try {
+            JsonNode json = httpPOST("validate.php","client_id=" + clientId + "&grant_type=refresh_token&refresh_token=" + refreshToken).get("login");
+            return loginCommon(json);
+        } catch (Exception ex) {
+            System.err.println("Exception: " + ex);
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+
+    private boolean loginCommon(JsonNode json) {
+        try {
+            sessionToken = json.get("access_token").asText();
+            refreshToken = json.get("refresh_token").asText();
+
+            if (!json.has("expires")) {
+                System.err.println("No expires set on login. Will not relogin with refresh token.");
+            }
+            else if (refreshToken.length() == 0) {
+                System.err.println("Empty refresh token. Will not relogin on expires.");
+            }
+            else {
+                loginRefreshDelay(refreshToken, json.get("expires").asInt() / 2);
+            }
+
+            if (json.has("userData")) {
+                permissions = mapper.treeToValue(json.get("userData").get("permissions"), UserPermissions.class);
+            }
+
+            return true;
+        } catch (Exception ex) {
+            System.err.println("Exception: " + ex);
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+
+    private void loginRefreshDelay(String refreshToken, int delay) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(delay * 1000);
+                loginRefresh(refreshToken);
+            }
+            catch (Exception ex) {
+                System.err.println(ex);
+                ex.printStackTrace();
+            }
+        }).start();
     }
 
 
@@ -106,6 +185,7 @@ public class MessengerAPI {
             return json;
         } catch (Exception ex) {
             System.err.println("Exception: " + ex);
+            ex.printStackTrace();
         }
 
         return null;
@@ -123,6 +203,7 @@ public class MessengerAPI {
             JsonNode json = httpPOST("api/message.php?_action=create&access_token=" + sessionToken + "&roomId=" + roomId, "message=" + messageText).get("sendMessage");
         } catch (Exception ex) {
             System.err.println("Exception: " + ex);
+            ex.printStackTrace();
             return false;
         }
 
@@ -142,6 +223,7 @@ public class MessengerAPI {
             return json;
         } catch (Exception ex) {
             System.err.println("Exception: " + ex);
+            ex.printStackTrace();
         }
 
         return null;
@@ -159,6 +241,7 @@ public class MessengerAPI {
             return json;
         } catch (Exception ex) {
             System.err.println("Exception: " + ex);
+            ex.printStackTrace();
         }
 
         return null;
@@ -186,6 +269,7 @@ public class MessengerAPI {
             return root;
         } catch (IOException ex) {
             System.err.println("IO exception: " + ex);
+            ex.printStackTrace();
             return null;
         }
     }
@@ -214,6 +298,7 @@ public class MessengerAPI {
             return root;
         } catch (IOException ex) {
             System.err.println("IO exception: " + ex);
+            ex.printStackTrace();
             return null;
         }
     }

@@ -27,6 +27,9 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -129,6 +132,7 @@ public class GUIDisplay extends Application {
             primaryStage.setTitle("Message Interface");
             primaryStage.show();
         } catch (Exception ex) {
+            System.out.println("Exception: " + ex);
             ex.printStackTrace();
         }
     }
@@ -157,24 +161,36 @@ public class GUIDisplay extends Application {
             loginController.googleButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent e) {
-                    System.out.println("Gbutton presssed");
                     WebView browser = new WebView();
                     WebEngine webEngine = browser.getEngine();
+
+                    // Custom URL stream factory to watch for redirects.
+                    URL.setURLStreamHandlerFactory(new URLInterceptorFactory(url -> {
+                        System.out.println("Saw: " + url);  
+                        if (url.toString().startsWith(GUIDisplay.api.getServerUrl() + "?sessionHash=")) {
+                            String hash = url.toString().replace(GUIDisplay.api.getServerUrl() + "?sessionHash=", "");
+                            System.out.println("Got hash: " + hash);
+
+                            Platform.runLater(() -> {
+                                webEngine.load(null);
+
+                                if (api.login(hash)) {
+                                    mainScene(primaryStage);
+                                } else {
+                                    loginScene(primaryStage);
+                                }
+                            });
+                        }
+                    }));
+
+                    // Browser Interface
                     webEngine.load(GUIDisplay.api.getServerUrl() + "validate.php?googleLogin");
 
                     Scene scene = new Scene(browser);
                     primaryStage.setResizable(true);
                     primaryStage.setMinWidth(800);
-                    primaryStage.setMinHeight(600);
+                    primaryStage.setMinHeight(800);
                     primaryStage.setScene(scene);
-
-                    webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
-                        System.out.println("New location: " + webEngine.getLocation());
-                        if (webEngine.getLocation().startsWith(GUIDisplay.api.getServerUrl() + "#sessionHash=")) {
-                            System.out.println("Got location; " + webEngine.getLocation());
-                            String hash = webEngine.getLocation().replace(GUIDisplay.api.getServerUrl() + "#sessionHash=", "");
-                        }
-                    });
                 }
             });
 
@@ -185,8 +201,8 @@ public class GUIDisplay extends Application {
             primaryStage.show();
 
         } catch (Exception ex) {
+            System.out.println("Exception: " + ex);
             ex.printStackTrace();
-            //System.out.println("Exception: " + );
         }
     }
 
@@ -199,6 +215,8 @@ public class GUIDisplay extends Application {
 
             user = (LoggedInUser) ois.readObject();
         } catch (Exception ex) {
+            System.out.println("Exception: " + ex);
+            ex.printStackTrace();
         }
 
         api = new MessengerAPI("http://josephtparsons.com/messenger/");
@@ -220,7 +238,8 @@ public class GUIDisplay extends Application {
             oos.writeObject(user);
             oos.flush();
         } catch (Exception ex) {
-            System.err.println("Saving data failed.");
+            System.err.println("Saving data failed: " + ex);
+            ex.printStackTrace();
         }
 
         MainPane.timer.cancel();

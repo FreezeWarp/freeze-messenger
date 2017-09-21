@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * Created by Administrator on 9/3/2017.
  */
-public class User implements Serializable {
+public class User {
     /**
      * The user's ID.
      */
