@@ -1070,7 +1070,7 @@ popup = {
             content : $t('privateRoom'),
             title : 'Enter Private Room',
             id : 'privateRoomDialogue',
-            width : 1000,
+            width : 500,
             oF : function() {
                 $('#userName').autocompleteHelper('users');
 
