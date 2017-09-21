@@ -204,6 +204,7 @@ if (!$ignoreLogin) {
         }
         else {
             header('Location: ' . $installUrl . '?sessionHash=' . $oauthResponse->getParameter('access_token'));
+            die();
         }
 
     }
