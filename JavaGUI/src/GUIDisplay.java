@@ -5,6 +5,7 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -21,6 +22,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import java.io.*;
@@ -148,6 +151,30 @@ public class GUIDisplay extends Application {
                         primaryStage.hide();
                         mainScene(primaryStage);
                     }
+                }
+            });
+
+            loginController.googleButton.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent e) {
+                    System.out.println("Gbutton presssed");
+                    WebView browser = new WebView();
+                    WebEngine webEngine = browser.getEngine();
+                    webEngine.load(GUIDisplay.api.getServerUrl() + "validate.php?googleLogin");
+
+                    Scene scene = new Scene(browser);
+                    primaryStage.setResizable(true);
+                    primaryStage.setMinWidth(800);
+                    primaryStage.setMinHeight(600);
+                    primaryStage.setScene(scene);
+
+                    webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) -> {
+                        System.out.println("New location: " + webEngine.getLocation());
+                        if (webEngine.getLocation().startsWith(GUIDisplay.api.getServerUrl() + "#sessionHash=")) {
+                            System.out.println("Got location; " + webEngine.getLocation());
+                            String hash = webEngine.getLocation().replace(GUIDisplay.api.getServerUrl() + "#sessionHash=", "");
+                        }
+                    });
                 }
             });
 

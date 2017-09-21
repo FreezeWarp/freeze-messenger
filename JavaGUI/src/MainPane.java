@@ -167,7 +167,7 @@ public class MainPane {
 
                     int userId = message.get("userId").asInt();
                     User user = getUser(userId);
-                    ImageView avatar = getAvatar(user.getAvatar());
+                    ImageView avatar = user.getAvatarImageView();
                     final Text userName = new Text(user.getName());
                     userName.setFont(Font.font(null, FontWeight.BOLD, -1));
 
