@@ -162,15 +162,16 @@ standard.prototype.login = function(options) {
             }
 
             window.sessionHash = activeLogin.access_token;
-            $.cookie('webpro_sessionHash', window.sessionHash);
 
             if (activeLogin.expires && activeLogin.refresh_token) {
+                $.cookie('webpro_refreshToken', activeLogin.refresh_token);
+
                 setTimeout(function() {
                     standard.login({
                         grantType : 'refresh_token',
                         refreshToken : activeLogin.refresh_token
                     });
-                }, activeLogin.expires / 2)
+                }, activeLogin.expires * 1000 / 2)
             }
 
 

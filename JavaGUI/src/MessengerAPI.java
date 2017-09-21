@@ -69,6 +69,11 @@ public class MessengerAPI {
      */
     private UserPermissions permissions;
 
+    /**
+     * The currently logged-in user.
+     */
+    static LoggedInUser user = new LoggedInUser();
+
 
     /**
      * Initialise API with server URL.
@@ -104,7 +109,7 @@ public class MessengerAPI {
      */
     public boolean login(String sessionHash) {
         try {
-            JsonNode json = httpPOST("validate.php","client_id=" + clientId + "&access_token=" + sessionHash).get("login");
+            JsonNode json = httpPOST("validate.php","client_id=" + clientId + "grant_type=access_token&access_token=" + sessionHash).get("login");
             return loginCommon(json);
         } catch (Exception ex) {
             System.err.println("Exception: " + ex);
@@ -143,11 +148,13 @@ public class MessengerAPI {
                 System.err.println("Empty refresh token. Will not relogin on expires.");
             }
             else {
+                user.setRefreshToken(refreshToken);
                 loginRefreshDelay(refreshToken, json.get("expires").asInt() / 2);
             }
 
             if (json.has("userData")) {
-                permissions = mapper.treeToValue(json.get("userData").get("permissions"), UserPermissions.class);
+                user.setName(json.get("userData").get("name").asText());
+                permissions = mapper.treeToValue(json.get("userData").get("permissions"), UserPermissions.class); // TODO
             }
 
             return true;
@@ -325,5 +332,13 @@ public class MessengerAPI {
      */
     public UserPermissions getPermissions() {
         return permissions;
+    }
+
+
+    /**
+     * @return {@link MessengerAPI#user}
+     */
+    public LoggedInUser getUser() {
+        return user;
     }
 }

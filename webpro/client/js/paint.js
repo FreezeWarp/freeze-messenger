@@ -428,6 +428,7 @@ $.when(
             /*** Initial Login ***/
             if (window.location.hash.match(/\#sessionHash=/)) {
                 standard.initialLogin({
+                    grantType : 'access_token',
                     sessionHash : window.location.hash.match(/\#sessionHash=([^\#]+)/)[1],
                     error : function() {
                         if (!window.userId) popup.login(); // The user is not actively logged in.
@@ -443,9 +444,10 @@ $.when(
                     }
                 });
             }
-            else if ($.cookie('webpro_sessionHash')) {
+            else if ($.cookie('webpro_refreshToken')) {
                 standard.initialLogin({
-                    sessionHash : $.cookie('webpro_sessionHash'),
+                    grantType : 'refresh_token',
+                    refreshToken : $.cookie('webpro_refreshToken'),
                     error : function() {
                         if (!window.userId) popup.login(); // The user is not actively logged in.
                     }

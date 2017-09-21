@@ -48,12 +48,6 @@ public class GUIDisplay extends Application {
 
 
     /**
-     * The currently logged-in user. May be serialized between application runs.
-     */
-    static LoggedInUser user = new LoggedInUser();
-
-
-    /**
      * A file object corresponding to the persistence file, whether or whether not it exists.
      */
     private static final File persistenceFile = new File(new File(System.getProperty("user.dir")), "messenger-persistence.bin");
@@ -157,8 +151,7 @@ public class GUIDisplay extends Application {
                     if (!GUIDisplay.api.login(loginController.username.getText(), loginController.password.getText())) {
                         GUIDisplay.alert("Login failed.");
                     } else {
-                        GUIDisplay.user.setName(loginController.username.getText());
-                        GUIDisplay.user.setPassword(loginController.password.getText());
+                        api.getUser().setPassword(loginController.password.getText());
 
                         primaryStage.hide();
                         mainScene(primaryStage);
@@ -225,23 +218,26 @@ public class GUIDisplay extends Application {
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
 
+        api = new MessengerAPI("http://josephtparsons.com/messenger/");
+
         try {
             FileInputStream in = new FileInputStream(persistenceFile);
             ObjectInputStream ois = new ObjectInputStream(in);
 
-            user = (LoggedInUser) ois.readObject();
+            api.user = (LoggedInUser) ois.readObject();
         } catch (Exception ex) {
             System.out.println("Exception: " + ex);
             ex.printStackTrace();
         }
 
-        api = new MessengerAPI("http://josephtparsons.com/messenger/");
-
-        if (!api.login(user.getName(), user.getPassword())) {
-            loginScene(primaryStage);
+        if (api.user.getRefreshToken().length() > 0 && api.loginRefresh(api.user.getRefreshToken())) {
+            mainScene(primaryStage);
+        }
+        else if (api.user.getPassword().length() > 0 && api.login(api.user.getName(), api.user.getPassword())) {
+            mainScene(primaryStage);
         }
         else {
-            mainScene(primaryStage);
+            loginScene(primaryStage);
         }
     }
 
@@ -251,7 +247,7 @@ public class GUIDisplay extends Application {
             FileOutputStream out = new FileOutputStream(persistenceFile);
             ObjectOutputStream oos = new ObjectOutputStream(out);
 
-            oos.writeObject(user);
+            oos.writeObject(api.user);
             oos.flush();
         } catch (Exception ex) {
             System.err.println("Saving data failed: " + ex);
