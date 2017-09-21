@@ -203,6 +203,7 @@ if (!$ignoreLogin) {
             new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
         }
         else {
+            header('HTTP/1.1 307 Temporary Redirect');
             header('Location: ' . $installUrl . '?sessionHash=' . $oauthResponse->getParameter('access_token'));
             die();
         }
