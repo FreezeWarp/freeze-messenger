@@ -49,6 +49,15 @@ class LoginFactory {
                 $loginConfig['extraMethods']['twitter']['clientSecret']
             );
         }
+
+        else if (isset($_REQUEST['facebookLogin'])) {
+            require('LoginFacebook.php');
+            $this->loginRunner = new LoginFacebook(
+                $this,
+                $loginConfig['extraMethods']['facebook']['clientId'],
+                $loginConfig['extraMethods']['facebook']['clientSecret']
+            );
+        }
     }
 
     /**
