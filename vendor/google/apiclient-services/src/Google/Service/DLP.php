@@ -37,6 +37,7 @@ class Google_Service_DLP extends Google_Service
       "https://www.googleapis.com/auth/cloud-platform";
 
   public $content;
+  public $dataSource;
   public $inspect_operations;
   public $inspect_results_findings;
   public $riskAnalysis_operations;
@@ -62,12 +63,30 @@ class Google_Service_DLP extends Google_Service
         'content',
         array(
           'methods' => array(
-            'inspect' => array(
+            'deidentify' => array(
+              'path' => 'v2beta1/content:deidentify',
+              'httpMethod' => 'POST',
+              'parameters' => array(),
+            ),'inspect' => array(
               'path' => 'v2beta1/content:inspect',
               'httpMethod' => 'POST',
               'parameters' => array(),
             ),'redact' => array(
               'path' => 'v2beta1/content:redact',
+              'httpMethod' => 'POST',
+              'parameters' => array(),
+            ),
+          )
+        )
+    );
+    $this->dataSource = new Google_Service_DLP_Resource_DataSource(
+        $this,
+        $this->serviceName,
+        'dataSource',
+        array(
+          'methods' => array(
+            'analyze' => array(
+              'path' => 'v2beta1/dataSource:analyze',
               'httpMethod' => 'POST',
               'parameters' => array(),
             ),
@@ -123,10 +142,6 @@ class Google_Service_DLP extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -134,6 +149,10 @@ class Google_Service_DLP extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
+                ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),
@@ -155,10 +174,6 @@ class Google_Service_DLP extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'pageSize' => array(
-                  'location' => 'query',
-                  'type' => 'integer',
-                ),
                 'filter' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -166,6 +181,10 @@ class Google_Service_DLP extends Google_Service
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
+                ),
+                'pageSize' => array(
+                  'location' => 'query',
+                  'type' => 'integer',
                 ),
               ),
             ),
@@ -217,10 +236,6 @@ class Google_Service_DLP extends Google_Service
                   'type' => 'string',
                   'required' => true,
                 ),
-                'filter' => array(
-                  'location' => 'query',
-                  'type' => 'string',
-                ),
                 'pageToken' => array(
                   'location' => 'query',
                   'type' => 'string',
@@ -228,6 +243,10 @@ class Google_Service_DLP extends Google_Service
                 'pageSize' => array(
                   'location' => 'query',
                   'type' => 'integer',
+                ),
+                'filter' => array(
+                  'location' => 'query',
+                  'type' => 'string',
                 ),
               ),
             ),

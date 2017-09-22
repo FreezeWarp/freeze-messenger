@@ -26,7 +26,7 @@
 class Google_Service_AndroidProvisioningPartner_Resource_PartnersCustomers extends Google_Service_Resource
 {
   /**
-   * A customer for Zero Touch Provisioning will be created. After a Customer is
+   * A customer for zero-touch enrollment will be created. After a Customer is
    * created, their admins and owners will be able to manage devices on
    * partner.android.com/zerotouch or via their API. (customers.create)
    *

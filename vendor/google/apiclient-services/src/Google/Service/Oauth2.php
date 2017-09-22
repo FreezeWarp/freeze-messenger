@@ -51,7 +51,7 @@ class Google_Service_Oauth2 extends Google_Service
    *
    * @param Google_Client $client
    */
-  public function   __construct(Google_Client $client)
+  public function __construct(Google_Client $client)
   {
     parent::__construct($client);
     $this->rootUrl = 'https://www.googleapis.com/';

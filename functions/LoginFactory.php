@@ -40,6 +40,15 @@ class LoginFactory {
                 $loginConfig['extraMethods']['google']['clientSecret']
             );
         }
+
+        else if (isset($_REQUEST['twitterLogin'])) {
+            require('LoginTwitter.php');
+            $this->loginRunner = new LoginTwitter(
+                $this,
+                $loginConfig['extraMethods']['twitter']['clientId'],
+                $loginConfig['extraMethods']['twitter']['clientSecret']
+            );
+        }
     }
 
     /**

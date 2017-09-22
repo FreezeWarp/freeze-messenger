@@ -118,8 +118,8 @@ class Google_Service_StreetViewPublish_Resource_Photo extends Google_Service_Res
    * Updates the metadata of a Photo, such as pose, place association,
    * connections, etc. Changing the pixels of a photo is not supported.
    *
-   * Only the fields specified in updateMask field are used. If `updateMask` is
-   * not present, the update applies to all fields.
+   * Only the fields specified in the updateMask field are used. If `updateMask`
+   * is not present, the update applies to all fields.
    *
    * Note: To update Pose.altitude, Pose.latLngPair has to be filled as well.
    * Otherwise, the request will fail.

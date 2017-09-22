@@ -223,8 +223,11 @@ standard.prototype.login = function(options) {
 
 
 standard.prototype.logout = function() {
+    // TODO: clear refresh token on server?
+
     $.cookie('webpro_username', null);
     $.cookie('webpro_password', null);
+    $.cookie('webpro_refreshToken', null);
 
     fimApi.getMessages(null, {close : true});
     fimApi.getActiveUsers(null, {close : true});
