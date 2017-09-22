@@ -34,6 +34,7 @@
  * Require base files.
  ******/
 require_once(dirname(__FILE__) . '/global.php');
+require_once(dirname(__FILE__) . '/functions/LoginFactory.php');
 
 
 
@@ -96,76 +97,6 @@ if (!$ignoreLogin) {
 
 
     /*
-     * Process Google/etc. logins.
-     * We'll create a new user if needed, and then defer to the grant token code below.
-     */
-    else if (isset($_REQUEST['googleLogin'])) {
-        if (!isset($loginConfig['extraMethods']['google']['clientId'], $loginConfig['extraMethods']['google']['clientSecret'])) {
-            new fimError('googleLoginDisabled', 'Google logins are not currently enabled.');
-        }
-        else {
-            require_once('vendor/autoload.php');
-
-            // create our client credentials
-            $client = new Google_Client();
-
-            $client->setApplicationName("FlexMessenger Login");
-            $client->setDeveloperKey("AIzaSyDxK4wHgx7NAy6NU3CcSsQ2D3JX3K6FwVs");
-            $client->setClientId($loginConfig['extraMethods']['google']['clientId']);
-            $client->setClientSecret($loginConfig['extraMethods']['google']['clientSecret']);
-            $client->setRedirectUri($installUrl . 'validate.php?googleLogin');
-            $client->addScope([
-                Google_Service_Oauth2::USERINFO_EMAIL,
-                Google_Service_Oauth2::USERINFO_PROFILE,
-            ]);
-
-            if (isset($_GET['code'])) {
-                $client->fetchAccessTokenWithAuthCode($_GET['code']); // verify returned code
-
-                $access_token = $client->getAccessToken();
-                if (!$access_token)
-                    new fimError('failedLogin', 'We were unable to login to the Google server.');
-
-                // get user info
-                $googleUser = new Google_Service_Oauth2($client);
-                $userInfo = $googleUser->userinfo->get();
-                //var_dump($userInfo);
-
-                if (!$userInfo->getId())
-                    new fimError('invalidIntegrationId', 'The Google server did not respond with a valid user ID. Login cannot continue.');
-
-                elseif (!$userInfo->getName())
-                    new fimError('invalidIntegrationName', 'The Google server did not respond with a valid user name. Login cannot continue.');
-
-                // store user info...
-                $integrationUser = new fimUser([
-                    'integrationMethod' => 'google',
-                    'integrationId' => $userInfo->getId(),
-                ]);
-                $integrationUser->resolveAll(); // This will resolve the ID if the user exists.
-                $integrationUser->setDatabase([
-                    'integrationMethod' => 'google',
-                    'integrationId' => $userInfo->getId(),
-                    'email' => $userInfo->getEmail(),
-                    'name' => $userInfo->getName(),
-                    'avatar' => $userInfo->getPicture()
-                ]); // If the ID wasn't resolved above, a new user will be created.
-
-                $doIntegrationLogin = true;
-            }
-
-            else {
-                // redirect to the login URL
-                $auth_url = $client->createAuthUrl();
-                header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
-                die();
-            }
-        }
-    }
-
-
-
-    /*
      * Begin OAuth Server
      * We have not yet added any Grant Types. We add these instead in the next section.
      */
@@ -187,27 +118,17 @@ if (!$ignoreLogin) {
      */
     $oauthRequest = OAuth2\Request::createFromGlobals();
 
-
-
-    /*
-     * Process login information previously set for Google, etc.
+    /**
+     * A factory for performing integration logins.
      */
-    if ($doIntegrationLogin) {
-        $oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
-        $oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
-        $oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
-        $oauthServer->addGrantType($userC = new OAuth2\GrantType\IntegrationLogin($oauthStorage, $integrationUser));
+    $loginFactory = new LoginFactory($oauthRequest, $oauthStorage, $oauthServer);
 
-        $oauthResponse = $oauthServer->handleTokenRequest($oauthRequest);
 
-        if ($oauthResponse->getStatusCode() !== 200) {
-            new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
-        }
-        else {
-            header('Location: ' . $installUrl . '?sessionHash=' . $oauthResponse->getParameter('access_token'));
-            die();
-        }
 
+    if ($loginFactory->hasLogin()) {
+        $loginFactory->getLogin();
+        $loginFactory->apiResponse();
+        die();
     }
 
 

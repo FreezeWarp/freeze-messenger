@@ -16,7 +16,7 @@ class IntegrationLogin implements GrantTypeInterface
     protected $storage;
 
     /**
-     * @param OAuth2\Storage\UserCredentialsInterface $storage REQUIRED Storage class for retrieving user credentials information
+     * @param UserCredentialsInterface $storage REQUIRED Storage class for retrieving user credentials information
      */
     public function __construct(UserCredentialsInterface $storage, \fimUser $user)
     {
