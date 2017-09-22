@@ -10,6 +10,7 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
+        '5255c38a0faeba867671b61dfda6d864' => __DIR__ . '/..' . '/paragonie/random_compat/lib/random.php',
         'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
         'c65d09b6820da036953a371c8c73a9b1' => __DIR__ . '/..' . '/facebook/graph-sdk/src/Facebook/polyfills.php',
     );
@@ -18,6 +19,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'p' => 
         array (
             'phpseclib\\' => 10,
+        ),
+        'S' => 
+        array (
+            'Stevenmaguire\\OAuth2\\Client\\' => 28,
         ),
         'P' => 
         array (
@@ -28,6 +33,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'M' => 
         array (
             'Monolog\\' => 8,
+        ),
+        'L' => 
+        array (
+            'League\\OAuth2\\Client\\' => 21,
         ),
         'G' => 
         array (
@@ -52,6 +61,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         array (
             0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
         ),
+        'Stevenmaguire\\OAuth2\\Client\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/stevenmaguire/oauth2-microsoft/src',
+        ),
         'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
@@ -67,6 +80,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'Monolog\\' => 
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
+        ),
+        'League\\OAuth2\\Client\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/league/oauth2-client/src',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (

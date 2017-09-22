@@ -41,7 +41,9 @@ class LoginFactory {
             );
         }
 
-        else if (isset($_REQUEST['twitterLogin'])) {
+        else if (isset($_REQUEST['twitterLogin'])
+            && isset($loginConfig['extraMethods']['twitter']['clientId'])
+            && isset($loginConfig['extraMethods']['twitter']['clientSecret'])) {
             require('LoginTwitter.php');
             $this->loginRunner = new LoginTwitter(
                 $this,
@@ -50,12 +52,25 @@ class LoginFactory {
             );
         }
 
-        else if (isset($_REQUEST['facebookLogin'])) {
+        else if (isset($_REQUEST['facebookLogin'])
+            && isset($loginConfig['extraMethods']['facebook']['clientId'])
+            && isset($loginConfig['extraMethods']['facebook']['clientSecret'])) {
             require('LoginFacebook.php');
             $this->loginRunner = new LoginFacebook(
                 $this,
                 $loginConfig['extraMethods']['facebook']['clientId'],
                 $loginConfig['extraMethods']['facebook']['clientSecret']
+            );
+        }
+
+        else if (isset($_REQUEST['microsoftLogin'])
+            && isset($loginConfig['extraMethods']['microsoft']['clientId'])
+            && isset($loginConfig['extraMethods']['microsoft']['clientSecret'])) {
+            require('LoginMicrosoft.php');
+            $this->loginRunner = new LoginMicrosoft(
+                $this,
+                $loginConfig['extraMethods']['microsoft']['clientId'],
+                $loginConfig['extraMethods']['microsoft']['clientSecret']
             );
         }
     }

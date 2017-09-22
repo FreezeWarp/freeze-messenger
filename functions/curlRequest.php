@@ -41,6 +41,11 @@ class curlRequest {
     public $requestFile = '';
 
     /**
+     * @var array A list of headers returned with the response.
+     */
+    public $allHeaders = [];
+
+    /**
      * @var array An array of request body parameters for the request.
      */
     public $requestData = '';
@@ -60,7 +65,7 @@ class curlRequest {
         }
 
         if (strlen($apiFile) > 0) {
-            $this->setRequestFile($apiFile . '?' . http_build_query($dataHead));
+            $this->setRequestFile($apiFile . (count($dataHead) ? '?' . http_build_query($dataHead) : ''));
         }
     }
 
@@ -118,11 +123,11 @@ class curlRequest {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function execute($method = CurlRequestMethod::GET) {
-        if (function_exists('curl_init'))
-            $this->curl($method);
-
-        elseif (function_exists('fsockopen'))
+        if (function_exists('fsockopen'))
             $this->fsockopen($method);
+
+        else if (function_exists('curl_init'))
+            $this->curl($method);
 
         else
             throw new Exception('curlRequest: no compatible PHP function found. Please enable fsock or curl.');
@@ -151,6 +156,7 @@ class curlRequest {
         else {
             $this->response = curl_exec($ch);
             $this->responseHeader = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $this->redirectLocation = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         }
 
         curl_close($ch);
@@ -162,22 +168,25 @@ class curlRequest {
         $errstr = false;
 
         $urlData = parse_url($this->requestFile); // parse the given URL
+        if (!$urlData['port']) {
+            $urlData['port'] = $urlData['scheme'] === 'https' ? 443 : 80;
+        }
 
-        $fp = fsockopen($urlData['host'], 80, $errno, $errstr); // open a socket connection on port 80
+        $fp = fsockopen($urlData['host'], $urlData['port'], $errno, $errstr); // open a socket connection on port 80
 
         if ($fp) {
             // send the request headers:
             fputs($fp, CurlRequestMethod::toString($method) . " " . $urlData['path'] . (isset($urlData['query']) ? '?' . $urlData['query'] : '') . " HTTP/1.1\r\n");
             fputs($fp, "Host: " . $urlData['host'] . "\r\n");
 
-            if ($this->requestData) {
+            if ($method != CurlRequestMethod::GET && $this->requestData) {
                 fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
                 fputs($fp, "Content-length: " . strlen($this->requestData) . "\r\n");;
             }
 
             fputs($fp, "Connection: close\r\n\r\n");
 
-            if ($this->requestData) {
+            if ($method != CurlRequestMethod::GET && $this->requestData) {
                 fputs($fp, $this->requestData);
             }
 
@@ -198,29 +207,28 @@ class curlRequest {
             $result = explode("\r\n\r\n", $result, 2); // Return headers in [0], return content in [1].
             $this->response = isset($result[1]) ? $result[1] : '';
 
-            $headers = [];
             $headerSet = 0;
             foreach (explode("\n", $result[0]) AS $header) {
                 if (stripos($header, 'HTTP/') === 0) {
                     $headerSet++;
 
                     if (strpos($header, '301') !== false || strpos($header, '302') !== false)
-                        $headers[$headerSet]['status'] = 'redirect';
+                        $this->allHeaders[$headerSet]['status'] = 'redirect';
                     else if (strpos($header, '200') === false)
-                        $headers[$headerSet]['status'] = 'error';
+                        $this->allHeaders[$headerSet]['status'] = 'error';
                     else
-                        $headers[$headerSet]['status'] = 'okay';
+                        $this->allHeaders[$headerSet]['status'] = 'okay';
 
-                    $headers[$headerSet]['httpCode'] = $header;
+                    $this->allHeaders[$headerSet]['httpCode'] = $header;
                 }
 
                 if (stripos($header, 'location') !== false) {
-                    $headers[$headerSet]['location'] = explode(': ', $header)[1];
+                    $this->allHeaders[$headerSet]['location'] = explode(': ', $header)[1];
                 }
             }
 
-            $this->responseHeader = $headers[$headerSet]['httpCode'];
-            //$this->redirectLocation = $headers[$headerSet - 1]['location']
+            $this->responseHeader = $this->allHeaders[$headerSet]['httpCode'];
+            $this->redirectLocation = $this->allHeaders[$headerSet - 1]['location'];
         }
     }
 

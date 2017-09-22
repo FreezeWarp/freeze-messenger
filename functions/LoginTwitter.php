@@ -14,16 +14,6 @@ class LoginTwitter implements LoginRunner {
 
         // create our client credentials
         $this->client = new TwitterOAuth($clientId, $clientSecret);
-
-        /*$this->client->setApplicationName("FlexMessenger Login");
-        $this->client->setDeveloperKey("AIzaSyDxK4wHgx7NAy6NU3CcSsQ2D3JX3K6FwVs");
-        $this->client->setClientId($clientId);
-        $this->client->setClientSecret($clientSecret);
-        $this->client->setRedirectUri($installUrl . 'validate.php?googleLogin');
-        $this->client->addScope([
-            Google_Service_Oauth2::USERINFO_EMAIL,
-            Google_Service_Oauth2::USERINFO_PROFILE,
-        ]);*/
     }
 
     public function hasLoginCredentials(): bool {
