@@ -15,12 +15,29 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 class LoginFactory {
+    /**
+     * @var \OAuth2\Request
+     */
     public $oauthRequest;
+
+    /**
+     * @var \OAuth2\Storage\FIMDatabaseOAuth
+     */
     public $oauthStorage;
+
+    /**
+     * @var \OAuth2\Server
+     */
     public $oauthServer;
 
+    /**
+     * @var LoginRunner
+     */
     public $loginRunner = null;
 
+    /**
+     * @var fimUser
+     */
     public $user;
 
     public function __construct(OAuth2\Request $oauthRequest, OAuth2\Storage\FIMDatabaseOAuth $oauthStorage, OAuth2\Server $oauthServer) {
@@ -30,48 +47,61 @@ class LoginFactory {
         $this->oauthStorage = $oauthStorage;
         $this->oauthServer = $oauthServer;
 
-        if (isset($_REQUEST['googleLogin'])
-            && isset($loginConfig['extraMethods']['google']['clientId'])
-            && isset($loginConfig['extraMethods']['google']['clientSecret'])) {
-            require('LoginGoogle.php');
-            $this->loginRunner = new LoginGoogle(
-                $this,
-                $loginConfig['extraMethods']['google']['clientId'],
-                $loginConfig['extraMethods']['google']['clientSecret']
-            );
+        if (isset($_REQUEST['integrationMethod'])) {
+            $loginName = $_REQUEST['integrationMethod'];
+            $className = 'Login' . ucfirst($loginName);
+            $includePath = __DIR__ . "/{$className}.php";
+
+            if (!isset($loginConfig['extraMethods'][$loginName]['clientId'], $loginConfig['extraMethods'][$loginName]['clientSecret'])) {
+                new fimError('disabledLogin', 'The attempted login method is disabled on this server.');
+            }
+
+            elseif (!file_exists($includePath)) {
+                new fimError('uninstalledLogin', 'The attempted login method is enabled, but not installed, on this server.');
+            }
+
+            else {
+                require($includePath);
+
+                if (!class_exists($className)) {
+                    new fimError('brokenLogin', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
+                }
+                else {
+                    $this->loginRunner = new $className(
+                        $this,
+                        $loginConfig['extraMethods'][$loginName]['clientId'],
+                        $loginConfig['extraMethods'][$loginName]['clientSecret']
+                    );
+                }
+            }
         }
 
-        else if (isset($_REQUEST['twitterLogin'])
-            && isset($loginConfig['extraMethods']['twitter']['clientId'])
-            && isset($loginConfig['extraMethods']['twitter']['clientSecret'])) {
-            require('LoginTwitter.php');
-            $this->loginRunner = new LoginTwitter(
-                $this,
-                $loginConfig['extraMethods']['twitter']['clientId'],
-                $loginConfig['extraMethods']['twitter']['clientSecret']
-            );
+        elseif (isset($_REQUEST['password'], $_REQUEST['username'])) {
+            global $loginConfig, $database;
+
+            $className = 'Login' . ucfirst($loginConfig['method']);
+            $includePath = __DIR__ . "/{$className}.php";
+
+            if (!file_exists($includePath)) { var_dump($includePath); die();
+                new fimError('loginMisconfigured', 'Logins are currently misconfigured: a login method has been specified without a corresponding login class being available.');
+            }
+            else {
+                require($includePath);
+
+                if (!class_exists($className)) {
+                    new fimError('loginMisconfigured', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
+                }
+                else {
+                    $this->loginRunner = new $className($this, $database);
+                }
+            }
         }
 
-        else if (isset($_REQUEST['facebookLogin'])
-            && isset($loginConfig['extraMethods']['facebook']['clientId'])
-            && isset($loginConfig['extraMethods']['facebook']['clientSecret'])) {
-            require('LoginFacebook.php');
-            $this->loginRunner = new LoginFacebook(
-                $this,
-                $loginConfig['extraMethods']['facebook']['clientId'],
-                $loginConfig['extraMethods']['facebook']['clientSecret']
-            );
-        }
+        elseif (isset($_REQUEST['grant_type'])) {
+            global $database;
 
-        else if (isset($_REQUEST['microsoftLogin'])
-            && isset($loginConfig['extraMethods']['microsoft']['clientId'])
-            && isset($loginConfig['extraMethods']['microsoft']['clientSecret'])) {
-            require('LoginMicrosoft.php');
-            $this->loginRunner = new LoginMicrosoft(
-                $this,
-                $loginConfig['extraMethods']['microsoft']['clientId'],
-                $loginConfig['extraMethods']['microsoft']['clientSecret']
-            );
+            require('LoginOAuth.php');
+            $this->loginRunner = new LoginOAuth($this, $database);
         }
     }
 
@@ -100,22 +130,6 @@ class LoginFactory {
      * Get the API response, following a login.
      */
     public function apiResponse() {
-        global $installUrl;
-
-        $this->oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
-        $this->oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
-        $this->oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
-        $this->oauthServer->addGrantType($userC = new OAuth2\GrantType\IntegrationLogin($this->oauthStorage, $this->user));
-
-        $oauthResponse = $this->oauthServer->handleTokenRequest($this->oauthRequest);
-
-        if ($oauthResponse->getStatusCode() !== 200) {
-            new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
-        }
-        else {
-            header('Location: ' . $installUrl . '?sessionHash=' . $oauthResponse->getParameter('access_token'));
-        }
-
-        die();
+        $this->loginRunner->apiResponse();
     }
 }

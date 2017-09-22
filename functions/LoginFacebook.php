@@ -16,17 +16,14 @@
 
 require_once(__DIR__ . '/../vendor/autoload.php');
 
-require_once('LoginRunner.php');
+require_once('LoginTwoStep.php');
 
-class LoginFacebook implements LoginRunner {
+class LoginFacebook extends LoginTwoStep {
     public $client;
     public $loginFactory;
 
     public function __construct($loginFactory, $clientId, $clientSecret) {
-        global $installUrl;
-
-        // Associate the login factory
-        $this->loginFactory = $loginFactory;
+        parent::__construct($loginFactory);
 
         // Session Data for Facebook
         if(!session_id()) {
@@ -47,7 +44,7 @@ class LoginFacebook implements LoginRunner {
 
     public function getLoginCredentials() {
         global $installUrl;
-        header('Location: ' . filter_var($this->client->getRedirectLoginHelper()->getLoginUrl($installUrl . 'validate.php?facebookLogin'), FILTER_SANITIZE_URL));
+        header('Location: ' . filter_var($this->client->getRedirectLoginHelper()->getLoginUrl($installUrl . 'validate.php?integrationMethod=facebook'), FILTER_SANITIZE_URL));
         die();
     }
 

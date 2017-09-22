@@ -19,5 +19,7 @@ interface LoginRunner {
     public function hasLoginCredentials(): bool;
     public function getLoginCredentials();
     public function setUser();
+    public function getLoginFactory() : LoginFactory;
+    public function apiResponse();
 
 }

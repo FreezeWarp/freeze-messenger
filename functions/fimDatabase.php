@@ -1259,7 +1259,7 @@ class fimDatabase extends DatabaseSQL
      * @param int $pagination
      * @return bool|object|resource
      */
-    public function getRooms($options, $sort = array('id' => 'asc'), $limit = 50, $pagination = 0)
+    public function getRooms($options, $sort = array('id' => 'asc'), $limit = 50, $pagination = 0) : fimDatabaseResult
     {
         $options = $this->argumentMerge(array(
             'roomIds'            => [],
@@ -1319,7 +1319,7 @@ class fimDatabase extends DatabaseSQL
 
 
 
-    public function getUsers($options = array(), $sort = array('id' => 'asc'), $limit = 0, $pagination = 0)
+    public function getUsers($options = array(), $sort = array('id' => 'asc'), $limit = 0, $pagination = 0) : fimDatabaseResult
     {
         $options = $this->argumentMerge(array(
             'userIds'        => array(),
@@ -1365,7 +1365,7 @@ class fimDatabase extends DatabaseSQL
 
 
 
-    public function getUser($userId)
+    public function getUser($userId) : fimUser
     {
         return $this->getUsers(array(
             'userIds' => array($userId)

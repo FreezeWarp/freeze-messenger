@@ -16,17 +16,16 @@
 
 require_once('vendor/autoload.php');
 
-require_once('LoginRunner.php');
+require_once('LoginTwoStep.php');
 
-class LoginGoogle implements LoginRunner {
+class LoginGoogle extends LoginTwoStep {
     public $client;
     public $loginFactory;
 
     public function __construct($loginFactory, $clientId, $clientSecret) {
         global $installUrl;
 
-        // Associate the login factory
-        $this->loginFactory = $loginFactory;
+        parent::__construct($loginFactory);
 
         // create our client credentials
         $this->client = new Google_Client();
@@ -35,7 +34,7 @@ class LoginGoogle implements LoginRunner {
         $this->client->setDeveloperKey("AIzaSyDxK4wHgx7NAy6NU3CcSsQ2D3JX3K6FwVs");
         $this->client->setClientId($clientId);
         $this->client->setClientSecret($clientSecret);
-        $this->client->setRedirectUri($installUrl . 'validate.php?googleLogin');
+        $this->client->setRedirectUri($installUrl . 'validate.php?integrationMethod=google');
         $this->client->addScope([
             Google_Service_Oauth2::USERINFO_EMAIL,
             Google_Service_Oauth2::USERINFO_PROFILE,

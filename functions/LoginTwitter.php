@@ -3,10 +3,9 @@
 require_once('vendor/autoload.php');
 use Abraham\TwitterOAuth\TwitterOAuth;
 
-require_once('LoginRunner.php');
-require_once('curlRequest.php');
+require_once('LoginTwoStep.php');
 
-class LoginTwitter implements LoginRunner {
+class LoginTwitter extends LoginTwoStep {
     public $loginFactory;
 
     public function __construct(LoginFactory $loginFactory, $clientId, $clientSecret) {
@@ -23,7 +22,7 @@ class LoginTwitter implements LoginRunner {
     public function getLoginCredentials() {
         global $installUrl;
 
-        $request_token = $this->client->oauth('oauth/request_token', array('oauth_callback' => $installUrl . 'validate.php?twitterLogin'));
+        $request_token = $this->client->oauth('oauth/request_token', array('oauth_callback' => $installUrl . 'validate.php?integrationMethod=twitter'));
 
         session_start();
         $_SESSION['oauth_token'] = $request_token['oauth_token'];

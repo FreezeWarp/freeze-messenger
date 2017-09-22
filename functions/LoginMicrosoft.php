@@ -2,24 +2,22 @@
 
 require_once('vendor/autoload.php');
 
-require_once('LoginRunner.php');
-require_once('curlRequest.php');
+require_once('LoginTwoStep.php');
 
-class LoginMicrosoft implements LoginRunner {
+class LoginMicrosoft extends LoginTwoStep {
     public $loginFactory;
 
     public function __construct(LoginFactory $loginFactory, $clientId, $clientSecret) {
         global $installUrl;
 
-        $this->loginFactory = $loginFactory;
-        //var_dump($installUrl . 'validate.php'); die();
+        parent::__construct($loginFactory);
 
         // create our client credentials
         $this->client = new Stevenmaguire\OAuth2\Client\Provider\Microsoft([
             // Required
             'clientId'                  => $clientId,
             'clientSecret'              => $clientSecret,
-            'redirectUri'               => $installUrl . 'validate.php?microsoftLogin'
+            'redirectUri'               => $installUrl . 'validate.php?integrationMethod=microsoft'
         ]);
     }
 
