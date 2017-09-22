@@ -3,9 +3,12 @@
 require_once('LoginRunner.php');
 abstract class LoginTwoStep implements LoginRunner {
 
+    /**
+     * @var LoginFactory
+     */
     public $loginFactory;
 
-    public function __construct($loginFactory) {
+    public function __construct(LoginFactory $loginFactory) {
         $this->loginFactory = $loginFactory;
     }
 
@@ -20,10 +23,7 @@ abstract class LoginTwoStep implements LoginRunner {
     public function apiResponse() {
         global $installUrl;
 
-        $this->loginFactory->oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
-        $this->loginFactory->oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
-        $this->loginFactory->oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
-        $this->loginFactory->oauthServer->addGrantType($userC = new OAuth2\GrantType\IntegrationLogin($this->loginFactory->oauthStorage, $this->loginFactory->user));
+        $this->loginFactory->oauthServer->addGrantType($this->loginFactory->oauthGetIntegrationLogin());
 
         $oauthResponse = $this->loginFactory->oauthServer->handleTokenRequest($this->loginFactory->oauthRequest);
 

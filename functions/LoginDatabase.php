@@ -2,7 +2,6 @@
 
 require_once('LoginRunner.php');
 abstract class LoginDatabase implements LoginRunner {
-
     /**
      * @var LoginFactory
      */
@@ -14,7 +13,7 @@ abstract class LoginDatabase implements LoginRunner {
     public $oauthGrantType;
 
 
-    public function __construct($loginFactory) {
+    public function __construct(LoginFactory $loginFactory) {
         $this->loginFactory = $loginFactory;
     }
 

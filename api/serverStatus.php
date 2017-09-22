@@ -30,7 +30,8 @@ require('../global.php');
 
 
 /* Emoticons */
-switch($loginConfig['method']) {
+
+/*switch($loginConfig['method']) {
     case 'vbulletin3':
     case 'vbulletin4':
         $smilies = $integrationDatabase->select(array(
@@ -77,7 +78,7 @@ if (count($smilies)) {
     foreach ($smilies AS $smilie) {
         $smilies2[$smilie['emoticonText']] = $forumUrlS . $smilie['emoticonFile'];
     }
-}
+}*/
 
 
 echo new ApiData(
@@ -140,7 +141,7 @@ echo new ApiData(
 
             'formatting' => array(
                 'fonts' => $config['fonts'],
-                'emoticons' => $smilies2,
+                ///'emoticons' => $smilies2,
             ),
 
             'cacheDelays' => array(

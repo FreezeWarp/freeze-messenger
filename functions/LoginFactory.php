@@ -36,16 +36,22 @@ class LoginFactory {
     public $loginRunner = null;
 
     /**
+     * @var DatabaseSQL
+     */
+    public $database;
+
+    /**
      * @var fimUser
      */
     public $user;
 
-    public function __construct(OAuth2\Request $oauthRequest, OAuth2\Storage\FIMDatabaseOAuth $oauthStorage, OAuth2\Server $oauthServer) {
+    public function __construct(OAuth2\Request $oauthRequest, OAuth2\Storage\FIMDatabaseOAuth $oauthStorage, OAuth2\Server $oauthServer, DatabaseSQL $database) {
         global $loginConfig;
 
         $this->oauthRequest = $oauthRequest;
         $this->oauthStorage = $oauthStorage;
         $this->oauthServer = $oauthServer;
+        $this->database = $database;
 
         if (isset($_REQUEST['integrationMethod'])) {
             $loginName = $_REQUEST['integrationMethod'];
@@ -77,8 +83,6 @@ class LoginFactory {
         }
 
         elseif (isset($_REQUEST['password'], $_REQUEST['username'])) {
-            global $loginConfig, $database;
-
             $className = 'Login' . ucfirst($loginConfig['method']);
             $includePath = __DIR__ . "/{$className}.php";
 
@@ -92,16 +96,14 @@ class LoginFactory {
                     new fimError('loginMisconfigured', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
                 }
                 else {
-                    $this->loginRunner = new $className($this, $database);
+                    $this->loginRunner = new $className($this);
                 }
             }
         }
 
         elseif (isset($_REQUEST['grant_type'])) {
-            global $database;
-
             require('LoginOAuth.php');
-            $this->loginRunner = new LoginOAuth($this, $database);
+            $this->loginRunner = new LoginOAuth($this);
         }
     }
 
@@ -131,5 +133,13 @@ class LoginFactory {
      */
     public function apiResponse() {
         $this->loginRunner->apiResponse();
+    }
+
+
+    public function oauthGetIntegrationLogin() {
+        $this->oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
+        $this->oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
+        $this->oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
+        return new OAuth2\GrantType\IntegrationLogin($this->user);
     }
 }

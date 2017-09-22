@@ -1,20 +1,8 @@
 <?php
 require_once('LoginDatabase.php');
 class LoginVanilla extends LoginDatabase {
-    /**
-     * @var LoginFactory
-     */
-    public $loginFactory;
-
-    /**
-     * @var fimDatabase
-     */
-    public $database;
-
-
-    public function __construct(LoginFactory $loginFactory, fimDatabase $database) {
-        $this->loginFactory = $loginFactory;
-        $this->database = $database;
+    public function __construct(LoginFactory $loginFactory) {
+        parent::__construct($loginFactory);
     }
 
     public function getLoginFactory(): LoginFactory {

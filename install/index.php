@@ -547,11 +547,11 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 </tr>
                 <tr class="vanillaShow">
                     <td><strong>Admin Username</strong></td>
-                    <td><input type="text" name="admin_userName" required /><br /><small>The name you wish to login with.</small></td>
+                    <td><input type="text" name="admin_userName" /><br /><small>The name you wish to login with.</small></td>
                 </tr>
                 <tr class="vanillaShow">
                     <td><strong>Admin Password</strong></td>
-                    <td><input id="admin_password"  type="password" name="admin_password" required /><input type="button" onclick="$('<input type=\'text\' name=\'admin_password\' />').val($('#admin_password').val()).prependTo($('#admin_password').parent()); $('#admin_password').remove();$(this).remove();" value="Show" /><br /><small>The password you wish to login with.</small></td>
+                    <td><input id="admin_password"  type="password" name="admin_password" /><input type="button" onclick="$('<input type=\'text\' name=\'admin_password\' />').val($('#admin_password').val()).prependTo($('#admin_password').parent()); $('#admin_password').remove();$(this).remove();" value="Show" /><br /><small>The password you wish to login with.</small></td>
                 </tr>
                 </tbody>
                 <thead>

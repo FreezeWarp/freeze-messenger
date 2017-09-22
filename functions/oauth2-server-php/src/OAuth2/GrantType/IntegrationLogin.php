@@ -12,28 +12,42 @@ use OAuth2\ResponseInterface;
  */
 class IntegrationLogin implements GrantTypeInterface
 {
-    private $userInfo;
-    protected $storage;
 
     /**
-     * @param UserCredentialsInterface $storage REQUIRED Storage class for retrieving user credentials information
+     * @var \fimUser
      */
-    public function __construct(UserCredentialsInterface $storage, \fimUser $user)
+    private $userInfo;
+
+
+    /**
+     * @param \fimUser $user
+     */
+    public function __construct(\fimUser $user)
     {
-        $this->storage = $storage;
-        $this->userInfo['user_id'] = $user->id;
+        $this->userInfo = $user;
     }
 
-    public function getQuerystringIdentifier()
+    /**
+     * @return string
+     */
+    public function getQueryStringIdentifier()
     {
         return 'integrationLogin';
     }
 
+    /**
+     * @param RequestInterface  $request
+     * @param ResponseInterface $response
+     * @return true as long as a valid user ID was provided at construction.
+     */
     public function validateRequest(RequestInterface $request, ResponseInterface $response)
     {
-        return true;
+        return $this->userInfo->isValid();
     }
 
+    /**
+     * @return null
+     */
     public function getClientId()
     {
         return null;
@@ -41,14 +55,26 @@ class IntegrationLogin implements GrantTypeInterface
 
     public function getUserId()
     {
-        return $this->userInfo['user_id'];
+        return $this->userInfo->id;
     }
 
+    /**
+     * @return null
+     */
     public function getScope()
     {
-        return isset($this->userInfo['scope']) ? $this->userInfo['scope'] : null;
+        return null;
     }
 
+    /**
+     * Create access token
+     *
+     * @param AccessTokenInterface $accessToken
+     * @param mixed                $client_id   - client identifier related to the access token.
+     * @param mixed                $user_id     - user id associated with the access token
+     * @param string               $scope       - scopes to be stored in space-separated string.
+     * @return array
+     */
     public function createAccessToken(AccessTokenInterface $accessToken, $client_id, $user_id, $scope)
     {
         return $accessToken->createAccessToken($client_id, $user_id, $scope);

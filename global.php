@@ -132,7 +132,8 @@ set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
 
 /* If the connections are the same, do not make multiple below. */
 /* Connect to the Main Database */
-$database = new fimDatabaseUAC;
+$database = new fimDatabase();
+
 if (!$database->connect($dbConnect['core']['host'],
     $dbConnect['core']['port'],
     $dbConnect['core']['username'],
@@ -147,12 +148,11 @@ else {
 }
 
 
-/* Connect to the Integration DB
- * On the whole, the product was designed such that all tables are in one database, but for the advanced users out there... */
-if ($dbConnect['core'] != $dbConnect['integration']) {
-    $integrationDatabase = new fimDatabaseUAC;
+/* Connect to the Integration DB  */
+if ($loginConfig['method'] != 'vanilla') {
+    $integrationDatabase = new fimDatabase();
 
-    if (!$database->connect($dbConnect['integration']['host'],
+    if (!$integrationDatabase->connect($dbConnect['integration']['host'],
         $dbConnect['integration']['port'],
         $dbConnect['integration']['username'],
         $dbConnect['integration']['password'],
@@ -168,10 +168,7 @@ else {
 
 
 /* Connect to the DB Slave
- * Unfortunately, this can not be reliably used in v3. It will be more of a focus in the future.
- * Still, if you do use it, it can ease load.
- * NOTE:
- ** Slave Database should be used, at least in the future, to referrence values that can have high latency. For instance, kicks, which can change within the minute, require relatively low latency, but roomData can have high latency. Thus, when trying to obtain a value for roomData, we should generally use the slave, while if we are trying to obtain kick information, we should use the slave. */
+ * This assumes external replication is set up, and the slave is a copy of the master with possible latency. (Thus, we use it when a little latency is okay.) */
 if ($dbConnect['core'] != $dbConnect['slave']) {
     $slaveDatabase = new fimDatabase;
 

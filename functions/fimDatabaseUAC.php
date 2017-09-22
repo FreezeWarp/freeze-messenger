@@ -10,18 +10,6 @@ class fimDatabaseUAC extends fimDatabase {
             'socialGroups' => 'socialgroup',
             'socialGroupMembers' => 'socialgroupmember',
         ),
-        'phpbb' => array(
-            'users' => 'users',
-            'adminGroups' => false,
-            'socialGroups' => 'groups',
-            'socialGroupMembers' => 'user_group'
-        ),
-        'vanilla' => array(
-            'users' => 'users',
-            'adminGroups' => 'adminGroups',
-            'socialGroups' => 'socialGroups',
-            'socialGroupMembers' => 'socialGroupMembers'
-        )
     );
 
     private $columnDefinitions = array( // These are only used for syncing. When the original database is queried (such as with password), the field will be used explictly there.
@@ -42,50 +30,6 @@ class fimDatabaseUAC extends fimDatabase {
             'socialGroupMembers' => array(
                 'groupId' => 'groupid', 'userId' => 'userid',
                 'type' => 'type', 'validType' => 'member',
-            ),
-        ),
-        'phpbb' => array(
-            'users' => array(
-                'userId' => 'user_id', 'userName' => 'username',
-                'userGroup' => 'group_id', 'userGroupAlt' => 'group_id',
-                'allGroups' => 'group_id', 'timeZone' => 'user_timezone',
-                'color' => 'user_colour', 'avatar' => 'user_avatar',
-            ),
-            'adminGroups' => false,
-            'socialGroups' => array(
-                'groupId' => 'groupid', 'groupName' => 'name',
-                'groupId' => 'group_id', 'groupName' => 'group_name',
-            ),
-            'socialGroupMembers' => array(
-                'groupId' => 'group_id', 'userId' => 'user_id',
-                'type' => 'user_pending', 'validType' => '0',
-            ),
-        ),
-        'vanilla' => array(
-            'users' => array(
-                'userId' => 'userId', 'userName' => 'userName',
-                'userGroupAlt' => 'userGroup', 'userGroup' => 'userGroup', // Note: Put 'userGroupAlt' first, since the array will later be flipped to generate a list of columns to select. (and userGroupAlt with thus be over-written with userGroup)
-                'allGroups' => 'allGroups', 'socialGroups' => 'socialGroups',
-                'timeZone' => 'timeZone', 'avatar' => 'avatar',
-                'password' => 'password', 'passwordSalt' => 'passwordSalt',
-                'passwordSaltNum' => 'passwordSaltNum', 'joinDate' => 'joinDate',
-                'birthDate' => 'birthDate', 'interfaceId' => 'interfaceId',
-                'status' => 'status',
-                'userPrivs' => 'userPrivs', 'adminPrivs' => 'adminPrivs',
-                'defaultRoom' => 'defaultRoom', 'defaultFormatting '=> 'defaultFormatting',
-                'defaultHighlight' => 'defaultHighlight', 'defaultColor' => 'defaultColor',
-                'defaultFontface' => 'defaultFontface', 'profile' => 'profile',
-                'userFormatStart' => 'userFormatStart', 'userFormatEnd' => 'userFormatEnd',
-                'lang' => 'lang',
-                'userParentalAge' => 'userParentalAge', 'userParentalFlags' => 'userParentalFlags',
-            ),
-            'adminGroups' => false,
-            'socialGroups' => array(
-                'groupId' => 'groupId', 'groupName' => 'groupName',
-            ),
-            'socialGroupMembers' => array(
-                'groupId' => 'group_id', 'userId' => 'user_id',
-                'type' => 'user_pending', 'validType' => '0',
             ),
         ),
     );

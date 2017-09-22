@@ -1,20 +1,8 @@
 <?php
 require_once('LoginDatabase.php');
 class LoginOAuth extends LoginDatabase {
-    /**
-     * @var LoginFactory
-     */
-    public $loginFactory;
-
-    /**
-     * @var fimDatabase
-     */
-    public $database;
-
-
-    public function __construct(LoginFactory $loginFactory, fimDatabase $database) {
-        $this->loginFactory = $loginFactory;
-        $this->database = $database;
+    public function __construct(LoginFactory $loginFactory) {
+        parent::__construct($loginFactory);
     }
 
     public function hasLoginCredentials(): bool {
@@ -26,7 +14,7 @@ class LoginOAuth extends LoginDatabase {
     }
 
     public function setUser() {
-        $this->database->cleanSessions();
+        $this->loginFactory->oauthStorage->cleanSessions();
 
         /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
         switch ($_REQUEST['grant_type']) {

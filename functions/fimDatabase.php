@@ -1776,47 +1776,19 @@ class fimDatabase extends DatabaseSQL
      ******************* SESSIONS ***************************
      ********************************************************/
 
-    public function createSession($user) {
-        // TODO: implement using database.php
-        global $dbConnect;
-
-        require_once('oauth2-server-php/src/OAuth2/Autoloader.php');
-        OAuth2\Autoloader::register();
-        $storage = new OAuth2\Storage\Pdo(array('dsn' => 'mysql:dbname=' . $this->connectionInformation['database'] . ';host=' . $this->connectionInformation['host'], 'username' => $this->connectionInformation['user'], 'password' => $this->connectionInformation['password']));// $dsn is the Data Source Name for your database, for exmaple "mysql:dbname=my_oauth2_db;host=localhost"
-        $server = new OAuth2\Server($storage); // Pass a storage object or array of storage objects to the OAuth2 server class
-        $server->addGrantType(new OAuth2\GrantType\ClientCredentials($storage)); // Add the "Client Credentials" grant type (it is the simplest of the grant types)
-        $server->addGrantType(new OAuth2\GrantType\AuthorizationCode($storage)); // Add the "Authorization Code" grant type (this is where the oauth magic happens)
-        /* Hash is prettttty simple. We create a random 64-bit integer (done as two 32-bit integers, since mt_rand isn't reliable for anything bigger), append microtime (as an integer to it). The resulting integer is around 100 bits, and should be treated as a 128-bit integer.
-         * This may seem insecure. It's not, because we prevent guessing by locking users out after x incorrect logins (and a non-existent session token counts as this).
-         * Thus, we just need to make sure that there's enough entropy here that the vast, vast majority of possible session tokens are unused. By having a ~64-bit random integer appended to the ~40-bit microtime, we can be pretty sure that no one's going to be able to guess anytime soon. */
-        $sessionHash = mt_rand(0x0, 0x7FFFFFFF) . mt_rand(0x0, 0x7FFFFFFF) . (int) (microtime(true) * 10000);
-
-        $this->cleanSessions(); // Whenever a new user logs in, delete all sessions from 15 or more minutes in the past.
-
-        $this->insert($this->sqlPrefix . 'sessions', array(
-            'userId' => $user->id,
-            'anonId' => $user->anonId,
-            'sessionTime' => $this->now(),
-            'sessionHash' => $sessionHash,
-            'userAgent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-            'sessionIp' => $_SERVER['REMOTE_ADDR'],
-            'clientCode' => $_REQUEST['clientCode']
+    /**
+     * Delete expired entries from the permissions cache.
+     */
+    public function cleanPermissionsCache() {
+        $this->delete($this->sqlPrefix . 'permissionsCache', array(
+            'expires' => $this->now(0, 'lte')
         ));
-
-        return $sessionHash;
     }
 
-
-
-    public function cleanSessions() {
-        $this->delete($this->sqlPrefix . 'oauth_access_tokens', array(
-            'expires' => $this->now(-3600, 'lte')
-        ));
-
-        $this->delete($this->sqlPrefix . 'oauth_authorization_codes', array(
-            'expires' => $this->now(-3600, 'lte')
-        ));
-
+    /**
+     * Delete expired entries from the user lockout table.
+     */
+    public function cleanLockout() {
         $this->delete($this->sqlPrefix . 'sessionLockout', array(
             'expires' => $this->now(0, 'lte')
         ));

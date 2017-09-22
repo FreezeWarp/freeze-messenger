@@ -27,6 +27,8 @@
  * @param string fim3_userId
  * @param string fim3_sessionHash
  *
+ * @global DatabaseSQL $database
+ * @global DatabaseSQL $integrationDatabase
  */
 
 
@@ -121,7 +123,7 @@ if (!$ignoreLogin) {
     /**
      * A factory for performing integration logins.
      */
-    $loginFactory = new LoginFactory($oauthRequest, $oauthStorage, $oauthServer);
+    $loginFactory = new LoginFactory($oauthRequest, $oauthStorage, $oauthServer, $integrationDatabase);
 
 
 
