@@ -20,7 +20,7 @@ require_once('Stream.php');
  * An implementation of Stream using database tables. Uses Database wrapper to ensure compatibility.
  * Compared to other implementations, this one will be more finicky: table locking may become a concern, and create/deleting stream tables will have some overhead.
  */
-class DatabaseStream implements Stream {
+class StreamDatabase implements Stream {
     private $database;
     private $retries = 0;
 
@@ -74,6 +74,7 @@ class DatabaseStream implements Stream {
         $this->database->delete($this->database->sqlPrefix . 'streams', $condition);
     }
 
+
     public function subscribe($stream, $lastId) {
         global $config;
 
@@ -109,6 +110,11 @@ class DatabaseStream implements Stream {
         $this->database->delete($this->database->sqlPrefix . 'stream_' . $stream, [
             'id' => $this->database->int($this->database->getLastInsertId() - 100, DatabaseTypeComparison::lessThan)
         ]);
+    }
+
+
+    public function unsubscribe($stream) {
+        return;
     }
 }
 ?>

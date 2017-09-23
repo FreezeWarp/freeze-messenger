@@ -2059,6 +2059,7 @@ class fimDatabase extends DatabaseSQL
 
         /* Insert Message Data */
         // Insert into permanent datastore, unless it's an off-the-record room (since that's the only way it's different from a normal private room), in which case we just try to get an autoincremented messageId, storing nothing else.
+        $now = $this->now();
         if ($message->room->type === 'otr') {
             $this->insert($this->sqlPrefix . "messages", array(
                 'roomId'   => $message->room->id,
@@ -2075,7 +2076,7 @@ class fimDatabase extends DatabaseSQL
                 'iv'       => $this->blob($message->iv),
                 'ip'       => $_SERVER['REMOTE_ADDR'],
                 'flag'     => $message->flag,
-                'time'     => $this->now(),
+                'time'     => $now,
             ));
             $message->id = $this->getLastInsertId();
         }
@@ -2089,7 +2090,7 @@ class fimDatabase extends DatabaseSQL
                 'userId'            => $message->user->id,
                 'text'              => $message->text,
                 'flag'              => $message->flag,
-                'time'              => $this->now(),
+                'time'              => $now,
             ));
         }
         else {
@@ -2100,10 +2101,21 @@ class fimDatabase extends DatabaseSQL
                 'messageFormatting' => $message->user->messageFormatting,
                 'text'              => $message->text,
                 'flag'              => $message->flag,
-                'time'              => $this->now(),
+                'time'              => $now,
             ));
         }
         $messageCacheId = $this->getLastInsertId();
+
+
+        // Enter message into stream
+        require_once('StreamFactory.php');
+        StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
+            'id' => $message->id,
+            'text' => $message->text,
+            'time' => $now->value,
+            'flag' => $message->flag,
+            'userId' => $message->user->id,
+        ]);
 
 
         // Generate (and Insert) Key Words, Unless an Off-the-Record Room
@@ -2193,16 +2205,6 @@ class fimDatabase extends DatabaseSQL
 
         // Increment the messages counter.
         $this->incrementCounter('messages');
-
-
-        // Enter message into stream
-        require_once('StreamFactory.php');
-        StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
-            'id' => $message->id,
-            'text' => $message->text,
-            'flag' => $message->flag,
-            'userId' => $message->user->id,
-        ]);
 
 
         // Delete old messages from the cache, based on the maximum allowed rows. (TODO: test)

@@ -16,9 +16,19 @@
 
 require(__DIR__ . '/Stream.php');
 
+/**
+ * Exposes standard publish/subscribe model, automatically using whichever available driver is best.
+ * This will use Redis first (if cacheConnectMethods['redis'] is set), PgSQL second (if cacheConnectMethods['pgsql'] is set or the primary database driver uses PgSQL), and a generic Database third (which will not be performant unless in-memory tables are supported).
+ */
 class StreamFactory {
+    /**
+     * @var Stream The currently in-use Stream instance.
+     */
     private static $instance;
 
+    /**
+     * @return Stream A stream instance (one will be created if not yet available).
+     */
     public static function getInstance(): Stream {
         if (StreamFactory::$instance instanceof Stream) {
             return StreamFactory::$instance;
@@ -26,26 +36,41 @@ class StreamFactory {
         else {
             global $dbConnect, $cacheConnectMethods;
 
-            // todo: dbConnect stream driver, reuse $database if possible
-
             if (isset($cacheConnectMethods['redis']['host']) && extension_loaded('redis')) {
-                require('RedisStream.php');
-                StreamFactory::$instance = new RedisStream($cacheConnectMethods['redis']);
+                require('StreamRedis.php');
+                StreamFactory::$instance = new StreamRedis($cacheConnectMethods['redis']);
             }
-            else {
-                switch ($dbConnect['core']['driver']) {
-                    case 'pgsql':
-                        require('PgSQLStream.php');
-                        global $database;
-                        return StreamFactory::$instance = new PgSQLStream($database);
-                    break;
 
-                    default:
-                        require('DatabaseStream.php');
-                        global $database;
-                        return StreamFactory::$instance = new DatabaseStream($database);
-                    break;
+            elseif ($dbConnect['core']['driver'] === 'pgsql' || $cacheConnectMethods['pgsql']['host']) {
+                require('StreamPgSQL.php');
+
+                // Reuse existing PgSQL instance if available
+                if ($dbConnect['core']['driver'] === 'pgsql') {
+                    global $database;
                 }
+
+                // Otherwise, create new PgSQL instance.
+                else {
+                    $database = new DatabaseSQL();
+                    if (!$database->connect(
+                        $cacheConnectMethods['pgsql']['host'],
+                        $cacheConnectMethods['pgsql']['port'],
+                        $cacheConnectMethods['pgsql']['username'],
+                        $cacheConnectMethods['pgsql']['password'],
+                        false,
+                        'pgsql'
+                    )) {
+                        new fimError('pgsqlConnectionFailure', 'Could not connect to the PgSQL server for Streaming.');
+                    }
+                }
+
+                return StreamFactory::$instance = new StreamPgSQL($database);
+            }
+
+            else {
+                require('StreamDatabase.php');
+                global $database;
+                return StreamFactory::$instance = new StreamDatabase($database);
             }
         }
     }

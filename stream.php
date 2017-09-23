@@ -72,7 +72,7 @@ else {
     while ($messages = StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent'])) {
         foreach ($messages AS $message) {
             if ($request['streamType'] === 'room') {
-                if ($message['data']['id'] <= $request['lastMessage']) continue;
+                if (isset($message['data']['id']) && $message['data']['id'] <= $request['lastMessage']) continue;
             }
 
             echo "\nid: " . (int)$message['id'] . "\n";

@@ -32,6 +32,7 @@ interface Stream {
 
     /**
      * Gets all events since lastId, and wait until at least one exists. This _may_ return empty if needed.
+     * Implementor note: since many pub/sub interfaces don't allow a $lastId specification (or anything like it), use StreamDatabase to perform the initial query, and your own stream after.
      *
      * @param $stream string The name of the stream.
      * @param $lastId int Only get new events since this event ID.
@@ -39,5 +40,13 @@ interface Stream {
      * @return array An array containing all results since lastId at time of execution (waiting until a result appears if needed). The array will be an array of arrays with the indexes 'id', 'eventName', and 'data', where 'data' contains the data sent via publish.
      */
     public function subscribe($stream, $lastId);
+
+
+    /**
+     * Unsubscribe from a stream, freeing the resource.
+     *
+     * @return $stream The stream to unsubscribe from.
+     */
+    public function unsubscribe($stream);
 }
 ?>

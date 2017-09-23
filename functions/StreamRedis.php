@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-class RedisStream implements Stream {
+class StreamRedis implements Stream {
     private $retries = 0;
 
     public function __construct($servers) {

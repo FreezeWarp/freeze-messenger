@@ -455,7 +455,7 @@ class DatabaseSQL extends Database
      *
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    private function functionMap($operation)
+    protected function functionMap($operation)
     {
         $args = func_get_args();
 

@@ -298,7 +298,7 @@ abstract class Database
                     )));
                 }
                 else {
-                    throw new Exception('A database error has occurred (' . $this->getLastError() . '). Additional Data: "' . print_r($errorData, true) . '"');
+                    throw new Exception('A database error has occurred: ' . $errorMessage . '.');
                 }
             }
             else {
