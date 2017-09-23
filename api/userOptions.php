@@ -233,7 +233,9 @@ if ($requestHead['_action'] === 'edit') {
         /************************************
          ************** Profile *************
          ************************************/
-        if (isset($request['profile'])) { // TODO: Add regex policy.
+        if (isset($request['profile'])) {
+            // TODO: Add/test regex policy.
+            // TODO: Disable for integration login
             if ($request['profile'] === '')
                 $updateArray['profile'] = $request['profile'];
 
@@ -360,7 +362,7 @@ if ($requestHead['_action'] === 'edit') {
             $xmlData['editUserOptions']['parentalAge'] = (new fimError('badAge', 'The parental age specified is invalid. A list of valid parental ages can be obtained from the getServerStatus API.', null, true))->value();
 
         else
-            $updateArray['userParentalAge'] = $request['parentalAge'];
+            $updateArray['parentalAge'] = $request['parentalAge'];
     }
 
 
@@ -369,7 +371,7 @@ if ($requestHead['_action'] === 'edit') {
      ********** Parental Flags **********
      ************************************/
     if (isset($request['parentalFlags']))
-        $updateArray['userParentalFlags'] = implode(',', $request['parentalFlags']);
+        $updateArray['parentalFlags'] = implode(',', $request['parentalFlags']);
 }
 
 /*** END: Editable Only Properties ***/
@@ -379,7 +381,6 @@ if ($requestHead['_action'] === 'edit') {
 /************************************
  ********* Perform the Update *******
  ************************************/
-
 if (count($updateArray) > 0) {
     $updateArray['messageFormatting'] = implode(';', $updateArray['messageFormatting']);
 
@@ -412,13 +413,13 @@ if (isset($request['favRooms'])) {
 
 /* Ignore List */
 if (isset($request['ignoreList'])) {
-    $user->editList('ignoreList', $request['ignoreList'], $requestHead['_action']);
+    $user->editList('ignoredUsers', $request['ignoreList'], $requestHead['_action']);
 }
 
 
 
 if (isset($request['friendsList'])) {
-    $user->editList('friendsList', $request['friendsList'], $requestHead['_action']);
+    $user->editList('friendedUsers', $request['friendsList'], $requestHead['_action']);
 }
 
 $database->autoQueue(false);

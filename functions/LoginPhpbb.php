@@ -21,7 +21,7 @@ class LoginPhpbb extends LoginDatabase {
             'user_password' => 'password',
             'group_id' => 'mainGroupId', 'user_email' => 'email',
             'user_regdate' => 'joinDate', 'user_avatar' => 'avatar',
-            'user_colour' => 'nameColor'
+            'user_colour' => 'nameColor', 'user_posts' => 'posts'
         ),
     ];
 

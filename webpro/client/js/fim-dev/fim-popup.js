@@ -458,6 +458,7 @@ popup = {
                 return false;
             },
             oF : function() {
+                // TODO: move
                 var idMap = {
                     disableFormatting : 16, disableImage : 32, disableVideos : 64, reversePostOrder : 1024,
                     showAvatars : 2048, audioDing : 8192, disableFx : 262144, disableRightClick : 1048576,
@@ -490,6 +491,9 @@ popup = {
                         'resolveFromNames' : Resolver.resolveRoomsFromNames
                     });
 
+
+                    $('#fontPreview').attr('style', active.messageFormatting);
+
                     defaultFormatting = active.messageFormatting.split(';');
                     defaultFormattingObj = {};
                     jQuery.each(defaultFormatting, function(index, value) {
@@ -497,9 +501,11 @@ popup = {
                         defaultFormattingObj[pair[0]] = pair[1];
                     });
 
+
                     /* Update Default Forum Values Based on Server Settings */
                     // User Profile
                     if (active.profile) $('#profile').val(active.profile);
+
 
                     // Default Formatting -- Bold
                     if ('font-weight' in defaultFormattingObj && defaultFormattingObj['font-weight'] == 'bold') {
@@ -511,9 +517,9 @@ popup = {
                         else $('#fontPreview').css('font-weight', 'normal');
                     });
 
+
                     // Default Formatting -- Italics
-                    if ('font-weight' in defaultFormattingObj && defaultFormattingObj['font-style'] == 'italic') {
-                        $('#fontPreview').css('font-style', 'italic');
+                    if ('font-style' in defaultFormattingObj && defaultFormattingObj['font-style'] == 'italic') {
                         $('#defaultItalics').attr('checked', 'checked');
                     }
                     $('#defaultItalics').change(function() {
@@ -522,89 +528,125 @@ popup = {
                     });
 
 
-                    // Default Formatting -- Font Colour
-                    if ('color' in defaultFormattingObj) {
-                        $('#fontPreview').css('color', defaultFormattingObj['color']);
-                        $('#defaultColour').css('background-color', defaultFormattingObj['color']);
-
-                        defaultColourHashPre = defaultFormattingObj['color'].slice(4, -1).split(',');
-                        defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
-                    }
-
-                    // Default Formatting -- Highlight Colour
-                    if ('background-color' in defaultFormattingObj) {
-                        $('#fontPreview').css('background-color', defaultFormattingObj['background-color']);
-                        $('#defaultHighlight').css('background-color', defaultFormattingObj['background-color']);
-
-                        defaultHighlightHashPre = defaultFormattingObj['background-color'].slice(4, -1).split(',');
-                        defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
-                    }
-
                     // Default Formatting -- Fontface
-                    if ('font-family' in defaultFormattingObj) {
-                        $('#defaultFace > option').filter(function () { return $(this).attr('data-font') == defaultFormattingObj['font-family']; }).attr('selected', 'selected');
+                    if (window.serverSettings.formatting.fonts) {
+                        // Populate Box
+                        jQuery.each(window.serverSettings.formatting.fonts, function(font, fontFamily) {
+                            $('#defaultFace').append($('<option>').attr({
+                                value: font,
+                                style: "font-family: " + fontFamily,
+                            }).attr((defaultFormattingObj['font-family'] == fontFamily) ? {
+                                selected : 'selected'
+                            } : {}).text(font));
+                        });
+
+                        // onChange
+                        $('#defaultFace').change(function() {
+                            $('#fontPreview').css('fontFamily', $('#defaultFace > option:selected').attr('data-font'));
+                        });
                     }
-                    $('#defaultFace').change(function() {
-                        $('#fontPreview').css('fontFamily', $('#defaultFace > option:selected').attr('data-font'));
-                    });
+                    else {
+                        $('#defaultFace').hide();
+                    }
+
 
                     // Colour Chooser -- Colour
-                    $('#defaultColour').ColorPicker({
-                        color: defaultColourHash,
-                        onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
-                        onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
-                        onChange: function(hsb, hex, rgb) {
-                            defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+                    if (window.serverSettings.formatting.color) {
+                        if ('color' in defaultFormattingObj) {
+                            $('#defaultColour').css('background-color', defaultFormattingObj['color']);
 
-                            $('#defaultColour').css('background-color', 'rgb(' + defaultColour + ')');
-                            $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
+                            defaultColourHashPre = defaultFormattingObj['color'].slice(4, -1).split(',');
+                            defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
                         }
-                    });
+
+                        $('#defaultColour').ColorPicker({
+                            color: defaultColourHash,
+                            onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
+                            onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
+                            onChange: function(hsb, hex, rgb) {
+                                defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+                                $('#defaultColour').css('background-color', 'rgb(' + defaultColour + ')');
+                                $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
+                            }
+                        });
+                    }
+                    else {
+                        $('#defaultColour').hide();
+                    }
+
 
                     // Colour Chooser -- Highlight
-                    $('#defaultHighlight').ColorPicker({
-                        color: defaultHighlightHash,
-                        onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
-                        onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
-                        onChange: function(hsb, hex, rgb) {
-                            defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+                    if (window.serverSettings.formatting.highlight) {
+                        if ('background-color' in defaultFormattingObj) {
+                            $('#defaultHighlight').css('background-color', defaultFormattingObj['background-color']);
 
-                            $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
-                            $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
+                            defaultHighlightHashPre = defaultFormattingObj['background-color'].slice(4, -1).split(',');
+                            defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
                         }
-                    });
+
+                        $('#defaultHighlight').ColorPicker({
+                            color: defaultHighlightHash,
+                            onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
+                            onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
+                            onChange: function(hsb, hex, rgb) {
+                                defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+                                $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
+                                $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
+                            }
+                        });
+                    }
+                    else {
+                        $('#defaultHighlight').hide();
+                    }
+
 
                     // Default Room Value
                     fimApi.getRooms({'roomIds' : [active.defaultRoomId]}, {'each' : function(roomData) { $('#defaultRoom').val(roomData.roomName).attr('data-id', roomData.roomId); }});
 
-                    // Parental Control Flags
-                    for (var i = 0; i < active.parentalFlags.length; i++) {
-                        $('input[data-cat=parentalFlag][data-name=' + active.parentalFlags[i] + ']').attr('checked', true);
+
+
+                    // Parental Ages/Flags
+                    if (window.serverSettings.parentalControls.parentalEnabled) {
+                        // Parental Age Values
+                        jQuery.each(window.serverSettings.parentalControls.parentalAges, function(key, age) {
+                            $('#parentalAge').append(
+                                $('<option>').attr('value', age).text($l('parentalAges.' + age))
+                            );
+                        });
+
+                        // Parental Age Default
+                        $('select#parentalAge option[value=' + active.parentalAge + ']').attr('selected', 'selected');
+
+                        // Parental Flags Values
+                        jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(key, flag) {
+                            $('#parentalFlagsList').append($('<br />'),
+                                $('<label>').append(
+                                    $('<input>').attr({
+                                        type : "checkbox",
+                                        value : "true",
+                                        name : "flag" + flag,
+                                        'data-cat' : "parentalFlag",
+                                        'data-name' : flag
+                                    }),
+                                    $('<span>').text($l('parentalFlags.' + flag))
+                                )
+                            );
+                        });
+
+                        // Parental Flags Default
+                        jQuery.each(active.parentalFlags, function(key, flag) {
+                            $('input[data-cat=parentalFlag][data-name=' + flag + ']').attr('checked', true);
+                        });
                     }
-                    $('select#parentalAge option[value=' + active.parentalAge + ']').attr('selected', 'selected');
+                    else {
+                        $('#settings5parentalAge, #settings5parentalFlags').hide();
+                    }
                 }});
 
 
                 /* Update Default Form Values to Client Settings */
-                // Boolean Checkboxes
-                if (settings.reversePostOrder) $('#reversePostOrder').attr('checked', 'checked');
-                if (settings.showAvatars) $('#showAvatars').attr('checked', 'checked');
-                if (settings.audioDing) $('#audioDing').attr('checked', 'checked');
-                if (settings.disableFx) $('#disableFx').attr('checked', 'checked');
-                if (settings.disableFormatting) $('#disableFormatting').attr('checked', 'checked');
-                if (settings.disableVideo) $('#disableVideo').attr('checked', 'checked');
-                if (settings.disableImage) $('#disableImage').attr('checked', 'checked');
-                if (settings.disableRightClick) $('#disableRightClick').attr('checked', 'checked');
-                if (settings.webkitNotifications) $('#webkitNotifications').attr('checked', 'checked');
-                if (settings.twelveHourTime) $('#twelveHourFormat').attr('checked', 'checked');
-                if (settings.usTime) $('#usTime').attr('checked', 'checked');
-
-                // Volume
-                if (snd.volume) $('#audioVolume').attr('value', snd.volume * 100);
-
-                // Select Boxes
-                if (window.webproDisplay.theme) $('#theme > option[value="' + window.webproDisplay.theme + '"]').attr('selected', 'selected');
-                if (window.webproDisplay.fontSize) $('#fontsize > option[value="' + window.webproDisplay.fontSize + '"]').attr('selected', 'selected');
 
                 // Only Show the Profile Setting if Using Vanilla Logins
                 if (window.serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
@@ -612,27 +654,12 @@ popup = {
                 // Autocomplete Rooms and Users
                 $("#defaultRoom").autocompleteHelper('rooms');
 
-                // Populate Fontface Checkbox
-                for (var i = 0; i < window.serverSettings.formatting.fonts.length; i++) {
-                    $('#defaultFace').append('<option value="' + i + '" style="' + window.serverSettings.formatting.fonts[i] + '" data-font="' + window.serverSettings.formatting.fonts[i] + '">' + i + '</option>')
-                }
 
-                // Parental Controls
-                if (!window.serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
-                    $('a[href="#settings5"]').parent().remove();
-                }
-                else {
-                    for (var i = 0; i < window.serverSettings.parentalControls.parentalAges.length; i++) {
-                        $('#parentalAge').append('<option value="' + window.serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + window.serverSettings.parentalControls.parentalAges[i]) + '</option>');
-                    }
-                    for (var i = 0; i < window.serverSettings.parentalControls.parentalFlags.length; i++) {
-                        $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + window.serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + window.serverSettings.parentalControls.parentalFlags[i] + '" />' +  $l('parentalFlags.' + window.serverSettings.parentalControls.parentalFlags[i]) + '</label>');
-                    }
-                }
+                /* Theme */
+                // Default
+                if (window.webproDisplay.theme) $('#theme > option[value="' + window.webproDisplay.theme + '"]').attr('selected', 'selected');
 
-
-                /* Actions onChange */
-                // Theme -- Update onChange
+                // onChange
                 $('#theme').change(function() {
                     $('#stylesjQ').attr('href', 'client/css/' + this.value + '/jquery-ui-1.8.16.custom.css');
                     $('#stylesVIM').attr('href', 'client/css/' + this.value + '/fim.css');
@@ -643,7 +670,13 @@ popup = {
                     return false;
                 });
 
-                // Theme Fontsize -- Update onChange
+
+                /* Theme Fontsize */
+                // Default
+                if (window.webproDisplay.fontSize)
+                    $('#fontsize > option[value="' + window.webproDisplay.fontSize + '"]').attr('selected', 'selected');
+
+                // onChange
                 $('#fontsize').change(function() {
                     $('body').css('font-size',this.value + 'em');
 
@@ -655,7 +688,12 @@ popup = {
                     return false;
                 });
 
-                // Volume -- Update onChange
+
+                /* Volume */
+                // Default
+                if (snd.volume) $('#audioVolume').attr('value', snd.volume * 100);
+
+                // onChange
                 $('#audioVolume').change(function() {
                     $.cookie('webpro_audioVolume', this.value, { expires : 14 });
                     snd.volume = this.value / 100;
@@ -663,7 +701,16 @@ popup = {
                     return false;
                 });
 
-                // Various Settings -- Update onChange, Refresh Posts
+
+                /* Various Settings -- Update onChange, Refresh Posts */
+                // Defaults
+                if (settings.showAvatars) $('#showAvatars').attr('checked', 'checked');
+                if (settings.reversePostOrder) $('#reversePostOrder').attr('checked', 'checked');
+                if (settings.disableFormatting) $('#disableFormatting').attr('checked', 'checked');
+                if (settings.disableVideo) $('#disableVideo').attr('checked', 'checked');
+                if (settings.disableImage) $('#disableImage').attr('checked', 'checked');
+
+                // onChange -- refresh messages when needed
                 $('#showAvatars, #reversePostOrder, #disableFormatting, #disableVideo, #disableImage').change(function() {
                     var localId = $(this).attr('id');
 
@@ -682,7 +729,15 @@ popup = {
                     standard.changeRoom(window.roomId);
                 });
 
-                // Various Settings -- Update onChange
+
+                /* Various Settings */
+                // Defaults
+                if (settings.audioDing) $('#audioDing').attr('checked', 'checked');
+                if (settings.disableFx) $('#disableFx').attr('checked', 'checked');
+                if (settings.disableRightClick) $('#disableRightClick').attr('checked', 'checked');
+                if (settings.webkitNotifications) $('#webkitNotifications').attr('checked', 'checked');
+
+                // onChange
                 $('#audioDing, #disableFx, #webkitNotifications, #disableRightClick').change(function() {
                     var localId = $(this).attr('id');
 

@@ -417,7 +417,7 @@ class fimUser extends fimDynamicObject
         $this->setList('friendsList', $friendsList);
     }
     protected function setIgnoreList($ignoreList) {
-        $this->setList('ignoreList', $ignoreList);
+        $this->setList('ignoredUsers', $ignoreList);
     }
     
     private function setList($listName, $value) {
@@ -460,8 +460,8 @@ class fimUser extends fimDynamicObject
         $tableNames = [
             'favRooms' => 'userFavRooms',
             'watchRooms' => 'watchRooms',
-            'ignoreList' => 'userIgnoreList',
-            'friendsList' => 'userFriendsList'
+            'ignoredUsers' => 'userIgnoreList',
+            'friendedUsers' => 'userFriendsList'
         ];
 
         if ($listName === 'favRooms' || $listName === 'watchRooms') {
@@ -473,7 +473,7 @@ class fimUser extends fimDynamicObject
 
             $columnName = 'roomId';
         }
-        elseif ($listName === 'ignoreList' || $listName === 'friendsList') {
+        elseif ($listName === 'ignoredUsers' || $listName === 'friendedUsers') {
             $items = (count($ids) > 0
                 ? $database->getUsers(array(
                     'userIds' => $ids
@@ -843,51 +843,4 @@ class fimUser extends fimDynamicObject
 }
 
 require('fimUserFactory.php');
-
-
-/* Run Seperate Queries for Integration Methods
- * TODO: These should, long term, probably be plugins.
- * TODO: vB and PHPBB both broken. */
-/*switch ($loginConfig['method']) {
-  case 'vbulletin3': case 'vbulletin4':
-  $userDataForums = $integrationDatabase->select(
-    array(
-      $sqlUserTable => array(
-        'joindate' => 'joinDate',
-        'posts' => 'posts',
-        'usertitle' => 'userTitle',
-        'lastvisit' => 'lastVisit',
-        $sqlUserTableCols['userId'] => 'userId',
-      ),
-    ),
-    array('both' => array('userId' => $this->in(array_keys($users))))
-  )->getAsArray('userId');
-  break;
-
-  case 'phpbb':
-  $userDataForums = $integrationDatabase->select(
-    array(
-      $sqlUserTable => array(
-        'user_posts' => 'posts',
-        'user_regdate' => 'joinDate',
-        $sqlUserTableCols['userId'] => 'userId',
-      ),
-    ),
-    array(
-      array('both' => array('userId' => $this->in(array_keys($users))))
-    )
-  )->getAsArray('userId');
-  break;
-
-  case 'vanilla':
-    $userDataForums = array(
-      'joinDate' => $user['joinDate'],
-      'posts' => false,
-    );
-  break;
-
-  default:
-  $userDataForums = array();
-  break;
-}*/
 ?>

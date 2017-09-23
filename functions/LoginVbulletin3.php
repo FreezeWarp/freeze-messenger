@@ -20,7 +20,8 @@ class LoginVbulletin3 extends LoginDatabase {
             'userid' => 'id', 'username' => 'name',
             'password' => 'password', 'salt' => 'salt',
             'displaygroupid' => 'mainGroupId', 'email' => 'email',
-            'joindate' => 'joinDate'
+            'joindate' => 'joinDate', 'usertitle' => 'userTitle',
+            'posts' => 'posts', 'lastvisit' => 'lastVisit',
         ),
 /*        'adminGroups' => array(
             'groupId' => 'usergroupid', 'groupName' => 'title',

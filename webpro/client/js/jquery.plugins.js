@@ -101,7 +101,7 @@ jQuery.cookie = function (name, value, options) {
 jQuery.getCookie = function (name, ifNull) {
     var cookie = $.cookie(name);
 
-    if (cookie === null) return ifNull;
+    if (cookie === null || cookie === undefined || isNaN(cookie)) return ifNull;
     else return cookie;
 };
 

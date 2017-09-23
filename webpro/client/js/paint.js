@@ -435,19 +435,19 @@ $.when(
                     }
                 });
             }
-            else if ($.cookie('webpro_username')) {
+            else if ($.cookie('webpro_refreshToken')) {
                 standard.initialLogin({
-                    username : $.cookie('webpro_username'),
-                    password : $.cookie('webpro_password'),
+                    grantType : 'refresh_token',
+                    refreshToken : $.cookie('webpro_refreshToken'),
                     error : function() {
                         if (!window.userId) popup.login(); // The user is not actively logged in.
                     }
                 });
             }
-            else if ($.cookie('webpro_refreshToken')) {
+            else if ($.cookie('webpro_username')) {
                 standard.initialLogin({
-                    grantType : 'refresh_token',
-                    refreshToken : $.cookie('webpro_refreshToken'),
+                    username : $.cookie('webpro_username'),
+                    password : $.cookie('webpro_password'),
                     error : function() {
                         if (!window.userId) popup.login(); // The user is not actively logged in.
                     }

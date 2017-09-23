@@ -182,6 +182,18 @@ class fimConfig implements ArrayAccess {
     /** @var int The minimum length every message must be. */
     public $messageMinLength = 1;
 
+    /** @var bool Whether to allow users to set a default background formatting color. */
+    public $defaultFormattingHighlight = true;
+    /** @var bool Whether to allow users to set a default foreground formatting color. */
+    public $defaultFormattingColor = true;
+    /** @var bool Whether to allow users to set default formatting using italics. */
+    public $defaultFormattingItalics = true;
+    /** @var bool Whether to allow users to set default formatting using bolded text. */
+    public $defaultFormattingBold = true;
+    /** @var bool Whether to allow users to set default formatting font. */
+    public $defaultFormattingFont = true;
+
+
     /** @var array The list of fonts (and corresponding font-families) available for message formatting. */
     public $fonts = array(
         'FreeMono' => "FreeMono, TwlgMono, 'Courier New', Consolas, monospace",

@@ -140,7 +140,11 @@ echo new ApiData(
             ),
 
             'formatting' => array(
-                'fonts' => $config['fonts'],
+                'fonts' => $config->defaultFormattingFont ? $config['fonts'] : false,
+                'highlight' => $config->defaultFormattingHighlight,
+                'color' => $config->defaultFormattingColor,
+                'italics' => $config->defaultFormattingItalics,
+                'bold' => $config->defaultFormattingBold,
                 ///'emoticons' => $smilies2,
             ),
 
