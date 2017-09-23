@@ -14,6 +14,10 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * A factory that looks that the $_REQUEST information and initialises an appropriate LoginRunner instance.
+ * Use hasLogin() to check if a valid LoginRunner is available. Use getLogin() to run the LoginRunner. Use apiResponse() to return an appropriate API response given the current LoginRunner status.
+ */
 class LoginFactory {
     /**
      * @var \OAuth2\Request
@@ -31,19 +35,20 @@ class LoginFactory {
     public $oauthServer;
 
     /**
-     * @var LoginRunner
+     * @var LoginRunner The currently available LoginRunner, created on construction of this class.
      */
     public $loginRunner = null;
 
     /**
-     * @var DatabaseSQL
+     * @var DatabaseSQL A DatabaseSQL instance connected to the source of the login information.
      */
     public $database;
 
     /**
-     * @var fimUser
+     * @var fimUser The user object created from a successful login.
      */
     public $user;
+
 
     public function __construct(OAuth2\Request $oauthRequest, OAuth2\Storage\FIMDatabaseOAuth $oauthStorage, OAuth2\Server $oauthServer, DatabaseSQL $database) {
         global $loginConfig;
@@ -86,7 +91,7 @@ class LoginFactory {
             $className = 'Login' . ucfirst($loginConfig['method']);
             $includePath = __DIR__ . "/{$className}.php";
 
-            if (!file_exists($includePath)) { var_dump($includePath); die();
+            if (!file_exists($includePath)) {
                 new fimError('loginMisconfigured', 'Logins are currently misconfigured: a login method has been specified without a corresponding login class being available.');
             }
             else {
@@ -106,6 +111,7 @@ class LoginFactory {
             $this->loginRunner = new LoginOAuth($this);
         }
     }
+
 
     /**
      * Whether or not an integration login is available.
@@ -128,14 +134,20 @@ class LoginFactory {
         }
     }
 
+
     /**
-     * Get the API response, following a login.
+     * Get the API response following a login. This should generally exit execution, though may cause redirects.
      */
     public function apiResponse() {
         $this->loginRunner->apiResponse();
     }
 
 
+    /**
+     * Get an IntegrationLogin GrantType instance from the current {LoginFactory::$user} object and set the appropriate request parameters to use it.
+     *
+     * @return \OAuth2\GrantType\IntegrationLogin
+     */
     public function oauthGetIntegrationLogin() {
         $this->oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
         $this->oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.

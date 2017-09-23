@@ -72,10 +72,17 @@ class LoginPhpbb extends LoginDatabase {
                 'integrationId' => $phpbbUser['id'],
                 'profile' => "{$loginConfig['url']}memberlist.php?mode=viewprofile&u={$phpbbUser['id']}",
                 'email' => $phpbbUser['email'],
+                'mainGroupId' => $phpbbUser['mainGroupId'],
+                'joinDate' => $phpbbUser['joinDate'],
                 'name' => $phpbbUser['name'],
                 'avatar' => ($phpbbUser['avatar'] ? "{$loginConfig['url']}/download/file.php?avatar={$phpbbUser['avatar']}" : ''),
                 'nameFormat' => ($phpbbUser['nameColor'] ? 'color: #' . $phpbbUser['nameColor'] : ''),
             ]);
+
+            /*
+             * TODO:
+             * Create main user group if it doesn't exist.
+             */
 
             $this->oauthGrantType = $this->loginFactory->oauthGetIntegrationLogin();
         }

@@ -691,13 +691,7 @@ class fimUser extends fimDynamicObject
                 }
             break;
 
-            case 'vbmd5':
-                if (!isset($this->passwordHash, $this->passwordSalt))
-                    throw new Exception('User object was not generated with password hash information.');
-                else
-                    return ($this->passwordHash === md5(md5($password) . $this->passwordSalt));
-            break;
-
+            /* Obviously, this method is almost never used. It primarily exists to make testing a little bit easier. */
             case 'plaintext':
                 return ($this->__get('passwordHash') === $password);
             break;

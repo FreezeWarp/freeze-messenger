@@ -1780,7 +1780,7 @@ class fimDatabase extends DatabaseSQL
      * Delete expired entries from the permissions cache.
      */
     public function cleanPermissionsCache() {
-        $this->delete($this->sqlPrefix . 'permissionsCache', array(
+        $this->delete($this->sqlPrefix . 'roomPermissionsCache', array(
             'expires' => $this->now(0, 'lte')
         ));
     }

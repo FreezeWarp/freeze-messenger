@@ -5,32 +5,11 @@ class fimDatabaseUAC extends fimDatabase {
 // These are the table names that are used in different integration methods. "Users" is required, while for the rest, if one is absent functionality will not be supported.
     private $tableDefinitions = array(
         'vbulletin4' => array(
-            'users' => 'user',
-            'adminGroups' => 'usergroup',
-            'socialGroups' => 'socialgroup',
-            'socialGroupMembers' => 'socialgroupmember',
         ),
     );
 
     private $columnDefinitions = array( // These are only used for syncing. When the original database is queried (such as with password), the field will be used explictly there.
         'vbulletin4' => array(
-            'users' => array(
-                'userId' => 'userid', 'userName' => 'username',
-                'userGroup' => 'displaygroupid', 'userGroupAlt' => 'usergroupid',
-                'allGroups' => 'membergroupids', 'timeZone' => 'timezoneoffset',
-                'options' => 'options',
-            ),
-            'adminGroups' => array(
-                'groupId' => 'usergroupid', 'groupName' => 'title',
-                'startTag' => 'opentag', 'endTag' => 'closetag',
-            ),
-            'socialGroups' => array(
-                'groupId' => 'groupid', 'groupName' => 'name',
-            ),
-            'socialGroupMembers' => array(
-                'groupId' => 'groupid', 'userId' => 'userid',
-                'type' => 'type', 'validType' => 'member',
-            ),
         ),
     );
 

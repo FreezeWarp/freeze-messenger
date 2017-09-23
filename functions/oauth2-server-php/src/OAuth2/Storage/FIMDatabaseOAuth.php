@@ -332,12 +332,12 @@ class FIMDatabaseOAuth implements
      * Clean expired entries from the database. (Also invokes fimDatabase's clean methods.)
      */
     public function cleanSessions() {
-        $this->delete($this->sqlPrefix . 'oauth_access_tokens', array(
-            'expires' => $this->now(-300, 'lte')
+        $this->db->delete($this->db->sqlPrefix . 'oauth_access_tokens', array(
+            'expires' => $this->db->now(-300, 'lte')
         ));
 
-        $this->delete($this->sqlPrefix . 'oauth_authorization_codes', array(
-            'expires' => $this->now(-300, 'lte')
+        $this->db->delete($this->db->sqlPrefix . 'oauth_authorization_codes', array(
+            'expires' => $this->db->now(-300, 'lte')
         ));
 
         $this->db->cleanLockout();
