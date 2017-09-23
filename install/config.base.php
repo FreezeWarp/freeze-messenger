@@ -83,6 +83,17 @@ $cacheConnectMethods['disk'] = [
     //'directory' => '', // If omitted, defaults to $tmpDir from below.
 ];
 
+
+/* $cacheConnectMethods['pgsql']
+ * If specified, this will enable PostGreSQL pub/sub. */
+/*$cacheConnectMethods['pgsql'] = [
+    'host' => 'localhost',
+    'port' => 5432,
+    'username' => 'postgres',
+    'password' => 'R@1nD0wn',
+];*/
+
+
 /* $cacheConnectMethods['redis']
  * If specified, this will enable Redis caching. */
 /*$cacheConnectMethods['redis'] = [
