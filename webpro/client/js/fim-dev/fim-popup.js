@@ -1381,17 +1381,17 @@ popup = {
                     var exportData = '';
 
                     $('#archiveMessageList').find('tr').each(function() {
-                        var exportUser = $(this).find('td:nth-child(1) .userNameTable').text(),
-                            exportTime = $(this).find('td:nth-child(2)').text(),
-                            exportMessage = $(this).find('td:nth-child(3)').text();
+                        var exportUser = $(this).find('td:eq(0) .userNameTable').text(),
+                            exportTime = $(this).find('td:eq(1)').text(),
+                            exportMessage = $(this).find('td:eq(2)').text();
 
-                        for (i in [1,3]) {
+                        for (i in [0,2]) {
                             switch (i) {
-                                case 1: var exportItem = exportUser; break;
-                                case 3: var exportItem = exportMessage; break;
+                                case 0: var exportItem = exportUser; break;
+                                case 2: var exportItem = exportMessage; break;
                             }
 
-                            var el = $(this).find('td:nth-child(' + i + ') > span'),
+                            var el = $(this).find('td:eq(' + i + ') > span'),
                                 colour = el.css('color'),
                                 highlight = el.css('backgroundColor'),
                                 font = el.css('fontFamily'),

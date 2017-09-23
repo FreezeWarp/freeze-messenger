@@ -328,7 +328,6 @@ fimApi.prototype.deleteMessage = function(roomId, messageId, requestSettings) {
             'roomId' : roomId
         }),
         type: 'POST',
-        data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache
     }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {

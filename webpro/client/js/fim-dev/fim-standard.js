@@ -69,6 +69,7 @@ standard.prototype.archive = {
                 $.when(fim_messageFormat(messageData, 'table')).then(function(messageText) {
                     $('#archiveMessageList').append(messageText);
                     standard.archive.messageData[messageData.id] = messageData;
+                    windowDraw();
                 });
             },
             'end' : function(messages) {
@@ -78,7 +79,6 @@ standard.prototype.archive = {
                 else {
                     $('#archiveNext').button({ disabled : false });
                 }
-                windowDraw();
             }
         });
     },
@@ -472,11 +472,8 @@ standard.prototype.unkick = function(userId, roomId) {
 };
 
 
-standard.prototype.deleteMessage = function(messageId) {
-    fimApi.deleteMessage({
-        'messageId' : messageId,
-        'action' : 'delete'
-    }, {
+standard.prototype.deleteMessage = function(roomId, messageId) {
+    fimApi.deleteMessage(roomId, messageId, {
         'end' : function() { dia.info("The message was deleted.") }
     });
 

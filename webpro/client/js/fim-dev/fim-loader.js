@@ -217,6 +217,7 @@ function fim_messageFormat(json, format) {
         messageTime = fim_dateFormat(json.time),
         messageId = json.id,
         flag = json.flag,
+        userId = Number(json.userId),
         //from query/cache:
         style,
         userName,
@@ -320,7 +321,7 @@ function fim_messageFormat(json, format) {
                     'message' : textarea.val()
                 });
 
-                $(this).replaceWith(buildEditableSpan(text, messageId, userId, roomId, messageTime, style));
+                $(this).replaceWith(buildEditableSpan(textarea.val(), messageId, userId, roomId, messageTime, style));
             });
 
             $.each(this.attributes, function() {
@@ -1270,16 +1271,21 @@ function contextMenuParseUser(container) {
 
             switch(action) {
                 case 'profile':
-                    dia.full({
-                        title : 'User Profile',
-                        id : 'messageLink',
-                        content : (userData[userId].profile ? '<iframe src="' + userData[userId].profile + '" style="width: 100%; height: 90%;" /><br /><a href="' + userData[userId].profile + '" target="_BLANK">Visit The Page Directly</a>' : 'The user has not yet registered a profile.'),
-                        width: $(window).width() * .8,
-                        height: $(window).height() * .9
+                    var resolver = $.when(Resolver.resolveUsersFromIds([userId])).then(function(userData) {
+                        dia.full({
+                            title : 'User Profile',
+                            id : 'messageLink',
+                            content : (userData[userId].profile ? '<iframe src="' + userData[userId].profile + '" style="width: 100%; height: 90%;" /><br /><a href="' + userData[userId].profile + '" target="_BLANK">Visit The Page Directly</a>' : 'The user has not yet registered a profile.'),
+                            width: $(window).width() * .8,
+                            height: $(window).height() * .9
+                        });
                     });
+
                     break;
 
-                case 'private_im': standard.privateRoom(userId); break;
+                case 'private_im':
+                    standard.changeRoom("p" + [window.userId, userId].join(','), true);
+                    break;
                 case 'kick': popup.kick(userId, roomId); break;
                 case 'ban': standard.banUser(userId); break; // TODO
                 case 'ignore': standard.ignoreUser(userId); break; // TODO
@@ -1309,7 +1315,7 @@ function contextMenuParseMessage() {
                     dia.confirm({
                         text : 'Are you sure you want to delete this message?',
                         'true' : function() {
-                            standard.deleteMessage(messageId);
+                            standard.deleteMessage(roomId, messageId);
 
                             $(el).parent().fadeOut();
 
@@ -1328,7 +1334,7 @@ function contextMenuParseMessage() {
                     break;
 
                 case 'edit':
-                    $('#message' + messageId + ' .messageText').html('<textarea>' + $('#message' + messageId + ' .messageText').html() + '</textarea>');
+                    $('#message' + messageId + ' .messageText').dblclick();
 
                     break;
             }
@@ -1362,7 +1368,7 @@ function contextMenuParseMessage() {
                     dia.confirm({
                         text : 'Are you sure you want to delete this message?',
                         'true' : function() {
-                            standard.deleteMessage(messageId);
+                            standard.deleteMessage(roomId, messageId);
 
                             $(el).parent().fadeOut();
                         }
@@ -1413,7 +1419,7 @@ function contextMenuParseMessage() {
                     dia.confirm({
                         text : 'Are you sure you want to delete this message?',
                         'true' : function() {
-                            standard.deleteMessage(messageId);
+                            standard.deleteMessage(roomId, messageId);
                             $(el).parent().fadeOut();
                         }
                     });
