@@ -1180,6 +1180,17 @@ function windowDynaLinks() {
     $('#userMenu li').show(); // Context LIs
 
 
+    // Hide/show login/logout based on active login
+    if (window.userId) {
+        $('#logout').parent().first().show();
+        $('#login').parent().first().hide();
+    }
+    else {
+        $('#logout').parent().first().hide();
+        $('#login').parent().first().show();
+    }
+
+
     // Hide DOM Elements Based on User's Permissions
     if (!window.permissions.createRooms) { $('li > #createRoom').parent().hide(); }
     if (!window.permissions.privateRoomsFriends) { $('li > #privateRoom').parent().hide(); $('#userMenu a[data-action="private_im"]').parent().hide(); }
@@ -1200,6 +1211,7 @@ function windowDynaLinks() {
         $('li > #editRoom').parent().hide(); noModCounter += 1; $('li > #kick').parent().hide(); $('li > #manageKick').parent().hide(); $('#userMenu a[data-action="kick"]').parent().hide();
     }
 
+    
     // Remove Link Categories If They Are to Appear Empty (the counter is incremented in the above code block)
     if (noAdminCounter === 8) { $('li > #modGeneral').parent().hide(); }
     if (noModCounter === 3 && noAdminCounter === 8) { $('#moderateCat').hide(); }

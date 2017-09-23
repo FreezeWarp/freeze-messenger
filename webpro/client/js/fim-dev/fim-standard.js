@@ -116,7 +116,11 @@ standard.prototype.archive = {
 
 
 standard.prototype.initialLogin = function(options) {
-    options.finish = function() {
+    oldFinish = options.finish;
+
+    options.finish = function(activeLogin) {
+        if (oldFinish) oldFinish(activeLogin);
+
         if (!window.anonId) {
             $.cookie('webpro_username', options.username, { expires : 14 });
             $.cookie('webpro_password', options.password, { expires : 14 });
@@ -163,6 +167,8 @@ standard.prototype.login = function(options) {
 
             window.sessionHash = activeLogin.access_token;
 
+            if (options.finish) options.finish(activeLogin);
+
             if (activeLogin.expires && activeLogin.refresh_token) {
                 $.cookie('webpro_refreshToken', activeLogin.refresh_token);
 
@@ -205,9 +211,6 @@ standard.prototype.login = function(options) {
                 }
             });
 
-
-            if (options.finish) options.finish();
-
             /*** A Hack of Sorts to Open Dialogs onLoad ***/
             if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
 
@@ -233,6 +236,9 @@ standard.prototype.logout = function() {
     fimApi.getActiveUsers(null, {close : true});
     fimApi.getUnreadMessages(null, {close : true});
     // TODO: others?
+
+    $('#logout').parent().show();
+    $('#login').parent().hide();
 
     popup.login();
 };

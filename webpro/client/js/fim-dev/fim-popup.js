@@ -7,12 +7,15 @@ popup = {
     /*** START Login ***/
 
     login : function() {
-        function login_success(data) {
+        function login_success(activeLogin) {
             $('#loginDialogue').dialog('close'); // Close any open login forms.
 
-            if (!permissions.view) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to view and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
-            else if (!permissions.post) dia.info('You are now logged in as ' + activeLogin.userData.userName + '. However, you are not allowed to post and have been silenced by an administrator. You may still view rooms which allow you access.', 'Logged In'); // dia.error(window.phrases.errorBanned);)
-            else dia.info('You are now logged in as ' + activeLogin.userData.userName + '.', 'Logged In');
+            if (!activeLogin.userData.permissions.view)
+                dia.info('You are now logged in as ' + activeLogin.userData.name + '. However, you are not allowed to view and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
+            else if (!activeLogin.userData.permissions.post)
+                dia.info('You are now logged in as ' + activeLogin.userData.name + '. However, you are not allowed to post and have been silenced by an administrator. You may still view rooms which allow you access.', 'Logged In');
+            else
+                dia.info('You are now logged in as ' + activeLogin.userData.name + '.', 'Logged In');
         }
 
         function login_fail(data) {
@@ -48,7 +51,7 @@ popup = {
             },
             cF : function() {
                 if (!window.userId) {
-                    standard.login({
+                    standard.initialLogin({
                         username : '',
                         password : '',
                         rememberMe : false,
