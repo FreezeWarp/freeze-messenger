@@ -110,7 +110,7 @@ class fimMessage
                 );
             } else { // Typically when in caches.
                 $this->text = $messageData['text'];
-                list($this->textEncrypted, $this->iv, $this->salt) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
+                list($this->textEncrypted, $this->salt, $this->iv) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
             }
 
             $this->flag = $messageData['flag'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have flag column.');
@@ -129,7 +129,7 @@ class fimMessage
                 $this->text = $generalCache->censorScan($this->text, $this->room->id, $messageData['ignoreBlock'] ?? false, $this->censorMatches);
             }
 
-            list($this->textEncrypted, $this->iv, $this->salt) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
+            list($this->textEncrypted, $this->salt, $this->iv) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
         }
 
         elseif ($messageData !== null) {
@@ -166,7 +166,7 @@ class fimMessage
     public function setText($text, $ignoreBlock = false)
     {
         $this->text = $this->generalCache->censorScan($text, $this->room->id, $ignoreBlock, $this->censorMatches);
-        list($this->textEncrypted, $this->iv, $this->salt) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
+        list($this->textEncrypted, $this->salt, $this->iv) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
     }
 
     /**

@@ -112,7 +112,7 @@ function fim_encrypt($data, $type = FIM_ENCRYPT_MESSAGETEXT) {
         );
     }
 
-    return array($newData, $iv, $keyNum); // Return the data.
+    return array($newData, $keyNum, $iv); // Return the data.
 }
 
 

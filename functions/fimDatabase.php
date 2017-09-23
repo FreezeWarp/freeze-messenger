@@ -2342,7 +2342,7 @@ class fimDatabase extends DatabaseSQL
 
 
     public function storeFile(fimFile $file, fimUser $user, fimRoom $room) {
-        list($contentsEncrypted, $iv, $saltNum) = fim_encrypt($file->contents, FIM_ENCRYPT_FILECONTENT);
+        list($contentsEncrypted, $saltNum, $iv) = fim_encrypt($file->contents, FIM_ENCRYPT_FILECONTENT);
 
         $this->startTransaction();
 
@@ -2413,7 +2413,7 @@ class fimDatabase extends DatabaseSQL
                     imagejpeg($imageThumb);
                     $thumbnail = ob_get_clean();
 
-                    list($thumbnailEncrypted, $iv, $keyNum) = fim_encrypt($thumbnail, FIM_ENCRYPT_FILECONTENT);
+                    list($thumbnailEncrypted, $keyNum, $iv) = fim_encrypt($thumbnail, FIM_ENCRYPT_FILECONTENT);
 
                     $this->insert($this->sqlPrefix . "fileVersionThumbnails", array(
                         'versionId' => $fileId,
