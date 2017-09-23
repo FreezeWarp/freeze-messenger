@@ -216,9 +216,9 @@ function fim_messageFormat(json, format) {
         text = json.text,
         messageTime = fim_dateFormat(json.time),
         messageId = json.id,
-        userId = Number(json.userId),
-        style = (settings.disableFormatting ? "" : json.formatting),
         flag = json.flag,
+        //from query/cache:
+        style,
         userName,
         userNameFormat,
         avatar;
@@ -227,6 +227,7 @@ function fim_messageFormat(json, format) {
         userName = pairs[userId].name;
         userNameFormat = pairs[userId].nameFormat;
         avatar = pairs[userId].avatar;
+        style = settings.disableFormatting ? '' : pairs[userId].messageFormatting;
     }));
 
     text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
@@ -469,11 +470,14 @@ function fim_newMessage(messageText, messageId) {
     if (!settings.reversePostOrder) fim_toBottom();
 
     if (window.isBlurred) {
+        // Play Sound
         if (settings.audioDing) snd.play();
 
+        // Flash Favicon
         window.clearInterval(timers.t3);
         timers.t3 = window.setInterval(fim_faviconFlash, 1000);
 
+        // Windows Flash Icon
         if (typeof window.external === 'object') {
             if (typeof window.external.msIsSiteMode !== 'undefined' && typeof window.external.msSiteModeActivate !== 'undefined') {
                 try {
@@ -481,6 +485,11 @@ function fim_newMessage(messageText, messageId) {
                 }
                 catch(ex) { } // Ya know, its very weird IE insists on this when the "in" statement works just as well...
             }
+        }
+
+        // HTML5 Notification
+        if (notify.webkitNotifySupported() && settings.webkitNotifications) {
+            notify.webkitNotify("images/favicon.ico", "New Message", $(messageText).text());
         }
     }
 

@@ -603,7 +603,7 @@ popup = {
 
 
                     // Default Room Value
-                    fimApi.getRooms({'roomIds' : [active.defaultRoomId]}, {'each' : function(roomData) { $('#defaultRoom').val(roomData.roomName).attr('data-id', roomData.roomId); }});
+                    fimApi.getRooms({'roomIds' : [active.defaultRoomId]}, {'each' : function(roomData) { $('#defaultRoom').val(roomData.name).attr('data-id', roomData.id); }});
 
 
 
@@ -745,14 +745,30 @@ popup = {
                         settings[localId] = true;
                         $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
 
-                        if (localId === 'disableFx') { jQuery.fx.off = true; } // Disable jQuery Effects
-                        if (localId === 'webkitNotifications' && 'webkitNotifications' in window) { window.webkitNotifications.requestPermission(); } // Ask client permission for webkit notifications
+                        // Disable jQuery Effects
+                        if (localId === 'disableFx') {
+                            jQuery.fx.off = true;
+                        }
+
+                        // Notifications
+                        if (localId === 'webkitNotifications') {
+                            if (notify.webkitNotifySupported()) {
+                                notify.webkitNotifyRequest();  // Ask client permission for webkit notifications
+                            }
+                            else {
+                                dia.error("Notifications are not supported on your browser.");
+                            }
+                        }
                     }
+
                     else if (!$(this).is(':checked') && settings[localId]) {
                         settings[localId] = false;
                         $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
 
-                        if (localId === 'disableFx') { jQuery.fSystemx.off = false; } // Reenable jQuery Effects
+                        // Reenable jQuery Effects
+                        if (localId === 'disableFx') {
+                            jQuery.fx.off = false;
+                        }
                     }
                 });
 

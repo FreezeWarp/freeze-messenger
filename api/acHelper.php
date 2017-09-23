@@ -14,6 +14,10 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * @global $slaveDatabase fimDatabase
+ */
+
 $apiRequest = true;
 
 require('../global.php');
@@ -40,13 +44,13 @@ switch ($request['list']) {
   case 'users':
     $entries = new ApiOutputDict($slaveDatabase->getUsers(array(
       'userNameSearch' => $request['search'],
-    ))->getColumnValues('name', 'id'));
+    ), null, 10)->getColumnValues('name', 'id'));
     break;
 
   case 'rooms':
     $entries = new ApiOutputDict($slaveDatabase->getRooms(array(
       'roomNameSearch' => $request['search'],
-    ))->getColumnValues('name', 'id'));
+    ), null, 10)->getColumnValues('name', 'id'));
      break;
 
 }

@@ -360,9 +360,15 @@ $.when(
 
         /*** Window Manipulation (see below) ***/
         $(window).bind('resize', windowResize);
-        $(window).bind('blur', windowBlur);
-        $(window).bind('focus', windowFocus);
         $(window).bind('hashchange', fim_hashParse);
+        document.addEventListener('visibilitychange', function(){
+            if(document.visibilityState == 'hidden') {
+                windowBlur();
+            }
+            else {
+                windowFocus();
+            }
+        });
 
 
         /*** Image Buttons! ***/

@@ -1274,17 +1274,23 @@ $.fn.tabbedDialog = function (dialogOptions, tabOptions) {
  * http://www.gnu.org/licenses/gpl.html */
 
 var notify = {
+    webkitNotifySupported: function() {
+        return "Notification" in window;
+    },
+
     webkitNotifyRequest: function () {
-        window.webkitNotifications.requestPermission();
+        window.Notification.requestPermission();
     },
 
     webkitNotify: function (icon, title, notifyData) {
-        if (window.webkitNotifications.checkPermission() > 0) {
+        if (window.Notification.permission != "granted") {
             notify.webkitNotifyRequest();
         }
         else {
-            notification = window.webkitNotifications.createNotification(icon, title, notifyData);
-            notification.show();
+            new window.Notification(title, {
+                body : notifyData,
+                icon : icon
+            });
         }
     },
 
