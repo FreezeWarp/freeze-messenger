@@ -352,7 +352,7 @@
             <column name="roomId" type="string" maxlen="50" />
             <column name="userId" type="int" maxlen="8" />
             <column name="time" default="__TIME__" type="time" />
-            <column name="text" type="string" maxlen="5000" />
+            <column name="text" type="string" maxlen="1000" />
             <column name="flag" type="string" maxlen="10" />
 
             <key name="id" type="primary" />

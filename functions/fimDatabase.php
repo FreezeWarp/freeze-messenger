@@ -1100,7 +1100,7 @@ class fimDatabase extends DatabaseSQL
             if ($options['room']->isPrivateRoom())
                 $columns = [$this->sqlPrefix . "messagesCachedPrivate" => "id cacheId, messageId id, roomId, time, flag, userId, text"];
             else
-                $columns = [$this->sqlPrefix . "messagesCached" => "id cacheId, messageId id, roomId, time, flag, userId, messageFormatting, text"];
+                $columns = [$this->sqlPrefix . "messagesCached" => "id cacheId, messageId id, roomId, time, flag, userId, text"];
         }
 
 
@@ -2049,7 +2049,7 @@ class fimDatabase extends DatabaseSQL
 
 
         /* Preemptively resolve all needed $user properties */
-        $message->user->resolve(array("messageFormatting"));
+        // $message->user->resolve(array("messageFormatting"));
 
 
 
@@ -2098,7 +2098,6 @@ class fimDatabase extends DatabaseSQL
                 'messageId'         => $message->id,
                 'roomId'            => $message->room->id,
                 'userId'            => $message->user->id,
-                'messageFormatting' => $message->user->messageFormatting,
                 'text'              => $message->text,
                 'flag'              => $message->flag,
                 'time'              => $now,

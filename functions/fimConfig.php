@@ -177,7 +177,7 @@ class fimConfig implements ArrayAccess {
 
 
     /* Message Sending & Formatting */
-    /** @var int The maximum length every message must be. This will additionally be limited by the database. */
+    /** @var int The maximum length every message must be. This will additionally be limited by the database; right now, increasing it above 1000 will almost certainly cause problems with the event streams. */
     public $messageMaxLength = 1000;
     /** @var int The minimum length every message must be. */
     public $messageMinLength = 1;

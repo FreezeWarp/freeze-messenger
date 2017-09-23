@@ -68,11 +68,6 @@ class fimMessage
     public $flag;
 
     /**
-     * @var string A CSS string to be applied to the message when displaying.
-     */
-    public $formatting;
-
-    /**
      * @var array When the message text is set anew (either for insertion or update), this will be the list of censor matches triggered by the censor.
      */
     public $censorMatches = [];
@@ -88,7 +83,6 @@ class fimMessage
      * @param fimUser ['user']             The user of the message.
      * @param string ['text']              An array of messageIds to filter by. Overrides other message ID filter parameters.
      * @param string ['flag']              A valid message flag, see fimMessage::flag.
-     * @param string ['messageFormatting'] See fimMessage::messageFormatting.
      * @param bool ['ignoreBlock']         Whether to ignore censor prompts. Defaults false.
      * @param bool ['archive']           Whether to query the message archive instead of the main table. Default false. (On average, the main table only includes around 100 messages, so this must be true for archive viewing.)
      */
@@ -121,7 +115,6 @@ class fimMessage
 
             $this->flag = $messageData['flag'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have flag column.');
             $this->time = $messageData['time'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');
-            $this->formatting = $messageData['messageFormatting'] ?? '';// todo: ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have messageFormatting column.');
         }
 
         // When creating a new message.
@@ -130,7 +123,6 @@ class fimMessage
             $this->room = $messageData['room'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain room.');
             $this->text = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain text.');
             $this->flag = $messageData['flag'] ?? '';
-            $this->formatting = $messageData['messageFormatting'] ?? '';
             $this->time = time();
 
             if (!in_array($this->flag, array('image', 'video', 'url', 'email', 'html', 'audio', 'text'))) {
