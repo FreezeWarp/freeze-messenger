@@ -8,7 +8,7 @@ let directory = window.location.pathname.split('/').splice(0, window.location.pa
 
 let numUsersPerRoom = 20;
 let percentUsersReuse = .5;
-let numRooms = 2;
+let numRooms = 4;
 
 let adminSessionToken = "";
 
@@ -17,6 +17,30 @@ class User {
     sessionToken : String;
     id : Number;
     lastIds : {} = {};
+
+    getMessages(roomId) {
+
+        this.lastIds[Number(roomId).toString()] = false;
+
+        window.setInterval(() => {
+            fimApi.getMessages({
+                'access_token' : this.sessionToken,
+                'messageIdStart' : this.lastIds[Number(roomId).toString()] ? this.lastIds[Number(roomId).toString()] + 1 : null,
+                'roomId' : roomId,
+            }, {
+                refresh : 3000,
+                each: (messageData) => {
+                    if ($('div#m' + messageData.id + 'u' + this.id).length == 0) {
+                        $('table > tbody > tr:eq(0) > td > div#m' + messageData.id).append($('<div>').attr('id', 'm' + messageData.id + 'u' + this.id).text(this.username + ' received message'));
+                    }
+
+                    if (messageData.id > this.lastIds[Number(roomId).toString()]) {
+                        this.lastIds[Number(roomId).toString()] = messageData.id;
+                    }
+                },
+            });
+        }, 3000);
+    }
 }
 
 class Room {
@@ -33,13 +57,15 @@ $.when(
     fimApi = new fimApi();
 
     $(document).ready(function() {
-        let users: User[] = [];
+        $('body').append($('<table><thead><tr></tr></thead><tbody><tr></tr></tbody></table>'));
+
         let numUniqueUsers = numUsersPerRoom * (1 - percentUsersReuse);
         let numCommonUsers = numUsersPerRoom * percentUsersReuse;
         let usersToCreate = numRooms * numUniqueUsers // This is the calculation of how many unique users there are per room, times the number of rooms.
             + numCommonUsers; // This is the calculation of how many reused users there are.
 
         // Create users objects.
+        let users: User[] = [];
         for (let i = 0; i < usersToCreate; i++) {
             users.push(new User(Math.random().toString(36).slice(2), 'password'));
         }
@@ -91,6 +117,7 @@ $.when(
                     end : function(login) {
                         $('body').append($('<div>').text('Logged in as user.'));
                         user.sessionToken = login.access_token;
+                        user.id = login.userData.id;
                     }
                 });
             }));
@@ -104,38 +131,24 @@ $.when(
 
         $.when.apply($, userCreationQueries).then(function() {
             rooms.forEach(function(room, index) {
+                $('table > thead > tr:eq(0)').append($('<th>').text(room.name));
+                $('table > tbody > tr:eq(0)').append($('<td>').attr('valign', 'top'));
+
                 fimApi.createRoom({
                     'access_token' : adminSessionToken,
                     'name' : room.name,
                     'defaultPermissions' : ['view', 'post']
                 }, {
                     error : function() {
-                        $('body').append($('<div>').text('Failed to create room.'));
+                        $('table > tbody > tr:eq(0) > td').eq(index).text('Failed to create room.');
                     },
                     end : function(createdRoom) {
-                        $('body').append($('<div>').text('Created room.'));
+                        $('table > tbody > tr:eq(0) > td').eq(index).text('Created room.');
                         room.id = createdRoom.id;
 
                         // These users subscribe to every room.
                         users.slice(0, numCommonUsers).forEach(function(user) {
-                            user.lastIds[Number(room.id).toString()] = false;
-
-                            window.setInterval(function() {
-                                fimApi.getMessages({
-                                    'access_token' : user.sessionToken,
-                                    'messageIdStart' : user.lastIds[Number(room.id).toString()] ? user.lastIds[Number(room.id).toString()] : null,
-                                    'roomId' : room.id,
-                                }, {
-                                    refresh : 3000,
-                                    each: function (messageData) {
-                                        $('body').append($('<div>').text(user.username + ' received message in ' + room.name + ': ' + messageData.text));
-
-                                        if (messageData.id > user.lastIds[Number(room.id).toString()]) {
-                                            user.lastIds[Number(room.id).toString()] = messageData.id;
-                                        }
-                                    },
-                                });
-                            }, 3000);
+                            user.getMessages(room.id);
 
                             window.setInterval(function() {
                                 fimApi.sendMessage(room.id, {
@@ -143,34 +156,20 @@ $.when(
                                     'message' : 'Hello',
                                 }, {
                                     error : function() {
-                                        $('body').append($('<div>').text(user.username + ' failed to send message in ' + room.name));
+                                        $('table > tbody > tr:eq(0) > td').eq(index).append($('<div>').text(user.username + ' failed to send message in ' + room.name));
                                     },
                                     end: function (messageData) {
-                                        $('body').append($('<div>').text(user.username + ' sent message in ' + room.name));
+                                        $('table > tbody > tr:eq(0) > td').eq(index).append($('<div>').attr('id', 'm' + messageData.id).append(
+                                            $('<div>').css('font-weight', 'bold').text(user.username + ' sent message in ' + room.name)
+                                        ));
                                     },
                                 });
                             }, 5000);
                         });
 
                         // These users subscribe only to this room.
-                        users.slice(numCommonUsers + index * numUniqueUsers, numCommonUsers + 2 * index * numUniqueUsers).forEach(function(user) {
-                            user.lastIds[Number(room.id).toString()] = false;
-                            window.setInterval(function() {
-                                fimApi.getMessages({
-                                    'access_token' : user.sessionToken,
-                                    'messageIdStart' : user.lastIds[Number(room.id).toString()] ? user.lastIds[Number(room.id).toString()] : null,
-                                    'roomId' : room.id,
-                                }, {
-                                    refresh : 3000,
-                                    each: function (messageData) {
-                                        $('body').append($('<div>').text(user.username + ' received message in ' + room.name + ': ' + messageData.text));
-
-                                        if (messageData.id > user.lastIds[Number(room.id).toString()]) {
-                                            user.lastIds[Number(room.id).toString()] = messageData.id;
-                                        }
-                                    },
-                                });
-                            }, 3000);
+                        users.slice(numCommonUsers + index * numUniqueUsers, numCommonUsers + (index + 1) * numUniqueUsers).forEach(function(user) {
+                            user.getMessages(room.id);
                         });
                     }
                 });
