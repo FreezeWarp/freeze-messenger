@@ -245,11 +245,11 @@ standard.prototype.logout = function() {
 
 
 standard.prototype.roomEventListener = function(roomId) {
-    var roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&lastEvent=' + window.requestSettings.lastEvent + '&lastMessage=' + window.requestSettings.lastMessage + '&access_token=' + window.sessionHash);
+    var roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&lastEvent=' + window.requestSettings[roomId].lastEvent + '&lastMessage=' + window.requestSettings[roomId].lastMessage + '&access_token=' + window.sessionHash);
     var eventHandler = function(callback) {
         return function(event) {
-            if (event.id > requestSettings.lastEvent) {
-                window.requestSettings.lastEvent = event.id;
+            if (event.id > window.requestSettings[roomId].lastEvent) {
+                window.requestSettings[roomId].lastEvent = event.id;
             }
 
             callback(JSON.parse(event.data));
@@ -257,10 +257,10 @@ standard.prototype.roomEventListener = function(roomId) {
     };
 
     roomSource.addEventListener('newMessage', eventHandler(function(active) {
-        requestSettings.lastMessage = Math.max(requestSettings.lastMessage, active.id);
+        window.requestSettings[roomId].lastMessage = Math.max(window.requestSettings[roomId].lastMessage, active.id);
 
         $.when(fim_messageFormat(active, 'list')).then(function(messageText) {
-            fim_newMessage(messageText, Number(active.id));
+            fim_newMessage(roomId, Number(active.id), messageText);
         });
     }), false);
 
@@ -280,13 +280,13 @@ standard.prototype.getMessages = function() {
 
     if (window.roomId) {
         fimApi.getMessages({
-            'roomId': roomId,
+            'roomId': window.roomId,
         }, {
             autoId : true,
             refresh : (window.requestSettings.serverSentEvents ? 3000 : 3000),
             each: function (messageData) {
                 $.when(fim_messageFormat(messageData, 'list')).then(function(messageText) {
-                    fim_newMessage(messageText, Number(messageData.id));
+                    fim_newMessage(Number(window.roomId), Number(messageData.id), messageText);
                 });
             },
             end: function () {
@@ -310,9 +310,12 @@ standard.prototype.populateMessages = function(roomId) {
     $(document).ready(function() {
         // Clear the message list.
         $('#messageList').html('');
-        requestSettings.lastMessage = null;
-        requestSettings.firstRequest = true;
-        messageIndex = [];
+
+        window.requestSettings[roomId] = {
+            lastMessage : null,
+            firstRequest : true
+        };
+        messageIndex[roomId] = [];
 
         // Get New Messages
         standard.getMessages();

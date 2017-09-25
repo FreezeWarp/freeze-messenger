@@ -1796,6 +1796,9 @@ class fimDatabase extends DatabaseSQL
 
 
     public function lockoutIncrement() {
+        if ($this->config->dev)
+            return true;
+
         // Note: As defined, attempts will further increase, and expires will further increase, with each additional query beyond the "lockout". As a result, this function generally shouldn't be called if a user is already lockedout -- otherwise, further attempts just lock them out further, when they could be the user checking to see if they are still locked out. So always call lockoutActive before calling lockoutIncrement.
         $this->upsert($this->sqlPrefix . 'sessionLockout', array(
             'ip' => $_SERVER['REMOTE_ADDR'],
@@ -1810,6 +1813,9 @@ class fimDatabase extends DatabaseSQL
     }
 
     public function lockoutActive() {
+        if ($this->config->dev)
+            return false;
+
         // Note: Select condition format is experimental and untested, and numRows is not yet implemented. So, uh, do that. Lockout count is also unimplemented.
         if ($this->select(array(
                 $this->sqlPrefix . 'sessionLockout' => 'ip, attempts, expires'
@@ -2606,8 +2612,12 @@ class fimDatabase extends DatabaseSQL
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
 
-    public function accessLog($action, $data)
+    public function accessLog($action, $data, $notLoggedIn = false)
     {
+        if (!$this->user && !$notLoggedIn) {
+            throw new exception('No user login registered.');
+        }
+
         if ($this->config['floodDetectionGlobal']) {
             $time = time();
             $minute = $time - ($time % 60);
@@ -2629,7 +2639,7 @@ class fimDatabase extends DatabaseSQL
                     'ip'      => $_SERVER['REMOTE_ADDR'],
                     'period'  => $this->ts($minute),
                 ], [
-                    'userId' => $this->user->id,
+                    'userId' => $notLoggedIn ? 0 : $this->user->id,
                     'count'  => $this->equation('$count + 1'),
                     'expires' => $this->ts($minute + 60),
                 ], [
@@ -2640,14 +2650,14 @@ class fimDatabase extends DatabaseSQL
 
         if ($this->config['accessLogEnabled']) {
             if ($this->insert($this->sqlPrefix . "accessLog", array(
-                'userId' => $this->user->id,
-                'sessionHash' => $this->user->sessionHash,
+                'userId' => $notLoggedIn ? 0 : $this->user->id,
+                'sessionHash' => $notLoggedIn ? '' : $this->user->sessionHash,
                 'action' => $action,
                 'data' => json_encode($data),
                 'time' => $_SERVER['REQUEST_TIME_FLOAT'],
                 'executionTime' => microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
                 'userAgent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-                'clientCode' => $this->user->clientCode,
+                'clientCode' => $notLoggedIn ? '' : $this->user->clientCode,
                 'ip' => $_SERVER['REMOTE_ADDR'],
             ))
             ) {

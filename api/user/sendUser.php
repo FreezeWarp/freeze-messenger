@@ -55,7 +55,7 @@ $request = fim_sanitizeGPC('p', [
     ],
 ]);
 
-$database->accessLog('sendUser', $request);
+$database->accessLog('sendUser', $request, true);
 
 
 /* Start Processing */

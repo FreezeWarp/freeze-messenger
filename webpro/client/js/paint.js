@@ -143,12 +143,12 @@ var topic,
     favicon = $('#favicon').attr('href'),
     uploadSettings = {}, // Object
     requestSettings = {
-        longPolling : false, // We may set this to true if the server supports it.
-        timeout : 2400, // We may increase this dramatically if the server supports longPolling.
-        firstRequest : true,
-        totalFails : 0,
-        lastMessage : 0,
-        lastEvent : 0
+        serverSentEvents : false, // We may set this to true if the server supports it.
+        //timeout : 2400, // We may increase this dramatically if the server supports longPolling.
+        //firstRequest : true,
+        //totalFails : 0,
+        //lastMessage : 0,
+        //lastEvent : 0
     },
     timers = {t1 : false}, // Object
     messageSource,
@@ -163,7 +163,7 @@ var modRooms = {}, // Just a whole bunch of objects.
     roomLists = {},
 
     roomList = [], userList = [], groupList = [], // Arrays that serve different purposes, notably looking up IDs from names.
-    messageIndex = [],
+    messageIndex = {},
 
     roomUlFavHtml = '', roomUlMyHtml = '', // A bunch of strings displayed at different points.
     roomUlHtml = '', ulText = '', roomTableHtml = '',

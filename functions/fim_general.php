@@ -898,6 +898,6 @@ function fim_nearestAge($age) {
         if ($a > $age) return $ages[$i - 1] ?? $ages[0];
     }
 
-    return pop($ages);
+    return array_pop($ages);
 }
 ?>

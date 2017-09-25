@@ -429,7 +429,7 @@ function fim_messagePreview(container, content) {
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  */
-function fim_newMessage(messageText, messageId) {
+function fim_newMessage(roomId, messageId, messageText) {
     if ($.inArray(messageId, messageIndex) > -1) { return; } // Double post hack
 
     var foundMatch = false;
@@ -461,11 +461,11 @@ function fim_newMessage(messageText, messageId) {
 
 
     // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
-    messageIndex.push(messageId); // Update the internal messageIndex array.
-    if (messageIndex.length >= 100) {
-        var messageOut = messageIndex[0];
+    messageIndex[roomId].push(messageId); // Update the internal messageIndex array.
+    if (messageIndex[roomId].length >= 100) {
+        var messageOut = messageIndex[roomId][0];
         $('#message' + messageOut).remove();
-        messageIndex = messageIndex.slice(1,99);
+        messageIndex[roomId] = messageIndex[roomId].slice(1,99);
     }
 
     if (!settings.reversePostOrder) fim_toBottom();
@@ -1211,7 +1211,7 @@ function windowDynaLinks() {
         $('li > #editRoom').parent().hide(); noModCounter += 1; $('li > #kick').parent().hide(); $('li > #manageKick').parent().hide(); $('#userMenu a[data-action="kick"]').parent().hide();
     }
 
-    
+
     // Remove Link Categories If They Are to Appear Empty (the counter is incremented in the above code block)
     if (noAdminCounter === 8) { $('li > #modGeneral').parent().hide(); }
     if (noModCounter === 3 && noAdminCounter === 8) { $('#moderateCat').hide(); }
