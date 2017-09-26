@@ -582,14 +582,18 @@ function fim_sanitizeGPC($type, $data) {
                     $source = $indexMetaData['source'];
 
                     foreach ($indexMetaData['flipTable'] AS $bit => $name) {
+
                         if (!isset($activeGlobal[$name]))
                             continue;
 
-                        elseif ($activeGlobal[$name])
+                        elseif (fim_cast(
+                            'bool',
+                            $activeGlobal[$name]
+                        ))
                             $source |= $bit;
 
                         else
-                            $source &= $bit;
+                            $source &= ~$bit;
                     }
 
                     $newData[$indexName] = $source;

@@ -908,8 +908,10 @@ popup = {
     /*** START Create Room ***/
 
     editRoom : function(roomId) {
-        if (roomId) var action = 'edit';
-        else var action = 'create';
+        if (roomId)
+            var action = 'edit';
+        else
+            var action = 'create';
 
         dia.full({
             content : $t('editRoomForm'),
@@ -917,6 +919,23 @@ popup = {
             width : 1000,
             tabs : true,
             oF : function() {
+                /* Events */
+                $('#allowPosting').change(function() {
+                    if ($(this).is(':checked')) {
+                        $('#allowedUsersBridge').attr('disabled', 'disabled');
+                        $('#allowedGroupsBridge').attr('disabled', 'disabled');
+                        $('#allowedUsersBridge').next().attr('disabled', 'disabled');
+                        $('#allowedGroupsBridge').next().attr('disabled', 'disabled');
+                    }
+                    else {
+                        $('#allowedUsersBridge').removeAttr('disabled');
+                        $('#allowedGroupsBridge').removeAttr('disabled');
+                        $('#allowedUsersBridge').next().removeAttr('disabled');
+                        $('#allowedGroupsBridge').next().removeAttr('disabled');
+                    }
+                });
+
+
                 /* Autocomplete Users and Groups */
                 moderatorsList = new autoEntry($("#moderatorsContainer"), {
                     'name' : 'moderator',
@@ -957,33 +976,19 @@ popup = {
                     'resolveFromNames' : Resolver.resolveGroupsFromNames
                 });*/
 
-                $('#allowPosting').change(function() {
-                    if ($(this).is(':checked')) {
-                        $('#allowedUsersBridge').attr('disabled', 'disabled');
-                        $('#allowedGroupsBridge').attr('disabled', 'disabled');
-                        $('#allowedUsersBridge').next().attr('disabled', 'disabled');
-                        $('#allowedGroupsBridge').next().attr('disabled', 'disabled');
-                    }
-                    else {
-                        $('#allowedUsersBridge').removeAttr('disabled');
-                        $('#allowedGroupsBridge').removeAttr('disabled');
-                        $('#allowedUsersBridge').next().removeAttr('disabled');
-                        $('#allowedGroupsBridge').next().removeAttr('disabled');
-                    }
-                });
-
 
                 /* Parental Controls */
                 if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
                     $('#editRoom1ParentalAge, #editRoom1ParentalFlags').remove();
                 }
                 else {
-                    for (var i = 0; i < serverSettings.parentalControls.parentalAges.length; i++) {
-                        $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
-                    }
-                    for (var i = 0; i < serverSettings.parentalControls.parentalFlags.length; i++) {
-                        $('#parentalFlagsList').append('<label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' +  $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label><br />');
-                    }
+                    jQuery.each(serverSettings.parentalControls.parentalAges, function(i, age) { console.log("A", i, age);
+                        $('#parentalAge').append('<option value="' + age + '">' + $l('parentalAges.' + age) + '</option>');
+                    });
+
+                    jQuery.each(serverSettings.parentalControls.parentalFlags, function(i, flag) {
+                        $('#parentalFlagsList').append('<label><input type="checkbox" value="true" name="flag' + flag + '" data-cat="parentalFlag" data-name="' + flag + '" />' +  $l('parentalFlags.' + flag) + '</label><br />');
+                    });
                 }
 
 
@@ -1000,7 +1005,18 @@ popup = {
                         else if (listData.listType === 'black') listStatus = 'unblock';
                         else throw 'Bad logic.';
 
-                        $('#censorLists').append('<label><input type="checkbox" name="list' + listData.listId + '" data-listId="' + listData.listId + '" data-checkType="list" value="true" ' + (listData.listOptions & 2 ? '' : ' disabled="disabled"') + (listStatus === 'block' ? ' checked="checked"' : '') + ' />' + listData.listName + '</label><br />');
+                        $('#censorLists').append($('<label>').append(
+                            $('<input>').attr({
+                                'type' : 'checkbox',
+                                'name' : 'list' + listData.listId,
+                                'data-listId' : listData.listId,
+                                'data-checkType' : 'list',
+                                'value' : 'true',
+
+                            })
+                            .attr(listData.listOptions & 2 ? { 'disabled' : 'disabled' } : {})
+                            .attr(listStatus == 'block' ? { 'checked' : 'checked' } : {})
+                        ), $('<label>').text(listData.listName), $('<br>'));
                     }
                 });
 
@@ -1008,43 +1024,48 @@ popup = {
                 /* Prepopulate Data if Editing a Room */
                 if (roomId) {
                     fimApi.getRooms({
-                        'roomIds' : [roomId]
-                    }, {'each' : function(roomData) { console.log(roomData);
+                        'id' : roomId
+                    }, {'each' : function(roomData) {
                         var allowedUsersArray = [],
                             moderatorsArray = [],
                             allowedGroupsArray = [];
 
+                        // User Permissions
                         jQuery.each(roomData.userPermissions, function(userId, privs) {
-                            if (privs.moderate && privs.properties && privs.grant) { moderatorsArray.push(j); } // Are all bits up to 8 present?
-                            if (privs.post) { allowedUsersArray.push(j); } // Are the 1, 2, and 4 bits all present?
+                            if (privs.moderate && privs.properties && privs.grant) // Are all bits up to 8 present?
+                                moderatorsArray.push(j);
+
+                            if (privs.post) // Are the 1, 2, and 4 bits all present?
+                                allowedUsersArray.push(j);
                         });
-
-                        // Name
-                        $('#name').val(roomData.name);
-
-                        // Options
-                        $('#allowOfficial').attr('checked', roomData.official);
-                        $('#allowHidden').attr('checked', roomData.hidden);
-
-                        // Parental Data
-                        jQuery.each(roomData.parentalFlags, function(index, flag) {
-                            $('input[data-cat=parentalFlag][data-name=' + flag + ']').attr('checked', true);
-                        });
-                        $('select#parentalAge option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
-
-                        // Permissions
                         allowedUsersList.displayEntries(allowedUsersArray);
                         moderatorsList.displayEntries(moderatorsArray);
                         //allowedGroupsList.displayEntries(allowedGroupsArray);
 
                         // Default Permissions
-                        if (roomData.defaultPermissions == 7) $('#allowAllUsers').attr('checked', true); // If all users are currently allowed, check the box (which triggers other stuff above).
+                        if ('view' in roomData.defaultPermissions) // If all users are currently allowed, check the box (which triggers other stuff above).
+                            $('#allowViewing').prop('checked', true);
+                        if ('post' in roomData.defaultPermissions) // If all users are currently allowed, check the box (which triggers other stuff above).
+                            $('#allowPosting').prop('checked', true);
+
+                        // Name
+                        $('#name').val(roomData.name);
+
+                        // Options
+                        $('#allowOfficial').prop('checked', roomData.official);
+                        $('#allowHidden').prop('checked', roomData.hidden);
+
+                        // Parental Data
+                        jQuery.each(roomData.parentalFlags, function(index, flag) {
+                            $('input[data-cat=parentalFlag][data-name=' + flag + ']').prop('checked', true);
+                        });
+                        $('select#parentalAge option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
                     }});
                 }
 
 
                 /* Submit */
-                $("#editRoomForm").submit(function() {console.log(allowedUsersList);
+                $("#editRoomForm").submit(function() {console.log("allowed users", allowedUsersList, allowedUsersList.getList());
                     var name = $('#name').val(),
                         censor = {},
                         parentalAge = $('#parentalAge option:selected').val(),
@@ -1052,31 +1073,38 @@ popup = {
                         combinedUserPermissions = {},
                         combinedGroupPermissions = {};
 
-                    if (action === 'create') { console.log(allowedUsersList.getList());
+                    // Parse Alloewd Users
+                    if (action === 'create') {
                         allowedUsersList.getList().forEach(function(user) {
-                            combinedUserPermissions["+" + user] = ['post'];
+                            combinedUserPermissions["+" + user] = ['view', 'post'];
                         });
                         moderatorsList.getList().forEach(function(user) {
-                            combinedUserPermissions["+" + user] = ['post', 'moderate'];
+                            combinedUserPermissions["+" + user] = ['view', 'post', 'moderate'];
                         });
                         /*allowedGroupsList.getList().forEach(function(group) {
                             combinedGroupPermissions["+" + group] = ['post'];
                         });*/
                     }
 
+                    // Parse Censor Lists
                     $('input[data-checkType="list"]').each(function() {
                         censor[$(this).attr('data-listId')] = ($(this).is(':checked') ? 1 : 0);
                     });
 
+                    // Parse Parental Flags
                     $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
                         parentalFlags.push($(b).attr('data-name'));
                     });
 
+                    // Parse Default Permissions
                     defaultPermissions = [];
-                    if ($('#allowViewing').is(':checked')) defaultPermissions.push("view");
-                    if ($('#allowPosting').is(':checked')) defaultPermissions.push("post");
+                    if ($('#allowViewing').is(':checked'))
+                        defaultPermissions.push("view");
+                    if ($('#allowPosting').is(':checked'))
+                        defaultPermissions.push("post");
 
-                    fimApi.editRoom(roomId, {
+                    // Do Edit
+                    fimApi.editRoom(roomId, action, {
                         "name" : name,
                         "defaultPermissions" : defaultPermissions,
                         "userPermissions" : combinedUserPermissions,
@@ -1087,10 +1115,9 @@ popup = {
                         "official" : $("#allowOfficial").is(":checked"),
                         "hidden" : $("#allowHidden").is(":checked")
                     }, {
-                        'action' : action,
-                        'begin' : function(json) {
+                        end : function(room) {
                             dia.full({
-                                content : 'The room has been created at the following URL: <br /><br /><form action="' + currentLocation + '#room=' + json.insertId + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + json.insertId + '" name="url" /></form>',
+                                content : 'The room has been created at the following URL: <br /><br /><form action="' + currentLocation + '#room=' + room.id + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + room.id + '" name="url" /></form>',
                                 title : 'Room Created!',
                                 id : 'editRoomResultsDialogue',
 
@@ -1098,7 +1125,7 @@ popup = {
                                 buttons : {
                                     Open : function() {
                                         $('#editRoomResultsDialogue').dialog('close');
-                                        standard.changeRoom(json.insertId);
+                                        standard.changeRoom(room.id);
 
                                         return false;
                                     },

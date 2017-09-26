@@ -706,8 +706,7 @@ fimApi.prototype.undeleteRoom = function(id, requestSettings) {
 fimApi.prototype.editRoomPermissionUser = function(roomId, userId, permissionsArray) {
     var permissionsObj = {};
     permissionsObj['*' + userId] = permissionsArray;
-    fimApi.editRoom({
-        'roomId' : roomId,
+    fimApi.editRoom(roomId, 'edit', {
         'userPermissions' : permissionsObj
     });
 }
@@ -715,8 +714,7 @@ fimApi.prototype.editRoomPermissionUser = function(roomId, userId, permissionsAr
 fimApi.prototype.editRoomPermissionGroup = function(roomId, groupId, permissionsArray) {
     var permissionsObj = {};
     permissionsObj['*' + groupId] = permissionsArray;
-    fimApi.editRoom({
-        'roomId' : roomId,
+    fimApi.editRoom(roomId, 'edit', {
         'groupPermissions' : permissionsObj
     });
 }
