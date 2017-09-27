@@ -44,10 +44,10 @@ class StreamPgSQL implements Stream {
     public function subscribe($stream, $lastId) {
         global $config;
 
-        $this->database->rawQuery('LISTEN' . $this->database->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $stream));
+        $this->database->rawQuery('LISTEN ' . $this->database->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $stream));
 
         do {
-            $message = pg_get_notify($this->database->connection, PGSQL_ASSOC);
+            $message = pg_get_notify($this->database->sqlInterface->connection, PGSQL_ASSOC);
         } while (usleep($config['serverSentEventsWait'] * 1000000) || (!$message && $this->retries++ < $config['serverSentMaxRetries']));
 
         if ($message) {
@@ -64,6 +64,6 @@ class StreamPgSQL implements Stream {
     }
 
     public function unsubscribe($stream) {
-        $this->database->rawQuery('UNLISTEN' . $this->database->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $stream));
+        $this->database->rawQuery('UNLISTEN ' . $this->database->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $stream));
     }
 }

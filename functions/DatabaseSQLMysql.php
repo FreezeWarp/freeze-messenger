@@ -2,7 +2,11 @@
 require_once(__DIR__ . '/DatabaseSQLMysqli.php');
 
 class DatabaseSQLMysql extends DatabaseSQLMysqli {
+    /**
+     * @var resource
+     */
     public $connection;
+
     public $lastInsertId;
 
     public function connect($host, $port, $username, $password, $database = false) {

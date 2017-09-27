@@ -3,7 +3,11 @@
 require_once(__DIR__ . '/DatabaseSQLStandard.php');
 
 class DatabaseSQLPgsql extends DatabaseSQLStandard {
+    /**
+     * @var resource
+     */
     public $connection;
+
     public $lastInsertId;
 
     private $connectionUser;

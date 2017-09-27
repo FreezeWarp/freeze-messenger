@@ -6,6 +6,7 @@ class DatabaseSQLMysqli extends DatabaseSQLStandard {
      * @var mysqli
      */
     public $connection;
+
     public $lastInsertId;
 
 

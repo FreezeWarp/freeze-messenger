@@ -2,6 +2,11 @@
 require_once(__DIR__ . '/DatabaseSQLInterface.php');
 
 abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
+    /**
+     * @var mixed A link to the database driver connection.
+     */
+    public $connection;
+
     /*********************************************************
      ************************ START **************************
      ***************** Query Format Constants ****************
