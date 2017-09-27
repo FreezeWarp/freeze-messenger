@@ -398,6 +398,32 @@ abstract class Database
 
     /*********************************************************
      ************************ START **************************
+     *************** Transformation Parameters ***************
+     *********************************************************/
+
+    public function setTransformationParameters($encode, $encodeCopy, $insertIdColumns) {
+        $this->encode = $encode;
+        $this->encodeCopy = $encodeCopy;
+        $this->insertIdColumns = $insertIdColumns;
+    }
+
+
+    public function setHardPartitions($partitions) {
+        $this->hardPartitions = $partitions;
+    }
+
+    public function setCollectionTriggers($triggers) {
+        $this->collectionTriggers = $triggers;
+    }
+
+    /*********************************************************
+     ************************* END ***************************
+     *************** Transformation Parameters ***************
+     *********************************************************/
+
+
+    /*********************************************************
+     ************************ START **************************
      ********************* Transactions **********************
      *********************************************************/
 

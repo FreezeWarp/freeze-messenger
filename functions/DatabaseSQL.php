@@ -200,62 +200,6 @@ class DatabaseSQL extends Database
 
 
     /**
-     * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
-     * TODO: remove
-     */
-    protected function functionMap($operation)
-    {
-        $args = func_get_args();
-
-        switch ($operation) {
-            case 'version':
-                $this->setDatabaseVersion($this->sqlInterface->getVersion());
-            break;
-
-            case 'error':
-                return $this->sqlInterface->getLastError();
-            break;
-
-            case 'selectdb':
-                return $this->sqlInterface->selectDatabase($args[1]);
-            break;
-
-            case 'close':
-                return $this->sqlInterface->close();
-            break;
-
-            case 'escape':
-                return $this->sqlInterface->escape($args[1], $args[2]);
-            break;
-
-            case 'query':
-                return $this->sqlInterface->query($args[1]);
-            break;
-
-            case 'insertId':
-                return $this->sqlInterface->getLastInsertId();
-            break;
-
-            case 'startTrans':
-                return $this->sqlInterface->startTransaction();
-            break;
-
-            case 'endTrans':
-                return $this->sqlInterface->endTransaction();
-            break;
-
-            case 'rollbackTrans':
-                return $this->sqlInterface->rollbackTransaction();
-            break;
-
-            default:
-                $this->triggerError("[Function Map] Unrecognised Operation", ['operation' => $operation], 'validation');
-            break;
-        }
-    }
-
-
-    /**
      * Autodetect how to format.
      * In most cases, this will format either an an integer or a string. Refer to {@link database::auto()} for more information.
      */
@@ -659,15 +603,15 @@ class DatabaseSQL extends Database
 
 
         // Compatibility check. We're really not sure how true any of this, and we have no reason to support older versions, but meh.
+        // todo: move
         switch ($this->driver) {
             case 'mysql':
             case 'mysqli':
                 if ($strippedVersionParts[0] <= 4) { // MySQL 4 is a no-go.
-                    die('You have attempted to connect to a MySQL version 4 database. MySQL 5.0.5+ is required for FreezeMessenger.');
+                    throw new Exception('You have attempted to connect to a MySQL version 4 database, which is unsupported.');
                 }
-                // todo: remove/test
                 elseif ($strippedVersionParts[0] == 5 && $strippedVersionParts[1] == 0 && $strippedVersionParts[2] <= 4) { // MySQL 5.0.0-5.0.4 is also a no-go (we require the BIT type, even though in theory we could work without it)
-                    die('You have attempted to connect to an incompatible version of a MySQL version 5 database (MySQL 5.0.0-5.0.4). MySQL 5.0.5+ is required for FreezeMessenger.');
+                    $this->sqlInterface->nativeBitfield = false;
                 }
                 break;
         }
@@ -744,25 +688,9 @@ class DatabaseSQL extends Database
     }
 
 
-    public function setTransformationParameters($encode, $encodeCopy, $insertIdColumns) {
-        $this->encode = $encode;
-        $this->encodeCopy = $encodeCopy;
-        $this->insertIdColumns = $insertIdColumns;
-    }
-
-
-    public function setHardPartitions($partitions) {
-        $this->hardPartitions = $partitions;
-    }
-
-    public function setCollectionTriggers($triggers) {
-        $this->collectionTriggers = $triggers;
-    }
-
-
     public function close()
     {
-        return $this->functionMap('close');
+        return $this->sqlInterface->close();
     }
 
 
@@ -795,7 +723,7 @@ class DatabaseSQL extends Database
             $string = addcslashes($string, '%_\\'); // TODO: Verify
         }
 
-        return $this->functionMap('escape', $string, $context); // Return the escaped string.
+        return $this->sqlInterface->escape($string, $context); // Return the escaped string.
     }
 
 
@@ -815,7 +743,7 @@ class DatabaseSQL extends Database
         else {
             $start = microtime(true);
 
-            if ($queryData = $this->functionMap('query', $query)) {
+            if ($queryData = $this->sqlInterface->query($query)) {
                 $this->newQuery($query, microtime(true) - $start);
 
                 if ($queryData === true) { // Insert, Update, Delete, etc.
@@ -827,7 +755,7 @@ class DatabaseSQL extends Database
             }
 
             else {
-                $this->triggerError($this->functionMap('error'), $query);
+                $this->triggerError($this->sqlInterface->getLastError(), $query);
 
                 return false;
             }
@@ -902,7 +830,7 @@ class DatabaseSQL extends Database
     {
         $this->transaction = true;
 
-        $this->functionMap('startTrans');
+        $this->sqlInterface->startTransaction();
     }
 
 
@@ -910,7 +838,7 @@ class DatabaseSQL extends Database
     {
         $this->transaction = false;
 
-        $this->functionMap('rollbackTrans');
+        $this->sqlInterface->rollbackTransaction();
     }
 
 
@@ -918,7 +846,7 @@ class DatabaseSQL extends Database
     {
         $this->transaction = false;
 
-        $this->functionMap('endTrans');
+        $this->sqlInterface->endTransaction();
     }
 
 
@@ -938,7 +866,7 @@ class DatabaseSQL extends Database
     {
         $error = false;
 
-        if ($this->functionMap('selectdb', $database)) { // Select the database.
+        if ($this->sqlInterface->selectDatabase($database)) { // Select the database.
             if ($this->language == 'mysql' || $this->language == 'mysqli') {
                 if (!$this->rawQuery('SET NAMES "utf8"', true)) { // Sets the database encoding to utf8 (unicode).
                     $error = 'SET NAMES Query Failed';
@@ -2057,7 +1985,7 @@ class DatabaseSQL extends Database
 
     public function getLastInsertId()
     {
-        return $this->functionMap('insertId');
+        return $this->sqlInterface->getLastInsertId();
     }
 
 

@@ -172,7 +172,6 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
      */
     public $indexQuoteEnd = '';
 
-
     /**
      * @var array The tokens corresponding to DatabaseTypeComparison enumerations.
      */
@@ -195,6 +194,13 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
     public $concatTypes = array(
         'both' => ' AND ', 'either' => ' OR ',
     );
+
+
+
+    /*********************************************************
+     ************************ START **************************
+     ****************** Misc. Information ********************
+     *********************************************************/
 
     /**
      * @var array The phrases that identify the three supported key types, 'primary', 'unique', and 'index'
@@ -224,13 +230,24 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
      */
     public $tableTypes = array(DatabaseEngine::memory, DatabaseEngine::general);
 
+    /**
+     * @var array Various datatype information. This information should only be needed when creating and altering table columns.
+     */
     public $dataTypes = array();
 
+    /**
+     * @var array The values that should be used for boolean "true" and "false".
+     */
     public $boolValues = array(
         true => 1, false => 0,
     );
 
 
+
+    /*********************************************************
+     ************************ START **************************
+     ***************** SQL Function Support ******************
+     *********************************************************/
 
     /**
      * @var bool If native bitfields are supported.
@@ -272,6 +289,12 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
      */
     public $enumMode = false;
 
+
+
+    /*********************************************************
+     ************************ START **************************
+     ****************** Interface Methods ********************
+     *********************************************************/
 
     abstract public function connect($host, $port, $username, $password, $database = false);
     abstract public function getVersion();
