@@ -1,0 +1,227 @@
+<?php
+require_once(__DIR__ . '/DatabaseSQLInterface.php');
+
+abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
+    /*********************************************************
+     ************************ START **************************
+     ***************** Query Format Constants ****************
+     *********************************************************/
+
+    /**
+     * @var string The token that comes before database names.
+     */
+    public $databaseQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after database names.
+     */
+    public $databaseQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before database aliases.
+     */
+    public $databaseAliasQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after database aliases.
+     */
+    public $databaseAliasQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before table names.
+     */
+    public $tableQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after table names.
+     */
+    public $tableQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before table aliases.
+     */
+    public $tableAliasQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after table aliases.
+     */
+    public $tableAliasQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before column names.
+     */
+    public $columnQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after column names.
+     */
+    public $columnQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before column aliases.
+     */
+    public $columnAliasQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after column aliases.
+     */
+    public $columnAliasQuoteEnd = '"';
+
+    /**
+     * @var string The token that comes before strings.
+     */
+    public $stringQuoteStart = '\'';
+
+    /**
+     * @var string The token that comes after strings.
+     */
+    public $stringQuoteEnd = '\'';
+
+    /**
+     * @var string The wildcard token when used in strings in LIKE clauses.
+     */
+    public $stringFuzzy = '%';
+
+    /**
+     * @var string The token that comes before arrays.
+     */
+    public $arrayQuoteStart = '(';
+
+    /**
+     * @var string The token that comes after arrays.
+     */
+    public $arrayQuoteEnd = ')';
+
+    /**
+     * @var string The token that comes between array elements.
+     */
+    public $arraySeperator = ', ';
+
+    /**
+     * @var string The token that comes between statements.
+     */
+    public $statementSeperator = ', ';
+
+    /**
+     * @var string The token that comes before ints.
+     */
+    public $intQuoteStart = '';
+
+    /**
+     * @var string The token that comes after ints.
+     */
+    public $intQuoteEnd = '';
+
+    /**
+     * @var string The token that comes before floats.
+     */
+    public $floatQuoteStart = '';
+
+    /**
+     * @var string The token that comes after floats.
+     */
+    public $floatQuoteEnd = '';
+
+    /**
+     * @var string The token that comes before timestamps.
+     */
+    public $timestampQuoteStart = '';
+
+    /**
+     * @var string The token that comes after timestamps.
+     */
+    public $timestampQuoteEnd = '';
+
+    /**
+     * @var string The token that comes between a database name and a column name.
+     */
+    public $databaseTableDivider = '.';
+
+    /**
+     * @var string The token that comes between a table name and a column name.
+     */
+    public $tableColumnDivider = '.';
+
+    /**
+     * @var string The token that designates ascending order.
+     */
+    public $sortOrderAsc = 'ASC';
+
+    /**
+     * @var string The token that designates descending order.
+     */
+    public $sortOrderDesc = 'DESC';
+
+    /**
+     * @var string The token that comes between a table name and a table alias.
+     */
+    public $tableAliasDivider = ' AS ';
+
+    /**
+     * @var string The token that comes between a column name and a column alias.
+     */
+    public $columnAliasDivider = ' AS ';
+
+    /**
+     * @var string The token that comes before an index.
+     */
+    public $indexQuoteStart = '';
+
+    /**
+     * @var string The token that comes after an index.
+     */
+    public $indexQuoteEnd = '';
+
+
+    /**
+     * @var array The tokens corresponding to DatabaseTypeComparison enumerations.
+     */
+    public $comparisonTypes = array(
+        DatabaseTypeComparison::equals => '=',
+        DatabaseTypeComparison::assignment => '=',
+        DatabaseTypeComparison::in => 'IN',
+        DatabaseTypeComparison::notin => 'NOT IN',
+        DatabaseTypeComparison::lessThan => '<',
+        DatabaseTypeComparison::lessThanEquals=> '<=',
+        DatabaseTypeComparison::greaterThan => '>',
+        DatabaseTypeComparison::greaterThanEquals => '>=',
+        DatabaseTypeComparison::search => 'LIKE',
+        DatabaseTypeComparison::binaryAnd => '&',
+    );
+
+    /**
+     * @var array The tokens corresponding with 'both' and 'either' concatenations.
+     */
+    public $concatTypes = array(
+        'both' => ' AND ', 'either' => ' OR ',
+    );
+
+    /**
+     * @var array The phrases that identify the three supported key types, 'primary', 'unique', and 'index'
+     */
+    public $keyTypeConstants = array(
+        DatabaseIndexType::primary => 'PRIMARY',
+        DatabaseIndexType::unique => 'UNIQUE',
+        DatabaseIndexType::index => '',
+    );
+
+    /**
+     * @var array The phrases that correspond with the supported default phrases, currently only '__TIME__'
+     */
+    public $defaultPhrases = array(
+        '__TIME__' => 'CURRENT_TIMESTAMP',
+    );
+
+
+    abstract public function connect($host, $port, $username, $password, $database = false);
+    abstract public function getVersion();
+    abstract public function getLastError();
+    abstract public function close();
+    abstract public function selectDatabase($database);
+    abstract public function escape($text, $context);
+    abstract public function query($rawQuery);
+    abstract public function getLastInsertId();
+    abstract public function startTransaction();
+    abstract public function endTransaction();
+    abstract public function rollbackTransaction();
+}

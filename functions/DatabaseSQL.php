@@ -88,6 +88,8 @@
  * 9.2: Index-only scans, cascading replication, range data types, JSON data type,
  */
 
+require_once(__DIR__ . '/DatabaseSQLInterface.php');
+
 class DatabaseSQL extends Database
 {
     public $classVersion = 3;
@@ -139,6 +141,11 @@ class DatabaseSQL extends Database
      * @var string The language currently in used. One of "mysql", "pgsql"
      */
     public $language;
+
+    /**
+     * @var DatabaseSQLStandard
+     */
+    public $sqlInterface;
 
     /**
      * @var array Maps between drivers and languages.
@@ -222,217 +229,6 @@ class DatabaseSQL extends Database
     private $lastInsertId = 0;
 
 
-    /*********************************************************
-     ************************ START **************************
-     ***************** Query Format Constants ****************
-     *********************************************************/
-
-    /**
-     * @var string The token that comes before database names.
-     */
-    protected $databaseQuoteStart = '"';
-
-    /**
-     * @var string The token that comes after database names.
-     */
-    protected $databaseQuoteEnd = '"';
-
-    /**
-     * @var string The token that comes before database aliases.
-     */
-    protected $databaseAliasQuoteStart = '"';
-
-    /**
-     * @var string The token that comes after database aliases.
-     */
-    protected $databaseAliasQuoteEnd = '"';
-
-    /**
-     * @var string The token that comes before table names.
-     */
-    protected $tableQuoteStart = '"';
-
-    /**
-     * @var string The token that comes after table names.
-     */
-    protected $tableQuoteEnd = '"';
-
-    /**
-     * @var string The token that comes before table aliases.
-     */
-    protected $tableAliasQuoteStart = '"';
-
-    /**
-     * @var string The token that comes after table aliases.
-     */
-    protected $tableAliasQuoteEnd = '"';
-
-    /**
-     * @var string The token that comes before column names.
-     */
-    protected $columnQuoteStart = '"';
-
-    /**
-     * @var string The token that comes after column names.
-     */
-    protected $columnQuoteEnd = '"';
-
-    /**
-     * @var string The token that comes before column aliases.
-     */
-    protected $columnAliasQuoteStart = '"';
-
-    /**
-     * @var string The token that comes after column aliases.
-     */
-    protected $columnAliasQuoteEnd = '"';
-
-    /**
-     * @var string The token that comes before strings.
-     */
-    protected $stringQuoteStart = '\'';
-
-    /**
-     * @var string The token that comes after strings.
-     */
-    protected $stringQuoteEnd = '\'';
-
-    /**
-     * @var string The wildcard token when used in strings in LIKE clauses.
-     */
-    protected $stringFuzzy = '%';
-
-    /**
-     * @var string The token that comes before arrays.
-     */
-    protected $arrayQuoteStart = '(';
-
-    /**
-     * @var string The token that comes after arrays.
-     */
-    protected $arrayQuoteEnd = ')';
-
-    /**
-     * @var string The token that comes between array elements.
-     */
-    protected $arraySeperator = ', ';
-
-    /**
-     * @var string The token that comes between statements.
-     */
-    protected $statementSeperator = ', ';
-
-    /**
-     * @var string The token that comes before ints.
-     */
-    protected $intQuoteStart = '';
-
-    /**
-     * @var string The token that comes after ints.
-     */
-    protected $intQuoteEnd = '';
-
-    /**
-     * @var string The token that comes before floats.
-     */
-    protected $floatQuoteStart = '';
-
-    /**
-     * @var string The token that comes after floats.
-     */
-    protected $floatQuoteEnd = '';
-
-    /**
-     * @var string The token that comes before timestamps.
-     */
-    protected $timestampQuoteStart = '';
-
-    /**
-     * @var string The token that comes after timestamps.
-     */
-    protected $timestampQuoteEnd = '';
-
-    /**
-     * @var string The token that comes between a database name and a column name.
-     */
-    protected $databaseTableDivider = '.';
-
-    /**
-     * @var string The token that comes between a table name and a column name.
-     */
-    protected $tableColumnDivider = '.';
-
-    /**
-     * @var string The token that designates ascending order.
-     */
-    protected $sortOrderAsc = 'ASC';
-
-    /**
-     * @var string The token that designates descending order.
-     */
-    protected $sortOrderDesc = 'DESC';
-
-    /**
-     * @var string The token that comes between a table name and a table alias.
-     */
-    protected $tableAliasDivider = ' AS ';
-
-    /**
-     * @var string The token that comes between a column name and a column alias.
-     */
-    protected $columnAliasDivider = ' AS ';
-
-    /**
-     * @var string The token that comes before an index.
-     */
-    protected $indexQuoteStart = '';
-
-    /**
-     * @var string The token that comes after an index.
-     */
-    protected $indexQuoteEnd = '';
-
-
-    /**
-     * @var array The tokens corresponding to DatabaseTypeComparison enumerations.
-     */
-    protected $comparisonTypes = array(
-        DatabaseTypeComparison::equals => '=',
-        DatabaseTypeComparison::assignment => '=',
-        DatabaseTypeComparison::in => 'IN',
-        DatabaseTypeComparison::notin => 'NOT IN',
-        DatabaseTypeComparison::lessThan => '<',
-        DatabaseTypeComparison::lessThanEquals=> '<=',
-        DatabaseTypeComparison::greaterThan => '>',
-        DatabaseTypeComparison::greaterThanEquals => '>=',
-        DatabaseTypeComparison::search => 'LIKE',
-        DatabaseTypeComparison::binaryAnd => '&',
-    );
-
-    /**
-     * @var array The tokens corresponding with 'both' and 'either' concatenations.
-     */
-    protected $concatTypes = array(
-       'both' => ' AND ', 'either' => ' OR ',
-    );
-
-    /**
-     * @var array The phrases that identify the three supported key types, 'primary', 'unique', and 'index'
-     */
-    protected $keyTypeConstants = array(
-        DatabaseIndexType::primary => 'PRIMARY',
-        DatabaseIndexType::unique => 'UNIQUE',
-        DatabaseIndexType::index => '',
-    );
-
-    /**
-     * @var array The phrases that correspond with the supported default phrases, currently only '__TIME__'
-     */
-    protected $defaultPhrases = array(
-        '__TIME__' => 'CURRENT_TIMESTAMP',
-    );
-
-
 
     /*********************************************************
      ************************ START **************************
@@ -452,322 +248,55 @@ class DatabaseSQL extends Database
 
     /**
      * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
-     *
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+     * TODO: remove
      */
     protected function functionMap($operation)
     {
         $args = func_get_args();
 
-        /* TODO: consistent responses (e.g. FALSE on failure) */
-        switch ($this->driver) {
-            case 'mysql':
-                switch ($operation) {
-                    case 'connect':
-                        $this->connection = mysql_connect("$args[1]:$args[2]", $args[3], $args[4]);
-
-                        if (!$this->connection) {
-                            $this->triggerError('Connect Error: ' . $this->functionMap('error'), false, 'connection');
-
-                            return false;
-                        }
-
-                        else {
-                            return $this->connection;
-                        }
-                    break;
-
-                    case 'version':
-                        $this->setDatabaseVersion(mysql_get_server_info($this->connection));
-                        break;
-
-                    case 'error':
-                        return mysql_error(isset($this->connection) ? $this->connection : null);
-                    break;
-
-                    case 'close':
-                        if ($this->connection) {
-                            $function = mysql_close($this->connection);
-                            unset($this->connection);
-
-                            return $function;
-                        }
-                        else {
-                            return true;
-                        }
-                    break;
-
-                    case 'selectdb':
-                        return mysql_select_db($args[1], $this->connection);
-                    break;
-
-                    case 'escape':
-                        return mysql_real_escape_string($args[1], $this->connection);
-                    break;
-
-                    case 'query':
-                        $query = mysql_query($args[1], $this->connection);
-
-                        if (mysql_insert_id($this->connection)) {
-                            $this->lastInsertId = mysql_insert_id($this->connection);
-                        }
-
-                        return $query;
-                    break;
-
-                    case 'insertId':
-                        return $this->lastInsertId;
-                    break;
-
-                    case 'startTrans':
-                        $this->rawQuery('START TRANSACTION');
-                    break;
-
-                    case 'endTrans':
-                        $this->rawQuery('COMMIT');
-                    break;
-
-                    case 'rollbackTrans':
-                        $this->rawQuery('ROLLBACK');
-                    break;
-
-                    default:
-                        $this->triggerError("[Function Map] Unrecognised Operation", ['operation' => $operation], 'validation');
-                    break;
-                }
+        switch ($operation) {
+            case 'version':
+                $this->setDatabaseVersion($this->sqlInterface->getVersion());
             break;
 
-
-            case 'mysqli':
-                switch ($operation) {
-                    case 'connect':
-                        $this->connection = new mysqli($args[1], $args[3], $args[4], ($args[5] ? $args[5] : null), (int)$args[2]);
-
-                        if ($this->connection->connect_error) {
-                            $this->triggerError('Connect Error (' . $this->connection->connect_errno . '): ' . $this->connection->connect_error, false, 'connection');
-
-                            return false;
-                        }
-
-                        else {
-                            return $this->connection;
-                        }
-                    break;
-
-                    case 'version':
-                        $this->setDatabaseVersion($this->connection->server_info);
-                    break;
-
-                    case 'error':
-                        if ($this->connection->connect_errno)
-                            return $this->connection->connect_errno;
-                        else
-                            return $this->connection->error;
-                    break;
-
-                    case 'selectdb':
-                        return $this->connection->select_db($args[1]);
-                    break;
-
-                    case 'close':    /*return $this->connection->close(); TODO? */
-                    break;
-
-                    case 'escape':
-                        return $this->connection->real_escape_string($args[1]);
-                    break;
-
-                    case 'query':
-                        $query = $this->connection->query($args[1]);
-
-                        if ($this->connection->insert_id) {
-                            $this->lastInsertId = $this->connection->insert_id;
-                        }
-
-                        return $query;
-                    break;
-
-                    case 'insertId':
-                        return $this->lastInsertId;
-                    break;
-
-                    case 'startTrans':
-                        $this->connection->autocommit(false);
-                    break; // Use start_transaction in PHP 5.5 TODO
-
-                    case 'endTrans':
-                        $this->connection->commit();
-                        $this->connection->autocommit(true);
-                    break;
-
-                    case 'rollbackTrans':
-                        $this->connection->rollback();
-                        $this->connection->autocommit(true);
-                    break;
-
-                    default:
-                        $this->triggerError("[Function Map] Unrecognised Operation", ['operation' => $operation], 'validation');
-                    break;
-                }
+            case 'error':
+                return $this->sqlInterface->getLastError();
             break;
 
-
-            case 'pdo':
-                switch ($operation) {
-                    case 'connect':
-                        try {
-                            $this->connection = new PDO("mysql:dbname=$args[5];host=$args[1]:$args[2]", $args[3], $args[4]);
-                        } catch (PDOException $e) {
-                            $this->connection->errorCode = $e->getMessage();
-                            $this->triggerError('Connect Error: ' . $this->connection->errorCode, false, 'connection');
-
-                            return false;
-                        }
-                        $this->activeDatabase = $args[5];
-
-                        return $this->connection;
-                    break;
-
-                    case 'version':
-                        $this->setDatabaseVersion($this->connection->getAttribute(PDO::ATTR_SERVER_VERSION));
-                    break;
-
-                    case 'error':
-                        return $this->connection->errorCode;
-                    break;
-
-                    case 'selectdb':
-                        return $this->rawQuery("USE " . $this->formatValue("database", $args[1]));
-                    break; // TODO test
-
-                    case 'close':
-                        unset($this->connection);
-
-                        return true;
-                    break;
-
-                    case 'escape':
-                        switch ($args[2]) {
-                            case DatabaseTypeType::string:
-                            case DatabaseTypeType::search:
-                                return $this->connection->quote($args[1], PDO::PARAM_STR);
-                            break;
-                            case DatabaseTypeType::integer:
-                            case DatabaseTypeType::timestamp:
-                                return $this->connection->quote($args[1], PDO::PARAM_STR);
-                            break;
-                            case DatabaseTypeType::column:
-                            case 'columnA':
-                            case 'table':
-                            case 'tableA':
-                            case 'database':
-                                return $args[1];
-                            break;
-                            default:
-                                $this->triggerError('Invalid context.', ['arguments' => $args], 'validation');
-                            break;
-                        }
-                    break; // Note: long-term, we should implement this using prepared statements.
-
-                    case 'query':
-                        return $this->connection->query($args[1]);
-                    break;
-
-                    case 'insertId':
-                        return $this->connection->lastInsertId();
-                    break;
-
-                    case 'startTrans':
-                        $this->connection->beginTransaction();
-                    break; // Use start_transaction in PHP 5.5
-
-                    case 'endTrans':
-                        $this->connection->commit();
-                    break;
-
-                    case 'rollbackTrans':
-                        $this->connection->rollBack();
-                    break;
-
-                    default:
-                        $this->triggerError("[Function Map] Unrecognised Operation", ['operation' => $operation], 'validation');
-                    break;
-                }
+            case 'selectdb':
+                return $this->sqlInterface->selectDatabase($args[1]);
             break;
 
+            case 'close':
+                return $this->sqlInterface->close();
+            break;
 
-            case 'pgsql':
-                switch ($operation) {
-                    case 'connect':
-                        // keep the user and password in memory to allow for reconnects with selectdb
-                        $this->connectionUser = $args[3];
-                        $this->connectionPassword = $args[4];
+            case 'escape':
+                return $this->sqlInterface->escape($args[1], $args[2]);
+            break;
 
-                        $this->connection = pg_connect("host=$args[1] port=$args[2] user=$args[3] password=$args[4]" . (isset($args[5]) ? " dbname=$args[5]" : ''));
+            case 'query':
+                return $this->sqlInterface->query($args[1]);
+            break;
 
-                        if (!$this->connection) {
-                            $this->triggerError('Connect Error: ' . $this->functionMap('error'), false, 'connection');
+            case 'insertId':
+                return $this->sqlInterface->getLastInsertId();
+            break;
 
-                            return false;
-                        }
-                        else {
-                            $this->rawQuery('SET bytea_output = "escape"');
+            case 'startTrans':
+                return $this->sqlInterface->startTransaction();
+            break;
 
-                            return $this->connection;
-                        }
-                    break;
+            case 'endTrans':
+                return $this->sqlInterface->endTransaction();
+            break;
 
-                    case 'version':
-                        $this->setDatabaseVersion(pg_version($this->connection)['client']);
-                    break;
+            case 'rollbackTrans':
+                return $this->sqlInterface->rollbackTransaction();
+            break;
 
-                    // Select database by creating a new connection with the database name present.
-                    case 'selectdb':
-                        return $this->functionMap('connect', pg_host($this->connection), pg_port($this->connection), $this->connectionUser, $this->connectionPassword, $args[1]);
-                    break;
-
-                    case 'error':
-                        return pg_last_error($this->connection);
-                    break;
-
-                    case 'close':
-                        return @pg_close($this->connection);
-                    break;
-
-                    case 'escape':
-                        if ($args[2] === DatabaseTypeType::blob)
-                            return pg_escape_bytea($this->connection, $args[1]);
-                        else
-                            return pg_escape_string($this->connection, $args[1]);
-                    break;
-
-                    case 'query':
-                        return pg_query($this->connection, $args[1]);
-                    break;
-
-                    case 'insertId':
-                        return $this->rawQuery('SELECT LASTVAL() AS lastval')->getAsArray(false)['lastval'];
-                    break; // Note: Returning is by far the best solution, and should be considered in future versions. This would require defining the insertId column, which might be doable.
-
-                    case 'startTrans':
-                        $this->rawQuery('START TRANSACTION');
-                    break;
-
-                    case 'endTrans':
-                        $this->rawQuery('COMMIT');
-                    break;
-
-                    case 'rollbackTrans':
-                        $this->rawQuery('ROLLBACK');
-                    break;
-
-                    case 'notify':
-                        return pg_get_notify($this->connection);
-                    break;
-
-                    default:
-                        $this->triggerError("[Function Map] Unrecognised Operation", ['operation' => $operation], 'validation');
-                    break;
-                }
+            default:
+                $this->triggerError("[Function Map] Unrecognised Operation", ['operation' => $operation], 'validation');
             break;
         }
     }
@@ -879,17 +408,17 @@ class DatabaseSQL extends Database
                 break;
 
             case DatabaseTypeType::search:
-                return $this->stringQuoteStart
-                    . $this->stringFuzzy
+                return $this->sqlInterface->stringQuoteStart
+                    . $this->sqlInterface->stringFuzzy
                     . $this->escape($values[1], $type)
-                    . $this->stringFuzzy
-                    . $this->stringQuoteEnd;
+                    . $this->sqlInterface->stringFuzzy
+                    . $this->sqlInterface->stringQuoteEnd;
                 break;
 
             case DatabaseTypeType::string:
-                return $this->stringQuoteStart
+                return $this->sqlInterface->stringQuoteStart
                     . $this->escape($values[1], $type)
-                    . $this->stringQuoteEnd;
+                    . $this->sqlInterface->stringQuoteEnd;
                 break;
 
             case DatabaseTypeType::bool:
@@ -898,9 +427,9 @@ class DatabaseSQL extends Database
 
             case DatabaseTypeType::blob:
                 //return 'FROM_BASE64("' . base64_encode($values[1]) . '")';
-                return $this->stringQuoteStart
+                return $this->sqlInterface->stringQuoteStart
                     . $this->escape($values[1], $type)
-                    . $this->stringQuoteEnd;
+                    . $this->sqlInterface->stringQuoteEnd;
                 break;
 
             case DatabaseTypeType::bitfield:
@@ -911,27 +440,27 @@ class DatabaseSQL extends Database
             break;
 
             case DatabaseTypeType::integer:
-                return $this->intQuoteStart
+                return $this->sqlInterface->intQuoteStart
                     . (int)$this->escape($values[1], $type)
-                    . $this->intQuoteEnd;
+                    . $this->sqlInterface->intQuoteEnd;
                 break;
 
             case DatabaseTypeType::float:
-                return $this->floatQuoteStart
+                return $this->sqlInterface->floatQuoteStart
                     . (float) $this->escape($values[1], $type)
-                    . $this->floatQuoteEnd;
+                    . $this->sqlInterface->floatQuoteEnd;
             break;
 
             case DatabaseTypeType::timestamp:
-                return $this->timestampQuoteStart
+                return $this->sqlInterface->timestampQuoteStart
                     . (int) $this->escape($values[1], $type)
-                    . $this->timestampQuoteEnd;
+                    . $this->sqlInterface->timestampQuoteEnd;
                 break;
 
             case DatabaseTypeType::column:
-                return $this->columnQuoteStart
+                return $this->sqlInterface->columnQuoteStart
                     . $this->escape($values[1], $type)
-                    . $this->columnQuoteEnd;
+                    . $this->sqlInterface->columnQuoteEnd;
                 break;
 
             case DatabaseTypeType::equation:  // Only partially implemented, because equations are stupid. Don't use them if possible.
@@ -949,39 +478,39 @@ class DatabaseSQL extends Database
                     $item = $this->formatValue($item->type, $item->value);
                 }
 
-                return $this->arrayQuoteStart
-                    . implode($this->arraySeperator, $values[1])
-                    . $this->arrayQuoteEnd;
+                return $this->sqlInterface->arrayQuoteStart
+                    . implode($this->sqlInterface->arraySeperator, $values[1])
+                    . $this->sqlInterface->arrayQuoteEnd;
             break;
 
             case DatabaseSQL::FORMAT_VALUE_COLUMN_ALIAS:
-                return $this->columnAliasQuoteStart
+                return $this->sqlInterface->columnAliasQuoteStart
                     . $this->escape($values[1], $type)
-                    . $this->columnAliasQuoteEnd;
+                    . $this->sqlInterface->columnAliasQuoteEnd;
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_TABLE:
-                return $this->tableQuoteStart
+                return $this->sqlInterface->tableQuoteStart
                     . $this->escape($values[1], $type)
-                    . $this->tableQuoteEnd;
+                    . $this->sqlInterface->tableQuoteEnd;
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_TABLE_ALIAS:
-                return $this->tableAliasQuoteStart
+                return $this->sqlInterface->tableAliasQuoteStart
                     . $this->escape($values[1], $type)
-                    . $this->tableAliasQuoteEnd;
+                    . $this->sqlInterface->tableAliasQuoteEnd;
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_DATABASE:
-                return $this->databaseQuoteStart
+                return $this->sqlInterface->databaseQuoteStart
                     . $this->escape($values[1], $type)
-                    . $this->databaseQuoteEnd;
+                    . $this->sqlInterface->databaseQuoteEnd;
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_INDEX:
-                return $this->indexQuoteStart
+                return $this->sqlInterface->indexQuoteStart
                     . $this->escape($values[1], $type)
-                    . $this->indexQuoteEnd;
+                    . $this->sqlInterface->indexQuoteEnd;
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_ENUM_ARRAY:
@@ -1002,9 +531,9 @@ class DatabaseSQL extends Database
                 foreach ($values[1] AS &$item)
                     $item = $this->formatValue(DatabaseTypeType::column, $item);
 
-                return $this->arrayQuoteStart
-                    . implode($this->arraySeperator, $values[1])
-                    . $this->arrayQuoteEnd;
+                return $this->sqlInterface->arrayQuoteStart
+                    . implode($this->sqlInterface->arraySeperator, $values[1])
+                    . $this->sqlInterface->arrayQuoteEnd;
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_UPDATE_ARRAY:
@@ -1012,36 +541,36 @@ class DatabaseSQL extends Database
 
                 foreach ($values[1] AS $column => $value) {
                     $update[] = $this->formatValue(DatabaseTypeType::column, $column)
-                        . $this->comparisonTypes[DatabaseTypeComparison::assignment]
+                        . $this->sqlInterface->comparisonTypes[DatabaseTypeComparison::assignment]
                         . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value);
                 }
 
-                return implode($update, $this->statementSeperator);
+                return implode($update, $this->sqlInterface->statementSeperator);
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN:
                 return $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $values[1])
-                    . $this->tableColumnDivider
+                    . $this->sqlInterface->tableColumnDivider
                     . $this->formatValue(DatabaseTypeType::column, $values[2]);
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE:
                 return $this->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE, $values[1])
-                    . $this->databaseTableDivider
+                    . $this->sqlInterface->databaseTableDivider
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $values[2]);
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS:
                 return $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $values[1])
-                    . $this->tableColumnDivider
+                    . $this->sqlInterface->tableColumnDivider
                     . $this->formatValue(DatabaseTypeType::column, $values[2])
-                    . $this->columnAliasDivider
+                    . $this->sqlInterface->columnAliasDivider
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_COLUMN_ALIAS, $values[3]);
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_TABLE_NAME_ALIAS:
                 return $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $values[1])
-                    . $this->tableAliasDivider
+                    . $this->sqlInterface->tableAliasDivider
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_ALIAS, $values[2]);
                 break;
 
@@ -1085,13 +614,13 @@ class DatabaseSQL extends Database
                 }
 
                 // Combine as list.
-                return $this->arrayQuoteStart
-                    . implode($this->arraySeperator, $values[2])
-                    . $this->arrayQuoteEnd
+                return $this->sqlInterface->arrayQuoteStart
+                    . implode($this->sqlInterface->arraySeperator, $values[2])
+                    . $this->sqlInterface->arrayQuoteEnd
                     . ' VALUES '
-                    . $this->arrayQuoteStart
-                    . implode($this->arraySeperator, $values[3])
-                    . $this->arrayQuoteEnd;
+                    . $this->sqlInterface->arrayQuoteStart
+                    . implode($this->sqlInterface->arraySeperator, $values[3])
+                    . $this->sqlInterface->arrayQuoteEnd;
             break;
 
             case DatabaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY:
@@ -1123,12 +652,12 @@ class DatabaseSQL extends Database
 
                     /* Format and add the column/value pair to our list */
                     $update[] = $this->formatValue(DatabaseTypeType::column, $column)
-                        . $this->comparisonTypes[DatabaseTypeComparison::assignment]
+                        . $this->sqlInterface->comparisonTypes[DatabaseTypeComparison::assignment]
                         . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value);
                 }
 
                 /* Return our list of paired values as an string */
-                return implode($update, $this->statementSeperator);
+                return implode($update, $this->sqlInterface->statementSeperator);
             break;
 
             default:
@@ -1197,16 +726,36 @@ class DatabaseSQL extends Database
         $this->setLanguage($driver);
         $this->sqlPrefix = $tablePrefix;
 
-        switch ($driver) {
-            case 'mysqli':
-                if (PHP_VERSION_ID < 50209) { // if PHP_VERSION_ID isn't defined with versions < 5.2.7, but this obviously isn't a problem here (it will eval to 0, which is indeed less than 50209).
-                    throw new Exception('MySQLi not supported on versions of PHP < 5.2.9');
-                }
-                break;
+
+        /* Detect Incompatible MySQLi */
+        if ($driver === 'mysqli' && PHP_VERSION_ID < 50209) { // PHP_VERSION_ID isn't defined with versions < 5.2.7, but this obviously isn't a problem here (it will eval to 0, which is indeed less than 50209).
+            $driver = 'mysql';
         }
 
-        if (!$this->functionMap('connect', $host, $port, $user, $password, $database)) { // Make the connection.
-            $this->triggerError('Could Not Connect', array( // Note: we do not include "password" in the error data.
+
+        /* Load DatabaseSQLInterface Driver from File */
+        $className = 'DatabaseSQL' . ucfirst($driver);
+        $includePath = __DIR__ . "/{$className}.php";
+
+        if (!file_exists($includePath)) {
+            throw new Exception('The specified DatabaseSQL driver is not available');
+        }
+
+        else {
+            require($includePath);
+
+            if (!class_exists($className)) {
+                throw new Exception('The specified DatabaseSQL driver is available but misnamed.');
+            }
+            else {
+                $this->sqlInterface = new $className();
+            }
+        }
+
+
+        /* Perform Connection */
+        if (!$this->sqlInterface->connect($host, $port, $user, $password, $database)) { // Make the connection.
+            $this->triggerError('Could Not Connect: ' . $this->sqlInterface->getLastError(), array( // Note: we do not include "password" in the error data.
                 'host' => $host,
                 'port' => $port,
                 'user' => $user,
@@ -1216,6 +765,8 @@ class DatabaseSQL extends Database
             return false;
         }
 
+
+        /* Select Database, If Needed (TODO: catch errors) */
         if (!$this->activeDatabase && $database) { // Some drivers will require this.
             if (!$this->selectDatabase($database)) { // Error will be issued in selectDatabase.
                 return false;
@@ -1234,7 +785,7 @@ class DatabaseSQL extends Database
         if ($this->versionPrimary > 0) // Don't reload information.
             return true;
 
-        $this->functionMap('version');
+        $this->setDatabaseVersion($this->sqlInterface->getVersion());
 
         return true;
     }
@@ -1273,47 +824,6 @@ class DatabaseSQL extends Database
     {
         $this->driver = $language;
         $this->language = $this->driverMap[$this->driver];
-
-        switch ($this->driver) {
-            // MySQL field tokens. They use ` for some reason.
-            case 'mysql':
-            case 'mysqli':
-                $this->tableQuoteStart = '`';
-                $this->tableQuoteEnd = '`';
-                $this->tableAliasQuoteStart = '`';
-                $this->tableAliasQuoteEnd = '`';
-                $this->columnQuoteStart = '`';
-                $this->columnQuoteEnd = '`';
-                $this->columnAliasQuoteStart = '`';
-                $this->columnAliasQuoteEnd = '`';
-                $this->databaseQuoteStart = '`';
-                $this->databaseQuoteEnd = '`';
-                $this->databaseAliasQuoteStart = '`';
-                $this->databaseAliasQuoteEnd = '`';
-                break;
-
-            // PDO field tokens. These are empty... mostly. We're not sure; it's not fully supported.
-            case 'pdo':
-                $this->tableQuoteStart = '';
-                $this->tableQuoteEnd = '';
-                $this->tableAliasQuoteStart = '';
-                $this->tableAliasQuoteEnd = '';
-                $this->columnQuoteStart = '';
-                $this->columnQuoteEnd = '';
-                $this->columnAliasQuoteStart = '';
-                $this->columnAliasQuoteEnd = '';
-                $this->databaseQuoteStart = '';
-                $this->databaseQuoteEnd = '';
-                $this->databaseAliasQuoteStart = '';
-                $this->databaseAliasQuoteEnd = '';
-                $this->stringQuoteStart = '';
-                $this->stringQuoteEnd = '';
-                break;
-
-            // PostGreSQL field tokens. Defaults (which are the SQL standard) should apply.
-            case 'pgsql':
-                break;
-        }
 
         switch ($this->language) {
             case 'mysql':
@@ -2444,19 +1954,19 @@ class DatabaseSQL extends Database
                                 rsort($list);
                                 $list = array_merge([$this->col($sortColumn)], $list);
 
-                                $finalQuery['sort'][] = 'FIELD' . $this->formatValue(DatabaseTypeType::arraylist, $list) . ' ' . $this->sortOrderDesc;
+                                $finalQuery['sort'][] = 'FIELD' . $this->formatValue(DatabaseTypeType::arraylist, $list) . ' ' . $this->sqlInterface->sortOrderDesc;
                             }// todo: postgresql using case
                         }
                         else {
-                            $finalQuery['sort'][] = $this->recurseBothEither([$sortColumn => $direction]) . ' ' . $this->sortOrderDesc ;
+                            $finalQuery['sort'][] = $this->recurseBothEither([$sortColumn => $direction]) . ' ' . $this->sqlInterface->sortOrderDesc ;
                         }
                     }
 
                     elseif (isset($reverseAlias[$sortColumn])) {
                         switch (strtolower($direction)) {
-                            case 'asc': $directionSym = $this->sortOrderAsc; break;
-                            case 'desc': $directionSym = $this->sortOrderDesc; break;
-                            default: $directionSym = $this->sortOrderAsc; break;
+                            case 'asc': $directionSym = $this->sqlInterface->sortOrderAsc; break;
+                            case 'desc': $directionSym = $this->sqlInterface->sortOrderDesc; break;
+                            default: $directionSym = $this->sqlInterface->sortOrderAsc; break;
                         }
 
                         $finalQuery['sort'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$sortColumn][0], $reverseAlias[$sortColumn][1]) . " $directionSym";
@@ -2584,7 +2094,7 @@ class DatabaseSQL extends Database
 
 
                 // comparison operator
-                $symbol = $this->comparisonTypes[$value->comparison];
+                $symbol = $this->sqlInterface->comparisonTypes[$value->comparison];
 
 
                 // rvalue
@@ -2635,14 +2145,14 @@ class DatabaseSQL extends Database
         }
 
 
-        if (!isset($this->concatTypes[$type])) {
+        if (!isset($this->sqlInterface->concatTypes[$type])) {
             $this->triggerError('Unrecognised Concatenation Operator', array(
                 'operator' => $type,
             ), 'validation');
         }
 
 
-        return '(' . implode($this->concatTypes[$type], $sideTextFull) . ')'; // Return condition string. We wrap parens around to support multiple levels of conditions/recursion.
+        return '(' . implode($this->sqlInterface->concatTypes[$type], $sideTextFull) . ')'; // Return condition string. We wrap parens around to support multiple levels of conditions/recursion.
     }
 
 
