@@ -212,6 +212,66 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
         '__TIME__' => 'CURRENT_TIMESTAMP',
     );
 
+    /**
+     * @var array A list of distinct DB engine classifications the DBMS supports.
+     *   'memory' is an engine that stores all or most of its data in memory, and whose data may be lost on restart
+     *   'general' is an engine that stores all or most of its data on disk, and which supports transactions, permanence, and so-on.
+     */
+    public $storeTypes = array(DatabaseEngine::memory, DatabaseEngine::general);
+
+    /*
+     * todo: remove (replace with storeTypes)
+     */
+    public $tableTypes = array(DatabaseEngine::memory, DatabaseEngine::general);
+
+    public $dataTypes = array();
+
+    public $boolValues = array(
+        true => 1, false => 0,
+    );
+
+
+
+    /**
+     * @var bool If native bitfields are supported.
+     *   true - use native BIT(length) type.
+     *   false - simulate with integers
+     */
+    public $nativeBitfield = false;
+
+    /**
+     * @var bool Whether or not IF NOT EXISTS is supported in CREATE statements.
+     */
+    public $useCreateIfNotExist = false;
+
+    /**
+     * @var string {
+     *     Mode used to support column comments. Options:
+     *
+     *    'useAttributes' - Use "COMMENT=" attribute on columns/tables.
+     *    'useCommentOn' - Execute "COMMENT ON" queries after table insertion.
+     */
+    public $commentMode = false;
+
+    /**
+     * @var string {
+     *     Mode used to support index creation. Options:
+     *
+     *    'useTableAttribute' - Embed in CREATE TABLE statement.
+     *    'useCreateIndex' - Execute "CREATE INDEX" queries after table insertion.
+     */
+    public $indexMode = false;
+
+    /**
+     * @var string {
+     *     Mode used to support enums. Options:
+     *
+     *    'useEnum' - Use native ENUM(val1, val2) type.
+     *    'useCreateType' - Create a custom enumerated type with CREATE TYPE.
+     *    'useCheck' - Use a CHECK() clause when creating the type.
+     */
+    public $enumMode = false;
+
 
     abstract public function connect($host, $port, $username, $password, $database = false);
     abstract public function getVersion();

@@ -121,13 +121,6 @@ class DatabaseSQL extends Database
     public $supportedLanguages = array('mysql', 'mysqli', 'pdo');
 
     /**
-     * @var array A list of distinct DB engine classifications the DBMS supports.
-     *   'memory' is an engine that stores all or most of its data in memory, and whose data may be lost on restart
-     *   'general' is an engine that stores all or most of its data on disk, and which supports transactions, permanence, and so-on.
-     */
-    public $storeTypes = array(DatabaseEngine::memory, DatabaseEngine::general);
-
-    /**
      * @var string The database mode. This will always be SQL for us.
      */
     public $mode = 'SQL';
@@ -167,46 +160,6 @@ class DatabaseSQL extends Database
      * @var bool|string If set to a file string, queries will be logged to this file.
      */
     public $queryLogToFile = false;
-
-    /**
-     * @var bool If native bitfields are supported.
-     *   true - use native BIT(length) type.
-     *   false - simulate with integers
-     */
-    public $nativeBitfield = false;
-
-    /**
-     * @var bool Whether or not IF NOT EXISTS is supported in CREATE statements.
-     */
-    public $useCreateIfNotExist = false;
-
-    /**
-     * @var string {
-     *     Mode used to support column comments. Options:
-     *
-     *    'useAttributes' - Use "COMMENT=" attribute on columns/tables.
-     *    'useCommentOn' - Execute "COMMENT ON" queries after table insertion.
-     */
-    public $commentMode = false;
-
-    /**
-     * @var string {
-     *     Mode used to support index creation. Options:
-     *
-     *    'useTableAttribute' - Embed in CREATE TABLE statement.
-     *    'useCreateIndex' - Execute "CREATE INDEX" queries after table insertion.
-     */
-    public $indexMode = false;
-
-    /**
-     * @var string {
-     *     Mode used to support enums. Options:
-     *
-     *    'useEnum' - Use native ENUM(val1, val2) type.
-     *    'useCreateType' - Create a custom enumerated type with CREATE TYPE.
-     *    'useCheck' - Use a CHECK() clause when creating the type.
-     */
-    public $enumMode = false;
 
     /**
      * @var bool If rawQuery should return its query instead of executing it. Ideal for simulation and testing.
@@ -422,7 +375,7 @@ class DatabaseSQL extends Database
                 break;
 
             case DatabaseTypeType::bool:
-                return $this->boolValues[$values[1]];
+                return $this->sqlInterface->boolValues[$values[1]];
                 break;
 
             case DatabaseTypeType::blob:
@@ -433,7 +386,7 @@ class DatabaseSQL extends Database
                 break;
 
             case DatabaseTypeType::bitfield:
-                if ($this->nativeBitfield)
+                if ($this->sqlInterface->nativeBitfield)
                     return 'B\'' . decbin((int) $values[1]) . '\'';
                 else
                     return $this->formatValue(DatabaseTypeType::integer, $values[1]);
@@ -824,129 +777,6 @@ class DatabaseSQL extends Database
     {
         $this->driver = $language;
         $this->language = $this->driverMap[$this->driver];
-
-        switch ($this->language) {
-            case 'mysql':
-                $this->defaultPhrases = array(
-                    '__TIME__' => 'CURRENT_TIMESTAMP',
-                );
-
-                $this->dataTypes = array(
-                    'columnIntLimits' => array(
-                        2 => 'TINYINT',
-                        4 => 'SMALLINT',
-                        7 => 'MEDIUMINT',
-                        9 => 'INT',
-                        'default' => 'BIGINT'
-                    ),
-
-                    'columnStringPermLimits' => array(
-                        255 => 'CHAR',
-                        1000 => 'VARCHAR', // In MySQL, TEXT types are stored outside of the table. For searching purposes, we only use VARCHAR for relatively small values (I decided 1000 would be reasonable).
-                        65535 => 'TEXT',
-                        16777215 => 'MEDIUMTEXT',
-                        '4294967295' => 'LONGTEXT'
-                    ),
-
-                    'columnStringTempLimits' => array( // In MySQL, TEXT is not allowed in memory tables.
-                        255 => 'CHAR',
-                        65535 => 'VARCHAR'
-                    ),
-
-
-                    'columnBlobPermLimits' => array(
-                        // In MySQL, BINARY values get right-padded. This is... difficult to work with, so we don't use it.
-                        1000 => 'VARBINARY',  // In MySQL, BLOB types are stored outside of the table. For searching purposes, we only use VARBLOB for relatively small values (I decided 1000 would be reasonable).
-                        65535 => 'BLOB',
-                        16777215 => 'MEDIUMBLOB',
-                        '4294967295' => 'LONGBLOB'
-                    ),
-
-                    'columnBlobTempLimits' => array( // In MySQL, BLOB is not allowed outside of
-                        65535 => 'VARBINARY'
-                    ),
-
-                    'columnNoLength' => array(
-                        'MEDIUMTEXT', 'LONGTEXT',
-                        'MEDIUMBLOB', 'LONGBLOB',
-                    ),
-
-                    'columnBitLimits' => array(
-                        8  => 'TINYINT UNSIGNED',
-                        16 => 'SMALLINT UNSIGNED',
-                        24 => 'MEDIUMINT UNSIGNED',
-                        32 => 'INTEGER UNSIGNED',
-                        64 => 'BIGINT UNSIGNED',
-                        'default' => 'INTEGER UNSIGNED',
-                    ),
-
-                    DatabaseTypeType::float => 'REAL',
-                    DatabaseTypeType::bool => 'BIT(1)',
-                    DatabaseTypeType::timestamp => 'INTEGER UNSIGNED',
-                    DatabaseTypeType::blob => 'BLOB',
-                );
-
-                $this->boolValues = array(
-                    true => 1, false => 0,
-                );
-
-                $this->nativeBitfield = true;
-                $this->enumMode = 'useEnum';
-                $this->commentMode = 'useAttributes';
-                $this->indexMode = 'useTableAttribute';
-
-                $this->tableTypes = array(
-                    DatabaseEngine::general => 'InnoDB',
-                    DatabaseEngine::memory  => 'MEMORY',
-                );
-                break;
-
-            case 'pgsql':
-                $this->storeTypes = array(DatabaseEngine::general);
-
-                $this->dataTypes = array(
-                    'columnIntLimits' => array(
-                        4 => 'SMALLINT',
-                        9 => 'INTEGER',
-                        'default' => 'BIGINT',
-                    ),
-                    'columnSerialLimits' => array(
-                        9 => 'SERIAL',
-                        'default' => 'BIGSERIAL',
-                    ),
-                    'columnStringPermLimits' => array(
-                        'default' => 'VARCHAR',
-                    ),
-                    'columnNoLength' => array(
-                        'TEXT', 'BYTEA'
-                    ),
-                    'columnBlobPermLimits' => array(
-                        'default' => 'BYTEA',
-                    ),
-
-                    'columnBitLimits' => array(
-                        15 => 'SMALLINT',
-                        31 => 'INTEGER',
-                        63 => 'BIGINT',
-                        'default' => 'INTEGER',
-                    ),
-                    DatabaseTypeType::float => 'REAL',
-                    DatabaseTypeType::bool => 'SMALLINT', // TODO: ENUM(1,2) AS BOOLENUM better.
-                    DatabaseTypeType::timestamp => 'INTEGER',
-                    DatabaseTypeType::blob => 'BYTEA',
-                );
-
-                $this->boolValues = array(
-                    true => 1, false => 0,
-                );
-
-                $this->nativeBitfield = false; // Requires too many workarounds.
-                $this->enumMode = 'useCreateType';
-                $this->commentMode = 'useCommentOn';
-                $this->indexMode = 'useCreateIndex';
-                $this->useCreateIfNotExist = false;
-                break;
-        }
     }
 
 
@@ -1130,7 +960,7 @@ class DatabaseSQL extends Database
 
     public function createDatabase($database)
     {
-        if ($this->useCreateIfNotExist) {
+        if ($this->sqlInterface->useCreateIfNotExist) {
             return $this->rawQuery('CREATE DATABASE IF NOT EXISTS ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE, $database));
         }
         else {
@@ -1214,12 +1044,12 @@ class DatabaseSQL extends Database
                 /* The column is integral. */
                 case DatabaseTypeType::integer:
                     // If we have limits of "serial" (sequential) datatypes, and we are a serial type (that is, we're autoincrementing), using the serial limits.
-                    if (isset($this->dataTypes['columnSerialLimits']) && $column['autoincrement'])
-                        $intLimits = $this->dataTypes['columnSerialLimits'];
+                    if (isset($this->sqlInterface->dataTypes['columnSerialLimits']) && $column['autoincrement'])
+                        $intLimits = $this->sqlInterface->dataTypes['columnSerialLimits'];
 
                     // If we don't have "serial" datatype limits, or we aren't using a serial datatype (aren't autoincrementing), use normal integer limits.
                     else
-                        $intLimits = $this->dataTypes['columnIntLimits'];
+                        $intLimits = $this->sqlInterface->dataTypes['columnIntLimits'];
 
                     // Go through our integer limits (keyed by increasing order)
                     foreach ($intLimits AS $length => $type) {
@@ -1233,7 +1063,7 @@ class DatabaseSQL extends Database
                     if (!strlen($typePiece)) $typePiece = $intLimits['default'];
 
                     // If we don't have serial limits and are autoincrementing, use the AUTO_INCREMENT orthogonal type identifier.
-                    if (!isset($this->dataTypes['columnSerialLimits']) && $column['autoincrement']) {
+                    if (!isset($this->sqlInterface->dataTypes['columnSerialLimits']) && $column['autoincrement']) {
                         $typePiece .= ' AUTO_INCREMENT'; // On the type itself.
                         $tableProperties .= ' AUTO_INCREMENT = ' . (int)$column['autoincrement']; // And also on the table definition.
 
@@ -1250,14 +1080,14 @@ class DatabaseSQL extends Database
                 /* The column is an integral that encodes bitwise information. */
                 case DatabaseTypeType::bitfield:
                     // If our SQL engine support a BIT type, use it.
-                    if ($this->nativeBitfield) {
+                    if ($this->sqlInterface->nativeBitfield) {
                         $typePiece = 'BIT(' . $column['bits'] . ')';
                     }
 
                     // Otherwise, use a predefined type identifier.
                     else {
                         if ($column['bits']) { // Do we have a bit size definition?
-                            foreach ($this->dataTypes['columnBitLimits'] AS $bits => $type) { // Search through our bit limit array, which should be in ascending order of bits.
+                            foreach ($this->sqlInterface->dataTypes['columnBitLimits'] AS $bits => $type) { // Search through our bit limit array, which should be in ascending order of bits.
                                 if ($column['bits'] <= $bits) { // We have a definition that fits our constraint.
                                     $typePiece = $type;
                                     break;
@@ -1266,7 +1096,7 @@ class DatabaseSQL extends Database
                         }
 
                         if (!strlen($typePiece)) { // If no type identifier was found...
-                            $typePiece = $this->dataTypes['columnBitLimits']['default']; // Use the default.
+                            $typePiece = $this->sqlInterface->dataTypes['columnBitLimits']['default']; // Use the default.
                         }
                     }
                 break;
@@ -1274,19 +1104,19 @@ class DatabaseSQL extends Database
 
                 /* The column encodes time information, most often using an integral and unix timestamp. */
                 case DatabaseTypeType::timestamp:
-                    $typePiece = $this->dataTypes[DatabaseTypeType::timestamp]; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
+                    $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::timestamp]; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
                 break;
 
 
                 /* The column encodes a boolean, most often using a BIT(1) or other small integral. */
                 case DatabaseTypeType::bool:
-                    $typePiece = $this->dataTypes[DatabaseTypeType::bool];
+                    $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::bool];
                 break;
 
 
                 /* The column encodes a floating point, with unspecified precision. */
                 case DatabaseTypeType::float:
-                    $typePiece = $this->dataTypes[DatabaseTypeType::float];
+                    $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::float];
                 break;
 
 
@@ -1294,12 +1124,12 @@ class DatabaseSQL extends Database
                 case DatabaseTypeType::string:
                 case DatabaseTypeType::blob:
                     // Limits may differ depending on table type and column type. Get the correct array encoding limits.
-                    $stringLimits = $this->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
+                    $stringLimits = $this->sqlInterface->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
 
                     // Search through the array encoding limits. This array should be keyed in increasing size.
                     foreach ($stringLimits AS $length => $type) {
                         if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
-                            if (in_array($type, $this->dataTypes['columnNoLength']))
+                            if (in_array($type, $this->sqlInterface->dataTypes['columnNoLength']))
                                 $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
                             else
                                 $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
@@ -1320,7 +1150,7 @@ class DatabaseSQL extends Database
                 /* The column is an enumeration of values. */
                 case DatabaseTypeType::enum:
                     // There are many different ways ENUMs may be supported in SQL DBMSs. Select our supported one.
-                    switch ($this->enumMode) {
+                    switch ($this->sqlInterface->enumMode) {
                         // Here, we create a special type to use as an enum. PostGreSQL does this.
                         case 'useCreateType':
                             $typePiece = $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $tableName . '_' . $columnName);
@@ -1392,8 +1222,8 @@ class DatabaseSQL extends Database
 
 
                 // If we have a valid identifier for the default, use it. (For instance, __TIME__ could be CURRENT_TIMESTAMP.)
-                elseif (isset($this->defaultPhrases[$column['default']])) {
-                    $typePiece .= ' DEFAULT ' . $this->defaultPhrases[$column['default']];
+                elseif (isset($this->sqlInterface->defaultPhrases[$column['default']])) {
+                    $typePiece .= ' DEFAULT ' . $this->sqlInterface->defaultPhrases[$column['default']];
                 }
 
 
@@ -1419,7 +1249,7 @@ class DatabaseSQL extends Database
 
 
             /* Generate COMMENT ON Statements, If Needed */
-            if ($this->commentMode === 'useCommentOn') {
+            if ($this->sqlInterface->commentMode === 'useCommentOn') {
                 $triggers[] = 'COMMENT ON COLUMN '
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, '{TABLENAME}', $columnName)
                     . ' IS '
@@ -1430,7 +1260,7 @@ class DatabaseSQL extends Database
             /* Put it All Together As an SQL Statement Piece */
             $columns[] = $this->formatValue(DatabaseTypeType::column, $columnName)
                 . ' ' . $typePiece
-                . ($this->commentMode === 'useAttributes' ? ' COMMENT ' . $this->formatValue(DatabaseTypeType::string, $column['comment']) : '');
+                . ($this->sqlInterface->commentMode === 'useAttributes' ? ' COMMENT ' . $this->formatValue(DatabaseTypeType::string, $column['comment']) : '');
         }
 
         return [$columns, $triggers, $tableIndexes, $tableProperties];
@@ -1474,13 +1304,13 @@ class DatabaseSQL extends Database
     /**
      * Given a table name and DatabaseEngine constant, produces the SQL string representing that engine.
      *
-     * @param string         $tableName The name of the table.
-     * @param DatabaseEngine $engine    The engine used for the table.
+     * @param string $tableName The name of the table.
+     * @param string $engine    The engine used for the table.
      *
      * @return string The SQL statement component representing the engine.
      */
     private function parseEngine($engine) {
-        if (!isset($this->tableTypes[$engine])) {
+        if (!isset($this->sqlInterface->tableTypes[$engine])) {
             $this->triggerError("Unrecognised Table Engine", array(
                 'engine' => $engine
             ), 'validationFallback');
@@ -1488,7 +1318,7 @@ class DatabaseSQL extends Database
             return DatabaseEngine::general;
         }
 
-        if (!in_array($engine, $this->storeTypes))
+        if (!in_array($engine, $this->sqlInterface->storeTypes))
             return DatabaseEngine::general;
 
         return $engine;
@@ -1507,24 +1337,24 @@ class DatabaseSQL extends Database
 
         /* Table Comments */
         // In this mode, we add comments with separate SQL statements at the end.
-        if ($this->commentMode === 'useCommentOn')
+        if ($this->sqlInterface->commentMode === 'useCommentOn')
             $triggers[] = 'COMMENT ON TABLE '
                 . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
                 . ' IS '
                 . $this->formatValue(DatabaseTypeType::string, $tableComment);
 
         // In this mode, we define comments as attributes on the table.
-        elseif ($this->commentMode === 'useAttributes')
+        elseif ($this->sqlInterface->commentMode === 'useAttributes')
             $tableProperties .= " COMMENT=" . $this->formatValue(DatabaseTypeType::string, $tableComment);
 
         // Invalid comment mode
         else
-            throw new Exception("Invalid comment mode: {$this->commentMode}");
+            throw new Exception("Invalid comment mode: {$this->sqlInterface->commentMode}");
 
 
         /* Table Engine */
         if ($this->language === 'mysql') {
-            $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->tableTypes[$engine]);
+            $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]);
         }
 
 
@@ -1544,6 +1374,7 @@ class DatabaseSQL extends Database
         /* Perform CREATEs */
         $this->startTransaction();
 
+        $return = true;
         for ($i = 0; $i < $hardPartitionCount; $i++) {
             $tableNameI = $tableName . ($hardPartitionCount > 1 ? "__part$i" : '');
             $return = $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableNameI) . ' (
@@ -1669,16 +1500,16 @@ class DatabaseSQL extends Database
 
             /* Generate CREATE INDEX Statements, If Needed */
             // use CREATE INDEX ON statements if the table already exists, or we are in useCreateIndex mode. However, don't do so if it's a primary key.
-            if ((!$duringTableCreation || $this->indexMode === 'useCreateIndex') && $index['type'] !== 'primary')
+            if ((!$duringTableCreation || $this->sqlInterface->indexMode === 'useCreateIndex') && $index['type'] !== 'primary')
                 $triggers[] = "CREATE {$typePiece} INDEX ON " . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}') . " ({$indexName})";
 
             // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
-            elseif (($duringTableCreation && $this->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
+            elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
                 $indexes[] = "{$typePiece} KEY ({$indexName})";
 
             // Throw an exception if the index mode is unrecognised.
             else
-                throw new Exception("Invalid index mode: {$this->indexMode}");
+                throw new Exception("Invalid index mode: {$this->sqlInterface->indexMode}");
         }
 
         if ($duringTableCreation) {
@@ -1694,7 +1525,7 @@ class DatabaseSQL extends Database
         $engine = $this->parseEngine($engine);
 
         return $this->rawQuery('ALTER TABLE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-            . (!is_null($engine) && $this->language === 'mysql' ? ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->tableTypes[$engine]) : '')
+            . (!is_null($engine) && $this->language === 'mysql' ? ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]) : '')
             . (!is_null($tableComment) ? ' COMMENT=' . $this->formatValue(DatabaseTypeType::string, $tableComment) : '')
             . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100' : ''));
     }

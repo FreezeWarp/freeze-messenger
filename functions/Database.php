@@ -129,6 +129,11 @@ abstract class Database
     public $encodeCopy = [];
 
     /**
+     * @var array Configuration data that identifies serial columns for the purpose of encoding.
+     */
+    public $insertIdColumns = [];
+
+    /**
      * @var array Configuration data to allow individual rows to be partioned to seperate (but identical) tables for performance reasons
      * Database drivers are not required to support.
      */
