@@ -821,7 +821,7 @@ function fim_exceptionHandler($exception) {
     $errorData = array(
         'contactEmail' => $config['email'],
     );
-    ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
+    //ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
 
     if ($exception instanceof fimErrorThrown) {
         header($exception->getHttpError()); // FimError is invoked when the user did something wrong, not us. (At least, it should be. I've been a little inconsistent.)
