@@ -5,7 +5,6 @@ require_once(__DIR__ . '/DatabasePDOTrait.php');
 class DatabaseSQLPdoMysql extends DatabaseDefinitionsMySQL {
     use DatabasePDOTrait, DatabaseReconnectOnSelectDatabaseTrait;
 
-
     public $tableQuoteStart = '';
     public $tableQuoteEnd = '';
     public $tableAliasQuoteStart = '';
@@ -25,7 +24,7 @@ class DatabaseSQLPdoMysql extends DatabaseDefinitionsMySQL {
      * @var string This is handled by escape() instead.
      */
     public $stringFuzzy = '';
-    
+
 
     public $preparedParams = [];
 

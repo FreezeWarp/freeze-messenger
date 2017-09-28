@@ -2,7 +2,7 @@
 require_once(__DIR__ . '/DatabaseDefinitionsMySQL.php');
 require_once(__DIR__ . '/DatabaseManualInsertIDTrait.php');
 
-class DatabaseSQLMysqli extends DatabaseSQLStandard {
+class DatabaseSQLMysqli extends DatabaseDefinitionsMySQL {
     use DatabaseManualInsertIDTrait;
 
     /**

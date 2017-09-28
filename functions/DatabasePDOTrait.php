@@ -5,7 +5,7 @@ require_once(__DIR__ . '/DatabaseDefinitionsMySQL.php');
 trait DatabasePDOTrait {
     use DatabaseManualInsertIDTrait;
 
-        /**
+    /**
      * @var PDO
      */
     public $connection;
