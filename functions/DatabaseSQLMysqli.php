@@ -1,93 +1,14 @@
 <?php
-require_once(__DIR__ . '/DatabaseSQLStandard.php');
+require_once(__DIR__ . '/DatabaseDefinitionsMySQL.php');
+require_once(__DIR__ . '/DatabaseManualInsertIDTrait.php');
 
 class DatabaseSQLMysqli extends DatabaseSQLStandard {
+    use DatabaseManualInsertIDTrait;
+
     /**
      * @var mysqli
      */
     public $connection;
-
-    public $lastInsertId;
-
-
-    public $tableQuoteStart = '`';
-    public $tableQuoteEnd = '`';
-    public $tableAliasQuoteStart = '`';
-    public $tableAliasQuoteEnd = '`';
-    public $columnQuoteStart = '`';
-    public $columnQuoteEnd = '`';
-    public $columnAliasQuoteStart = '`';
-    public $columnAliasQuoteEnd = '`';
-    public $databaseQuoteStart = '`';
-    public $databaseQuoteEnd = '`';
-    public $databaseAliasQuoteStart = '`';
-    public $databaseAliasQuoteEnd = '`';
-
-    public $dataTypes = array(
-        'columnIntLimits' => array(
-            2 => 'TINYINT',
-            4 => 'SMALLINT',
-            7 => 'MEDIUMINT',
-            9 => 'INT',
-            'default' => 'BIGINT'
-        ),
-
-        'columnStringPermLimits' => array(
-            255 => 'CHAR',
-            1000 => 'VARCHAR', // In MySQL, TEXT types are stored outside of the table. For searching purposes, we only use VARCHAR for relatively small values (I decided 1000 would be reasonable).
-            65535 => 'TEXT',
-            16777215 => 'MEDIUMTEXT',
-            '4294967295' => 'LONGTEXT'
-        ),
-
-        'columnStringTempLimits' => array( // In MySQL, TEXT is not allowed in memory tables.
-            255 => 'CHAR',
-            65535 => 'VARCHAR'
-        ),
-
-
-        'columnBlobPermLimits' => array(
-            // In MySQL, BINARY values get right-padded. This is... difficult to work with, so we don't use it.
-            1000 => 'VARBINARY',  // In MySQL, BLOB types are stored outside of the table. For searching purposes, we only use VARBLOB for relatively small values (I decided 1000 would be reasonable).
-            65535 => 'BLOB',
-            16777215 => 'MEDIUMBLOB',
-            '4294967295' => 'LONGBLOB'
-        ),
-
-        'columnBlobTempLimits' => array( // In MySQL, BLOB is not allowed outside of
-            65535 => 'VARBINARY'
-        ),
-
-        'columnNoLength' => array(
-            'MEDIUMTEXT', 'LONGTEXT',
-            'MEDIUMBLOB', 'LONGBLOB',
-        ),
-
-        'columnBitLimits' => array(
-            8  => 'TINYINT UNSIGNED',
-            16 => 'SMALLINT UNSIGNED',
-            24 => 'MEDIUMINT UNSIGNED',
-            32 => 'INTEGER UNSIGNED',
-            64 => 'BIGINT UNSIGNED',
-            'default' => 'INTEGER UNSIGNED',
-        ),
-
-        DatabaseTypeType::float => 'REAL',
-        DatabaseTypeType::bool => 'BIT(1)',
-        DatabaseTypeType::timestamp => 'INTEGER UNSIGNED',
-        DatabaseTypeType::blob => 'BLOB',
-    );
-
-    public $nativeBitfield = true;
-    public $enumMode = 'useEnum';
-    public $commentMode = 'useAttributes';
-    public $indexMode = 'useTableAttribute';
-
-    public $tableTypes = array(
-        DatabaseEngine::general => 'InnoDB',
-        DatabaseEngine::memory  => 'MEMORY',
-    );
-
 
     public function connect($host, $port, $username, $password, $database = false) {
         $this->connection = new mysqli($host, $username, $password, $database ?: null, (int) $port);
@@ -119,18 +40,63 @@ class DatabaseSQLMysqli extends DatabaseSQLStandard {
     }
 
     public function escape($text, $context) {
+        /*$this->preparedParams[] = $text;
+
+        switch ($context) {
+            case DatabaseTypeType::integer:
+            case DatabaseTypeType::timestamp:
+            case DatabaseTypeType::bitfield:
+                $this->preparedParamTypes[] = 'i';
+            break;
+
+            case DatabaseTypeType::float:
+                $this->preparedParamTypes[] = 'd';
+            break;
+
+            case DatabaseTypeType::blob:
+                $this->preparedParamTypes[] = 'b';
+            break;
+
+            case DatabaseTypeType::string:
+            case DatabaseTypeType::search:
+                $this->preparedParamTypes[] = 's';
+                break;
+
+            default:
+                return $this->connection->real_escape_string($text);
+                break;
+        }
+
+        return '?';*/
+
         return $this->connection->real_escape_string($text);
     }
 
     public function query($rawQuery) {
+        /*if (true || count($this->preparedParams) > 0) {
+            $query = $this->connection->prepare($rawQuery);
+
+            if (!$query) {
+                var_dump($rawQuery); die();
+                return false;
+            }
+
+            while (count($this->preparedParams) > 0) {
+                $query->bind_param(array_pop($this->preparedParamTypes), array_pop($this->preparedParams));
+            }
+            $query->execute();
+
+            return $query->get_result() || !((bool) $this->connection->errno);
+        }
+        else {
+            return $this->connection->query($rawQuery);
+        }
+        $query->close();*/
+
         $query = $this->connection->query($rawQuery);
-        $this->lastInsertId = $this->connection->insert_id ?: $this->lastInsertId;
+        $this->incrementLastInsertId($this->connection->insert_id);
 
         return $query;
-    }
-
-    public function getLastInsertId() {
-        return $this->lastInsertId;
     }
 
     public function startTransaction() {

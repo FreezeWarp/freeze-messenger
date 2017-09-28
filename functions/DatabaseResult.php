@@ -17,7 +17,7 @@ class databaseResult
     public $sourceQuery;
 
     /**
-     * @var Database The database object used to generate this result.
+     * @var DatabaseSQL The database object used to generate this result.
      */
     public $database;
 
@@ -42,6 +42,8 @@ class databaseResult
      */
     public $binaryFields = [];
 
+    public $data = [];
+
     /**
      * Construct
      *
@@ -56,6 +58,14 @@ class databaseResult
         $this->reverseAlias = $reverseAlias;
         $this->sourceQuery = $sourceQuery;
         $this->database = $database;
+
+        if ($this->database->driver === 'pdoMysql') {
+            try {
+                $this->data = $this->queryData->fetchAll(PDO::FETCH_ASSOC);
+            } catch (Exception $ex) {
+                var_dump($ex, $sourceQuery);
+            }
+        }
 
         if ($resultLimit > 1 && $this->functionMap('getCount') > $resultLimit) {
             $this->paginated = true;
@@ -147,10 +157,13 @@ class databaseResult
                 }
             break;
 
-            case 'pdo':
+            case 'pdoMysql':
                 switch ($operation) {
-                    case 'fetchAsArray' :
-                        return ((($data = $this->queryData->fetch(PDO::FETCH_ASSOC)) === null) ? false : $data);
+                    case 'getCount' :
+                        return count($this->data);
+                    break;
+                    case 'fetchAsArray':
+                        return $this->data[$this->resultIndex - 1];
                     break;
                 }
             break;
@@ -283,13 +296,18 @@ class databaseResult
 
 
     public function applyColumnTransformation($column, $value) {
-        $tableName = $this->reverseAlias[$column][0];
+        if (isset($this->reverseAlias[$column])) {
+            $tableName = $this->reverseAlias[$column][0];
 
-        if (isset($this->database->encode[$tableName][$column])) {
-            return call_user_func($this->database->encode[$tableName][$column][2], $value);
+            if (isset($this->database->encode[$tableName][$column])) {
+                return call_user_func($this->database->encode[$tableName][$column][2], $value);
+            }
+
+            else {
+                return $value;
+            }
         }
-
-        else {//var_dump(false);
+        else {
             return $value;
         }
     }

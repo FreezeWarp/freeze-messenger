@@ -1,17 +1,15 @@
 <?php
 
 require_once(__DIR__ . '/DatabaseSQLStandard.php');
+require_once(__DIR__ . '/DatabaseReconnectOnSelectDatabaseTrait.php');
 
 class DatabaseSQLPgsql extends DatabaseSQLStandard {
+    use DatabaseReconnectOnSelectDatabaseTrait;
+
     /**
      * @var resource
      */
     public $connection;
-
-    public $lastInsertId;
-
-    private $connectionUser;
-    private $connectionPassword;
 
     public $storeTypes = array(DatabaseEngine::general);
 
@@ -62,6 +60,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
         $this->connectionPassword = $password;
 
         $this->connection = pg_connect("host=$host port=$port user=$username password=$password" . ($database ? " dbname=$database" : ''));
+        $this->registerConnection($host, $port, $username, $password);
 
         if (!$this->connection) {
             return false;
@@ -92,10 +91,6 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
         }
     }
 
-    public function selectDatabase($database) {
-        return $this->connect(pg_host($this->connection), pg_port($this->connection), $this->connectionUser, $this->connectionPassword, $database);
-    }
-
     public function escape($text, $context) {
         if ($context === DatabaseTypeType::blob)
             return pg_escape_bytea($this->connection, $text);
@@ -108,7 +103,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
     }
 
     public function getLastInsertId() {
-        return $this->rawQuery('SELECT LASTVAL() AS lastval')->getAsArray(false)['lastval'];
+        return pg_fetch_array($this->query('SELECT LASTVAL() AS lastval'))['lastval'];
     }
 
     public function startTransaction() {

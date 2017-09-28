@@ -1,7 +1,7 @@
 <?php
-require_once(__DIR__ . '/DatabaseSQLMysqli.php');
+require_once(__DIR__ . '/DatabaseDefinitionsMySQL.php');
 
-class DatabaseSQLMysql extends DatabaseSQLMysqli {
+class DatabaseSQLMysql extends DatabaseDefinitionsMySQL {
     /**
      * @var resource
      */

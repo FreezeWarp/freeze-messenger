@@ -1,7 +1,7 @@
 <?php
 require_once(__DIR__ . '/DatabaseSQLInterface.php');
 
-abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
+abstract class DatabaseSQLStandard {
     /**
      * @var mixed A link to the database driver connection.
      */
