@@ -20,11 +20,18 @@ require(__DIR__ . '/Stream.php');
  * Exposes standard publish/subscribe model, automatically using whichever available driver is best.
  * This will use Redis first (if cacheConnectMethods['redis'] is set), PgSQL second (if cacheConnectMethods['pgsql'] is set or the primary database driver uses PgSQL), and a generic Database third (which will not be performant unless in-memory tables are supported).
  */
+
+require('StreamDatabase.php');
+
 class StreamFactory {
     /**
      * @var Stream The currently in-use Stream instance.
      */
     private static $instance;
+    /**
+     * @var Stream A secondary DatabaseStream instance, used for the initial request in most implementors.
+     */
+    private static $databaseInstance;
 
     /**
      * @return Stream A stream instance (one will be created if not yet available).
@@ -66,13 +73,15 @@ class StreamFactory {
 
                 return StreamFactory::$instance = new StreamPgSQL($database);
             }
-
             else {
-                require('StreamDatabase.php');
-                global $database;
-                return StreamFactory::$instance = new StreamDatabase($database);
+                return self::getDatabaseInstance();
             }
         }
+    }
+
+    public static function getDatabaseInstance() : StreamDatabase {
+        global $database;
+        return StreamFactory::$databaseInstance = new StreamDatabase($database);
     }
 
     public static function publish($stream, $eventName, $data) {

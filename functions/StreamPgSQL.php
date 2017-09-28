@@ -44,23 +44,34 @@ class StreamPgSQL implements Stream {
     public function subscribe($stream, $lastId) {
         global $config;
 
+        $databaseStream = StreamFactory::getDatabaseInstance();
+
+        // Perform listen right away
         $this->database->rawQuery('LISTEN ' . $this->database->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $stream));
 
-        do {
-            $message = pg_get_notify($this->database->sqlInterface->connection, PGSQL_ASSOC);
-        } while (usleep($config['serverSentEventsWait'] * 1000000) || (!$message && $this->retries++ < $config['serverSentMaxRetries']));
-
-        if ($message) {
-            $event = json_decode($message['payload'], true);
-
-            return [[
-                'id' => time(),
-                'eventName' => $event['eventName'],
-                'data' => $event['data'],
-            ]];
+        // Now query database for recent missed events
+        foreach ($databaseStream->subscribeOnce($stream, $lastId) AS $result) {
+            yield $result;
         }
-        else
-            return [];
+
+        // Now get the listen results as they come in
+        while ($this->retries++ < $config['serverSentMaxRetries']) {
+            $message = pg_get_notify($this->database->sqlInterface->connection, PGSQL_ASSOC);
+
+            if ($message) {
+                $event = json_decode($message['payload'], true);
+
+                yield [
+                    'id' => time(),
+                    'eventName' => $event['eventName'],
+                    'data' => $event['data'],
+                ];
+            }
+
+            usleep($config['serverSentEventsWait'] * 1000000);
+        }
+
+        return [];
     }
 
     public function unsubscribe($stream) {

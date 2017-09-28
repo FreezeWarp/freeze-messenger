@@ -80,16 +80,31 @@ class StreamDatabase implements Stream {
 
         $this->createStreamIfNotExists($stream);
 
-        do {
-            $output = $this->database->select([
-                $this->database->sqlPrefix . 'stream_' . $stream => 'id, chunk, data, eventName'
-            ], [
-                'id' => $this->database->int($lastId, DatabaseTypeComparison::greaterThan)
-            ], [
-                'id' => 'ASC',
-                'chunk' => 'ASC'
-            ])->getAsArray(true);
-        } while (usleep($config['serverSentEventsWait'] * 1000000) || (count($output) == 0 && $this->retries++ < $config['serverSentMaxRetries']));
+        while ($this->retries++ < $config['serverSentMaxRetries']) {
+            foreach ($this->subscribeOnce($stream, $lastId) AS $event) {
+                if ($event['id'] > $lastId) $lastId = $event['id'];
+
+                yield $event;
+            }
+
+            usleep($config['serverSentEventsWait'] * 1000000);
+        }
+
+        return [];
+    }
+
+
+    public function subscribeOnce($stream, $lastId) {
+        $this->createStreamIfNotExists($stream); // todo: remove
+
+        $output = $this->database->select([
+            $this->database->sqlPrefix . 'stream_' . $stream => 'id, chunk, data, eventName'
+        ], [
+            'id' => $this->database->int($lastId, DatabaseTypeComparison::greaterThan)
+        ], [
+            'id' => 'ASC',
+            'chunk' => 'ASC'
+        ])->getAsArray(true);
 
         foreach ($output AS &$entry) {
             $entry['data'] = json_decode($entry['data'], true);
