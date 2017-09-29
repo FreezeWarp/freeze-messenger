@@ -2113,7 +2113,7 @@ class fimDatabase extends DatabaseSQL
 
 
         // Enter message into stream
-        require_once('StreamFactory.php');
+        require_once(__DIR__ . '/Stream/StreamFactory.php');
         StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
             'id' => $message->id,
             'text' => $message->text,

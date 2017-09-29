@@ -20,7 +20,7 @@ if (!$config['serverSentEvents']) {
     die('Not Supported');
 }
 else {
-    require_once('functions/StreamFactory.php');
+    require_once(__DIR__ . '/functions/Stream/StreamFactory.php');
 
     /* Possibly Helpful:
 	ini_set('output_buffering', 'off');
