@@ -175,7 +175,7 @@ class DatabaseSQL extends Database
      *********************************************************/
 
     public function __destruct() {
-        if ($this->sqlInterface->connection !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
+        if (@$this->sqlInterface->connection !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
             $this->close();
         }
 
@@ -1902,7 +1902,7 @@ class DatabaseSQL extends Database
 
                 // Combine l and rvalues
                 if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
-                    $sideTextFull[$i] = ($this->startsWith($key, '!') ? '!' : '') . "({$sideText['left']} {$symbol} {$sideText['right']}"
+                    $sideTextFull[$i] = ($this->startsWith($key, '!') ? $this->sqlInterface->concatTypes['not'] : '') . "({$sideText['left']} {$symbol} {$sideText['right']}"
                         . ($value->comparison === DatabaseTypeComparison::binaryAnd ? ' = ' . $this->formatValue(DatabaseTypeType::integer, $value->value) : '') // Special case: postgres binaryAnd
                         . ")";
                 }
@@ -2171,19 +2171,12 @@ class DatabaseSQL extends Database
                 $query = 'INSERT INTO ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $allColumns, $allValues)
                     . ' ON DUPLICATE KEY UPDATE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray);
-
-                if ($queryData = $this->rawQuery($query)) {
-                    $this->insertIdCallback($tableName);
-
-                    return $queryData;
-                }
-                else return false;
                 break;
 
             case 'pgsql':
                 $this->loadVersion();
 
-                if (($this->versionPrimary == 9 && $this->versionSecondary >= 5) || $this->versionPrimary >= 9) {
+                if (($this->versionPrimary == 9 && $this->versionSecondary >= 5) || $this->versionPrimary > 9) {
                     // Workaround for equations to use unambiguous excluded dataset.
                     foreach ($dataArray AS &$dataElement) {
                         if ($this->isTypeObject($dataElement) && $dataElement->type === DatabaseTypeType::equation) {
@@ -2196,22 +2189,27 @@ class DatabaseSQL extends Database
                         . ' ON CONFLICT '
                         . $this->formatValue(DatabaseSQL::FORMAT_VALUE_COLUMN_ARRAY, array_keys($conditionArray))
                         . ' DO UPDATE SET ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray);
-
-                    if ($queryData = $this->rawQuery($query)) {
-                        $this->insertIdCallback($tableName);
-
-                        return $queryData;
-                    }
-                    else return false;
                 }
                 else {
-                    throw new Exception('The currently active version of PostgreSQL does not support upsert.');
+                    if ($this->select([$tableName => array_keys($conditionArray)], $conditionArray)->getCount() > 0) {
+                        return $this->update($tableName, $dataArray, $conditionArray);
+                    }
+                    else {
+                        return $this->insert($tableName, $allArray);
+                    }
                 }
                 break;
 
             default:
                 throw new Exception('The currently active language does not support upsert.');
         }
+
+        if ($queryData = $this->rawQuery($query)) {
+            $this->insertIdCallback($tableName);
+
+            return $queryData;
+        }
+        else return false;
     }
 
     /*********************************************************

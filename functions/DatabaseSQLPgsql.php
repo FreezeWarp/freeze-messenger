@@ -45,6 +45,10 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
         DatabaseTypeType::blob => 'BYTEA',
     );
 
+    public $concatTypes = array(
+        'both' => ' AND ', 'either' => ' OR ', 'not' => ' NOT '
+    );
+
     /**
      * @var bool While Postgres supports a native bitfield type, it has very strange cast rules for it. Thus, it does not exhibit the expected behaviour.
      */
@@ -72,7 +76,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
     }
 
     public function getVersion() {
-        return pg_version($this->connection)['client'];
+        return pg_version($this->connection)['server'];
     }
 
     public function getLastError() {
@@ -134,15 +138,25 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
              */
             public $binaryFields = [];
 
+            /**
+             * @var array An array containing the field numbers corresponding to all integer columns in the current resultset, used to convert NULL to 0 (instead of ""). This may not be needed on new versions of Postgres.
+             */
+            public $integerFields = [];
+
             public function __construct($source) {
+                $this->source = $source;
+
                 $num = pg_num_fields($this->source);
                 for ($i = 0; $i < $num; $i++) {
                     if (pg_field_type($this->source, $i) === 'bytea') {
-                        $this->binaryFields[] = pg_field_name($this->queryData, $i);
+                        $this->binaryFields[] = pg_field_name($this->source, $i);
+                    }
+
+                    // ...not actually positive this is needed. Need more testing.
+                    if (pg_field_type($this->source, $i) === 'int2' || pg_field_type($this->source, $i) === 'int4') {
+                        $this->integerFields[] = pg_field_name($this->source, $i);
                     }
                 }
-
-                $this->source = $source;
             }
 
             public function fetchAsArray() {
@@ -152,6 +166,10 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
                 if ($data) {
                     foreach ($this->binaryFields AS $field) {
                         $data[$field] = pg_unescape_bytea($data[$field]);
+                    }
+
+                    foreach ($this->integerFields AS $field) {
+                        $data[$field] = (int) $data[$field];
                     }
                 }
 

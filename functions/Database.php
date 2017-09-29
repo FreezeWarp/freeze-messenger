@@ -1272,7 +1272,7 @@ abstract class Database
             return $value;
         elseif ($value === true || $value === false)
             return $this->bool($value);
-        elseif (is_int($value) || (ctype_digit($value) && strlen($value) < 10))
+        elseif (is_int($value) || (strlen($value) < 12 && ctype_digit($value)))
             return $this->int($value);
         else
             return $this->str($value);

@@ -197,7 +197,7 @@ abstract class DatabaseSQLStandard {
      * @var array The tokens corresponding with 'both' and 'either' concatenations.
      */
     public $concatTypes = array(
-        'both' => ' AND ', 'either' => ' OR ',
+        'both' => ' AND ', 'either' => ' OR ', 'not' => ' !'
     );
 
 
@@ -293,6 +293,17 @@ abstract class DatabaseSQLStandard {
      *    'useCheck' - Use a CHECK() clause when creating the type.
      */
     public $enumMode = false;
+
+    /**
+     * @var string {
+     *     Mode used to support enums. Options:
+     *
+     *    'onDuplicateKey' - Use MySQL on-duplicate-key handling.
+     *    'onConflictDoUpdate' - Use PostGres 9.5+ on-conflict-do-update handling.
+     *    'selectThenInsertOrUpdate' - Select on key condition, and either insert if no results or update if there are.
+     *    'tryCatch' - Attempt an insert, update on failure (not yet implemented).
+     */
+    public $upsertMode = false;
 
 
 
