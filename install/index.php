@@ -23,30 +23,17 @@ $optionalInstallFlags = 0; // ""
 $installStatusDB = 0; // And one for supported DBs.
 
 
-/* Available in 5.2.7+ */
-if (!defined('PHP_VERSION_ID')) {
-    $version = explode('.', PHP_VERSION);
-
-    define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
-}
-
-
 // Define CONSTANTS (it's a bit excessive here, but...)
 define('INSTALL_ISSUE_PHP_VERSION', 1);
 define('INSTALL_ISSUE_DB', 16);
-define('INSTALL_ISSUE_DATE', 512);
-define('INSTALL_ISSUE_PCRE', 2048);
 define('INSTALL_ISSUE_DOM', 8192);
+define('INSTALL_ISSUE_JSON', 16384);
 define('INSTALL_ISSUE_WRITEORIGINDIR', 1048576);
 define('INSTALL_ISSUE_CONFIGEXISTS', 2097152);
 define('INSTALL_ISSUE_WRITEDATADIR', 4194304);
 
-define('OPTIONAL_INSTALL_ISSUE_MCRYPT', 256);
-define('OPTIONAL_INSTALL_ISSUE_HASH', 512);
-define('OPTIONAL_INSTALL_ISSUE_SHA256', 1024);
-define('OPTIONAL_INSTALL_ISSUE_SHA512', 2048);
+define('OPTIONAL_INSTALL_ISSUE_OPENSSL', 256);
 define('OPTIONAL_INSTALL_ISSUE_MBSTRING', 4096);
-define('OPTIONAL_INSTALL_ISSUE_JSON', 16384);
 define('OPTIONAL_INSTALL_ISSUE_APC', 32768);
 define('OPTIONAL_INSTALL_ISSUE_CURL', 65536);
 define('OPTIONAL_INSTALL_ISSUE_TRANSLITERATOR', 131072);
@@ -59,41 +46,50 @@ define('INSTALL_DB_PDO_POSTGRESQL', 16);
 define('INSTALL_DB_MSSQL', 32);
 
 
+
 // Install Status - DB
-if (extension_loaded('mysql') && PHP_VERSION_ID < 50500) $installStatusDB += INSTALL_DB_MYSQL; // MySQL is deprecated in 5.5. We could just ignore this, but instead it seems reasonable to remove the feature entirely -- after all, mysqli and pdo_mysql should both be options.
-if (extension_loaded('mysqli') && PHP_VERSION_ID > 50209) $installStatusDB += INSTALL_DB_MYSQLI; // MySQLi has a weird issue that was fixed in 5.2.9 and 5.3.0; see http://www.php.net/manual/en/mysqli.connect-error.php
-if (extension_loaded('pdo_mysql')) $installStatusDB += INSTALL_DB_PDO_MYSQL;
-if (extension_loaded('pdo_pgsql')) $installStatusDB += INSTALL_DB_PDO_POSTGRESQL;
-if (extension_loaded('pgsql')) $installStatusDB += INSTALL_DB_POSTGRESQL;
+if (extension_loaded('mysql'))
+    $installStatusDB += INSTALL_DB_MYSQL;
+if (extension_loaded('mysqli'))
+    $installStatusDB += INSTALL_DB_MYSQLI;
+if (extension_loaded('pdo_mysql'))
+    $installStatusDB += INSTALL_DB_PDO_MYSQL;
+if (extension_loaded('pdo_pgsql'))
+    $installStatusDB += INSTALL_DB_PDO_POSTGRESQL;
+if (extension_loaded('pgsql'))
+    $installStatusDB += INSTALL_DB_POSTGRESQL;
 
 
 // PHP Issues
-if (PHP_VERSION_ID < 50200) $installFlags += INSTALL_ISSUE_PHP_VERSION;
+if (PHP_VERSION_ID < 70000)
+    $installFlags += INSTALL_ISSUE_PHP_VERSION; // TODO: 5.5 in preview
 
 
 // DB Issues
-if ($installStatusDB == 0) $installFlags += INSTALL_ISSUE_DB;
+if ($installStatusDB == 0)
+    $installFlags += INSTALL_ISSUE_DB;
 
 
 // Plugin Issues
-if (!extension_loaded('date')) $installFlags += INSTALL_ISSUE_DATE;
-if (!extension_loaded('pcre')) $installFlags += INSTALL_ISSUE_PCRE;
-if (!extension_loaded('mbstring')) $installFlags += INSTALL_ISSUE_MBSTRING;
-if (!extension_loaded('dom')) $installFlags += INSTALL_ISSUE_DOM;
+if (!extension_loaded('dom'))
+    $installFlags += INSTALL_ISSUE_DOM;
+if (!extension_loaded('json'))
+    $optionalInstallFlags += INSTALL_ISSUE_JSON;
 
 
 // Optional Plugins
-if (!extension_loaded('hash')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_HASH;
-if (!extension_loaded('mcrypt')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_MCRYPT;
-if (!extension_loaded('json')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_JSON;
-if (!extension_loaded('curl')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_CURL;
-if (!extension_loaded('apc') && !extension_loaded('apcu')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_APC;
-
-if (!class_exists('Transliterator')) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_TRANSLITERATOR;
-
-if (CRYPT_SHA256 !== 1) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_SHA256; // ...Will be removed, prolly.
-if (CRYPT_SHA512 !== 1) $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_SHA512;
-
+if (!function_exists('openssl_encrypt')
+    || !in_array('AES-256-CTR', openssl_get_cipher_methods()))
+    $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_OPENSSL;
+if (!class_exists('Transliterator'))
+    $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_TRANSLITERATOR;
+if (!extension_loaded('mbstring'))
+    $installFlags += OPTIONAL_INSTALL_ISSUE_MBSTRING;
+if (!extension_loaded('curl'))
+    $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_CURL;
+if (!extension_loaded('apc')
+    && !extension_loaded('apcu'))
+    $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_APC;
 
 // FS Issues
 if (!is_writable('../')) $installFlags += INSTALL_ISSUE_WRITEORIGINDIR;
@@ -250,11 +246,11 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
         <table id="requirements">
             <thead>
             <tr class="ui-widget-header">
-                <th width="10%">Package</th>
-                <th width="10%">Minimum Version</th>
-                <th width="10%">Installed Version</th>
-                <th width="10%">Used For</th>
-                <th width="60%">How To Install<!-- (<a href="#" onclick="showDetails();">Show</a>)--></th>
+                <th width="12%">Package</th>
+                <th width="15%">Minimum Version</th>
+                <th width="15%">Installed Version</th>
+                <th width="18%">Used For</th>
+                <th width="40%">How To Install<!-- (<a href="#" onclick="showDetails();">Show</a>)--></th>
             </tr>
             <tr class="ui-widget-header">
                 <th colspan="5">PHP (required modules)</th>
@@ -263,18 +259,11 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
             <tbody>
             <tr class="<?php echo ($installFlags & INSTALL_ISSUE_PHP_VERSION ? 'uninstalledFlag' : 'installedFlag'); ?>">
                 <td>PHP</td>
-                <td>5.2</td>
+                <td>7 (5.5 in Preview 2)</td>
                 <td><?php echo phpversion(); ?></td>
                 <td>Everything</td>
-                <td>On Ubuntu: <pre>sudo apt-get install php5 libapache2-mod-php5</pre><br />
+                <td>On Ubuntu: <pre>sudo apt-get install php libapache2-mod-php</pre><br />
                     On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
-            </tr>
-            <tr class="<?php echo ($installFlags & INSTALL_ISSUE_DATE ? 'uninstalledFlag' : 'installedFlag'); ?>">
-                <td>Date/Time</td>
-                <td>n/a</td>
-                <td><?php echo phpversion('date'); ?></td>
-                <td>Date/Time</td>
-                <td>With PHP 5.2</td>
             </tr>
             <tr class="<?php echo ($installFlags & INSTALL_ISSUE_DOM ? 'uninstalledFlag' : 'installedFlag'); ?>">
                 <td>DOM</td>
@@ -283,12 +272,13 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 <td>XML File Support</td>
                 <td>With PHP 5.2</td>
             </tr>
-            <tr class="<?php echo ($installFlags & INSTALL_ISSUE_PCRE ? 'uninstalledFlag' : 'installedFlag'); ?>">
-                <td>PCRE</td>
+            <tr class="<?php echo ($installFlags & INSTALL_ISSUE_JSON ? 'uninstalledFlag' : 'installedFlag'); ?>">
+                <td>JSON</td>
                 <td>n/a</td>
-                <td><?php echo phpversion('pcre'); ?></td>
-                <td>Regex</td>
-                <td>With PHP 5.2</td>
+                <td><?php echo phpversion('json'); ?></td>
+                <td>Reading and Writing JSON Objects</td>
+                <td>On Ubuntu: <pre>sudo apt-get install php-json</pre><br />
+                    </td>
             </tr>
             </tbody>
             <tbody>
@@ -298,33 +288,12 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
             </tr>
             </thead>
             <tbody>
-            <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_SHA512 ? 'uninstalledFlag' : 'installedFlag'); ?>">
-                <td>SHA512</td>
-                <td>n/a</td>
-                <td><?php echo phpversion('hash'); ?></td>
-                <td><abbr title="Without SHA512 support, the default hashing algorithm, which is both secure and fast, will not be available. The HASH extension will be used instead for a slightly less secure algorithm. If it is not available, a much slower, slightly less secure algorithm with be used.">Password Hashing</abbr></td>
-                <td>With PHP 5.3</td>
-            </tr>
-            <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_HASH ? 'uninstalledFlag' : 'installedFlag'); ?>">
-                <td>Hash</td>
-                <td>1.1</td>
-                <td><?php echo phpversion('hash'); ?></td>
-                <td><abbr title="Without the Hash extension, password encryption will be far, far slower, unless you use SHA512 (above).">Password Hashing</abbr></td>
-                <td>With PHP 5.2</td>
-            </tr>
-            <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_JSON ? 'uninstalledFlag' : 'installedFlag'); ?>">
-                <td>JSON</td>
-                <td>1.2.0</td>
-                <td><?php echo phpversion('json'); ?></td>
-                <td><abbr title="Without the JSON extension, JSON-based operations will become slower.">API and WebPro</abbr></td>
-                <td>With PHP 5.2</td>
-            </tr>
             <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_APC ? 'uninstalledFlag' : 'installedFlag'); ?>">
-                <td>APC</td>
+                <td>APC (or APCu)</td>
                 <td>3.1.4</td>
                 <td><?php echo phpversion('apc'); ?></td>
                 <td><abbr title="Without APC, higher disk and database usage will occur. FreezeMessenger is optimised for in-memory caching, and will not be able to function on large installations without APC.">Caching</abbr	></td>
-                <td>On Ubuntu: <pre>sudo apt-get install php-apc</pre><br />
+                <td>On Ubuntu: <pre>sudo apt-get install php-apcu</pre><br />
                     On Windows: Usually comes with PHP.</td>
             </tr>
             <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_CURL ? 'uninstalledFlag' : 'installedFlag'); ?>">
@@ -332,15 +301,15 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 <td>3.1.4</td>
                 <td><?php echo phpversion('curl'); ?></td>
                 <td><abbr title="Without cURL, WebLite may not function. If it does function, it will be slower.">WebLite</abbr></td>
-                <td>On Ubuntu: <pre>sudo apt-get install curl libcurl3 libcurl3-dev php5-curl</pre><br />
+                <td>On Ubuntu: <pre>sudo apt-get install curl libcurl3 libcurl3-dev php-curl</pre><br />
                     On Windows: Compile APC, or find the plugin matching your version of PHP at <a href="http://dev.freshsite.pl/php-accelerators/apc.html">http://dev.freshsite.pl/php-accelerators/apc.html</a>.</td>
             </tr>
             <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_MCRYPT ? 'uninstalledFlag' : 'installedFlag'); ?>">
-                <td>MCrypt</td>
+                <td>OpenSSL (and AES-256-CTR cipher)</td>
                 <td>n/a</td>
-                <td><?php echo phpversion('mcrypt'); ?></td>
+                <td><?php echo phpversion('openssl'); ?></td>
                 <td><abbr title="Without MCrypt, message encryption will be disabled.">Message Encryption</abbr></td>
-                <td>On Ubuntu: <pre>sudo apt-get install php5-mcrypt</pre><br />
+                <td>On Ubuntu: <pre>sudo apt-get install php-mcrypt</pre><br />
                     On Windows: Install PHP 5.3, or see <a href="http://php.net/manual/en/mcrypt.requirements.php">http://php.net/manual/en/mcrypt.requirements.php</a></td>
             </tr>
             <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_MBSTRING ? 'uninstalledFlag' : 'installedFlag'); ?>">
@@ -355,7 +324,8 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 <td>n/a</td>
                 <td>n/a</td>
                 <td><abbr title="Without Transliteration, search indexing is not as effective.">Text Searching</abbr></td>
-                <td>With PHP 5.2</td>
+                <td>On Ubuntu: <pre>sudo apt-get install php-intl</pre><br />
+                    </td>
             </tr>
             </tbody>
             <thead>
@@ -369,7 +339,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 <td>5.0</td>
                 <td>*</td>
                 <td>Database</td>
-                <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre><br />
+                <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php-mysql</pre><br />
                     On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
             </tr>
             <tr class="<?php echo ($installStatusDB & (INSTALL_DB_POSTGRESQL + INSTALL_DB_PDO_POSTGRESQL) ? 'installedFlag' : 'unininstalledFlag'); ?>">
@@ -377,7 +347,7 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 <td>?</td>
                 <td>*</td>
                 <td>Database</td>
-                <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql</pre><br />
+                <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php-mysql</pre><br />
                     On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
             </tr>
             </tbody>

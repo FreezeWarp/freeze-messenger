@@ -74,23 +74,22 @@ function fim_decrypt($content, $keyNum, $iv) {
  */
 define('FIM_ENCRYPT_MESSAGETEXT', 1);
 define('FIM_ENCRYPT_FILECONTENT', 2);
+define('FIM_ENCRYPT_CIPHER', 'AES-256-CTR');
 
 function fim_encrypt($data, $type = FIM_ENCRYPT_MESSAGETEXT) {
     global $salts, $encrypt, $encryptUploads;
 
-    $cipher = "AES-256-CTR";
-
     if ($type === FIM_ENCRYPT_MESSAGETEXT && !$encrypt
         || $type === FIM_ENCRYPT_FILECONTENT && !$encryptUploads
         || !function_exists('openssl_encrypt')
-        || !in_array($cipher, openssl_get_cipher_methods()))
+        || !in_array(FIM_ENCRYPT_CIPHER, openssl_get_cipher_methods()))
         return [$data, '', -1];
 
 
     $key = str_pad(end($salts), 256, "."); // Move the file pointer to the last entry in the array (and return its value)
     $keyNum = key($salts); // Get the key/id of the corrosponding salt.
 
-    $iv_size = openssl_cipher_iv_length($cipher); // Get the length of the IV for the method used
+    $iv_size = openssl_cipher_iv_length(FIM_ENCRYPT_CIPHER); // Get the length of the IV for the method used
     $iv = random_bytes($iv_size);
 
     if (is_array($data)) { // If $data is an array, we will encrypt each value, and retain the key->value structure.
@@ -99,7 +98,7 @@ function fim_encrypt($data, $type = FIM_ENCRYPT_MESSAGETEXT) {
         foreach ($data AS $key => $value) { // Run through the data array...
             $newData[$key] = openssl_encrypt( // Encrypt the $value.
                 $value, // The value we're encrypting.
-                $cipher, // This one is pretttty strong.
+                FIM_ENCRYPT_CIPHER, // This one is pretttty strong.
                 $key, // We use our config-file stored salts as a key.
                 OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, // No padding, please,
                 $iv // We need to use the raw IV, so we decode the earlier encoded value.
@@ -108,7 +107,11 @@ function fim_encrypt($data, $type = FIM_ENCRYPT_MESSAGETEXT) {
     }
     else {
         $newData = openssl_encrypt(
-            $data, $cipher, $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $iv
+            $data,
+            FIM_ENCRYPT_CIPHER,
+            $key,
+            OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING,
+            $iv
         );
     }
 
@@ -127,37 +130,49 @@ function fim_encrypt($data, $type = FIM_ENCRYPT_MESSAGETEXT) {
 
 
 /**
- * Generates a SHA256 using whatever methods are available. If no valid function can be found, the data will be returned unhashed.
+ * Generates a SHA256 using whatever methods are available. If no valid function can be found, an empty string will be returned (...don't use this for password hashin).
  *
- * @param string $data - The data to encrypt.
- * @return string - Encrypted data.
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ * @param string $data The data to hash.
+ * @return string Hashed data.
  */
 function fim_sha256($data) {
-    global $config;
+    // hash() is available in PHP 5.1.2+, or in PECL Hash 1.1. Algorithms vary, so we must make sure sha256 is one of them.
+    if (function_exists('hash')
+        && in_array('sha256', hash_algos()))
+        return hash('sha256', $data);
 
-    if (function_exists('hash') && in_array('sha256', hash_algos())) return hash('sha256', $data); // hash() is available in PHP 5.1.2+, or in PECL Hash 1.1. Algorithms vary, so we must make sure sha256 is one of them.
-    elseif (function_exists('mhash') && defined('MHASH_SHA256')) return mhash(MHASH_SHA256, $data); // mhash() is available in pretty much all versions of PHP, but the SHA256 algo may not be available.
-    else { // Otherwise, we use a third-party SHA256 library. Expect slowness. [TODO: Test]
-        require('functions/sha256.php'); // Require SHA256 class provided by NanoLink.ca.
+    // mhash() is available in pretty much all versions of PHP, but the SHA256 algo may not be available.
+    elseif (function_exists('mhash')
+        && defined('MHASH_SHA256'))
+        return mhash(MHASH_SHA256, $data);
 
-        $obj = new nanoSha2();
-        $shaStr = $obj->hash($data);
+    // Otherwise, return empty string.
+    else {
+        return '';
     }
 }
 
 
 /**
- * A wrapper for rand and mt_rand, using whichever is available.
+ * A wrapper for rand and mt_rand, using whichever is available (or returning $min if neither is).
  *
- * @param string $data - The data to encrypt.
- * @return string - Encrypted data.
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
+ * @param int $min The minimum value.
+ * @param int $max The maximum value.
+
+ * @return int A value between $min and $max, hopefully choosen randomly.
  */
 function fim_rand($min, $max) {
-    if (function_exists('mt_rand')) return mt_rand($min, $max); // Proper hardware-based rand, actually works.
-    elseif (function_exists('rand')) return rand($min, $max); // Standard rand, not well seeded.
-    else return $min; // Though it should never happened, applications should still /run/ if no rand function exists. Keep this in mind when using fim_rand.
+    // Proper hardware-based rand, actually works.
+    if (function_exists('mt_rand'))
+        return mt_rand($min, $max);
+
+    // Standard rand, not well seeded.
+    elseif (function_exists('rand'))
+        return rand($min, $max);
+
+    // Though it should never happened, applications should still /run/ if no rand function exists. Keep this in mind when using fim_rand.
+    else
+        return $min;
 }
 
 

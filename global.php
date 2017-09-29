@@ -14,79 +14,32 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-////* PREREQUISITES *////
-
-/* Make Sure Required PHP Extensions are Present
- *
- * Note that:
- * MySQL is present in all versions since PHP 4
- * JSON is present in all versions of PHP since 5.2 (but is not actually used in FIMv3)
- ** JSON is used if APC is not available
- * MBString is present in all versions of PHP since 4.3
- * MCrypt is present in all versions since PHP 4
- * PCRE is present in all versions since PHP 4
- * APC is present in PHP 5.4, Ubuntu's php-apc packge, and easily installed from PECL.net. It simply has to be a requirement for many of the functions (as far as the way they are designed).
- * DOM is in all of PHP 5.
- *
- * The following are used, but with safe fallbacks:
- * Hash is present in all versions since PHP 5.1.2; MHash is present in all versions since PHP4
- */
-foreach (array('json', 'mbstring', 'mcrypt', 'pcre', 'dom') AS $module) { // Check that each extension has been loaded.
-    if (!extension_loaded($module)) die("The module <strong>$module</strong> could not be found. Please install PHP <strong>$module</strong> compatibility. See the documentation for help.");
-}
-
-/*
- * I'm not yet sure how well the disk cache works for small installations. APC is still essential for larger ones, but the disk cache may suffice for everything else.
- * Ideally, a disk cache will be possible for extra-common data, of which there is some.
-
-  if (!extension_loaded('apc') && !extension_loaded('memcache')) die("Neither the <strong>apc</strong> or <strong>memcache</strong> modules could not be found. Please install PHP <strong>apc</strong> or <strong>memcache</strong> compatibility. See the documentation for help."); // APC is required. Memcached is not yet supported.
-if (!extension_loaded('hash') && !extension_loaded('mhash')) die("Neither the <strong>hash</strong> or <strong>mhash</strong> modules could not be found. Please install PHP <strong>hash</strong> or <strong>mhash</strong> compatibility. See the documentation for help."); // Either can be used.
-*/
-
-if ((bool) ini_get('allow_url_fopen') === false) {
-    die('FOpen functionality is disable. Please enable allow_url_fopen in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/filesystem.configuration.php#ini.allow-url-fopen">PHP manual</a>, and in the documentation.');
-}
-
 
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
 
 $phpVersion = floatval(PHP_VERSION);
-if ($phpVersion < 5.2) { // We won't bother supporting older PHP; too much hassle. We will also raise this to 5.3 in the next version.
-    die('The installed version of PHP is out of date. Only PHP versions 5.2 and above are supported. Contact your server host for more information if possible.');
+if ($phpVersion < 5.5) {
+    die('The installed version of PHP is out of date. Only PHP versions 5.5 and above are supported. Contact your server host for more information if possible.');
 }
-elseif ($phpVersion <= 5.3) { // Removed outright in 5.4, may as well save a CPU cycle or two.
-    if (function_exists('get_magic_quotes_runtime')) { // Really, in the future, even this function will be removed as well, but it is still there in 5.4 for all the good scripts that use it to disable 'em.
-        if (get_magic_quotes_runtime()) { // Note: We should consider removing the set_magic_quotes_runtime to false; it is deprecated in 5.3, so if we make that the baseline in version 4 we will do it then.
-            if (!set_magic_quotes_runtime(false)) {
-                die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>, and in the documentation.');
-            }
-        }
-
-        if (get_magic_quotes_gpc()) { // Note: We will also assume the above function_exists counts for this one.
-            die('Magic Quotes is enabled and it was not possible to disable this "feature". Please disable magic quotes in php.ini. More information can be found in the <a href="http://php.net/manual/en/security.magicquotes.disabling.php">PHP manual</a>, and in the documentation.'); // In theory, we could just strip the globals, but is it really worth the CPU cycles?
-        }
-    }
-
-    if ((bool) ini_get('register_globals') === true) { // Note: This can not be altered with ini_set, so... we won't even bother. We will remove it in the next version most likely, as no one really uses it anyway.
-        die('Register Globals is enabled. Please disable register_globals in php.ini. More information can be found in the <a href="http://www.php.net/manual/en/security.globals.php">PHP manual</a>, and in the documentation.');
-    }
+elseif ($phpVersion < 7) { // Removed outright in 5.4, may as well save a CPU cycle or two.
+    die('The installed version of PHP is not supported on development branches. Please wait until Preview Release 2 to for PHP 5.5 and 5.6 support.');
 }
 
 
 /* Require Libraries */
-require_once(dirname(__FILE__) . '/config.php'); // Configuration Variables
-require_once(dirname(__FILE__) . '/functions/ApiData.php'); // API Data output wrapper.
-require_once(dirname(__FILE__) . '/functions/Database.php'); // Database
-require_once(dirname(__FILE__) . '/functions/DatabaseSQL.php'); // Database (SQL)
-require_once(dirname(__FILE__) . '/functions/fimDatabase.php'); // FIM-specific Extensions
-require_once(dirname(__FILE__) . '/functions/fimDatabaseUAC.php'); // FIM-specific Extensions, UAC (it gets its own file because it might be shipped seperately to support additional intgration methods.)
-require_once(dirname(__FILE__) . '/functions/fimUser.php'); // FIM-specific Extensions
-require_once(dirname(__FILE__) . '/functions/fimRoom.php'); // FIM-specific Extensions
-require_once(dirname(__FILE__) . '/functions/fimMessage.php'); // FIM-specific Extensions
-require_once(dirname(__FILE__) . '/functions/fimCache.php'); // FIM-specific Extension to APC Wrapper
-require_once(dirname(__FILE__) . '/functions/fimConfig.php'); // FIM config and factory
-require_once(dirname(__FILE__) . '/functions/fimError.php'); // FIM Custom Error Class
-require_once(dirname(__FILE__) . '/functions/fim_general.php'); // Various Functions
+require_once(__DIR__ . '/config.php'); // Configuration Variables
+require_once(__DIR__ . '/functions/ApiData.php'); // API Data output wrapper.
+require_once(__DIR__ . '/functions/Database.php'); // Database
+require_once(__DIR__ . '/functions/DatabaseSQL.php'); // Database (SQL)
+require_once(__DIR__ . '/functions/fimDatabase.php'); // FIM-specific Extensions
+require_once(__DIR__ . '/functions/fimDatabaseUAC.php'); // FIM-specific Extensions, UAC (it gets its own file because it might be shipped seperately to support additional intgration methods.)
+require_once(__DIR__ . '/functions/fimUser.php'); // FIM-specific Extensions
+require_once(__DIR__ . '/functions/fimRoom.php'); // FIM-specific Extensions
+require_once(__DIR__ . '/functions/fimMessage.php'); // FIM-specific Extensions
+require_once(__DIR__ . '/functions/fimCache.php'); // FIM-specific Extension to APC Wrapper
+require_once(__DIR__ . '/functions/fimConfig.php'); // FIM config and factory
+require_once(__DIR__ . '/functions/fimError.php'); // FIM Custom Error Class
+require_once(__DIR__ . '/functions/fim_general.php'); // Various Functions
 
 
 
