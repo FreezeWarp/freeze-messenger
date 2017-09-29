@@ -35,8 +35,8 @@
 /******
  * Require base files.
  ******/
-require_once(dirname(__FILE__) . '/global.php');
-require_once(dirname(__FILE__) . '/functions/LoginFactory.php');
+require_once(__DIR__ . '/global.php');
+require_once(__DIR__ . '/functions/Login/LoginFactory.php');
 
 
 

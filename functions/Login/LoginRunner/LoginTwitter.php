@@ -1,15 +1,15 @@
 <?php
 
-require_once('vendor/autoload.php');
+require_once(__DIR__ . '/../../../vendor/autoload.php');
 use Abraham\TwitterOAuth\TwitterOAuth;
 
-require_once('LoginTwoStep.php');
+require_once(__DIR__ . '/../LoginTwoStep.php');
 
 class LoginTwitter extends LoginTwoStep {
-    public $loginFactory;
+    public $client;
 
     public function __construct(LoginFactory $loginFactory, $clientId, $clientSecret) {
-        $this->loginFactory = $loginFactory;
+        parent::__construct($loginFactory);
 
         // create our client credentials
         $this->client = new TwitterOAuth($clientId, $clientSecret);
