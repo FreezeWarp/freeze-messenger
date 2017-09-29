@@ -99,6 +99,10 @@ class DatabaseSQLMysqli extends DatabaseDefinitionsMySQL {
         return $query;
     }
 
+    public function queryReturningResult($rawQuery) : DatabaseResultInterface {
+        return $this->getResult($this->query($rawQuery));
+    }
+
     public function startTransaction() {
         $this->connection->autocommit(false); // Use start_transaction in PHP 5.5 TODO
     }
@@ -111,5 +115,26 @@ class DatabaseSQLMysqli extends DatabaseDefinitionsMySQL {
     public function rollbackTransaction() {
         $this->connection->rollback();
         $this->connection->autocommit(true);
+    }
+
+    protected function getResult($source) : DatabaseResultInterface {
+        return new class($source) implements DatabaseResultInterface {
+            /**
+             * @var mysqli_result The result of the query.
+             */
+            public $source;
+
+            public function __construct($source) {
+                $this->source = $source;
+            }
+
+            public function fetchAsArray() {
+                return (($data = $this->source->fetch_assoc()) === null ? false : $data);
+            }
+
+            public function getCount() {
+                return $this->source->num_rows;
+            }
+        };
     }
 }

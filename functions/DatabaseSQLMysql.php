@@ -50,6 +50,10 @@ class DatabaseSQLMysql extends DatabaseDefinitionsMySQL {
         return $query;
     }
 
+    public function queryReturningResult($rawQuery) : DatabaseResultInterface {
+        return $this->getResult($this->query($rawQuery));
+    }
+
     public function getLastInsertId() {
         return $this->lastInsertId;
     }
@@ -64,5 +68,26 @@ class DatabaseSQLMysql extends DatabaseDefinitionsMySQL {
 
     public function rollbackTransaction() {
         $this->query('ROLLBACK');
+    }
+
+    protected function getResult($source) : DatabaseResultInterface {
+        return new class($source) implements DatabaseResultInterface {
+            /**
+             * @var resource The result of the query.
+             */
+            public $source;
+
+            public function __construct($source) {
+                $this->source = $source;
+            }
+
+            public function fetchAsArray() {
+                return (($data = mysql_fetch_assoc($this->source)) === false ? false : $data);
+            }
+
+            public function getCount() {
+                return mysql_num_rows($this->source);
+            }
+        };
     }
 }

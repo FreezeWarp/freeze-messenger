@@ -1,5 +1,5 @@
 <?php
-require_once(__DIR__ . '/DatabaseSQLInterface.php');
+require_once(__DIR__ . '/DatabaseResultInterface.php');
 
 abstract class DatabaseSQLStandard {
     /**
@@ -308,6 +308,7 @@ abstract class DatabaseSQLStandard {
     abstract public function selectDatabase($database);
     abstract public function escape($text, $context);
     abstract public function query($rawQuery);
+    abstract public function queryReturningResult($rawQuery): DatabaseResultInterface;
     abstract public function getLastInsertId();
     abstract public function startTransaction();
     abstract public function endTransaction();

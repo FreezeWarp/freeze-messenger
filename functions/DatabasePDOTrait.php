@@ -69,6 +69,10 @@ trait DatabasePDOTrait {
         }
     }
 
+    public function queryReturningResult($rawQuery) : DatabaseResultInterface {
+        return $this->getResult($this->query($rawQuery));
+    }
+
     public function startTransaction() {
         $this->connection->beginTransaction();
     }
@@ -79,6 +83,41 @@ trait DatabasePDOTrait {
 
     public function rollbackTransaction() {
         $this->connection->rollBack();
+    }
+
+    protected function getResult($source) : DatabaseResultInterface {
+        return new class($source) implements DatabaseResultInterface {
+            /**
+             * @var PDOStatement The result of the query.
+             */
+            public $source;
+
+            /**
+             * @var int A pointer to the current result entry.
+             */
+            public $resultIndex;
+
+            /**
+             * @var array All query information. (Required to support getCount on all PDO drivers; you may want to override this on compatible language implementors.)
+             */
+            public $data;
+
+            public function __construct($source) {
+                $this->source = $source;
+                $this->data = $this->source->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            public function fetchAsArray() {
+                if (count($this->data) >= $this->resultIndex)
+                    return false;
+                else
+                    return $this->data[$this->resultIndex++];
+            }
+
+            public function getCount() {
+                return count($this->data);
+            }
+        };
     }
 }
 ?>

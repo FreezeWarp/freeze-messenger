@@ -759,7 +759,7 @@ class DatabaseSQL extends Database
         else {
             $start = microtime(true);
 
-            if ($queryData = $this->sqlInterface->query($query)) {
+            if ($queryData = $this->sqlInterface->queryReturningResult($query)) {
                 $this->newQuery($query, microtime(true) - $start);
 
                 return $this->databaseResultPipe($queryData, $reverseAlias, $query, $this, $paginate);

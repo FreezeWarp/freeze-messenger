@@ -102,6 +102,10 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
         return pg_query($this->connection, $rawQuery);
     }
 
+    public function queryReturningResult($rawQuery) : DatabaseResultInterface {
+        return $this->getResult($this->query($rawQuery));
+    }
+
     public function getLastInsertId() {
         return pg_fetch_array($this->query('SELECT LASTVAL() AS lastval'))['lastval'];
     }
@@ -116,6 +120,48 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
 
     public function rollbackTransaction() {
         $this->query('ROLLBACK');
+    }
+
+    protected function getResult($source) {
+        return new class($source) implements DatabaseResultInterface {
+            /**
+             * @var resource The postgres resource returned by query.
+             */
+            public $source;
+
+            /**
+             * @var array An array containing the field numbers corresponding to all binary columns in the current resultset.
+             */
+            public $binaryFields = [];
+
+            public function __construct($source) {
+                $num = pg_num_fields($this->source);
+                for ($i = 0; $i < $num; $i++) {
+                    if (pg_field_type($this->source, $i) === 'bytea') {
+                        $this->binaryFields[] = pg_field_name($this->queryData, $i);
+                    }
+                }
+
+                $this->source = $source;
+            }
+
+            public function fetchAsArray() {
+                $data = pg_fetch_assoc($this->source);
+
+                // Decode bytea values
+                if ($data) {
+                    foreach ($this->binaryFields AS $field) {
+                        $data[$field] = pg_unescape_bytea($data[$field]);
+                    }
+                }
+
+                return $data;
+            }
+
+            public function getCount() {
+                return pg_num_rows($this->source);
+            }
+        };
     }
 
 
