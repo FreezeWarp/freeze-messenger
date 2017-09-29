@@ -43,7 +43,7 @@ class StreamFactory {
 
             if (isset($cacheConnectMethods['redis']['host']) && extension_loaded('redis')) {
                 require(__DIR__ . '/StreamRedis.php');
-                StreamFactory::$instance = new StreamRedis($cacheConnectMethods['redis']);
+                return StreamFactory::$instance = new StreamRedis($cacheConnectMethods['redis']);
             }
 
             elseif ($dbConnect['core']['driver'] === 'pgsql' || $cacheConnectMethods['pgsql']['host']) {
@@ -87,7 +87,7 @@ class StreamFactory {
         return self::getInstance()->publish($stream, $eventName, $data);
     }
 
-    public static function subscribe($stream, $lastId) {
-        return self::getInstance()->subscribe($stream, $lastId);
+    public static function subscribe($stream, $lastId, $callback) {
+        return self::getInstance()->subscribe($stream, $lastId, $callback);
     }
 }

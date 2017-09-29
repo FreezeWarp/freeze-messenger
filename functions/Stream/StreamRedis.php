@@ -15,13 +15,22 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 class StreamRedis implements Stream {
+    /**
+     * @var Redis a Redis instance.
+     */
+    private $redis;
+
+    /**
+     * @var int The number of queries this instance has made so far.
+     */
     private $retries = 0;
 
-    public function __construct($servers) {
+    public function __construct($server) {
         $this->redis = new Redis();
-        $this->redis->pconnect($servers['host'], $servers['port'], $servers['timeout'], $servers['persistentId']);
-        if ($servers['password'])
-            $this->redis->auth($servers['password']);
+        $this->redis->connect($server['host'], $server['port'], $server['timeout']);
+
+        if ($server['password'])
+            $this->redis->auth($server['password']);
     }
 
     public function publish($stream, $eventName, $data) {
@@ -31,19 +40,29 @@ class StreamRedis implements Stream {
         ]));
     }
 
-    public function subscribe($stream, $lastId) {
-        global $config;
+    public function subscribe($stream, $lastId, $callback) {
+        // The subscribe below will block, so we call this first. (Unfortunately, this does mean there is a small -- or possibly big -- window wherein messages may not be retrieved.)
+        foreach (StreamFactory::getDatabaseInstance()->subscribeOnce($stream, $lastId) AS $result) {
+            call_user_func($callback, $result);
+        }
 
-        $return = [];
-        $this->redis->subscribe($stream, function($instance, $channel, $data) {
-            global $return;
+        // And now subscribe to the Redis socket.
+        $this->redis->subscribe(["room_1"], function ($instance, $channel, $data) use ($callback) {
+            $event = json_decode($data, true);
 
-            $return = $data;
+            call_user_func($callback, [
+                'id' => time(),
+                'eventName' => $event['eventName'],
+                'data' => $event['data'],
+            ]);
         });
+    }
 
-        while (usleep($config['serverSentEventsWait'] * 1000000) || (count($return) == 0 && $this->retries++ < $config['serverSentMaxRetries']))
-            ;
+    public function __destruct() {
+        $this->redis->close();
+    }
 
-        return $return;
+    public function unsubscribe($stream) {
+        $this->redis->close();
     }
 }

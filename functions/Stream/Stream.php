@@ -39,7 +39,7 @@ interface Stream {
      *
      * @return array An array containing all results since lastId at time of execution (waiting until a result appears if needed). The array will be an array of arrays with the indexes 'id', 'eventName', and 'data', where 'data' contains the data sent via publish.
      */
-    public function subscribe($stream, $lastId);
+    public function subscribe($stream, $lastId, $callback);
 
 
     /**

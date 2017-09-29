@@ -69,16 +69,17 @@ else {
         $request['lastEvent'] = $_SERVER['HTTP_LAST_EVENT_ID']; // Get the message ID used for keeping state data; e.g. 1-2-3
     }
 
-    foreach (StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent']) AS $message) {
+
+    StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent'], function($message) use ($request) {
         if ($request['streamType'] === 'room') {
-            if (isset($message['data']['id']) && $message['data']['id'] <= $request['lastMessage']) continue;
+            if (isset($message['data']['id']) && $message['data']['id'] <= $request['lastMessage']) return;
         }
 
         echo "\nid: " . (int)$message['id'] . "\n";
         echo "event: " . $message['eventName'] . "\n";
         echo "data: " . json_encode($message['data']) . "\n\n";
         fim_flush();
-    }
+    });
 }
 
 echo "retry: 0\n";

@@ -41,7 +41,7 @@ class StreamPgSQL implements Stream {
         $this->database->rawQuery('NOTIFY ' . $this->database->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $stream) . ', ' . $this->database->formatValue(DatabaseTypeType::string, $json));
     }
 
-    public function subscribe($stream, $lastId) {
+    public function subscribe($stream, $lastId, $callback) {
         global $config;
 
         $databaseStream = StreamFactory::getDatabaseInstance();
@@ -51,7 +51,7 @@ class StreamPgSQL implements Stream {
 
         // Now query database for recent missed events
         foreach ($databaseStream->subscribeOnce($stream, $lastId) AS $result) {
-            yield $result;
+            call_user_func($callback, $result);
         }
 
         // Now get the listen results as they come in
@@ -61,11 +61,11 @@ class StreamPgSQL implements Stream {
             if ($message) {
                 $event = json_decode($message['payload'], true);
 
-                yield [
+                call_user_func($callback, [
                     'id' => time(),
                     'eventName' => $event['eventName'],
                     'data' => $event['data'],
-                ];
+                ]);
             }
 
             usleep($config['serverSentEventsWait'] * 1000000);
