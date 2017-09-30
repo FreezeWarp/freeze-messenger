@@ -1,6 +1,7 @@
 <?php
-require_once('LoginDatabase.php');
-require_once('PasswordHash.php');
+require_once(__DIR__ . '/../LoginDatabase.php');
+require_once(__DIR__ . '/../../PasswordHash.php');
+
 class LoginPhpbb extends LoginDatabase {
     /**
      * @var array A reference to the tables used by PHPBB.

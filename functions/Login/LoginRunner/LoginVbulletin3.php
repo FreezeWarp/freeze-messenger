@@ -1,5 +1,6 @@
 <?php
-require_once('LoginDatabase.php');
+
+require_once(__DIR__ . '/../LoginDatabase.php');
 
 class LoginVbulletin3 extends LoginDatabase {
     /**

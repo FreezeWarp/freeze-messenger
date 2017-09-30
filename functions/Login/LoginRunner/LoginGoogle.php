@@ -14,9 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-require_once('vendor/autoload.php');
-
-require_once('LoginTwoStep.php');
+require_once(__DIR__ . '/../../../vendor/autoload.php');
+require_once(__DIR__ . '/../LoginTwoStep.php');
 
 class LoginGoogle extends LoginTwoStep {
     public $client;

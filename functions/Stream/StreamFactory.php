@@ -15,14 +15,12 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 require(__DIR__ . '/Stream.php');
+require(__DIR__ . '/StreamDatabase.php');
 
 /**
  * Exposes standard publish/subscribe model, automatically using whichever available driver is best.
  * This will use Redis first (if cacheConnectMethods['redis'] is set), PgSQL second (if cacheConnectMethods['pgsql'] is set or the primary database driver uses PgSQL), and a generic Database third (which will not be performant unless in-memory tables are supported).
  */
-
-require('StreamDatabase.php');
-
 class StreamFactory {
     /**
      * @var Stream The currently in-use Stream instance.
@@ -44,12 +42,12 @@ class StreamFactory {
             global $dbConnect, $cacheConnectMethods;
 
             if (isset($cacheConnectMethods['redis']['host']) && extension_loaded('redis')) {
-                require('StreamRedis.php');
-                StreamFactory::$instance = new StreamRedis($cacheConnectMethods['redis']);
+                require(__DIR__ . '/StreamRedis.php');
+                return StreamFactory::$instance = new StreamRedis($cacheConnectMethods['redis']);
             }
 
             elseif ($dbConnect['core']['driver'] === 'pgsql' || $cacheConnectMethods['pgsql']['host']) {
-                require('StreamPgSQL.php');
+                require(__DIR__ . '/StreamPgSQL.php');
 
                 // Reuse existing PgSQL instance if available
                 if ($dbConnect['core']['driver'] === 'pgsql') {
@@ -73,6 +71,7 @@ class StreamFactory {
 
                 return StreamFactory::$instance = new StreamPgSQL($database);
             }
+
             else {
                 return self::getDatabaseInstance();
             }
@@ -88,7 +87,7 @@ class StreamFactory {
         return self::getInstance()->publish($stream, $eventName, $data);
     }
 
-    public static function subscribe($stream, $lastId) {
-        return self::getInstance()->subscribe($stream, $lastId);
+    public static function subscribe($stream, $lastId, $callback) {
+        return self::getInstance()->subscribe($stream, $lastId, $callback);
     }
 }

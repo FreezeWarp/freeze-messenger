@@ -53,11 +53,15 @@ class fimFile {
                 case 'sha256hash':
                     $this->sha256hash = fim_sha256($this->contents);
                 break;
+
                 case 'md5hash':
                     $this->sha256hash = md5($this->contents);
                 break;
+
                 case 'crc32bhash':
-                    $this->sha256hash = hash('crc32b', $this->contents);
+                    $this->sha256hash = (in_array('crc32b', hash_algos())
+                        ? hash('crc32b', $this->contents)
+                        : '');
                 break;
 
                 case 'size':

@@ -1,11 +1,12 @@
 <?php
 
-require_once('vendor/autoload.php');
-
-require_once('LoginTwoStep.php');
+require_once(__DIR__ . '/../../../vendor/autoload.php');
+require_once(__DIR__ . '/../LoginTwoStep.php');
 
 class LoginMicrosoft extends LoginTwoStep {
     public $loginFactory;
+
+    public $client;
 
     public function __construct(LoginFactory $loginFactory, $clientId, $clientSecret) {
         global $installUrl;

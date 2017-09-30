@@ -36,14 +36,6 @@ class databaseResult
      */
     public $resultIndex = 0;
 
-
-    /**
-     * @var array An array containing the field numbers corresponding to all binary columns in the current resultset.
-     */
-    public $binaryFields = [];
-
-    public $data = [];
-
     /**
      * Construct
      *
@@ -52,135 +44,20 @@ class databaseResult
      * @return void
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function __construct($queryData, $reverseAlias, $sourceQuery, Database $database, int $resultLimit = 0)
+    public function __construct(DatabaseResultInterface $queryData, $reverseAlias, $sourceQuery, Database $database, int $resultLimit = 0)
     {
         $this->queryData = $queryData;
         $this->reverseAlias = $reverseAlias;
         $this->sourceQuery = $sourceQuery;
         $this->database = $database;
 
-        if ($this->database->driver === 'pdoMysql') {
-            try {
-                $this->data = $this->queryData->fetchAll(PDO::FETCH_ASSOC);
-            } catch (Exception $ex) {
-                var_dump($ex, $sourceQuery);
-            }
-        }
-
-        if ($resultLimit > 1 && $this->functionMap('getCount') > $resultLimit) {
+        if ($resultLimit > 1 && $this->queryData->getCount() > $resultLimit) {
             $this->paginated = true;
             $this->count = $resultLimit;
         }
         else {
-            $this->count = $this->functionMap('getCount');
+            $this->count = $this->queryData->getCount();
         }
-
-        if ($this->database->driver === 'pgsql') {
-            $num = pg_num_fields($this->queryData);
-            for ($i = 0; $i < $num; $i++) {
-                if (pg_field_type($this->queryData, $i) === 'bytea') {
-                    $this->binaryFields[] = pg_field_name($this->queryData, $i);
-                }
-            }
-        }
-    }
-
-
-    /**
-     * Calls a database function, such as mysql_connect or mysql_query, using lookup tables
-     *
-     * @return void
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    public function functionMap($operation)
-    {
-        switch ($operation) {
-            case 'fetchAsArray':
-                if ($this->resultIndex++ >= $this->count) {
-                    return false;
-                }
-            break;
-        }
-
-        $args = func_get_args();
-        switch ($this->database->driver) {
-            case 'mysql':
-                switch ($operation) {
-                    case 'fetchAsArray' :
-                        return (($data = mysql_fetch_assoc($this->queryData)) === false ? false : $data);
-                    break;
-                    case 'getCount' :
-                        return mysql_num_rows($this->queryData);
-                    break;
-                }
-            break;
-
-            case 'mysqli':
-                switch ($operation) {
-                    case 'fetchAsArray' :
-                        return (($data = $this->queryData->fetch_assoc()) === null ? false : $data);
-                    break;
-                    case 'getCount' :
-                        return $this->queryData->num_rows;
-                    break;
-                }
-            break;
-
-            case 'pgsql':
-                switch ($operation) {
-                    case 'fetchAsArray' :
-                        $data = pg_fetch_assoc($this->queryData);
-
-                        // Decode bytea values
-                        if ($data) {
-                            /*
-                            $columns = array_keys($data);
-                            foreach ($columns AS $i => $column) {
-                                echo $column . ':' . pg_field_type($this->queryData, $i) . "\n";
-                                if (pg_field_type($this->queryData, $i) === 'bytea') {
-                                    $data[$column] = pg_unescape_bytea($data[$column]);
-                                }
-                            }*/
-
-                            foreach ($this->binaryFields AS $field) {
-                                $data[$field] = pg_unescape_bytea($data[$field]);
-                            }
-                            //var_dump($data);
-                            //var_dump(debug_backtrace());
-                        }
-
-                        return $data;
-                    break;
-                    case 'getCount' :
-                        return pg_num_rows($this->queryData);
-                    break;
-                }
-            break;
-
-            case 'pdoMysql':
-                switch ($operation) {
-                    case 'getCount' :
-                        return count($this->data);
-                    break;
-                    case 'fetchAsArray':
-                        return $this->data[$this->resultIndex - 1];
-                    break;
-                }
-            break;
-        }
-    }
-
-
-    /**
-     * Replaces Query Data
-     *
-     * @param object $queryData - The database object.
-     * @return void
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    public function setQuery($queryData)
-    {
-        //$this->queryData = $queryData;
     }
 
 
@@ -190,6 +67,18 @@ class databaseResult
     public function getCount()
     {
         return $this->count;
+    }
+
+
+    /**
+     * @return mixed The next array of data from the result object, or false if no more are available.
+     */
+    public function fetchAsArray() {
+        if ($this->resultIndex++ >= $this->count) {
+            return false;
+        }
+
+        return $this->queryData->fetchAsArray();
     }
 
 
@@ -211,7 +100,7 @@ class databaseResult
 
         if ($this->queryData !== false) {
             if ($index) { // An index is specified, generate & return a multidimensional array. (index => [key => value], index being the value of the index for the row, key being the column name, and value being the corrosponding value).
-                while ($row = $this->functionMap('fetchAsArray')) {
+                while ($row = $this->fetchAsArray()) {
                     if ($rowNumber++ > $this->count) break; // Don't go over the pagination limit. In general, there will only be one extra result, which indicates that more results are available.
 
                     //if ($row === null || $row === false) break;
@@ -247,7 +136,7 @@ class databaseResult
             }
 
             else { // No index is present, generate a two-dimensional array (key => value, key being the column name, value being the corrosponding value).
-                $return = $this->functionMap('fetchAsArray');
+                $return = $this->fetchAsArray();
 
                 if ($return) {
                     foreach ($return AS $columnName => &$columnValue) {
@@ -270,7 +159,7 @@ class databaseResult
         $columnValues = array();
         $columns = (array) $columns;
 
-        while ($row = $this->functionMap('fetchAsArray')) {
+        while ($row = $this->fetchAsArray()) {
             $ref =& $columnValues;
             for ($i = 1; $i < count($columns); $i++) {
                 $ref =& $ref[$row[$columns[$i - 1]]];
@@ -289,7 +178,7 @@ class databaseResult
 
     public function getColumnValue($column)
     {
-        $row = $this->functionMap('fetchAsArray');
+        $row = $this->fetchAsArray();
 
         return $this->applyColumnTransformation($column, $row[$column]);
     }
@@ -326,7 +215,7 @@ class databaseResult
         $uid = 0;
 
         if ($this->queryData !== false && $this->queryData !== null) {
-            while (false !== ($row = $this->functionMap('fetchAsArray'))) { // Process through all rows.
+            while (false !== ($row = $this->fetchAsArray())) { // Process through all rows.
                 $uid++;
                 $row['uid'] = $uid; // UID is a variable that can be used as the row number in the template.
 

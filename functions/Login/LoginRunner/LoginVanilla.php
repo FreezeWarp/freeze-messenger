@@ -1,5 +1,7 @@
 <?php
-require_once('LoginDatabase.php');
+
+require_once(__DIR__ . '/../LoginDatabase.php');
+
 class LoginVanilla extends LoginDatabase {
     public function __construct(LoginFactory $loginFactory) {
         parent::__construct($loginFactory);

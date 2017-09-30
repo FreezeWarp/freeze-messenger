@@ -61,7 +61,7 @@ class LoginFactory {
         if (isset($_REQUEST['integrationMethod'])) {
             $loginName = $_REQUEST['integrationMethod'];
             $className = 'Login' . ucfirst($loginName);
-            $includePath = __DIR__ . "/{$className}.php";
+            $includePath = __DIR__ . "/LoginRunner/{$className}.php";
 
             if (!isset($loginConfig['extraMethods'][$loginName]['clientId'], $loginConfig['extraMethods'][$loginName]['clientSecret'])) {
                 new fimError('disabledLogin', 'The attempted login method is disabled on this server.');
@@ -89,7 +89,7 @@ class LoginFactory {
 
         elseif (isset($_REQUEST['password'], $_REQUEST['username'])) {
             $className = 'Login' . ucfirst($loginConfig['method']);
-            $includePath = __DIR__ . "/{$className}.php";
+            $includePath = __DIR__ . "/LoginRunner/{$className}.php";
 
             if (!file_exists($includePath)) {
                 new fimError('loginMisconfigured', 'Logins are currently misconfigured: a login method has been specified without a corresponding login class being available.');

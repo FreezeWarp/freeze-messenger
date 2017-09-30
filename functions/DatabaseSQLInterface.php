@@ -59,6 +59,15 @@ interface DatabaseSQLInterface {
     public function query($rawQuery);
 
     /**
+     * Send a raw query string to the database connection for execution, returning a resultset.
+     *
+     * @param string $rawQuery
+     *
+     * @return mixed False on failure; DatabaseResultInterface on success.
+     */
+    public function queryReturningResult($rawQuery);
+
+    /**
      * @return string The last value of a serial column incremented in an INSERT. This should, correctly implemented, return the last serial column value even if a query without a serial column is run.
      */
     public function getLastInsertId();

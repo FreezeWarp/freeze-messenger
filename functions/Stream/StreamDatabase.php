@@ -75,7 +75,7 @@ class StreamDatabase implements Stream {
     }
 
 
-    public function subscribe($stream, $lastId) {
+    public function subscribe($stream, $lastId, $callback) {
         global $config;
 
         $this->createStreamIfNotExists($stream);
@@ -84,7 +84,7 @@ class StreamDatabase implements Stream {
             foreach ($this->subscribeOnce($stream, $lastId) AS $event) {
                 if ($event['id'] > $lastId) $lastId = $event['id'];
 
-                yield $event;
+                call_user_func($callback, $event);
             }
 
             usleep($config['serverSentEventsWait'] * 1000000);

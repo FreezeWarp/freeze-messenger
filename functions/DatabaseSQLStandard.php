@@ -1,5 +1,5 @@
 <?php
-require_once(__DIR__ . '/DatabaseSQLInterface.php');
+require_once(__DIR__ . '/DatabaseResultInterface.php');
 
 abstract class DatabaseSQLStandard {
     /**
@@ -197,7 +197,7 @@ abstract class DatabaseSQLStandard {
      * @var array The tokens corresponding with 'both' and 'either' concatenations.
      */
     public $concatTypes = array(
-        'both' => ' AND ', 'either' => ' OR ',
+        'both' => ' AND ', 'either' => ' OR ', 'not' => ' !'
     );
 
 
@@ -294,6 +294,17 @@ abstract class DatabaseSQLStandard {
      */
     public $enumMode = false;
 
+    /**
+     * @var string {
+     *     Mode used to support enums. Options:
+     *
+     *    'onDuplicateKey' - Use MySQL on-duplicate-key handling.
+     *    'onConflictDoUpdate' - Use PostGres 9.5+ on-conflict-do-update handling.
+     *    'selectThenInsertOrUpdate' - Select on key condition, and either insert if no results or update if there are.
+     *    'tryCatch' - Attempt an insert, update on failure (not yet implemented).
+     */
+    public $upsertMode = false;
+
 
 
     /*********************************************************
@@ -308,6 +319,7 @@ abstract class DatabaseSQLStandard {
     abstract public function selectDatabase($database);
     abstract public function escape($text, $context);
     abstract public function query($rawQuery);
+    abstract public function queryReturningResult($rawQuery): DatabaseResultInterface;
     abstract public function getLastInsertId();
     abstract public function startTransaction();
     abstract public function endTransaction();

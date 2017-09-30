@@ -45,6 +45,10 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
         DatabaseTypeType::blob => 'BYTEA',
     );
 
+    public $concatTypes = array(
+        'both' => ' AND ', 'either' => ' OR ', 'not' => ' NOT '
+    );
+
     /**
      * @var bool While Postgres supports a native bitfield type, it has very strange cast rules for it. Thus, it does not exhibit the expected behaviour.
      */
@@ -72,7 +76,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
     }
 
     public function getVersion() {
-        return pg_version($this->connection)['client'];
+        return pg_version($this->connection)['server'];
     }
 
     public function getLastError() {
@@ -102,6 +106,10 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
         return pg_query($this->connection, $rawQuery);
     }
 
+    public function queryReturningResult($rawQuery) : DatabaseResultInterface {
+        return $this->getResult($this->query($rawQuery));
+    }
+
     public function getLastInsertId() {
         return pg_fetch_array($this->query('SELECT LASTVAL() AS lastval'))['lastval'];
     }
@@ -116,6 +124,62 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
 
     public function rollbackTransaction() {
         $this->query('ROLLBACK');
+    }
+
+    protected function getResult($source) {
+        return new class($source) implements DatabaseResultInterface {
+            /**
+             * @var resource The postgres resource returned by query.
+             */
+            public $source;
+
+            /**
+             * @var array An array containing the field numbers corresponding to all binary columns in the current resultset.
+             */
+            public $binaryFields = [];
+
+            /**
+             * @var array An array containing the field numbers corresponding to all integer columns in the current resultset, used to convert NULL to 0 (instead of ""). This may not be needed on new versions of Postgres.
+             */
+            public $integerFields = [];
+
+            public function __construct($source) {
+                $this->source = $source;
+
+                $num = pg_num_fields($this->source);
+                for ($i = 0; $i < $num; $i++) {
+                    if (pg_field_type($this->source, $i) === 'bytea') {
+                        $this->binaryFields[] = pg_field_name($this->source, $i);
+                    }
+
+                    // ...not actually positive this is needed. Need more testing.
+                    if (pg_field_type($this->source, $i) === 'int2' || pg_field_type($this->source, $i) === 'int4') {
+                        $this->integerFields[] = pg_field_name($this->source, $i);
+                    }
+                }
+            }
+
+            public function fetchAsArray() {
+                $data = pg_fetch_assoc($this->source);
+
+                // Decode bytea values
+                if ($data) {
+                    foreach ($this->binaryFields AS $field) {
+                        $data[$field] = pg_unescape_bytea($data[$field]);
+                    }
+
+                    foreach ($this->integerFields AS $field) {
+                        $data[$field] = (int) $data[$field];
+                    }
+                }
+
+                return $data;
+            }
+
+            public function getCount() {
+                return pg_num_rows($this->source);
+            }
+        };
     }
 
 
