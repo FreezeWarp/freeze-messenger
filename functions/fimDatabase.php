@@ -1796,7 +1796,7 @@ class fimDatabase extends DatabaseSQL
 
 
     public function lockoutIncrement() {
-        if ($this->config->dev)
+        if ($this->config::$dev)
             return true;
 
         // Note: As defined, attempts will further increase, and expires will further increase, with each additional query beyond the "lockout". As a result, this function generally shouldn't be called if a user is already lockedout -- otherwise, further attempts just lock them out further, when they could be the user checking to see if they are still locked out. So always call lockoutActive before calling lockoutIncrement.
@@ -1813,7 +1813,7 @@ class fimDatabase extends DatabaseSQL
     }
 
     public function lockoutActive() {
-        if ($this->config->dev)
+        if ($this->config::$dev)
             return false;
 
         // Note: Select condition format is experimental and untested, and numRows is not yet implemented. So, uh, do that. Lockout count is also unimplemented.
