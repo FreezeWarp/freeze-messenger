@@ -94,11 +94,11 @@ echo new ApiData(
             'installUrl' => $installUrl,
 
             'parentalControls' => array(
-                'parentalEnabled' => $config['parentalEnabled'],
-                'parentalAgeChangeable' => $config['parentalAgeChangeable'],
-                'parentalFlags' => new ApiOutputList($config['parentalFlags']),
-                'parentalAges' => new ApiOutputList($config['parentalAges']),
-                'enableCensor' => $config['censorEnabled'],
+                'parentalEnabled' => fimConfig::$parentalEnabled,
+                'parentalAgeChangeable' => fimConfig::$parentalAgeChangeable,
+                'parentalFlags' => new ApiOutputList(fimConfig::$parentalFlags),
+                'parentalAges' => new ApiOutputList(fimConfig::$parentalAges),
+                'enableCensor' => fimConfig::$censorEnabled,
             ),
 
             'branding' => array(
@@ -108,48 +108,48 @@ echo new ApiData(
 
             'requestMethods' => array(
                 'poll' => true,
-                'serverSentEvents' => (bool) $config['serverSentEvents'],
+                'serverSentEvents' => (bool) fimConfig::$serverSentEvents,
             ),
 
             'registrationPolicies' => array(
-                'ageRequired' => (bool) $config['ageRequired'],
-                'ageMinimum' => (int) $config['ageMinimum'],
-                'emailRequired' => (bool) $config['emailRequired'],
+                'ageRequired' => (bool) fimConfig::$ageRequired,
+                'ageMinimum' => (int) fimConfig::$ageMinimum,
+                'emailRequired' => (bool) fimConfig::$emailRequired,
             ),
 
             'fileUploads' => array(
-                'enabled' => (bool) $config['enableUploads'],
-                'generalEnabled' => (bool) $config['enableGeneralUploads'],
-                'maxAll' => (int) $config['uploadMaxFiles'],
-                'maxUser' => (int) $config['uploadMaxUserFiles'],
-                'chunkSize' => (int) $config['fileUploadChunkSize'],
-                'orphanFiles' => (bool) $config['allowOrphanFiles'],
-                'allowedExtensions' => new ApiOutputList($config['allowedExtensions']),
-                'mimes' => new ApiOutputList($config['uploadMimes']),
-                'extensionChanges' => $config['extensionChanges'],
-                'fileContainers' => $config['fileContainers'],
-                'fileProofs' => $config['uploadMimeProof'],
-                'sizeLimits' => $config['uploadSizeLimits'],
+                'enabled' => (bool) fimConfig::$enableUploads,
+                'generalEnabled' => (bool) fimConfig::$enableGeneralUploads,
+                'maxAll' => (int) fimConfig::$uploadMaxFiles,
+                'maxUser' => (int) fimConfig::$uploadMaxUserFiles,
+                'chunkSize' => (int) fimConfig::$fileUploadChunkSize,
+                'orphanFiles' => (bool) fimConfig::$allowOrphanFiles,
+                'allowedExtensions' => new ApiOutputList(fimConfig::$allowedExtensions),
+                'mimes' => new ApiOutputList(fimConfig::$uploadMimes),
+                'extensionChanges' => fimConfig::$extensionChanges,
+                'fileContainers' => fimConfig::$fileContainers,
+                'fileProofs' => fimConfig::$uploadMimeProof,
+                'sizeLimits' => fimConfig::$uploadSizeLimits,
             ),
 
             'rooms' => array(
-                'roomLengthMinimum' => (int) $config['roomLengthMinimum'],
-                'roomLengthMaximum' => (int) $config['roomLengthMaximum'],
-                'disableTopic' => (bool) $config['disableTopic'],
-                'hiddenRooms' => (bool) $config['hiddenRooms'],
+                'roomLengthMinimum' => (int) fimConfig::$roomLengthMinimum,
+                'roomLengthMaximum' => (int) fimConfig::$roomLengthMaximum,
+                'disableTopic' => (bool) fimConfig::$disableTopic,
+                'hiddenRooms' => (bool) fimConfig::$hiddenRooms,
             ),
 
             'formatting' => array(
-                'fonts' => $config->defaultFormattingFont ? $config['fonts'] : false,
-                'highlight' => $config->defaultFormattingHighlight,
-                'color' => $config->defaultFormattingColor,
-                'italics' => $config->defaultFormattingItalics,
-                'bold' => $config->defaultFormattingBold,
+                'fonts' => fimConfig::$defaultFormattingFont ? fimConfig::$fonts : false,
+                'highlight' => fimConfig::$defaultFormattingHighlight,
+                'color' => fimConfig::$defaultFormattingColor,
+                'italics' => fimConfig::$defaultFormattingItalics,
+                'bold' => fimConfig::$defaultFormattingBold,
                 ///'emoticons' => $smilies2,
             ),
 
             'cacheDelays' => array(
-                'censorWords' => $config['censorWordsCacheRefresh'],
+                'censorWords' => fimConfig::$censorWordsCacheRefresh,
             ),
 
             'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk. We will, however, display the base version.

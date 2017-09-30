@@ -243,7 +243,7 @@ switch ($_REQUEST['phase']) {
         if ($forum == 'vanilla') {
             try {
                 list ($database, $config) = fimDatabaseAndConfigFactory::init($host, $port, $userName, $password, $databaseName, $driver, $prefix);
-                $config->displayBacktrace = true;
+                fimConfig::$displayBacktrace = true;
                 $generalCache = new fimCache(null, 'none', $database);
 
                 $user = new fimUser(1);

@@ -17,7 +17,7 @@ if (!defined('API_INKICK'))
 $request = fim_sanitizeGPC('p', [
     'length' => [
         'require' => $requestHead['_action'] === 'create',
-        'min' => $config->kickMinimumLength
+        'min' => fimConfig::$kickMinimumLength
     ],
 ]);
 
@@ -44,7 +44,7 @@ elseif ($requestHead['_action'] === 'create') {
     else {
         $database->kickUser($kickUser->id, $room->id, $request['length']);
 
-        if ($config->kickSendMessage)
+        if (fimConfig::$kickSendMessage)
             $database->storeMessage(new fimMessage([
                 'user' => $user,
                 'room' => $room,
@@ -56,7 +56,7 @@ elseif ($requestHead['_action'] === 'create') {
 elseif ($requestHead['_action'] === 'delete') {
     $database->unkickUser($kickUser->id, $room->id);
 
-    if ($config->unkickSendMessage)
+    if (fimConfig::$unkickSendMessage)
         $database->storeMessage(new fimMessage([
             'user' => $user,
             'room' => $room,

@@ -71,7 +71,7 @@ list ($database, $config) = fimDatabaseAndConfigFactory::init($dbConnect['core']
     $dbConnect['core']['password'],
     $dbConnect['core']['database'],
     $dbConnect['core']['driver'], $dbConfig['vanilla']['tablePrefix']);
-$config->dev = true;
+fimConfig::$dev = true;
 
 $databaseTests = new databaseSQLTests($database);
 

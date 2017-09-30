@@ -78,7 +78,7 @@ class fimFile {
                 case 'extension':
                     $extension = pathinfo($this->name, PATHINFO_EXTENSION);
 
-                    $this->extension = $config->extensionChanges[$this->__get('extension')] ?? $extension;
+                    $this->extension = fimConfig::$extensionChanges[$this->__get('extension')] ?? $extension;
                 break;
 
                 case 'mime':
@@ -88,7 +88,7 @@ class fimFile {
 
                 case 'container':
                     global $config;
-                    $this->container = $config->fileContainers[$this->__get('extension')] ?? 'other';
+                    $this->container = fimConfig::$fileContainers[$this->__get('extension')] ?? 'other';
                 break;
             }
         }
