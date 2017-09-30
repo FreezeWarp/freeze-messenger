@@ -290,6 +290,10 @@ class DatabaseSQL extends Database
                 return $this->formatValue($item->type, $item->value);
                 break;
 
+            case DatabaseTypeType::null:
+                return 'NULL';
+                break;
+
             case DatabaseTypeType::search:
                 return $this->sqlInterface->stringQuoteStart
                     . $this->sqlInterface->stringFuzzy
