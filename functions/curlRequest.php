@@ -16,8 +16,9 @@
 
 require_once('ApiData.php');
 require_once('fimError.php');
+require_once('fimError.php');
 require('curlRequestMethod.php');
-
+require(__DIR__ . '/../vendor/autoload.php');
 
 /**
  * Performs a structured CURL request.
@@ -89,7 +90,7 @@ class curlRequest {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function setRequestData($data) {
-        $this->requestData = http_build_query($data);
+        $this->requestData = $data;
     }
 
     /**
@@ -123,114 +124,33 @@ class curlRequest {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function execute($method = CurlRequestMethod::GET) {
-        if (function_exists('fsockopen'))
-            $this->fsockopen($method);
-
-        else if (function_exists('curl_init'))
-            $this->curl($method);
-
-        else
-            throw new Exception('curlRequest: no compatible PHP function found. Please enable fsock or curl.');
-
-        return $this;
+        $this->guzzle($method);
     }
 
 
-    public function curl($method) {
-        $ch = curl_init($this->requestFile); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
+    public function guzzle($method) {
+        $client = new GuzzleHttp\Client([
+            'http_errors' => false,
+        ]);
 
-        if ($method == CurlRequestMethod::POST)
-            curl_setopt($ch, CURLOPT_POST, true);
-        elseif ($method  != CurlRequestMethod::GET)
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, CurlRequestMethod::toString($method));
+        $effectiveUrl = '';
 
-        if ($method != CurlRequestMethod::GET)
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->requestData);
-
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); // obey redirects
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);  // return the data
-
-        if ($che = curl_error($ch)) {
-            throw new Exception('Curl Error: ' . $che);
-        }
-        else {
-            $this->response = curl_exec($ch);
-            $this->responseHeader = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $this->redirectLocation = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+        $queryParams = [
+            'on_stats' => function (GuzzleHttp\TransferStats $stats) use (&$effectiveUrl) {
+                $effectiveUrl = $stats->getEffectiveUri();
+            }
+        ];
+        if ($this->requestData) {
+            $queryParams['form_params'] = $this->requestData;
         }
 
-        curl_close($ch);
+        $response = $client->request($method, $this->requestFile, $queryParams);
+
+        $this->response = (string) $response->getBody();
+        $this->responseHeader = $response->getStatusCode();
+        $this->redirectLocation = $effectiveUrl;
     }
 
-
-    public function fsockopen($method) {
-        $errno = false;
-        $errstr = false;
-
-        $urlData = parse_url($this->requestFile); // parse the given URL
-        if (!$urlData['port']) {
-            $urlData['port'] = $urlData['scheme'] === 'https' ? 443 : 80;
-        }
-
-        $fp = fsockopen($urlData['host'], $urlData['port'], $errno, $errstr); // open a socket connection on port 80
-
-        if ($fp) {
-            // send the request headers:
-            fputs($fp, CurlRequestMethod::toString($method) . " " . $urlData['path'] . (isset($urlData['query']) ? '?' . $urlData['query'] : '') . " HTTP/1.1\r\n");
-            fputs($fp, "Host: " . $urlData['host'] . "\r\n");
-
-            if ($method != CurlRequestMethod::GET && $this->requestData) {
-                fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n");
-                fputs($fp, "Content-length: " . strlen($this->requestData) . "\r\n");;
-            }
-
-            fputs($fp, "Connection: close\r\n\r\n");
-
-            if ($method != CurlRequestMethod::GET && $this->requestData) {
-                fputs($fp, $this->requestData);
-            }
-
-            $result = '';
-
-            while (!feof($fp)) {
-                $result .= fgets($fp, 1024); // receive the results of the request
-            }
-        }
-
-        fclose($fp); // close the socket connection:
-
-        if ($errno) {
-            throw new Exception('FSock Error: ' . $errstr);
-        }
-        else {
-            // split the result header from the content
-            $result = explode("\r\n\r\n", $result, 2); // Return headers in [0], return content in [1].
-            $this->response = isset($result[1]) ? $result[1] : '';
-
-            $headerSet = 0;
-            foreach (explode("\n", $result[0]) AS $header) {
-                if (stripos($header, 'HTTP/') === 0) {
-                    $headerSet++;
-
-                    if (strpos($header, '301') !== false || strpos($header, '302') !== false)
-                        $this->allHeaders[$headerSet]['status'] = 'redirect';
-                    else if (strpos($header, '200') === false)
-                        $this->allHeaders[$headerSet]['status'] = 'error';
-                    else
-                        $this->allHeaders[$headerSet]['status'] = 'okay';
-
-                    $this->allHeaders[$headerSet]['httpCode'] = $header;
-                }
-
-                if (stripos($header, 'location') !== false) {
-                    $this->allHeaders[$headerSet]['location'] = explode(': ', $header)[1];
-                }
-            }
-
-            $this->responseHeader = $this->allHeaders[$headerSet]['httpCode'];
-            $this->redirectLocation = $this->allHeaders[$headerSet - 1]['location'];
-        }
-    }
 
     /**
      * Executes the cURL request.
