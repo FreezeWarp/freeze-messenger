@@ -472,6 +472,11 @@ popup = {
                     'info' : ['self', 'profile'],
                     'userIds' : [userId]
                 }, {'each' : function(active) { console.log(active);
+
+                    /**************************
+                     ***** Server Settings ****
+                     **************************/
+
                     var options = active.options,
                         defaultHighlightHashPre = [],
                         defaultHighlightHash = {r:0, g:0, b:0},
@@ -480,7 +485,15 @@ popup = {
 
                     var ignoreList = new autoEntry($("#ignoreListContainer"), {
                         'name' : 'ignoreList',
-                        'default' : active.ignoreList,
+                        'default' : active.ignoredUsers,
+                        'list' : 'users',
+                        'resolveFromIds' : Resolver.resolveUsersFromIds,
+                        'resolveFromNames' : Resolver.resolveUsersFromNames
+                    });
+
+                    var friendsList = new autoEntry($("#friendsListContainer"), {
+                        'name' : 'friendsList',
+                        'default' : active.friendedUsers,
                         'list' : 'users',
                         'resolveFromIds' : Resolver.resolveUsersFromIds,
                         'resolveFromNames' : Resolver.resolveUsersFromNames
@@ -609,7 +622,6 @@ popup = {
                     fimApi.getRooms({'roomIds' : [active.defaultRoomId]}, {'each' : function(roomData) { $('#defaultRoom').val(roomData.name).attr('data-id', roomData.id); }});
 
 
-
                     // Parental Ages/Flags
                     if (window.serverSettings.parentalControls.parentalEnabled) {
                         // Parental Age Values
@@ -646,10 +658,18 @@ popup = {
                     else {
                         $('#settings5parentalAge, #settings5parentalFlags').hide();
                     }
+
+
+                    // Default Privacy Level
+                    $('input[name=privacyLevel][value="' + active.privacyLevel + '"]').prop('checked', true);
                 }});
 
 
-                /* Update Default Form Values to Client Settings */
+
+
+                /**************************
+                 * WebPro-Specific Values *
+                 **************************/
 
                 // Only Show the Profile Setting if Using Vanilla Logins
                 if (window.serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
@@ -776,7 +796,11 @@ popup = {
                 });
 
 
-                /* Submit Processer */
+
+                /**************************
+                 ******* Submit Form ******
+                 **************************/
+
                 $("#changeSettingsForm").submit(function() {
                     var defaultFormatting = [],
                         parentalFlags = [];
@@ -796,9 +820,11 @@ popup = {
                         "defaultRoomId" : $('#defaultRoom').attr('data-id'),
                         "watchRooms" : $('#watchRooms').val().split(','),
                         "ignoreList" : $('#ignoreList').val().split(','),
+                        "friendsList" : $('#friendsList').val().split(','),
                         "profile" : $('#profile').val(),
                         "parentalAge" : $('#parentalAge option:selected').val(),
-                        "parentalFlags" : parentalFlags
+                        "parentalFlags" : parentalFlags,
+                        "privacyLevel" : $('input[name=privacyLevel]:radio:checked').val()
                     }, {
                         'each' : function(value) {
                             console.log(value);

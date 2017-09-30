@@ -608,11 +608,13 @@ fimApi.prototype.editUserOptions = function(action, params, requestSettings) {
         'watchRooms' : null,
         'favRooms' : null,
         'ignoreList': null,
+        'friendsList': null,
         'profile': null,
         'defaultFontface': null,
         'parentalAge': null,
         'parentalFlags': null,
         'avatar' : null,
+        'privacyLevel' : null
     });
 
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
