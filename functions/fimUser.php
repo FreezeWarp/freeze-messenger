@@ -23,6 +23,22 @@ require_once('fimDynamicObject.php');
 class fimUser extends fimDynamicObject
 {
     /**
+     * The user does not wish to enable private messages.
+     */
+    const USER_PRIVACY_BLOCKALL = "block";
+
+    /**
+     * The user only allows private messages from friends.
+     */
+    const USER_PRIVACY_FRIENDSONLY = "friends";
+
+    /**
+     * The user only allows private messages from all users.
+     */
+    const USER_PRIVACY_ALLOWALL = "allow";
+
+
+    /**
      * The user may view rooms.
      */
     const USER_PRIV_VIEW = 0x1;
@@ -100,7 +116,7 @@ class fimUser extends fimDynamicObject
     const ADMIN_CENSOR = 0x1000000;
 
 
-       /**
+    /**
      * The id reserved for anonymous users.
      */
     const ANONYMOUS_USER_ID = -1;
@@ -174,6 +190,7 @@ class fimUser extends fimDynamicObject
 
     /**
      * @var int The last time the user's data was synced with an integration service.
+     * todo: remove, probably
      */
     protected $lastSync;
 
@@ -247,6 +264,11 @@ class fimUser extends fimDynamicObject
     protected $friendedUsers = [];
 
     /**
+     * @var string the user's privacy setting.
+     */
+    protected $privacyLevel;
+
+    /**
      * @var string The user's password, hashed. Only in vanilla logins.
      */
     protected $passwordHash;
@@ -312,13 +334,14 @@ class fimUser extends fimDynamicObject
      */
     private static $userDataPullGroups = array(
         'id,name,privs,lastSync',
-        'mainGroupId,socialGroupIds,parentalFlags,parentalAge,birthDate',
+        'mainGroupId,socialGroupIds,parentalFlags,parentalAge,birthDate', // Permission flags.
         'joinDate,messageFormatting,profile,avatar,nameFormat',
         'options,defaultRoomId',
         'passwordHash,passwordFormat',
         'fileCount,fileSize',
-        'favRooms,watchRooms,ignoredUsers,friendedUsers',
-        'email'
+        'favRooms,watchRooms',
+        'privacyLevel,ignoredUsers,friendedUsers',
+        'email',
     );
 
 
@@ -455,6 +478,8 @@ class fimUser extends fimDynamicObject
     public function editList($listName, $ids, $action) {
         global $database;
 
+        // todo: room/user factories that use cached data if available, database otherwise
+
         $this->resolve([$listName]);
 
         $tableNames = [
@@ -482,6 +507,10 @@ class fimUser extends fimDynamicObject
 
             $columnName = 'subjectId';
         }
+        else {
+            throw new Exception('Unknown list.');
+        }
+
 
         $table = $database->sqlPrefix . $tableNames[$listName];
 
@@ -512,29 +541,31 @@ class fimUser extends fimDynamicObject
 
         if ($action === 'create' || $action === 'edit') {
             foreach ($items AS $item) {
+                // Skip Rooms That The User Doesn't Have Permission To
                 if ($listName === 'favRooms' || $listName === 'watchRooms') {
                     if (!($database->hasPermission($this, $item) & fimRoom::ROOM_PERMISSION_VIEW)) {
                         continue;
                     }
-
-                    // TODO: If it is the friends list, status should be request
-
-                    $database->insert($table, array(
-                        'userId' => $this->id,
-                        $columnName => $item->id,
-                    ));
-
-                    // TODO: If it is the friends list, create a friendRequest event
-
-                    $this->{$listName}[] = $item->id;
                 }
+
+                // Update the Database List
+                $database->insert($table, array(
+                    'userId' => $this->id,
+                    $columnName => $item->id,
+                ));
+
+                // Update Our Local List
+                if (!in_array($item->id, $this->{$listName}))
+                    $this->{$listName}[] = $item->id;
             }
         }
 
 
+        // Sort Our Local List
         sort($this->{$listName});
 
 
+        // Update the Database List Cache
         $this->setDatabase([
             $listName => $this->{$listName}
         ]);

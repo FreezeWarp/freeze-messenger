@@ -90,6 +90,25 @@ class fimRoom extends fimDynamicObject {
      */
     const ROOM_TYPE_GENERAL = 'general';
 
+
+
+    /**
+     * When a private room behaves normally.
+     */
+    const PRIVATE_ROOM_STATE_NORMAL = 'normal';
+
+    /**
+     * When a private room has members who are not allowed to private message eachother.
+     */
+    const PRIVATE_ROOM_STATE_READONLY = 'readOnly';
+
+    /**
+     * When a private room is outright disabled, and should not be readable even by its member users.
+     * This is typically the state of the room when one member does not exist, or private rooms are disabled entirely.
+     */
+    const PRIVATE_ROOM_STATE_DISABLED = 'readOnly';
+
+
     
     /**
      * @var mixed The ID of the room.
@@ -140,6 +159,11 @@ class fimRoom extends fimDynamicObject {
      * @var string The room's type, e.g. "private"
      */
     protected $type = 'unknown';
+
+    /**
+     * @var bool The state of the private room, based on its members and global configuration. (Basically, we're caching it, since it's an O(n^3) operation to check, and requires finding all allowed users.)
+     */
+    protected $privateRoomState = null;
 
     /**
      * @var array An array of parental flags applied to the room.
@@ -392,6 +416,7 @@ class fimRoom extends fimDynamicObject {
      * Returns an array of the user IDs who are part of the private/otr room. It does not check to see if they exist.
      * @return array
      * @throws Exception
+     * TODO: move into fimRoomPrivate class
      */
     public function getPrivateRoomMemberIds() {
         if (!$this->isPrivateRoom())
@@ -402,20 +427,124 @@ class fimRoom extends fimDynamicObject {
 
     /**
      * Returns an array of fimUser objects corresponding with those returned by getPrivateRoomMemberIds(), though only valid members (those that exist in the database) will be returned. Thus, the count of this may differ from the count of getPrivateRoomMemberIds(), and this fact can be used to check if the room exists solely of valid members.
-     * TODO: rewrite to use cached $user->exists() checks
      *
      * @return fimUser[]
      * @throws Exception
+     * TODO: move into fimRoomPrivate class
      */
     public function getPrivateRoomMembers() : array {
-        global $database;
+        if (!$this->isPrivateRoom())
+            throw new Exception('Call to fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
+
+        $users = [];
+        foreach ($this->getPrivateRoomMemberIds() AS $userId) {
+            $user = fimUserFactory::getFromId($userId);
+
+            if ($user->exists()) {
+                $users[] = $user;
+            }
+        }
+
+        return $users;
+    }
+
+    /**
+     * @return bool
+     * @throws Exception If the room is not a private room.
+     * TODO: move into fimRoomPrivate class
+     */
+    public function arePrivateRoomMembersValid() : bool {
+        if (!$this->isPrivateRoom())
+            throw new Exception('Call to fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
+
+        if ($this->privateMembersCompatible !== null) {
+
+        }
+        return ;
+    }
+
+    /**
+     * Determines whether all private room members are allowed to private message all other members, based on ignore/friends lists and each user's privacy settings.
+     *
+     * Performance wise, this is typically O(n^3), although:
+     ** the first two ns will be fairly small (10 is max) -- this is the two foreach loops.
+     ** the third n may be bigger -- this is the in_array(, friended/ignoredUsers)
+     *
+     * @return bool True if all private room members are allowed to private message all other private room members, false otherwise.
+     * @throws Exception If the room is not a private room.
+     */
+    public function getPrivateRoomState() {
+        global $config;
 
         if (!$this->isPrivateRoom())
             throw new Exception('Call to fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
 
-        return $database->getUsers(array(
-            'userIds' => $this->getPrivateRoomMemberIds(),
-        ))->getAsUsers();
+
+        if ($this->privateRoomState !== null)
+            return $this->privateRoomState;
+
+        else {
+            // Disallow OTR rooms if disabled.
+            if ($this->type === fimRoom::ROOM_TYPE_OTR && !fimConfig::$otrRoomsEnabled)
+                return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_DISABLED;
+
+            // Disallow private rooms if disabled.
+            elseif ($this->type === fimRoom::ROOM_TYPE_PRIVATE && !fimConfig::$privateRoomsEnabled)
+                return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_DISABLED;
+
+            // Disallow private rooms with too many members.
+            elseif (count($this->getPrivateRoomMemberIds()) > fimConfig::$privateRoomMaxUsers)
+                return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_DISABLED;
+
+            else {
+                $users = $this->getPrivateRoomMembers();
+
+                // This checks for invalid users, as getPrivateRoomMembers() will only return members who exist in the database, while getPrivateRoomMemberIds() returns all ids who were specified when the fimRoom object was created.
+                if (count($this->getPrivateRoomMemberIds()) !== count($users))
+                    return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_DISABLED;
+
+                else {
+                    $roomAllowed = true;
+
+                    /*
+                     * Performance wise, this is typically O(n^3), although:
+                     ** the first two ns will be fairly small (10 is max) -- this is the two foreach loops.
+                     ** the third n may be bigger -- this is the in_array(, friended/ignoredUsers)
+                     */
+                    foreach ($users AS $user) {
+                        if ($user->privacyLevel == fimUser::USER_PRIVACY_BLOCKALL) {
+                            $roomAllowed = false;
+                            break;
+                        }
+                        else {
+                            foreach ($users AS $otherUser) {
+                                if ($otherUser === $user)
+                                    continue;
+
+                                // If a user is only allowing friends, block if a non-friended user is present.
+                                elseif ($user->privacyLevel == fimUser::USER_PRIVACY_FRIENDSONLY
+                                    && !in_array($otherUser->id, $user->friendedUsers)) {
+                                    $roomAllowed = false;
+                                    break;
+                                }
+
+                                // If a user is allowing by default, block only if an ignored user is present.
+                                elseif ($user->privacyLevel == fimUser::USER_PRIVACY_ALLOWALL
+                                    && in_array($otherUser->id, $user->ignoredUsers)) {
+                                    $roomAllowed = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if ($roomAllowed)
+                        return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_NORMAL;
+                    else
+                        return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_READONLY;
+                }
+            }
+        }
     }
 
     public function getEncodedId() {

@@ -142,7 +142,8 @@ function curlTestGETEquals($path, $params, $jsonIndex, $expectedValue, $callback
     global $host;
     echo '<td>' . $path . '?' . http_build_query($params) . '</td>';
 
-    $request = (new curlRequest("{$host}{$path}", $params))->executeGET();
+    $request = (new curlRequest("{$host}{$path}", $params));
+    $request->executeGET();
 
     echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
 
@@ -153,7 +154,8 @@ function curlTestGETEqualsMulti($path, $params, $jsonIndexes, $expectedValues, $
     global $host;
     echo '<td>' . $path . '?' . http_build_query($params) . '</td>';
 
-    $request = (new curlRequest("{$host}{$path}", $params))->executeGET();
+    $request = (new curlRequest("{$host}{$path}", $params));
+    $request->executeGET();
 
     echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
 
@@ -164,7 +166,8 @@ function curlTestPOSTEquals($path, $params, $body, $jsonIndex, $expectedValue, $
     global $host;
     echo '<td>' . $path . '?' . http_build_query($params) . '<br />' . http_build_query($body) . '</td>';
 
-    $request = (new curlRequest("{$host}{$path}", $params, $body))->executePOST();
+    $request = (new curlRequest("{$host}{$path}", $params, $body));
+    $request->executePOST();
 
     echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
 
@@ -175,7 +178,8 @@ function curlTestPOSTEqualsMulti($path, $params, $body, $jsonIndexes, $expectedV
     global $host;
     echo '<td>' . $path . '?' . http_build_query($params) . '<br />' . http_build_query($body) . '</td>';
 
-    $request = (new curlRequest("{$host}{$path}", $params, $body))->executePOST();
+    $request = (new curlRequest("{$host}{$path}", $params, $body));
+    $request->executePOST();
 
     echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
 
@@ -1609,15 +1613,241 @@ curlTestPOSTEquals(
 
 // todo: test kick natural expiration
 
+
+echo '<thead><tr class="ui-widget-header"><th colspan="4">Private Rooms</th></tr></thead>';
+
+foreach (["", "2"] AS $testUserX) {
+    echo "<tr><td>Send Message 'Hi!$testUserX' in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestPOSTEquals(
+        'api/message.php',
+        ['_action' => 'create', 'access_token' => ${'testUser' . $testUserX . 'Token'}, 'roomId' => "p$testUserId,$testUser2Id"],
+        ['message' => 'Hi!' . $testUserX],
+        ['message', 'censor'],
+        []
+    );
+}
+
+foreach (["", "2"] AS $testUserX) {
+    echo "<tr><td>Get Messages in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestGETEqualsMulti(
+        'api/message.php',
+        ['access_token' => $testUserToken, 'roomId' => "p$testUserId,$testUser2Id"],
+        [
+            ['messages', 1, 'text'],
+            ['messages', 0, 'text']
+        ],
+        [
+            'Hi!',
+            'Hi!2'
+        ]
+    );
+}
+
+echo "<tr><td>Get Messages in 'p$testUserId,$testUser2Id' as 'admin'</td>";
+curlTestGETEquals(
+    'api/message.php',
+    ['access_token' => $accessToken, 'roomId' => "p$testUserId,$testUser2Id"],
+    ['exception', 'string'],
+    'idNoExist'
+);
+
+echo "<tr><td>'$testUserId' Adds '$testUser2Id' to Ignore List</td>";
+curlTestPOSTEquals(
+    'api/userOptions.php',
+    ['access_token' => $testUserToken, '_action' => 'create'],
+    ['ignoreList' => [$testUser2Id]],
+    ['editUserOptions'],
+    []
+);
+
+foreach (["", "2"] AS $testUserX) {
+    echo "<tr><td>Send Message 'Hi!$testUserX' in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestPOSTEquals(
+        'api/message.php',
+        ['_action' => 'create', 'access_token' => ${'testUser' . $testUserX . 'Token'}, 'roomId' => "p$testUserId,$testUser2Id"],
+        ['message' => 'Hi!' . $testUserX],
+        ['exception', 'string'],
+        'noPerm'
+    );
+
+    echo "<tr><td>Get Messages in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestGETEqualsMulti(
+        'api/message.php',
+        ['access_token' => $testUserToken, 'roomId' => "p$testUserId,$testUser2Id"],
+        [
+            ['messages', 0, 'text'],
+            ['messages', 1, 'text']
+        ],
+        [
+            'Hi!2',
+            'Hi!'
+        ]
+    );
+}
+
+echo "<tr><td>'$testUserId' Removes '$testUser2Id' From Ignore List</td>";
+curlTestPOSTEquals(
+    'api/userOptions.php',
+    ['access_token' => $testUserToken, '_action' => 'delete'],
+    ['ignoreList' => [$testUser2Id]],
+    ['editUserOptions'],
+    []
+);
+
+foreach (["", "2"] AS $testUserX) {
+    echo "<tr><td>Send Message 'Hello!$testUserX' in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestPOSTEquals(
+        'api/message.php',
+        ['_action' => 'create', 'access_token' => ${'testUser' . $testUserX . 'Token'}, 'roomId' => "p$testUserId,$testUser2Id"],
+        ['message' => "Hello!$testUserX"],
+        ['message', 'censor'],
+        []
+    );
+}
+
+foreach (["", "2"] AS $testUserX) {
+    echo "<tr><td>Get Messages in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestGETEqualsMulti(
+        'api/message.php',
+        ['access_token' => $testUserToken, 'roomId' => "p$testUserId,$testUser2Id"],
+        [
+            ['messages', 0, 'text'],
+            ['messages', 1, 'text'],
+        ],
+        [
+            'Hello!2',
+            'Hello!'
+        ]
+    );
+}
+
+echo "<tr><td>'$testUserId' Changes Privacy Setting to Friends-Only</td>";
+curlTestPOSTEquals(
+    'api/userOptions.php',
+    ['access_token' => $testUserToken, '_action' => 'edit'],
+    ['privacyLevel' => 'friends'],
+    ['editUserOptions'],
+    []
+);
+
+foreach (["", "2"] AS $testUserX) {
+    echo "<tr><td>Send Message 'Hi!$testUserX' in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestPOSTEquals(
+        'api/message.php',
+        ['_action' => 'create', 'access_token' => ${'testUser' . $testUserX . 'Token'}, 'roomId' => "p$testUserId,$testUser2Id"],
+        ['message' => 'Hi!' . $testUserX],
+        ['exception', 'string'],
+        'noPerm'
+    );
+
+    echo "<tr><td>Get Messages in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestGETEqualsMulti(
+        'api/message.php',
+        ['access_token' => $testUserToken, 'roomId' => "p$testUserId,$testUser2Id"],
+        [
+            ['messages', 0, 'text'],
+            ['messages', 1, 'text'],
+        ],
+        [
+            'Hello!2',
+            'Hello!'
+        ]
+    );
+}
+
+echo "<tr><td>'$testUserId' Adds '$testUser2Id' to Friends List</td>";
+curlTestPOSTEquals(
+    'api/userOptions.php',
+    ['access_token' => $testUserToken, '_action' => 'create'],
+    ['friendsList' => [$testUser2Id]],
+    ['editUserOptions'],
+    []
+);
+
+foreach (["", "2"] AS $testUserX) {
+    echo "<tr><td>Send Message 'Hi Again!$testUserX' in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestPOSTEquals(
+        'api/message.php',
+        ['_action' => 'create', 'access_token' => ${'testUser' . $testUserX . 'Token'}, 'roomId' => "p$testUserId,$testUser2Id"],
+        ['message' => 'Hi Again!' . $testUserX],
+        ['message', 'censor'],
+        []
+    );
+}
+
+foreach (["", "2"] AS $testUserX) {
+    echo "<tr><td>Get Messages in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestGETEqualsMulti(
+        'api/message.php',
+        ['access_token' => ${"testUser" . $testUserX . "Token"}, 'roomId' => "p$testUserId,$testUser2Id"],
+        [
+            ['messages', 0, 'text'],
+            ['messages', 1, 'text']
+        ],
+        [
+            'Hi Again!2',
+            'Hi Again!',
+        ]
+    );
+}
+
+echo "<tr><td>'$testUserId' Changes Privacy Setting to Block-All</td>";
+curlTestPOSTEquals(
+    'api/userOptions.php',
+    ['access_token' => $testUserToken, '_action' => 'edit'],
+    ['privacyLevel' => 'block'],
+    ['editUserOptions'],
+    []
+);
+
+foreach (["", "2"] AS $testUserX) {
+    echo "<tr><td>Send Message 'Hi!$testUserX' in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestPOSTEquals(
+        'api/message.php',
+        ['_action' => 'create', 'access_token' => ${'testUser' . $testUserX . 'Token'}, 'roomId' => "p$testUserId,$testUser2Id"],
+        ['message' => 'Hi!' . $testUserX],
+        ['exception', 'string'],
+        'noPerm'
+    );
+
+    echo "<tr><td>Get Messages in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Id'} . "</td>";
+    curlTestGETEqualsMulti(
+        'api/message.php',
+        ['access_token' => ${"testUser" . $testUserX . "Token"}, 'roomId' => "p$testUserId,$testUser2Id"],
+        [
+            ['messages', 0, 'text'],
+            ['messages', 1, 'text'],
+            ['messages', 2, 'text'],
+            ['messages', 3, 'text'],
+            ['messages', 4, 'text'],
+            ['messages', 5, 'text'],
+            ['messages', 6, 'text']
+        ],
+        [
+            'Hi Again!2',
+            'Hi Again!',
+            'Hello!2',
+            'Hello!',
+            'Hi!2',
+            'Hi!',
+            null
+        ]
+    );
+}
+
+// todo: kicks disabled for private rooms
+// todo: message edits work for private rooms
+
 echo '</table>';
 
 // todo: message/room text search
 
 // todo: user message formatting
-// todo: user friends/ignore list and private messages
 // todo: file uploads and enumerations
 
 // todo: age content restrictions on rooms, files
+
+// todo: censor
 ?>
 </div>
 </body>

@@ -633,6 +633,8 @@
 
             <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
 
+            <column name="privacyLevel" type="enum" restrict="block,friends,allow" default="allow" maxlen="50" comment="The user's name." />
+
             <!-- Password Fun -->
             <!-- Note: The password section is rather verbose in an effort to ensure that it is easy to change algorithms. -->
             <column name="passwordHash" type="string" maxlen="2048" comment="The hashed password of the user. It is only used on vanilla logins." />

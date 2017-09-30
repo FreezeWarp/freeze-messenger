@@ -1471,31 +1471,35 @@ class fimDatabase extends DatabaseSQL
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     public function hasPermission(fimUser $user, fimRoom $room) {
+        /* Private Room Have Their Own, Fairly Involved Permission Logic */
         if ($room->isPrivateRoom()) {
             $userIds = $room->getPrivateRoomMemberIds();
 
-            if ($room->type === fimRoom::ROOM_TYPE_OTR && !$this->config['otrRoomsEnabled']) // Disallow OTR rooms if disabled.
-                return 0;
-
-            elseif ($room->type === fimRoom::ROOM_TYPE_PRIVATE && !$this->config['privateRoomsEnabled']) // Disallow private rooms if disabled.
-                return 0;
-
-            elseif (count($userIds) > $this->config->privateRoomMaxUsers) // Disallow private rooms with too many members.
+            // Obviously, a user who is not in a private room's member list is not allowed to access the room.
+            if (!in_array($user->id, $userIds))
                 return 0;
 
             else {
-                $users = $room->getPrivateRoomMembers();
+                switch ($room->getPrivateRoomState()) {
+                    case fimRoom::PRIVATE_ROOM_STATE_NORMAL:
+                        return fimRoom::ROOM_PERMISSION_VIEW | fimRoom::ROOM_PERMISSION_POST;
+                        break;
 
-                if (count($users) !== count($userIds)) // This checks for invalid users, as getPrivateRoomMembers() will only return members who exist in the database, while getPrivateRoomMemberIds() returns all ids who were specified when the fimRoom object was created.
-                    return 0;
+                    case fimRoom::PRIVATE_ROOM_STATE_READONLY:
+                        return fimRoom::ROOM_PERMISSION_VIEW;
+                        break;
 
-                elseif (in_array($user->id, $userIds))
-                    return fimRoom::ROOM_PERMISSION_VIEW | fimRoom::ROOM_PERMISSION_POST; // The logic with private rooms is fairly self-explanatory: roomAlias lists all valid userIds, so check to see if the user is in there.
+                    case fimRoom::PRIVATE_ROOM_STATE_DISABLED:
+                        return 0;
+                        break;
 
-                else
-                    return 0;
+                    default:
+                        throw new Exception('Unexpected private room state.');
+                        break;
+                }
             }
         }
+
         else {
             /* Check for Cached Entry */
             $permissionsCached = $this->getPermissionCache($room->id, $user->id);
