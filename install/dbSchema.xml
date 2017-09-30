@@ -605,7 +605,7 @@
             <column name="senderName" type="string" maxlen="50" fkey="users.userName" fkeyWeak="true" comment="The name of the user who sent the message." />
             <column name="senderNameFormat" type="string" maxlen="300" fkey="users.userNameFormat" fkeyWeak="true" comment="CSS-formatting to be applied to the sender's name." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room in question." />
-            <column name="roomName" type="string" maxlen="50" comment="The name of the room in question." />
+            <column name="roomName" type="string" maxlen="500" comment="The name of the room in question." />
             <column name="messageId" type="int" maxlen="9" fkey="messages.messageId" comment="The ID of the message." />
             <column name="time" type="time" default="__TIME__" comment="The time the message was made." />
             <column name="otherMessages" type="int" comment="The number of other messages that have been sent since this one." />
