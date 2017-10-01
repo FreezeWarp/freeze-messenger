@@ -10,6 +10,11 @@ public class Room {
     int id;
 
     /**
+     * The name of the room.
+     */
+    String name;
+
+    /**
      * The last (that is, greatest) message ID received in the current room.
      */
     int lastMessageId;
@@ -24,9 +29,18 @@ public class Room {
         this.id = id;
     }
 
+    public Room(int id, String name) {
+        this(id);
+        this.name = name;
+    }
+
 
     public int getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public int getLastMessageId() {

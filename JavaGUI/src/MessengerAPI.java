@@ -221,7 +221,6 @@ public class MessengerAPI {
     /**
      * Get a single user's data. Returns the JSON data.
      * @param userId The ID of the user to retrieve.
-     * @throws IOException
      */
     public JsonNode getUser(int userId) {
         try {
@@ -238,8 +237,24 @@ public class MessengerAPI {
 
 
     /**
+     * Get the list of rooms. Returns the JSON data.
+     */
+    public JsonNode getRooms() {
+        try {
+            JsonNode json = httpGET("api/room.php?access_token=" + sessionToken).get("rooms");
+
+            return json;
+        } catch (Exception ex) {
+            System.err.println("Exception: " + ex);
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    /**
      * Get a all user's currently online. Returns the JSON data.
-     * @throws IOException
      */
     public JsonNode getActiveUsers() {
         try {

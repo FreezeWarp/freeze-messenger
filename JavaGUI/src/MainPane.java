@@ -46,10 +46,21 @@ public class MainPane {
     @FXML
     public TableColumn username = new TableColumn<User, String>("User Name");
 
+    @FXML
+    public TableView roomList;
+
+    @FXML
+    public TableColumn roomName = new TableColumn<Room, String>("Room Name");
+
     /**
      * A list of users currently considered active. userList monitors this for changes, and updates accordingly.
      */
     ObservableList<User> activeUsers =  FXCollections.observableArrayList();
+
+    /**
+     * A list of rooms on the site. roomList monitors this for changes, and updates accordingly.
+     */
+    ObservableList<Room> rooms =  FXCollections.observableArrayList();
 
     /**
      * A map between user IDs and user objects. Used mainly for caching.
@@ -110,12 +121,41 @@ public class MainPane {
         userList.setItems(activeUsers);
 
 
+        /* RoomList SetUp */
+        // Bind the table's data to the rooms list.
+        roomList.setItems(rooms);
+
+        roomList.setRowFactory( tv -> {
+            TableRow<Room> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty()) ) {
+                    Room room = row.getItem();
+                    currentRoom = room;
+
+                    System.out.println(currentRoom.getId());
+
+                    // todo: refactor
+                    messageList.getChildren().clear();
+                    (new RefreshMessages()).run();
+                }
+            });
+            return row ;
+        });
+
+        // Bind the username column to the "name" property from a User object.
+        roomName.setCellValueFactory(new PropertyValueFactory<Room, String>("name"));
+
+
+
         /* Recurring GETs */
         // Check for new messages every 3 seconds.
         timer.schedule(new RefreshMessages(), 0, 3000);
 
         // Check the currently active users every 10 seconds.
         timer.schedule(new RefreshUsers(), 0, 10000);
+
+        // Check the room list every hour.
+        timer.schedule(new RefreshRooms(), 0, 60 * 60 * 1000);
 
 
         /* Align messages to bottom */
@@ -199,6 +239,21 @@ public class MainPane {
                 for (final JsonNode user : users) {
                     System.out.println(user);
                     activeUsers.add(getUser(user.get("userData").get("id").asInt()));
+                }
+            }
+        }
+    }
+
+    class RefreshRooms extends TimerTask {
+        public void run() {
+            JsonNode apiRooms = GUIDisplay.api.getRooms();
+            System.out.println(rooms);
+            rooms.clear();
+
+            if (apiRooms.isObject()) {
+                for (final JsonNode room : apiRooms) {
+                    System.out.println(room);
+                    rooms.add(new Room(room.get("id").asInt(), room.get("name").asText()));
                 }
             }
         }

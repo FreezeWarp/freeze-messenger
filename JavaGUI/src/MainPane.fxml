@@ -38,7 +38,7 @@
                <children>
                   <TableView fx:id="roomList" prefHeight="200.0" prefWidth="200.0" styleClass="hide-header" stylesheets="@FXcss.css">
                     <columns>
-                      <TableColumn prefWidth="195.0" text="Rooms" />
+                      <TableColumn fx:id="roomName" prefWidth="195.0" text="Rooms" />
                     </columns>
                   </TableView>
                </children>
