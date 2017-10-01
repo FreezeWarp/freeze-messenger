@@ -50,7 +50,7 @@ class ApiData implements ArrayAccess {
         $this->data = $data;
 
         // Include query log and configuration with all requests when in dev mode.
-        if ($config['dev']) {
+        if (fimConfig::$dev) {
             global $request, $database;
             $this->data['queryLog'] = $database->queryLog;
             $this->data['request'] = $request;

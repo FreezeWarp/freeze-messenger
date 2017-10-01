@@ -84,7 +84,7 @@ class fimCache extends generalCache {
         else {
             $activeCensorWords = $this->slaveDatabase->getCensorWordsActive($roomId)->getAsArray(true);
 
-            $this->set('fim_activeCensorWords_' . $roomId, $activeCensorWords, $config['censorWordsCacheRefresh']);
+            $this->set('fim_activeCensorWords_' . $roomId, $activeCensorWords, fimConfig::$censorWordsCacheRefresh);
         }
 
         return $activeCensorWords;

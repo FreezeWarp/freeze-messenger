@@ -412,14 +412,14 @@ class fimUser extends fimDynamicObject
     protected function setParentalAge($age) {
         global $config;
 
-        if ($config['parentalEnabled'])
+        if (fimConfig::$parentalEnabled)
             $this->parentalAge = $age;
     }
 
     protected function setParentalFlags($flags) {
         global $config;
 
-        if ($config['parentalEnabled'])
+        if (fimConfig::$parentalEnabled)
             $this->parentalFlags = fim_emptyExplode(',', $flags);
     }
     
@@ -432,7 +432,7 @@ class fimUser extends fimDynamicObject
     protected function setWatchRooms($watchRooms) {
         global $config;
 
-        if ($config['enableWatchRooms']) {
+        if (fimConfig::$enableWatchRooms) {
             $this->setList('watchRooms', $watchRooms);
         }
     }
@@ -575,7 +575,7 @@ class fimUser extends fimDynamicObject
     protected function setDefaultRoomId($roomId) {
         global $config;
 
-        $this->defaultRoomId = $roomId ?: $config['defaultRoomId'];
+        $this->defaultRoomId = $roomId ?: fimConfig::$defaultRoomId;
     }
 
 
@@ -585,7 +585,7 @@ class fimUser extends fimDynamicObject
         $this->privs = $privs;
 
         // If certain features are disabled, remove user privileges. The bitfields should be maintained, however, for when a feature is reenabled.
-        if (!$config['userRoomCreation'])
+        if (!fimConfig::$userRoomCreation)
             $this->privs &= ~fimUser::USER_PRIV_CREATE_ROOMS;
 
         // Superuser override (note that any user with GRANT or in the $config superuser array is automatically given all permissions, and is marked as protected. The only way, normally, to remove a user's GRANT status, because they are automatically protected, is to do so directly in the database.)
@@ -596,9 +596,9 @@ class fimUser extends fimDynamicObject
             $this->privs |= (fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
 
         // Note that we set these after setting admin privs, becuase we don't want admins using these functionalities when they are disabled.
-        if (!$config['userPrivateRoomCreation'])
+        if (!fimConfig::$userPrivateRoomCreation)
             $this->privs &= ~(fimUser::USER_PRIV_PRIVATE_ALL | fimUser::USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
-        if ($config['disableTopic'])
+        if (fimConfig::$disableTopic)
             $this->privs &= ~fimUser::USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
 
         // Certain bits imply other bits. Make sure that these are consistent.
@@ -665,8 +665,8 @@ class fimUser extends fimDynamicObject
 
             /* Config Aliases
              * (These may become full priviledges in the future.) */
-            case 'editOwnPosts':   return $config['usersCanEditOwnPosts'] && !$this->isAnonymousUser();   break;
-            case 'deleteOwnPosts': return $config['usersCanDeleteOwnPosts'] && !$this->isAnonymousUser(); break;
+            case 'editOwnPosts':   return fimConfig::$usersCanEditOwnPosts && !$this->isAnonymousUser();   break;
+            case 'deleteOwnPosts': return fimConfig::$usersCanDeleteOwnPosts && !$this->isAnonymousUser(); break;
 
             default: throw new Exception("Invalid priv; $priv"); break;
         }
@@ -861,7 +861,7 @@ class fimUser extends fimDynamicObject
 
         else {
             $databaseFields = array_merge(array(
-                'privs' => $config['defaultUserPrivs']
+                'privs' => fimConfig::$defaultUserPrivs
             ), $databaseFields);
 
             $return = $database->insert($database->sqlPrefix . "users", $databaseFields);

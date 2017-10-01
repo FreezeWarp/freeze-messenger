@@ -599,7 +599,7 @@ class fimRoom extends fimDynamicObject {
     protected function setWatchedByUsers($users) {
         global $config;
 
-        if (!$config['enableWatchRooms'])
+        if (!fimConfig::$enableWatchRooms)
             return;
 
         elseif ($users === fimDatabase::decodeError) {
@@ -659,26 +659,26 @@ class fimRoom extends fimDynamicObject {
 
         $this->deleted  = ($this->options & fimRoom::ROOM_DELETED);
         $this->archived = ($this->options & fimRoom::ROOM_ARCHIVED);
-        $this->official = ($this->options & fimRoom::ROOM_OFFICIAL) && $config['officialRooms'];
-        $this->hidden   = ($this->options & fimRoom::ROOM_HIDDEN) && $config['hiddenRooms'];
+        $this->official = ($this->options & fimRoom::ROOM_OFFICIAL) && fimConfig::$officialRooms;
+        $this->hidden   = ($this->options & fimRoom::ROOM_HIDDEN) && fimConfig::$hiddenRooms;
     }
 
     protected function setTopic($topic) {
         global $config;
 
-        $this->topic = $config['disableTopic'] ? '' : $topic;
+        $this->topic = fimConfig::$disableTopic ? '' : $topic;
     }
 
     protected function setParentalAge($age) {
         global $config;
 
-        $this->parentalAge = $config['parentalEnabled'] ? (int) $age : 0;
+        $this->parentalAge = fimConfig::$parentalEnabled ? (int) $age : 0;
     }
 
     protected function setParentalFlags($parentalFlags) {
         global $config;
 
-        if ($config['parentalEnabled'] && is_string($parentalFlags))
+        if (fimConfig::$parentalEnabled && is_string($parentalFlags))
             $this->parentalFlags = fim_emptyExplode(',', $parentalFlags);
     }
 
@@ -779,7 +779,7 @@ class fimRoom extends fimDynamicObject {
 
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->changeTopic on private room.');
-        elseif ($config['disableTopic'])
+        elseif (fimConfig::$disableTopic)
             throw new fimError('topicsDisabled', 'Topics are disabled on this server.');
         else {
             $database->createRoomEvent('topicChange', $this->id, $topic); // name, roomId, message

@@ -127,14 +127,14 @@ $request = fim_sanitizeGPC(
     
         'parentalAge' => array(
             'cast' => 'int',
-            'valid' => $config['parentalAges'],
-            'default' => $config['parentalAgeDefault'],
+            'valid' => fimConfig::$parentalAges,
+            'default' => fimConfig::$parentalAgeDefault,
         ),
     
         'parentalFlags' => array(
-            'default' => $config['parentalFlagsDefault'],
+            'default' => fimConfig::$parentalFlagsDefault,
             'cast' => 'list',
-            'valid' => $config['parentalFlags'],
+            'valid' => fimConfig::$parentalFlags,
         ),
     
         'fileId' => array(
@@ -169,17 +169,17 @@ case 'edit': case 'create':
         else $roomData = false;
 
 
-        if (!$config['enableUploads'])
+        if (!fimConfig::$enableUploads)
             throw new fimError('uploadsDisabled', 'Uploads are disabled on this FreezeMessenger server.');
-        if (!$roomData && !$config['allowOrphanFiles'])
+        if (!$roomData && !fimConfig::$allowOrphanFiles)
             throw new fimError('noOrphanFiles', 'Files cannot be orphaned on this FreezeMessenger server. You must post them to a room.');
-        if ($config['uploadMaxFiles'] !== -1 && $database->getCounter('uploads') > $config['uploadMaxFiles'])
+        if (fimConfig::$uploadMaxFiles !== -1 && $database->getCounter('uploads') > fimConfig::$uploadMaxFiles)
             throw new fimError('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
-        if ($config['uploadMaxUserFiles'] !== -1 && $user->fileCount > $config['uploadMaxUserFiles'])
+        if (fimConfig::$uploadMaxUserFiles !== -1 && $user->fileCount > fimConfig::$uploadMaxUserFiles)
             throw new fimError('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
-        if ($config['uploadMaxSpace'] !== -1 && $database->getCounter('uploadSize') > $config['uploadMaxSpace'])
+        if (fimConfig::$uploadMaxSpace !== -1 && $database->getCounter('uploadSize') > fimConfig::$uploadMaxSpace)
             throw new fimError('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
-        if ($config['uploadMaxUserSpace'] !== -1 && $user->fileSize > $config['uploadMaxUserSpace'])
+        if (fimConfig::$uploadMaxUserSpace !== -1 && $user->fileSize > fimConfig::$uploadMaxUserSpace)
             throw new fimError('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
 
 
@@ -188,7 +188,7 @@ case 'edit': case 'create':
             $putResource = fopen("php://input", "r"); // file data is from stdin
             $request['fileData'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
 
-            while ($fileContents = fread($putResource, $config['fileUploadChunkSize'])) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
+            while ($fileContents = fread($putResource, fimConfig::$fileUploadChunkSize)) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
                 $request['fileData'] .= $fileContents;
             }
 
@@ -237,18 +237,18 @@ case 'edit': case 'create':
 
 
         /* File Type Restrictions */
-        if (isset($config['extensionChanges'][$file->extension])) // Certain extensions are considered to be equivalent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
-            $file->extension = $config['extensionChanges'][$fileNameParts[1]];
+        if (isset(fimConfig::$extensionChanges[$file->extension])) // Certain extensions are considered to be equivalent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
+            $file->extension = fimConfig::$extensionChanges[$fileNameParts[1]];
 
-        if (!isset($config['uploadMimes'][$file->extension]))
+        if (!isset(fimConfig::$uploadMimes[$file->extension]))
             throw new fimError('unrecExt', 'The filetype is unrecognised, and thus the file cannot be uploaded.'); // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
 
-        if (!in_array($file->extension, $config['allowedExtensions']))
+        if (!in_array($file->extension, fimConfig::$allowedExtensions))
             throw new fimError('badExt', 'The filetype is forbidden, and thus the file cannot be uploaded.'); // Not allowed...
 
 
         /* Derived from File Type */
-        $maxSize = ($config['uploadSizeLimits'][$file->extension] ? $config['uploadSizeLimits'][$file->extension] : 0);
+        $maxSize = (fimConfig::$uploadSizeLimits[$file->extension] ? fimConfig::$uploadSizeLimits[$file->extension] : 0);
 
 
         /* File Size Restrictions */
@@ -340,7 +340,7 @@ $database->endTransaction();
 
 
 /* Update Data for Errors */
-if ($config['dev']) $xmlData['request'] = $request;
+if (fimConfig::$dev) $xmlData['request'] = $request;
 
 
 

@@ -16,7 +16,7 @@
 $apiRequest = true;
 require('global.php');
 
-if (!$config['serverSentEvents']) {
+if (!fimConfig::$serverSentEvents) {
     die('Not Supported');
 }
 else {
@@ -31,7 +31,7 @@ else {
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
 
-    @set_time_limit($config['serverSentTimeLimit']);
+    @set_time_limit(fimConfig::$serverSentTimeLimit);
 
     $serverSentRetries = 0;
 

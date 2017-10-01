@@ -68,7 +68,7 @@ $xmlData = array(
 
 
 $activeUsers = $database->getActiveUsers(array(
-    'onlineThreshold' => $config['defaultOnlineThreshold'],
+    'onlineThreshold' => fimConfig::$defaultOnlineThreshold,
     'roomIds' => $request['roomIds'],
     'userIds' => $request['userIds']
 ))->getAsArray(true);

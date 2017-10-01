@@ -103,7 +103,7 @@ do {
         ), [
             'id 1' => $database->in($user->favRooms),
             $request['sort'] => 'asc'
-        ], $config['defaultRoomLimit'], $request['page']);
+        ], fimConfig::$defaultRoomLimit, $request['page']);
 
         $rooms = $roomsQuery->getAsRooms();
     }

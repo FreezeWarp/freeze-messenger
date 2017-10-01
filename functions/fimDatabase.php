@@ -2731,7 +2731,7 @@ class fimDatabase extends DatabaseSQL
         $room = fimRoomFactory::getFromId((int) $roomId);
         $listEntries = $room->{$cacheColumn};
 
-        /*if (count($listEntries) > $config['databaseCollectionMaxEntries']) {
+        /*if (count($listEntries) > fimConfig::$databaseCollectionMaxEntries) {
             $cacheIndex = 'fim_' . $cacheColumn . '_' . $roomId;
 
             if (!$generalCache->exists($cacheIndex, 'redis')) {

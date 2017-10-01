@@ -243,12 +243,12 @@ function fim_formatSize($size) {
 
     $suffix = 0;
 
-    while ($size > $config['fileIncrementSize']) { // Increase the Byte Prefix, Decrease the Number (1024B = 1KiB)
+    while ($size > fimConfig::$fileIncrementSize) { // Increase the Byte Prefix, Decrease the Number (1024B = 1KiB)
         $suffix++;
-        $size /= $config['fileIncrementSize'];
+        $size /= fimConfig::$fileIncrementSize;
     }
 
-    return round($size, 2) . $config['fileSuffixes'][$suffix];
+    return round($size, 2) . fimConfig::$fileSuffixes[$suffix];
 }
 
 function fim_startsWith($haystack, $needle) {
@@ -453,7 +453,7 @@ function fim_sanitizeGPC($type, $data) {
                     $newData[$indexName] = json_decode(
                         $activeGlobal[$indexName],
                         true,
-                        $config['jsonDecodeRecursionLimit'],
+                        fimConfig::$jsonDecodeRecursionLimit,
                         JSON_BIGINT_AS_STRING
                     );
                 break;
@@ -583,7 +583,7 @@ function fim_sanitizeGPC($type, $data) {
                  * Remove characters that are non-alphanumeric. Note that we will try to romanise what we can, based on the $config directive romanisation.
                  */
                 case 'alphanum':
-                    $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys($config['romanisation']), array_values($config['romanisation']), $activeGlobal[$indexName]));
+                    $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys(fimConfig::$romanisation), array_values(fimConfig::$romanisation), $activeGlobal[$indexName]));
                 break;
 
 
@@ -834,7 +834,7 @@ function fim_exceptionHandler($exception) {
     global $config;
 
     $errorData = array(
-        'contactEmail' => $config['email'],
+        'contactEmail' => fimConfig::$email,
     );
     //ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
 
@@ -845,7 +845,7 @@ function fim_exceptionHandler($exception) {
         $errorData['details'] = $exception->getString();
         $errorData['other'] = $exception->getContext();
 
-        if ($config['displayBacktrace']) {
+        if (fimConfig::$displayBacktrace) {
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
             //array_shift($backtrace); // Omits this function, fimError->trigger, from the backtrace.
 
@@ -859,10 +859,10 @@ function fim_exceptionHandler($exception) {
 
         $errorData = array_merge($errorData, array(
             'string' => $exception->getMessage(),
-            'contactEmail' => $config['email'],
+            'contactEmail' => fimConfig::$email,
         ));
 
-        if ($config['displayBacktrace']) {
+        if (fimConfig::$displayBacktrace) {
             $errorData['file'] = $exception->getFile();
             $errorData['line'] = $exception->getLine();
             $errorData['trace'] = $exception->getTrace();
@@ -883,7 +883,7 @@ function fim_exceptionHandler($exception) {
 function fim_flush() {
     global $config;
 
-    echo str_repeat(' ', 1024 * $config['outputFlushPaddingKilobytes']);
+    echo str_repeat(' ', 1024 * fimConfig::$outputFlushPaddingKilobytes);
 
     @ob_flush();
     flush();
@@ -910,7 +910,7 @@ function fim_removeNullValues(array &$a) {
 function fim_nearestAge($age) {
     global $config;
 
-    $ages = $config['parentalAges'];
+    $ages = fimConfig::$parentalAges;
     sort($ages);
 
     foreach ($ages AS $i => $a) {

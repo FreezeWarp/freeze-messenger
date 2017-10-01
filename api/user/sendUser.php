@@ -46,11 +46,11 @@ $request = fim_sanitizeGPC('p', [
     ],
 
     'email' => [
-        'require' => $config['emailRequired'],
+        'require' => fimConfig::$emailRequired,
     ],
 
     'birthDate' => [
-        'require' => $config['ageRequired'],
+        'require' => fimConfig::$ageRequired,
         'cast'    => 'int',
     ],
 ]);
@@ -70,10 +70,10 @@ elseif ($user->id && !$user->isAnonymousUser())
 elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMAIL)))
     new fimError('emailInvalid', 'The email specified is not allowed.');
 
-elseif (isset($request['birthDate']) && ($age < $config['ageMinimum']))
+elseif (isset($request['birthDate']) && ($age < fimConfig::$ageMinimum))
     new fimError('ageMinimum', 'The age specified is below the minimum age allowed by the server.', [
         'ageDetected' => $age,
-        'ageMinimum'  => $config['ageMinimum']
+        'ageMinimum'  => fimConfig::$ageMinimum
     ]);
 
 elseif ($database->getUsers(['userNames' => [$request['name']]])->getCount() > 0)

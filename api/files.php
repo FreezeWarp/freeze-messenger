@@ -74,7 +74,7 @@ foreach ($files AS $file) {
 
 
 
-if ($config['dev']) $xmlData['request'] = $request;
+if (fimConfig::$dev) $xmlData['request'] = $request;
 
 
 

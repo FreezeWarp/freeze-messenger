@@ -645,8 +645,8 @@ class Bootstrap
         $config = array();
         // check for environment variables
         if (($key = $this->getEnvVar('AWS_ACCESS_KEY_ID')) && ($secret = $this->getEnvVar('AWS_SECRET_KEY'))) {
-            $config['key']    = $key;
-            $config['secret'] = $secret;
+            fimConfig::$key    = $key;
+            fimConfig::$secret = $secret;
         } else {
             // fall back on ~/.aws/credentials file
             // @see http://docs.aws.amazon.com/aws-sdk-php/guide/latest/credentials.html#credential-profiles
@@ -657,11 +657,11 @@ class Bootstrap
             }
 
             // set profile in AWS_PROFILE environment variable, defaults to "default"
-            $config['profile'] = $this->getEnvVar('AWS_PROFILE', 'default');
+            fimConfig::$profile = $this->getEnvVar('AWS_PROFILE', 'default');
         }
 
         // set region in AWS_REGION environment variable, defaults to "us-east-1"
-        $config['region'] = $this->getEnvVar('AWS_REGION', \Aws\Common\Enum\Region::US_EAST_1);
+        fimConfig::$region = $this->getEnvVar('AWS_REGION', \Aws\Common\Enum\Region::US_EAST_1);
 
         return \Aws\DynamoDb\DynamoDbClient::factory($config);
     }

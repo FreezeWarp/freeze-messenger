@@ -55,7 +55,7 @@ class StreamPgSQL implements Stream {
         }
 
         // Now get the listen results as they come in
-        while ($this->retries++ < $config['serverSentMaxRetries']) {
+        while ($this->retries++ < fimConfig::$serverSentMaxRetries) {
             $message = pg_get_notify($this->database->sqlInterface->connection, PGSQL_ASSOC);
 
             if ($message) {
@@ -68,7 +68,7 @@ class StreamPgSQL implements Stream {
                 ]);
             }
 
-            usleep($config['serverSentEventsWait'] * 1000000);
+            usleep(fimConfig::$serverSentEventsWait * 1000000);
         }
 
         return [];

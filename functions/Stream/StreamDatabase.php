@@ -80,14 +80,14 @@ class StreamDatabase implements Stream {
 
         $this->createStreamIfNotExists($stream);
 
-        while ($this->retries++ < $config['serverSentMaxRetries']) {
+        while ($this->retries++ < fimConfig::$serverSentMaxRetries) {
             foreach ($this->subscribeOnce($stream, $lastId) AS $event) {
                 if ($event['id'] > $lastId) $lastId = $event['id'];
 
                 call_user_func($callback, $event);
             }
 
-            usleep($config['serverSentEventsWait'] * 1000000);
+            usleep(fimConfig::$serverSentEventsWait * 1000000);
         }
 
         return [];

@@ -52,10 +52,10 @@ $database->accessLog('sendMessage', $request);
 
 
 /* Start Processing */
-if (strlen($request['message']) < $config['messageMinLength'] || strlen($request['message']) > $config['messageMaxLength'])
+if (strlen($request['message']) < fimConfig::$messageMinLength || strlen($request['message']) > fimConfig::$messageMaxLength)
     new fimError('messageLength', "The message is too long/too short.", [
-        "minLength" => $config['messageMinLength'],
-        "maxLength" => $config['messageMaxLength']
+        "minLength" => fimConfig::$messageMinLength,
+        "maxLength" => fimConfig::$messageMaxLength
     ]); // Too short/long.
 
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))

@@ -47,7 +47,7 @@ class IdToken implements IdTokenInterface
         }
         $this->encryptionUtil = $encryptionUtil;
 
-        if (!isset($config['issuer'])) {
+        if (!isset(fimConfig::$issuer)) {
             throw new LogicException('config parameter "issuer" must be set');
         }
         $this->config = array_merge(array(

@@ -42,7 +42,7 @@ else {
         switch ($request['do2']) {
             case 'lang':
             case false:
-                foreach ($config['languages'] AS $code => $language) {
+                foreach (fimConfig::$languages AS $code => $language) {
                     $languageLinks .= "<a href=\"moderate.php?do=phrases&do2=view&languageCode={$code}\">{$language}</a><br />";
                 }
 

@@ -162,7 +162,7 @@ $config = fimConfigFactory::init($slaveDatabase);
 
 
 $database->registerConfig($config);
-$database->queryLogToFile = ($config['logQueries'] ? $config['logQueriesFile'] : false);
+$database->queryLogToFile = (fimConfig::$logQueries ? fimConfig::$logQueriesFile : false);
 
 
 ////* User Login (Requires Database) *////

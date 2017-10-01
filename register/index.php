@@ -142,7 +142,7 @@
                 <option value="0"></option>';
 
             // 150 years into the future seems... reasonable.
-            for ($year = (intval(date('Y')) + 150); $year <= (intval(date('Y')) - $config['ageMinimum']); $year++) {
+            for ($year = (intval(date('Y')) + 150); $year <= (intval(date('Y')) - fimConfig::$ageMinimum); $year++) {
                 echo '<option value=' . $year . '>' . $year . '</option>';
             }
 

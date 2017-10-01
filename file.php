@@ -40,14 +40,14 @@ $request = fim_sanitizeGPC('g', array(
     // Because file.php must NOT require a session token, we want to allow APIs to define these separately (and, yes, this is very much by design -- again, the parental control system is not locked-down).
     'parentalAge' => array(
         'cast' => 'int',
-        'valid' => $config['parentalAges'],
-        'default' => $config['parentalAgeDefault'],
+        'valid' => fimConfig::$parentalAges,
+        'default' => fimConfig::$parentalAgeDefault,
     ),
 
     'parentalFlags' => array(
         'cast' => 'list',
-        'valid' => $config['parentalFlags'],
-        'default' => $config['parentalFlagsDefault'],
+        'valid' => fimConfig::$parentalFlags,
+        'default' => fimConfig::$parentalFlagsDefault,
     ),
 
     'thumbnailWidth' => array(
@@ -116,7 +116,7 @@ header('X-Content-Type-Options: nosniff');
 header("X-XSS-Protection: 1; mode=block");
 
 // We don't really want our files to be used for rendering HTML pages.
-if ($config['blockFrames']) header("X-Frame-Options: DENY");
+if (fimConfig::$blockFrames) header("X-Frame-Options: DENY");
 
 
 /* Set File Caching Controls */
@@ -128,7 +128,7 @@ header("Cache-Control: public, max-age=365000000, immutable");
 /* Start Processing */
 
 $parentalBlock = false;
-if ($config['parentalEnabled']) {
+if (fimConfig::$parentalEnabled) {
     if ($file['parentalAge'] > $request['parentalAge']) $parentalBlock = true;
     elseif (fim_inArray($request['parentalFlags'], explode(',', $file['parentalFlags']))) $parentalBlock = true;
 }
