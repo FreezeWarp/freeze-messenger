@@ -131,6 +131,7 @@ public class MainPane {
                 if (event.getClickCount() == 2 && (!row.isEmpty()) ) {
                     Room room = row.getItem();
                     currentRoom = room;
+                    currentRoom.resetLastMessageId();
 
                     System.out.println(currentRoom.getId());
 

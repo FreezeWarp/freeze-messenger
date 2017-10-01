@@ -53,6 +53,11 @@ public class Room {
         }
     }
 
+    public void resetLastMessageId() {
+        this.lastMessageId = 0;
+        this.archiveFetched = false;
+    }
+
     public boolean isArchiveFetched() {
         return archiveFetched;
     }
