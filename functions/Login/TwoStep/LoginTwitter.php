@@ -1,9 +1,10 @@
 <?php
 
-require_once(__DIR__ . '/../../../vendor/autoload.php');
-use Abraham\TwitterOAuth\TwitterOAuth;
+namespace Login\TwoStep;
 
-require_once(__DIR__ . '/../LoginTwoStep.php');
+use Abraham\TwitterOAuth\TwitterOAuth;
+use Login\LoginFactory;
+use Login\LoginTwoStep;
 
 class LoginTwitter extends LoginTwoStep {
     public $client;
@@ -47,7 +48,7 @@ class LoginTwitter extends LoginTwoStep {
         $userInfo = $this->client->get("account/verify_credentials");
 
         // store user info...
-        $this->loginFactory->user = new fimUser([
+        $this->loginFactory->user = new \fimUser([
             'integrationMethod' => 'twitter',
             'integrationId' => (int) $userInfo->id,
         ]);

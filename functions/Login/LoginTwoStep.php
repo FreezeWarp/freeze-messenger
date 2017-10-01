@@ -1,6 +1,6 @@
 <?php
+namespace Login;
 
-require_once('LoginRunner.php');
 abstract class LoginTwoStep implements LoginRunner {
 
     /**

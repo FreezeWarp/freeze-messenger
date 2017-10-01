@@ -1,7 +1,9 @@
 <?php
 
-require_once(__DIR__ . '/../../../vendor/autoload.php');
-require_once(__DIR__ . '/../LoginTwoStep.php');
+namespace Login\TwoStep;
+
+use Login\LoginFactory;
+use Login\LoginTwoStep;
 
 class LoginMicrosoft extends LoginTwoStep {
     public $loginFactory;
@@ -14,7 +16,7 @@ class LoginMicrosoft extends LoginTwoStep {
         parent::__construct($loginFactory);
 
         // create our client credentials
-        $this->client = new Stevenmaguire\OAuth2\Client\Provider\Microsoft([
+        $this->client = new \Stevenmaguire\OAuth2\Client\Provider\Microsoft([
             // Required
             'clientId'                  => $clientId,
             'clientSecret'              => $clientSecret,
@@ -62,8 +64,8 @@ class LoginMicrosoft extends LoginTwoStep {
         try {
             // We got an access token, let's now get the user's details
             $userInfo = $this->client->getResourceOwner($token)->toArray();
-        } catch (Exception $e) {
-            new fimError('microsoftLoginFailed', 'Could not get token: ' . $e);
+        } catch (\Exception $e) {
+            new \fimError('microsoftLoginFailed', 'Could not get token: ' . $e);
         }
 
         /*$picture = new curlRequest('https://apis.live.net/v5.0/' . $userInfo['id'] . '/picture');
@@ -77,7 +79,7 @@ class LoginMicrosoft extends LoginTwoStep {
         }*/
 
         // store user info...
-        $this->loginFactory->user = new fimUser([
+        $this->loginFactory->user = new \fimUser([
             'integrationMethod' => 'microsoft',
             'integrationId' => (int) $userInfo['id'],
         ]);

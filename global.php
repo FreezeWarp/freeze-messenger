@@ -42,6 +42,9 @@ require_once(__DIR__ . '/functions/fimError.php'); // FIM Custom Error Class
 require_once(__DIR__ . '/functions/fim_general.php'); // Various Functions
 
 
+require_once(__DIR__ . '/vendor/autoload.php'); // Various Functions
+
+
 
 
 /* Constants

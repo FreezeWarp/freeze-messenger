@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+namespace Login;
+
 /**
  * A factory that looks that the $_REQUEST information and initialises an appropriate LoginRunner instance.
  * Use hasLogin() to check if a valid LoginRunner is available. Use getLogin() to run the LoginRunner. Use apiResponse() to return an appropriate API response given the current LoginRunner status.
@@ -40,17 +42,17 @@ class LoginFactory {
     public $loginRunner = null;
 
     /**
-     * @var DatabaseSQL A DatabaseSQL instance connected to the source of the login information.
+     * @var \DatabaseSQL A DatabaseSQL instance connected to the source of the login information.
      */
     public $database;
 
     /**
-     * @var fimUser The user object created from a successful login.
+     * @var \fimUser The user object created from a successful login.
      */
     public $user;
 
 
-    public function __construct(OAuth2\Request $oauthRequest, OAuth2\Storage\FIMDatabaseOAuth $oauthStorage, OAuth2\Server $oauthServer, DatabaseSQL $database) {
+    public function __construct(\OAuth2\Request $oauthRequest, \OAuth2\Storage\FIMDatabaseOAuth $oauthStorage, \OAuth2\Server $oauthServer, \DatabaseSQL $database) {
         global $loginConfig;
 
         $this->oauthRequest = $oauthRequest;
@@ -61,24 +63,25 @@ class LoginFactory {
         if (isset($_REQUEST['integrationMethod'])) {
             $loginName = $_REQUEST['integrationMethod'];
             $className = 'Login' . ucfirst($loginName);
-            $includePath = __DIR__ . "/LoginRunner/{$className}.php";
+            $classNameSpaced = "\\Login\\TwoStep\\$className";
+            $includePath = __DIR__ . "/TwoStep/{$className}.php";
 
             if (!isset($loginConfig['extraMethods'][$loginName]['clientId'], $loginConfig['extraMethods'][$loginName]['clientSecret'])) {
-                new fimError('disabledLogin', 'The attempted login method is disabled on this server.');
+                new \fimError('disabledLogin', 'The attempted login method is disabled on this server.');
             }
 
             elseif (!file_exists($includePath)) {
-                new fimError('uninstalledLogin', 'The attempted login method is enabled, but not installed, on this server.');
+                new \fimError('uninstalledLogin', 'The attempted login method is enabled, but not installed, on this server.');
             }
 
             else {
                 require($includePath);
 
-                if (!class_exists($className)) {
-                    new fimError('brokenLogin', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
+                if (!class_exists($classNameSpaced)) {
+                    new \fimError('brokenLogin', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
                 }
                 else {
-                    $this->loginRunner = new $className(
+                    $this->loginRunner = new $classNameSpaced(
                         $this,
                         $loginConfig['extraMethods'][$loginName]['clientId'],
                         $loginConfig['extraMethods'][$loginName]['clientSecret']
@@ -89,25 +92,26 @@ class LoginFactory {
 
         elseif (isset($_REQUEST['password'], $_REQUEST['username'])) {
             $className = 'Login' . ucfirst($loginConfig['method']);
-            $includePath = __DIR__ . "/LoginRunner/{$className}.php";
+            $classNameSpaced = "\\Login\\Database\\$className";
+            $includePath = __DIR__ . "/Database/{$className}.php";
 
             if (!file_exists($includePath)) {
-                new fimError('loginMisconfigured', 'Logins are currently misconfigured: a login method has been specified without a corresponding login class being available.');
+                new \fimError('loginMisconfigured', 'Logins are currently misconfigured: a login method has been specified without a corresponding login class being available.');
             }
             else {
                 require($includePath);
 
-                if (!class_exists($className)) {
-                    new fimError('loginMisconfigured', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
+                if (!class_exists($classNameSpaced)) {
+                    new \fimError('loginMisconfigured', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
                 }
                 else {
-                    $this->loginRunner = new $className($this);
+                    $this->loginRunner = new $classNameSpaced($this);
                 }
             }
         }
 
         elseif (isset($_REQUEST['grant_type'])) {
-            require('LoginOAuth.php');
+            //require('LoginOAuth.php');
             $this->loginRunner = new LoginOAuth($this);
         }
     }
@@ -152,6 +156,6 @@ class LoginFactory {
         $this->oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
         $this->oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
         $this->oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
-        return new OAuth2\GrantType\IntegrationLogin($this->user);
+        return new \OAuth2\GrantType\IntegrationLogin($this->user);
     }
 }

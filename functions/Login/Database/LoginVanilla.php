@@ -1,6 +1,8 @@
 <?php
+namespace Login\Database;
 
-require_once(__DIR__ . '/../LoginDatabase.php');
+use Login\LoginDatabase;
+use Login\LoginFactory;
 
 class LoginVanilla extends LoginDatabase {
     public function __construct(LoginFactory $loginFactory) {
@@ -20,7 +22,7 @@ class LoginVanilla extends LoginDatabase {
     }
 
     public function setUser() {
-        $this->oauthGrantType = new OAuth2\GrantType\UserCredentials($this->loginFactory->oauthStorage);
+        $this->oauthGrantType = new \OAuth2\GrantType\UserCredentials($this->loginFactory->oauthStorage);
     }
 
 }

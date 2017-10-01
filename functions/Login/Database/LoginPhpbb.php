@@ -1,6 +1,8 @@
 <?php
-require_once(__DIR__ . '/../LoginDatabase.php');
-require_once(__DIR__ . '/../../PasswordHash.php');
+namespace Login\Database;
+
+use Login\LoginDatabase;
+use Login\LoginFactory;
 
 class LoginPhpbb extends LoginDatabase {
     /**
@@ -53,17 +55,17 @@ class LoginPhpbb extends LoginDatabase {
         ])->getAsArray(false);
 
         if (!$phpbbUser) {
-            new fimError('usernameInvalid', 'A user by the given name does not exist.');
+            new \fimError('usernameInvalid', 'A user by the given name does not exist.');
         }
-        elseif (strlen($_REQUEST['password']) <= 0 || !(new PasswordHash(8, FALSE))->CheckPassword($_REQUEST['password'], $phpbbUser['password'])) {
-            new fimError('passwordInvalid', 'A user by the given password does not exist.');
+        elseif (strlen($_REQUEST['password']) <= 0 || !(new \PasswordHash(8, FALSE))->CheckPassword($_REQUEST['password'], $phpbbUser['password'])) {
+            new \fimError('passwordInvalid', 'A user by the given password does not exist.');
         }
         else {
             if (!preg_match('/^[0-9A-Fa-f]+$/', $phpbbUser['nameColor'])) {
                 $phpbbUser['nameColor'] = '';
             }
 
-            $this->loginFactory->user = new fimUser([
+            $this->loginFactory->user = new \fimUser([
                 'integrationMethod' => 'phpbb',
                 'integrationId' => $phpbbUser['id'],
             ]);

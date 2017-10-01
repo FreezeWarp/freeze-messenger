@@ -1,6 +1,8 @@
 <?php
+namespace Login\Database;
 
-require_once(__DIR__ . '/../LoginDatabase.php');
+use Login\LoginDatabase;
+use Login\LoginFactory;
 
 class LoginVbulletin3 extends LoginDatabase {
     /**
@@ -64,13 +66,13 @@ class LoginVbulletin3 extends LoginDatabase {
         ])->getAsArray(false);
 
         if (!$vbUser) {
-            new fimError('usernameInvalid', 'A user by the given name does not exist.');
+            new \fimError('usernameInvalid', 'A user by the given name does not exist.');
         }
         elseif (strlen($_REQUEST['password']) <= 0 || $vbUser['password'] !== md5(md5($_REQUEST['password']) . $vbUser['salt'])) {
-            new fimError('passwordInvalid', 'A user by the given password does not exist.');
+            new \fimError('passwordInvalid', 'A user by the given password does not exist.');
         }
         else {
-            $this->loginFactory->user = new fimUser([
+            $this->loginFactory->user = new \fimUser([
                 'integrationMethod' => 'vb34',
                 'integrationId' => $vbUser['id'],
             ]);

@@ -1,6 +1,6 @@
 <?php
+namespace Login;
 
-require_once('LoginRunner.php');
 abstract class LoginDatabase implements LoginRunner {
     /**
      * @var LoginFactory
@@ -8,7 +8,7 @@ abstract class LoginDatabase implements LoginRunner {
     public $loginFactory;
 
     /**
-     * @var OAuth2\GrantType\GrantTypeInterface A grant type that can be used to obtain a session token. It must be set by an implementor.
+     * @var \OAuth2\GrantType\GrantTypeInterface A grant type that can be used to obtain a session token. It must be set by an implementor.
      */
     public $oauthGrantType;
 
@@ -35,11 +35,11 @@ abstract class LoginDatabase implements LoginRunner {
 
         // Error, if needed
         if ($oauthResponse->getStatusCode() !== 200) {
-            new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
+            new \fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
         }
         else {
             // Get the user object from a user ID
-            $user = fimUserFactory::getFromId((int) $this->oauthGrantType->getUserId());
+            $user = \fimUserFactory::getFromId((int) $this->oauthGrantType->getUserId());
             $user->setSessionHash($oauthResponse->getParameter('access_token')); // Mainly for logging.
             $user->setClientCode($oauthResponse->getParameter('client_id')); // Mainly for logging.
 
@@ -52,7 +52,7 @@ abstract class LoginDatabase implements LoginRunner {
             $user->resolveAll();
             $this->loginFactory->user = $user;
 
-            die(new ApiData(array(
+            die(new \ApiData(array(
                 'login' => array(
                     'access_token' => $user->sessionHash,
                     'refresh_token' => $oauthResponse->getParameter('refresh_token'),

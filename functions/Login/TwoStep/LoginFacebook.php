@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-require_once(__DIR__ . '/../../../vendor/autoload.php');
-require_once(__DIR__ . '/../LoginTwoStep.php');
+namespace Login\TwoStep;
+
+use Login\LoginTwoStep;
+use \Facebook;
 
 class LoginFacebook extends LoginTwoStep {
     public $client;
@@ -52,11 +54,11 @@ class LoginFacebook extends LoginTwoStep {
             $accessToken = $this->client->getRedirectLoginHelper()->getAccessToken();
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
-            new fimError('facebookError', 'Graph returned an error: ' . $e->getMessage());
+            new \fimError('facebookError', 'Graph returned an error: ' . $e->getMessage());
             die();
         } catch(Facebook\Exceptions\FacebookSDKException $e) {
             // When validation fails or other local issues
-            new fimError('facebookError', 'Facebook SDK returned an error: ' . $e->getMessage());
+            new \fimError('facebookError', 'Facebook SDK returned an error: ' . $e->getMessage());
             die();
         }
 
@@ -64,12 +66,12 @@ class LoginFacebook extends LoginTwoStep {
             $helper = $this->client->getRedirectLoginHelper();
 
             if ($this->client->getRedirectLoginHelper()->getError()) {
-                new fimError($helper->getErrorCode(), $helper->getError(), [
+                new \fimError($helper->getErrorCode(), $helper->getError(), [
                     'reason' => $helper->getErrorReason(),
                     'description' => $helper->getErrorDescription()
                 ]);
             } else {
-                new fimError('facebookError', 'Unknown Facebook Error.');
+                new \fimError('facebookError', 'Unknown Facebook Error.');
             }
             exit;
         }
@@ -78,11 +80,11 @@ class LoginFacebook extends LoginTwoStep {
             $user = $this->client->get('/me?fields=id,name,about', $accessToken)->getDecodedBody();
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
-            new fimError('facebookError', 'Graph returned an error: ' . $e->getMessage());
+            new \fimError('facebookError', 'Graph returned an error: ' . $e->getMessage());
             die();
         } catch(Facebook\Exceptions\FacebookSDKException $e) {
             // When validation fails or other local issues
-            new fimError('facebookError', 'Facebook SDK returned an error: ' . $e->getMessage());
+            new \fimError('facebookError', 'Facebook SDK returned an error: ' . $e->getMessage());
             die();
         }
 
@@ -90,18 +92,18 @@ class LoginFacebook extends LoginTwoStep {
             $picture = $this->client->get('/me/picture?redirect=false&type=large', $accessToken)->getDecodedBody();
         } catch(Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
-            new fimError('facebookError', 'Graph returned an error: ' . $e->getMessage());
+            new \fimError('facebookError', 'Graph returned an error: ' . $e->getMessage());
             die();
         } catch(Facebook\Exceptions\FacebookSDKException $e) {
             // When validation fails or other local issues
-            new fimError('facebookError', 'Facebook SDK returned an error: ' . $e->getMessage());
+            new \fimError('facebookError', 'Facebook SDK returned an error: ' . $e->getMessage());
             die();
         }
         session_unset();
 
         if (isset($user) && $user['id']) {
             // store user info...
-            $this->loginFactory->user = new fimUser([
+            $this->loginFactory->user = new \fimUser([
                 'integrationMethod' => 'facebook',
                 'integrationId'     => $user['id'],
             ]);
@@ -114,7 +116,7 @@ class LoginFacebook extends LoginTwoStep {
             ]);
         }
         else {
-            fimError('invalidFacebookLogin', 'Facebook Login returned bad data.');
+            \fimError('invalidFacebookLogin', 'Facebook Login returned bad data.');
         }
     }
 }

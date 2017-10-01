@@ -225,16 +225,16 @@
         },
         {
             "name": "google/apiclient-services",
-            "version": "v0.25",
+            "version": "v0.27",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google/google-api-php-client-services.git",
-                "reference": "a94763c82a4325a6529feaa0a1f5fd1c289c8f68"
+                "reference": "a78a34c76ba300d8236979d74f340b815151f893"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/a94763c82a4325a6529feaa0a1f5fd1c289c8f68",
-                "reference": "a94763c82a4325a6529feaa0a1f5fd1c289c8f68",
+                "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/a78a34c76ba300d8236979d74f340b815151f893",
+                "reference": "a78a34c76ba300d8236979d74f340b815151f893",
                 "shasum": ""
             },
             "require": {
@@ -258,7 +258,7 @@
             "keywords": [
                 "google"
             ],
-            "time": "2017-09-16T00:23:43+00:00"
+            "time": "2017-09-24T00:22:51+00:00"
         },
         {
             "name": "google/auth",
@@ -636,16 +636,16 @@
         },
         {
             "name": "paragonie/random_compat",
-            "version": "v2.0.10",
+            "version": "v2.0.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paragonie/random_compat.git",
-                "reference": "634bae8e911eefa89c1abfbf1b66da679ac8f54d"
+                "reference": "5da4d3c796c275c55f057af5a643ae297d96b4d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paragonie/random_compat/zipball/634bae8e911eefa89c1abfbf1b66da679ac8f54d",
-                "reference": "634bae8e911eefa89c1abfbf1b66da679ac8f54d",
+                "url": "https://api.github.com/repos/paragonie/random_compat/zipball/5da4d3c796c275c55f057af5a643ae297d96b4d8",
+                "reference": "5da4d3c796c275c55f057af5a643ae297d96b4d8",
                 "shasum": ""
             },
             "require": {
@@ -680,7 +680,7 @@
                 "pseudorandom",
                 "random"
             ],
-            "time": "2017-03-13T16:27:32+00:00"
+            "time": "2017-09-27T21:40:39+00:00"
         },
         {
             "name": "phpseclib/phpseclib",

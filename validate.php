@@ -36,7 +36,6 @@
  * Require base files.
  ******/
 require_once(__DIR__ . '/global.php');
-require_once(__DIR__ . '/functions/Login/LoginFactory.php');
 
 
 
@@ -123,7 +122,7 @@ if (!$ignoreLogin) {
     /**
      * A factory for performing integration logins.
      */
-    $loginFactory = new LoginFactory($oauthRequest, $oauthStorage, $oauthServer, $integrationDatabase);
+    $loginFactory = new \Login\LoginFactory($oauthRequest, $oauthStorage, $oauthServer, $integrationDatabase);
 
 
 
