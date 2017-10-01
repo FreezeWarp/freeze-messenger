@@ -67,8 +67,6 @@ switch ($_REQUEST['phase']) {
             die($exception->getMessage());
         }
 
-        $database->registerConfig(new fimConfig());
-
 
         if ($database->getLastError()) {
             die("Connection Error.\n" . $database->getLastError());
