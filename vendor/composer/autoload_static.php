@@ -36,6 +36,7 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         ),
         'L' => 
         array (
+            'Login\\' => 6,
             'League\\OAuth2\\Client\\' => 21,
         ),
         'G' => 
@@ -80,6 +81,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'Monolog\\' => 
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
+        ),
+        'Login\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/functions/Login',
         ),
         'League\\OAuth2\\Client\\' => 
         array (
