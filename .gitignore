@@ -3,3 +3,6 @@
 config.php
 querylog
 *.class
+vendor/google/apiclient-services/src/Google/*
+!vendor/google/apiclient-services/src/Google/Oauth2/*
+!vendor/google/apiclient-services/src/Google/Oauth2.php
