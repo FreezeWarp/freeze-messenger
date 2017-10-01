@@ -88,7 +88,7 @@ class databaseSQLTests2 extends databaseSQLTests {
 
 
         // Lists, Decode
-        $this->enableEncodeDecode($table);/*
+        $this->enableEncodeDecode($table);
         printCompRow("Insert List and Decode", $this->databaseObj->select([$table => "id, list"], [
             "id" => 1,
         ])->getAsArray(false)["list"], [20, 100, 50]);
@@ -120,10 +120,10 @@ class databaseSQLTests2 extends databaseSQLTests {
 
         printCompRow("Insert RoomName, Get Searchable", $this->databaseObj->select([$table => "id, roomNameSearchable"], [
             "id" => 3,
-        ])->getAsArray(false)["roomNameSearchable"], "cafe");*/
+        ])->getAsArray(false)["roomNameSearchable"], "cafe");
 
 
-        //printRow("Delete Table", $this->testCreateTable1($table));
+        printRow("Delete Table", $this->testCreateTable1($table));
         endTable();
     }
 

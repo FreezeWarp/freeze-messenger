@@ -101,8 +101,8 @@ class fimMessage
 
             if (isset($messageData['salt'], $messageData['iv'])) { // Typically when in permanent store.
                 $this->textEncrypted = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have text column.');
-                $this->salt = $messageData['salt'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have salt column.');
-                $this->iv = $messageData['iv'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have iv column.');
+                $this->salt = $messageData['salt'] ?? '';
+                $this->iv = $messageData['iv'] ?? '';
                 $this->text = fim_decrypt(
                     $this->textEncrypted,
                     $this->salt,
@@ -113,7 +113,7 @@ class fimMessage
                 list($this->textEncrypted, $this->salt, $this->iv) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
             }
 
-            $this->flag = $messageData['flag'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have flag column.');
+            $this->flag = $messageData['flag'] ?? '';
             $this->time = $messageData['time'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');
         }
 

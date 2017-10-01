@@ -1040,7 +1040,7 @@ class fimDatabase extends DatabaseSQL
      *
      * @return databaseResult
      */
-    public function getMessages($options = array(), $sort = array('id' => 'asc'), $limit = 40, $page = 0)
+    public function getMessages($options = array(), $sort = array('id' => 'asc'), $limit = 40, $page = 0) : fimDatabaseResult
     {
         $options = $this->argumentMerge(array(
             'room'              => false,

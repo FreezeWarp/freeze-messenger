@@ -25,7 +25,6 @@
           <option name="KEEP_BLANK_LINES_IN_CODE" value="5" />
           <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="5" />
           <option name="ELSE_ON_NEW_LINE" value="true" />
-          <option name="INDENT_BREAK_FROM_CASE" value="false" />
           <option name="ALIGN_MULTILINE_CHAINED_METHODS" value="true" />
           <option name="KEEP_SIMPLE_METHODS_IN_ONE_LINE" value="true" />
         </codeStyleSettings>

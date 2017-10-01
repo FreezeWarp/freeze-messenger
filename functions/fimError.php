@@ -21,17 +21,32 @@ class fimError extends Exception {
     const HTTP_403_FORBIDDEN = "HTTP/1.1 403 Forbidden";
     const HTTP_429_TOO_MANY = "HTTP/1.1 429 Too Many Requests";
     const HTTP_500_INTERNAL = "HTTP/1.1 500 Internal Server Error";
+
+    /**
+     * @var fimErrorThrown
+     */
+    private $instance;
+
     /**
      * fimErrorThrown constructor.
      * @param string $code {@link fimErrorThrown::$code}
      * @param string $string {@link fimErrorThrown::$string}
-     * @param string $return If true, this will return the Exception instance instead of throwing it.
+     * @param string $return If true, this will store the Exception instance instead of throwing it.
      * @param array $context {@link fimErrorThrown::$context}
      * @param string $httpError {@link fimErrorThrown::$httpError}
      */
     public function __construct($code = false, $string = false, $context = array(), $return = false, $httpError = fimError::HTTP_403_FORBIDDEN) {
-        if ($code && !$return) throw new fimErrorThrown($code, $string, $context, $httpError);
-        else return new fimErrorThrown($code, $string, $context, $httpError);
+        if ($code && !$return)
+            throw new fimErrorThrown($code, $string, $context, $httpError);
+        else $this->instance = new fimErrorThrown($code, $string, $context, $httpError);
+    }
+
+    /**
+     * Get the data of this error instance, if initialised with $return. See {@link fimErrorThrown::getArray()}
+     * @return array
+     */
+    public function getArray() : array {
+        return $this->instance->getArray();
     }
 }
 
@@ -93,5 +108,14 @@ class fimErrorThrown extends Exception {
      */
     public function getHttpError(): string {
         return $this->httpError;
+    }
+
+
+    public function getArray() : array {
+        return [
+            'string' => $this->code,
+            'details' => $this->string,
+            'context' => $this->context,
+        ];
     }
 }
