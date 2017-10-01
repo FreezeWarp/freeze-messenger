@@ -14,7 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-require('generalCache.php');
+require('Cache/CacheFactory.php');
+use Cache\CacheFactory;
 
 /**
  * Class designed to store and recall cache variables.
@@ -24,7 +25,7 @@ require('generalCache.php');
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-class fimCache extends generalCache {
+class fimCache extends CacheFactory {
     private $defaultConfigFile;
     private $memory = array(); // Whenever the cache is retrieved, we store it in memory for the duration of the script's execution
     protected $database = false;

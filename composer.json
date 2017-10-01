@@ -7,7 +7,8 @@
   },
   "autoload" : {
     "psr-4": {
-      "Login\\" : "functions/Login/"
+      "Login\\" : "functions/Login/",
+      "Cache\\" : "functions/Cache/"
     }
   }
 }

@@ -1,5 +1,7 @@
 <?php
 
+namespace Cache;
+
 /**
  *
  * @package FileCache - A simple file based cache

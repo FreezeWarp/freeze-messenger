@@ -84,9 +84,9 @@ $cacheConnectMethods['disk'] = [
 ];
 
 
-/* $cacheConnectMethods['pgsql']
+/* $streamMethods['pgsql']
  * If specified, this will enable PostGreSQL pub/sub. */
-/*$cacheConnectMethods['pgsql'] = [
+/*$streamMethods['pgsql'] = [
     'host' => 'localhost',
     'port' => 5432,
     'username' => 'postgres',
@@ -101,7 +101,8 @@ $cacheConnectMethods['disk'] = [
     'port' => 6379,
     'timeout' => 0,
     'password' => false,
-];*/
+];
+$streamMethods['redis'] = $cacheConnectionMethods['redis'];*/
 
 /* $cacheConnectMethods['memcached']
  * If specified, this will enable memcached with the attached list of servers to use in the connection pool. */

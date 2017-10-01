@@ -51,6 +51,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
             'Firebase\\JWT\\' => 13,
             'Facebook\\' => 9,
         ),
+        'C' => 
+        array (
+            'Cache\\' => 6,
+        ),
         'A' => 
         array (
             'Abraham\\TwitterOAuth\\' => 21,
@@ -113,6 +117,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'Facebook\\' => 
         array (
             0 => __DIR__ . '/..' . '/facebook/graph-sdk/src/Facebook',
+        ),
+        'Cache\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/functions/Cache',
         ),
         'Abraham\\TwitterOAuth\\' => 
         array (

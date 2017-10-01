@@ -19,7 +19,7 @@ require(__DIR__ . '/StreamDatabase.php');
 
 /**
  * Exposes standard publish/subscribe model, automatically using whichever available driver is best.
- * This will use Redis first (if cacheConnectMethods['redis'] is set), PgSQL second (if cacheConnectMethods['pgsql'] is set or the primary database driver uses PgSQL), and a generic Database third (which will not be performant unless in-memory tables are supported).
+ * This will use Redis first (if streamMethods['redis'] is set), PgSQL second (if streamMethods['pgsql'] is set or the primary database driver uses PgSQL), and a generic Database third (which will not be performant unless in-memory tables are supported).
  */
 class StreamFactory {
     /**
@@ -39,14 +39,14 @@ class StreamFactory {
             return StreamFactory::$instance;
         }
         else {
-            global $dbConnect, $cacheConnectMethods;
+            global $dbConnect, $streamMethods;
 
-            if (isset($cacheConnectMethods['redis']['host']) && extension_loaded('redis')) {
+            if (isset($streamMethods['redis']['host']) && extension_loaded('redis')) {
                 require(__DIR__ . '/StreamRedis.php');
-                return StreamFactory::$instance = new StreamRedis($cacheConnectMethods['redis']);
+                return StreamFactory::$instance = new StreamRedis($streamMethods['redis']);
             }
 
-            elseif ($dbConnect['core']['driver'] === 'pgsql' || $cacheConnectMethods['pgsql']['host']) {
+            elseif ($dbConnect['core']['driver'] === 'pgsql' || $streamMethods['pgsql']['host']) {
                 require(__DIR__ . '/StreamPgSQL.php');
 
                 // Reuse existing PgSQL instance if available
@@ -58,10 +58,10 @@ class StreamFactory {
                 else {
                     $database = new DatabaseSQL();
                     if (!$database->connect(
-                        $cacheConnectMethods['pgsql']['host'],
-                        $cacheConnectMethods['pgsql']['port'],
-                        $cacheConnectMethods['pgsql']['username'],
-                        $cacheConnectMethods['pgsql']['password'],
+                        $streamMethods['pgsql']['host'],
+                        $streamMethods['pgsql']['port'],
+                        $streamMethods['pgsql']['username'],
+                        $streamMethods['pgsql']['password'],
                         false,
                         'pgsql'
                     )) {

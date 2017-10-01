@@ -33,7 +33,7 @@ class Anonymous implements GrantTypeInterface
     {
         /* Use cache if possible, since the anonymous user will be queried quite frequently.
          * getUser(), which is called by getUserDetails(), may also implement a general cache of all users, but since cache is redundancy to begin with, I tend not to avoid it. */
-        $cache = new \generalCache();
+        $cache = new \CacheFactory();
         if ($cache->exists('fim_oauth2_anonymousUserArray'))
             $userInfo = $cache->get('fim_oauth2_anonymousUserArray');
         else
