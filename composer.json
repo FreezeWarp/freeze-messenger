@@ -1,9 +1,16 @@
 {
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/iignatov/LightOpenID"
+    }
+  ],
   "require": {
     "google/apiclient" : "^2.0",
     "abraham/twitteroauth" : "0.7.4",
     "facebook/graph-sdk" : "5.6.1",
     "stevenmaguire/oauth2-microsoft" : "2.2.0",
+    "iignatov/lightopenid": "*",
     "google/recaptcha": "~1.1"
   },
   "autoload" : {

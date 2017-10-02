@@ -198,6 +198,8 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'Google\\Auth\\Subscriber\\SimpleSubscriber' => __DIR__ . '/..' . '/google/auth/src/Subscriber/SimpleSubscriber.php',
         'Google_Service_Exception' => __DIR__ . '/..' . '/google/apiclient/src/Google/Service/Exception.php',
         'Google_Service_Resource' => __DIR__ . '/..' . '/google/apiclient/src/Google/Service/Resource.php',
+        'LightOpenID' => __DIR__ . '/..' . '/iignatov/lightopenid/openid.php',
+        'LightOpenIDProvider' => __DIR__ . '/..' . '/iignatov/lightopenid/provider/provider.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
