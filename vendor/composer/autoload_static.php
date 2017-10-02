@@ -25,6 +25,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
             'Stream\\' => 7,
             'Stevenmaguire\\OAuth2\\Client\\' => 28,
         ),
+        'R' => 
+        array (
+            'ReCaptcha\\' => 10,
+        ),
         'P' => 
         array (
             'Psr\\Log\\' => 8,
@@ -78,6 +82,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'Stevenmaguire\\OAuth2\\Client\\' => 
         array (
             0 => __DIR__ . '/..' . '/stevenmaguire/oauth2-microsoft/src',
+        ),
+        'ReCaptcha\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/google/recaptcha/src/ReCaptcha',
         ),
         'Psr\\Log\\' => 
         array (
