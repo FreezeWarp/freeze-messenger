@@ -71,7 +71,7 @@ else {
                 break;
 
             case 'updateDatabaseSchema':
-                require('../functions/xml.php');
+                require(__DIR__ . '/../../functions/Xml2Array.php');
                 $showTable = (array) $database->getTablesAsArray();
                 $showTables = array_map('strtolower', $showTable); // ...In Windows, table names may not be returned as entered (uppercase letters usually become lowercase), so this is the most efficient work-around I could come up with.
 
