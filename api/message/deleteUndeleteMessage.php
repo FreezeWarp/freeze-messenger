@@ -43,7 +43,7 @@ if (($message->user->id = $user->id && $user->hasPriv('editOwnPosts'))
 else
     new fimError('noPerm', 'You are not allowed to delete this message.');
 
-echo new ApiData([
+echo new Http\ApiData([
     'message' => [
         'id'     => $message->id,
     ],

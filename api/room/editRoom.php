@@ -236,5 +236,5 @@ $database->endTransaction();
 
 /* Output Data */
 $xmlData = ['room' => fim_objectArrayFilterKeys($room, ['id', 'name']), 'request' => $request];
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>

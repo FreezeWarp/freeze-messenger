@@ -11,7 +11,8 @@
       "Login\\" : "functions/Login/",
       "Cache\\" : "functions/Cache/",
       "Stream\\" : "functions/Stream/",
-      "Database\\" : "functions/Database/"
+      "Database\\" : "functions/Database/",
+      "Http\\" : "functions/Http/"
     }
   }
 }

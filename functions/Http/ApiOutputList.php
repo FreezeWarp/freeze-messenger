@@ -1,4 +1,5 @@
 <?php
+namespace Http;
 
 class ApiOutputList {
     private $array;

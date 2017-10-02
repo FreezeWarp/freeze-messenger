@@ -147,8 +147,8 @@ else {
 }
 
 
-$xmlData['messages'] = new ApiOutputList($xmlData['messages']); // output the messages as a list
+$xmlData['messages'] = new Http\ApiOutputList($xmlData['messages']); // output the messages as a list
 
 /* Output Data */
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>

@@ -42,13 +42,13 @@ $database->accessLog('acHelper', $request);
 switch ($request['list']) {
 
   case 'users':
-    $entries = new ApiOutputDict($slaveDatabase->getUsers(array(
+    $entries = new Http\ApiOutputDict($slaveDatabase->getUsers(array(
       'userNameSearch' => $request['search'],
     ), null, 10)->getColumnValues('name', 'id'));
     break;
 
   case 'rooms':
-    $entries = new ApiOutputDict($slaveDatabase->getRooms(array(
+    $entries = new Http\ApiOutputDict($slaveDatabase->getRooms(array(
       'roomNameSearch' => $request['search'],
     ), null, 10)->getColumnValues('name', 'id'));
      break;
@@ -64,5 +64,5 @@ $xmlData = array(
 
 
 /* Output Data */
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>

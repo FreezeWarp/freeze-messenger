@@ -1,4 +1,6 @@
 <?php
+namespace Http;
+
 class ApiOutputDict {
     private $array;
 

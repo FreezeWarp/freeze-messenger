@@ -129,7 +129,7 @@ foreach ($users AS $userData) {
         fim_castArrayEntry(
             fim_objectArrayFilterKeys($userData, $returnFields),
             ['ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms', 'parentalFlags'],
-            'ApiOutputList'
+            'Http\ApiOutputList'
         )
     );
 
@@ -143,5 +143,5 @@ foreach ($users AS $userData) {
 
 
 /* Output Data */
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>

@@ -68,7 +68,7 @@ class LoginMicrosoft extends LoginTwoStep {
             new \fimError('microsoftLoginFailed', 'Could not get token: ' . $e);
         }
 
-        /*$picture = new curlRequest('https://apis.live.net/v5.0/' . $userInfo['id'] . '/picture');
+        /*$picture = new Http\curlRequest('https://apis.live.net/v5.0/' . $userInfo['id'] . '/picture');
         $picture->executeGET();
 
         if ($picture->redirectLocation === 'https://js.live.net/static/img/DefaultUserPicture.png') {

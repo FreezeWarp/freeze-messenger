@@ -44,6 +44,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
             'Login\\' => 6,
             'League\\OAuth2\\Client\\' => 21,
         ),
+        'H' => 
+        array (
+            'Http\\' => 5,
+        ),
         'G' => 
         array (
             'GuzzleHttp\\Psr7\\' => 16,
@@ -110,6 +114,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'League\\OAuth2\\Client\\' => 
         array (
             0 => __DIR__ . '/..' . '/league/oauth2-client/src',
+        ),
+        'Http\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/functions/Http',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (

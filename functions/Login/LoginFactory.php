@@ -44,7 +44,7 @@ class LoginFactory {
     public $loginRunner = null;
 
     /**
-     * @var DatabaseSQL A DatabaseSQL instance connected to the source of the login information.
+     * @var \DatabaseSQL A DatabaseSQL instance connected to the source of the login information.
      */
     public $database;
 

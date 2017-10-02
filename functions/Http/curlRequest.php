@@ -14,11 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-require_once('ApiData.php');
-require_once('fimError.php');
-require_once('fimError.php');
-require('curlRequestMethod.php');
-require(__DIR__ . '/../vendor/autoload.php');
+namespace Http;
+use GuzzleHttp;
 
 /**
  * Performs a structured CURL request.
@@ -184,7 +181,7 @@ class curlRequest {
         if (function_exists('curl_init')) {
             $ch = curl_init($file); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); /* obey redirects */
-            curl_setopt($ch, CURLOPT_USERAGENT, fimConfig::$curlUA);
+            curl_setopt($ch, CURLOPT_USERAGENT, \fimConfig::$curlUA);
             curl_setopt($ch, CURLOPT_NOBODY, true);
             curl_exec($ch);
 

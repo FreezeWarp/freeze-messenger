@@ -81,7 +81,7 @@ if (count($smilies)) {
 }*/
 
 
-echo new ApiData(
+echo new Http\ApiData(
     [
         'serverStatus' => array(
             'activeUser' => array(
@@ -96,8 +96,8 @@ echo new ApiData(
             'parentalControls' => array(
                 'parentalEnabled' => fimConfig::$parentalEnabled,
                 'parentalAgeChangeable' => fimConfig::$parentalAgeChangeable,
-                'parentalFlags' => new ApiOutputList(fimConfig::$parentalFlags),
-                'parentalAges' => new ApiOutputList(fimConfig::$parentalAges),
+                'parentalFlags' => new Http\ApiOutputList(fimConfig::$parentalFlags),
+                'parentalAges' => new Http\ApiOutputList(fimConfig::$parentalAges),
                 'enableCensor' => fimConfig::$censorEnabled,
             ),
 
@@ -124,8 +124,8 @@ echo new ApiData(
                 'maxUser' => (int) fimConfig::$uploadMaxUserFiles,
                 'chunkSize' => (int) fimConfig::$fileUploadChunkSize,
                 'orphanFiles' => (bool) fimConfig::$allowOrphanFiles,
-                'allowedExtensions' => new ApiOutputList(fimConfig::$allowedExtensions),
-                'mimes' => new ApiOutputList(fimConfig::$uploadMimes),
+                'allowedExtensions' => new Http\ApiOutputList(fimConfig::$allowedExtensions),
+                'mimes' => new Http\ApiOutputList(fimConfig::$uploadMimes),
                 'extensionChanges' => fimConfig::$extensionChanges,
                 'fileContainers' => fimConfig::$fileContainers,
                 'fileProofs' => fimConfig::$uploadMimeProof,

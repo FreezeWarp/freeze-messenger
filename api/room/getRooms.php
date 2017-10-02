@@ -119,7 +119,7 @@ do {
             [
                 'defaultPermissions' => $room->getPermissionsArray($room->defaultPermissions),
                 'permissions'        => $room->getPermissionsArray($database->hasPermission($user, $room)),
-                'parentalFlags'      => new ApiOutputList($room->parentalFlags)
+                'parentalFlags'      => new Http\ApiOutputList($room->parentalFlags)
             ]
         );
 
@@ -146,5 +146,5 @@ $xmlData['metadata']['nextPage'] = $request['page'];
 
 
 /* Output Data Structure */
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>

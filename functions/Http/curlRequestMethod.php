@@ -1,4 +1,6 @@
 <?php
+namespace Http;
+
 class CurlRequestMethod {
     const __default = self::GET;
 

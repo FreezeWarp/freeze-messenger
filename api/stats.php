@@ -100,5 +100,5 @@ foreach ($totalPosts AS $roomId => $room) {
 
 
 /* Output Data */
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>

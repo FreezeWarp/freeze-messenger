@@ -52,7 +52,7 @@ abstract class LoginDatabase implements LoginRunner {
             $user->resolveAll();
             $this->loginFactory->user = $user;
 
-            die(new \ApiData(array(
+            die(new \Http\ApiData(array(
                 'login' => array(
                     'access_token' => $user->sessionHash,
                     'refresh_token' => $oauthResponse->getParameter('refresh_token'),
@@ -63,7 +63,7 @@ abstract class LoginDatabase implements LoginRunner {
                         fim_objectArrayFilterKeys(
                             $user,
                             ['id', 'anonId', 'name', 'nameFormat', 'mainGroupId', 'socialGroupIds', 'avatar', 'profile', 'parentalAge', 'parentalFlags', 'messageFormatting', 'defaultRoomId', 'options', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms']
-                        ), ['socialGroupIds', 'parentalFlags', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms'], 'ApiOutputList'
+                        ), ['socialGroupIds', 'parentalFlags', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms'], '\Http\ApiOutputList'
                     ))
                 ),
             )));

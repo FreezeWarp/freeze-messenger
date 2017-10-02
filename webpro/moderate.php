@@ -22,7 +22,6 @@
 define('WEBPRO_INMOD', true);
 
 require('moderateFunctions.php'); // Functions that are used solely by the moderate interfaces.
-require('../functions/curlRequest.php');
 require('../config.php');
 
 
@@ -33,7 +32,7 @@ if (isset($_GET['do']) && $_GET['do'] === 'logout') {
 }
 
 elseif (isset($_POST['webproModerate_userName'])) {
-    $cr = new curlRequest($installUrl . '/validate.php', [], ['client_id' => 'WebProAdmin', 'grant_type' => 'password', 'username' => $_POST['webproModerate_userName'], 'password' => $_POST['webproModerate_password']]);
+    $cr = new Http\curlRequest($installUrl . '/validate.php', [], ['client_id' => 'WebProAdmin', 'grant_type' => 'password', 'username' => $_POST['webproModerate_userName'], 'password' => $_POST['webproModerate_password']]);
 
      try {
          $cr->executePOST();

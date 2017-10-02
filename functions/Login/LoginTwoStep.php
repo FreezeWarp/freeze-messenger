@@ -28,7 +28,7 @@ abstract class LoginTwoStep implements LoginRunner {
         $oauthResponse = $this->loginFactory->oauthServer->handleTokenRequest($this->loginFactory->oauthRequest);
 
         if ($oauthResponse->getStatusCode() !== 200) {
-            new fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
+            new \fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
         }
         else {
             header('Location: ' . $installUrl . '?sessionHash=' . $oauthResponse->getParameter('access_token'));

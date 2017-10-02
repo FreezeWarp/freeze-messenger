@@ -30,7 +30,6 @@ elseif ($phpVersion < 7) { // Removed outright in 5.4, may as well save a CPU cy
 require_once(__DIR__ . '/vendor/autoload.php'); // Various Functions
 
 require_once(__DIR__ . '/config.php'); // Configuration Variables
-require_once(__DIR__ . '/functions/ApiData.php'); // API Data output wrapper.
 require_once(__DIR__ . '/functions/fimDatabase.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimUser.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimRoom.php'); // FIM-specific Extensions
