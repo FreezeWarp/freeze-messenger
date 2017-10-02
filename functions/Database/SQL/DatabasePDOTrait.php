@@ -1,6 +1,15 @@
 <?php
-require_once(__DIR__ . '/DatabaseManualInsertIDTrait.php');
-require_once(__DIR__ . '/DatabaseDefinitionsMySQL.php');
+namespace Database\SQL;
+
+use PDO;
+use PDOStatement;
+use Exception;
+
+use Database\DatabaseResultInterface;
+use Database\DatabaseIndexType;
+use Database\DatabaseEngine;
+use Database\DatabaseTypeType;
+use Database\DatabaseTypeComparison;
 
 trait DatabasePDOTrait {
     use DatabaseManualInsertIDTrait;
@@ -9,6 +18,11 @@ trait DatabasePDOTrait {
      * @var PDO
      */
     public $connection;
+
+    /**
+     * @var array
+     */
+    public $preparedParams = [];
 
     /**
      * @var string An error string registered on connection failure.

@@ -1,5 +1,11 @@
 <?php
-require_once(__DIR__ . '/DatabaseResultInterface.php');
+namespace Database\SQL;
+
+use Database\DatabaseResultInterface;
+use Database\DatabaseIndexType;
+use Database\DatabaseEngine;
+use Database\DatabaseTypeType;
+use Database\DatabaseTypeComparison;
 
 abstract class DatabaseSQLStandard {
     /**

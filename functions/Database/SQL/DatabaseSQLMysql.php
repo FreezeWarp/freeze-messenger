@@ -1,5 +1,7 @@
 <?php
-require_once(__DIR__ . '/DatabaseDefinitionsMySQL.php');
+namespace Database\SQL;
+
+use Database\DatabaseResultInterface;
 
 class DatabaseSQLMysql extends DatabaseDefinitionsMySQL {
     /**

@@ -22,6 +22,7 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         ),
         'S' => 
         array (
+            'Stream\\' => 7,
             'Stevenmaguire\\OAuth2\\Client\\' => 28,
         ),
         'P' => 
@@ -51,6 +52,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
             'Firebase\\JWT\\' => 13,
             'Facebook\\' => 9,
         ),
+        'D' => 
+        array (
+            'Database\\' => 9,
+        ),
         'C' => 
         array (
             'Cache\\' => 6,
@@ -65,6 +70,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'phpseclib\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
+        ),
+        'Stream\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/functions/Stream',
         ),
         'Stevenmaguire\\OAuth2\\Client\\' => 
         array (
@@ -117,6 +126,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'Facebook\\' => 
         array (
             0 => __DIR__ . '/..' . '/facebook/graph-sdk/src/Facebook',
+        ),
+        'Database\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/functions/Database',
         ),
         'Cache\\' => 
         array (

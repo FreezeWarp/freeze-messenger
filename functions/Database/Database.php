@@ -14,15 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/**** BRIEF INTRODUCTION ****/
-/* This file is the outline of FreezeMessenger's database class. The legwork will be performed by another class (usually databaseSQL), while this defines variables and includes documentation for the interface. */
-
-
-/**** TODO ****/
-/*
- * insert triggers (e.g. a watch() function)
- */
-
+namespace Database;
+use Exception;
 
 /**
  * Database operations that must be implemented by a driver, and other helper functionality.
@@ -1016,7 +1009,7 @@ abstract class Database
 
     protected function isTypeObject($type)
     {
-        return (is_object($type) && get_class($type) === 'DatabaseType'); // TODO: instanceof, dummy
+        return (is_object($type) && ($type instanceof DatabaseType));
     }
 
     /**
@@ -1334,7 +1327,7 @@ abstract class Database
      * @param Database $database     {@see databaseResult::$database}
      * @param bool     $paginated    {@see databaseResult::$paginated}
      *
-     * @return databaseResult
+     * @return DatabaseResult
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
     abstract protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, Database $database, int $paginated = 0);

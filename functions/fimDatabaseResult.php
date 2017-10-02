@@ -1,5 +1,8 @@
 <?php
-class fimDatabaseResult extends databaseResult {
+
+use Database\DatabaseResult;
+
+class fimDatabaseResult extends DatabaseResult {
     /**
      * @return fimRoom[]
      *

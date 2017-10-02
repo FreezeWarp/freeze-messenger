@@ -13,11 +13,12 @@
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+namespace Stream;
 
 /**
  * A basic interface that allows for clients to publish to a stream by name, and to listen for new events in the stream.
  */
-interface Stream {
+interface StreamInterface {
     /**
      * Add new data to a stream.
      *

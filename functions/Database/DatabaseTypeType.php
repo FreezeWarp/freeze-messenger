@@ -1,4 +1,7 @@
 <?php
+
+namespace Database;
+
 class DatabaseTypeType {
     const __default = self::string;
 

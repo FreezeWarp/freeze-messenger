@@ -13,14 +13,23 @@
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+namespace Stream\Streams;
 
-require_once('Stream.php');
+use Database\Database;
+use Database\DatabaseEngine;
+use Database\DatabaseIndexType;
+use Database\DatabaseTypeComparison;
+
+use Stream\StreamInterface;
 
 /**
  * An implementation of Stream using database tables. Uses Database wrapper to ensure compatibility.
  * Compared to other implementations, this one will be more finicky: table locking may become a concern, and create/deleting stream tables will have some overhead.
  */
-class StreamDatabase implements Stream {
+class StreamDatabase implements StreamInterface {
+    /**
+     * @var Database
+     */
     private $database;
     private $retries = 0;
 
@@ -31,7 +40,7 @@ class StreamDatabase implements Stream {
     /**
      * Ensures that the stream named $stream exists, and also performances maintence, deleting old streams, etc.
      *
-     * @param $stream Stream to create.
+     * @param $stream string StreamInterface to create.
      */
     private function createStreamIfNotExists($stream) {
         /* Create the Stream Table if it Doesn't Exist */
@@ -80,14 +89,14 @@ class StreamDatabase implements Stream {
 
         $this->createStreamIfNotExists($stream);
 
-        while ($this->retries++ < fimConfig::$serverSentMaxRetries) {
+        while ($this->retries++ < \fimConfig::$serverSentMaxRetries) {
             foreach ($this->subscribeOnce($stream, $lastId) AS $event) {
                 if ($event['id'] > $lastId) $lastId = $event['id'];
 
                 call_user_func($callback, $event);
             }
 
-            usleep(fimConfig::$serverSentEventsWait * 1000000);
+            usleep(\fimConfig::$serverSentEventsWait * 1000000);
         }
 
         return [];

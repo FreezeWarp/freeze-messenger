@@ -13,6 +13,18 @@
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+namespace Database\SQL;
+
+use Exception;
+
+use Database\Database;
+use Database\DatabaseResult;
+use Database\DatabaseResultInterface;
+use Database\DatabaseIndexType;
+use Database\DatabaseEngine;
+use Database\DatabaseType;
+use Database\DatabaseTypeType;
+use Database\DatabaseTypeComparison;
 
 /**** BRIEF INTRODUCTION ****/
 /* This file is the MySQL-version (and the only one currently existing) of a generic database layer created for FreezeMessenger. What purpose could it possibly serve? Why not go the PDO-route? Mainly, it offers a few distinct advantages: full control, easier to modify by plugins (specifically, in that most data is stored in a tree structure), and perhaps more importantly it allows things that PDO, which is fundamentally an SQL extension, doesn't. There is no shortage of database foundations bearing almost no semblance to SQL: IndexedDB (which has become popular by-way of web-browser implementation), Node.JS (which I would absolutely love to work with but currently can't because of the MySQL requirement), and others come to mind.
@@ -87,8 +99,6 @@
  * 9.1: Sync. replication, foreign tables,
  * 9.2: Index-only scans, cascading replication, range data types, JSON data type,
  */
-
-require_once(__DIR__ . '/DatabaseSQLInterface.php');
 
 class DatabaseSQL extends Database
 {
@@ -621,22 +631,13 @@ class DatabaseSQL extends Database
 
 
         /* Load DatabaseSQLInterface Driver from File */
-        $className = 'DatabaseSQL' . ucfirst($driver);
-        $includePath = __DIR__ . "/{$className}.php";
+        $className = '\Database\SQL\DatabaseSQL' . ucfirst($driver);
 
-        if (!file_exists($includePath)) {
-            throw new Exception('The specified DatabaseSQL driver is not available');
+        if (!class_exists($className)) {
+            throw new Exception('The specified DatabaseSQL driver is not installed.');
         }
-
         else {
-            require($includePath);
-
-            if (!class_exists($className)) {
-                throw new Exception('The specified DatabaseSQL driver is available but misnamed.');
-            }
-            else {
-                $this->sqlInterface = new $className();
-            }
+            $this->sqlInterface = new $className();
         }
 
 
@@ -784,7 +785,7 @@ class DatabaseSQL extends Database
      */
     protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, Database $database, int $paginated = 0)
     {
-        return new databaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
+        return new DatabaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
     }
 
 
@@ -884,7 +885,7 @@ class DatabaseSQL extends Database
 
         if ($this->sqlInterface->selectDatabase($database)) { // Select the database.
             if ($this->language == 'mysql' || $this->language == 'mysqli') {
-                if (!$this->rawQuery('SET NAMES "utf8"', true)) { // Sets the database encoding to utf8 (unicode).
+                if (!$this->rawQuery('SET NAMES "utf8"')) { // Sets the database encoding to utf8 (unicode).
                     $error = 'SET NAMES Query Failed';
                 }
             }

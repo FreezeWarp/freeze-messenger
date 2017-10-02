@@ -1,5 +1,7 @@
 <?php
-class databaseResult
+namespace Database;
+
+class DatabaseResult
 {
     /**
      * @var array The result-set returned from the query.
@@ -17,7 +19,7 @@ class databaseResult
     public $sourceQuery;
 
     /**
-     * @var DatabaseSQL The database object used to generate this result.
+     * @var Database The database object used to generate this result.
      */
     public $database;
 

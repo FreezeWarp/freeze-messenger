@@ -1,4 +1,6 @@
 <?php
+namespace Database\SQL;
+
 trait DatabaseManualInsertIDTrait {
     /**
      * @var mixed A holder for the last insert ID, since it may be unset by subsequent queries.

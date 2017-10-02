@@ -1,6 +1,10 @@
 <?php
-require_once(__DIR__ . '/DatabaseReconnectOnSelectDatabaseTrait.php');
-require_once(__DIR__ . '/DatabasePDOTrait.php');
+namespace Database\SQL;
+
+use PDO;
+use PDOStatement;
+use PDOException;
+use Exception;
 
 class DatabaseSQLPdoMysql extends DatabaseDefinitionsMySQL {
     use DatabasePDOTrait, DatabaseReconnectOnSelectDatabaseTrait;
@@ -26,7 +30,6 @@ class DatabaseSQLPdoMysql extends DatabaseDefinitionsMySQL {
     public $stringFuzzy = '';
 
 
-    public $preparedParams = [];
 
     public function connect($host, $port, $username, $password, $database = false) {
         // keep the user and password in memory to allow for reconnects with selectdb

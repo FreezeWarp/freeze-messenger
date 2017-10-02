@@ -1,4 +1,7 @@
 <?php
+
+namespace Database;
+
 class DatabaseIndexType {
     const __default = self::index;
 

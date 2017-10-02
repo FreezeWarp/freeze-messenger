@@ -30,7 +30,6 @@ namespace Cache;
  */
 class CacheFactory {
     public $methods = [];
-    private $data = [];
 
     /**
      * Initialises class.

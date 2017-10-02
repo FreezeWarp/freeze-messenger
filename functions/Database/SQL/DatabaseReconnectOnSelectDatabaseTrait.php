@@ -1,4 +1,6 @@
 <?php
+namespace Database\SQL;
+
 trait DatabaseReconnectOnSelectDatabaseTrait {
     protected $connectionUser;
     protected $connectionPassword;

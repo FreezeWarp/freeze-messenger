@@ -1,5 +1,8 @@
 <?php
-require_once(__DIR__ . '/DatabaseSQLStandard.php');
+namespace Database\SQL;
+
+use Database\DatabaseEngine;
+use Database\DatabaseTypeType;
 
 abstract class DatabaseDefinitionsMySQL extends DatabaseSQLStandard {
     public $tableQuoteStart = '`';

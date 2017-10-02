@@ -1,4 +1,8 @@
 <?php
+namespace Database;
+
+use Exception;
+
 class DatabaseType {
     const null = null;
 

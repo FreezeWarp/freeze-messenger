@@ -13,20 +13,19 @@
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+namespace Stream\Streams;
 
-class StreamRedis implements Stream {
+use Stream\StreamInterface;
+use Stream\StreamFactory;
+
+class StreamRedis implements StreamInterface {
     /**
-     * @var Redis a Redis instance.
+     * @var \Redis a Redis instance.
      */
     private $redis;
 
-    /**
-     * @var int The number of queries this instance has made so far.
-     */
-    private $retries = 0;
-
     public function __construct($server) {
-        $this->redis = new Redis();
+        $this->redis = new \Redis();
         $this->redis->connect($server['host'], $server['port'], $server['timeout']);
 
         if ($server['password'])
@@ -41,7 +40,7 @@ class StreamRedis implements Stream {
     }
 
     public function subscribe($stream, $lastId, $callback) {
-        // The subscribe below will block, so we call this first. (Unfortunately, this does mean there is a small -- or possibly big -- window wherein messages may not be retrieved.)
+        // The subscribe below will block, so we call this first. (Unfortunately, this does mean the    re is a small -- or possibly big -- window wherein messages may not be retrieved.)
         foreach (StreamFactory::getDatabaseInstance()->subscribeOnce($stream, $lastId) AS $result) {
             call_user_func($callback, $result);
         }

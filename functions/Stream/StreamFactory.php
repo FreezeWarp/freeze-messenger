@@ -13,9 +13,14 @@
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+namespace Stream;
 
-require(__DIR__ . '/Stream.php');
-require(__DIR__ . '/StreamDatabase.php');
+use Database\SQL\DatabaseSQL;
+
+use Stream\Streams\StreamRedis;
+use Stream\Streams\StreamPgSQL;
+use Stream\Streams\StreamDatabase;
+
 
 /**
  * Exposes standard publish/subscribe model, automatically using whichever available driver is best.
@@ -23,32 +28,29 @@ require(__DIR__ . '/StreamDatabase.php');
  */
 class StreamFactory {
     /**
-     * @var Stream The currently in-use Stream instance.
+     * @var StreamInterface The currently in-use Stream instance.
      */
     private static $instance;
     /**
-     * @var Stream A secondary DatabaseStream instance, used for the initial request in most implementors.
+     * @var StreamInterface A secondary DatabaseStream instance, used for the initial request in most implementors.
      */
     private static $databaseInstance;
 
     /**
-     * @return Stream A stream instance (one will be created if not yet available).
+     * @return StreamInterface A stream instance (one will be created if not yet available).
      */
-    public static function getInstance(): Stream {
-        if (StreamFactory::$instance instanceof Stream) {
+    public static function getInstance(): StreamInterface {
+        if (StreamFactory::$instance instanceof StreamInterface) {
             return StreamFactory::$instance;
         }
         else {
             global $dbConnect, $streamMethods;
 
             if (isset($streamMethods['redis']['host']) && extension_loaded('redis')) {
-                require(__DIR__ . '/StreamRedis.php');
                 return StreamFactory::$instance = new StreamRedis($streamMethods['redis']);
             }
 
             elseif ($dbConnect['core']['driver'] === 'pgsql' || $streamMethods['pgsql']['host']) {
-                require(__DIR__ . '/StreamPgSQL.php');
-
                 // Reuse existing PgSQL instance if available
                 if ($dbConnect['core']['driver'] === 'pgsql') {
                     global $database;
@@ -65,7 +67,7 @@ class StreamFactory {
                         false,
                         'pgsql'
                     )) {
-                        new fimError('pgsqlConnectionFailure', 'Could not connect to the PgSQL server for Streaming.');
+                        new \fimError('pgsqlConnectionFailure', 'Could not connect to the PgSQL server for Streaming.');
                     }
                 }
 

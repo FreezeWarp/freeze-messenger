@@ -14,12 +14,14 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+use Database\DatabaseType;
+
 error_reporting(E_ALL); // Report All Potential Errors
 ini_set('display_errors', 1);
 
+require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
+
 require('../functions/xml.php'); // For reading the db*.xml files
-require('../functions/Database.php'); // DB Operations
-require('../functions/DatabaseSQL.php'); // ""
 require('../functions/fimDatabase.php'); // ""
 require('../functions/fimUser.php'); // Creating Users
 require('../functions/fimRoom.php'); // Transformation Parameters

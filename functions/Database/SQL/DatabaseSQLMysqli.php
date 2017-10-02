@@ -1,6 +1,10 @@
 <?php
-require_once(__DIR__ . '/DatabaseDefinitionsMySQL.php');
-require_once(__DIR__ . '/DatabaseManualInsertIDTrait.php');
+namespace Database\SQL;
+
+use mysqli;
+use mysqli_result;
+
+use Database\DatabaseResultInterface;
 
 class DatabaseSQLMysqli extends DatabaseDefinitionsMySQL {
     use DatabaseManualInsertIDTrait;

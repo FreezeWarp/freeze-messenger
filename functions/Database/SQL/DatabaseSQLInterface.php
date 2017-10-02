@@ -1,4 +1,6 @@
 <?php
+namespace Database\SQL;
+
 interface DatabaseSQLInterface {
     /**
      * Connect to a remote (or local) database server with a known host, port, username, and password.

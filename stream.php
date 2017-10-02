@@ -20,8 +20,6 @@ if (!fimConfig::$serverSentEvents) {
     die('Not Supported');
 }
 else {
-    require_once(__DIR__ . '/functions/Stream/StreamFactory.php');
-
     /* Possibly Helpful:
 	ini_set('output_buffering', 'off');
 	ini_set('zlib.output_compression', false);
@@ -70,7 +68,7 @@ else {
     }
 
 
-    StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent'], function($message) use ($request) {
+    \Stream\StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent'], function($message) use ($request) {
         if ($request['streamType'] === 'room') {
             if (isset($message['data']['id']) && $message['data']['id'] <= $request['lastMessage']) return;
         }

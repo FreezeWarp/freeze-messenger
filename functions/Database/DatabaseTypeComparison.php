@@ -1,4 +1,7 @@
 <?php
+
+namespace Database;
+
 class DatabaseTypeComparison {
     const __default = self::equals;
 

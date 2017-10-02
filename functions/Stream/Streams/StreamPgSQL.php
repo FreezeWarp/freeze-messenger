@@ -13,11 +13,18 @@
 
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+namespace Stream\Streams;
+
+use Database\SQL\DatabaseSQL;
+use Database\DatabaseTypeType;
+
+use Stream\StreamInterface;
+use Stream\StreamFactory;
 
 /**
  * Implements Publisher/Subscriber model using Postgres' NOTIFY/LISTEN queries.
  */
-class StreamPgSQL implements Stream {
+class StreamPgSQL implements StreamInterface {
     /**
      * @var DatabaseSQL
      */
@@ -55,7 +62,7 @@ class StreamPgSQL implements Stream {
         }
 
         // Now get the listen results as they come in
-        while ($this->retries++ < fimConfig::$serverSentMaxRetries) {
+        while ($this->retries++ < \fimConfig::$serverSentMaxRetries) {
             $message = pg_get_notify($this->database->sqlInterface->connection, PGSQL_ASSOC);
 
             if ($message) {
@@ -68,7 +75,7 @@ class StreamPgSQL implements Stream {
                 ]);
             }
 
-            usleep(fimConfig::$serverSentEventsWait * 1000000);
+            usleep(\fimConfig::$serverSentEventsWait * 1000000);
         }
 
         return [];

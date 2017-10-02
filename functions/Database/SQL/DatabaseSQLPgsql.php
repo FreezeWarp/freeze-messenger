@@ -1,7 +1,9 @@
 <?php
+namespace Database\SQL;
 
-require_once(__DIR__ . '/DatabaseSQLStandard.php');
-require_once(__DIR__ . '/DatabaseReconnectOnSelectDatabaseTrait.php');
+use Database\DatabaseResultInterface;
+use Database\DatabaseEngine;
+use Database\DatabaseTypeType;
 
 class DatabaseSQLPgsql extends DatabaseSQLStandard {
     use DatabaseReconnectOnSelectDatabaseTrait;

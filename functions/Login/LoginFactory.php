@@ -16,6 +16,8 @@
 
 namespace Login;
 
+use Database\SQL\DatabaseSQL;
+
 /**
  * A factory that looks that the $_REQUEST information and initialises an appropriate LoginRunner instance.
  * Use hasLogin() to check if a valid LoginRunner is available. Use getLogin() to run the LoginRunner. Use apiResponse() to return an appropriate API response given the current LoginRunner status.
@@ -42,7 +44,7 @@ class LoginFactory {
     public $loginRunner = null;
 
     /**
-     * @var \DatabaseSQL A DatabaseSQL instance connected to the source of the login information.
+     * @var DatabaseSQL A DatabaseSQL instance connected to the source of the login information.
      */
     public $database;
 
@@ -52,7 +54,7 @@ class LoginFactory {
     public $user;
 
 
-    public function __construct(\OAuth2\Request $oauthRequest, \OAuth2\Storage\FIMDatabaseOAuth $oauthStorage, \OAuth2\Server $oauthServer, \DatabaseSQL $database) {
+    public function __construct(\OAuth2\Request $oauthRequest, \OAuth2\Storage\FIMDatabaseOAuth $oauthStorage, \OAuth2\Server $oauthServer, DatabaseSQL $database) {
         global $loginConfig;
 
         $this->oauthRequest = $oauthRequest;
