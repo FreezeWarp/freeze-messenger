@@ -85,8 +85,6 @@ class StreamDatabase implements StreamInterface {
 
 
     public function subscribe($stream, $lastId, $callback) {
-        global $config;
-
         $this->createStreamIfNotExists($stream);
 
         while ($this->retries++ < \fimConfig::$serverSentMaxRetries) {

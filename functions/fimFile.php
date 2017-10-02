@@ -86,12 +86,10 @@ class fimFile {
                 break;
 
                 case 'mime':
-                    global $config;
                     $this->mime = fimConfig::$uploadMimes[$this->__get('extension')] ? fimConfig::$uploadMimes[$this->__get('extension')] : 'application/octet-stream';
                     break;
 
                 case 'container':
-                    global $config;
                     $this->container = fimConfig::$fileContainers[$this->__get('extension')] ?? 'other';
                 break;
             }

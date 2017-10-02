@@ -239,8 +239,6 @@ function fim_dobToAge($date) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_formatSize($size) {
-    global $config;
-
     $suffix = 0;
 
     while ($size > fimConfig::$fileIncrementSize) { // Increase the Byte Prefix, Decrease the Number (1024B = 1KiB)
@@ -282,9 +280,6 @@ function fim_endsWith($haystack, $needle) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_sanitizeGPC($type, $data) {
-    global $config;
-
-
     $newData = [];
 
 
@@ -831,8 +826,6 @@ function fim_emptyExplode(string $separator, $list) {
  */
 
 function fim_exceptionHandler($exception) {
-    global $config;
-
     $errorData = array(
         'contactEmail' => fimConfig::$email,
     );
@@ -881,8 +874,6 @@ function fim_exceptionHandler($exception) {
  * Flushes The Output Buffer
  */
 function fim_flush() {
-    global $config;
-
     echo str_repeat(' ', 1024 * fimConfig::$outputFlushPaddingKilobytes);
 
     @ob_flush();
@@ -908,8 +899,6 @@ function fim_removeNullValues(array &$a) {
  * @return mixed
  */
 function fim_nearestAge($age) {
-    global $config;
-
     $ages = fimConfig::$parentalAges;
     sort($ages);
 

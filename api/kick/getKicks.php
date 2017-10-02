@@ -23,7 +23,6 @@
  * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  *
- * @global fimConfig   $config
  * @global fimDatabase $database
  * @global fimUser     $user
  * @global fimUser     $kickUser

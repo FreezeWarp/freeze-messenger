@@ -49,8 +49,6 @@ class StreamPgSQL implements StreamInterface {
     }
 
     public function subscribe($stream, $lastId, $callback) {
-        global $config;
-
         $databaseStream = StreamFactory::getDatabaseInstance();
 
         // Perform listen right away

@@ -310,7 +310,7 @@ if ($requestHead['_action'] === 'edit') {
         if (isset($request[$value])) {
             $rgb = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
 
-            if (!$config['defaultFormatting' . substr($value, 7)])
+            if (!fimConfig::${'defaultFormatting' . substr($value, 7)})
                 $xmlData['editUserOptions'][$value] = (new fimError('disabled', $value . ' is disabled on this server.', null, true))->getArray();
 
             elseif (count($rgb) !== 3) // Too many entries.

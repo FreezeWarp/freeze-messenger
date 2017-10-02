@@ -474,8 +474,6 @@ class fimRoom extends fimDynamicObject {
      * @throws Exception If the room is not a private room.
      */
     public function getPrivateRoomState() {
-        global $config;
-
         if (!$this->isPrivateRoom())
             throw new Exception('Call to fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
 
@@ -597,8 +595,6 @@ class fimRoom extends fimDynamicObject {
 
 
     protected function setWatchedByUsers($users) {
-        global $config;
-
         if (!fimConfig::$enableWatchRooms)
             return;
 
@@ -653,8 +649,6 @@ class fimRoom extends fimDynamicObject {
 
 
     protected function setOptions($options) {
-        global $config;
-
         $this->options = $options;
 
         $this->deleted  = ($this->options & fimRoom::ROOM_DELETED);
@@ -664,20 +658,14 @@ class fimRoom extends fimDynamicObject {
     }
 
     protected function setTopic($topic) {
-        global $config;
-
         $this->topic = fimConfig::$disableTopic ? '' : $topic;
     }
 
     protected function setParentalAge($age) {
-        global $config;
-
         $this->parentalAge = fimConfig::$parentalEnabled ? (int) $age : 0;
     }
 
     protected function setParentalFlags($parentalFlags) {
-        global $config;
-
         if (fimConfig::$parentalEnabled && is_string($parentalFlags))
             $this->parentalFlags = fim_emptyExplode(',', $parentalFlags);
     }
@@ -775,7 +763,7 @@ class fimRoom extends fimDynamicObject {
 
     /* TODO: move to DB, I think? */
     public function changeTopic($topic) {
-        global $config, $database;
+        global $database;
 
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->changeTopic on private room.');

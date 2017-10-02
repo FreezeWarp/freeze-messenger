@@ -176,8 +176,6 @@ class curlRequest {
      * Verify whether a given resource exists or not.
      */
     public static function exists($file) {
-        global $config;
-
         if (function_exists('curl_init')) {
             $ch = curl_init($file); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); /* obey redirects */

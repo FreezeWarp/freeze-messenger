@@ -48,7 +48,7 @@ class CacheFactory {
 
 
     public function addMethod($method, $servers) {
-        global $config, $tmpDir;
+        global $tmpDir;
 
         $className = 'Cache' . ucfirst($method);
         $classNameSpaced = "\\Cache\\$className";

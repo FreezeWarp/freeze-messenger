@@ -59,11 +59,6 @@ class fimDatabase extends DatabaseSQL
     public $errorFormatFunction = 'fimError';
 
     /**
-     * @var fimConfig A pointer to the site configuration class.
-     */
-    protected $config;
-
-    /**
      * @var fimUser A pointer to the logged-in user.
      */
     protected $user;
@@ -2623,7 +2618,7 @@ class fimDatabase extends DatabaseSQL
                 'period' => $this->ts($minute),
             ])->getColumnValue('count');
 
-            if ($floodCount > $this->config['floodDetectionGlobal_' . $action . '_perMinute'] && !$this->user->hasPriv('modPrivs')) {
+            if ($floodCount > fimConfig::${'floodDetectionGlobal_' . $action . '_perMinute'} && !$this->user->hasPriv('modPrivs')) {
                 new fimError("flood", "Your IP has sent too many $action requests ($floodCount observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
@@ -2715,8 +2710,6 @@ class fimDatabase extends DatabaseSQL
     }
 
     public function triggerRoomListCache($roomId, $cacheColumn, $dataChanges) {
-        global $generalCache, $config;
-
         $room = fimRoomFactory::getFromId((int) $roomId);
         $listEntries = $room->{$cacheColumn};
 

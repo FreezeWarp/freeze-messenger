@@ -369,7 +369,7 @@ class fimUser extends fimDynamicObject
 
 
     public function __get($property) {
-        global $loginConfig, $integrationDatabase;
+        global $loginConfig;
 
         // Return a unique username for every anonymous user.
         if ($this->isAnonymousUser() && $property === 'name')
@@ -411,15 +411,11 @@ class fimUser extends fimDynamicObject
     }
 
     protected function setParentalAge($age) {
-        global $config;
-
         if (fimConfig::$parentalEnabled)
             $this->parentalAge = $age;
     }
 
     protected function setParentalFlags($flags) {
-        global $config;
-
         if (fimConfig::$parentalEnabled)
             $this->parentalFlags = fim_emptyExplode(',', $flags);
     }
@@ -431,8 +427,6 @@ class fimUser extends fimDynamicObject
         $this->setList('favRooms', $favRooms);
     }
     protected function setWatchRooms($watchRooms) {
-        global $config;
-
         if (fimConfig::$enableWatchRooms) {
             $this->setList('watchRooms', $watchRooms);
         }
@@ -574,14 +568,12 @@ class fimUser extends fimDynamicObject
 
 
     protected function setDefaultRoomId($roomId) {
-        global $config;
-
         $this->defaultRoomId = $roomId ?: fimConfig::$defaultRoomId;
     }
 
 
     protected function setPrivs($privs) {
-        global $config, $loginConfig;
+        global $loginConfig;
 
         $this->privs = $privs;
 
@@ -641,7 +633,6 @@ class fimUser extends fimDynamicObject
      */
     public function hasPriv(string $priv) : bool
     {
-        global $config;
         $privs = $this->__get('privs');
 
         switch ($priv) {
@@ -686,7 +677,7 @@ class fimUser extends fimDynamicObject
     /**
      * Checks if the plaintext password matches the user's password (generally after some hashing).
      *
-     * @param $password The password to check against.
+     * @param $password string The password to check against.
      * @return bool True if the password match, false otherwise.
      * @throws Exception If the user's passwordFormat is not understood.
      */
@@ -825,7 +816,7 @@ class fimUser extends fimDynamicObject
      */
     public function setDatabase($databaseFields)
     {
-        global $database, $config;
+        global $database;
 
         if (isset($databaseFields['password'])) {
             require 'PasswordHash.php';
