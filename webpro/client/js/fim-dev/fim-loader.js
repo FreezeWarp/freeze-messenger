@@ -216,20 +216,11 @@ function fim_messageFormat(json, format) {
         text = json.text,
         messageTime = fim_dateFormat(json.time),
         messageId = json.id,
+        roomId = json.roomId,
         flag = json.flag,
         userId = Number(json.userId),
-        //from query/cache:
-        style,
-        userName,
-        userNameFormat,
-        avatar;
+        userNameDeferred = fim_getUsernameDeferred(userId);
 
-    var userNameDeferred = $.when(Resolver.resolveUsersFromIds([userId]).then(function(pairs) {
-        userName = pairs[userId].name;
-        userNameFormat = pairs[userId].nameFormat;
-        avatar = pairs[userId].avatar;
-        style = settings.disableFormatting ? '' : pairs[userId].messageFormatting;
-    }));
 
     text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
     text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {
@@ -287,8 +278,8 @@ function fim_messageFormat(json, format) {
                 if (/^\/me/.test(text)) {
                     text = text.replace(/^\/me/,'');
 
-                    $.when(userNameDeferred).then(function() {
-                        text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + userName + ' ' + text).prop('outerHTML');
+                    $.when(userNameDeferred).then(function(pairs) {
+                        text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' ' + text).prop('outerHTML');
                     });
                 }
 
@@ -298,8 +289,8 @@ function fim_messageFormat(json, format) {
 
                     $('#topic').html(text);
 
-                    $.when(userNameDeferred).then(function() {
-                       text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + userName + ' changed the topic to "' + text + '".').prop('outerHTML');
+                    $.when(userNameDeferred).then(function(pairs) {
+                       text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' changed the topic to "' + text + '".').prop('outerHTML');
                     });
                 }
                 break;
@@ -307,9 +298,8 @@ function fim_messageFormat(json, format) {
     }
 
 
-    function buildEditableSpan(text, messageId, userId, roomId, messageTime, style) {
-        return $('<span>').attr({
-            'style': style,
+    function buildEditableSpan(text, messageId, userId, roomId, messageTime, userNameDeferred) {
+        var tag = $('<span>').attr({
             'class': 'messageText' + (window.userId == userId && window.permissions.editOwnPosts ? ' editable' : ''),
             'data-messageId': messageId,
             'data-roomId': roomId,
@@ -329,76 +319,91 @@ function fim_messageFormat(json, format) {
             });
 
             $(this).replaceWith(textarea);
-        })
+        });
+
+        $.when(userNameDeferred).then(function(pairs) {
+            tag.attr("style", pairs[userId].messageFormatting);
+        });
+
+        return tag;
     }
 
 
-    function whenUserNameAvailable() {
-        switch (format) {
-            case 'table':
-                data = $('<tr style="word-wrap: break-word;">').attr({
-                    'id': "archiveMessage' + messageId + '"
-                }).append(
-                    $('<td>').append(
-                        $('<span class="userName userNameTable">').attr({
-                            'style': userNameFormat,
-                            'data-userId': userId,
-                        }).text(userName)
-                    )
-                ).append(
-                    $('<td>').text(messageTime)
-                ).append(
-                    $('<td>').attr({
-                        'style': style,
-                        'data-messageId': messageId,
-                        'data-roomId': roomId,
-                        'data-avatar': avatar,
-                        'class': window.userId == userId && window.permissions.editOwnPosts ? 'editable' : '',
-                    }).html(text)
-                ).append(
-                    $('<td>').append(
-                        $('<a href="javascript:void(0);" class="updateArchiveHere">').attr({'data-messageId': messageId}).text('Show')
-                    )
-                );
-                break;
+    switch (format) {
+        case 'table':
+            data = $('<tr style="word-wrap: break-word;">').attr({
+                'id': "archiveMessage' + messageId + '"
+            }).append(
+                $('<td>').append(
+                    fim_buildUsernameTag($('<span class="userName userNameTable">'), userId, userNameDeferred, true)
+                )
+            ).append(
+                $('<td>').text(messageTime)
+            ).append(
+                $('<td>').append(
+                    buildEditableSpan(text, messageId, userId, roomId, messageTime, userNameDeferred).html(text)
+                )
+            ).append(
+                $('<td>').append(
+                    $('<a href="javascript:void(0);" class="updateArchiveHere">').attr({'data-messageId': messageId}).text('Show')
+                )
+            );
+            break;
 
-            case 'list':
-                data = $('<span>').attr({
-                    'id': 'message' + messageId,
-                    'class': 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
-                }).append(
-                    $('<span class="usernameDate">').append(
-                        $('<span>').attr({
-                            'class': 'userName ' + (settings.showAvatars ? 'userNameAvatar' : 'userNameTable'),
-                            'style': (!settings.showAvatars ? userNameFormat : ''),
-                            'data-userId': userId,
-                            'data-userName': userName,
-                            'data-avatar': avatar,
-                            'tabindex': 1000
-                        }).append(
-                            settings.showAvatars ?
-                                $('<img>').attr({
-                                    'alt': userName,
-                                    'src': avatar ? avatar : 'client/images/blankperson.png'
-                                }) :
-                                $('<span>').text(userName)
-                        )
-                    ).append(
-                        !settings.showAvatars ?
-                            $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(messageTime))
-                            : ''
-                    )
+        case 'list':
+            data = $('<span>').attr({
+                'id': 'message' + messageId,
+                'class': 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
+            }).append(
+                $('<span class="usernameDate">').append(
+                    fim_buildUsernameTag($('<span>'), userId, userNameDeferred)
                 ).append(
-                    buildEditableSpan(text, messageId, userId, roomId, messageTime, style)
-                );
-                break;
-        }
-
-        return data;
+                    !settings.showAvatars ?
+                        $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(messageTime))
+                        : ''
+                )
+            ).append(
+                buildEditableSpan(text, messageId, userId, roomId, messageTime, userNameDeferred)
+            );
+            break;
     }
+
 
     /* Format for Table/List Display */
-    return $.when(userNameDeferred).then(whenUserNameAvailable);
+    return data;
+}
+
+function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
+    $.when(deferred).then(function(pairs) {
+        var userName = pairs[userId].name,
+            userNameFormat = pairs[userId].nameFormat,
+            avatar = pairs[userId].avatar,
+            style = settings.disableFormatting ? '' : pairs[userId].messageFormatting;
+
+        tag.attr({
+            'class': 'userName ' + (settings.showAvatars && !bothNameAvatar ? 'userNameAvatar' : 'userNameTable'),
+            'style': (!settings.showAvatars ? userNameFormat : ''),
+            'data-userId': userId,
+            'data-userName': userName,
+            'data-avatar': avatar,
+            'tabindex': 1000
+        }).append(
+            settings.showAvatars || bothNameAvatar ?
+                $('<img>').attr({
+                    'alt': userName,
+                    'src': avatar ? avatar : 'client/images/blankperson.png'
+                }) : ''
+        ).append(
+            !settings.showAvatars || bothNameAvatar ?
+                $('<span>').text(userName) : ''
+        );
+    });
+
+    return tag;
+}
+
+function fim_getUsernameDeferred(userId) {
+    return $.when(Resolver.resolveUsersFromIds([userId]));
 }
 
 
@@ -969,119 +974,6 @@ autoEntry.prototype = {
         return $("#" + this.options.name).val().split(',').filter(Number);
     }
 };
-
-/*autoEntry.prototype.addEntry = function(type, id) {
-        var val;
-        var id = id;
-        var roomId = $("#" + type + "Bridge").attr('roomId')
-
-        if (!id) {
-            val = $("#" + type + "Bridge").val();
-            switch(type) {
-                case 'watchRooms':
-                    fimApi.getRooms({'roomNames' : [val]}, {
-                        'each': function(room) { addEntry_dom(type, room.roomId, val); }
-                    });
-                break;
-                case 'moderators': case 'allowedUsers': case 'ignoreList':
-                    fimApi.getUsers({'userNames' : [val]}, {
-                        'each': function(user) {
-                            addEntry_dom(type, user.userId, val);
-
-                            switch (type) {
-                                case 'moderators':    ; break;
-                                case 'allowedUsers' : fimApi.editRoomPermissionUser(roomId, id, ["view", "post", "moderate"]); break;
-                            }
-                        }
-                    });
-                break;
-                case 'allowedGroups':
-                    fimApi.getGroups({'groupNames' : [val]}, {
-                        'each': function(group) { addEntry_dom(type, group.groupId, val); }
-                    });
-                break;
-            }
-        }
-        else {
-            switch(type) {
-                case 'watchRooms':
-                    fimApi.getRooms({'roomIds' : [id]}, {
-                        'each': function(room) { addEntry_dom(type, id, room.roomName); }
-                    });
-                break;
-                case 'moderators': case 'allowedUsers': case 'ignoreList':
-                    fimApi.getUsers({'userIds' : [id]}, {
-                        'each': function(user) { addEntry_dom(type, id, user.userName); }
-                    });
-                break;
-                case 'allowedGroups':
-                    fimApi.getGroups({'groupNames' : [id]}, {
-                        'each': function(group) { addEntry_dom(type, id, group.groupName); }
-                    });
-                break;
-            }
-        }
-
-        function addEntry_dom(type, id, val) {
-            if (!id) {
-                dia.error(type + ' does not exist.');
-            }
-            else {
-                var currentRooms = $("#" + type).val().split(",");
-                currentRooms.push(id);
-
-                $("#" + type + "List").append("<span id=\"" + type + "SubList" + id + "\">" + val + " (<a href=\"javascript:false(0);\" onclick=\"autoEntry.removeEntry('" + type + "'," + id + ");\">×</a>), </span>");
-                $("#" + type).val(currentRooms.toString(","));
-
-                $("#" + type + "Bridge").val('');
-            }
-        }
-
-        return false;
-    },
-
-    removeEntry : function(type, id) {
-        var currentRooms = $("#" + type).val().split(","),
-            i = 0;
-
-        for (i = 0; i < currentRooms.length; i += 1) {
-            if(currentRooms[i] == id) {
-                currentRooms.splice(i, 1);
-                break;
-            }
-        }
-
-        $("#" + type).val(currentRooms.toString(","));
-
-        $("#" + type + "SubList" + id).fadeOut(500, function() {
-            $(this).remove();
-        });
-
-        return false;
-    },
-
-    showEntries : function(type, string) {
-        var source,
-            i = 0;
-
-        if (typeof string === 'object' || typeof string === 'array') { entryList = string; } // String is already not a string! (yeah...) Also, "array" doesn't exist as a type far as I know, but I don't really want to remove it for whatever reason.
-        else if (typeof string === 'string' && string.length > 0) { entryList = string.split(','); } // String is a string and not empty.
-        else { entryList = []; }
-
-
-        for (i = 0; i < entryList.length; i += 1) {
-            if (!entryList[i]) { continue; }
-
-            autoEntry.addEntry(type, entryList[i]);
-        }
-
-        return false;
-    }
-
-    toString : function() {
-
-    }
-};*/
 
 /*********************************************************
  ************************* END ***************************

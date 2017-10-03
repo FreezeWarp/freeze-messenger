@@ -66,11 +66,9 @@ standard.prototype.archive = {
         }, {
             'reverseEach' : false,
             'each' : function(messageData) {
-                $.when(fim_messageFormat(messageData, 'table')).then(function(messageText) {
-                    $('#archiveMessageList').append(messageText);
-                    standard.archive.messageData[messageData.id] = messageData;
-                    windowDraw();
-                });
+                $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
+                standard.archive.messageData[messageData.id] = messageData;
+                windowDraw();
             },
             'end' : function(messages) {
                 if (!Object.keys(messages).length) {
@@ -259,9 +257,7 @@ standard.prototype.roomEventListener = function(roomId) {
     roomSource.addEventListener('newMessage', eventHandler(function(active) {
         window.requestSettings[roomId].lastMessage = Math.max(window.requestSettings[roomId].lastMessage, active.id);
 
-        $.when(fim_messageFormat(active, 'list')).then(function(messageText) {
-            fim_newMessage(roomId, Number(active.id), messageText);
-        });
+        fim_newMessage(roomId, Number(active.id), fim_messageFormat(active, 'list'));
     }), false);
 
     roomSource.addEventListener('topicChange', eventHandler(function(active) {
@@ -285,9 +281,7 @@ standard.prototype.getMessages = function() {
             autoId : true,
             refresh : (window.requestSettings.serverSentEvents ? 3000 : 3000),
             each: function (messageData) {
-                $.when(fim_messageFormat(messageData, 'list')).then(function(messageText) {
-                    fim_newMessage(Number(window.roomId), Number(messageData.id), messageText);
-                });
+                fim_newMessage(Number(window.roomId), Number(messageData.id), fim_messageFormat(messageData, 'list'));
             },
             end: function () {
                 if (window.requestSettings.serverSentEvents) {
