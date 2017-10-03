@@ -960,13 +960,13 @@ popup = {
 
                 /* Autocomplete Users and Groups */
                 moderatorsList = new autoEntry($("#moderatorsContainer"), {
-                    'name' : 'moderator',
+                    'name' : 'moderators',
                     'list' : 'users',
                     'onAdd' : function(id) {
-                        if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post", "moderate"])
+                        if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post", "moderate", "properties", "grant"])
                     },
                     'onRemove' : function(id) {
-                        if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"])
+                        if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"]) // todo: just remove moderate privs
                     },
                     'resolveFromIds' : Resolver.resolveUsersFromIds,
                     'resolveFromNames' : Resolver.resolveUsersFromNames
@@ -1004,7 +1004,7 @@ popup = {
                     $('#editRoom1ParentalAge, #editRoom1ParentalFlags').remove();
                 }
                 else {
-                    jQuery.each(serverSettings.parentalControls.parentalAges, function(i, age) { console.log("A", i, age);
+                    jQuery.each(serverSettings.parentalControls.parentalAges, function(i, age) {
                         $('#parentalAge').append('<option value="' + age + '">' + $l('parentalAges.' + age) + '</option>');
                     });
 
@@ -1050,7 +1050,7 @@ popup = {
                     }, {'each' : function(roomData) {
                         // User Permissions
                         var allowedUsersArray = [], moderatorsArray = [];
-                        jQuery.each(roomData.userPermissions, function(userId, privs) { console.log("userperm", userId, privs);
+                        jQuery.each(roomData.userPermissions, function(userId, privs) {
                             if (privs.moderate && privs.properties && privs.grant) // Are all bits up to 8 present?
                                 moderatorsArray.push(userId);
 
