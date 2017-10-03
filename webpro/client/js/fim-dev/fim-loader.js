@@ -381,7 +381,7 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
             style = settings.disableFormatting ? '' : pairs[userId].messageFormatting;
 
         tag.attr({
-            'class': 'userName ' + (settings.showAvatars && !bothNameAvatar ? 'userNameAvatar' : 'userNameTable'),
+            'class': 'userName' + (settings.showAvatars || bothNameAvatar ? ' userNameAvatar' : ''),
             'style': (!settings.showAvatars ? userNameFormat : ''),
             'data-userId': userId,
             'data-userName': userName,
@@ -921,13 +921,23 @@ autoEntry.prototype = {
                 console.log("autoEntry: attempted to add duplicate");
             }
             else {
+                var nameTag = $('<span>');
+
+                // this whole thing is TODO; I just wanna get a proof-of-concept
+                if (_this.options.name == "allowedUsers" || _this.options.name == "moderators") {
+                    nameTag = fim_buildUsernameTag(nameTag, id, fim_getUsernameDeferred(id), true);
+                }
+                else {
+                    nameTag.text(name);
+                }
+
                 $("#" + _this.options.name).val($("#" + _this.options.name).val() + "," + id);
 
                 $("#" + _this.options.name + "List").append(
                     $("<span>").attr('id', _this.options.name + "SubList" + id).text(
-                        ($("#" + _this.options.name + "List > span").length > 0 ? ', ' : '') +
-                        name + ' '
-                    ).append(
+                        ($("#" + _this.options.name + "List > span").length > 0 ? ', ' : '')
+                    ).append(nameTag)
+                    .append(
                         $('<span class="close">(<a href="javascript:void(0);">×</a>)</span>').click(function () {
                             _this.removeEntry(id)
                         })
