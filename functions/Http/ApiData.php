@@ -129,7 +129,7 @@ class ApiData implements \ArrayAccess {
             return $this->outputJson($value, $depth + 1);
         }
 
-        elseif (is_object($value) && get_class($value) === 'ApiOutputDict') {
+        elseif (is_object($value) && ($value instanceof ApiOutputDict)) {
             $values = $value->getArray();
 
             if (count($values)) {
