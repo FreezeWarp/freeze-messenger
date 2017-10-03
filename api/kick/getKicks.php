@@ -23,7 +23,6 @@
  * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  *
- * @global fimConfig   $config
  * @global fimDatabase $database
  * @global fimUser     $user
  * @global fimUser     $kickUser
@@ -82,5 +81,5 @@ else {
 
 
 /* Output Data */
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>

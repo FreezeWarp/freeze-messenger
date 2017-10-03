@@ -21,9 +21,9 @@
 // Security to prevent loading of base moderate pages.
 define('WEBPRO_INMOD', true);
 
-require('moderateFunctions.php'); // Functions that are used solely by the moderate interfaces.
-require('../functions/curlRequest.php');
-require('../config.php');
+require(__DIR__ . '/../vendor/autoload.php');
+require(__DIR__ . '/moderateFunctions.php'); // Functions that are used solely by the moderate interfaces.
+require(__DIR__ . '/../config.php');
 
 
 /* This below bit hooks into the validate.php script to facilitate a seperate login. It is a bit cooky, though, and will need to be further tested. */
@@ -33,7 +33,7 @@ if (isset($_GET['do']) && $_GET['do'] === 'logout') {
 }
 
 elseif (isset($_POST['webproModerate_userName'])) {
-    $cr = new curlRequest($installUrl . '/validate.php', [], ['client_id' => 'WebProAdmin', 'grant_type' => 'password', 'username' => $_POST['webproModerate_userName'], 'password' => $_POST['webproModerate_password']]);
+    $cr = new Http\curlRequest($installUrl . '/validate.php', [], ['client_id' => 'WebProAdmin', 'grant_type' => 'password', 'username' => $_POST['webproModerate_userName'], 'password' => $_POST['webproModerate_password']]);
 
      try {
          $cr->executePOST();

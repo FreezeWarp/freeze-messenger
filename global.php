@@ -27,12 +27,10 @@ elseif ($phpVersion < 7) { // Removed outright in 5.4, may as well save a CPU cy
 
 
 /* Require Libraries */
+require_once(__DIR__ . '/vendor/autoload.php'); // Various Functions
+
 require_once(__DIR__ . '/config.php'); // Configuration Variables
-require_once(__DIR__ . '/functions/ApiData.php'); // API Data output wrapper.
-require_once(__DIR__ . '/functions/Database.php'); // Database
-require_once(__DIR__ . '/functions/DatabaseSQL.php'); // Database (SQL)
 require_once(__DIR__ . '/functions/fimDatabase.php'); // FIM-specific Extensions
-require_once(__DIR__ . '/functions/fimDatabaseUAC.php'); // FIM-specific Extensions, UAC (it gets its own file because it might be shipped seperately to support additional intgration methods.)
 require_once(__DIR__ . '/functions/fimUser.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimRoom.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimMessage.php'); // FIM-specific Extensions
@@ -40,9 +38,6 @@ require_once(__DIR__ . '/functions/fimCache.php'); // FIM-specific Extension to 
 require_once(__DIR__ . '/functions/fimConfig.php'); // FIM config and factory
 require_once(__DIR__ . '/functions/fimError.php'); // FIM Custom Error Class
 require_once(__DIR__ . '/functions/fim_general.php'); // Various Functions
-
-
-require_once(__DIR__ . '/vendor/autoload.php'); // Various Functions
 
 
 

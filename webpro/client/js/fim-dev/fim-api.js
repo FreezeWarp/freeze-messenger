@@ -29,6 +29,7 @@ var fimApi = function() {
 
             requestSettings.begin(firstElement);
             if (requestSettings.reverseEach) firstElement = firstElement.reverse();
+
             $.each(firstElement, function (index, value) {
                 requestSettings.each(value);
             });
@@ -121,16 +122,12 @@ fimApi.prototype.login = function (params, requestSettings) {
     }).fail(function(response) {
         requestSettings.error(response.responseJSON.exception);
     });
-}
+};
 
 
 
 /**
  * Obtains one or more users.
- *
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2017
- *
  */
 fimApi.prototype.getUsers = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
@@ -514,6 +511,26 @@ fimApi.prototype.getActiveUsers = function(params, requestSettings) {
     }
 
     fimApi.timer(requestSettings, "getActiveUsers", getActiveUsers_query);
+};
+
+
+fimApi.prototype.getGroups = function(params, requestSettings) {
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    $.ajax({
+        type: 'get',
+        url: directory + 'api/group.php',
+        data: fimApi.mergeDefaults(params, {
+            'access_token' : window.sessionHash,
+            'groupIds' : null,
+            'groupNames' : null,
+            'groupNameSearch' : null
+        }),
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+        fimApi.getGroups(params, requestSettings)
+    }));
 };
 
 

@@ -91,7 +91,7 @@ else {
 
 
 /* Output Data */
-echo new ApiData([
+echo new Http\ApiData([
     'user' => [
         'id' => $newUser->id,
         'name' => $newUser->name,

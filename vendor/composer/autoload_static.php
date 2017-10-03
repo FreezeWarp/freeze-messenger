@@ -22,7 +22,14 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         ),
         'S' => 
         array (
+            'Stream\\' => 7,
             'Stevenmaguire\\OAuth2\\Client\\' => 28,
+        ),
+        'R' => 
+        array (
+            'Rudolf\\OAuth2\\Client\\Tests\\' => 27,
+            'Rudolf\\OAuth2\\Client\\' => 21,
+            'ReCaptcha\\' => 10,
         ),
         'P' => 
         array (
@@ -39,6 +46,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
             'Login\\' => 6,
             'League\\OAuth2\\Client\\' => 21,
         ),
+        'H' => 
+        array (
+            'Http\\' => 5,
+        ),
         'G' => 
         array (
             'GuzzleHttp\\Psr7\\' => 16,
@@ -50,6 +61,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         array (
             'Firebase\\JWT\\' => 13,
             'Facebook\\' => 9,
+        ),
+        'D' => 
+        array (
+            'Database\\' => 9,
         ),
         'C' => 
         array (
@@ -66,9 +81,25 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         array (
             0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
         ),
+        'Stream\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/functions/Stream',
+        ),
         'Stevenmaguire\\OAuth2\\Client\\' => 
         array (
             0 => __DIR__ . '/..' . '/stevenmaguire/oauth2-microsoft/src',
+        ),
+        'Rudolf\\OAuth2\\Client\\Tests\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/rtheunissen/oauth2-reddit/tests',
+        ),
+        'Rudolf\\OAuth2\\Client\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/rtheunissen/oauth2-reddit/src',
+        ),
+        'ReCaptcha\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/google/recaptcha/src/ReCaptcha',
         ),
         'Psr\\Log\\' => 
         array (
@@ -94,6 +125,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         array (
             0 => __DIR__ . '/..' . '/league/oauth2-client/src',
         ),
+        'Http\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/functions/Http',
+        ),
         'GuzzleHttp\\Psr7\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
@@ -117,6 +152,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'Facebook\\' => 
         array (
             0 => __DIR__ . '/..' . '/facebook/graph-sdk/src/Facebook',
+        ),
+        'Database\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/functions/Database',
         ),
         'Cache\\' => 
         array (
@@ -169,6 +208,8 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'Google\\Auth\\Subscriber\\SimpleSubscriber' => __DIR__ . '/..' . '/google/auth/src/Subscriber/SimpleSubscriber.php',
         'Google_Service_Exception' => __DIR__ . '/..' . '/google/apiclient/src/Google/Service/Exception.php',
         'Google_Service_Resource' => __DIR__ . '/..' . '/google/apiclient/src/Google/Service/Resource.php',
+        'LightOpenID' => __DIR__ . '/..' . '/iignatov/lightopenid/openid.php',
+        'LightOpenIDProvider' => __DIR__ . '/..' . '/iignatov/lightopenid/provider/provider.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

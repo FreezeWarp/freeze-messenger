@@ -19,14 +19,14 @@
  * So, yeah, unfortunately this will be using ugly, ugly arrays. I felt this was the best compromise, but I'm not exactly happy about it. It's hard to document, etc, etc.
  */
 
-/*
- * @TODO Limit handling (OFFSET = limit * pagination).
- */
-
+use Database\Database;
+use Database\DatabaseResult;
+use Database\DatabaseTypeType;
+use Database\SQL\DatabaseSQL;
 
 /**
  * FreezeMessenger-specific database functionality. Attempts to define a function for effectively every needed database call; most database calls, that is, will be through these methods instead of custom query logic.
- * Current work-in-progress stuff:
+ * Current work-in-progress stuff (TODO):
  *  - Limit handling is needed for most functions.
  *
  * @author Joseph T. Parsons <josephtparsons@gmail.com>
@@ -57,11 +57,6 @@ class fimDatabase extends DatabaseSQL
      * @var string An error format function to be used when errors are encountered. Overrides {@link database:errorFormatFunction}
      */
     public $errorFormatFunction = 'fimError';
-
-    /**
-     * @var fimConfig A pointer to the site configuration class.
-     */
-    protected $config;
 
     /**
      * @var fimUser A pointer to the logged-in user.
@@ -323,7 +318,7 @@ class fimDatabase extends DatabaseSQL
      * @param int   $limit The maximum number of returned rows (with 0 being unlimited).
      * @param int   $page  The page of the resultset to return.
      *
-     * @return databaseResult
+     * @return DatabaseResult
      */
     public function getActiveUsers($options, $sort = array('userName' => 'asc'), $limit = false, $page = false)
     {
@@ -373,7 +368,7 @@ class fimDatabase extends DatabaseSQL
      * Gets the censor list rows, filtered by $options, and optionally with the "on"/"off" status associated with a given roomId.
      * Scans table `censorLists`. Also joins `censorBlackWhiteLists` if $options['includeStatus'] is set.
      *
-     * Note: Censor active status is calculated outside of the database, and thus can not be selected for. Use getCensorListsActive for this purpose, which returns an array of active censor lists instead of a databaseResult.
+     * Note: Censor active status is calculated outside of the database, and thus can not be selected for. Use getCensorListsActive for this purpose, which returns an array of active censor lists instead of a DatabaseResult.
      *
      * @param array $options {
      *     Options to filter by.
@@ -392,7 +387,7 @@ class fimDatabase extends DatabaseSQL
      * @param int   $limit The maximum number of results.
      * @param int   $page  The page for the selected resultset.
      *
-     * @return databaseResult
+     * @return DatabaseResult
      */
     public function getCensorLists($options = array(), $sort = array('listId' => 'asc'), $limit = false, $page = false)
     {
@@ -498,7 +493,7 @@ class fimDatabase extends DatabaseSQL
      * @param int   $limit The maximum number of returned rows (with 0 being unlimited).
      * @param int   $page  The page of the resultset to return.
      *
-     * @return databaseResult The resultset corresponding with the matched censorWords.
+     * @return DatabaseResult The resultset corresponding with the matched censorWords.
      */
     public function getCensorWords($options = array(), $sort = array('listId' => 'asc', 'word' => 'asc'), $limit = false, $page = false)
     {
@@ -546,7 +541,7 @@ class fimDatabase extends DatabaseSQL
      * @param int   $roomId     The roomId whose active words are being retrieved.
      * @param array $severities If specified, only fetches results with a matching severity (valid values, as defined for censorWord.severity: "replace", "warn", "confirm", "block")
      *
-     * @return databaseResult The resultset corresponding with all censor words active in $roomId.
+     * @return DatabaseResult The resultset corresponding with all censor words active in $roomId.
      */
     public function getCensorWordsActive($roomId, $severities = []) {
         return $this->getCensorWords(array(
@@ -573,7 +568,7 @@ class fimDatabase extends DatabaseSQL
      * }
      * @param array $sort Sort columns (see standard definition).
      *
-     * @return databaseResult The resultset corresponding with the matched configuration directives.
+     * @return DatabaseResult The resultset corresponding with the matched configuration directives.
      */
     public function getConfigurations($options = array(), $sort = array('directive' => 'asc'))
     {
@@ -663,7 +658,7 @@ class fimDatabase extends DatabaseSQL
      * @param int   $limit The maximum number of returned rows (with 0 being unlimited).
      * @param int   $page  The page of the resultset to return.
      *
-     * @return databaseResult
+     * @return DatabaseResult
      *
      * @TODO: Test filters for other file properties.
      */
@@ -776,7 +771,7 @@ class fimDatabase extends DatabaseSQL
      * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
      * @param int   $page        The page of the resultset to return.
      *
-     * @return databaseResult
+     * @return DatabaseResult
      */
     public function getKicks($options = array(), $sort = array('roomId' => 'asc', 'userId' => 'asc'), $limit = 0, $pagination = 1)
     {
@@ -966,7 +961,7 @@ class fimDatabase extends DatabaseSQL
      * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
      * @param int   $page        The page of the resultset to return.
      *
-     * @return databaseResult
+     * @return DatabaseResult
      */
     public function getMessageIdsFromSearchCache($options, $limit, $page) {
         $options = $this->argumentMerge(array(
@@ -1028,7 +1023,7 @@ class fimDatabase extends DatabaseSQL
      * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
      * @param int   $page        The page of the resultset to return.
      *
-     * @return databaseResult
+     * @return DatabaseResult
      */
     public function getMessages($options = array(), $sort = array('id' => 'asc'), $limit = 40, $page = 0) : fimDatabaseResult
     {
@@ -1140,7 +1135,7 @@ class fimDatabase extends DatabaseSQL
      * @param fimRoom $room      The room the message was made in.
      * @param int     $messageId The ID given to the message.
      *
-     * @return databaseResult
+     * @return DatabaseResult
      */
     public function getMessage(fimRoom $room, $messageId) : fimMessage {
         return $this->getMessages(array(
@@ -1578,7 +1573,7 @@ class fimDatabase extends DatabaseSQL
      * @param array $params
      * @todo cache calls
      *
-     * @return databaseResult
+     * @return DatabaseResult
      */
     public function getRoomPermissions($roomIds = array(), $attribute = false, $params = array())
     {
@@ -1748,10 +1743,12 @@ class fimDatabase extends DatabaseSQL
      * @param int $roomId
      * @param string $attribute
      * @param int $param The new permission.
-     *
-     * @todo still a work in progress
      */
     public function deleteGroupPermissionsCache($roomId, $groupId) {
+        /**
+         * TODO: this is currently stubbed out. That's fine, probably! Since the cache naturally expires every five or so minutes, this just means the invalid cache entries will persist for a little while. (The main concern is that the memory table writes this causes could be problematic, and since social groups are barely used, didn't really want to worry about potential instability resulting from this.)
+         */
+        /*
         $users = $this->getSocialGroupMembers(array(
             'groupIds' => array($groupId),
             'type' => array('member', 'moderator')
@@ -1760,7 +1757,7 @@ class fimDatabase extends DatabaseSQL
         $this->delete($this->prefix . 'roomPermissionsCache', array(
             'roomId' => $roomId,
             'userId' => $this->in($users)
-        ));
+        )); */
     }
 
 
@@ -1790,7 +1787,7 @@ class fimDatabase extends DatabaseSQL
 
 
     public function lockoutIncrement() {
-        if ($this->config::$dev)
+        if (fimConfig::$dev)
             return true;
 
         // Note: As defined, attempts will further increase, and expires will further increase, with each additional query beyond the "lockout". As a result, this function generally shouldn't be called if a user is already lockedout -- otherwise, further attempts just lock them out further, when they could be the user checking to see if they are still locked out. So always call lockoutActive before calling lockoutIncrement.
@@ -1807,7 +1804,7 @@ class fimDatabase extends DatabaseSQL
     }
 
     public function lockoutActive() {
-        if ($this->config::$dev)
+        if (fimConfig::$dev)
             return false;
 
         // Note: Select condition format is experimental and untested, and numRows is not yet implemented. So, uh, do that. Lockout count is also unimplemented.
@@ -1901,6 +1898,74 @@ class fimDatabase extends DatabaseSQL
             'userId' => $userId,
             'type' => $this->in(['member', 'moderator'])
         ])->getColumns('roomId');
+    }
+
+
+    /**
+     * @param $options
+     * @param array $sort
+     * @param int $limit
+     * @param int $pagination
+     * @return bool|object|resource
+     */
+    public function getGroups($options, $sort = array('id' => 'asc'), $limit = 50, $pagination = 0) : fimDatabaseResult
+    {
+        $options = $this->argumentMerge(array(
+            'groupIds'            => [],
+            'groupNames'          => [],
+            'groupNameSearch'     => false,
+            'columns'            => ['id', 'name', 'options'],
+        ), $options);
+
+        $columns = [$this->sqlPrefix . 'socialGroups' => $options['columns']];
+
+
+
+        $conditions = [
+            'both' => [
+                'either' => []
+            ]
+        ];
+
+        // Modify Query Data for Directives
+        if (count($options['groupIds']) > 0) $conditions['both']['either']['id'] = $this->in($options['groupIds']);
+        if (count($options['groupNames']) > 0) $conditions['both']['either']['name'] = $this->in($options['groupNames']);
+        if ($options['groupNameSearch']) $conditions['both']['either']['name'] = $this->type('string', $options['groupNameSearch'], 'search');
+
+
+
+        // Perform Query
+        return $this->where($conditions)->sortBy($sort)->limit($limit)->page($pagination)->select($columns);
+    }
+
+
+    /**
+     * Creates a social group with the give name.
+     *
+     * @param string $groupName Name of group to create.
+     *
+     * @return bool|void
+     */
+    public function createSocialGroup($groupName) {
+        return $this->insert($this->sqlPrefix . 'socialGroups', [
+            'name' => $groupName
+        ]);
+    }
+
+    /**
+     * User joins group with ID.
+     *
+     * @param int     $groupId Group to join.
+     * @param fimUser $user User joining the group.
+     *
+     * @return bool|void
+     */
+    public function enterSocialGroup($groupId, fimUser $user) {
+        return $this->insert($this->sqlPrefix . 'socialGroupMembers', [
+            'groupId' => $groupId,
+            'userId' => $user->id,
+            'type' => 'member'
+        ]);
     }
 
 
@@ -2107,8 +2172,7 @@ class fimDatabase extends DatabaseSQL
 
 
         // Enter message into stream
-        require_once(__DIR__ . '/Stream/StreamFactory.php');
-        StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
+        \Stream\StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
             'id' => $message->id,
             'text' => $message->text,
             'time' => $now->value,
@@ -2624,7 +2688,7 @@ class fimDatabase extends DatabaseSQL
                 'period' => $this->ts($minute),
             ])->getColumnValue('count');
 
-            if ($floodCount > $this->config['floodDetectionGlobal_' . $action . '_perMinute'] && !$this->user->hasPriv('modPrivs')) {
+            if ($floodCount > fimConfig::${'floodDetectionGlobal_' . $action . '_perMinute'} && !$this->user->hasPriv('modPrivs')) {
                 new fimError("flood", "Your IP has sent too many $action requests ($floodCount observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
@@ -2716,8 +2780,6 @@ class fimDatabase extends DatabaseSQL
     }
 
     public function triggerRoomListCache($roomId, $cacheColumn, $dataChanges) {
-        global $generalCache, $config;
-
         $room = fimRoomFactory::getFromId((int) $roomId);
         $listEntries = $room->{$cacheColumn};
 
@@ -2768,9 +2830,9 @@ class fimDatabase extends DatabaseSQL
 
     /**
      * Overrides the normal function to use fimDatabaseResult instead.
-     * @see Database::databaseResultPipe()
+     * @see Database::DatabaseResultPipe()
      */
-    protected function databaseResultPipe($queryData, $reverseAlias, string $sourceQuery, Database $database, int $paginated = 0) {
+    protected function DatabaseResultPipe($queryData, $reverseAlias, string $sourceQuery, Database $database, int $paginated = 0) {
         return new fimDatabaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
     }
 }

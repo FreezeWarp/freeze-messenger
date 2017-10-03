@@ -345,5 +345,5 @@ if (fimConfig::$dev) $xmlData['request'] = $request;
 
 
 /* Output Data */
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>

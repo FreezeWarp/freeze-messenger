@@ -9,17 +9,27 @@ class Resolver {
     static cacheduserNames: Array<string> = [];
     static cacheduserProperties: Array<any> = [];
 
-    static cachedroomIds: Array<number> = [];
-    static cachedroomNames: Array<string> = [];
-    static cachedroomProperties: Array<any> = [];
-
     static waitinguserIds: Array<number> = [];
     static waitinguserNames: Array<string> = [];
     static waitinguserProperties: Array<any> = [];
 
+
+    static cachedroomIds: Array<number> = [];
+    static cachedroomNames: Array<string> = [];
+    static cachedroomProperties: Array<any> = [];
+    
     static waitingroomIds: Array<number> = [];
     static waitingroomNames: Array<string> = [];
     static waitingroomProperties: Array<any> = [];
+
+
+    static cachedgroupIds: Array<number> = [];
+    static cachedgroupNames: Array<string> = [];
+    static cachedgroupProperties: Array<any> = [];
+
+    static waitinggroupIds: Array<number> = [];
+    static waitinggroupNames: Array<string> = [];
+    static waitinggroupProperties: Array<any> = [];
 
 
     private static cacheEntry(type, entry) {
@@ -131,5 +141,13 @@ class Resolver {
 
     public static resolveRoomsFromNames(names: Array<string>) {
         return Resolver.resolve("room", "name", names);
+    }
+
+    public static resolveGroupsFromIds(ids: Array<number>) {
+        return Resolver.resolve("group", "id", ids);
+    }
+
+    public static resolveGroupsFromNames(names: Array<string>) {
+        return Resolver.resolve("group", "name", names);
     }
 }

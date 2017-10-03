@@ -52,5 +52,5 @@ $xmlData['unreadMessages'] = $database->getUnreadMessages()->getAsArray(true);
 
 
 /* Output Data */
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>

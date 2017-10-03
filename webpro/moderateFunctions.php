@@ -26,8 +26,6 @@
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function container($title, $content, $class = 'page') {
-  global $config;
-
   return $return = "<table class=\"$class ui-widget\">
   <thead>
     <tr class=\"hrow ui-widget-header ui-corner-top\">

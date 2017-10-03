@@ -77,8 +77,6 @@ class fimCache extends CacheFactory {
 
 
     public function getActiveCensorWords($roomId) {
-        global $config;
-
         if ($this->exists('fim_activeCensorWords_' . $roomId)) {
             $activeCensorWords = $this->get('fim_activeCensorWords_' . $roomId);
         }

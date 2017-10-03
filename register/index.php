@@ -161,7 +161,6 @@
         break;
             case 2:
                 require('../config.php'); // We do NOT want to require global for a couple of reasons, the biggest one being this file simply doesn't require it. All CURL requests require config.php, however.
-                require('../functions/curlRequest.php');
 //echo mktime(null, null, null, $_POST['birthmonth'], $_POST['birthday'], $_POST['birthyear']); die();
 
                 $crA = array(
@@ -175,7 +174,7 @@
                     $crA['birthdate'] = mktime(null, null, null, $_POST['birthmonth'], $_POST['birthday'], $_POST['birthyear']);
                 }
 
-                $cr = new curlRequest($crA, '/api/sendUser.php');
+                $cr = new Http\curlRequest($crA, '/api/sendUser.php');
 
                 if (!$cr->execute()) {
                     echo 'The request could not be completed (Server Error). Its response is below: ' . $cr->response;

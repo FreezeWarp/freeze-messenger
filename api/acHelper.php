@@ -23,46 +23,52 @@ $apiRequest = true;
 require('../global.php');
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', array(
-  'list' => array(
-    'valid' => array(
-      'users', 'rooms',
-    ),
-    'require' => true,
-  ),
+$request = fim_sanitizeGPC('g', [
+    'list' => [
+        'valid'   => [
+            'users', 'rooms', 'groups'
+        ],
+        'require' => true,
+    ],
 
-  'search' => array(
-    'cast' => 'string',
-    'require' => true,
-  ),
-));
+    'search' => [
+        'cast'    => 'string',
+        'require' => true,
+    ],
+]);
 $database->accessLog('acHelper', $request);
 
 
 switch ($request['list']) {
 
-  case 'users':
-    $entries = new ApiOutputDict($slaveDatabase->getUsers(array(
-      'userNameSearch' => $request['search'],
-    ), null, 10)->getColumnValues('name', 'id'));
-    break;
+    case 'users':
+        $entries = new Http\ApiOutputDict($slaveDatabase->getUsers([
+            'userNameSearch' => $request['search'],
+        ], null, 10)->getColumnValues('name', 'id'));
+        break;
 
-  case 'rooms':
-    $entries = new ApiOutputDict($slaveDatabase->getRooms(array(
-      'roomNameSearch' => $request['search'],
-    ), null, 10)->getColumnValues('name', 'id'));
-     break;
+    case 'rooms':
+        $entries = new Http\ApiOutputDict($slaveDatabase->getRooms([
+            'roomNameSearch' => $request['search'],
+        ], null, 10)->getColumnValues('name', 'id'));
+        break;
+
+    case 'groups':
+        $entries = new Http\ApiOutputDict($slaveDatabase->getGroups([
+            'groupNameSearch' => $request['search'],
+        ], null, 10)->getColumnValues('name', 'id'));
+        break;
 
 }
 
 
 
 /* Data Predefine */
-$xmlData = array(
+$xmlData = [
     'entries' => $entries,
-);
+];
 
 
 /* Output Data */
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>

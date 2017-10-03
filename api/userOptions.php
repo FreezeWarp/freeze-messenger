@@ -100,8 +100,6 @@ These parameters are, where applicable, documented in the SQL documentation.
 $apiRequest = true;
 
 require('../global.php');
-require('../functions/curlRequest.php');
-
 
 
 /* Get Request Data */
@@ -212,7 +210,7 @@ if ($requestHead['_action'] === 'edit') {
             elseif (filter_var($request['avatar'], FILTER_VALIDATE_URL) === FALSE)
                 $xmlData['editUserOptions']['avatar'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->getArray();
 
-            elseif (!curlRequest::exists($request['avatar']))
+            elseif (!Http\curlRequest::exists($request['avatar']))
                 $xmlData['editUserOptions']['avatar'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->getArray();
 
             else {
@@ -250,7 +248,7 @@ if ($requestHead['_action'] === 'edit') {
                 || (fimConfig::$profileMustNotMatchRegex && preg_match(fimConfig::$profileMustNotMatchRegex, $request['profile'])))
                 $xmlData['editUserOptions']['profile'] = (new fimError('bannedUrl', 'The URL specified is not allowed.', null, true))->getArray();
 
-//            elseif (!curlRequest::exists($request['profile']))
+//            elseif (!Http\curlRequest::exists($request['profile']))
 //                $xmlData['editUserOptions']['profile'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->getArray();
 
             else
@@ -312,7 +310,7 @@ if ($requestHead['_action'] === 'edit') {
         if (isset($request[$value])) {
             $rgb = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
 
-            if (!$config['defaultFormatting' . substr($value, 7)])
+            if (!fimConfig::${'defaultFormatting' . substr($value, 7)})
                 $xmlData['editUserOptions'][$value] = (new fimError('disabled', $value . ' is disabled on this server.', null, true))->getArray();
 
             elseif (count($rgb) !== 3) // Too many entries.
@@ -442,5 +440,5 @@ $database->autoQueue(false);
 
 
 /* Output Data */
-echo new ApiData($xmlData);
+echo new Http\ApiData($xmlData);
 ?>
