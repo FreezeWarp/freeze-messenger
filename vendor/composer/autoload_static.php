@@ -27,6 +27,8 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         ),
         'R' => 
         array (
+            'Rudolf\\OAuth2\\Client\\Tests\\' => 27,
+            'Rudolf\\OAuth2\\Client\\' => 21,
             'ReCaptcha\\' => 10,
         ),
         'P' => 
@@ -86,6 +88,14 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'Stevenmaguire\\OAuth2\\Client\\' => 
         array (
             0 => __DIR__ . '/..' . '/stevenmaguire/oauth2-microsoft/src',
+        ),
+        'Rudolf\\OAuth2\\Client\\Tests\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/rtheunissen/oauth2-reddit/tests',
+        ),
+        'Rudolf\\OAuth2\\Client\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/rtheunissen/oauth2-reddit/src',
         ),
         'ReCaptcha\\' => 
         array (
