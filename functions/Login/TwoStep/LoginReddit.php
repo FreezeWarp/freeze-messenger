@@ -104,6 +104,7 @@ class LoginReddit extends LoginTwoStep {
                 @$database->createSocialGroup('Subscribers of /r/' . $subscription['sr']);
             }
 
+
             $dbGroupIds = $database->select([
                 'socialGroups' => 'id, name'
             ], ['name' => $database->in($subscriptionNames)])->getColumnValues('id');

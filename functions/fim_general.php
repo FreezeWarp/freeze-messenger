@@ -354,10 +354,6 @@ function fim_sanitizeGPC($type, $data) {
                     && !is_numeric($metaData))
                     throw new Exception('Invalid "' . $metaName . '" in data in fim_sanitizeGPC');
 
-                elseif ($metaName === 'filter'
-                    && !in_array($metaData, array('', 'int', 'bool', 'string', 'roomId')))
-                    throw new Exception('Invalid "filter" in data in fim_sanitizeGPC');
-
                 elseif ($metaName === 'cast'
                     && !in_array($metaData, array('int', 'bool', 'string', 'json', 'list', 'dict', 'alphanum', 'bitfieldShift', 'roomId')))
                     throw new Exception("Invalid 'cast' (value = $metaData) in data in fim_sanitizeGPC.");
@@ -474,7 +470,7 @@ function fim_sanitizeGPC($type, $data) {
                         $arrayFromGlobal,
                         ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
                         ($indexMetaData['evaltrue'] ? false : true),
-                        (count($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
+                        (isset($indexMetaData['valid']) && count($indexMetaData['valid']) > 0 ? $indexMetaData['valid'] : false)
                     );
                 break;
 
@@ -558,7 +554,7 @@ function fim_sanitizeGPC($type, $data) {
                  * If we have a default, and the cast value is unrecognised by fim_cast (e.g. 2 is neither seen as true nor false), then it will set to default. Otherwise, it will set to null.
                  */
                 case 'bool':
-                    $newData[$indexName] = fim_cast(
+                    $newData[$indexName] = @fim_cast(
                         'bool',
                         $activeGlobal[$indexName],
                         (isset($indexMetaData['default']) ? $indexMetaData['default'] : null)
@@ -596,7 +592,7 @@ function fim_sanitizeGPC($type, $data) {
                         if (!isset($activeGlobal[$name]))
                             continue;
 
-                        elseif (fim_cast(
+                        elseif (@fim_cast(
                             'bool',
                             $activeGlobal[$name]
                         ))
@@ -614,7 +610,7 @@ function fim_sanitizeGPC($type, $data) {
                  * Basically, cast it to an integer if otherwise looks like one (e.g. the string "123"), keep it as-is if it's a private room ID (e.g. the string "p1,4,90"), or set it to null.
                  */
                 case 'roomId':
-                    $newData[$indexName] = fim_cast('roomId', $activeGlobal[$indexName]);
+                    $newData[$indexName] = @fim_cast('roomId', $activeGlobal[$indexName]);
                 break;
 
 
@@ -648,28 +644,29 @@ function fim_sanitizeGPC($type, $data) {
  */
 function fim_cast($cast, $value, $default = null) {
     switch ($cast) {
-    case 'bool':
-        $trueValues = array('true', 1, true, '1');
-        $falseValues = array('false', 0, false, '0');
+        case 'bool':
+            $trueValues = array('true', 1, true, '1');
+            $falseValues = array('false', 0, false, '0');
 
-        if (in_array($value, $trueValues, true)) { $value = true; } // Strictly matches one of the above true values
-        elseif (in_array($value, $falseValues, true)) { $value = false; } // Strictly matches one of the above false values
-        elseif (!is_null($default)) { $value = (bool) $default; } // There's a default
-        else { $value = false; }
-    break;
+            if (in_array($value, $trueValues, true)) { $value = true; } // Strictly matches one of the above true values
+            elseif (in_array($value, $falseValues, true)) { $value = false; } // Strictly matches one of the above false values
+            elseif (!is_null($default)) { $value = (bool) $default; } // There's a default
+            else { $value = false; }
+        break;
 
-    case 'int': $value = (int) $value; break;
-    case 'float': $value = (float) $value; break;
-    case 'string': $value = (string) $value; break;
+        case 'int': $value = (int) $value; break;
+        case 'float': $value = (float) $value; break;
+        case 'string': $value = (string) $value; break;
+        case 'array': $value = (array) $value; break;
 
-    case 'roomId':
-        if (ctype_digit($value))
-            $value = (int) $value;
-        elseif (!fimRoom::isPrivateRoomId($value))
-            $value = null;
-    break;
+        case 'roomId':
+            if (ctype_digit($value))
+                $value = (int) $value;
+            elseif (!fimRoom::isPrivateRoomId($value))
+                $value = null;
+        break;
 
-    default: throw new Exception('Unrecognised cast in fim_cast: ' . $cast); break;
+        default: throw new Exception('Unrecognised cast in fim_cast: ' . $cast); break;
     }
 
     return $value;
@@ -693,7 +690,7 @@ function fim_arrayValidate($array, $type = 'int', $preserveAll = false, $allowed
             if (is_array($allowedValues)
                 && !in_array($value, $allowedValues)) continue;
 
-            $preValue = fim_cast($type, $value, false);
+            $preValue = @fim_cast($type, $value, false);
 
             if ($preValue || $preserveAll) $arrayValidated[$key] = $preValue; // Only keep falsey values if preserveAll is true
         }

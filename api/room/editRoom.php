@@ -73,7 +73,7 @@ function alterRoomPermissions($roomId, $userArray, $groupArray)
 
             switch ($operation) {
                 case '+':
-                    $database->setPermission($roomId, $attribute, $param, $databasePermissionsField | $permissionsField);
+                    @$database->setPermission($roomId, $attribute, $param, $databasePermissionsField | $permissionsField);
                 break; // Add new permissions to any existing permissions.
                 case '-':
                     $database->setPermission($roomId, $attribute, $param, $databasePermissionsField & ~$permissionsField);
@@ -102,13 +102,15 @@ $request = fim_sanitizeGPC('p', [
     ],
 
     'userPermissions' => [
-        'cast' => 'json',
-        'default' => '{}',
+        'cast' => 'dict',
+        'filter' => 'array',
+        'default' => [],
     ],
 
     'groupPermissions' => [
-        'cast' => 'json',
-        'default' => '{}',
+        'cast' => 'dict',
+        'filter' => 'array',
+        'default' => [],
     ],
 
     'censorLists' => [

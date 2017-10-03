@@ -948,16 +948,12 @@ popup = {
                 /* Events */
                 $('#allowPosting').change(function() {
                     if ($(this).is(':checked')) {
-                        $('#allowedUsersBridge').attr('disabled', 'disabled');
-                        $('#allowedGroupsBridge').attr('disabled', 'disabled');
-                        $('#allowedUsersBridge').next().attr('disabled', 'disabled');
-                        $('#allowedGroupsBridge').next().attr('disabled', 'disabled');
+                        $('#allowedUsersBridge, #allowedGroupsBridge').attr('disabled', 'disabled');
+                        $('#allowedUsersBridge, #allowedGroupsBridge').next().attr('disabled', 'disabled');
                     }
                     else {
-                        $('#allowedUsersBridge').removeAttr('disabled');
-                        $('#allowedGroupsBridge').removeAttr('disabled');
-                        $('#allowedUsersBridge').next().removeAttr('disabled');
-                        $('#allowedGroupsBridge').next().removeAttr('disabled');
+                        $('#allowedUsersBridge, #allowedGroupsBridge').removeAttr('disabled');
+                        $('#allowedUsersBridge, #allowedGroupsBridge').next().removeAttr('disabled');
                     }
                 });
 
@@ -989,7 +985,7 @@ popup = {
                     'resolveFromNames' : Resolver.resolveUsersFromNames
                 });
 
-                /*allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
+                allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
                     'name' : 'allowedGroups',
                     'list' : 'groups',
                     'onAdd' : function(id) {
@@ -1000,7 +996,7 @@ popup = {
                     },
                     'resolveFromIds' : Resolver.resolveGroupsFromIds,
                     'resolveFromNames' : Resolver.resolveGroupsFromNames
-                });*/
+                });
 
 
                 /* Parental Controls */
@@ -1052,21 +1048,26 @@ popup = {
                     fimApi.getRooms({
                         'id' : roomId
                     }, {'each' : function(roomData) {
-                        var allowedUsersArray = [],
-                            moderatorsArray = [],
-                            allowedGroupsArray = [];
-
                         // User Permissions
-                        jQuery.each(roomData.userPermissions, function(userId, privs) {
+                        var allowedUsersArray = [], moderatorsArray = [];
+                        jQuery.each(roomData.userPermissions, function(userId, privs) { console.log("userperm", userId, privs);
                             if (privs.moderate && privs.properties && privs.grant) // Are all bits up to 8 present?
-                                moderatorsArray.push(j);
+                                moderatorsArray.push(userId);
 
                             if (privs.post) // Are the 1, 2, and 4 bits all present?
-                                allowedUsersArray.push(j);
+                                allowedUsersArray.push(userId);
                         });
+
                         allowedUsersList.displayEntries(allowedUsersArray);
                         moderatorsList.displayEntries(moderatorsArray);
-                        //allowedGroupsList.displayEntries(allowedGroupsArray);
+
+                        // Group Permissions
+                        var allowedGroupsArray = []
+                        jQuery.each(roomData.groupPermissions, function(userId, privs) {
+                            if (privs.post) // Are the 1, 2, and 4 bits all present?
+                                allowedGroupsArray.push(userId);
+                        });
+                        allowedGroupsList.displayEntries(allowedGroupsArray);
 
                         // Default Permissions
                         if ('view' in roomData.defaultPermissions) // If all users are currently allowed, check the box (which triggers other stuff above).
@@ -1107,9 +1108,9 @@ popup = {
                         moderatorsList.getList().forEach(function(user) {
                             combinedUserPermissions["+" + user] = ['view', 'post', 'moderate'];
                         });
-                        /*allowedGroupsList.getList().forEach(function(group) {
+                        allowedGroupsList.getList().forEach(function(group) {
                             combinedGroupPermissions["+" + group] = ['post'];
-                        });*/
+                        });
                     }
 
                     // Parse Censor Lists

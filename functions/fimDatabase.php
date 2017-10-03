@@ -1743,10 +1743,12 @@ class fimDatabase extends DatabaseSQL
      * @param int $roomId
      * @param string $attribute
      * @param int $param The new permission.
-     *
-     * @todo still a work in progress
      */
     public function deleteGroupPermissionsCache($roomId, $groupId) {
+        /**
+         * TODO: this is currently stubbed out. That's fine, probably! Since the cache naturally expires every five or so minutes, this just means the invalid cache entries will persist for a little while. (The main concern is that the memory table writes this causes could be problematic, and since social groups are barely used, didn't really want to worry about potential instability resulting from this.)
+         */
+        /*
         $users = $this->getSocialGroupMembers(array(
             'groupIds' => array($groupId),
             'type' => array('member', 'moderator')
@@ -1755,7 +1757,7 @@ class fimDatabase extends DatabaseSQL
         $this->delete($this->prefix . 'roomPermissionsCache', array(
             'roomId' => $roomId,
             'userId' => $this->in($users)
-        ));
+        )); */
     }
 
 
@@ -1897,6 +1899,45 @@ class fimDatabase extends DatabaseSQL
             'type' => $this->in(['member', 'moderator'])
         ])->getColumns('roomId');
     }
+
+
+    /**
+     * @param $options
+     * @param array $sort
+     * @param int $limit
+     * @param int $pagination
+     * @return bool|object|resource
+     */
+    public function getGroups($options, $sort = array('id' => 'asc'), $limit = 50, $pagination = 0) : fimDatabaseResult
+    {
+        $options = $this->argumentMerge(array(
+            'groupIds'            => [],
+            'groupNames'          => [],
+            'groupNameSearch'     => false,
+            'columns'            => ['id', 'name', 'options'],
+        ), $options);
+
+        $columns = [$this->sqlPrefix . 'socialGroups' => $options['columns']];
+
+
+
+        $conditions = [
+            'both' => [
+                'either' => []
+            ]
+        ];
+
+        // Modify Query Data for Directives
+        if (count($options['groupIds']) > 0) $conditions['both']['either']['id'] = $this->in($options['groupIds']);
+        if (count($options['groupNames']) > 0) $conditions['both']['either']['name'] = $this->in($options['groupNames']);
+        if ($options['groupNameSearch']) $conditions['both']['either']['name'] = $this->type('string', $options['groupNameSearch'], 'search');
+
+
+
+        // Perform Query
+        return $this->where($conditions)->sortBy($sort)->limit($limit)->page($pagination)->select($columns);
+    }
+
 
     /**
      * Creates a social group with the give name.

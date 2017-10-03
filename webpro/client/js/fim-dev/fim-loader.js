@@ -890,8 +890,7 @@ autoEntry.prototype = {
         this.options.onAdd = onAdd;
     },
 
-    addEntry : function(id, name) {
-        console.log(["autoEntry: add entry", id, name]);
+    addEntry : function(id, name, suppressEvents) {
 
         var _this = this;
         var id = id;
@@ -900,16 +899,12 @@ autoEntry.prototype = {
         if (!id && name) {
             var resolver = $.when(this.options.resolveFromNames([name])).then(function(data) {
                 id = data[name].id;
-
-                console.log(["autoEntry: resolved id", id]);
             });
         }
 
         else if (!name && id) {
             var resolver = $.when(this.options.resolveFromIds([id]).then(function(data) {
                 name = data[id].name;
-
-                console.log(["autoEntry: resolved name", name]);
             }));
         }
 
@@ -936,14 +931,12 @@ autoEntry.prototype = {
 
                 $("#" + _this.options.name + "Bridge").val('');
 
-                if (_this.options.onAdd) _this.options.onAdd(id);
+                if (!suppressEvents && _this.options.onAdd) _this.options.onAdd(id);
             }
         });
     },
 
     removeEntry : function(id) {
-        console.log(["autoEntry: remove entry", id]);
-
         var options = this.options;
 
         $("#" + this.options.name).val($("#" + this.options.name).val().replace(new RegExp("(^|,)" + id + "(,|$)"), "$1$2").replace(/^,|(,),|,$/,'$1'));
@@ -967,7 +960,7 @@ autoEntry.prototype = {
         var _this = this;
         $.when(this.options.resolveFromIds(entryList)).then(function(entries) {
             for (var i = 0; i < entryList.length; i++) {
-                _this.addEntry(entryList[i], entries[entryList[i]].name);
+                _this.addEntry(entryList[i], entries[entryList[i]].name, true);
             }
         });
     },

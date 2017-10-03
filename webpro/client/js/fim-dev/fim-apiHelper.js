@@ -92,18 +92,30 @@ var Resolver = (function () {
     Resolver.resolveRoomsFromNames = function (names) {
         return Resolver.resolve("room", "name", names);
     };
+    Resolver.resolveGroupsFromIds = function (ids) {
+        return Resolver.resolve("group", "id", ids);
+    };
+    Resolver.resolveGroupsFromNames = function (names) {
+        return Resolver.resolve("group", "name", names);
+    };
     Resolver.cacheduserIds = [];
     Resolver.cacheduserNames = [];
     Resolver.cacheduserProperties = [];
-    Resolver.cachedroomIds = [];
-    Resolver.cachedroomNames = [];
-    Resolver.cachedroomProperties = [];
     Resolver.waitinguserIds = [];
     Resolver.waitinguserNames = [];
     Resolver.waitinguserProperties = [];
+    Resolver.cachedroomIds = [];
+    Resolver.cachedroomNames = [];
+    Resolver.cachedroomProperties = [];
     Resolver.waitingroomIds = [];
     Resolver.waitingroomNames = [];
     Resolver.waitingroomProperties = [];
+    Resolver.cachedgroupIds = [];
+    Resolver.cachedgroupNames = [];
+    Resolver.cachedgroupProperties = [];
+    Resolver.waitinggroupIds = [];
+    Resolver.waitinggroupNames = [];
+    Resolver.waitinggroupProperties = [];
     return Resolver;
 }());
 //# sourceMappingURL=fim-apiHelper.js.map
