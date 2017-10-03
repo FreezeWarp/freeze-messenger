@@ -1898,6 +1898,35 @@ class fimDatabase extends DatabaseSQL
         ])->getColumns('roomId');
     }
 
+    /**
+     * Creates a social group with the give name.
+     *
+     * @param string $groupName Name of group to create.
+     *
+     * @return bool|void
+     */
+    public function createSocialGroup($groupName) {
+        return $this->insert($this->sqlPrefix . 'socialGroups', [
+            'name' => $groupName
+        ]);
+    }
+
+    /**
+     * User joins group with ID.
+     *
+     * @param int     $groupId Group to join.
+     * @param fimUser $user User joining the group.
+     *
+     * @return bool|void
+     */
+    public function enterSocialGroup($groupId, fimUser $user) {
+        return $this->insert($this->sqlPrefix . 'socialGroupMembers', [
+            'groupId' => $groupId,
+            'userId' => $user->id,
+            'type' => 'member'
+        ]);
+    }
+
 
     /**
      * Gets the entries from the watchRooms table corresponding with a single roomId. fimRoom($roomId)->watchRooms should generally be used instead, since it implements additional caching.

@@ -26,7 +26,7 @@ class LoginSteam extends LoginTwoStep {
     }
 
     public function setUser() {
-        global $loginConfig;
+        global $loginConfig, $database;
 
         if ($this->client->validate()) {
             $matches = [];
@@ -45,6 +45,8 @@ class LoginSteam extends LoginTwoStep {
                     throw new \Exception('userInfo could not be retrieved from Steam API.');
                 }
 
+
+                /* Set User Info */
                 $this->loginFactory->user = new \fimUser([
                     'integrationMethod' => 'steam',
                     'integrationId' => (int) $userInfo['steamid'],
@@ -68,14 +70,53 @@ class LoginSteam extends LoginTwoStep {
                     'include_appinfo' => true,
                 ]);
 
-                foreach ($games['response']['games'] AS $game) {
-                    if ($game['playtime_forever'] > 0) {
-                        // TODO: group icon
-                        // img_icon_url
+                if (isset($games['response']['games'])) {
+                    $groupNames = [];
+                    foreach ($games['response']['games'] AS $game) {
+                        if ($game['playtime_forever'] > 0) {
+                            // TODO: group icon
+                            // img_icon_url
 
-                        // create group if doesn't exist
-                        // name: 'Steam Players of ' . $game['name']
+                            $groupNames[] = 'Steam Players of ' . $game['name'];
+
+                            // create group if doesn't exist
+                            @$database->createSocialGroup('Steam Players of ' . $game['name']);
+                        }
                     }
+
+                    $dbGroupIds = $database->select([
+                        'socialGroups' => 'id, name'
+                    ], ['name' => $database->in($groupNames)])->getColumnValues('id');
+
+                    $database->autoQueue(true);
+                    foreach ($dbGroupIds AS $groupId) {
+                        @$database->enterSocialGroup($groupId, $this->loginFactory->user);
+                    }
+                    @$database->autoQueue(false);
+                }
+
+
+                /* Lookup Steam Friends */
+                $friends = \Http\curlRequest::quickRunGET('http://api.steampowered.com/ISteamUser/GetFriendList/v0001/', [
+                    'key' => $loginConfig['extraMethods']['steam']['clientId'],
+                    'steamid' => $steamId,
+                    'format' => 'json',
+                ]);
+
+                if (isset($friends['friendslist']['friends'])) {
+                    $friendMatches = [];
+
+                    foreach ($friends['friendslist']['friends'] AS $friend) {
+                        $friendMatches[] = [
+                            'integrationMethod' => 'steam',
+                            'integrationId' => $friend['steamid']
+                        ];
+                    }
+
+                    $dbFriends = $database->select([
+                        'users' => 'id, name, integrationId, integrationMethod'
+                    ], ['either' => $friendMatches])->getColumnValues('id');
+                    $this->loginFactory->user->editList('friendedUsers', $dbFriends, 'create');
                 }
             }
         }

@@ -47,6 +47,8 @@ class LoginReddit extends LoginTwoStep {
     }
 
     public function setUser() {
+        global $database;
+
         if (!session_id())
             session_start();
 
@@ -73,17 +75,6 @@ class LoginReddit extends LoginTwoStep {
         }
 
 
-        /* Add User Groups Based On Subscriptions */
-        $subscriptions = $this->client->getParsedResponse($this->client->getAuthenticatedRequest(
-            'GET',
-            'https://oauth.reddit.com/api/v1/me/karma',
-            $token
-        ));
-        foreach ($subscriptions AS $subscription) {
-            // $subscription['sr']
-        }
-
-
         /* Store User Info */
         $this->loginFactory->user = new \fimUser([
             'integrationMethod' => 'reddit',
@@ -95,8 +86,34 @@ class LoginReddit extends LoginTwoStep {
             'integrationId' => $userInfo['id'],
             'name' => $userInfo['name'],
         ]);
-
         //todo: $userInfo['over_18']
+
+
+        /* Add User Groups Based On Subscriptions */
+        $subscriptions = $this->client->getParsedResponse($this->client->getAuthenticatedRequest(
+            'GET',
+            'https://oauth.reddit.com/api/v1/me/karma',
+            $token
+        ));
+
+        if (isset($subscriptions['data'])) {
+            $subscriptionNames = [];
+
+            foreach ($subscriptions['data'] AS $subscription) {
+                $subscriptionNames[] = 'Subscribers of /r/' . $subscription['sr'];
+                @$database->createSocialGroup('Subscribers of /r/' . $subscription['sr']);
+            }
+
+            $dbGroupIds = $database->select([
+                'socialGroups' => 'id, name'
+            ], ['name' => $database->in($subscriptionNames)])->getColumnValues('id');
+
+            $database->autoQueue(true);
+            foreach ($dbGroupIds AS $groupId) {
+                @$database->enterSocialGroup($groupId, $this->loginFactory->user);
+            }
+            @$database->autoQueue(false);
+        }
     }
 
 }

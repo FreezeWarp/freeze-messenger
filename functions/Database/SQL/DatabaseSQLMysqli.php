@@ -137,7 +137,7 @@ class DatabaseSQLMysqli extends DatabaseDefinitionsMySQL {
             }
 
             public function getCount() {
-                return $this->source->num_rows;
+                return $this->source ? $this->source->num_rows : 0;
             }
         };
     }

@@ -567,23 +567,23 @@
         </table>
 
 
-        <table name="socialGroups" type="general" comment="The members of user groups. This is a reserved table for future functionality; at present, social group functionality is only possible through integration services.">
-            <column name="groupId" type="int" maxlen="6" comment="The group ID." />
-            <column name="groupName" type="string" maxlen="50" comment="The group name." />
-            <column name="ownerId" type="int" maxlen="8" fkey="users.userId" comment="The owner userID of the group." />
+        <table name="socialGroups" type="general" comment="User groups.">
+            <column name="id" type="int" maxlen="6" comment="The group ID." />
+            <column name="name" type="string" maxlen="50" comment="The group name." />
+            <column name="ownerId" type="int" maxlen="8" fkey="users.id" comment="The owner userID of the group." />
             <column name="creationTime" type="time" default="__TIME__" comment="Time the group was created." />
             <column name="options" type="int" maxlen="6" comment="Group options." />
-            <column name="userNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to any users that have this group as their primary, if they have not specified their own." />
 
             <column name="memberUserIds" type="blob" maxlen="50000" comment="A CSV cache of the users who are part of this group." />
 
-            <key name="groupId" type="primary" />
+            <key name="id" type="primary" />
+            <key name="name" type="unique" />
         </table>
 
 
-        <table name="socialGroupMembers" type="general" comment="The members of groups, used with vanilla logins. This is a reserved table for future functionality; at present, social group functionality is only possible through integration services.">
-            <column name="groupId" type="int" maxlen="6" fkey="socialGroups.groupId" comment="The group ID." />
-            <column name="userId" type="int" maxlen="8" fkey="users.userId" comment="The member ID of the group." />
+        <table name="socialGroupMembers" type="general" comment="The members of groups.">
+            <column name="groupId" autoincrement="1" type="int" maxlen="6" fkey="socialGroups.id" comment="The group ID." />
+            <column name="userId" type="int" maxlen="8" fkey="users.id" comment="The member ID of the group." />
             <column name="type" type="enum" default="pending" restrict="member,moderator,pending,banned" comment="Whether a group member is a normal member, a moderator (able to add and remove other users from the group), or has been banned from the group (can not requested invitation)." />
 
             <key name="groupId,userId" type="primary" />
@@ -819,7 +819,6 @@
         <bitfield name="options" table="socialGroups">
             <def bit="1" comment="This prevents users from joining groups. Instead, a user may be put into this group by an administrator.">Admin Group</def>
             <def bit="2" comment="If set, a user can only join this group once approved by a moderator for the group.">Moderated Group</def>
-            <def bit="16" comment="If set, a user that belongs to such a group will have their username style set to this group's style regardless of their own setting. If not set, a user's group formatting will only be applied when they have not specified one themselves.">Override Username Formatting</def>
         </bitfield>
 
         <bitfield name="options" table="users">

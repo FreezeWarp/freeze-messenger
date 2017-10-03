@@ -277,6 +277,9 @@ abstract class Database
             // TODO
             // validation errors are warnings
         }
+        elseif (error_reporting() === 0) { // Errors are suppressed.
+
+        }
         else {
             // If transaction mode is active, then any error will result in a rollback and the closure of the connection. Once transaction mode is ended, errors no longer result in a connection closure.
             if ($this->transaction) {
