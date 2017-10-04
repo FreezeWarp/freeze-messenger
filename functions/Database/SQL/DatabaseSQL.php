@@ -411,14 +411,8 @@ class DatabaseSQL extends Database
                 break;
 
             case DatabaseSQL::FORMAT_VALUE_ENUM_ARRAY:
-                foreach ($values[1] AS $item) {
-                    if ($this->auto($item)->type !== DatabaseTypeType::string) { // Make sure none of the values are detected to be non-strings.
-                        $this->triggerError("Invalid Enum Type", array(
-                            'value' => $item,
-                        ), 'validation');
-                    }
-
-                    // Note that we don't want to force an integer to a string, because we won't always know that we're working with an enum type. That is, while we could correct the enum type column when it is created here, we won't be able to do so when data is being inserted. Thus, throwing an error here for the same type of data that will cause an error later is good.
+                foreach ($values[1] AS &$item) {
+                    $item = $this->str($item);
                 }
 
                 return $this->formatValue(DatabaseTypeType::arraylist, $values[1]);
