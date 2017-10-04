@@ -205,6 +205,7 @@ if (jQuery)(function () {
 
 
             $(this).each(function () { // Loop each context menu
+                console.log("contextmneu", $(this));
                 var el = $(this);
 
 
@@ -235,6 +236,7 @@ if (jQuery)(function () {
                 }
                 else {
                     $(this).mousedown(function (e) { // Simulate a true right clickasync
+
                         e.preventDefault();
                         e.stopPropagation();
 
@@ -261,7 +263,7 @@ if (jQuery)(function () {
                         }
                     });
 
-                    $(el).add($('ul.contextMenu')).bind('contextmenu', function () { // Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
+                    $(this).add($('ul.contextMenu')).bind('contextmenu', function () { // Disable browser context menu (requires both selectors to work in IE/Safari + FF/Chrome)
                         return false;
                     });
                 }

@@ -320,7 +320,6 @@ function fim_messageFormat(json, format) {
             break;
 
         case 'list':
-            console.log("b", text, messageId, userId, roomId, messageTime, userNameDeferred);
             data = $('<span>').attr({
                 'id': 'message' + messageId,
                 'class': 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
@@ -434,13 +433,68 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
 }
 
 function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred) {
-    var tag = $('<span>').attr({
+    var contextAction_msgLink = function() {
+        dia.full({
+            title : 'Link to this Message',
+            id : 'messageLink',
+            content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
+            width: 600
+        });
+    };
+
+    var tag = $('<span>');
+
+    tag.attr({
         'class': 'messageText',
         'data-messageId': messageId,
         'data-roomId': roomId,
         'data-time': messageTime,
         'tabindex': 1000
-    }).html(text).contextMenu({
+    }).append(text);
+
+    tag.find('img').each(function() { $(this).contextMenu({
+        menu: 'messageMenuImage',
+        altMenu : settings.disableRightClick
+    }, function(action, el) {
+        var messageId = $(el).parent().attr('data-messageId'),
+            roomId = $(el).parent().attr('data-roomId'),
+            src = $(el).attr('src');
+
+        switch(action) {
+            case 'url':
+                dia.full({
+                    title : 'Copy Image URL',
+                    content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px; margin-left: auto; margin-right: auto; display: block;" /><br /><br /><input type="text" name="url" value="' + src +  '" style="width: 100%;" />',
+                    width : 800,
+                    position : 'top',
+                    oF : function() {
+                        $('input[name=url]', this).first().focus();
+                    }
+                });
+                break;
+
+            case 'delete':
+                dia.confirm({
+                    text : 'Are you sure you want to delete this message?',
+                    'true' : function() {
+                        standard.deleteMessage(roomId, messageId);
+
+                        $(el).parent().fadeOut();
+                    }
+                });
+                break;
+
+            case 'link': contextAction_msgLink(); break;
+
+            case 'click':
+                $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
+                $('#contextMenuClickHelper').remove();
+                break;
+        }
+
+        return false;
+    }); }); /*
+    tag.contextMenu({
         menu: 'messageMenu',
         altMenu : settings.disableRightClick
     }, function(action, el) {
@@ -459,14 +513,7 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
                 });
                 break;
 
-            case 'link':
-                dia.full({
-                    title : 'Link to this Message',
-                    id : 'messageLink',
-                    content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
-                    width: 600
-                });
-                break;
+            case 'link': contextAction_msgLink(); break;
 
             case 'edit':
                 $('#message' + messageId + ' .messageText').dblclick();
@@ -474,7 +521,94 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
         }
 
         return false;
-    });
+    });*/
+
+/*    $('a:not(.imglink)', tag).contextMenu({
+        menu: 'messageMenuLink',
+        altMenu : settings.disableRightClick
+    }, function(action, el) {
+        var messageId = $(el).parent().attr('data-messageId'),
+            roomId = $(el).parent().attr('data-roomId'),
+            src = $(el).attr('href');
+
+        switch(action) {
+            case 'url':
+                dia.full({
+                    title : 'Copy URL',
+                    position : 'top',
+                    content : '<iframe style="width: 100%; display: none; height: 0px;"></iframe><a href="javascript:void(0);" onclick="$(this).prev().attr(\'src\',\'' + src.replace(/\'/g, "\\'").replace(/\"/g, '\\"') + '\').show().animate({height : \'80%\'}, 500); $(this).hide();">View<br /></a><br /><input type="text" name="url" value="' + src.replace(/\"/g, '\\"') +  '" style="width: 100%;" />',
+                    width : 800,
+                    oF : function() {
+                        $('input[name=url]', this).first().focus();
+                    }
+                });
+                break;
+
+            case 'delete':
+                dia.confirm({
+                    text : 'Are you sure you want to delete this message?',
+                    'true' : function() {
+                        standard.deleteMessage(roomId, messageId);
+                        $(el).parent().fadeOut();
+                    }
+                });
+                break;
+
+            case 'link': contextAction_msgLink(); break;
+
+            case 'click':
+                $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
+                $('#contextMenuClickHelper').remove();
+                break;
+        }
+
+        return false;
+    });*/
+
+console.log(tag.html(), tag.find('img').length);
+
+    tag.find('img').each(function(i, e) { console.log('ddd', $(this).html()); $(e).contextMenu({
+        menu: 'messageMenuImage',
+        altMenu : settings.disableRightClick
+    }, function(action, el) {
+        var messageId = $(el).parent().attr('data-messageId'),
+            roomId = $(el).parent().attr('data-roomId'),
+            src = $(el).attr('src');
+
+        switch(action) {
+            case 'url':
+                dia.full({
+                    title : 'Copy Image URL',
+                    content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px; margin-left: auto; margin-right: auto; display: block;" /><br /><br /><input type="text" name="url" value="' + src +  '" style="width: 100%;" />',
+                    width : 800,
+                    position : 'top',
+                    oF : function() {
+                        $('input[name=url]', this).first().focus();
+                    }
+                });
+                break;
+
+            case 'delete':
+                dia.confirm({
+                    text : 'Are you sure you want to delete this message?',
+                    'true' : function() {
+                        standard.deleteMessage(roomId, messageId);
+
+                        $(el).parent().fadeOut();
+                    }
+                });
+                break;
+
+            case 'link': contextAction_msgLink(); break;
+
+            case 'click':
+                $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
+                $('#contextMenuClickHelper').remove();
+                break;
+        }
+
+        return false;
+    }) });
 
     if (window.userId == userId && window.permissions.editOwnPosts) {
         tag.on('dblclick', function() {
@@ -1207,118 +1341,6 @@ function enableSender() {
     $('#icon_url').button({ disabled : false }); // "
     $('#icon_submit').button({ disabled : false }); // "
     $('#icon_reset').button({ disabled : false }); // "
-}
-
-
-
-/**
- * (Re-)Parse the "message" context menus, including menus for embedded images and links.
- * TODO
- *
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2017
- */
-function contextMenuParseMessage() {
-    $('.messageLine .messageText img').contextMenu({
-            menu: 'messageMenuImage',
-            altMenu : settings.disableRightClick
-        },
-        function(action, el) {
-            var messageId = $(el).parent().attr('data-messageId'),
-                roomId = $(el).parent().attr('data-roomId'),
-                src = $(el).attr('src');
-
-            switch(action) {
-                case 'url':
-                    dia.full({
-                        title : 'Copy Image URL',
-                        content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px; margin-left: auto; margin-right: auto; display: block;" /><br /><br /><input type="text" name="url" value="' + src +  '" style="width: 100%;" />',
-                        width : 800,
-                        position : 'top',
-                        oF : function() {
-                            $('input[name=url]', this).first().focus();
-                        }
-                    });
-                    break;
-
-                case 'delete':
-                    dia.confirm({
-                        text : 'Are you sure you want to delete this message?',
-                        'true' : function() {
-                            standard.deleteMessage(roomId, messageId);
-
-                            $(el).parent().fadeOut();
-                        }
-                    });
-                    break;
-
-                case 'link':
-                    dia.full({
-                        title : 'Link to this Message',
-                        id : 'messageLink',
-                        content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
-                        width: 600
-                    });
-                    break;
-
-                case 'click':
-                    $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
-                    $('#contextMenuClickHelper').remove();
-                    break;
-            }
-
-            return false;
-        });
-
-    $('.messageLine .messageText a').not('.imglink').contextMenu({
-            menu: 'messageMenuLink',
-            altMenu : settings.disableRightClick
-        },
-        function(action, el) {
-            var messageId = $(el).parent().attr('data-messageId'),
-                roomId = $(el).parent().attr('data-roomId'),
-                src = $(el).attr('href');
-
-            switch(action) {
-                case 'url':
-                    dia.full({
-                        title : 'Copy URL',
-                        position : 'top',
-                        content : '<iframe style="width: 100%; display: none; height: 0px;"></iframe><a href="javascript:void(0);" onclick="$(this).prev().attr(\'src\',\'' + src.replace(/\'/g, "\\'").replace(/\"/g, '\\"') + '\').show().animate({height : \'80%\'}, 500); $(this).hide();">View<br /></a><br /><input type="text" name="url" value="' + src.replace(/\"/g, '\\"') +  '" style="width: 100%;" />',
-                        width : 800,
-                        oF : function() {
-                            $('input[name=url]', this).first().focus();
-                        }
-                    });
-                    break;
-
-                case 'delete':
-                    dia.confirm({
-                        text : 'Are you sure you want to delete this message?',
-                        'true' : function() {
-                            standard.deleteMessage(roomId, messageId);
-                            $(el).parent().fadeOut();
-                        }
-                    });
-                    break;
-
-                case 'link':
-                    dia.full({
-                        title : 'Link to this Message',
-                        id : 'messageLink',
-                        content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '/#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
-                        width: 600
-                    });
-                    break;
-
-                case 'click':
-                    $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
-                    $('#contextMenuClickHelper').remove();
-                    break;
-            }
-
-            return false;
-        });
 }
 
 
