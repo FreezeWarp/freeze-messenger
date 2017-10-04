@@ -310,9 +310,6 @@ standard.prototype.changeRoom = function(roomId) {
         },
         'each' : function(user) {
             $('#activeUsers > ul').append('<li><span class="userName" data-userId="' + user.userData.id + '" style=""' + user.userData.nameFormat + '"">' + user.userData.name + '</span></li>');
-        },
-        'end' : function() {
-            contextMenuParseUser('#activeUsers');
         }
     });
 };

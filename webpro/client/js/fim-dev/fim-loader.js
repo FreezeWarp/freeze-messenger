@@ -298,37 +298,6 @@ function fim_messageFormat(json, format) {
     }
 
 
-    function buildEditableSpan(text, messageId, userId, roomId, messageTime, userNameDeferred) {
-        var tag = $('<span>').attr({
-            'class': 'messageText' + (window.userId == userId && window.permissions.editOwnPosts ? ' editable' : ''),
-            'data-messageId': messageId,
-            'data-roomId': roomId,
-            'data-time': messageTime,
-            'tabindex': 1000
-        }).html(text).on('dblclick', function() {
-            var textarea = $('<textarea>').text($(this).text()).onEnter(function() {
-                fimApi.editMessage(roomId, messageId, {
-                    'message' : textarea.val()
-                });
-
-                $(this).replaceWith(buildEditableSpan(textarea.val(), messageId, userId, roomId, messageTime, style));
-            });
-
-            $.each(this.attributes, function() {
-                textarea.attr(this.name, this.value);
-            });
-
-            $(this).replaceWith(textarea);
-        });
-
-        $.when(userNameDeferred).then(function(pairs) {
-            tag.attr("style", pairs[userId].messageFormatting);
-        });
-
-        return tag;
-    }
-
-
     switch (format) {
         case 'table':
             data = $('<tr style="word-wrap: break-word;">').attr({
@@ -341,7 +310,7 @@ function fim_messageFormat(json, format) {
                 $('<td>').text(messageTime)
             ).append(
                 $('<td>').append(
-                    buildEditableSpan(text, messageId, userId, roomId, messageTime, userNameDeferred).html(text)
+                    fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred).html(text)
                 )
             ).append(
                 $('<td>').append(
@@ -351,6 +320,7 @@ function fim_messageFormat(json, format) {
             break;
 
         case 'list':
+            console.log("b", text, messageId, userId, roomId, messageTime, userNameDeferred);
             data = $('<span>').attr({
                 'id': 'message' + messageId,
                 'class': 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
@@ -363,7 +333,7 @@ function fim_messageFormat(json, format) {
                         : ''
                 )
             ).append(
-                buildEditableSpan(text, messageId, userId, roomId, messageTime, userNameDeferred)
+                fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred)
             );
             break;
     }
@@ -398,9 +368,41 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
                 $('<span>').text(userName) : ''
         );
 
+        tag.contextMenu({
+            menu: 'userMenu',
+            altMenu : settings.disableRightClick
+        }, function(action, el) {
+            var userId = $(el).attr('data-userId'),
+                userName = '',
+                avatarUrl = '',
+                profileUrl = '';
+
+            switch(action) {
+                case 'profile':
+                    var resolver = $.when(Resolver.resolveUsersFromIds([userId])).then(function(userData) {
+                        dia.full({
+                            title : 'User Profile',
+                            id : 'messageLink',
+                            content : (userData[userId].profile ? '<iframe src="' + userData[userId].profile + '" style="width: 100%; height: 90%;" /><br /><a href="' + userData[userId].profile + '" target="_BLANK">Visit The Page Directly</a>' : 'The user has not yet registered a profile.'),
+                            width: $(window).width() * .8,
+                            height: $(window).height() * .9
+                        });
+                    });
+
+                    break;
+
+                case 'private_im':
+                    standard.changeRoom("p" + [window.userId, userId].join(','), true);
+                    break;
+                case 'kick': popup.kick(userId, roomId); break;
+                case 'ban': standard.banUser(userId); break; // TODO
+                case 'ignore': standard.ignoreUser(userId); break; // TODO
+            }
+        });
+
         tag.ezpz_tooltip({
             contentId: 'tooltext',
-            beforeShow: function(content, el) { console.log("showing...", userId);
+            beforeShow: function(content, el) {
                 content.html("");
                 content.append(
                     $('<div style="width: 400px;">').append(
@@ -426,6 +428,74 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
                     content.append($('<span><br><em>Member Since</em>: </span>').append($('<span>').text(fim_dateFormat(pairs[userId].joinDate, {year : "numeric", month : "numeric", day : "numeric"})))); // TODO:just date
             }
         });
+    });
+
+    return tag;
+}
+
+function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred) {
+    var tag = $('<span>').attr({
+        'class': 'messageText',
+        'data-messageId': messageId,
+        'data-roomId': roomId,
+        'data-time': messageTime,
+        'tabindex': 1000
+    }).html(text).contextMenu({
+        menu: 'messageMenu',
+        altMenu : settings.disableRightClick
+    }, function(action, el) {
+        var messageId = $(el).attr('data-messageId'),
+            roomId = $(el).attr('data-roomId');
+
+        switch(action) {
+            case 'delete':
+                dia.confirm({
+                    text : 'Are you sure you want to delete this message?',
+                    'true' : function() {
+                        standard.deleteMessage(roomId, messageId);
+                        $(el).parent().fadeOut();
+                        return false;
+                    }
+                });
+                break;
+
+            case 'link':
+                dia.full({
+                    title : 'Link to this Message',
+                    id : 'messageLink',
+                    content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
+                    width: 600
+                });
+                break;
+
+            case 'edit':
+                $('#message' + messageId + ' .messageText').dblclick();
+                break;
+        }
+
+        return false;
+    });
+
+    if (window.userId == userId && window.permissions.editOwnPosts) {
+        tag.on('dblclick', function() {
+            var textarea = $('<textarea>').text($(this).text()).onEnter(function() {
+                fimApi.editMessage(roomId, messageId, {
+                    'message' : textarea.val()
+                });
+
+                $(this).replaceWith(fim_buildMessageLine(textarea.val(), messageId, userId, roomId, messageTime, userNameDeferred));
+            });
+
+            $.each(this.attributes, function() {
+                textarea.attr(this.name, this.value);
+            });
+
+            $(this).replaceWith(textarea);
+        });
+    }
+
+    $.when(userNameDeferred).then(function(pairs) {
+        tag.attr("style", pairs[userId].messageFormatting);
     });
 
     return tag;
@@ -527,9 +597,6 @@ function fim_newMessage(roomId, messageId, messageText) {
             notify.webkitNotify("images/favicon.ico", "New Message", $(messageText).text());
         }
     }
-
-    contextMenuParseMessage();
-    contextMenuParseUser('#messageList');
 
     /*** Time Tooltip ***/
     if (settings.showAvatars) {
@@ -1002,10 +1069,6 @@ function windowDraw() {
     console.log('Redrawing window.');
 
 
-    /*** Context Menus ***/
-    contextMenuParseRoom();
-
-
     /*** Funky Little Dialog Thing ***/
     $('.ui-dialog-titlebar-tabbed').on('dblclick', function() {
         var newHeight = $(window).height();
@@ -1034,7 +1097,7 @@ function windowDraw() {
 
 
     // Disable the chatbox if the user is not allowed to post.
-    if (roomId && (userId | anonId)) { /* TODO */ } // The user is able to post.
+    if (roomId && (userId || anonId)) { /* TODO */ } // The user is able to post.
     else { disableSender(); } // The user is _not_ able to post.
 
 
@@ -1149,97 +1212,13 @@ function enableSender() {
 
 
 /**
- * (Re-)Parse the "user" context menus.
- *
- * @param container - A jQuery selector that can be used to restrict the results. For example, specifying "#funStuff" would only reparse menus that are within the "#funStuff" node.
- *
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2017
- */
-function contextMenuParseUser(container) {
-    $((container ? container + ' ' : '') + '.userName').contextMenu({
-            menu: 'userMenu',
-            altMenu : settings.disableRightClick
-        },
-        function(action, el) {
-            var userId = $(el).attr('data-userId'),
-                userName = '',
-                avatarUrl = '',
-                profileUrl = '';
-
-            switch(action) {
-                case 'profile':
-                    var resolver = $.when(Resolver.resolveUsersFromIds([userId])).then(function(userData) {
-                        dia.full({
-                            title : 'User Profile',
-                            id : 'messageLink',
-                            content : (userData[userId].profile ? '<iframe src="' + userData[userId].profile + '" style="width: 100%; height: 90%;" /><br /><a href="' + userData[userId].profile + '" target="_BLANK">Visit The Page Directly</a>' : 'The user has not yet registered a profile.'),
-                            width: $(window).width() * .8,
-                            height: $(window).height() * .9
-                        });
-                    });
-
-                    break;
-
-                case 'private_im':
-                    standard.changeRoom("p" + [window.userId, userId].join(','), true);
-                    break;
-                case 'kick': popup.kick(userId, roomId); break;
-                case 'ban': standard.banUser(userId); break; // TODO
-                case 'ignore': standard.ignoreUser(userId); break; // TODO
-            }
-        });
-}
-
-
-
-/**
  * (Re-)Parse the "message" context menus, including menus for embedded images and links.
+ * TODO
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  */
 function contextMenuParseMessage() {
-    $('.messageLine .messageText').contextMenu({
-            menu: 'messageMenu',
-            altMenu : settings.disableRightClick
-        },
-        function(action, el) {
-            var messageId = $(el).attr('data-messageId'),
-                roomId = $(el).attr('data-roomId');
-
-            switch(action) {
-                case 'delete':
-                    dia.confirm({
-                        text : 'Are you sure you want to delete this message?',
-                        'true' : function() {
-                            standard.deleteMessage(roomId, messageId);
-
-                            $(el).parent().fadeOut();
-
-                            return false;
-                        }
-                    });
-                    break;
-
-                case 'link':
-                    dia.full({
-                        title : 'Link to this Message',
-                        id : 'messageLink',
-                        content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
-                        width: 600
-                    });
-                    break;
-
-                case 'edit':
-                    $('#message' + messageId + ' .messageText').dblclick();
-
-                    break;
-            }
-
-            return false;
-        });
-
     $('.messageLine .messageText img').contextMenu({
             menu: 'messageMenuImage',
             altMenu : settings.disableRightClick
@@ -1346,6 +1325,7 @@ function contextMenuParseMessage() {
 
 /**
  * (Re-)Parse the "room" context menus.
+ * TODO
  *
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017

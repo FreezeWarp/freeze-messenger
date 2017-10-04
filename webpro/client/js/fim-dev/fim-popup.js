@@ -109,24 +109,22 @@ popup.prototype.insertDoc = function(preSelect) {
                 $('#insertDocUpload').html('Disabled.');
             }
             else {
-                serverSettings.fileUploads.extensionChangesReverse = new Object();
+                serverSettings.fileUploads.extensionChangesReverse = {};
 
-                for (var i = 0; i < serverSettings.fileUploads.extensionChanges.length; i++) {
-                    var extension = serverSettings.fileUploads.extensionChanges[i];
-
+                jQuery.each(serverSettings.fileUploads.extensionChanges, function(index, extension) {
                     if (!(extension in serverSettings.fileUploads.extensionChangesReverse))
                         serverSettings.fileUploads.extensionChangesReverse[extension] = [extension];
 
-                    serverSettings.fileUploads.extensionChangesReverse[extension].push(i);
-                }
+                    serverSettings.fileUploads.extensionChangesReverse[extension].push(extension);
+                });
 
-                for (var i = 0; i < serverSettings.fileUploads.allowedExtensions.length; i++) {
-                    var maxFileSize = serverSettings.fileUploads.sizeLimits[serverSettings.fileUploads.allowedExtensions[i]],
-                        fileContainer = serverSettings.fileUploads.fileContainers[serverSettings.fileUploads.allowedExtensions[i]],
-                        fileExtensions = serverSettings.fileUploads.extensionChangesReverse[serverSettings.fileUploads.allowedExtensions[i]];
+                jQuery.each(serverSettings.fileUploads.allowedExtensions, function(index, extension) {
+                    var maxFileSize = serverSettings.fileUploads.sizeLimits[extension],
+                        fileContainer = serverSettings.fileUploads.fileContainers[extension],
+                        fileExtensions = serverSettings.fileUploads.extensionChangesReverse[extension];
 
-                    $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : serverSettings.fileUploads.allowedExtensions[i]) + '</td><td>' + $l('fileContainers.' + fileContainer) + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
-                }
+                    $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : extension) + '</td><td>' + $l('fileContainers.' + fileContainer) + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
+                });
 
 
                 /* File Upload Form */
@@ -330,14 +328,7 @@ popup.prototype.viewStats = function() {
                     jQuery.each(room.users, function(userId, user) {
                         $('table#viewStats > tbody > tr').eq(i).append(
                             $('<td>').append(
-                                $('<span>').attr({
-                                    'class' : 'userName',
-                                    'data-userId' : user.id,
-                                    'style' : user.nameFormat
-                                }).text(user.name)
-                                    .append($('<span>').text(' ('))
-                                    .append($('<span>').text(user.messageCount))
-                                    .append($('<span>').text(')'))
+                                fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)
                             )
                         );
 
@@ -1163,13 +1154,9 @@ popup.prototype.online = function() {
 
                 $('#onlineUsers').append($('<tr>').append(
                     $('<td>').append(
-                        $('<span>').attr('class', 'userName').attr('data-userId', user.userData.id).attr('style', user.userData.nameFormat).text(user.userData.name)
+                        fim_buildUsernameTag($('<span>'), user.userData.id, fim_getUsernameDeferred(user.userData.id), true)
                     )
                 ).append($('<td>').append(roomData)));
-            },
-            'end' : function() {
-                contextMenuParseUser('#onlineUsers');
-                windowDraw();
             }
         }),
         cF : function() {
