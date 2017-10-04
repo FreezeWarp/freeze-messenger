@@ -299,7 +299,7 @@ abstract class Database
                     )));
                 }
                 else {
-                    throw new Exception('A database error has occurred: ' . $errorMessage . ' (query = ' . end($this->queryLog)[0] . ').');
+                    throw new Exception('A database error has occurred: ' . $errorMessage . ' (other info: ' . print_r($errorData, true) . ') (query = ' . end($this->queryLog)[0] . ').');
                 }
             }
             else {
