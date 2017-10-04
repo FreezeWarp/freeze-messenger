@@ -518,7 +518,7 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
         return false;
     });
 
-    /*    $('a:not(.imglink)', tag).contextMenu({
+    tag.find('a').contextMenu({
         menu: 'messageMenuLink',
         altMenu : settings.disableRightClick
     }, function(action, el) {
@@ -527,38 +527,32 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
             src = $(el).attr('href');
 
         switch(action) {
+            case 'delete': contextAction_msgDelete(); break;
+            case 'link': contextAction_msgLink(); break;
+            case 'edit': contextAction_msgEdit(); break;
+
+            case 'click':
+                $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
+                $('#contextMenuClickHelper').remove();
+                break;
+
+
             case 'url':
                 dia.full({
                     title : 'Copy URL',
                     position : 'top',
-                    content : '<iframe style="width: 100%; display: none; height: 0px;"></iframe><a href="javascript:void(0);" onclick="$(this).prev().attr(\'src\',\'' + src.replace(/\'/g, "\\'").replace(/\"/g, '\\"') + '\').show().animate({height : \'80%\'}, 500); $(this).hide();">View<br /></a><br /><input type="text" name="url" value="' + src.replace(/\"/g, '\\"') +  '" style="width: 100%;" />',
+                    content : '<iframe style="width: 100%; display: none; height: 0px;"></iframe><a href="javascript:void(0);" onclick="$(this).prev().attr(\'src\',\'' + src.replace(/\'/g, "\\'").replace(/\"/g, '\\"') + '\').show().animate({height : \'80%\'}, 500); $(this).hide(); windowDraw();">View<br /></a><br /><input type="text" name="url" value="' + src.replace(/\"/g, '\\"') +  '" style="width: 100%;" />',
                     width : 800,
                     oF : function() {
                         $('input[name=url]', this).first().focus();
                     }
                 });
                 break;
-
-            case 'delete':
-                dia.confirm({
-                    text : 'Are you sure you want to delete this message?',
-                    'true' : function() {
-                        standard.deleteMessage(roomId, messageId);
-                        $(el).parent().fadeOut();
-                    }
-                });
-                break;
-
-            case 'link': contextAction_msgLink(); break;
-
-            case 'click':
-                $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
-                $('#contextMenuClickHelper').remove();
-                break;
         }
 
         return false;
-    });*/
+    });
+
 
     if (window.userId == userId && window.permissions.editOwnPosts) {
         tag.on('dblclick', function() {
