@@ -397,6 +397,35 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
             !settings.showAvatars || bothNameAvatar ?
                 $('<span>').text(userName) : ''
         );
+
+        tag.ezpz_tooltip({
+            contentId: 'tooltext',
+            beforeShow: function(content, el) { console.log("showing...", userId);
+                content.html("");
+                content.append(
+                    $('<div style="width: 400px;">').append(
+                        $('<img style="float: left; max-height: 200px; max-width: 200px;">').attr('src', avatar)
+                    ).append(
+                        $('<span class="userName">').attr({
+                            'data-userId' : userId,
+                            'style' : userNameFormat
+                        }).text(userName)
+                    )
+                );
+
+                if (pairs[userId].userTitle)
+                    content.append($('<br>').append($('<span>').text(pairs[userId].userTitle)));
+
+                if (pairs[userId].posts)
+                    content.append($('<span><br><em>Posts</em>: </span>').append($('<span>').text(pairs[userId].posts)));
+
+                if (pairs[userId].profile)
+                    content.append($('<span><br><em>Profile</em>: </span>').append($('<a>').attr('href', pairs[userId].profile).text(pairs[userId].profile)));
+
+                if (pairs[userId].joinDate)
+                    content.append($('<span><br><em>Member Since</em>: </span>').append($('<span>').text(fim_dateFormat(pairs[userId].joinDate, {year : "numeric", month : "numeric", day : "numeric"})))); // TODO:just date
+            }
+        });
     });
 
     return tag;
@@ -511,45 +540,7 @@ function fim_newMessage(roomId, messageId, messageText) {
     }
 
 
-    /*** Hover Tooltip ***/
-    $('.userName').ezpz_tooltip({
-        contentId: 'tooltext',
-        beforeShow: function(content, el) {
-            var userId = $(el).attr('data-userId'),
-                userName = $(el).attr('data-userName'),
-                avatar = $(el).attr('data-avatar');
-
-            if (userId != $('#tooltext').attr('data-lastuserId')) {
-                $('#tooltext').attr('data-lastuserId', userId);
-
-                content.html("");
-                content.append(
-                    $('<div style="width: 400px;">').append(
-                        (typeof avatar !== "undefined" && avatar.length > 0) ? $('<img style="float: left; max-height: 200px; max-width: 200px;">').attr('src', avatar) : ''
-                    ).append(
-                        $('<span class="userName">').attr({'data-userId' : userId, 'style' : ''}).text(userName)
-                    )
-                );
-
-                fimApi.getUsers({
-                    'userIds' : [userId]
-                }, {'each' : function(userData) {
-                    if (userData.userTitle)
-                        content.append($('<br>').append($('<span>').text(userData.userTitle)))
-
-                    if (userData.posts)
-                        content.append($('<span><br><em>Posts</em>: </span>').append($('<span>').text(userData.posts)));
-
-                    if (userData.profile)
-                        content.append($('<span><br><em>Profile</em>: </span>').append($('<a>').attr('href', userData.profile).text(userData.profile)));
-
-                    if (userData.joinDate)
-                        content.append($('<span><br><em>Member Since</em>: </span>').append($('<span>').text(fim_dateFormat(userData.joinDate, {year : "numeric", month : "numeric", day : "numeric"})))); // TODO:just date
-                }});
-            }
-        }
-    });
-
+    /* ... todo whatever the fuck this is */
     $('.messageLine .messageText, .messageLine .userName, body').unbind('keydown');
 
     $('.messageLine .messageText').bind('keydown', function(e) {
