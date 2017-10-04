@@ -1309,24 +1309,132 @@ popup.prototype.help = function() {
 
 /*** START Archive ***/
 
-popup.prototype.archive = function(options) {
-    dia.full({
-        content : $t('archive'),
-        title : 'Archive',
-        id : 'archiveDialogue',
-        position : 'top',
-        width : 1000,
-        oF : function() {
-            $('#searchUser').autocompleteHelper('users')
+popup.prototype.archive = {
+    options : {
+        encrypt : 'base64',
+        searchText : '',
+        resultLimit : 40,
+        searchUser : 0,
+        firstMessage : 0,
+        page : 0,
+        roomId : 0
+    },
+
+    messageData : {},
+
+    init : function(options) {
+        var _this = this;
+
+        for (i in options) this.options[i] = options[i];
+
+        dia.full({
+            content : $t('archive'),
+            title : 'Archive',
+            id : 'archiveDialogue',
+            position : 'top',
+            width : 1000,
+            oF : function() {
+                $('#searchText, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
+
+
+                $('#searchText').bind('change', function() {
+                    _this.update('searchText', $(this).val());
+                    _this.retrieve();
+                });
+
+
+                $('#searchUser').bind('change', function() {
+                    _this.update('searchUser', $(this).attr('data-id'));
+                    _this.retrieve();
+                }).autocompleteHelper('users');
+
+
+                $('#archiveNext').bind('click', function() {
+                    _this.nextPage();
+                });
+                $('#archivePrev').bind('click', function() {
+                    _this.prevPage();
+                });
+
+
+                $('#archiveDialogue > table').on('click', '.updateArchiveHere', function() {
+                    _this.update('firstMessage', $(this).attr('data-messageId'));
+                    window.location.hash = '#room=' + _this.options.roomId + '#message=' + $(this).attr('data-messageId');
+
+                    _this.retrieve();
+                });
+
+
+                $('#export').bind('click', function() {
+                    popup.exportArchive();
+                });
+
+
+                _this.retrieve();
+            }
+        });
+    },
+
+    retrieve : function() {
+        var _this = this;
+
+        $('#archiveMessageList').html('');
+        this.messageData = {};
+
+        fimApi.getMessages({
+            'roomId' : _this.options.roomId,
+            'userIds' : [_this.options.searchUser],
+            'messageTextSearch' : _this.options.searchText,
+            'messageIdStart' : _this.options.firstMessage,
+            'archive' : 1,
+            'page' : _this.options.page
+        }, {
+            'reverseEach' : false,
+            'each' : function(messageData) {
+                $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
+                _this.messageData[messageData.id] = messageData;
+                windowDraw();
+            },
+            'end' : function(messages) {
+                if (!Object.keys(messages).length) {
+                    $('#archiveNext').button({ disabled : true });
+                }
+                else {
+                    $('#archiveNext').button({ disabled : false });
+                }
+            }
+        });
+    },
+
+    nextPage : function () {
+        $('#archivePrev').button({ disabled : false });
+
+        if (this.options.firstMessage) {
+            this.options.firstMessage -= this.options.searchLimit;
         }
-    });
+        else {
+            this.options.page++;
+        }
 
-    standard.archive.init({
-        roomId: options.roomId,
-        firstMessage: options.firstMessage
-    });
+        this.retrieve();
+    },
 
-    standard.archive.retrieve();
+    prevPage : function () {
+        if (this.options.firstMessage) {
+            this.options.firstMessage += this.options.searchLimit;
+        }
+        else if (this.options.page !== 0) this.options.page--;
+
+        if (this.options.page <= 0) {
+            $('#archivePrev').button({ disabled : true });
+        }
+
+        this.retrieve();
+    },
+
+    update : function (option, value) {
+        this.options[option] = value;
+    }
 };
 
 /*** END Archive ***/
@@ -1494,7 +1602,7 @@ popup.prototype.selectRoom = {
                 );
             },
             'end' : function() {
-                $('button.editRoomMulti, button.favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
+                $('button.editRoomMulti, button.favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being bound multiple times.
 
                 /* Favorites */
                 var roomLists = {
@@ -1534,7 +1642,7 @@ popup.prototype.selectRoom = {
                 });
 
                 $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click', function() {
-                    popup.archive({roomId : $(this).attr('data-roomId')});
+                    popup.archive.init({roomId : $(this).attr('data-roomId')});
                 });
 
                 $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {

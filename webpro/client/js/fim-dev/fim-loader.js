@@ -590,7 +590,7 @@ function fim_hashParse(options) {
     switch (page) {
         case 'archive':
             prepopup = function() {
-                popup.archive({
+                popup.archive.init({
                     'roomId' : roomId,
                     'firstMessage' : messageId - 1
                 });
@@ -1373,7 +1373,7 @@ function contextMenuParseRoom() {
                     break;
 
                 case 'edit': popup.editRoom(roomId); break;
-                case 'archive': popup.archive({roomId : roomId}); break;
+                case 'archive': popup.archive.init({roomId : roomId}); break;
                 case 'enter': standard.changeRoom(roomId); break;
             }
 
