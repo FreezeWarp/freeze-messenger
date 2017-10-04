@@ -140,10 +140,10 @@ function fim_youtubeParse($1) {
 function fim_formatAsImage(imageUrl) {
     return $('<a target="_BLANK" class="imglink">').attr('href', imageUrl).append(
         settings.disableImage ? $('<span>').text('[IMAGE]')
-            : $('<img style="max-width: 250px; max-height: 250px;" />').attr('src', imageUrl + "&" + $.param({
+            : $('<img style="max-width: 250px; max-height: 250px;" />').attr('src', imageUrl/* + "&" + $.param({
                     'thumbnailWidth' : 250,
                     'thumbnailHeight' : 250,
-                })) // todo: only for files on installI
+                })*/) // todo: only for files on installI
     ).prop('outerHTML');
 }
 
@@ -442,6 +442,21 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
         });
     };
 
+    var contextAction_msgDelete = function() {
+        dia.confirm({
+            text : 'Are you sure you want to delete this message?',
+            'true' : function() {
+                standard.deleteMessage(roomId, messageId);
+
+                $(el).parent().fadeOut();
+            }
+        });
+    }
+
+    var contextAction_msgEdit = function() {
+        $('#message' + messageId + ' .messageText').dblclick();
+    }
+
     var tag = $('<span>');
 
     tag.attr({
@@ -452,7 +467,23 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
         'tabindex': 1000
     }).append(text);
 
-    tag.find('img').each(function() { $(this).contextMenu({
+    tag.contextMenu({
+        menu: 'messageMenu',
+        altMenu : settings.disableRightClick
+    }, function(action, el) {
+        var messageId = $(el).attr('data-messageId'),
+            roomId = $(el).attr('data-roomId');
+
+        switch(action) {
+            case 'delete': contextAction_msgDelete(); break;
+            case 'link': contextAction_msgLink(); break;
+            case 'edit': contextAction_msgEdit(); break;
+        }
+
+        return false;
+    });
+
+    tag.find('img').contextMenu({
         menu: 'messageMenuImage',
         altMenu : settings.disableRightClick
     }, function(action, el) {
@@ -461,6 +492,16 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
             src = $(el).attr('src');
 
         switch(action) {
+            case 'delete': contextAction_msgDelete(); break;
+            case 'link': contextAction_msgLink(); break;
+            case 'edit': contextAction_msgEdit(); break;
+
+            case 'click':
+                $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
+                $('#contextMenuClickHelper').remove();
+                break;
+
+
             case 'url':
                 dia.full({
                     title : 'Copy Image URL',
@@ -472,58 +513,12 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
                     }
                 });
                 break;
-
-            case 'delete':
-                dia.confirm({
-                    text : 'Are you sure you want to delete this message?',
-                    'true' : function() {
-                        standard.deleteMessage(roomId, messageId);
-
-                        $(el).parent().fadeOut();
-                    }
-                });
-                break;
-
-            case 'link': contextAction_msgLink(); break;
-
-            case 'click':
-                $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
-                $('#contextMenuClickHelper').remove();
-                break;
         }
 
         return false;
-    }); }); /*
-    tag.contextMenu({
-        menu: 'messageMenu',
-        altMenu : settings.disableRightClick
-    }, function(action, el) {
-        var messageId = $(el).attr('data-messageId'),
-            roomId = $(el).attr('data-roomId');
+    });
 
-        switch(action) {
-            case 'delete':
-                dia.confirm({
-                    text : 'Are you sure you want to delete this message?',
-                    'true' : function() {
-                        standard.deleteMessage(roomId, messageId);
-                        $(el).parent().fadeOut();
-                        return false;
-                    }
-                });
-                break;
-
-            case 'link': contextAction_msgLink(); break;
-
-            case 'edit':
-                $('#message' + messageId + ' .messageText').dblclick();
-                break;
-        }
-
-        return false;
-    });*/
-
-/*    $('a:not(.imglink)', tag).contextMenu({
+    /*    $('a:not(.imglink)', tag).contextMenu({
         menu: 'messageMenuLink',
         altMenu : settings.disableRightClick
     }, function(action, el) {
@@ -564,51 +559,6 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
 
         return false;
     });*/
-
-console.log(tag.html(), tag.find('img').length);
-
-    tag.find('img').each(function(i, e) { console.log('ddd', $(this).html()); $(e).contextMenu({
-        menu: 'messageMenuImage',
-        altMenu : settings.disableRightClick
-    }, function(action, el) {
-        var messageId = $(el).parent().attr('data-messageId'),
-            roomId = $(el).parent().attr('data-roomId'),
-            src = $(el).attr('src');
-
-        switch(action) {
-            case 'url':
-                dia.full({
-                    title : 'Copy Image URL',
-                    content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px; margin-left: auto; margin-right: auto; display: block;" /><br /><br /><input type="text" name="url" value="' + src +  '" style="width: 100%;" />',
-                    width : 800,
-                    position : 'top',
-                    oF : function() {
-                        $('input[name=url]', this).first().focus();
-                    }
-                });
-                break;
-
-            case 'delete':
-                dia.confirm({
-                    text : 'Are you sure you want to delete this message?',
-                    'true' : function() {
-                        standard.deleteMessage(roomId, messageId);
-
-                        $(el).parent().fadeOut();
-                    }
-                });
-                break;
-
-            case 'link': contextAction_msgLink(); break;
-
-            case 'click':
-                $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
-                $('#contextMenuClickHelper').remove();
-                break;
-        }
-
-        return false;
-    }) });
 
     if (window.userId == userId && window.permissions.editOwnPosts) {
         tag.on('dblclick', function() {
