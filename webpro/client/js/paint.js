@@ -318,6 +318,7 @@ $.when(
 
 
     window.standard = new standard();
+    window.popup = new popup();
 
 
 
@@ -396,7 +397,7 @@ $.when(
         $('a#createRoom').bind('click', function() { popup.editRoom();}); // Create Room
         $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
         $('#icon_help').bind('click', function() { popup.help(); }); // Help
-        $('#roomList, #roomList2').bind('click', function() { popup.selectRoom(); }); // Room List
+        //$('#roomList, #roomList2').bind('click', function() { popup.selectRoom.init(); }); // Room List
         $('#viewStats').bind('click', function() { popup.viewStats(); }); // Room Post Stats
         $('#copyrightLink').bind('click', function() { popup.copyright(); }); // Copyright & Credits
         $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click', function() { popup.userSettings(); }); // User Settings

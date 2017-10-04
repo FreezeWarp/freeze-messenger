@@ -3,10 +3,12 @@
  ************** Repeat-Action Popup Methods **************
  *********************************************************/
 
-popup = {
+var popup = function() {
+    return;
+}
     /*** START Login ***/
 
-    login : function() {
+popup.prototype.login = function() {
         function login_success(activeLogin) {
             $('#loginDialogue').dialog('close'); // Close any open login forms.
 
@@ -61,102 +63,10 @@ popup = {
                 }
             }
         });
-    },
+    };
 
     /*** END Login ***/
 
-
-
-
-    /*** START Room Select ***/
-
-    selectRoom : function() {
-        dia.full({
-            content : $t('selectRoom'),
-            title : 'Room List',
-            id : 'roomListDialogue',
-            width: 1000,
-            oF : function() {
-                fimApi.getRooms({}, {
-                    'each' : function(roomData) {
-                        $('#roomTableHtml').append(
-                            $('<tr>').attr('id', 'room' + roomData.id).append(
-                                $('<td>').append(
-                                    $('<a>').attr('href','#room=' + roomData.id).text(roomData.name)
-                                ),
-                                $('<td>').text(roomData.topic),
-                                $('<td>').append(
-                                    (roomData.permissions.properties
-                                        ? $('<button>').attr('data-roomId', roomData.id).attr('class', 'editRoomMulti standard')
-                                        : ''
-                                    ), (roomData.permissions.properties
-                                        ? $('<button>').attr('data-roomId', roomData.id).attr('class', 'deleteRoomMulti standard')
-                                        : ''
-                                    ), $('<button>').attr('data-roomId', roomData.id).attr('class', 'archiveMulti standard')
-                                    , $('<button>').attr('data-roomId', roomData.id).attr('class', 'favRoomMulti standard')
-                                    , $('<button>').attr('data-roomId', roomData.id).attr('class', 'watchRoomMulti standard')
-                                )
-                            )
-                        );
-                    },
-                    'end' : function() {
-                        $('button.editRoomMulti, button.favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
-
-                        /* Favorites */
-                        var roomLists = {
-                            'favRoom' : window.activeLogin.userData.favRooms,
-                            'watchRoom' : window.activeLogin.userData.watchRooms
-                        };
-
-                        for (i in roomLists) {
-                            $('#roomTableHtml button.' + i + 'Multi').each(function() {
-                                var roomId = $(this).attr('data-roomId');
-
-                                $(this).button({
-                                    icons : {primary : (i == 'favRoom' ? 'ui-icon-star' : 'ui-icon-search')},
-                                }).bind('click', function() {
-                                    if (roomLists[i].indexOf(roomId) === -1) {
-                                        dia.info("You will now be notified of new messages made in this room.");
-                                        roomLists[i].push(roomId);
-                                        fimApi[i](roomId);
-                                        $(this).addClass("ui-state-highlight");
-                                    }
-
-                                    else {
-                                        roomLists[i].remove(roomId);
-                                        fimApi["un" + i](roomId);
-                                        $(this).removeClass("ui-state-highlight");
-                                    }
-                                });
-
-                                if (roomLists[i].indexOf(roomId) !== -1) {
-                                    $(this).addClass("ui-state-highlight");
-                                }
-                            });
-                        }
-
-                        $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
-                            popup.editRoom($(this).attr('data-roomId'));
-                        });
-
-                        $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click', function() {
-                            popup.archive({roomId : $(this).attr('data-roomId')});
-                        });
-
-                        $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
-                            if (dia.confirm("Are you sure you want to delete this room?")) {
-                                standard.deleteRoom($(this).attr('data-roomId'));
-                            }
-                        });
-
-                        windowDraw();
-                    }
-                });
-            }
-        });
-    },
-
-    /*** END Room List ***/
 
 
 
@@ -164,7 +74,7 @@ popup = {
     /*** START Insert Docs ***/
     /* Note: This dialogue will calculate only "expected" errors before submit. The rest of the errors, though we could calculate, will be left up to the server to tell us. */
 
-    insertDoc : function(preSelect) {
+popup.prototype.insertDoc = function(preSelect) {
         var selectTab;
 
         switch (preSelect) {
@@ -381,7 +291,7 @@ popup = {
         });
 
         return false;
-    },
+    };
 
     /*** END Insert Docs ***/
 
@@ -390,7 +300,7 @@ popup = {
 
     /*** START Stats ***/
 
-    viewStats : function() {
+popup.prototype.viewStats = function() {
         var number = 10;
 
         dia.full({
@@ -440,7 +350,7 @@ popup = {
                 });
             }
         });
-    },
+    };
 
     /*** END Stats ***/
 
@@ -449,7 +359,7 @@ popup = {
 
     /*** START User Settings ***/
 
-    userSettings : function() { /* TODO: Handle reset properly, and refresh the entire application when settings are changed. It used to make some sense not to, but not any more. */
+popup.prototype.userSettings = function() { /* TODO: Handle reset properly, and refresh the entire application when settings are changed. It used to make some sense not to, but not any more. */
         dia.full({
             content : $t('userSettingsForm'),
             id : 'changeSettingsDialogue',
@@ -853,7 +763,7 @@ popup = {
         });
 
         return false;
-    },
+    };
 
     /*** END User Settings ***/
 
@@ -864,7 +774,7 @@ popup = {
 
     /*** START View My Uploads ***/
 
-    viewUploads : function() {
+popup.prototype.viewUploads = function() {
         dia.full({
             content : $t('viewUploads'),
             width : 1200,
@@ -922,7 +832,7 @@ popup = {
                 });
             }
         });
-    },
+    };
 
     /*** END View My Uploads ***/
 
@@ -933,7 +843,7 @@ popup = {
 
     /*** START Create Room ***/
 
-    editRoom : function(roomId) {
+popup.prototype.editRoom = function(roomId) {
         if (roomId)
             var action = 'edit';
         else
@@ -1176,7 +1086,7 @@ popup = {
         });
 
         return false;
-    },
+    };
 
     /*** END Create Room ***/
 
@@ -1185,7 +1095,7 @@ popup = {
 
     /*** START Private Rooms ***/
 
-    privateRoom : function() {
+popup.prototype.privateRoom = function() {
         dia.full({
             content : $t('privateRoom'),
             title : 'Enter Private Room',
@@ -1222,7 +1132,7 @@ popup = {
         });
 
         return false;
-    },
+    };
 
     /*** END Private Rooms ***/
 
@@ -1231,7 +1141,7 @@ popup = {
 
     /*** START Online ***/
 
-    online : function() {
+popup.prototype.online = function() {
         dia.full({
             content : $t('online'),
             title : 'Active Users',
@@ -1268,7 +1178,7 @@ popup = {
                 })
             }
         });
-    },
+    };
 
     /*** END Online ***/
 
@@ -1277,7 +1187,7 @@ popup = {
 
     /*** START Kick Manager ***/
 
-    manageKicks : function(params) {
+popup.prototype.manageKicks = function(params) {
         var dateOptions = {year : "numeric", month : "numeric", day : "numeric", hour: "numeric", minute: "numeric", second: "numeric"};
 
         dia.full({
@@ -1320,7 +1230,7 @@ popup = {
                 });
             }
         });
-    },
+    };
 
     /*** END Kick Manager ***/
 
@@ -1329,7 +1239,7 @@ popup = {
 
     /*** START Kick ***/
 
-    kick : function() {
+popup.prototype.kick = function() {
         dia.full({
             content : $t('kick'),
             title : 'Kick User',
@@ -1371,7 +1281,7 @@ popup = {
         });
 
         return false;
-    },
+    };
 
     /*** END Kick ***/
 
@@ -1380,7 +1290,7 @@ popup = {
 
     /*** START Help ***/
 
-    help : function() {
+popup.prototype.help = function() {
         dia.full({
             content : $t('help'),
             title : 'helpDialogue',
@@ -1390,7 +1300,7 @@ popup = {
         });
 
         return false;
-    },
+    };
 
     /*** END Help ***/
 
@@ -1399,7 +1309,7 @@ popup = {
 
     /*** START Archive ***/
 
-    archive : function(options) {
+popup.prototype.archive = function(options) {
         dia.full({
             content : $t('archive'),
             title : 'Archive',
@@ -1417,14 +1327,14 @@ popup = {
         });
 
         standard.archive.retrieve();
-    },
+    };
 
     /*** END Archive ***/
 
 
 
     /* TODO: Create a seperate call? */
-    exportArchive : function() {
+popup.prototype.exportArchive = function() {
         dia.full({
             id : 'exportDia',
             content : '<form method="post" action="#" onsubmit="return false;" id="exportDiaForm">How would you like to export the data?<br /><br /><table align="center"><tr><td>Format</td><td><select id="exportFormat"><option value="bbcodetable">BBCode Table</option><option value="csv">CSV List (Excel, etc.)</option></select></td></tr><tr><td colspan="2" align="center"><button type="submit">Export</button></td></tr></table></form>',
@@ -1496,14 +1406,14 @@ popup = {
 
             return false;
         });
-    },
+    };
 
 
 
 
     /*** START Copyright ***/
 
-    copyright : function() {
+popup.prototype.copyright = function() {
         dia.full({
             content : $t('copyright'),
             title : 'copyrightDialogue',
@@ -1512,77 +1422,153 @@ popup = {
         });
 
         return false;
+    };
+
+
+popup.prototype.selectRoom = {
+    options : {
+        searchText : '',
+        page : 0
     },
 
-    /*** END Copyright ***/
+    init : function(options) {
+        var _this = this;
 
-
-
-    /*** START Editbox ***/
-    editBox : function(name, list, allowDefaults, removeCallback, addCallback) { // TODO: Move into plugins?
-        allowDefaults = allowDefaults || false;
-        removeCallback = removeCallback || function(value) { return false };
-        addCallback = addCallback || function(value) { return false };
+        for (i in options)
+            _this.options[i] = options[i];
 
         dia.full({
-            content : $t('editBox'),
-            title : 'Edit ' + $l('editBoxNames.' + name),
-            width : 400,
-            oF : function() {
-                // General
-                function remove(element) {
-                    removeCallback($(element).text());
+            content : $t('selectRoom'),
+            title : 'Room List',
+            id : 'roomListDialogue',
+            width: 1000,
+            oF: function() {
+                // TODO: names, not IDs
+                $('#permissionLevel, #roomNameSearchText, #roomListNext, #roomListPrev').unbind('change');
 
-                    $(element).remove();
-                }
+                $('#roomNameSearchText').bind('change', function() {
+                    _this.update('searchText', $(this).val());
+                    _this.retrieve();
+                });
 
-                function drawButtons() {
-                    $("#editBoxList button").button({
-                        icons: {primary : 'ui-icon-closethick'}
-                    }).bind('click', function() {
-                        remove($(this).parent());
+                $('#roomListNext').bind('click', function() {
+                    _this.nextPage();
+                });
+
+                $('#roomListPrev').bind('click', function() {
+                    _this.prevPage();
+                });
+
+                _this.retrieve();
+            }
+        });
+    },
+
+    retrieve : function() {
+        var _this = this;
+
+        $('#roomTableHtml').html('');
+
+        fimApi.getRooms({
+            page : _this.options.page
+        }, {
+            'each' : function(roomData) {
+                $('#roomTableHtml').append(
+                    $('<tr>').attr('id', 'room' + roomData.id).append(
+                        $('<td>').append(
+                            $('<a>').attr('href','#room=' + roomData.id).text(roomData.name)
+                        ),
+                        $('<td>').text(roomData.topic),
+                        $('<td>').append(
+                            (roomData.permissions.properties
+                                    ? $('<button>').attr('data-roomId', roomData.id).attr('class', 'editRoomMulti standard')
+                                    : ''
+                            ), (roomData.permissions.properties
+                                    ? $('<button>').attr('data-roomId', roomData.id).attr('class', 'deleteRoomMulti standard')
+                                    : ''
+                            ), $('<button>').attr('data-roomId', roomData.id).attr('class', 'archiveMulti standard')
+                            , $('<button>').attr('data-roomId', roomData.id).attr('class', 'favRoomMulti standard')
+                            , $('<button>').attr('data-roomId', roomData.id).attr('class', 'watchRoomMulti standard')
+                        )
+                    )
+                );
+            },
+            'end' : function() {
+                $('button.editRoomMulti, button.favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being binded multiple times.
+
+                /* Favorites */
+                var roomLists = {
+                    'favRoom' : window.activeLogin.userData.favRooms,
+                    'watchRoom' : window.activeLogin.userData.watchRooms
+                };
+
+                for (i in roomLists) {
+                    $('#roomTableHtml button.' + i + 'Multi').each(function() {
+                        var roomId = $(this).attr('data-roomId');
+
+                        $(this).button({
+                            icons : {primary : (i === 'favRoom' ? 'ui-icon-star' : 'ui-icon-search')},
+                        }).bind('click', function() {
+                            if (roomLists[i].indexOf(roomId) === -1) {
+                                dia.info("You will now be notified of new messages made in this room.");
+                                roomLists[i].push(roomId);
+                                fimApi[i](roomId);
+                                $(this).addClass("ui-state-highlight");
+                            }
+
+                            else {
+                                roomLists[i].remove(roomId);
+                                fimApi["un" + i](roomId);
+                                $(this).removeClass("ui-state-highlight");
+                            }
+                        });
+
+                        if (roomLists[i].indexOf(roomId) !== -1) {
+                            $(this).addClass("ui-state-highlight");
+                        }
                     });
                 }
 
-
-                // Populate
-                $(list).each(function(key, value) {
-                    $('#editBoxList').append($t('editBoxItem', {"value" : value}));
-                    drawButtons();
+                $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
+                    popup.editRoom($(this).attr('data-roomId'));
                 });
 
+                $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click', function() {
+                    popup.archive({roomId : $(this).attr('data-roomId')});
+                });
 
-                // Search
-                $('#editBoxSearchValue').focus().keyup(function(e) {
-                    var val = $('#editBoxSearchValue').val();
-
-                    $('#editBoxList li').show();
-
-                    if (val !== '') {
-                        $("#editBoxList li").not(":contains('" + val + "')").hide();
+                $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
+                    if (dia.confirm("Are you sure you want to delete this room?")) {
+                        standard.deleteRoom($(this).attr('data-roomId'));
                     }
                 });
 
-                $('#editBoxSearch').submit(function() { return false; });
-
-
-                // Add
-                $('#editBoxAdd').submit(function() {
-                    value = $('#editBoxAddValue').val();
-                    $('#editBoxAddValue').val('');
-
-                    $('#editBoxList').append($t('editBoxItem', {"value" : value}));
-                    drawButtons();
-
-                    addCallback(value);
-
-                    return false;
-                });
+                windowDraw();
             }
         });
-    }
+    },
 
-    /*** End Editbox ***/
+    nextPage : function () {
+        $('#archivePrev').button({ disabled : false });
+
+        this.options.page++;
+
+        this.retrieve();
+    },
+
+    prevPage : function () {
+        if (this.options.page !== 0) this.options.page--;
+
+        if (this.options.page <= 0) {
+            $('#archivePrev').button({ disabled : true });
+        }
+
+        this.retrieve();
+    },
+
+    update : function (option, value) {
+        this.options[option] = value;
+    }
 };
 
 /*********************************************************

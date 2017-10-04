@@ -177,54 +177,33 @@ fimApi.prototype.createUser = function(params, requestSettings) {
 
 
 fimApi.prototype.getRooms = function(params, requestSettings) {
-        var params = fimApi.mergeDefaults(params, {
-            'access_token' : window.sessionHash,
-            'id' : null,
-            'roomIds' : null,
-            'roomNames' : null,
-            'roomNameSearch' : null,
-            'permLevel' : null
-        });
+    var params = fimApi.mergeDefaults(params, {
+        'access_token' : window.sessionHash,
+        'id' : null,
+        'roomIds' : null,
+        'roomNames' : null,
+        'roomNameSearch' : null,
+        'permLevel' : null,
+        'page' : null
+    });
 
-        var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
-        function getRooms_query() {
-            $.ajax({
-                type: 'get',
-                url: directory + 'api/room.php',
-                data: params,
-                timeout: requestSettings.timeout,
-                cache: requestSettings.cache
-            }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
-                fimApi.getRooms(params, requestSettings)
-            }));
-        }
+    function getRooms_query() {
+        $.ajax({
+            type: 'get',
+            url: directory + 'api/room.php',
+            data: params,
+            timeout: requestSettings.timeout,
+            cache: requestSettings.cache
+        }).done(fimApi.done(requestSettings)).fail(fimApi.fail(requestSettings, function() {
+            fimApi.getRooms(params, requestSettings)
+        }));
+    }
 
-        getRooms_query();
+    getRooms_query();
 };
 
-
-    /*            var errStr = json.getMessages.errStr,
-     errDesc = json.getMessages.errDesc,
-     sentUserId = 0,
-     messageCount = 0;
-
-     if (errStr) {
-     sentUserId = json.getMessages.activeUser.userId;
-
-     if (errStr === 'noperm') {
-     roomId = false; // Clear the internal roomId.
-
-     if (sentUserId) { popup.selectRoom(); dia.error('You have been restricted access from this room. Please select a new room.'); } // You are still login, but permission has been denied for whatever reason.
-     else { popup.login(); dia.error('You are no longer logged in. Please log-in.'); } // If the API no longer recognises the login, prompt a relogin.
-     }
-     else {
-     roomId = false;
-     dia.error(errDesc);
-     }
-     }
-     else {
-     */
 
 /* Messages */
 fimApi.prototype.getMessages = function(params, requestSettings) {

@@ -1,5 +1,4 @@
 var standard = function() {
-
     return;
 }
 
@@ -331,7 +330,7 @@ standard.prototype.populateMessages = function(roomId) {
 
 standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
     if (!window.roomId) {
-        popup.selectRoom();
+        popup.selectRoom.init();
     }
     else {
         ignoreBlock = (ignoreBlock === 1 ? 1 : '');
@@ -385,7 +384,7 @@ standard.prototype.changeRoom = function(roomId) {
     }, {'each' : function(roomData) {
         if (!roomData.permissions.view) { // If we can not view the room
             window.roomId = false; // Set the global roomId false.
-            popup.selectRoom(); // Prompt the user to select a new room.
+            popup.selectRoom.init(); // Prompt the user to select a new room.
             dia.error('You have been restricted access from this room. Please select a new room.');
         }
         else if (!roomData.permissions.post) { // If we can view, but not post
