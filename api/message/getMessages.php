@@ -141,6 +141,7 @@ else {
             $xmlData['messages'][] = array_merge([
                 'text'   => ($request['encode'] == 'base64' ? base64_encode($message->text) : $message->text),
                 'userId' => $message->user->id,
+                'roomId' => $message->room->id,
             ], fim_objectArrayFilterKeys($message, ['id', 'time', 'formatting', 'flag']));
         }
     }

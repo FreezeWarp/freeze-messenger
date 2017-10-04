@@ -2178,6 +2178,7 @@ class fimDatabase extends DatabaseSQL
             'time' => $now->value,
             'flag' => $message->flag,
             'userId' => $message->user->id,
+            'roomId' => $message->room->id,
         ]);
 
 
