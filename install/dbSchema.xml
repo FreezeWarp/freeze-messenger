@@ -568,8 +568,9 @@
 
 
         <table name="socialGroups" type="general" comment="User groups.">
-            <column name="id" type="int" maxlen="6" comment="The group ID." />
+            <column name="id" autoincrement="1" type="int" maxlen="6" comment="The group ID." />
             <column name="name" type="string" maxlen="50" comment="The group name." />
+            <column name="avatar" type="string" maxlen="200" comment="The absolute URI of the group's avatar." />
             <column name="ownerId" type="int" maxlen="8" fkey="users.id" comment="The owner userID of the group." />
             <column name="creationTime" type="time" default="__TIME__" comment="Time the group was created." />
             <column name="options" type="int" maxlen="6" comment="Group options." />
@@ -582,7 +583,7 @@
 
 
         <table name="socialGroupMembers" type="general" comment="The members of groups.">
-            <column name="groupId" autoincrement="1" type="int" maxlen="6" fkey="socialGroups.id" comment="The group ID." />
+            <column name="groupId" type="int" maxlen="6" fkey="socialGroups.id" comment="The group ID." />
             <column name="userId" type="int" maxlen="8" fkey="users.id" comment="The member ID of the group." />
             <column name="type" type="enum" default="pending" restrict="member,moderator,pending,banned" comment="Whether a group member is a normal member, a moderator (able to add and remove other users from the group), or has been banned from the group (can not requested invitation)." />
 
