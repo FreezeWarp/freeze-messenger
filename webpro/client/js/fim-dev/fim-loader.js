@@ -414,17 +414,14 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
                     )
                 );
 
-                if (pairs[userId].userTitle)
-                    content.append($('<br>').append($('<span>').text(pairs[userId].userTitle)));
-
-                if (pairs[userId].posts)
-                    content.append($('<span><br><em>Posts</em>: </span>').append($('<span>').text(pairs[userId].posts)));
+                if (pairs[userId].bio)
+                    content.append($('<span>').text(pairs[userId].bio), $('<br>'));
 
                 if (pairs[userId].profile)
-                    content.append($('<span><br><em>Profile</em>: </span>').append($('<a>').attr('href', pairs[userId].profile).text(pairs[userId].profile)));
+                    content.append($('<span>').append($('<em>Profile</em>'), ': ', $('<a>').attr('href', pairs[userId].profile).text(pairs[userId].profile), $('<br>')));
 
                 if (pairs[userId].joinDate)
-                    content.append($('<span><br><em>Member Since</em>: </span>').append($('<span>').text(fim_dateFormat(pairs[userId].joinDate, {year : "numeric", month : "numeric", day : "numeric"})))); // TODO:just date
+                    content.append($('<span>').append($('<em>Member Since</em>'), ': ', $('<span>').text(fim_dateFormat(pairs[userId].joinDate, {year : "numeric", month : "numeric", day : "numeric"})), $('<br>'))); // TODO:just date
             }
         });
     });
