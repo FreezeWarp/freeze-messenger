@@ -221,6 +221,11 @@ class fimUser extends fimDynamicObject
     protected $profile;
 
     /**
+     * @var string The user's biography line.
+     */
+    protected $bio;
+
+    /**
      * @var int A bitfield of options the user has set.
      */
     protected $options;
@@ -336,7 +341,7 @@ class fimUser extends fimDynamicObject
     private static $userDataPullGroups = array(
         'id,name,privs,lastSync',
         'mainGroupId,socialGroupIds,parentalFlags,parentalAge,birthDate', // Permission flags.
-        'joinDate,messageFormatting,profile,avatar,nameFormat',
+        'joinDate,messageFormatting,profile,avatar,nameFormat,bio',
         'options,defaultRoomId',
         'passwordHash,passwordFormat',
         'fileCount,fileSize',

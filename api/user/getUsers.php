@@ -111,7 +111,7 @@ foreach ($users AS $userData) {
     $returnFields = ['name', 'id'];
 
     if (in_array('profile', $request['info']))
-        $returnFields = array_merge($returnFields, ['avatar', 'profile', 'nameFormat', 'messageFormatting', 'joinDate']);
+        $returnFields = array_merge($returnFields, ['avatar', 'profile', 'bio', 'nameFormat', 'messageFormatting', 'joinDate']);
 
     if (in_array('groups', $request['info']))
         $returnFields = array_merge($returnFields, ['mainGroupId', 'socialGroupIds']);

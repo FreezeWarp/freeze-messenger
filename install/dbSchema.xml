@@ -649,6 +649,7 @@
             <column name="scope" type="string" maxlen="4000" comment="An OAuth scope string. May or may not actually get implemented, but reserved to make things easier." />
 
             <!-- User Display -->
+            <column name="bio" type="string" maxlen="200" comment="A brief biography line describing the user. Currently only importable from login methods." />
             <column name="avatar" type="string" maxlen="200" comment="The absolute URI of the user's avatar." />
             <column name="profile" type="string" maxlen="200" comment="The absolute URI of the user's profile link or website." />
             <column name="nameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the user's name for its display." />
