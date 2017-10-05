@@ -29,58 +29,6 @@ $ignoreLogin = true;
 require('../global.php');
 
 
-/* Emoticons */
-
-/*switch($loginConfig['method']) {
-    case 'vbulletin3':
-    case 'vbulletin4':
-        $smilies = $integrationDatabase->select(array(
-                                                    "{$forumTablePrefix}smilie" => 'smilietext emoticonText, smiliepath emoticonFile',
-                                                ))->getAsArray(true);
-        break;
-
-    case 'phpbb':
-        $smilies = $integrationDatabase->select(array(
-                                                    "{$forumTablePrefix}smilies" => 'code emoticonText, smiley_url emoticonFile'
-                                                ))->getAsArray(true);
-        break;
-
-    case 'vanilla':
-        // TODO: Convert
-        $smilies = $database->select(array(
-                                         $database->sqlPrefix . "emoticons" => 'emoticonText, emoticonFile'
-                                     ))->getAsArray(true);
-        break;
-
-    default:
-        $smilies = array();
-        break;
-}
-
-
-
-if (count($smilies)) {
-    switch ($loginConfig['method']) {
-        case 'phpbb':
-            $forumUrlS = $loginConfig['url'] . 'images/smilies/';
-            break;
-
-        case 'vanilla':
-            $forumUrlS = $installUrl;
-            break;
-
-        case 'vbulletin3':
-        case 'vbulletin4':
-            $forumUrlS = $loginConfig['url'];
-            break;
-    }
-
-    foreach ($smilies AS $smilie) {
-        $smilies2[$smilie['emoticonText']] = $forumUrlS . $smilie['emoticonFile'];
-    }
-}*/
-
-
 echo new Http\ApiData(
     [
         'serverStatus' => array(
@@ -145,7 +93,6 @@ echo new Http\ApiData(
                 'color' => fimConfig::$defaultFormattingColor,
                 'italics' => fimConfig::$defaultFormattingItalics,
                 'bold' => fimConfig::$defaultFormattingBold,
-                ///'emoticons' => $smilies2,
             ),
 
             'cacheDelays' => array(
