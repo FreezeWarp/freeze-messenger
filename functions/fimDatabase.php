@@ -1949,9 +1949,11 @@ class fimDatabase extends DatabaseSQL
      *
      * @return bool|void
      */
-    public function createSocialGroup($groupName) {
-        return $this->insert($this->sqlPrefix . 'socialGroups', [
+    public function createSocialGroup($groupName, $groupAvatar) {
+        return $this->upsert($this->sqlPrefix . 'socialGroups', [
             'name' => $groupName
+        ], [
+            'avatar' => $groupAvatar
         ]);
     }
 
