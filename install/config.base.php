@@ -149,6 +149,16 @@ $loginConfig['url'] = 'http://example.com/forums/'; // The URL of the forum bein
  * In general, this should include at least yourself. Thus, 1 for vBulletin and Vanilla, and 2 for PHPBB. */
 $loginConfig['superUsers'] = array();
 
+/* $loginConfig['adminGroups']
+ * A list of groupIds who have most administrative functionality.
+ * On vBulletin, this will be the admin group, ID = 6. */
+$loginConfig['adminGroups'] = array();
+
+/* $loginConfig['bannedGroups']
+ * A list of groupIds who are "banned", and can not access the chat software.
+ * On vBulletin, this will be the banned (ID = 8) and COPPA (ID = 4) groups. */
+$loginConfig['bannedGroups'] = array();
+
 
 
 
