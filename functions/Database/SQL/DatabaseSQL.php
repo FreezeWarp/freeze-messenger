@@ -1860,6 +1860,11 @@ class DatabaseSQL extends Database
 
                 // lvalue
                 $column = ($this->startsWith($key, '!') ? substr($key, 1) : $key);
+
+                // Detect Bad Column
+                if (!isset($reverseAlias[$column]))
+                    throw new Exception("Column '$column' cannot be queried; was it in the select fields?");
+
                 $sideText['left'] = ($reverseAlias ? $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$column][0], $reverseAlias[$column][1]) : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
 
 
