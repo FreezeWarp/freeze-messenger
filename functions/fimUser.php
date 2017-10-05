@@ -583,7 +583,9 @@ class fimUser extends fimDynamicObject
 
         // Superuser override (note that any user with GRANT or in the $config superuser array is automatically given all permissions, and is marked as protected. The only way, normally, to remove a user's GRANT status, because they are automatically protected, is to do so directly in the database.)
         // LoginConfig is not guranteed to be set here (e.g. during installation), which is why we cast.
-        if (in_array($this->id, (array) $loginConfig['superUsers']) || ($this->privs & fimUser::ADMIN_GRANT))
+        if (in_array($this->id, (array) $loginConfig['superUsers'])
+            || in_array($this->mainGroupId, (array) $loginConfig['adminGroups'])
+            || ($this->privs & fimUser::ADMIN_GRANT))
             $this->privs = 0x7FFFFFFF;
         elseif ($this->privs & fimUser::ADMIN_ROOMS)
             $this->privs |= (fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.

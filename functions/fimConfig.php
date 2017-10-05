@@ -17,9 +17,6 @@ class fimConfig implements ArrayAccess {
     /** @var int */
     public static $anonymousUserMaxId = 100000;
 
-    /** @var array<int> A list of userGroup IDs that are considered "banned," and as a consequence have no permissions. Used for integration with forums, primarily. */
-    public static $bannedUserGroups = [];
-
     /** @var int The time after which a user's vanilla data is resycned with its integration data, such as adminGroups. The default of 6 hours means that if a user is banned, for instance, in a forum, it may take 6 hours for this to be reflected in the messenger. */
     public static $userSyncThreshold = 60 * 60 * 24 * 7;
 

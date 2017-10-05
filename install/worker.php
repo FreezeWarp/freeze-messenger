@@ -291,7 +291,9 @@ switch ($_REQUEST['phase']) {
 );',
             '$encrypt = true;',
             '$encryptUploads = true;',
-            '$tmpDir = \'\';'
+            '$tmpDir = \'\';',
+            '$loginConfig[\'adminGroups\'] = array()',
+            '$loginConfig[\'bannedGroups\'] = array()'
         );
 
         $replace = array(
@@ -313,7 +315,9 @@ switch ($_REQUEST['phase']) {
 );',
             '$encrypt = ' . ($enableEncrypt & 1 ? 'true' : 'false') . ';',
             '$encryptUploads = ' . ($enableEncrypt & 2 ? 'true' : 'false') . ';',
-            '$tmpDir = \'' . $tmpDir . '\';'
+            '$tmpDir = \'' . $tmpDir . '\';',
+            '$loginConfig[\'adminGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin4') ? '6' : '') . ')',
+            '$loginConfig[\'bannedGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin4') ? '4, 8' : '') . ')',
         );
 
 

@@ -250,7 +250,7 @@
         </table>
 
 
-        <table name="emoticons">
+        <!--<table name="emoticons">
             <column name="emoticonText" value=":|" />
             <column name="emoticonFile" value="webpro/client/smilies/icon_neutral.gif" />
         </table>
@@ -269,7 +269,7 @@
         <table name="emoticons">
             <column name="emoticonText" value=":D" />
             <column name="emoticonFile" value="webpro/client/smilies/icon_e_biggrin.gif" />
-        </table>
+        </table>-->
 
 
         <!-- Table users -->

@@ -1492,6 +1492,9 @@ class fimDatabase extends DatabaseSQL
                 return $permissionsCached;
 
 
+            global $loginConfig;
+
+
             /* Resolve Needed User Parameters */
             if (!$user->resolve(array('socialGroupIds', 'parentalAge', 'parentalFlags')))
                 throw new Exception('hasPermission was called without a valid user.'); // Make sure we know the room type and alias in addition to ID.
@@ -1507,7 +1510,7 @@ class fimDatabase extends DatabaseSQL
                 $returnBitfield = 65535;
 
             // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
-            elseif (in_array($user->mainGroupId, fimConfig::$bannedUserGroups))
+            elseif (in_array($user->mainGroupId, $loginConfig['bannedGroups']))
                 $returnBitfield = 0;
 
             // Owners have all permissions (but can still be banned).
