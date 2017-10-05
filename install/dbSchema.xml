@@ -99,9 +99,10 @@
             <column name="emoticonId" type="int" maxlen="8" autoincrement="1" comment="Emoticon ID." />
             <column name="emoticonText" type="string" maxlen="20" comment="Text to find." />
             <column name="emoticonFile" type="string" maxlen="1000" comment="Image source." />
-            <column name="context" type="string" maxlen="20" default="imageReplace" comment="How to parse emoticon. ('imageReplace' only current option.)" />
+            <column name="context" type="enum" restrict="imageReplace" maxlen="20" default="imageReplace" comment="How to parse emoticon. ('imageReplace' only current option.)" />
 
             <key name="emoticonId" type="primary" />
+            <key name="emoticonText" type="unique" />
         </table>
 
 
