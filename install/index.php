@@ -304,13 +304,13 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 <td>On Ubuntu: <pre>sudo apt-get install curl libcurl3 libcurl3-dev php-curl</pre><br />
                     On Windows: Compile APC, or find the plugin matching your version of PHP at <a href="http://dev.freshsite.pl/php-accelerators/apc.html">http://dev.freshsite.pl/php-accelerators/apc.html</a>.</td>
             </tr>
-            <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_MCRYPT ? 'uninstalledFlag' : 'installedFlag'); ?>">
+            <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_OPENSSL ? 'uninstalledFlag' : 'installedFlag'); ?>">
                 <td>OpenSSL (and AES-256-CTR cipher)</td>
                 <td>n/a</td>
                 <td><?php echo phpversion('openssl'); ?></td>
-                <td><abbr title="Without MCrypt, message encryption will be disabled.">Message Encryption</abbr></td>
-                <td>On Ubuntu: <pre>sudo apt-get install php-mcrypt</pre><br />
-                    On Windows: Install PHP 5.3, or see <a href="http://php.net/manual/en/mcrypt.requirements.php">http://php.net/manual/en/mcrypt.requirements.php</a></td>
+                <td><abbr title="Without OpenSSL, message encryption will be disabled.">Message Encryption</abbr></td>
+                <td>On Ubuntu: <pre>sudo apt-get install php-openssl</pre><br />
+                    On Windows: Install PHP, or see <a href="http://php.net/manual/en/openssl.requirements.php">http://php.net/manual/en/openssl.requirements.php</a></td>
             </tr>
             <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_MBSTRING ? 'uninstalledFlag' : 'installedFlag'); ?>">
                 <td>MB String</td>
@@ -443,10 +443,12 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                     <td><strong>Database Name</strong></td>
                     <td><input id="db_database" type="text" name="db_database" /><br /><small>The name of the database FreezeMessenger's data will be stored in. <strong>If you are integrating with a forum, this must be the same database the forum uses.</strong></small></td>
                 </tr>
+                <label for="db_createdb">
                 <tr>
                     <td><strong>Create Database?</strong></td>
                     <td><input type="checkbox" name="db_createdb" /><small>This will not overwrite existing databases. You are encouraged to create the database yourself, as otherwise default permissions, etc. will be used (which is rarely ideal).</small></td>
                 </tr>
+                </label>
                 </tbody>
                 <thead>
                 <tr class="ui-widget-header">
@@ -465,10 +467,12 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 </tr>
                 </thead>
                 <tbody>
+                <label for="db_usedev">
                 <tr>
                     <td><strong>Insert Developer Data</strong></td>
                     <td><input type="checkbox" name="db_usedev" /><small>This will populate the database with test data. Generally only meant for the developers, you could also probably use this to test drive FreezeMessenger.</small></td>
                 </tr>
+                </label>
                 </tbody>
             </table>
         </form><br /><br />
