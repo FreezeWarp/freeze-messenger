@@ -153,6 +153,7 @@ public class MessengerAPI {
             }
 
             if (json.has("userData")) {
+                user.setId(json.get("userData").get("id").asInt());
                 user.setName(json.get("userData").get("name").asText());
                 permissions = mapper.treeToValue(json.get("userData").get("permissions"), UserPermissions.class); // TODO
             }

@@ -18,14 +18,14 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
+import javafx.scene.text.*;
 import javafx.util.Callback;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static javafx.scene.text.TextAlignment.LEFT;
+import static javafx.scene.text.TextAlignment.RIGHT;
 
 public class MainPane {
     @FXML
@@ -180,7 +180,6 @@ public class MainPane {
         });
     }
 
-
     /**
      * Runner to check for new messages.
      */
@@ -216,7 +215,21 @@ public class MainPane {
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
-                            messageList.getChildren().add(new TextFlow(user.getAvatarImageView(), userName, new Text(" @ "), messageTime, new Text(": "), messageText));
+
+                            TextFlow t;
+                            if(MessengerAPI.user.getId() == userId) {
+
+
+                                t = new TextFlow(messageText, new Text(": "), user.getAvatarImageView());
+                                t.setTextAlignment(RIGHT);
+                            }
+
+                            else{
+                                t = new TextFlow(user.getAvatarImageView(), userName, new Text(": "), messageText);
+                                t.setTextAlignment(LEFT);
+                            }
+                            messageList.getChildren().add(t);
+
                         }
                     });
 
