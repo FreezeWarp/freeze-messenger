@@ -2,6 +2,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -105,6 +106,13 @@ public class MainPane {
 
 
     public void initialize() {
+
+        messageList.heightProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldvalue, Object newValue) {
+                messageListScroll.setVvalue(1.0);;
+            }
+        });
         /* UserList SetUp */
         // Bind the username column to the "name" property from a User object.
         username.setCellValueFactory(new PropertyValueFactory<User, String>("name"));
@@ -184,6 +192,9 @@ public class MainPane {
      * Runner to check for new messages.
      */
     class RefreshMessages extends TimerTask {
+
+
+
         public void run() {
             JsonNode messages = GUIDisplay.api.getMessages(currentRoom.getId(), currentRoom.getLastMessageId(), !currentRoom.isArchiveFetched());
 
@@ -229,6 +240,7 @@ public class MainPane {
                                 t.setTextAlignment(LEFT);
                             }
                             messageList.getChildren().add(t);
+                            messageListScroll.setVvalue(1.0);
 
                         }
                     });
