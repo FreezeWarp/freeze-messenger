@@ -22,7 +22,7 @@ use GuzzleHttp;
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-class curlRequest {
+class CurlRequest {
     /**
      * @var string The response populated after a request.
      */
@@ -197,14 +197,14 @@ class curlRequest {
 
 
     public static function quickRunPOST($apiFile, $dataHead, $dataBody) {
-        $curl = new curlRequest($apiFile, $dataHead, $dataBody);
+        $curl = new CurlRequest($apiFile, $dataHead, $dataBody);
         $curl->executePOST();
         return $curl->getAsJson();
     }
 
 
     public static function quickRunGET($apiFile, $data) {
-        $curl = new curlRequest($apiFile, $data);
+        $curl = new CurlRequest($apiFile, $data);
         $curl->executeGET();
         return $curl->getAsJson();
     }

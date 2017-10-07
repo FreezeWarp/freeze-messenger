@@ -174,7 +174,7 @@
                     $crA['birthdate'] = mktime(null, null, null, $_POST['birthmonth'], $_POST['birthday'], $_POST['birthyear']);
                 }
 
-                $cr = new Http\curlRequest($crA, '/api/sendUser.php');
+                $cr = new Http\CurlRequest($crA, '/api/sendUser.php');
 
                 if (!$cr->execute()) {
                     echo 'The request could not be completed (Server Error). Its response is below: ' . $cr->response;

@@ -210,7 +210,7 @@ if ($requestHead['_action'] === 'edit') {
             elseif (filter_var($request['avatar'], FILTER_VALIDATE_URL) === FALSE)
                 $xmlData['editUserOptions']['avatar'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->getArray();
 
-            elseif (!Http\curlRequest::exists($request['avatar']))
+            elseif (!Http\CurlRequest::exists($request['avatar']))
                 $xmlData['editUserOptions']['avatar'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->getArray();
 
             else {
@@ -248,7 +248,7 @@ if ($requestHead['_action'] === 'edit') {
                 || (fimConfig::$profileMustNotMatchRegex && preg_match(fimConfig::$profileMustNotMatchRegex, $request['profile'])))
                 $xmlData['editUserOptions']['profile'] = (new fimError('bannedUrl', 'The URL specified is not allowed.', null, true))->getArray();
 
-//            elseif (!Http\curlRequest::exists($request['profile']))
+//            elseif (!Http\CurlRequest::exists($request['profile']))
 //                $xmlData['editUserOptions']['profile'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->getArray();
 
             else

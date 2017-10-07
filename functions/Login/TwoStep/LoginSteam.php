@@ -36,7 +36,7 @@ class LoginSteam extends LoginTwoStep {
 
             if (isset($loginConfig['extraMethods']['steam']['clientId'])) {
                 /* Get User Info & Create Account */
-                $userInfo = \Http\curlRequest::quickRunGET('http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/', [
+                $userInfo = \Http\CurlRequest::quickRunGET('http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/', [
                     'key' => $loginConfig['extraMethods']['steam']['clientId'],
                     'steamids' => $steamId,
                 ])['response']['players'][0];
@@ -63,7 +63,7 @@ class LoginSteam extends LoginTwoStep {
 
 
                 /* Lookup Games the User Plays */
-                $games = \Http\curlRequest::quickRunGET('http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/', [
+                $games = \Http\CurlRequest::quickRunGET('http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/', [
                     'key' => $loginConfig['extraMethods']['steam']['clientId'],
                     'steamid' => $steamId,
                     'format' => 'json',
@@ -73,7 +73,7 @@ class LoginSteam extends LoginTwoStep {
                 if (isset($games['response']['games'])) {
                     $groupNames = [];
                     foreach ($games['response']['games'] AS $game) {
-                        if ($game['playtime_forever'] > 0) {
+                        if ($game['playtime_forever'] > 0) { 
                             // TODO: group icon
                             // img_icon_url
 
@@ -97,7 +97,7 @@ class LoginSteam extends LoginTwoStep {
 
 
                 /* Lookup Steam Friends */
-                $friends = \Http\curlRequest::quickRunGET('http://api.steampowered.com/ISteamUser/GetFriendList/v0001/', [
+                $friends = \Http\CurlRequest::quickRunGET('http://api.steampowered.com/ISteamUser/GetFriendList/v0001/', [
                     'key' => $loginConfig['extraMethods']['steam']['clientId'],
                     'steamid' => $steamId,
                     'format' => 'json',

@@ -141,7 +141,7 @@ function curlTestGETEquals($path, $params, $jsonIndex, $expectedValue, $callback
     global $host;
     echo '<td>' . $path . '?' . http_build_query($params) . '</td>';
 
-    $request = (new Http\curlRequest("{$host}{$path}", $params));
+    $request = (new Http\CurlRequest("{$host}{$path}", $params));
     $request->executeGET();
 
     echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
@@ -153,7 +153,7 @@ function curlTestGETEqualsMulti($path, $params, $jsonIndexes, $expectedValues, $
     global $host;
     echo '<td>' . $path . '?' . http_build_query($params) . '</td>';
 
-    $request = (new Http\curlRequest("{$host}{$path}", $params));
+    $request = (new Http\CurlRequest("{$host}{$path}", $params));
     $request->executeGET();
 
     echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
@@ -165,7 +165,7 @@ function curlTestPOSTEquals($path, $params, $body, $jsonIndex, $expectedValue, $
     global $host;
     echo '<td>' . $path . '?' . http_build_query($params) . '<br />' . http_build_query($body) . '</td>';
 
-    $request = (new Http\curlRequest("{$host}{$path}", $params, $body));
+    $request = (new Http\CurlRequest("{$host}{$path}", $params, $body));
     $request->executePOST();
 
     echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';
@@ -177,7 +177,7 @@ function curlTestPOSTEqualsMulti($path, $params, $body, $jsonIndexes, $expectedV
     global $host;
     echo '<td>' . $path . '?' . http_build_query($params) . '<br />' . http_build_query($body) . '</td>';
 
-    $request = (new Http\curlRequest("{$host}{$path}", $params, $body));
+    $request = (new Http\CurlRequest("{$host}{$path}", $params, $body));
     $request->executePOST();
 
     echo '<td><textarea style="width: 400px; height: 150px; font-size: .6em;">' . formatOutput($request->response) . '</textarea></td>';

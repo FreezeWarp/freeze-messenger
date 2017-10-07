@@ -33,7 +33,7 @@ if (isset($_GET['do']) && $_GET['do'] === 'logout') {
 }
 
 elseif (isset($_POST['webproModerate_userName'])) {
-    $cr = new Http\curlRequest($installUrl . '/validate.php', [], ['client_id' => 'WebProAdmin', 'grant_type' => 'password', 'username' => $_POST['webproModerate_userName'], 'password' => $_POST['webproModerate_password']]);
+    $cr = new Http\CurlRequest($installUrl . '/validate.php', [], ['client_id' => 'WebProAdmin', 'grant_type' => 'password', 'username' => $_POST['webproModerate_userName'], 'password' => $_POST['webproModerate_password']]);
 
      try {
          $cr->executePOST();
