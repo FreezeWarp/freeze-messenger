@@ -38,7 +38,7 @@
         <table name="configuration" type="general" comment="Configuration directives.">
             <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
             <column name="value" type="string" maxlen="10000" comment="The current value of the configuration directive." />
-            <column name="type" type="enum" restrict="integer,float,string,bool,array,associative" comment="A typecast to be applied to the value after being retrieved. Bool and array behave slightly different, however: bool converts 'true' and '1' to true but everything else to false, while array splits a string using an escape-capable string split function." />
+            <column name="type" type="enum" restrict="int,float,string,bool,json" comment="A typecast to be applied to the value after being retrieved." />
 
             <key name="directive" type="primary" />
         </table>

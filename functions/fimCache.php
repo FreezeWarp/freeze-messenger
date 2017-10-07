@@ -26,30 +26,19 @@ use Cache\CacheFactory;
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 class fimCache extends CacheFactory {
-    private $defaultConfigFile;
-    private $memory = array(); // Whenever the cache is retrieved, we store it in memory for the duration of the script's execution
-    protected $database = false;
     protected $slaveDatabase = false;
 
 
 
-    /** Sets the defaultConfigFile, and checks to ensure a database exists.
-     *
-     * @param string method - The database method, required by fimCache's construct.
-     * @param mixed servers - The server information we are using, mainly for memcached. Obviously, if we aren't using memcached, there won't really be anything here.
-     * @param object Database - A fimDatabase object to use for queries.
-     * @param object slaveDatabase - A fimData object to use for slave-enabled queries.
+    /**
+     * @param fimDatabase $database
      */
-    function __construct($method, $servers, $database, $slaveDatabase = false) {
-        parent::__construct($method, $servers);
-
+    function __construct($database) {
         if (!$database) {
             throw new Exception('No database provided');
         }
-        else {
-            $this->database = $database;
-            $this->slaveDatabase = $slaveDatabase ? $slaveDatabase : $database;
-        }
+
+        $this->slaveDatabase = $database;
     }
 
 
@@ -72,6 +61,36 @@ class fimCache extends CacheFactory {
         }
 
         return $array;
+    }
+
+
+    public function loadFimConfig() {
+        global $disableConfig;
+
+        if (!$disableConfig) {
+            if ($this->exists('fim_config')) {
+                $configData = $this->get('fim_config');
+            }
+            else {
+                $configData = $this->slaveDatabase->getConfigurations()->getAsArray(true);
+                $this->set('fim_config', $configData);
+            }
+
+            foreach ($configData AS $configDatabaseRow) {
+                switch ($configDatabaseRow['type']) {
+                    case 'int':
+                    case 'string':
+                    case 'float':
+                    case 'bool':
+                        fimConfig::${$configDatabaseRow['directive']} = fim_cast($configDatabaseRow['type'], $configDatabaseRow['value']);
+                        break;
+
+                    case 'json':
+                        fimConfig::${$configDatabaseRow['directive']} = (array) json_decode($configDatabaseRow['value']);
+                        break;
+                }
+            }
+        }
     }
 
 

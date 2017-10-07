@@ -5,7 +5,7 @@
 /**
  * The fimConfig class is used to reference all configuration variables. It is not currently optimised, but we may eventually cache config variables seperately, lowering the memory footprint.
  */
-class fimConfig implements ArrayAccess {
+class fimConfig {
     /** @var int A bitfield consisting of some combination of fimUser::USER_PRIV_VIEW, fimUser::USER_PRIV_POST, fimUser::USER_PRIV_TOPIC, fimUser::USER_PRIV_CREATE_ROOMS, fimUser::USER_PRIV_PRIVATE_FRIENDS, fimUser::USER_PRIV_PRIVATE_ALL, fimUser::USER_PRIV_ACTIVE_USERS, and fimUser::USER_PRIV_POST_COUNTS. fimUser::USER_PRIV_TOPIC and fimUser::USER_PRIV_PRIVATE_ALL are omitted by default. */
     public static $defaultUserPrivs = fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_CREATE_ROOMS | fimUser::USER_PRIV_PRIVATE_FRIENDS | fimUser::USER_PRIV_ACTIVE_USERS | fimUser::USER_PRIV_POST_COUNTS;
 
@@ -624,51 +624,5 @@ class fimConfig implements ArrayAccess {
 
     public static $recaptchaPublicKey = '';
     public static $recaptchaPrivateKey = '';
-
-
-    /**
-     * Retrieve and store configuration data into cache.
-     * The database is stored as $config[index].
-     *
-     * @param mixed index -- If false, all configuration information will be returned. Otherwise, will return the value of the index specified.
-     *
-     * @global bool disableConfig - If true, only the default cache will be used (note that the configuration will not be cahced so long as disableConfig is in effect -- it will need to be disabled ASAP). This I picked up from vBulletin, and it makes it possible to disable the database-stored configuration if something goes horribly wrong.
-     *
-     * @return mixed -- The config array if no index is specified, otherwise the formatted config value corresponding to the index (this may be an array, but due to the nature of $config, we will not support going two levels in).
-     *
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    public function getConfig($index = null) {
-        // sure, we'd get this same error if notices were on, but I'm an idiot who has too many notices to be able to do that.
-        if ($index && !isset($this->container[$index])) {
-            throw new Exception('Invalid config entry requested: ' . $index);
-        }
-
-        return $this->container[$index];
-    }
-
-
-
-
-    public function offsetSet($offset, $value) {
-        throw new Exception('Configuration directives may not be set.');
-    }
-
-    public function offsetExists($offset) {
-        return property_exists($this, $offset);
-    }
-
-    public function offsetUnset($offset) {
-        throw new Exception('Configuration directives may not be unset.');
-    }
-
-    public function offsetGet($offset) {
-        if (!property_exists($this, $offset))
-            throw new Exception('Invalid config entry requested: ' . $offset);
-
-        return $this::${$offset};
-    }
 }
-
-require('fimConfigFactory.php');
 ?>

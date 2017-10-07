@@ -33,7 +33,7 @@ else {
 
         'type' => array(
             'cast' => 'string',
-            'valid' => array('integer', 'bool', 'string', 'float', 'array', 'associative'),
+            'valid' => array('int', 'bool', 'string', 'float', 'json'),
         ),
     ));
 
@@ -113,11 +113,10 @@ else {
       <td>
         ' . fimHtml_buildSelect('type', array(
                         'bool' => 'Boolean',
-                        'integer' => 'Integer',
+                        'int' => 'Integer',
                         'float' => 'Float',
                         'string' => 'String',
-                        'array' => 'Array',
-                        'associative' => 'Associative Array',
+                        'json' => 'JSON (for arrays)',
                     ), $config2['type']) . '<br />
         <small>This is the type of the variable when interpreted. It should not normally be altered.</small>
       </td>
@@ -126,7 +125,6 @@ else {
       <td>Value:</td>
       <td>
         ' . $valueBlock . '<br />
-        <small>Note that for array types, values should be entered using comma-separated notation. You can escape commas in entries by prepending a "\".</small>
       </td>
     </tr>
   </table>

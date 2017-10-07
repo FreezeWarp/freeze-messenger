@@ -14,6 +14,11 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * @global $cacheConnectMethods array
+ * @global $loginConfig array
+ * @global $dbConfig array
+ */
 
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
 
@@ -110,7 +115,7 @@ if ($loginConfig['method'] != 'vanilla') {
         $dbConnect['integration']['database'],
         $dbConnect['integration']['driver'],
         $dbConfig['integration']['tablePrefix'])) { // Connect to MySQL
-        die('Could not connect to the integration database: ' . $database->error . '; the application has exitted.');
+        die('Could not connect to the integration database: ' . $database->getLastError() . '; the application has exitted.');
     }
 }
 else {
@@ -130,7 +135,7 @@ if ($dbConnect['core'] != $dbConnect['slave']) {
         $dbConnect['slave']['database'],
         $dbConnect['slave']['driver'],
         $dbConfig['vanilla']['tablePrefix'])) { // Connect to MySQL
-        die('Could not connect to the slave database: ' . $database->error . '; the application has exitted.');
+        die('Could not connect to the slave database: ' . $database->getLastError() . '; the application has exitted.');
     }
 }
 else {
@@ -147,13 +152,13 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 /* Only small tables are cached this way. */
 
 // Initiate cache object.
-$generalCache = new fimCache(null, null, $database, $slaveDatabase);
+$generalCache = new fimCache($slaveDatabase);
 foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
     $generalCache->addMethod($cacheConnectName, $cacheConnectParams);
 }
 
 // Get Configuration Data
-fimConfigFactory::init($slaveDatabase);
+$generalCache->loadFimConfig();
 
 
 $database->queryLogToFile = (fimConfig::$logQueries ? fimConfig::$logQueriesFile : false);

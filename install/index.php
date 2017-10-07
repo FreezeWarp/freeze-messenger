@@ -553,8 +553,9 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                     <td><strong>Cache Method</strong></td>
                     <td><select name="cache_method">
                             <option value="disk">Disk Cache</option>
-                            <?php echo (extension_loaded('apc') || extension_loaded('apcu') ? '<option value="apc" selected="selected">APC</option>' : '') .
-                                (extension_loaded('memcache') ? '<option value="memcache">MemCache</option>' : '') ?>
+                            <?php echo (extension_loaded('apc') ? '<option value="apc" selected="selected">APC</option>' : '') .
+                                (extension_loaded('apcu') ? '<option value="apcu" selected="selected">APCi</option>' : '') .
+                                (extension_loaded('memcached') ? '<option value="memcached">Memcached</option>' : '') ?>
                         </select><br /><small>The primary cache to use. Only available caches are listed. We strongly recommend APC if you are able to use it. (Dev Note: Memcached will be available in Beta 5.)</td>
                 </tr>
                 <tr>

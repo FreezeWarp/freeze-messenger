@@ -31,21 +31,6 @@ namespace Cache;
 class CacheFactory {
     public $methods = [];
 
-    /**
-     * Initialises class.
-     *
-     * @param string method - Cache method to use (will guess if not provided).
-     * @param array servers - Servers used for Memcached. (not yet supported).
-     * @return void
-     *
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    public function __construct($method = false, $servers = false) {
-        if ($method) {
-            $this->addMethod($method, $servers);
-        }
-    }
-
 
     public function addMethod($method, $servers) {
         global $tmpDir;
@@ -64,8 +49,16 @@ class CacheFactory {
                 new \fimError('cacheMisconfigured', "Caches are currently misconfigured: A cache method, $method, is installed on this server, but appears to be named incorrectly.");
             }
             else {
-                $method = new $classNameSpaced($servers);
-                $this->methods[$method->getCacheType()] = $method;
+                /**
+                 * @var CacheInterface
+                 */
+                $methodObject = new $classNameSpaced($servers);
+
+                if (!$methodObject::available()) {
+                    throw new \Exception("The cache method '$method' cannot be loaded, as the system does not support it.");
+                }
+
+                $this->methods[$methodObject->getCacheType()] = $methodObject;
             }
         }
     }
