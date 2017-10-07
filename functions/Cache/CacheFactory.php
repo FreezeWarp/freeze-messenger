@@ -81,18 +81,19 @@ class CacheFactory {
                     ?? null;
                 break;
 
-            case 'apc':
-            case 'apcu':
-            case CacheInterface::CACHE_TYPE_MEMORY:
-                return $this->methods[CacheInterface::CACHE_TYPE_MEMORY]
-                    ?? $this->methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
-                    ?? null;
-
             case 'disk':
             case CacheInterface::CACHE_TYPE_DISK:
                 return $this->methods[CacheInterface::CACHE_TYPE_MEMORY]
                     ?? $this->methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
                     ?? $this->methods[CacheInterface::CACHE_TYPE_DISK]
+                    ?? null;
+
+            case 'apc':
+            case 'apcu':
+            case CacheInterface::CACHE_TYPE_MEMORY:
+            default:
+                return $this->methods[CacheInterface::CACHE_TYPE_MEMORY]
+                    ?? $this->methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
                     ?? null;
         }
     }
