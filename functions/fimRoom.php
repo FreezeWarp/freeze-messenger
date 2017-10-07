@@ -106,7 +106,7 @@ class fimRoom extends fimDynamicObject {
      * When a private room is outright disabled, and should not be readable even by its member users.
      * This is typically the state of the room when one member does not exist, or private rooms are disabled entirely.
      */
-    const PRIVATE_ROOM_STATE_DISABLED = 'readOnly';
+    const PRIVATE_ROOM_STATE_DISABLED = 'disabled';
 
 
     
@@ -457,10 +457,7 @@ class fimRoom extends fimDynamicObject {
         if (!$this->isPrivateRoom())
             throw new Exception('Call to fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
 
-        if ($this->privateMembersCompatible !== null) {
-
-        }
-        return ;
+        return (count($this->getPrivateRoomMembers()) === count($this->getPrivateRoomMemberIds()));
     }
 
     /**
@@ -480,6 +477,9 @@ class fimRoom extends fimDynamicObject {
 
         if ($this->privateRoomState !== null)
             return $this->privateRoomState;
+
+        else if (!$this->arePrivateRoomMembersValid())
+            return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_DISABLED;
 
         else {
             // Disallow OTR rooms if disabled.
