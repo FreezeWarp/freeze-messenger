@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Rectangle2D?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -64,30 +66,40 @@
                     </ScrollPane>
                </children>
             </GridPane>
-            <GridPane maxWidth="200.0" minWidth="200.0" GridPane.columnIndex="2" GridPane.valignment="CENTER">
+            <GridPane GridPane.columnIndex="2" GridPane.valignment="CENTER">
               <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="100.0" prefWidth="100.0" />
               </columnConstraints>
               <rowConstraints>
-                  <RowConstraints maxHeight="292.0" minHeight="10.0" prefHeight="45.0" vgrow="SOMETIMES" />
-                <RowConstraints maxHeight="577.0" minHeight="10.0" prefHeight="555.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="50.0" minHeight="50.0" prefHeight="50.0" valignment="CENTER" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
               </rowConstraints>
 
                 <!-- Start tableview userList (right side) - Mike -->
 
                <children>
-                  <TableView fx:id="userList" prefHeight="549.0" prefWidth="196.0" styleClass="hide-header" stylesheets="@FXcss.css" GridPane.rowIndex="1">
+                  <TableView fx:id="userList" styleClass="hide-header" stylesheets="@FXcss.css" GridPane.rowIndex="1">
                     <columns>
                       <TableColumn fx:id="avatar" prefWidth="58.0" text="Avatar" />
                       <TableColumn fx:id="username" prefWidth="137.0" text="Username" />
                     </columns>
                   </TableView>
-                  <ButtonBar prefHeight="40.0" prefWidth="200.0">
-                    <buttons>
-                      <Button minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" styleClass="buttons" stylesheets="@FXcss.css" text="WIP" />
-                        <Button layoutX="46.0" layoutY="20.0" mnemonicParsing="false" styleClass="buttons" stylesheets="@FXcss.css" text="WIP" />
-                    </buttons>
-                  </ButtonBar>
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                     <children>
+                        <Button fx:id="settings" alignment="CENTER" contentDisplay="CENTER" graphicTextGap="0.0" mnemonicParsing="false" textAlignment="CENTER" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="9.0">
+                           <graphic>
+                              <ImageView accessibleRole="BUTTON" fitHeight="50.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" GridPane.rowIndex="1">
+                                 <image>
+                                    <Image url="@Images/setttings_gear.png" />
+                                 </image>
+                                 <viewport>
+                                    <Rectangle2D width="100.0" />
+                                 </viewport>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                     </children>
+                  </AnchorPane>
                </children>
             </GridPane>
         </children>

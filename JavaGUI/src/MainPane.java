@@ -2,6 +2,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,14 +19,14 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
+import javafx.scene.text.*;
 import javafx.util.Callback;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static javafx.scene.text.TextAlignment.LEFT;
+import static javafx.scene.text.TextAlignment.RIGHT;
 
 public class MainPane {
     @FXML
@@ -105,6 +106,13 @@ public class MainPane {
 
 
     public void initialize() {
+
+        messageList.heightProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldvalue, Object newValue) {
+                messageListScroll.setVvalue(1.0);;
+            }
+        });
         /* UserList SetUp */
         // Bind the username column to the "name" property from a User object.
         username.setCellValueFactory(new PropertyValueFactory<User, String>("name"));
@@ -180,11 +188,13 @@ public class MainPane {
         });
     }
 
-
     /**
      * Runner to check for new messages.
      */
     class RefreshMessages extends TimerTask {
+
+
+
         public void run() {
             JsonNode messages = GUIDisplay.api.getMessages(currentRoom.getId(), currentRoom.getLastMessageId(), !currentRoom.isArchiveFetched());
 
@@ -216,7 +226,22 @@ public class MainPane {
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
-                            messageList.getChildren().add(new TextFlow(user.getAvatarImageView(), userName, new Text(" @ "), messageTime, new Text(": "), messageText));
+
+                            TextFlow t;
+                            if(MessengerAPI.user.getId() == userId) {
+
+
+                                t = new TextFlow(messageText, new Text(": "), user.getAvatarImageView());
+                                t.setTextAlignment(RIGHT);
+                            }
+
+                            else{
+                                t = new TextFlow(user.getAvatarImageView(), userName, new Text(": "), messageText);
+                                t.setTextAlignment(LEFT);
+                            }
+                            messageList.getChildren().add(t);
+                            messageListScroll.setVvalue(1.0);
+
                         }
                     });
 
