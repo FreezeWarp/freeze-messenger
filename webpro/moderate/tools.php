@@ -51,18 +51,18 @@ else {
                 }
 
                 foreach ($generalCache->methods AS $method) {
-                    echo container('Cache Dump: ' . $method, '<pre>' . print_r($generalCache->dump($method), true) . '</pre>');
+                    echo container('Cache Dump: ' . get_class($method), '<pre>' . print_r($generalCache->dump($method), true) . '</pre>');
                 }
 
                 echo '<br />';
-                echo container('Contents of fim_fimUser_1 Cache Entry', '<pre>' . print_r($generalCache->get('fim_fimUser_1'), true) . '</pre>');
+                echo container('Contents of fimConfig', '<pre>' . print_r((new ReflectionClass('fimConfig'))->getStaticProperties(), true) . '</pre>');
                 echo '<br />';
-                echo container('Contents of fim_activeCensorWords_1 Cache Entry', '<pre>' . print_r($generalCache->get('fim_activeCensorWords_1'), true) . '</pre>');
+                echo container('Contents of fim_fimUser_1 Cache Entry', '<pre>' . print_r(@$generalCache->get('fim_fimUser_1'), true) . '</pre>');
+                echo '<br />';
+                echo container('Contents of fim_activeCensorWords_1 Cache Entry', '<pre>' . print_r(@$generalCache->get('fim_activeCensorWords_1'), true) . '</pre>');
                 break;
 
             case 'clearCache':
-                $config->disableDestruction();
-
                 if ($generalCache->clearAll())
                     echo container('Cache Cleared','The cache has been cleared.<br /><br /><form action="moderate.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
 

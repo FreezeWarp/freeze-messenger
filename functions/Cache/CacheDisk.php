@@ -57,6 +57,6 @@ class CacheDisk implements CacheInterface {
     }
 
     public function dump() {
-        return "";
+        return $this->instance->dumpAll();
     }
 }

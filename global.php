@@ -153,7 +153,7 @@ foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
 }
 
 // Get Configuration Data
-$config = fimConfigFactory::init($slaveDatabase);
+fimConfigFactory::init($slaveDatabase);
 
 
 $database->queryLogToFile = (fimConfig::$logQueries ? fimConfig::$logQueriesFile : false);

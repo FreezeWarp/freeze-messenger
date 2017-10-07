@@ -81,19 +81,20 @@ class CacheFactory {
                     ?? null;
                 break;
 
-            case 'disk':
-            case CacheInterface::CACHE_TYPE_DISK:
-                return $this->methods[CacheInterface::CACHE_TYPE_MEMORY]
-                    ?? $this->methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
-                    ?? $this->methods[CacheInterface::CACHE_TYPE_DISK]
-                    ?? null;
-
             case 'apc':
             case 'apcu':
             case CacheInterface::CACHE_TYPE_MEMORY:
+                return $this->methods[CacheInterface::CACHE_TYPE_MEMORY]
+                    ?? $this->methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
+                    ?? null;
+
+
+            case 'disk':
+            case CacheInterface::CACHE_TYPE_DISK:
             default:
                 return $this->methods[CacheInterface::CACHE_TYPE_MEMORY]
                     ?? $this->methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
+                    ?? $this->methods[CacheInterface::CACHE_TYPE_DISK]
                     ?? null;
         }
     }
@@ -185,7 +186,7 @@ class CacheFactory {
      * {@link CacheInterface::dump()}
      */
     public function dump($driver) {
-        $this->chooseMethod($driver)->dump();
+        return $this->chooseMethod($driver)->dump();
     }
 }
 ?>

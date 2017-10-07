@@ -199,6 +199,21 @@ class FileCache {
 
 
     /**
+     * Dumps all data
+     */
+    public function dumpAll() {
+        $files = glob($this->root . $this->prefix . '*');
+        $data = [];
+
+        foreach ($files AS $file) {
+            $data[$file] = json_decode(@file_get_contents($file), true);
+        }
+
+        return $data;
+    }
+
+
+    /**
      * Reads and clears the internal error
      * @returns string Text of the error raised by the last process
      */
