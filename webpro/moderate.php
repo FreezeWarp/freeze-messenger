@@ -40,8 +40,8 @@ elseif (isset($_POST['webproModerate_userName'])) {
          $result = $cr->getAsJson();
 
          if (isset($result['exception'])) {
-             var_dump($result);
-             die();
+             $message = 'An error occurred logging in: ' . $result['exception']['string'] . ' (' . $result['exception']['details'] . ')';
+             $ignoreLogin = true;
          }
          else {
              setcookie('webproModerate_accessToken', $result['login']['access_token'], time() + (int) $result['login']['expires'] - 10);
