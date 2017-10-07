@@ -154,7 +154,9 @@ class LoginFactory {
      * @return \OAuth2\GrantType\IntegrationLogin
      */
     public function oauthGetIntegrationLogin() {
-        //$this->oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this.
+        if (!$this->oauthRequest->request['client_id'])
+            $this->oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this (if we don't).
+
         $this->oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
         $this->oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
         return new \OAuth2\GrantType\IntegrationLogin($this->user);
