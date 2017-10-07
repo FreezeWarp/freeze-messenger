@@ -190,7 +190,7 @@
             <column name="listId" value="3" />
             <column name="word" value="Google" />
             <column name="severity" value="block" />
-            <column name="param" value="We're not allowed to show that. (Also, are my AD referrences horrible or what?)" />
+            <column name="param" value="We're not allowed to show that. (Also, are my AD references horrible or what?)" />
         </table>
 
 
@@ -240,13 +240,6 @@
             <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
             <column name="ownerId" value="0" />
             <column name="options" value="1" type="bitfield" />
-        </table>
-        <table name="rooms" mode="dev">
-            <column name="id" value="3" />
-            <column name="name" value="Hidden Room" />
-            <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-            <column name="ownerId" value="1" />
-            <column name="options" value="8" type="bitfield" />
         </table>
 
 
