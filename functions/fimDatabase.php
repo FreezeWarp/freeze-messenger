@@ -2206,34 +2206,9 @@ class fimDatabase extends DatabaseSQL
         ));
 
 
-        // Update the messageIndex if appropriate
         if (!$message->room->isPrivateRoom()) {
             $room = $this->getRoom($message->room->id); // Get the new room data. (TODO: UPDATE ... RETURNING for PostGreSQL)
-
-            if ($message->room->messageCount % fimConfig::$messageIndexCounter === 0) { // If the current messages in the room is divisible by the messageIndexCounter, insert into the messageIndex cache. Note that we are hoping this is because of the very last query which incremented this value, but it is impossible to know for certain (if we tried to re-order things to get the room data first, we still run this risk, so that doesn't matter; either way accuracy isn't critical). Postgres would avoid this issue, once implemented.
-                $this->insert($this->sqlPrefix . "messageIndex", array(
-                    'roomId'    => $message->room->id,
-                    'interval'  => $message->room->messageCount,
-                    'messageId' => $message->id
-                ));
-            }
         }
-
-
-        // Update the messageDates if appropriate (TODO: should be on a per-room basis)
-        /*$lastDayCache = (int) $generalCache->get('fim3_lastDayCache');
-
-        $currentTime = time();
-        $lastMidnight = $currentTime - ($currentTime % fimConfig::$messageTimesCounter); // Using some cool math (look it up if you're not familiar), we determine the distance from the last even day, then get the time of the last even day itself. This is the midnight reference point.
-
-        if ($lastDayCache < $lastMidnight) { // If the most recent midnight comes after the period at which the time cache was last updated, handle that. Note that, though rare-ish, this query may be executed by a few different messages. It's not a big deal, since the primary key will prevent any duplicate entries, but still.
-            $generalCache->set('fim3_lastDayCache', $lastMidnight); // Update the quick cache.
-
-            $this->insert($this->sqlPrefix . "messageDates", array(
-                'time'      => $lastMidnight,
-                'messageId' => $messageId
-            ));
-        }*/
 
 
         // Update Flood Counter

@@ -544,9 +544,6 @@ class fimConfig {
     /** @var int The time in seconds that a user object is considered valid for in the cache. */
     public static $cacheUserObjectsTimeout = 300;
 
-    /** @var int After how many messages an index is written. If changed; rebuild the messageIndex table! (This functionality is currently unused, but the record is still written.) */
-    public static $messageIndexCounter = 1000;
-
     /** @var int After how many seconds the message times index is written. If changed; rebuild the messageTimes table! (This functionality is currently unused, but the record is still written.) */
     public static $messageTimesCounter = 60 * 60 * 24;
 

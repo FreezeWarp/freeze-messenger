@@ -299,23 +299,6 @@
         </table>
 
 
-        <table name="messageIndex" type="general" comment="A pseudo-cache that indexes every x (usually 1000) messages made in a room, thus allowing faster lookup. It must be rebuilt if corrupted. (I haven't had time to check to see the performance of both this and messageDates, but I'm guessing I just somehow was using bad indexes when I came up with this seemingly asinine idea. I'll quite likely remove both, or just keep them in for fun.">
-            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
-            <column name="interval" type="int" maxlen="15" comment="The interval of messages in the room with which the message ID corresponds." />
-            <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
-
-            <key name="roomId,interval" type="primary" />
-        </table>
-
-
-        <table name="messageDates" type="general" comment="A pseudo-cache that indexes the first message made in any given day (or other time range), thus allowing lookup. It must be rebuilt if corrupted.">
-            <column name="time" type="time" comment="The day (or appropriate time range) the message was made on." />
-            <column name="messageId" type="int" maxlen="9" comment="The unique ID of the message." />
-
-            <key name="time" type="primary" />
-        </table>
-
-
         <!-- Longterm, we'll almost certainly be partioning these in a different way, I'm just not exactly sure what that is yet. This old method will still be useful for those that don't have support for the more efficient method. -->
         <table name="messagesCached" type="memory" hardPartitions="10" comment="A cache of user-created messages for scalibility.">
             <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique (temporary) ID for the message cache entry." />
