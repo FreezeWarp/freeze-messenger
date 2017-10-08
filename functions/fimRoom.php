@@ -823,12 +823,10 @@ class fimRoom extends fimDynamicObject {
         elseif (fimConfig::$disableTopic)
             throw new fimError('topicsDisabled', 'Topics are disabled on this server.');
         else {
-            $database->createRoomEvent('topicChange', $this->id, $topic); // name, roomId, message
-            $database->update($database->sqlPrefix . "rooms", array(
+            \Stream\StreamFactory::publish('room_' . $this->id, 'topicChange', [
                 'topic' => $topic,
-            ), array(
-                'id' => $this->id,
-            ));
+                'time' => time(),
+            ]);
         }
     }
 

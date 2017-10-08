@@ -9,7 +9,6 @@ $database->setTransformationParameters([
     $database->sqlPrefix . 'rooms' => [
         'watchedByUsers'  => ['fimDatabase::packListCache', DatabaseTypeType::blob, 'fimDatabase::unpackListCache']
     ],
-    $database->sqlPrefix . 'roomEvents' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     $database->sqlPrefix . 'roomStats' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     $database->sqlPrefix . 'socialGroups' => [
         'memberUserIds' => ['fimDatabase::packListCache', DatabaseTypeType::blob, 'fimDatabase::unpackListCache']

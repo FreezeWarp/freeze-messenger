@@ -442,20 +442,6 @@
         </table>
 
 
-        <table name="roomEvents" type="memory" comment="Events that relate to a specific room.">
-            <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
-            <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. topic-change, edit-message)." />
-            <column name="roomId" type="blob" maxlen="23" comment="The room ID." />
-            <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
-            <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
-            <column name="time" type="time" comment="The time of the event's occurrence, primarily for maintenance." />
-
-            <key name="eventId" type="primary" />
-            <key name="eventName" type="index" />
-            <key name="roomId" type="index" />
-        </table>
-
-
         <table name="roomHistory" type="general" comment="A history of all changes made to rooms. This is enabled per-installation. It does not include private rooms.">
             <!-- General -->
             <column name="id" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
@@ -680,20 +666,6 @@
             <key name="fileSize" type="index" />
             <key name="messageCount" type="index" />
             <key name="defaultRoomId" type="index" />
-        </table>
-
-
-        <table name="userEvents" type="memory" comment="Events that relate to a specific user.">
-            <column name="eventId" type="int" maxlen="8" autoincrement="1" comment="A unique identifier for the event." />
-            <column name="eventName" type="string" maxlen="20" comment="The name of the event (e.g. friend-request, unread-message)." />
-            <column name="userId" type="int" maxlen="8" comment="The user ID." />
-            <column name="param1" type="string" maxlen="20" comment="An additional parameter." />
-            <column name="param2" type="string" maxlen="20" comment="An additional parameter." />
-            <column name="time" type="time" default="__TIME__" comment="The time of the event's occurrence, primarily for maintenance." />
-
-            <key name="eventId" type="primary" />
-            <key name="eventName" type="index" />
-            <key name="userId" type="index" />
         </table>
 
 

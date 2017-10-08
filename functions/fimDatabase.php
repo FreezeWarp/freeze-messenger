@@ -1387,59 +1387,6 @@ class fimDatabase extends DatabaseSQL
     }
 
 
-    public function getEvents($options = array(), $sort = array('eventId' => 'asc')) {
-        $options = $this->argumentMerge(array(
-            'roomIds' => array(),
-            'userIds'        => array(),
-            'lastEvent'      => 0,
-        ), $options);
-
-
-        $columns = array(
-            $this->sqlPrefix . "events" => 'eventId, eventName, userId, roomId, messageId, param1, param2, param3, time',
-        );
-
-        $conditions = array(
-            'both' => array()
-        );
-
-        if (count($options['roomIds'])) $conditions['both']['either']['roomId'] = $this->in($options['roomIds']);
-        if (count($options['userIds'])) $conditions['both']['either']['userId'] = $this->in($options['userIds']);
-
-        if ($options['lastEvent']) $conditions['both']['eventId']  = $this->int($options['lastEvent'], 'gt');
-
-        return $this->select($columns, $conditions, $sort);
-    }
-
-
-    public function getUserEventsForId($userId, $lastEvent) {
-        $columns = array(
-            $this->sqlPrefix . "userEvents" => 'eventId, eventName, userId, param1, param2, time',
-        );
-
-        $conditions = array(
-            'userId' => $this->int($userId),
-            'eventId' => $this->int($lastEvent, 'gt')
-        );
-
-        return $this->select($columns, $conditions);
-    }
-
-
-    public function getRoomEventsForId($roomId, $lastEventTime) {
-        $columns = array(
-            $this->sqlPrefix . "roomEvents" => 'eventId, eventName, roomId, param1, param2, time',
-        );
-
-        $conditions = array(
-            'roomId' => $this->int($roomId),
-            'eventId' => $this->int($lastEventTime, 'gt')
-        );
-
-        return $this->select($columns, $conditions);
-    }
-
-
     /********************************************************
      ******************* PERMISSIONS ************************
      ********************************************************/
@@ -2265,12 +2212,12 @@ class fimDatabase extends DatabaseSQL
                 if ($sendToUserId == $message->user->id)
                     continue;
                 else
-                    $this->createUnreadMessage($sendToUserId, $message->user, $message->room, $message->id);
+                    $this->createUnreadMessage($sendToUserId, $message);
             }
         }
         else {
             foreach ($message->room->watchedByUsers AS $sendToUserId) {
-                $this->createUnreadMessage($sendToUserId, $message->user, $message->room, $message->id);
+                $this->createUnreadMessage($sendToUserId, $message);
             }
         }
 
@@ -2320,7 +2267,13 @@ class fimDatabase extends DatabaseSQL
             $this->storeKeyWords($keyWords, $message->id, $this->user->id, $message->room->id);
 
             // Create event to prompt update in existing message displays.
-            $this->createEvent('editedMessage', $message->user->id, $message->room->id, $message->id, false, false, false);
+            \Stream\StreamFactory::publish('room_' . $message->room->id, 'editedMessage', [
+                'id' => $message->id,
+                'senderId' => $message->user->id,
+                'roomId' => $message->room->id,
+                'text' => $message->text,
+                'flag' => $message->flag,
+            ]);
         }
 
         // Update message entry itself
@@ -2363,20 +2316,27 @@ class fimDatabase extends DatabaseSQL
 
 
 
-    public function createUnreadMessage($sendToUserId, fimUser $user, fimRoom $room, $messageId) {
+    public function createUnreadMessage($sendToUserId, fimMessage $message) {
         if (fimConfig::$enableUnreadMessages) {
-            if ($room->isPrivateRoom()) // If watched rooms created events, our event log may quickly run out of space, causing missed events.
-                $this->createUserEvent('missedMessage', $sendToUserId, $room->id, $messageId);
+            // If watched rooms created events, it would cause almost excessive writes. That said, should be an enableable feature; TODO.
+            if ($message->room->isPrivateRoom())
+                \Stream\StreamFactory::publish('user_' . $sendToUserId, 'missedMessage', [
+                    'id' => $message->id,
+                    'senderId' => $message->user->id,
+                    'roomId' => $message->room->id,
+                ]);
 
+
+            // TODO: remove extra columns
             $this->upsert($this->sqlPrefix . "unreadMessages", array(
                 'userId'            => $sendToUserId,
-                'roomId'            => $room->id
+                'roomId'            => $message->room->id
             ), array(
-                'senderId'          => $user->id,
-                'senderName'        => $user->name,
-                'senderNameFormat'  => $user->nameFormat,
-                'roomName'          => $room->name,
-                'messageId'         => $messageId,
+                'senderId'          => $message->user->id,
+                'senderName'        => $message->user->name,
+                'senderNameFormat'  => $message->user->nameFormat,
+                'roomName'          => $message->room->name,
+                'messageId'         => $message->messageId,
                 'otherMessages'     => 0,
             ), array(
                 'time'              => $this->now(),
@@ -2494,48 +2454,6 @@ class fimDatabase extends DatabaseSQL
             return false;
         }
     }
-
-
-
-    /**
-     * @param $eventName
-     * @param $userId
-     * @param $roomId
-     * @param $messageId
-     * @param $param1
-     * @param $param2
-     * @param $param3
-     */
-    public function createEvent($eventName, $userId = 0, $roomId = 0, $messageId = 0, $param1 = '', $param2 = '', $param3 = '')
-    {
-        if (fimConfig::$enableEvents) {
-            $this->insert($this->sqlPrefix . "events", array(
-                'eventName' => $eventName,
-                'userId'    => $userId,
-                'roomId'    => $roomId,
-                'messageId' => $messageId,
-                'param1'    => $param1,
-                'param2'    => $param2,
-                'param3'    => $param3,
-                'time'      => $this->now(),
-            ));
-        }
-    }
-
-
-    public function createUserEvent($eventName, $userId, $param1 = '', $param2 = '')
-    {
-        if (fimConfig::$enableEvents) {
-            $this->insert($this->sqlPrefix . "userEvents", array(
-                'eventName' => $eventName,
-                'userId'    => $userId,
-                'param1'    => $param1,
-                'param2'    => $param2,
-                'time'      => $this->now(),
-            ));
-        }
-    }
-
 
 
     /**
