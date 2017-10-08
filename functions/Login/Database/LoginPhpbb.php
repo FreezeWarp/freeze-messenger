@@ -87,8 +87,31 @@ class LoginPhpbb extends LoginDatabase {
              * Create main user group if it doesn't exist.
              */
 
+
+            /*
+             * TODO: on timer
+             */
+            $this->syncInstall();
+
             $this->oauthGrantType = $this->loginFactory->oauthGetIntegrationLogin();
         }
+    }
+
+    public function syncInstall() {
+        global $integrationDatabase, $database, $loginConfig;
+
+        $smilies = $integrationDatabase->select(array(
+            "{$integrationDatabase->sqlPrefix}smilies" => 'code emoticonText, smiley_url emoticonFile'
+        ))->getAsArray(true);
+
+        $database->autoQueue(true);
+        foreach ($smilies AS $smilie) {
+            @$database->insert("{$database->sqlPrefix}emoticons", [
+                'emoticonText' => $smilie['emoticonText'],
+                'emoticonFile' => $loginConfig['url'] . 'images/smilies/' . $smilie['emoticonFile']
+            ]);
+        }
+        @$database->autoQueue(false);
     }
 
 }
