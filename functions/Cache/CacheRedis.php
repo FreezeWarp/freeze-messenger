@@ -9,6 +9,9 @@ class CacheRedis implements CacheInterface {
      */
     private $instance;
 
+    /* setNx doesn't support ttl, so emulate */
+    use CacheAddFallbackTrait;
+
 
     public static function available() : bool {
         return extension_loaded('redis');

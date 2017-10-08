@@ -19,8 +19,11 @@ class CacheApcu implements CacheInterface {
     }
 
     public function set($index, $value, $ttl) {
-        apcu_delete($index);
         apcu_store($index, $value, $ttl);
+    }
+
+    public function add($index, $value, $ttl) {
+        apcu_add($index, $value, $ttl);
     }
 
     public function exists($index) : bool {

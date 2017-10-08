@@ -50,6 +50,17 @@ interface CacheInterface {
     public function set($index, $value, $ttl);
 
     /**
+     * Set a cache entry at $index with $value, which shouldn't be valid for more than $ttl. Do nothing if $index already exists.
+     *
+     * @param $index
+     * @param $value
+     * @param $ttl
+     *
+     * @return mixed
+     */
+    public function add($index, $value, $ttl);
+
+    /**
      * @param $index
      *
      * @return mixed True if a key

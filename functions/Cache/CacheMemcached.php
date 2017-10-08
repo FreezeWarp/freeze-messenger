@@ -37,6 +37,10 @@ class CacheMemcached implements CacheInterface {
         return $this->instance->set($index, $value, $ttl);
     }
 
+    public function add($index, $value, $ttl) {
+        return $this->instance->add($index, $value, $ttl);
+    }
+
     public function exists($index) : bool {
         $this->instance->get($index);
         return $this->instance->getResultCode() != Memcached::RES_NOTFOUND;

@@ -19,8 +19,11 @@ class CacheApc implements CacheInterface {
     }
 
     public function set($index, $value, $ttl) {
-        apc_delete($index);
         apc_store($index, $value, $ttl);
+    }
+
+    public function add($index, $value, $ttl) {
+        apc_add($index, $value, $ttl);
     }
 
     public function exists($index) : bool {

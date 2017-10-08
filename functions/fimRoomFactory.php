@@ -3,33 +3,49 @@
  * Class fimRoomFactory
  */
 class fimRoomFactory {
-    public static function getFromId($roomId) {
-        if (function_exists('apc_fetch') && apc_exists('fim_fimRoom_' . $roomId)) {
-            return apc_fetch('fim_fimRoom_' . $roomId);
-        }
+    static $instances = [];
 
-        else if (function_exists('apcu_fetch') && apcu_exists('fim_fimRoom_' . $roomId)) {
-            return apcu_fetch('fim_fimRoom_' . $roomId);
-        }
+    public static function getFromId(int $roomId) {
+        global $generalCache;
 
-        else {
-            return new fimRoom($roomId);
-        }
+        if (isset(fimRoomFactory::$instances[$roomId]))
+            return fimRoomFactory::$instances[$roomId];
+
+        elseif ($generalCache->exists('fim_fimRoom_' . $roomId))
+            return fimRoomFactory::$instances[$roomId] = $generalCache->get('fim_fimRoom_' . $roomId);
+
+        else
+            return fimRoomFactory::$instances[$roomId] = new fimRoom($roomId);
     }
 
     public static function getFromData(array $roomData) : fimRoom {
-        if (!isset($roomData['id'])) {
-            throw new Exception('Roomdata must contain id');
-        }
+        global $generalCache;
 
-        elseif (function_exists('apc_fetch') && apc_exists('fim_fimRoom_' . $roomData['id'])) {
-            $room = apc_fetch('fim_fimRoom_' . $roomData['id']);
+        if (!isset($roomData['id']))
+            throw new Exception('Roomdata must contain id');
+
+        elseif (isset(fimRoomFactory::$instances[$roomData['id']]))
+            return fimRoomFactory::$instances[$roomData['id']];
+
+        elseif ($generalCache->exists('fim_fimRoom_' . $roomData['id'])) {
+            $room = $generalCache->get('fim_fimRoom_' . $roomData['id']);
             $room->populateFromArray($roomData);
-            return $room;
+            return fimRoomFactory::$instances[$roomData['id']] = $room;
         }
 
         else {
-            return new fimRoom($roomData);
+            return fimRoomFactory::$instances[$roomData['id']] = new fimRoom($roomData);
+        }
+    }
+
+    public static function cacheInstances() {
+        global $generalCache;
+
+        foreach (fimRoomFactory::$instances AS $id => $instance) {
+            if (!$generalCache->exists('fim_fimRoom_' . $id)) {
+                $instance->resolveAll();
+                $generalCache->add('fim_fimRoom_' . $id, $instance, 5 * 60);
+            }
         }
     }
 }

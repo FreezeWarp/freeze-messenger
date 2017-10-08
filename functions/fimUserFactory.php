@@ -3,39 +3,49 @@
  * Class fimUserFactory
  */
 class fimUserFactory {
+    static $instances = [];
+
     public static function getFromId(int $userId) {
-        if (function_exists('apc_fetch') && apc_exists('fim_fimUser_' . $userId)) {
-            return apc_fetch('fim_fimUser_' . $userId);
-        }
+        global $generalCache;
 
-        else if (function_exists('apcu_fetch') && apcu_exists('fim_fimUser_' . $userId)) {
-            return apcu_fetch('fim_fimUser_' . $userId);
-        }
+        if (isset(fimUserFactory::$instances[$userId]))
+            return fimUserFactory::$instances[$userId];
 
-        else {
-            return new fimUser($userId);
-        }
+        elseif ($generalCache->exists('fim_fimUser_' . $userId))
+            return fimUserFactory::$instances[$userId] = $generalCache->get('fim_fimUser_' . $userId);
+
+        else
+            return fimUserFactory::$instances[$userId] = new fimUser($userId);
     }
 
     public static function getFromData(array $userData) : fimUser {
-        if (!isset($userData['id'])) {
+        global $generalCache;
+
+        if (!isset($userData['id']))
             throw new Exception('Userdata must contain id');
-        }
 
-        elseif (function_exists('apc_fetch') && apc_exists('fim_fimUser_' . $userData['id'])) {
-            $user = apc_fetch('fim_fimUser_' . $userData['id']);
-            $user->populateFromArray($userData);
-            return $user;
-        }
+        elseif (isset(fimUserFactory::$instances[$userData['id']]))
+            return fimUserFactory::$instances[$userData['id']];
 
-        elseif (function_exists('apcu_fetch') && apcu_exists('fim_fimUser_' . $userData['id'])) {
-            $user = apcu_fetch('fim_fimUser_' . $userData['id']);
+        elseif ($generalCache->exists('fim_fimUser_' . $userData['id'])) {
+            $user = $generalCache->get('fim_fimUser_' . $userData['id']);
             $user->populateFromArray($userData);
-            return $user;
+            return fimUserFactory::$instances[$userData['id']] = $user;
         }
 
         else {
-            return new fimUser($userData);
+            return fimUserFactory::$instances[$userData['id']] = new fimUser($userData);
+        }
+    }
+
+    public static function cacheInstances() {
+        global $generalCache;
+
+        foreach (fimUserFactory::$instances AS $id => $instance) {
+            if (!$generalCache->exists('fim_fimUser_' . $id)) {
+                $instance->resolveAll();
+                $generalCache->add('fim_fimUser_' . $id, $instance, 5 * 60);
+            }
         }
     }
 }

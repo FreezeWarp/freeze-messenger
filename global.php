@@ -161,7 +161,15 @@ foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
 $generalCache->loadFimConfig();
 
 
+// Log queries, if enabled.
 $database->queryLogToFile = (fimConfig::$logQueries ? fimConfig::$logQueriesFile : false);
+
+
+// Cache object instances at shutdown.
+register_shutdown_function(function() {
+    fimUserFactory::cacheInstances();
+    fimRoomFactory::cacheInstances();
+});
 
 
 ////* User Login (Requires Database) *////

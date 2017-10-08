@@ -11,6 +11,8 @@ class CacheDisk implements CacheInterface {
      */
     private $instance;
 
+    use CacheAddFallbackTrait;
+
 
     public static function available() : bool {
         return file_exists(__DIR__ . '/FileCache.php');

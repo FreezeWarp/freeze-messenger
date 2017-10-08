@@ -105,6 +105,16 @@ class CacheFactory {
     }
 
     /**
+     * {@link CacheInterface::add($index, $value, $ttl)}
+     */
+    public function add($index, $value, $ttl = 31536000, $preferredMethod = false) {
+        if ($this->chooseMethod($preferredMethod))
+            return $this->chooseMethod($preferredMethod)->add($index, $value, $ttl);
+        else
+            return false;
+    }
+
+    /**
      * {@link CacheInterface::set($index, $value, $ttl)}
      */
     public function set($index, $value, $ttl = 31536000, $preferredMethod = false) {

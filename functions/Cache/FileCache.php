@@ -31,6 +31,9 @@ namespace Cache;
  * Changes by Joseph T. Parsons:
  ** FIM syntax style
  ** exists function
+ ** add function
+ ** dump function
+ ** serialize instead of json
  */
 
 class FileCache {
@@ -84,7 +87,7 @@ class FileCache {
 
         flock($fh, LOCK_EX); // Lock the file.
         ftruncate($fh, 0); // Empty the file.
-        if (!fwrite($fh, json_encode($store))) { // Rewrite the file with the new contents.
+        if (!fwrite($fh, serialize($store))) { // Rewrite the file with the new contents.
             throw new Exception('Could not write cache.');
         }
         flock($fh, LOCK_UN); // Remove the lock on the file.
@@ -122,7 +125,7 @@ class FileCache {
 
         // Assuming we got something back...
         if ($file_content) {
-            $store = json_decode($file_content, true);
+            $store = unserialize($file_content);
 
             if($store['ttl'] < time()) { // If the cache has expired.
                 unlink($key); // remove the file
@@ -206,7 +209,7 @@ class FileCache {
         $data = [];
 
         foreach ($files AS $file) {
-            $data[$file] = json_decode(@file_get_contents($file), true);
+            $data[$file] = unserialize(@file_get_contents($file));
         }
 
         return $data;
