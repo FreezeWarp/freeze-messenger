@@ -11,8 +11,9 @@ class fimUserFactory {
         if (isset(fimUserFactory::$instances[$userId]))
             return fimUserFactory::$instances[$userId];
 
-        elseif ($generalCache->exists('fim_fimUser_' . $userId))
-            return fimUserFactory::$instances[$userId] = $generalCache->get('fim_fimUser_' . $userId);
+        elseif ($generalCache->exists('fim_fimUser_' . $userId)
+            && ($user = $generalCache->get('fim_fimUser_' . $userId)) != false)
+            return fimUserFactory::$instances[$userId] = $user;
 
         else
             return fimUserFactory::$instances[$userId] = new fimUser($userId);
@@ -27,8 +28,8 @@ class fimUserFactory {
         elseif (isset(fimUserFactory::$instances[$userData['id']]))
             return fimUserFactory::$instances[$userData['id']];
 
-        elseif ($generalCache->exists('fim_fimUser_' . $userData['id'])) {
-            $user = $generalCache->get('fim_fimUser_' . $userData['id']);
+        elseif ($generalCache->exists('fim_fimUser_' . $userData['id'])
+            && ($user = $generalCache->get('fim_fimUser_' . $userData['id'])) != false) {
             $user->populateFromArray($userData);
             return fimUserFactory::$instances[$userData['id']] = $user;
         }

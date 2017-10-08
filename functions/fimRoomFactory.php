@@ -11,8 +11,9 @@ class fimRoomFactory {
         if (isset(fimRoomFactory::$instances[$roomId]))
             return fimRoomFactory::$instances[$roomId];
 
-        elseif ($generalCache->exists('fim_fimRoom_' . $roomId))
-            return fimRoomFactory::$instances[$roomId] = $generalCache->get('fim_fimRoom_' . $roomId);
+        elseif ($generalCache->exists('fim_fimRoom_' . $roomId)
+            && ($room = $generalCache->get('fim_fimRoom_' . $roomId)) != false)
+            return fimRoomFactory::$instances[$roomId] = $room;
 
         else
             return fimRoomFactory::$instances[$roomId] = new fimRoom($roomId);
@@ -27,8 +28,8 @@ class fimRoomFactory {
         elseif (isset(fimRoomFactory::$instances[$roomData['id']]))
             return fimRoomFactory::$instances[$roomData['id']];
 
-        elseif ($generalCache->exists('fim_fimRoom_' . $roomData['id'])) {
-            $room = $generalCache->get('fim_fimRoom_' . $roomData['id']);
+        elseif ($generalCache->exists('fim_fimRoom_' . $roomData['id'])
+            && ($room = $generalCache->get('fim_fimRoom_' . $roomData['id'])) != false) {
             $room->populateFromArray($roomData);
             return fimRoomFactory::$instances[$roomData['id']] = $room;
         }
