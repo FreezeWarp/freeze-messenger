@@ -28,79 +28,74 @@ $ignoreLogin = true;
 
 require('../global.php');
 
+echo new Http\ApiData([
+    'serverStatus' => array(
+        'fim_version' => FIM_VERSION,
+        'installedPlugins' => array(),
+        'installUrl' => $installUrl,
+        'loginMethods' => array_keys($loginConfig['extraMethods']),
 
-echo new Http\ApiData(
-    [
-        'serverStatus' => array(
-            'activeUser' => array(
-                'userId' => $user->id,
-                'userName' => $user->name,
-            ),
-
-            'fim_version' => FIM_VERSION,
-            'installedPlugins' => array(),
-            'installUrl' => $installUrl,
-
-            'parentalControls' => array(
-                'parentalEnabled' => fimConfig::$parentalEnabled,
-                'parentalAgeChangeable' => fimConfig::$parentalAgeChangeable,
-                'parentalFlags' => new Http\ApiOutputList(fimConfig::$parentalFlags),
-                'parentalAges' => new Http\ApiOutputList(fimConfig::$parentalAges),
-                'enableCensor' => fimConfig::$censorEnabled,
-            ),
-
-            'branding' => array(
-                'forumType' => $loginConfig['method'],
-                'forumUrl' => $loginConfig['url'],
-            ),
-
-            'requestMethods' => array(
-                'poll' => true,
-                'serverSentEvents' => (bool) fimConfig::$serverSentEvents,
-            ),
-
-            'registrationPolicies' => array(
-                'ageRequired' => (bool) fimConfig::$ageRequired,
-                'ageMinimum' => (int) fimConfig::$ageMinimum,
-                'emailRequired' => (bool) fimConfig::$emailRequired,
-            ),
-
-            'fileUploads' => array(
-                'enabled' => (bool) fimConfig::$enableUploads,
-                'generalEnabled' => (bool) fimConfig::$enableGeneralUploads,
-                'maxAll' => (int) fimConfig::$uploadMaxFiles,
-                'maxUser' => (int) fimConfig::$uploadMaxUserFiles,
-                'chunkSize' => (int) fimConfig::$fileUploadChunkSize,
-                'orphanFiles' => (bool) fimConfig::$allowOrphanFiles,
-                'allowedExtensions' => new Http\ApiOutputList(fimConfig::$allowedExtensions),
-                'mimes' => new Http\ApiOutputList(fimConfig::$uploadMimes),
-                'extensionChanges' => fimConfig::$extensionChanges,
-                'fileContainers' => fimConfig::$fileContainers,
-                'fileProofs' => fimConfig::$uploadMimeProof,
-                'sizeLimits' => fimConfig::$uploadSizeLimits,
-            ),
-
-            'rooms' => array(
-                'roomLengthMinimum' => (int) fimConfig::$roomLengthMinimum,
-                'roomLengthMaximum' => (int) fimConfig::$roomLengthMaximum,
-                'disableTopic' => (bool) fimConfig::$disableTopic,
-                'hiddenRooms' => (bool) fimConfig::$hiddenRooms,
-            ),
-
-            'formatting' => array(
-                'fonts' => fimConfig::$defaultFormattingFont ? fimConfig::$fonts : false,
-                'highlight' => fimConfig::$defaultFormattingHighlight,
-                'color' => fimConfig::$defaultFormattingColor,
-                'italics' => fimConfig::$defaultFormattingItalics,
-                'bold' => fimConfig::$defaultFormattingBold,
-            ),
-
-            'cacheDelays' => array(
-                'censorWords' => fimConfig::$censorWordsCacheRefresh,
-            ),
-
-            'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk. We will, however, display the base version.
+        'parentalControls' => array(
+            'parentalEnabled' => fimConfig::$parentalEnabled,
+            'parentalAgeChangeable' => fimConfig::$parentalAgeChangeable,
+            'parentalFlags' => new Http\ApiOutputList(fimConfig::$parentalFlags),
+            'parentalAges' => new Http\ApiOutputList(fimConfig::$parentalAges),
+            'enableCensor' => fimConfig::$censorEnabled,
         ),
-    ]
-);
+
+        'branding' => array(
+            'forumType' => $loginConfig['method'],
+            'forumUrl' => $loginConfig['url'],
+        ),
+
+        'requestMethods' => array(
+            'poll' => true,
+            'serverSentEvents' => (bool) fimConfig::$serverSentEvents,
+        ),
+
+        'registrationPolicies' => array(
+            'ageRequired' => (bool) fimConfig::$ageRequired,
+            'ageMinimum' => (int) fimConfig::$ageMinimum,
+            'emailRequired' => (bool) fimConfig::$emailRequired,
+        ),
+
+        'fileUploads' => array(
+            'enabled' => (bool) fimConfig::$enableUploads,
+            'generalEnabled' => (bool) fimConfig::$enableGeneralUploads,
+            'maxAll' => (int) fimConfig::$uploadMaxFiles,
+            'maxUser' => (int) fimConfig::$uploadMaxUserFiles,
+            'chunkSize' => (int) fimConfig::$fileUploadChunkSize,
+            'orphanFiles' => (bool) fimConfig::$allowOrphanFiles,
+            'allowedExtensions' => new Http\ApiOutputList(fimConfig::$allowedExtensions),
+            'mimes' => new Http\ApiOutputList(fimConfig::$uploadMimes),
+            'extensionChanges' => fimConfig::$extensionChanges,
+            'fileContainers' => fimConfig::$fileContainers,
+            'fileProofs' => fimConfig::$uploadMimeProof,
+            'sizeLimits' => fimConfig::$uploadSizeLimits,
+        ),
+
+        'rooms' => array(
+            'roomLengthMinimum' => (int) fimConfig::$roomLengthMinimum,
+            'roomLengthMaximum' => (int) fimConfig::$roomLengthMaximum,
+            'disableTopic' => (bool) fimConfig::$disableTopic,
+            'hiddenRooms' => (bool) fimConfig::$hiddenRooms,
+        ),
+
+        'formatting' => array(
+            'fonts' => fimConfig::$defaultFormattingFont ? fimConfig::$fonts : false,
+            'highlight' => fimConfig::$defaultFormattingHighlight,
+            'color' => fimConfig::$defaultFormattingColor,
+            'italics' => fimConfig::$defaultFormattingItalics,
+            'bold' => fimConfig::$defaultFormattingBold,
+        ),
+
+        'cacheDelays' => array(
+            'censorWords' => fimConfig::$censorWordsCacheRefresh,
+        ),
+
+        'emoticons' => $generalCache->getEmoticons(),
+
+        'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk. We will, however, display the base version.
+    ),
+]);
 ?>

@@ -211,6 +211,11 @@ class fimRoom extends fimDynamicObject {
     protected $watchedByUsers = [];
 
     /**
+     * @var array An array of censor words applied to this room, to aid in caching.
+     */
+    protected $censorWordsArray;
+
+    /**
      * @var mixed The room data the room was initialised with.
      */
     protected $roomData;
@@ -244,20 +249,11 @@ class fimRoom extends fimDynamicObject {
         ['watchedByUsers']
     );
 
-    /**
-     * @var fimCache Our cache instance.
-     */
-    private $generalCache;
-
 
     /**
      * @param $roomData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
      */
     function __construct($roomData) {
-        global $generalCache;
-        $this->generalCache = $generalCache;
-
-
         if (is_int($roomData))
             $this->set('id', $roomData);
 
@@ -549,6 +545,63 @@ class fimRoom extends fimDynamicObject {
         return fimRoom::encodeId($this->id);
     }
 
+    /**
+     * TODO
+     * @return array
+     */
+    public function getCensorWords() {
+        /**
+         * @var fimDatabase
+         */
+        global $slaveDatabase;
+
+        if ($this->censorWordsArray !== null)
+            return $this->censorWordsArray;
+
+        return $this->censorWordsArray = $slaveDatabase->getCensorWordsActive($this->id)->getAsArray(true);
+    }
+
+    /**
+     *
+     * @param $text - The text to censor
+     * @param null $roomId - The roomID whose rules should be applied. If not specified, the global rules (for, e.g., usernames) will be used
+     * @param bool $dontAsk - If true, we won't stop for words that merely trigger confirms
+     * @param $matches - This array will fill with all matched words.
+     *
+     * @return string text with substitutions made.
+     */
+    public function censorScan($text, $dontAsk = false, &$matches) {
+        foreach ($this->getCensorWords() AS $word) {
+            if ($dontAsk && $word['severity'] === 'confirm') continue;
+
+            if (stripos($text, $word['word']) !== FALSE) {
+                switch ($word['severity']) {
+                    // Automatically replaces text
+                    case 'replace':
+                        $text = str_ireplace($word['word'], $word['param'], $text);
+                        break;
+
+                    // Passes the word to $matches, to advise the user to be careful
+                    case 'warn':
+                        $matches[$word['word']] = $word['param'];
+                        break;
+
+                    // Blocks the word, throwing an exception
+                    case 'block':
+                        new fimError('blockCensor', "The message can not be sent: '{$word['word']}' is not allowed.");
+                        break;
+
+                    // Blocks the word, throwing an exception, but can be overwridden with $dontAsk
+                    case 'confirm':
+                        new fimError('confirmCensor', "The message must be resent because a word may not be allowed: {$word['word']} is discouraged: {$word['param']}.");
+                        break;
+                }
+            }
+        }
+
+        return $text;
+    }
+
 
     /**
      * This is a common getter for all fimRoom parameters.
@@ -598,8 +651,8 @@ class fimRoom extends fimDynamicObject {
         if (!fimConfig::$enableWatchRooms)
             return;
 
+        // TODO
         elseif ($users === fimDatabase::decodeError) {
-            // TODO: regenerate and cache to APC
             global $database;
             $this->watchedByUsers = $database->getWatchRoomUsers($this->id);
 

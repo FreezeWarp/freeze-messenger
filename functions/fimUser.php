@@ -320,11 +320,6 @@ class fimUser extends fimDynamicObject
     protected $fileSize;
 
     /**
-     * @var fimCache The caching object.
-     */
-    protected $generalCache;
-
-    /**
      * @var array The source userdata.
      * @todo remove?
      */
@@ -360,7 +355,7 @@ class fimUser extends fimDynamicObject
         if (is_int($userData))
             $this->id = $userData;
 
-        elseif (is_array($userData))
+        elseif (is_array($userData)) // TODO: remove/replace with instanceof databaseResult
             $this->populateFromArray($userData); // TODO: test contents
 
         elseif ($userData === false || $userData === null)
@@ -444,7 +439,7 @@ class fimUser extends fimDynamicObject
     }
     
     private function setList($listName, $value) {
-        global $database, $generalCache;
+        global $database;
 
         /* The returned value was "incomplete," indicating that it was truncated by the database software.
          * We check to see if it exists in a database list cache (Redis), and then invoke the database wrapper's relevant method to retrieve it from the full table.
@@ -452,18 +447,9 @@ class fimUser extends fimDynamicObject
         if ($value === fimDatabase::decodeError) {
             $cacheIndex = 'fim_' . $listName . '_' . $this->id;
 
-            if ($generalCache->exists($cacheIndex, 'redis')) {
-                throw new Exception('Redis activated.');
+            $this->{$listName} = call_user_func([$database, 'getUser' . ucfirst($listName)], $this->id);
 
-                $this->{$listName} = $generalCache->get($cacheIndex, 'redis');
-            }
-            else {
-                $this->{$listName} = call_user_func([$database, 'getUser' . ucfirst($listName)], $this->id);
-
-                throw new Exception('User data corrupted: ' . $cacheIndex . '; fallback refused. (Note: this error is for development purposes. A fallback is available, we\'re just not using it. Recovery data found as: ' + print_r($this->{$property}, true));
-
-                $generalCache->setAdd($cacheIndex, $this->{$property});
-            }
+            throw new Exception('User data corrupted: ' . $cacheIndex . '; fallback refused. (Note: this error is for development purposes. A fallback is available, we\'re just not using it. Recovery data found as: ' + print_r($this->{$property}, true));
         }
 
         elseif (!is_array($value))

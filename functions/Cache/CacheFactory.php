@@ -94,6 +94,8 @@ class CacheFactory {
 
     /**
      * {@link CacheInterface::get($index)}
+     *
+     * @return mixed
      */
     public function get($index, $preferredMethod = false) {
         if ($this->chooseMethod($preferredMethod))

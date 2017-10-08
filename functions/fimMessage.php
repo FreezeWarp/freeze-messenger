@@ -121,15 +121,13 @@ class fimMessage
         else if (is_array($messageData)) {
             $this->user = $messageData['user'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain user.');
             $this->room = $messageData['room'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain room.');
-            $this->text = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain text.');
             $this->flag = $messageData['flag'] ?? '';
             $this->time = time();
 
-            if (!in_array($this->flag, array('image', 'video', 'url', 'email', 'html', 'audio', 'text'))) {
-                $this->text = $generalCache->censorScan($this->text, $this->room->id, $messageData['ignoreBlock'] ?? false, $this->censorMatches);
-            }
-
-            list($this->textEncrypted, $this->salt, $this->iv) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
+            $this->setText(
+                $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain text.'),
+                $messageData['ignoreBlock'] ?? false
+            );
         }
 
         elseif ($messageData !== null) {
@@ -165,7 +163,13 @@ class fimMessage
      */
     public function setText($text, $ignoreBlock = false)
     {
-        $this->text = $this->generalCache->censorScan($text, $this->room->id, $ignoreBlock, $this->censorMatches);
+        if (!in_array($this->flag, array('image', 'video', 'url', 'email', 'html', 'audio'))) {
+            $this->text = $this->room->censorScan($text, $ignoreBlock, $this->censorMatches);
+        }
+        else {
+            $this->text = $text;
+        }
+
         list($this->textEncrypted, $this->salt, $this->iv) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
     }
 

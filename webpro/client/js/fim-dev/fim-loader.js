@@ -233,68 +233,77 @@ function fim_messageFormat(json, format) {
         )));
     });
 
-    if (text.length > 1000) { /* TODO */
-        text = '[Message Too Long]';
-    }
-    else {
-        switch (flag) {
-            case 'source': text = text.replace(regexs.url, fim_youtubeParse) || '[Unrecognised Source]'; break; // Youtube, etc.
-            case 'image': text = fim_formatAsImage(text); break; // // Image; We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
-            case 'video': text = fim_formatAsVideo(text) ; break; // Video
-            case 'audio': text = fim_formatAsAudio(text); break; // Audio
-            case 'email': text = fim_formatAsEmail(text); break; // Email Link
 
-            // Various Files and URLs
-            case 'url': case 'text': case 'html': case 'archive': case 'other':
+    switch (flag) {
+        case 'source': text = $('<span>').text(text.replace(regexs.url, fim_youtubeParse) || '[Unrecognised Source]'); break; // Youtube, etc.
+        case 'image': text = fim_formatAsImage(text); break; // // Image; We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
+        case 'video': text = fim_formatAsVideo(text) ; break; // Video
+        case 'audio': text = fim_formatAsAudio(text); break; // Audio
+        case 'email': text = fim_formatAsEmail(text); break; // Email Link
 
-            break;
+        // Various Files and URLs
+        case 'url': case 'text': case 'html': case 'archive': case 'other':
 
-            // Unspecified
-            default:
-                // URL Autoparse (will also detect youtube & image)
-                text = text.replace(regexs.url, function($1) {
-                    if ($1.match(regexs.url2)) {
-                        var $2 = $1.replace(regexs.url2, "$2");
-                        $1 = $1.replace(regexs.url2, "$1"); // By doing this one second we don't have to worry about storing the variable first to get $2
-                    }
-                    else {
-                        var $2 = '';
-                    }
+        break;
 
-                    if (youtubeCode = fim_youtubeParse($1)) return youtubeCode; // Youtube Autoparse
+        // Unspecified
+        default:
+            // URL Autoparse (will also detect youtube & image)
+            text = $('<span>').text(text);
 
-                    // Image Autoparse
-                    else if ($1.match(regexs.image)) {
-                        return fim_formatAsImage($1) + $2
-                    }
+            text.html(text.text().replace(regexs.url, function($1) {
+                if ($1.match(regexs.url2)) {
+                    var $2 = $1.replace(regexs.url2, "$2");
+                    $1 = $1.replace(regexs.url2, "$1"); // By doing this one second we don't have to worry about storing the variable first to get $2
+                }
+                else {
+                    var $2 = '';
+                }
 
-                    // Normal URL
-                    else {
-                        return $('<a target="_BLANK">').attr('href', $1).text($1).prop('outerHTML') + $2;
-                    }
+                if (youtubeCode = fim_youtubeParse($1)) return youtubeCode; // Youtube Autoparse
+
+                // Image Autoparse
+                else if ($1.match(regexs.image)) {
+                    return fim_formatAsImage($1) + $2
+                }
+
+                // Normal URL
+                else {
+                    return $('<a target="_BLANK">').attr('href', $1).text($1).prop('outerHTML') + $2;
+                }
+            }));
+
+            // "/me" parse
+            if (/^\/me/.test(text.text())) {
+                text.text(text.text().replace(/^\/me/,''));
+
+                $.when(userNameDeferred).then(function(pairs) {
+                    text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' ' + text).prop('outerHTML'));
                 });
+            }
 
-                // "/me" parse
-                if (/^\/me/.test(text)) {
-                    text = text.replace(/^\/me/,'');
+            // "/topic" parse
+            else if (/^\/topic/.test(text.text())) {
+                text.text(text.text().replace(/^\/topic/,''));
 
-                    $.when(userNameDeferred).then(function(pairs) {
-                        text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' ' + text).prop('outerHTML');
+                $('#topic').text(text);
+
+                $.when(userNameDeferred).then(function(pairs) {
+                   text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' changed the topic to "' + text + '".').prop('outerHTML'));
+                });
+            }
+
+            jQuery.each(serverSettings.emoticons, function(index, emoticon) {
+                text.contents()
+                    .filter(function() {
+                        return this.nodeType === 3; //Node.TEXT_NODE
+                    }).each(function() {
+                        $(this).replaceWith($(this).text().replace(new RegExp(emoticon.emoticonText.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), "gi"), function() {
+                            return $('<img>').attr('src', emoticon.emoticonFile).prop('outerHTML')
+                        }));
                     });
-                }
-
-                // "/topic" parse
-                else if (/^\/topic/.test(text)) {
-                    text = text.replace(/^\/topic/,'');
-
-                    $('#topic').html(text);
-
-                    $.when(userNameDeferred).then(function(pairs) {
-                       text = $('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' changed the topic to "' + text + '".').prop('outerHTML');
-                    });
-                }
-                break;
-        }
+            });
+        break;
     }
 
 
