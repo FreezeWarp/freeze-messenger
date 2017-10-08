@@ -15,10 +15,11 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 if (!defined('WEBPRO_INMOD')) {
-  die();
+    die();
 }
 else {
-  if ($user['adminDefs']['modPrivs']) {
-    echo container('System Requirements & Status','WIP');
+    if ($user->hasPriv('modPrivs')) {
+        echo container('System Requirements & Status', 'WIP');
+    }
 }
 ?>

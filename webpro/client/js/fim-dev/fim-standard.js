@@ -232,8 +232,7 @@ standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
             'flag' : (flag ? flag : '')
         }, {
             'end' : function (message) {
-                if ("censor" in message && message.censor.size) {
-                    console.log("censor match.");
+                if ("censor" in message && Object.keys(message.censor).length > 0) {
                     dia.info(Object.values(message.censor).join('<br /><br />'), "Censor warning: " + Object.keys(message.censor).join(', '));
                 }
             },

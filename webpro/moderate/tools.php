@@ -57,9 +57,9 @@ else {
                 echo '<br />';
                 echo container('Contents of fimConfig', '<pre>' . print_r((new ReflectionClass('fimConfig'))->getStaticProperties(), true) . '</pre>');
                 echo '<br />';
-                echo container('Contents of fim_fimUser_1 Cache Entry', '<pre>' . print_r(@$generalCache->get('fim_fimUser_1'), true) . '</pre>');
+                echo container('Contents of roomPermissionsCache Table', '<table><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . $database->select(['roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
                 echo '<br />';
-                echo container('Contents of fim_activeCensorWords_1 Cache Entry', '<pre>' . print_r(@$generalCache->get('fim_activeCensorWords_1'), true) . '</pre>');
+                echo container('Contents of counters Table', '<table><tr><th>Name</th><th>Value</th></tr>' . $database->select(['counters' => 'counterName, counterValue'])->getAsTemplate('<tr><td>$counterName</td><td>$counterValue</td></tr>') . '</table>');
                 break;
 
             case 'clearCache':

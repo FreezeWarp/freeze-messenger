@@ -939,7 +939,7 @@ popup.prototype.editRoom = function(roomId) {
                         })
                             .attr(listData.listOptions & 2 ? { 'disabled' : 'disabled' } : {})
                             .attr(listStatus == 'block' ? { 'checked' : 'checked' } : {})
-                    ), $('<label>').text(listData.listName), $('<br>'));
+                    , $('<span>').text(listData.listName), $('<br>')));
                 }
             });
 

@@ -805,7 +805,7 @@ class DatabaseSQL extends Database
      */
     public function getLastQuery()
     {
-        return end($this->queryLog);
+        return end($this->queryLog)[0];
     }
 
 

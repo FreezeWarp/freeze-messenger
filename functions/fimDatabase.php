@@ -464,6 +464,7 @@ class fimDatabase extends DatabaseSQL
 
         $censorLists = $this->getCensorLists(array(
             'includeStatus' => $roomId,
+            'activeStatus' => 'active',
         ))->getAsArray(array('listId'));
 
         foreach ($censorLists AS $listId => $list) { // Run through each censor list retrieved.

@@ -121,17 +121,32 @@ function fim_dateFormat(timestamp, options) {
 
 function fim_youtubeParse($1) {
     if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) {
-        var code = false;
+        var code = '';
 
-        if ($1.match(regexs.youtubeFull) !== null) { code = $1.replace(regexs.youtubeFull, "$8"); }
-        else if ($1.match(regexs.youtubeShort) !== null) { code = $1.replace(regexs.youtubeShort, "$5"); }
+        // Parse Out the Code
+        if ($1.match(regexs.youtubeFull) !== null)
+            code = $1.replace(regexs.youtubeFull, "$8");
+        else if ($1.match(regexs.youtubeShort) !== null)
+            code = $1.replace(regexs.youtubeShort, "$5");
 
-        if (settings.disableVideo) { return '<a href="https://www.youtu.be/' + code + '" target="_BLANK">[Youtube Video]</a>'; }
-        else { return '<iframe width="425" height="349" src="https://www.youtube.com/embed/' + code + '?rel=0&wmode=transparent" frameborder="0" allowfullscreen></iframe>'; }
+
+        // Embed the Video, or a Link to It
+        if (settings.disableVideo) return $('<a>').attr({
+            'href' : 'https://www.youtu.be/' + code,
+            'target' : '_BLANK'
+        }).text('[Youtube Video]');
+
+        else return $('<iframe>').attr({
+            'width' : 560,
+            'height' : 315,
+            'src' : 'https://www.youtube.com/embed/' + code + '?rel=0',
+            'frameborder' : 0,
+            'allowfullscreen' : true
+        });
     }
 
     else {
-        return false;
+        return fim_formatAsUrl($1);
     }
 }
 
@@ -144,7 +159,7 @@ function fim_formatAsImage(imageUrl) {
                     'thumbnailWidth' : 250,
                     'thumbnailHeight' : 250,
                 })*/) // todo: only for files on installI
-    ).prop('outerHTML');
+    );
 }
 
 function fim_formatAsVideo(videoUrl) {
@@ -235,15 +250,13 @@ function fim_messageFormat(json, format) {
 
 
     switch (flag) {
-        case 'source': text = $('<span>').text(text.replace(regexs.url, fim_youtubeParse) || '[Unrecognised Source]'); break; // Youtube, etc.
+        case 'source': text = fim_youtubeParse(text); break; // Youtube, etc.
         case 'image': text = fim_formatAsImage(text); break; // // Image; We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
         case 'video': text = fim_formatAsVideo(text) ; break; // Video
         case 'audio': text = fim_formatAsAudio(text); break; // Audio
         case 'email': text = fim_formatAsEmail(text); break; // Email Link
-
-        // Various Files and URLs
-        case 'url': case 'text': case 'html': case 'archive': case 'other':
-
+        case 'url': case 'text': case 'html': case 'archive': case 'other': // Various Files and URLs
+            text = fim_formatAsUrl(text);
         break;
 
         // Unspecified
@@ -260,17 +273,15 @@ function fim_messageFormat(json, format) {
                     var $2 = '';
                 }
 
-                if (youtubeCode = fim_youtubeParse($1)) return youtubeCode; // Youtube Autoparse
+                /* Youtube, Image, URL Parsing */
+                if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) // Youtube Autoparse
+                    return fim_youtubeParse($1).prop('outerHTML') + $2;
 
-                // Image Autoparse
-                else if ($1.match(regexs.image)) {
-                    return fim_formatAsImage($1) + $2
-                }
+                else if ($1.match(regexs.image)) // Image Autoparse
+                    return fim_formatAsImage($1).prop('outerHTML') + $2;
 
-                // Normal URL
-                else {
-                    return $('<a target="_BLANK">').attr('href', $1).text($1).prop('outerHTML') + $2;
-                }
+                else // Normal URL
+                    return fim_formatAsUrl($1).prop('outerHTML') + $2;
             }));
 
             // "/me" parse
@@ -319,7 +330,7 @@ function fim_messageFormat(json, format) {
                 $('<td>').text(messageTime)
             ).append(
                 $('<td>').append(
-                    fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred).html(text)
+                    fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred).append(text)
                 )
             ).append(
                 $('<td>').append(

@@ -206,6 +206,7 @@ class DatabaseResult
 
     /**
      * Get the database object as a string, using the specified format/template. Each result will be passed to this template and stored in a string, which will be appended to the entire result.
+     * Use standard PHP notation on column names, e.g. "$id - $name".
      *
      * @param string $format
      * @return mixed
@@ -213,7 +214,7 @@ class DatabaseResult
      */
     public function getAsTemplate($format)
     {
-        static $data;
+        $data = '';
         $uid = 0;
 
         if ($this->queryData !== false && $this->queryData !== null) {
@@ -221,13 +222,15 @@ class DatabaseResult
                 $uid++;
                 $row['uid'] = $uid; // UID is a variable that can be used as the row number in the template.
 
-                $data2 = preg_replace('/\$([a-zA-Z0-9]+)/e', '$row[$1]', $format); // the "e" flag is a PHP-only extension that allows parsing of PHP code in the replacement.
-                $data2 = preg_replace('/\{\{(.*?)\}\}\{\{(.*?)\}\{(.*?)\}\}/e', 'stripslashes(iif(\'$1\',\'$2\',\'$3\'))', $data2); // Slashes are appended automatically when using the /e flag, thus corrupting links.
-                $data .= $data2;
+                $data .= preg_replace_callback('/\$([a-zA-Z0-9]+)/', function($matches) use ($row) {
+                    return $row[$matches[1]];
+                }, $format);
             }
 
             return $data;
-        } else {
+        }
+
+        else {
             return false; // Query data is false or null, return false.
         }
     }

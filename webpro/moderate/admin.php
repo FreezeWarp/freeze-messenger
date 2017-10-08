@@ -20,17 +20,19 @@ if (!defined('WEBPRO_INMOD')) {
 else {
     $request = fim_sanitizeGPC('r', array(
         'do2' => array(
-            'cast' => 'string',
+            'default' => 'view',
+            'valid' => ['view'],
         ),
     ));
 
     if ($user->hasPriv('modPrivs')) {
         switch ($request['do2']) {
-            case 'view': case false:
+            case 'view':
             $users = $database->getUsers(array(
-                                             'hasPrivs' => array(fimUser::ADMIN_CENSOR, fimUser::ADMIN_FILES, fimUser::ADMIN_GRANT, fimUser::ADMIN_PROTECTED, fimUser::ADMIN_ROOMS, fimUser::ADMIN_USERS, fimUser::ADMIN_VIEW_PRIVATE),
-                                         ))->getAsUsers();
+                 'hasPrivs' => array(fimUser::ADMIN_CENSOR, fimUser::ADMIN_FILES, fimUser::ADMIN_GRANT, fimUser::ADMIN_PROTECTED, fimUser::ADMIN_ROOMS, fimUser::ADMIN_USERS, fimUser::ADMIN_VIEW_PRIVATE),
+            ))->getAsUsers();
 
+            $rows = '';
             foreach ($users AS $user2) {
                 $adminPrivs = array();
 

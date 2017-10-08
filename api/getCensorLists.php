@@ -63,6 +63,8 @@ $xmlData = array(
 $censorLists = $slaveDatabase->getCensorLists(array(
     'listIds' => $request['listIds'],
     'includeStatus' => $request['roomId'],
+    'hiddenStatus' => 'unhidden', // Don't include hidden lists.
+    'activeStatus' => 'active' // Don't include "archived"/inactive lists.
 ))->getAsArray(array('listId'));
 
 if ($request['includeWords']) {
@@ -82,8 +84,11 @@ foreach ($censorLists AS $listId => $list) { // Run through each censor list ret
             'listType' => ($list['listType']),
             'listOptions' => (int) $list['options'],
             'words' => array(),
-            'status' => $list['status'],
         );
+
+        if (isset($list['status'])) {
+            $xmlData['lists'][$list['listId']]['status'] = $list['status'];
+        }
 
         if ($request['includeWords']) {
             foreach($censorWords[$list['listId']] AS $wordId => $censorListWord) {

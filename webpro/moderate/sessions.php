@@ -20,17 +20,20 @@ if (!defined('WEBPRO_INMOD')) {
 else {
     $request = fim_sanitizeGPC('r', array(
         'do2' => array(
-            'cast' => 'string',
+            'default' => 'view',
+            'valid' => ['view'],
         )
     ));
 
     if ($user->hasPriv('modPrivs')) {
         switch ($request['do2']) {
-            case 'view': case false:
+            case 'view':
             $sessions = $database->getSessions()->getAsArray(true);
 
+            $rows = '';
+
             foreach ($sessions as $session) {
-                $rows .= "<tr><td>$session[userId]-$session[anonId] ($session[userName])</td><td>" . date('r', $session['expires']) . "</td><td>$session[sessionIp]</td><td>$session[clientId]</td><td>$session[userAgent]</td></tr>";
+                $rows .= "<tr><td>{$session['id']}-{$session['anonId']} ({$session['name']})</td><td>" . date('r', $session['expires']) . "</td><td>{$session['sessionIp']}</td><td>{$session['clientId']}</td><td>{$session['userAgent']}</td></tr>";
             }
 
             echo container('Sessions','<table class="page rowHover">

@@ -406,13 +406,13 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 <tbody>
                 <tr>
                     <td width="20%"><strong>Database & Driver</strong></td>
-                    <td width="80%"><select name="db_driver" onchange="switch (this.value) { case 'mysql': case 'mysqli': case 'pdo-mysql': document.getElementById('db_port').value = '3306'; break; case 'pgsql': case 'pdo-pgsql': document.getElementById('db_port').value = '5432'; break; };">
+                    <td width="80%"><select name="db_driver" onchange="switch (this.value) { case 'mysql': case 'mysqli': case 'pdo-mysql': document.getElementById('db_port').value = '3306'; break; case 'pgsql': case 'pdo-pgsql': document.getElementById('db_port').value = '5432'; $('#db_createdb').prop({'disabled' : true, 'checked' : false}); break; };">
                             <?php
                             if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL, MySQL Driver (Discouraged)</option>';
                             if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysqli">MySQL, MySQLi Driver (Recommended for MySQL)</option>';
-                            if ($installStatusDB & INSTALL_DB_PDO_MYSQL) echo '<option value="pdo-mysql">MySQL, PDO Driver (Currently Unsupported)</option>';
-                            if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="pgsql">PostGreSQL, PostGreSQL Driver (Recommended for PostGreSQL, May Not Work Yet)</option>';
-                            if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdo-pgsql">PostGreSQL, PDO Driver (Currently Unsupported)</option>';
+                            if ($installStatusDB & INSTALL_DB_PDO_MYSQL) echo '<option value="pdo-mysql">MySQL, PDO Driver</option>';
+                            if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="pgsql">PostGreSQL, PostGreSQL Driver</option>';
+                            if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdo-pgsql">PostGreSQL, PDO Driver (Currently Unsupported/Broken)</option>';
                             ?>
                         </select><br /><small>The database and corresponding driver. If you are integrating with a forum, choose the database (either MySQL or PostgreSQL) that your forum uses. Otherwise PostgreSQL, with the PostgreSQL driver, is best if available.</small></td>
                 </tr>
@@ -443,12 +443,10 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                     <td><strong>Database Name</strong></td>
                     <td><input id="db_database" type="text" name="db_database" /><br /><small>The name of the database FreezeMessenger's data will be stored in. <strong>If you are integrating with a forum, this must be the same database the forum uses.</strong></small></td>
                 </tr>
-                <label for="db_createdb">
                 <tr>
-                    <td><strong>Create Database?</strong></td>
-                    <td><input type="checkbox" name="db_createdb" /><small>This will not overwrite existing databases. You are encouraged to create the database yourself, as otherwise default permissions, etc. will be used (which is rarely ideal).</small></td>
+                    <td><label for="db_createdb"><strong>Create Database?</strong></label></td>
+                    <td><label for="db_createdb"><input type="checkbox" id="db_createdb" name="db_createdb" /><small>This will not overwrite existing databases. You are encouraged to create the database yourself, as otherwise default permissions, etc. will be used. If you are on Postgres, you <em>must</em> created the database yourself.</small></label></td>
                 </tr>
-                </label>
                 </tbody>
                 <thead>
                 <tr class="ui-widget-header">
@@ -467,12 +465,10 @@ foreach(array('../webpro/client/data/config.json', '../webpro/client/data/langua
                 </tr>
                 </thead>
                 <tbody>
-                <label for="db_usedev">
                 <tr>
-                    <td><strong>Insert Developer Data</strong></td>
-                    <td><input type="checkbox" name="db_usedev" /><small>This will populate the database with test data. Generally only meant for the developers, you could also probably use this to test drive FreezeMessenger.</small></td>
+                    <td><label for="db_usedev"><strong>Insert Developer Data</strong></label></td>
+                    <td><label for="db_usedev"><input type="checkbox" id="db_usedev" name="db_usedev" /><small>This will populate the database with test data. Generally only meant for the developers, you could also probably use this to test drive FreezeMessenger.</small></label></td>
                 </tr>
-                </label>
                 </tbody>
             </table>
         </form><br /><br />
