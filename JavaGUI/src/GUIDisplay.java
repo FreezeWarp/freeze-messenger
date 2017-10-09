@@ -190,7 +190,7 @@ public class GUIDisplay extends Application {
                     });
 
                     // Load the googleLogin webpage.
-                    browser.getEngine().load(GUIDisplay.api.getServerUrl() + "validate.php?googleLogin");
+                    browser.getEngine().load(GUIDisplay.api.getServerUrl() + "validate.php?integrationMethod=google");
 
                     // Display the browser in a new scene.
                     Scene scene = new Scene(browser);
