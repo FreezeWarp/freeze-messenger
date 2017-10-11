@@ -116,8 +116,8 @@ foreach ($users AS $userData) {
     if (in_array('groups', $request['info']))
         $returnFields = array_merge($returnFields, ['mainGroupId', 'socialGroupIds']);
 
-    if (($userData->id === $user->id || $user->hasPriv('modUsers')
-        && in_array('self', $request['info']))) {
+    if (($userData->id === $user->id || $user->hasPriv('modUsers'))
+        && in_array('self', $request['info'])) {
         $xmlData['users'][$userData->id] = array_merge($xmlData['users'][$userData->id], [
             'permissions' => $userData->getPermissionsArray(),
         ]);
@@ -132,13 +132,6 @@ foreach ($users AS $userData) {
             'Http\ApiOutputList'
         )
     );
-
-    // todo
-    //if (isset($userDataForums[$userId]['posts'])) // TODO
-    //    $xmlData['users']['user ' . $userId]['postCount'] = $userDataForums[$userId]['posts'];
-
-    //if (isset($userDataForums[$userId]['userTitle']))
-    //    $xmlData['users']['user ' . $userId]['userTitle'] = $userDataForums[$userId]['userTitle'];
 }
 
 
