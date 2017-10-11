@@ -59,7 +59,11 @@ $database->accessLog('sendUser', $request, true);
 
 
 /* Start Processing */
-$age = fim_dobToAge($request['birthDate']);
+if (isset($request['birthDate']))
+    $age = fim_dobToAge($request['birthDate']);
+else
+    $age = fimConfig::$parentalAgeDefault;
+
 
 if ($loginConfig['method'] != 'vanilla')
     new fimError('notSupported', 'This script only works for servers using vanilla logins.');
@@ -69,6 +73,9 @@ elseif ($user->id && !$user->isAnonymousUser())
 
 elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMAIL)))
     new fimError('emailInvalid', 'The email specified is not allowed.');
+
+elseif (strlen($request['password']) < fimConfig::$passwordMinimumLength)
+    new fimError('passwordMinimumLength', 'The password provided is too short.');
 
 elseif (isset($request['birthDate']) && ($age < fimConfig::$ageMinimum))
     new fimError('ageMinimum', 'The age specified is below the minimum age allowed by the server.', [

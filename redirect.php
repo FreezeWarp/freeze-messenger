@@ -36,9 +36,18 @@ switch ($request['do']) {
     case 'register': // Register for an account to post.
 
         switch ($loginConfig['method']) { // Different methods for each forum system.
-            case 'phpbb':     $redirectPage = $loginConfig['url'] . 'ucp.php?mode=register'; break;
-            case 'vbulletin': $redirectPage = $loginConfig['url'] . 'register.php';          break;
-            case 'vanilla':   $redirectPage = 'register/index.php';                          break; // Clients can do this themselves if they want, be we will include our own as a sorta "core" functionality.
+            case 'phpbb':
+                $redirectPage = $loginConfig['url'] . 'ucp.php?mode=register';
+                break;
+
+            case 'vbulletin3':
+            case 'vbulletin4':
+                $redirectPage = $loginConfig['url'] . 'register.php';
+                break;
+
+            case 'vanilla':
+                $redirectPage = 'register/index.php';
+                break;
         }
 
         break;

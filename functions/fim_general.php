@@ -227,7 +227,12 @@ function fim_inArray(array $needle, array $haystack, $all = false) {
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function fim_dobToAge($date) {
-    return floor((time() - $date) / (60 * 60 * 24 * 365)); // Generate an age by taking a unix timestamp and subtracting the timestamp of the user's DOB. Divide to create years.
+    $dateTime = new DateTime();
+    $dateTime->setTimestamp($date);
+
+    $dateTimeNow = new DateTime("now");
+
+    return (int) $dateTimeNow->diff($dateTime)->format("%y"); // Generate an age by taking a unix timestamp and subtracting the timestamp of the user's DOB. Divide to create years.
 }
 
 
@@ -335,7 +340,7 @@ function fim_sanitizeGPC($type, $data) {
         else {
             /* Validate Metadata */
             foreach ($indexData AS $metaName => $metaData) {
-                if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'filter', 'cast', 'transform', 'bitTable', 'flipTable', 'removeDuplicates', 'conflict', 'source')))
+                if (!in_array($metaName, array('default', 'require', 'trim', 'evaltrue', 'valid', 'min', 'max', 'minLength', 'maxLength', 'filter', 'cast', 'transform', 'bitTable', 'flipTable', 'removeDuplicates', 'conflict', 'source')))
                     throw new Exception('Unrecognised metadata: ' . $metaName);
 
                 elseif (($metaName === 'require' || $metaName === 'trim' || $metaName === 'evaltrue')
@@ -904,5 +909,19 @@ function fim_nearestAge($age) {
     }
 
     return array_pop($ages);
+}
+
+
+
+function fimHtml_buildSelect($selectName, $selectArray, $selectedItem) {
+    $code = "<select name=\"$selectName\">";
+
+    foreach ($selectArray AS $key => $value) {
+        $code .= "<option value=\"$key\"" . ($key == $selectedItem ? ' selected="selected"' : '') . ">$value</option>";
+    }
+
+    $code .= '</select>';
+
+    return $code;
 }
 ?>

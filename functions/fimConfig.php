@@ -18,14 +18,11 @@ class fimConfig {
     /** @var int The time after which a user's vanilla data is resycned with its integration data, such as adminGroups. The default of 6 hours means that if a user is banned, for instance, in a forum, it may take 6 hours for this to be reflected in the messenger. */
     public static $userSyncThreshold = 60 * 60 * 24 * 7;
 
-    /** @var bool (Vanilla logins only.) Whether a user is required to specify their age in order to sign-up. */
-    public static $ageRequired = true;
-
-    /** @var int The minimum allowed age for a user signing up. */
-    public static $ageMinimum = 13;
-
-    /** @var bool Whether an email is required to sign up. The vanilla subsystem can function without email, and in truth; its not even used for anything in FIMv3 (where Vanilla is very IRC-like). Additionally, there are no email registration limits; all limits to having multiple accounts are enforced by IP. */
+    /** @var bool Whether an email is required to sign up. The vanilla subsystem can function without email, and in truth; its not even used for anything in FIMv3 (where Vanilla is very IRC-like)`. Additionally, there are no email registration limits; all limits to having multiple accounts are enforced by IP. */
     public static $emailRequired = false;
+
+    /** @var int (Vanilla logins only.) The minimum number of characters needed in a password for it to be valid. */
+    public static $passwordMinimumLength = 4;
 
     /** @var int The maximum width allowed for a user avatar. (Vanilla logins only.) */
     public static $avatarMaximumWidth = 1000;
@@ -482,9 +479,16 @@ class fimConfig {
     /** @var bool Whether we attempt to block uploaded files from being used in HTML frames, in effect blocking HTML files from being embedded. It relies on HTTP headers; and thus is not perfect. */
     public static $blockFrames = true;
 
+
     /* Parental Controls */
     /** @var bool Whether or not the parental controls are enabled. */
     public static $parentalEnabled = true;
+
+    /** @var bool (Vanilla logins only.) Whether a user is required to specify their age in order to sign-up. */
+    public static $ageRequired = false;
+
+    /** @var int (Vanilla logins only.) The minimum allowed age for a user signing up. */
+    public static $ageMinimum = 13;
 
     /** @var int Age used in lieu of a birthdate; if the user has not provided one. (see "ageRequired") */
     public static $parentalAgeDefault = 13;

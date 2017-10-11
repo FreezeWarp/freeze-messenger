@@ -40,6 +40,7 @@
             border: 2px solid black;
         }
         table td {
+            word-break: break-all;
             padding-top: 5px;
             padding-bottom: 5px;
         }
@@ -71,7 +72,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 ini_set('display_startup_errors', '1');
-require('../config.php');
+$ignoreLogin = true;
+require('../global.php');
 
 $host = $installUrl;
 
@@ -137,6 +139,7 @@ function formatOutput($output) {
     else
         return $output;
 }
+
 function curlTestGETEquals($path, $params, $jsonIndex, $expectedValue, $callback = false) {
     global $host;
     echo '<td>' . $path . '?' . http_build_query($params) . '</td>';
@@ -602,16 +605,25 @@ echo '<tr><td>Create User With Email bob@example</td>';
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['name' => $testUserName, 'password' => 'password', 'email' => 'bob@example', 'birthDate' => time() - 14 * 365 * 3600],
+    ['name' => $testUserName, 'password' => 'password', 'email' => 'bob@example', 'birthDate' => time() - 14 * 365 * 24 * 3600],
     ['exception', 'string'],
     'emailInvalid'
+);
+
+echo '<tr><td>Create User With Short Password</td>';
+curlTestPOSTEquals(
+    'api/user.php',
+    ['_action' => 'create'],
+    ['name' => $testUserName, 'password' => 'pa', 'email' => 'bob@example.com', 'birthDate' => time() - 14 * 365 * 24 * 3600],
+    ['exception', 'string'],
+    'passwordMinimum'
 );
 
 echo '<tr><td>Create COPPA User</td>';
 curlTestPOSTEquals(
     'api/user.php',
     ['_action' => 'create'],
-    ['name' => $testUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 12 * 365 * 3600],
+    ['name' => $testUserName, 'password' => 'password', 'email' => 'bob@example.com', 'birthDate' => time() - 12 * 365 * 24 * 3600],
     ['exception', 'string'],
     'ageMinimum'
 );
