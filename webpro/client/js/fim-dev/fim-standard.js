@@ -267,6 +267,8 @@ standard.prototype.sendMessage = function(message, ignoreBlock, flag) {
 standard.prototype.changeRoom = function(roomId) {
     var intervalPing;
 
+    // Put the room hash in the URL.
+    history.replaceState(undefined, undefined, "#room=" + roomId);
 
     fimApi.getRooms({
         'id' : roomId,

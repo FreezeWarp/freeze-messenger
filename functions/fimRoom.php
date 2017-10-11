@@ -402,9 +402,9 @@ class fimRoom extends fimDynamicObject {
     public function exists() : bool {
         global $database;
 
-        return $this->exists = ($this->exists || $this->isPrivateRoom() || (count($database->getRooms([
+        return $this->exists = ($this->exists || ($this->isPrivateRoom() ? $this->arePrivateRoomMembersValid() : (count($database->getRooms([
             'roomIds' => $this->id,
-        ])->getAsArray(false)) > 0));
+        ])->getAsArray(false)) > 0)));
     }
 
 

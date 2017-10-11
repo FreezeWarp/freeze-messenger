@@ -764,7 +764,7 @@ function fim_hashParse(options) {
             break;
     }
 
-    if (!window.roomId && options.defaultRoomId)
+    if (!roomId && options.defaultRoomId)
         roomId = options.defaultRoomId;
 
     if (roomId && roomId !== window.roomId)

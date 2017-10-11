@@ -562,7 +562,7 @@
 
 
         <table name="streams" type="general" comment="An index tracking all of our streams. In most cases, this table will be unused, but with some stream implementations (for instance, when creating tables for event streams), this will be used to determine old tables in need of dropping.">
-            <column name="streamName" type="string" maxlen="10" comment="The ID of the phrase found in the message." />
+            <column name="streamName" type="string" maxlen="100" comment="The ID of the phrase found in the message." />
             <column name="lastEvent" type="time" default="__TIME__" comment="The ID of the message." />
 
             <key name="streamName" type="primary" />

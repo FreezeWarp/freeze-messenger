@@ -616,6 +616,10 @@ function fim_sanitizeGPC($type, $data) {
                  */
                 case 'roomId':
                     $newData[$indexName] = @fim_cast('roomId', $activeGlobal[$indexName]);
+
+                    if (!$newData[$indexName]) {
+                        new fimError('roomIdInvalid', 'The room ID is not valid.');
+                    }
                 break;
 
 

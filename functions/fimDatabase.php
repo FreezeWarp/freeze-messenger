@@ -2337,7 +2337,7 @@ class fimDatabase extends DatabaseSQL
                 'senderName'        => $message->user->name,
                 'senderNameFormat'  => $message->user->nameFormat,
                 'roomName'          => $message->room->name,
-                'messageId'         => $message->messageId,
+                'messageId'         => $message->id,
                 'otherMessages'     => 0,
             ), array(
                 'time'              => $this->now(),
