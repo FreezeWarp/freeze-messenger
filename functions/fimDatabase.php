@@ -36,7 +36,7 @@ class fimDatabase extends DatabaseSQL
     /**
      * @var string The columns containing all user data.
      */
-    public $userColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, parentalAge, parentalFlags, privs, lastSync';
+    public $userColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, parentalAge, parentalFlags, privs, lastSync, bio, privacyLevel';
 
     /**
      * @var string The columns containing all user login data.

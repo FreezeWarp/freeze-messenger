@@ -371,7 +371,7 @@ popup.prototype.userSettings = function() { /* TODO: Handle reset properly, and 
 
             fimApi.getUsers({
                 'info' : ['self', 'profile'],
-                'userIds' : [userId]
+                'id' : userId
             }, {'each' : function(active) { console.log(active);
 
                 /**************************

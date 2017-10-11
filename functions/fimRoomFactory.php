@@ -5,7 +5,7 @@
 class fimRoomFactory {
     static $instances = [];
 
-    public static function getFromId(int $roomId) {
+    public static function getFromId($roomId) {
         global $generalCache;
 
         if (isset(fimRoomFactory::$instances[$roomId]))

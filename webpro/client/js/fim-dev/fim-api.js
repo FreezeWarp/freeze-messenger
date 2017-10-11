@@ -133,6 +133,7 @@ fimApi.prototype.getUsers = function(params, requestSettings) {
     var params = fimApi.mergeDefaults(params, {
         'info' : ['self', 'groups', 'profile'],
         'access_token' : window.sessionHash,
+        'id' : null,
         'userIds' : null,
         'userNames' : null,
         'userNameSearch' : null
