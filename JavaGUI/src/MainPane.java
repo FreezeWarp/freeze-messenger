@@ -231,7 +231,7 @@ public class MainPane {
                             if(MessengerAPI.user.getId() == userId) {
 
 
-                                t = new TextFlow(messageText, new Text(": "), user.getAvatarImageView());
+                                t = new TextFlow(messageText, new Text("  "), user.getAvatarImageView());
                                 t.setTextAlignment(RIGHT);
                             }
 
