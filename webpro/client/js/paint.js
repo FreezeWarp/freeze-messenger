@@ -79,8 +79,8 @@ function $t(templateName, substitutions) {
 }
 
 
-function renderHandlebarsInPlace(tag, name) {
-    var id       = tag.attr('id'); console.log(id);
+function renderHandlebarsInPlace(tag, name) { console.log(tag);
+    var id       = tag.attr('id');
     var source   = tag.html();
     var template = Handlebars.compile(source);
     tag.replaceWith('<div id="' + id + '">' + template(window.phrases) + '</div>');
@@ -181,7 +181,6 @@ var userId, // The user ID who is logged in.
 window.isBlurred = false; // By default, we assume the window is active and not blurred.
 var topic,
     favicon = $('#favicon').attr('href'),
-    uploadSettings = {}, // Object
     requestSettings = {
         serverSentEvents : false, // We may set this to true if the server supports it.
         //timeout : 2400, // We may increase this dramatically if the server supports longPolling.
@@ -439,34 +438,11 @@ $.when(
         $('#viewStats').bind('click', function() { popup.viewStats(); }); // Room Post Stats
         $('#copyrightLink').bind('click', function() { popup.copyright(); }); // Copyright & Credits
         $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click', function() { popup.userSettings(); }); // User Settings
-        $('#viewUploads').bind('click', function() { popup.viewUploads(); }); // View My Uploads
         $('#icon_url').bind('click', function() { popup.insertDoc('url'); }); // Upload
 
         // Room Shower Thing
         $('#showMoreRooms').bind('click', function() { $('#roomListShort').slideUp(); $('#roomListLong').slideDown(); });
         $('#showFewerRooms').bind('click', function() { $('#roomListLong').slideUp(); $('#roomListShort').slideDown(); });
-
-
-        /*** Send Messages, Yay! ***/
-        $('#sendForm').bind('submit', function() {
-            var message = $('textarea#messageInput').val();
-
-            if (message.length === 0) { dia.error('Please enter your message.'); }
-            else {
-                standard.sendMessage(message); // Send the messaage
-                $('textarea#messageInput').val(''); // Clear the textbox
-            }
-
-            return false;
-        });
-
-
-        /*** Process Enter for Message Input ***/
-        $('#messageInput').onEnter(function() {
-            $('#sendForm').submit();
-
-            return false;
-        });
 
 
         showLogin = function() {

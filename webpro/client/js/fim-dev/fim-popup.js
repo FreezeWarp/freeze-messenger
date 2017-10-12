@@ -351,410 +351,399 @@ popup.prototype.viewStats = function() {
 
 /*** START User Settings ***/
 
-popup.prototype.userSettings = function() { /* TODO: Handle reset properly, and refresh the entire application when settings are changed. It used to make some sense not to, but not any more. */
-    dia.full({
-        content : $t('userSettingsForm'),
-        id : 'changeSettingsDialogue',
-        tabs : true,
-        width : 1000,
-        cF : function() {
-            $('.colorpicker').empty().remove();
+popup.prototype.settings = {
+    init : function() { /* TODO: Handle reset properly, and refresh the entire application when settings are changed. It used to make some sense not to, but not any more. */
+        // TODO: move
+        var idMap = {
+            disableFormatting : 16, disableImage : 32, disableVideos : 64, reversePostOrder : 1024,
+            showAvatars : 2048, audioDing : 8192, disableFx : 262144, disableRightClick : 1048576,
+            usTime : 16777216, twelveHourTime : 33554432, webkitNotifications : 536870912
+        };
 
-            return false;
-        },
-        oF : function() {
-            // TODO: move
-            var idMap = {
-                disableFormatting : 16, disableImage : 32, disableVideos : 64, reversePostOrder : 1024,
-                showAvatars : 2048, audioDing : 8192, disableFx : 262144, disableRightClick : 1048576,
-                usTime : 16777216, twelveHourTime : 33554432, webkitNotifications : 536870912
-            };
-
-            fimApi.getUsers({
-                'info' : ['self', 'profile'],
-                'id' : userId
-            }, {'each' : function(active) { console.log(active);
-
-                /**************************
-                 ***** Server Settings ****
-                 **************************/
-
-                var options = active.options,
-                    defaultHighlightHashPre = [],
-                    defaultHighlightHash = {r:0, g:0, b:0},
-                    defaultColourHashPre = [],
-                    defaultColourHash = {r:0, g:0, b:0};
-
-                var ignoreList = new autoEntry($("#ignoreListContainer"), {
-                    'name' : 'ignoreList',
-                    'default' : active.ignoredUsers,
-                    'list' : 'users',
-                    'resolveFromIds' : Resolver.resolveUsersFromIds,
-                    'resolveFromNames' : Resolver.resolveUsersFromNames
-                });
-
-                var friendsList = new autoEntry($("#friendsListContainer"), {
-                    'name' : 'friendsList',
-                    'default' : active.friendedUsers,
-                    'list' : 'users',
-                    'resolveFromIds' : Resolver.resolveUsersFromIds,
-                    'resolveFromNames' : Resolver.resolveUsersFromNames
-                });
-
-                var watchRooms = new autoEntry($("#watchRoomsContainer"), {
-                    'name' : 'watchRooms',
-                    'default' : active.watchRooms,
-                    'list' : 'rooms',
-                    'resolveFromIds' : Resolver.resolveRoomsFromIds,
-                    'resolveFromNames' : Resolver.resolveRoomsFromNames
-                });
-
-
-                $('#fontPreview').attr('style', active.messageFormatting);
-
-                defaultFormatting = active.messageFormatting.split(';');
-                defaultFormattingObj = {};
-                jQuery.each(defaultFormatting, function(index, value) {
-                    pair = value.split(':');
-                    defaultFormattingObj[pair[0]] = pair[1];
-                });
-
-
-                /* Update Default Forum Values Based on Server Settings */
-                // User Profile
-                if (active.profile) $('#profile').val(active.profile);
-
-
-                // Default Formatting -- Bold
-                if ('font-weight' in defaultFormattingObj && defaultFormattingObj['font-weight'] == 'bold') {
-                    $('#fontPreview').css('font-weight', 'bold');
-                    $('#defaultBold').attr('checked', 'checked');
-                }
-                $('#defaultBold').change(function() {
-                    if ($('#defaultBold').is(':checked')) $('#fontPreview').css('font-weight', 'bold');
-                    else $('#fontPreview').css('font-weight', 'normal');
-                });
-
-
-                // Default Formatting -- Italics
-                if ('font-style' in defaultFormattingObj && defaultFormattingObj['font-style'] == 'italic') {
-                    $('#defaultItalics').attr('checked', 'checked');
-                }
-                $('#defaultItalics').change(function() {
-                    if ($('#defaultItalics').is(':checked')) $('#fontPreview').css('font-style', 'italic');
-                    else $('#fontPreview').css('font-style', 'normal');
-                });
-
-
-                // Default Formatting -- Fontface
-                if (window.serverSettings.formatting.fonts) {
-                    // Populate Box
-                    jQuery.each(window.serverSettings.formatting.fonts, function(font, fontFamily) {
-                        $('#defaultFace').append($('<option>').attr({
-                            value: font,
-                            style: "font-family: " + fontFamily,
-                        }).attr((defaultFormattingObj['font-family'] == fontFamily) ? {
-                            selected : 'selected'
-                        } : {}).text(font));
-                    });
-
-                    // onChange
-                    $('#defaultFace').change(function() {
-                        $('#fontPreview').css('fontFamily', $('#defaultFace > option:selected').attr('data-font'));
-                    });
-                }
-                else {
-                    $('#defaultFace').hide();
-                }
-
-
-                // Colour Chooser -- Colour
-                if (window.serverSettings.formatting.color) {
-                    if ('color' in defaultFormattingObj) {
-                        $('#defaultColour').css('background-color', defaultFormattingObj['color']);
-
-                        defaultColourHashPre = defaultFormattingObj['color'].slice(4, -1).split(',');
-                        defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
-                    }
-
-                    $('#defaultColour').ColorPicker({
-                        color: defaultColourHash,
-                        onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
-                        onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
-                        onChange: function(hsb, hex, rgb) {
-                            defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
-
-                            $('#defaultColour').css('background-color', 'rgb(' + defaultColour + ')');
-                            $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
-                        }
-                    });
-                }
-                else {
-                    $('#defaultColour').hide();
-                }
-
-
-                // Colour Chooser -- Highlight
-                if (window.serverSettings.formatting.highlight) {
-                    if ('background-color' in defaultFormattingObj) {
-                        $('#defaultHighlight').css('background-color', defaultFormattingObj['background-color']);
-
-                        defaultHighlightHashPre = defaultFormattingObj['background-color'].slice(4, -1).split(',');
-                        defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
-                    }
-
-                    $('#defaultHighlight').ColorPicker({
-                        color: defaultHighlightHash,
-                        onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
-                        onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
-                        onChange: function(hsb, hex, rgb) {
-                            defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
-
-                            $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
-                            $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
-                        }
-                    });
-                }
-                else {
-                    $('#defaultHighlight').hide();
-                }
-
-
-                // Default Room Value
-                fimApi.getRooms({'roomIds' : [active.defaultRoomId]}, {'each' : function(roomData) { $('#defaultRoom').val(roomData.name).attr('data-id', roomData.id); }});
-
-
-                // Parental Ages/Flags
-                if (window.serverSettings.parentalControls.parentalEnabled) {
-                    // Parental Age Values
-                    jQuery.each(window.serverSettings.parentalControls.parentalAges, function(key, age) {
-                        $('#parentalAge').append(
-                            $('<option>').attr('value', age).text($l('parentalAges.' + age))
-                        );
-                    });
-
-                    // Parental Age Default
-                    $('select#parentalAge option[value=' + active.parentalAge + ']').attr('selected', 'selected');
-
-                    // Parental Flags Values
-                    jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(key, flag) {
-                        $('#parentalFlagsList').append($('<br />'),
-                            $('<label>').append(
-                                $('<input>').attr({
-                                    type : "checkbox",
-                                    value : "true",
-                                    name : "flag" + flag,
-                                    'data-cat' : "parentalFlag",
-                                    'data-name' : flag
-                                }),
-                                $('<span>').text($l('parentalFlags.' + flag))
-                            )
-                        );
-                    });
-
-                    // Parental Flags Default
-                    jQuery.each(active.parentalFlags, function(key, flag) {
-                        $('input[data-cat=parentalFlag][data-name=' + flag + ']').attr('checked', true);
-                    });
-                }
-                else {
-                    $('#settings5parentalAge, #settings5parentalFlags').hide();
-                }
-
-
-                // Default Privacy Level
-                $('input[name=privacyLevel][value="' + active.privacyLevel + '"]').prop('checked', true);
-            }});
-
-
-
+        fimApi.getUsers({
+            'info' : ['self', 'profile'],
+            'id' : userId
+        }, {'each' : function(active) { console.log(active);
 
             /**************************
-             * WebPro-Specific Values *
+             ***** Server Settings ****
              **************************/
 
-            // Only Show the Profile Setting if Using Vanilla Logins
-            if (window.serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
+            var options = active.options,
+                defaultHighlightHashPre = [],
+                defaultHighlightHash = {r:0, g:0, b:0},
+                defaultColourHashPre = [],
+                defaultColourHash = {r:0, g:0, b:0};
 
-            // Autocomplete Rooms and Users
-            $("#defaultRoom").autocompleteHelper('rooms');
+            var ignoreList = new autoEntry($("#ignoreListContainer"), {
+                'name' : 'ignoreList',
+                'default' : active.ignoredUsers,
+                'list' : 'users',
+                'resolveFromIds' : Resolver.resolveUsersFromIds,
+                'resolveFromNames' : Resolver.resolveUsersFromNames
+            });
 
+            var friendsList = new autoEntry($("#friendsListContainer"), {
+                'name' : 'friendsList',
+                'default' : active.friendedUsers,
+                'list' : 'users',
+                'resolveFromIds' : Resolver.resolveUsersFromIds,
+                'resolveFromNames' : Resolver.resolveUsersFromNames
+            });
 
-            /* Theme */
-            // Default
-            if (window.webproDisplay.theme) $('#theme > option[value="' + window.webproDisplay.theme + '"]').attr('selected', 'selected');
-
-            // onChange
-            $('#theme').change(function() {
-                $('#stylesjQ').attr('href', 'client/css/' + this.value + '/jquery-ui-1.8.16.custom.css');
-                $('#stylesVIM').attr('href', 'client/css/' + this.value + '/fim.css');
-
-                $.cookie('webpro_theme', this.value, { expires : 14 });
-                window.webproDisplay.theme = this.value;
-
-                return false;
+            var watchRooms = new autoEntry($("#watchRoomsContainer"), {
+                'name' : 'watchRooms',
+                'default' : active.watchRooms,
+                'list' : 'rooms',
+                'resolveFromIds' : Resolver.resolveRoomsFromIds,
+                'resolveFromNames' : Resolver.resolveRoomsFromNames
             });
 
 
-            /* Theme Fontsize */
-            // Default
-            if (window.webproDisplay.fontSize)
-                $('#fontsize > option[value="' + window.webproDisplay.fontSize + '"]').attr('selected', 'selected');
+            $('#fontPreview').attr('style', active.messageFormatting);
 
-            // onChange
-            $('#fontsize').change(function() {
-                $('body').css('font-size',this.value + 'em');
-
-                $.cookie('webpro_fontsize', this.value, { expires : 14 });
-                window.webproDisplay.fontSize = this.value;
-
-                windowResize();
-
-                return false;
+            defaultFormatting = active.messageFormatting.split(';');
+            defaultFormattingObj = {};
+            jQuery.each(defaultFormatting, function(index, value) {
+                pair = value.split(':');
+                defaultFormattingObj[pair[0]] = pair[1];
             });
 
 
-            /* Volume */
-            // Default
-            if (snd.volume) $('#audioVolume').attr('value', snd.volume * 100);
+            /* Update Default Forum Values Based on Server Settings */
+            // User Profile
+            if (active.profile) $('#profile').val(active.profile);
 
-            // onChange
-            $('#audioVolume').change(function() {
-                $.cookie('webpro_audioVolume', this.value, { expires : 14 });
-                snd.volume = this.value / 100;
 
-                return false;
+            // Default Formatting -- Bold
+            if ('font-weight' in defaultFormattingObj && defaultFormattingObj['font-weight'] == 'bold') {
+                $('#fontPreview').css('font-weight', 'bold');
+                $('#defaultBold').attr('checked', 'checked');
+            }
+            $('#defaultBold').change(function() {
+                if ($('#defaultBold').is(':checked')) $('#fontPreview').css('font-weight', 'bold');
+                else $('#fontPreview').css('font-weight', 'normal');
             });
 
 
-            /* Various Settings -- Update onChange, Refresh Posts */
-            // Defaults
-            if (settings.showAvatars) $('#showAvatars').attr('checked', 'checked');
-            if (settings.reversePostOrder) $('#reversePostOrder').attr('checked', 'checked');
-            if (settings.disableFormatting) $('#disableFormatting').attr('checked', 'checked');
-            if (settings.disableVideo) $('#disableVideo').attr('checked', 'checked');
-            if (settings.disableImage) $('#disableImage').attr('checked', 'checked');
-
-            // onChange -- refresh messages when needed
-            $('#showAvatars, #reversePostOrder, #disableFormatting, #disableVideo, #disableImage').change(function() {
-                var localId = $(this).attr('id');
-
-                if ($(this).is(':checked') && !settings[localId]) {
-                    settings[localId] = true;
-                    $('#messageList').html('');
-                    $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
-                }
-                else if (!$(this).is(':checked') && settings[localId]) {
-                    settings[localId] = false;
-                    $('#messageList').html('');
-                    $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
-                }
-
-                // TODO: test
-                standard.changeRoom(window.roomId);
+            // Default Formatting -- Italics
+            if ('font-style' in defaultFormattingObj && defaultFormattingObj['font-style'] == 'italic') {
+                $('#defaultItalics').attr('checked', 'checked');
+            }
+            $('#defaultItalics').change(function() {
+                if ($('#defaultItalics').is(':checked')) $('#fontPreview').css('font-style', 'italic');
+                else $('#fontPreview').css('font-style', 'normal');
             });
 
 
-            /* Various Settings */
-            // Defaults
-            if (settings.audioDing) $('#audioDing').attr('checked', 'checked');
-            if (settings.disableFx) $('#disableFx').attr('checked', 'checked');
-            if (settings.disableRightClick) $('#disableRightClick').attr('checked', 'checked');
-            if (settings.webkitNotifications) $('#webkitNotifications').attr('checked', 'checked');
-
-            // onChange
-            $('#audioDing, #disableFx, #webkitNotifications, #disableRightClick').change(function() {
-                var localId = $(this).attr('id');
-
-                if ($(this).is(':checked') && !settings[localId]) {
-                    settings[localId] = true;
-                    $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
-
-                    // Disable jQuery Effects
-                    if (localId === 'disableFx') {
-                        jQuery.fx.off = true;
-                    }
-
-                    // Notifications
-                    if (localId === 'webkitNotifications') {
-                        if (notify.webkitNotifySupported()) {
-                            notify.webkitNotifyRequest();  // Ask client permission for webkit notifications
-                        }
-                        else {
-                            dia.error("Notifications are not supported on your browser.");
-                        }
-                    }
-                }
-
-                else if (!$(this).is(':checked') && settings[localId]) {
-                    settings[localId] = false;
-                    $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
-
-                    // Reenable jQuery Effects
-                    if (localId === 'disableFx') {
-                        jQuery.fx.off = false;
-                    }
-                }
-            });
-
-
-
-            /**************************
-             ******* Submit Form ******
-             **************************/
-
-            $("#changeSettingsForm").submit(function() {
-                var defaultFormatting = [],
-                    parentalFlags = [];
-
-                if ($('#defaultBold').is(':checked')) defaultFormatting.push("bold");
-                if ($('#defaultItalics').is(':checked')) defaultFormatting.push("italic");
-
-                $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
-                    parentalFlags.push($(b).attr('data-name'));
+            // Default Formatting -- Fontface
+            if (window.serverSettings.formatting.fonts) {
+                // Populate Box
+                jQuery.each(window.serverSettings.formatting.fonts, function(font, fontFamily) {
+                    $('#defaultFace').append($('<option>').attr({
+                        value: font,
+                        style: "font-family: " + fontFamily,
+                    }).attr((defaultFormattingObj['font-family'] == fontFamily) ? {
+                        selected : 'selected'
+                    } : {}).text(font));
                 });
 
-                fimApi.editUserOptions('edit', {
-                    "defaultFontface" : $('#defaultFace option:selected').val(),
-                    "defaultFormatting" : defaultFormatting,
-                    "defaultHighlight" : ($('#fontPreview').css('background-color') === 'rgba(0, 0, 0, 0)' ? null : $('#fontPreview').css('background-color').slice(4,-1)),
-                    "defaultColor" : $('#fontPreview').css('color').slice(4,-1),
-                    "defaultRoomId" : $('#defaultRoom').attr('data-id'),
-                    "watchRooms" : $('#watchRooms').val().split(','),
-                    "ignoreList" : $('#ignoreList').val().split(','),
-                    "friendsList" : $('#friendsList').val().split(','),
-                    "profile" : $('#profile').val(),
-                    "parentalAge" : $('#parentalAge option:selected').val(),
-                    "parentalFlags" : parentalFlags,
-                    "privacyLevel" : $('input[name=privacyLevel]:radio:checked').val()
-                }, {
-                    'each' : function(value) {
-                        console.log(value);
-                    },
-                    'end' : function() {
-                        dia.info('Your settings have been updated successfully.');
+                // onChange
+                $('#defaultFace').change(function() {
+                    $('#fontPreview').css('fontFamily', $('#defaultFace > option:selected').attr('data-font'));
+                });
+            }
+            else {
+                $('#defaultFace').hide();
+            }
 
-                        $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-                        $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-                    },
-                    'error' : function(errors) {
-                        errorsList = [];
 
-                        for (var i = 0; i < errors.responseJSON.editUserOptions.length; i++) {
-                            errorsList.push("<li>" + i + ": " + errors.responseJSON.editUserOptions[i].exception.details + "</li>")
-                        }
-                        dia.error('Some of your settings have been updated. However, the following values were unable to be processed:<ul>' + errorsList.join() + '</ul>')
+            // Colour Chooser -- Colour
+            if (window.serverSettings.formatting.color) {
+                if ('color' in defaultFormattingObj) {
+                    $('#defaultColour').css('background-color', defaultFormattingObj['color']);
+
+                    defaultColourHashPre = defaultFormattingObj['color'].slice(4, -1).split(',');
+                    defaultColourHash = {r : defaultColourHashPre[0], g : defaultColourHashPre[1], b : defaultColourHashPre[2] }
+                }
+
+                $('#defaultColour').ColorPicker({
+                    color: defaultColourHash,
+                    onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
+                    onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
+                    onChange: function(hsb, hex, rgb) {
+                        defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+                        $('#defaultColour').css('background-color', 'rgb(' + defaultColour + ')');
+                        $('#fontPreview').css('color', 'rgb(' + defaultColour + ')');
                     }
                 });
+            }
+            else {
+                $('#defaultColour').hide();
+            }
 
-                return false; // Don't submit the form.
-            });
+
+            // Colour Chooser -- Highlight
+            if (window.serverSettings.formatting.highlight) {
+                if ('background-color' in defaultFormattingObj) {
+                    $('#defaultHighlight').css('background-color', defaultFormattingObj['background-color']);
+
+                    defaultHighlightHashPre = defaultFormattingObj['background-color'].slice(4, -1).split(',');
+                    defaultHighlightHash = {r : defaultHighlightHashPre[0], g : defaultHighlightHashPre[1], b : defaultHighlightHashPre[2] }
+                }
+
+                $('#defaultHighlight').ColorPicker({
+                    color: defaultHighlightHash,
+                    onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
+                    onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
+                    onChange: function(hsb, hex, rgb) {
+                        defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
+
+                        $('#defaultHighlight').css('background-color', 'rgb(' + defaultHighlight + ')');
+                        $('#fontPreview').css('background-color', 'rgb(' + defaultHighlight + ')');
+                    }
+                });
+            }
+            else {
+                $('#defaultHighlight').hide();
+            }
+
+
+            // Default Room Value
+            fimApi.getRooms({'roomIds' : [active.defaultRoomId]}, {'each' : function(roomData) { $('#defaultRoom').val(roomData.name).attr('data-id', roomData.id); }});
+
+
+            // Parental Ages/Flags
+            if (window.serverSettings.parentalControls.parentalEnabled) {
+                // Parental Age Values
+                jQuery.each(window.serverSettings.parentalControls.parentalAges, function(key, age) {
+                    $('#parentalAge').append(
+                        $('<option>').attr('value', age).text($l('parentalAges.' + age))
+                    );
+                });
+
+                // Parental Age Default
+                $('select#parentalAge option[value=' + active.parentalAge + ']').attr('selected', 'selected');
+
+                // Parental Flags Values
+                jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(key, flag) {
+                    $('#parentalFlagsList').append($('<br />'),
+                        $('<label>').append(
+                            $('<input>').attr({
+                                type : "checkbox",
+                                value : "true",
+                                name : "flag" + flag,
+                                'data-cat' : "parentalFlag",
+                                'data-name' : flag
+                            }),
+                            $('<span>').text($l('parentalFlags.' + flag))
+                        )
+                    );
+                });
+
+                // Parental Flags Default
+                jQuery.each(active.parentalFlags, function(key, flag) {
+                    $('input[data-cat=parentalFlag][data-name=' + flag + ']').attr('checked', true);
+                });
+            }
+            else {
+                $('#settings5parentalAge, #settings5parentalFlags').hide();
+            }
+
+
+            // Default Privacy Level
+            $('input[name=privacyLevel][value="' + active.privacyLevel + '"]').prop('checked', true);
+        }});
+
+
+
+
+        /**************************
+         * WebPro-Specific Values *
+         **************************/
+
+        // Only Show the Profile Setting if Using Vanilla Logins
+        if (window.serverSettings.branding.forumType !== 'vanilla') $('#settings5profile').hide(0);
+
+        // Autocomplete Rooms and Users
+        $("#defaultRoom").autocompleteHelper('rooms');
+
+
+        /* Theme */
+        // Default
+        if (window.webproDisplay.theme) $('#theme > option[value="' + window.webproDisplay.theme + '"]').attr('selected', 'selected');
+
+        // onChange
+        $('#theme').change(function() {
+            $('#stylesjQ').attr('href', 'client/css/' + this.value + '/jquery-ui-1.8.16.custom.css');
+            $('#stylesVIM').attr('href', 'client/css/' + this.value + '/fim.css');
+
+            $.cookie('webpro_theme', this.value, { expires : 14 });
+            window.webproDisplay.theme = this.value;
 
             return false;
-        }
-    });
+        });
 
-    return false;
+
+        /* Theme Fontsize */
+        // Default
+        if (window.webproDisplay.fontSize)
+            $('#fontsize > option[value="' + window.webproDisplay.fontSize + '"]').attr('selected', 'selected');
+
+        // onChange
+        $('#fontsize').change(function() {
+            $('body').css('font-size',this.value + 'em');
+
+            $.cookie('webpro_fontsize', this.value, { expires : 14 });
+            window.webproDisplay.fontSize = this.value;
+
+            windowResize();
+
+            return false;
+        });
+
+
+        /* Volume */
+        // Default
+        if (snd.volume) $('#audioVolume').attr('value', snd.volume * 100);
+
+        // onChange
+        $('#audioVolume').change(function() {
+            $.cookie('webpro_audioVolume', this.value, { expires : 14 });
+            snd.volume = this.value / 100;
+
+            return false;
+        });
+
+
+        /* Various Settings -- Update onChange, Refresh Posts */
+        // Defaults
+        if (settings.showAvatars) $('#showAvatars').attr('checked', 'checked');
+        if (settings.reversePostOrder) $('#reversePostOrder').attr('checked', 'checked');
+        if (settings.disableFormatting) $('#disableFormatting').attr('checked', 'checked');
+        if (settings.disableVideo) $('#disableVideo').attr('checked', 'checked');
+        if (settings.disableImage) $('#disableImage').attr('checked', 'checked');
+
+        // onChange -- refresh messages when needed
+        $('#showAvatars, #reversePostOrder, #disableFormatting, #disableVideo, #disableImage').change(function() {
+            var localId = $(this).attr('id');
+
+            if ($(this).is(':checked') && !settings[localId]) {
+                settings[localId] = true;
+                $('#messageList').html('');
+                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
+            }
+            else if (!$(this).is(':checked') && settings[localId]) {
+                settings[localId] = false;
+                $('#messageList').html('');
+                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
+            }
+
+            // TODO: test
+            standard.changeRoom(window.roomId);
+        });
+
+
+        /* Various Settings */
+        // Defaults
+        if (settings.audioDing) $('#audioDing').attr('checked', 'checked');
+        if (settings.disableFx) $('#disableFx').attr('checked', 'checked');
+        if (settings.disableRightClick) $('#disableRightClick').attr('checked', 'checked');
+        if (settings.webkitNotifications) $('#webkitNotifications').attr('checked', 'checked');
+
+        // onChange
+        $('#audioDing, #disableFx, #webkitNotifications, #disableRightClick').change(function() {
+            var localId = $(this).attr('id');
+
+            if ($(this).is(':checked') && !settings[localId]) {
+                settings[localId] = true;
+                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
+
+                // Disable jQuery Effects
+                if (localId === 'disableFx') {
+                    jQuery.fx.off = true;
+                }
+
+                // Notifications
+                if (localId === 'webkitNotifications') {
+                    if (notify.webkitNotifySupported()) {
+                        notify.webkitNotifyRequest();  // Ask client permission for webkit notifications
+                    }
+                    else {
+                        dia.error("Notifications are not supported on your browser.");
+                    }
+                }
+            }
+
+            else if (!$(this).is(':checked') && settings[localId]) {
+                settings[localId] = false;
+                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
+
+                // Reenable jQuery Effects
+                if (localId === 'disableFx') {
+                    jQuery.fx.off = false;
+                }
+            }
+        });
+
+
+
+        /**************************
+         ******* Submit Form ******
+         **************************/
+
+        $("#changeSettingsForm").submit(function() {
+            var defaultFormatting = [],
+                parentalFlags = [];
+
+            if ($('#defaultBold').is(':checked')) defaultFormatting.push("bold");
+            if ($('#defaultItalics').is(':checked')) defaultFormatting.push("italic");
+
+            $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
+                parentalFlags.push($(b).attr('data-name'));
+            });
+
+            fimApi.editUserOptions('edit', {
+                "defaultFontface" : $('#defaultFace option:selected').val(),
+                "defaultFormatting" : defaultFormatting,
+                "defaultHighlight" : ($('#fontPreview').css('background-color') === 'rgba(0, 0, 0, 0)' ? null : $('#fontPreview').css('background-color').slice(4,-1)),
+                "defaultColor" : $('#fontPreview').css('color').slice(4,-1),
+                "defaultRoomId" : $('#defaultRoom').attr('data-id'),
+                "watchRooms" : $('#watchRooms').val().split(','),
+                "ignoreList" : $('#ignoreList').val().split(','),
+                "friendsList" : $('#friendsList').val().split(','),
+                "profile" : $('#profile').val(),
+                "parentalAge" : $('#parentalAge option:selected').val(),
+                "parentalFlags" : parentalFlags,
+                "privacyLevel" : $('input[name=privacyLevel]:radio:checked').val()
+            }, {
+                'each' : function(value) {
+                    console.log(value);
+                },
+                'end' : function() {
+                    dia.info('Your settings have been updated successfully.');
+
+                    $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+                    $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+                },
+                'error' : function(errors) {
+                    errorsList = [];
+
+                    for (var i = 0; i < errors.responseJSON.editUserOptions.length; i++) {
+                        errorsList.push("<li>" + i + ": " + errors.responseJSON.editUserOptions[i].exception.details + "</li>")
+                    }
+                    dia.error('Some of your settings have been updated. However, the following values were unable to be processed:<ul>' + errorsList.join() + '</ul>')
+                }
+            });
+
+            window.history.back();
+
+            return false; // Don't submit the form.
+        });
+
+        return false;
+    }
 };
 
 /*** END User Settings ***/
@@ -766,65 +755,59 @@ popup.prototype.userSettings = function() { /* TODO: Handle reset properly, and 
 
 /*** START View My Uploads ***/
 
-popup.prototype.viewUploads = function() {
-    dia.full({
-        content : $t('viewUploads'),
-        width : 1200,
-        title : 'View My Uploads',
-        position : 'top',
-        oF : function() {
-            fimApi.getFiles({
-                'userIds' : [window.userId]
-            }, {
-                'each': function(active) {
-                    var parentalFlagsFormatted = [];
+popup.prototype.uploads = {
+    init : function() {
+        fimApi.getFiles({
+            'userIds' : [window.userId]
+        }, {
+            'each': function(active) {
+                var parentalFlagsFormatted = [];
 
-                    for (var i = 0; i < active.parentalFlags.length; i++) {
-                        if (active.parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + active.parentalFlags[i])); // Yes, this is a very weird line.
-                    }
-
-                    $('#viewUploadsBody').append(
-                        $('<tr>').append(
-                            $('<td align="center">').append(
-                                $('<img style="max-width: 200px; max-height: 200px;" />').attr('src', directory + 'file.php?' + $.param({
-                                    'sha256hash': active.sha256hash,
-                                    'thumbnailWidth': 200,
-                                    'thumbnailHeight': 200
-                                }))
-                            ).append('<br />').append($('<span>').text(active.fileName))
-                        ).append(
-                            $('<td align="center">').text(active.fileSizeFormatted)
-                        ).append(
-                            $('<td align="center">').text($l('parentalAges.' + active.parentalAge))
-                                .append('<br />')
-                                .append(parentalFlagsFormatted.join(', '))
-                        ).append(
-                            $('<td align="center">').append(
-                                $('<button>').click(function() {
-                                    fimApi.editUserOptions('edit', {
-                                        'avatar': serverSettings.installUrl + "file.php?sha256hash=" + active.sha256hash + '&thumbnailWidth=200&thumbnailHeight=200',
-                                    }, {
-                                        'end' : function(response) {
-                                            if ("avatar" in response) {
-                                                dia.error(response.avatar.string);
-                                            }
-                                            else {
-                                                dia.info('Your avatar has been updated. It will not appear in your old messages.');
-                                            }
-                                        }
-                                    });
-                                }).text('Set to Avatar')
-                            )
-                        )
-                    );
-                },
-                'end' : function() {
-                    $("#viewUploadsBody img").load(windowDraw);
+                for (var i = 0; i < active.parentalFlags.length; i++) {
+                    if (active.parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + active.parentalFlags[i])); // Yes, this is a very weird line.
                 }
-            });
-        }
-    });
-};
+
+                $('#viewUploadsBody').append(
+                    $('<tr>').append(
+                        $('<td align="center">').append(
+                            $('<img style="max-width: 200px; max-height: 200px;" />').attr('src', directory + 'file.php?' + $.param({
+                                'sha256hash': active.sha256hash,
+                                'thumbnailWidth': 200,
+                                'thumbnailHeight': 200
+                            }))
+                        ).append('<br />').append($('<span>').text(active.fileName))
+                    ).append(
+                        $('<td align="center">').text(active.fileSizeFormatted)
+                    ).append(
+                        $('<td align="center">').text($l('parentalAges.' + active.parentalAge))
+                            .append('<br />')
+                            .append(parentalFlagsFormatted.join(', '))
+                    ).append(
+                        $('<td align="center">').append(
+                            $('<button>').click(function() {
+                                fimApi.editUserOptions('edit', {
+                                    'avatar': serverSettings.installUrl + "file.php?sha256hash=" + active.sha256hash + '&thumbnailWidth=200&thumbnailHeight=200',
+                                }, {
+                                    'end' : function(response) {
+                                        if ("avatar" in response) {
+                                            dia.error(response.avatar.string);
+                                        }
+                                        else {
+                                            dia.info('Your avatar has been updated. It will not appear in your old messages.');
+                                        }
+                                    }
+                                });
+                            }).text('Set to Avatar')
+                        )
+                    )
+                );
+            },
+            'end' : function() {
+                $("#viewUploadsBody img").load(windowDraw);
+            }
+        });
+    }
+}
 
 /*** END View My Uploads ***/
 
@@ -1275,26 +1258,6 @@ popup.prototype.kick = function() {
 
 
 
-
-/*** START Help ***/
-
-popup.prototype.help = function() {
-    dia.full({
-        content : $t('help'),
-        title : 'helpDialogue',
-        width : 1000,
-        position : 'top',
-        tabs : true
-    });
-
-    return false;
-};
-
-/*** END Help ***/
-
-
-
-
 /*** START Archive ***/
 
 popup.prototype.archive = {
@@ -1500,22 +1463,6 @@ popup.prototype.exportArchive = function() {
 };
 
 
-
-
-/*** START Copyright ***/
-
-popup.prototype.copyright = function() {
-    dia.full({
-        content : $t('copyright'),
-        title : 'copyrightDialogue',
-        width : 800,
-        tabs : true
-    });
-
-    return false;
-};
-
-
 popup.prototype.room = {
     options : {
         roomId : 0,
@@ -1531,6 +1478,26 @@ popup.prototype.room = {
             _this.options[i] = options[i];
 
         var intervalPing;
+
+
+        $('#sendForm').bind('submit', function() {
+            var message = $('textarea#messageInput').val();
+
+            if (message.length === 0) { dia.error('Please enter your message.'); }
+            else {
+                _this.sendMessage(message); // Send the messaage
+                $('textarea#messageInput').val(''); // Clear the textbox
+            }
+
+            return false;
+        });
+
+        $('#messageInput').onEnter(function() {
+            $('#sendForm').submit();
+
+            return false;
+        });
+
 
         fimApi.getRooms({
             'id' : _this.options.roomId,
@@ -1580,6 +1547,8 @@ popup.prototype.room = {
     },
 
     eventListener : function() {
+        var _this = this;
+
         var roomSource = new EventSource(directory + 'stream.php?queryId=' + _this.options.roomId + '&streamType=room&lastEvent=' + _this.options.lastEvent + '&lastMessage=' + _this.options.lastMessage + '&access_token=' + window.sessionHash);
         var eventHandler = function(callback) {
             return function(event) {
@@ -1632,7 +1601,7 @@ popup.prototype.room = {
                     if (window.requestSettings.serverSentEvents) {
                         fimApi.getMessages(null, {'close' : true});
 
-                        this.roomEventListener();
+                        _this.eventListener();
                     }
                 }
             });

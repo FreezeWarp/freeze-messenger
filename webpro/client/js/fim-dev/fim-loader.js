@@ -746,46 +746,23 @@ function fim_hashParse(options) {
             urlHashComponentsMap[componentPieces[0]] = componentPieces[1];
     }
 
-    if ('room' in urlHashComponentsMap) {
-        urlHashComponentsMap['roomId'] = urlHashComponentsMap['room'];
+    if (!('room' in urlHashComponents)) {
+        urlHashComponentsMap['room'] = window.activeLogin.userData.defaultRoomId;
     }
+    urlHashComponentsMap['roomId'] = urlHashComponentsMap['room'];
 
     switch (urlHashComponents[1]) {
         case 'archive':
-            fim_openView('archive', urlHashComponentsMap);
-            break;
-
         case 'rooms':
-            fim_openView('rooms', urlHashComponentsMap);
-            break;
-
-        case 'settings':
-            popup.userSettings();
-            break;
-
-        case 'online':
-            popup.online();
-            break;
-
-        case 'stats':
-            history.replaceState(undefined, undefined, "#page=stats#room=" + window.roomId);
-            popup.viewStats();
-            break;
-
-        case 'createRoom':
-            popup.editRoom();
-            break;
-
         case 'uploads':
-            popup.viewUploads();
-            break;
-
-        case 'private':
-            popup.privateRoom();
+        case 'copyright':
+        case 'help':
+        case 'room':
+        case 'settings':
+            fim_openView(urlHashComponents[1], urlHashComponentsMap);
             break;
 
         default:
-        case 'room':
             fim_openView('room', urlHashComponentsMap);
             break;
     }
