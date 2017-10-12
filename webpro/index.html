@@ -50,6 +50,203 @@
 <body>
 
 <script id="entry-template" type="text/x-handlebars-template">
+    <div id="modal-login" class="modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Login</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="#" method="post" id="loginForm" name="loginForm" style="text-align: center; display: block;">
+                        <label for="userName">{{loginUsername}}</label><br/><input type="text" name="userName"
+                                                                                   id="userName"/><br/><br/><label for="password">{{loginPassword}}</label><br/><input
+                            type="password" name="password" id="password"/><br/><br/><label
+                            for="rememberme">{{loginRemember}}</label><input type="checkbox" name="rememberme"
+                                                                             id="rememberme"/><br/><br/>
+                        <button type="submit">{{loginSubmit}}</button>
+                        <button type="reset">{{loginReset}}</button>
+                    </form>
+                    <br/>
+                    <div style="text-align: center;"><strong>Not registered yet?</strong><br/>
+                        <a href="../redirect.php?do=register">Register now!</a><br/>
+                        <a href="../validate.php?integrationMethod=google">Login/Register with Google</a><br/>
+                        <a href="../validate.php?integrationMethod=twitter">Login/Register with Twitter</a><br/>
+                        <a href="../validate.php?integrationMethod=facebook">Login/Register with Facebook</a><br/>
+                        <a href="../validate.php?integrationMethod=microsoft">Login/Register with Microsoft</a><br/><br/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-kick" class="modal">
+        <form action="#" id="kickUserForm" method="post">
+            <label for="userName">User</label>: <input type="text" name="userName" id="userName" required/><br/>
+            <label for="roomNameKick">Room</label>: <input type="text" id="roomNameKick" name="roomNameKick" required/><br/>
+            <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" required/>
+            <select name="interval" id="interval">
+                <option value="1">Seconds</option>
+                <option value="60">Minutes</option>
+                <option value="3600">Hours</option>
+                <option value="86400">Days</option>
+                <option value="604800">Weeks</option>
+            </select><br/><br/>
+            <button type="submit">Kick User</button>
+            <button type="reset">Reset</button>
+        </form>
+    </div>
+
+    <div id="modal-stats" class="modal">
+        <table class="center" id="viewStats">
+            <thead>
+            <tr>
+                <th>Position</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="modal-privateRoom" class="modal">
+        <form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm"><label for="userName">Username</label>:
+            <input type="text" name="userName" id="userName"/><br/>
+            <small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small>
+            <br/><br/>
+            <button type="submit">Go</button>
+        </form>
+    </div>
+
+    <div id="modal-online" class="modal">
+        <table class="center">
+            <thead>
+            <tr class="hrow">
+                <th>User</th>
+                <th>Rooms</th>
+            </tr>
+            </thead>
+            <tbody id="onlineUsers">
+            <tr>
+                <td colspan="2">Loading...</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="modal-insertDoc" class="modal">
+        <ul class="tabList">
+            <li><a href="#insertDocUpload">{{fileTabUpload}}</a></li>
+            <li><a href="#insertDocLink">{{fileTabLink}}</a></li>
+            <li><a href="#insertDocImage">{{fileTabImage}}</a></li>
+            <li><a href="#insertDocVideo">{{fileTabVideo}}</a></li>
+        </ul>
+        <div id="insertDocUpload">
+            <form method="post" enctype="multipart/form-data" id="uploadFileForm">
+                <fieldset style="float: left; width: 70%;">
+                    <legend>{{fileUploadLegend}}</legend>
+                    <fieldset style="float: right;">
+                        <legend>{{fileUploadPreviewLegend}}</legend>
+                        <div id="uploadFileFormPreview"></div>
+                    </fieldset>
+                    <div id="uploadFile"><label for="fileUpload">{{fileUploadFileLabel}}</label><input name="fileUpload"
+                                                                                                       id="fileUpload"
+                                                                                                       type="file"/><br
+                        / <span class="indent"><small>{{fileUploadFileBlurb}}</small></span><br/><br/></div>
+                    <div id="uploadParentalAge"><label for="parentalAge">{{fileUploadAgeLabel}}</label><select
+                            name="parentalAge" id="parentalAge"></select><br/><span class="indent"><small>{{fileUploadAgeBlurb}}</small></span><br/><br/>
+                    </div>
+                    <div id="uploadParentalFlags"><label for="parentalFlagsList">{{fileUploadFlagsLabel}}</label>
+                        <div id="parentalFlagsList" class="indent small"></div>
+                        <br/><span class="indent"><small>{{fileUploadFlagsBlurb}}</small></span><br/><br/></div>
+                    <button onclick="$('#insertDoc').dialog('close');" type="button">{{fileUploadCancel}}</button>
+                    <button type="submit" id="imageUploadSubmitButton">{{fileUploadSend}}</button>
+                </fieldset>
+                <fieldset style="float: right; width: 28%">
+                    <legend>{{fileUploadInfoLegend}}</legend>
+                    <table id="fileUploadInfo" style="Width: 100%;">
+                        <thead>
+                        <tr>
+                            <th>{{fileUploadInfoExtensions}}</th>
+                            <th>{{fileUploadInfoContainer}}</th>
+                            <th>{{fileUploadInfoMaxSize}}</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </fieldset>
+            </form>
+        </div>
+        <div id="insertDocLink">
+            <form action="#" method="post" target="upload_target3" id="linkForm"
+                  onsubmit="$('#textentryBoxUrl').dialog('close');">
+                <fieldset>
+                    <legend>{{fileLinkNormal}}</legend>
+                    <label for="linkUrl">{{fileLinkNormalURL}}</label><input name="linkUrl" id="linkUrl" type="url"/>
+                </fieldset>
+                <br/>
+                <fieldset>
+                    <legend>{{fileLinkEmail}}</legend>
+                    <label for="linkEmail">{{fileLinkEmailAddress}}</label><input name="linkEmail" id="linkEmail"
+                                                                                  type="email"/></span><br/></fieldset>
+                <br/>
+                <fieldset>
+                    <legend>{{fileLinkSubmit}}</legend>
+                    <button onclick="$('#textentryBoxUrl').dialog('close');" type="button">{{fileLinkCancel}}</button>
+                    <button type="submit" id="linkSubmitButton">{{fileLinkSend}}</button>
+                </fieldset>
+                <input type="hidden" name="method" value="url"/></form>
+        </div>
+        <div id="insertDocImage">
+            <form method="post" id="uploadUrlForm">
+                <fieldset>
+                    <legend>{{fileImageLegend}}</legend>
+                    <fieldset style="float: right;">
+                        <legend>{{fileImagePreviewLegend}}</legend>
+                        <div id="uploadUrlFormPreview"></div>
+                    </fieldset>
+                    <label for="urlUpload">{{fileImageURL}}</label><input name="urlUpload" id="urlUpload" type="url"
+                                                                          value="http://"/></span><br/>
+                    <button onclick="$('insertDoc').dialog('close');" type="button">{{fileImageCancel}}</button>
+                    <button type="submit" id="imageEmbedSubmitButton">{{fileImageSend}}</button>
+                </fieldset>
+                <br/></form>
+        </div>
+        <div id="insertDocVideo">
+            <fieldset>
+                <legend>{{fileVideoDirectLegend}}</legend>
+                <form action="#" method="post" enctype="multipart/form-data" target="upload_target2"
+                      id="uploadYoutubeForm" onsubmit="$('#textentryBoxYoutube').dialog('close');"><label
+                        for="youtubeUpload">{{fileVideoURL}}</label><input name="youtubeUpload" id="youtubeUpload"
+                                                                           type="url" value="http://"/><input
+                        name="youtubeUpload" id="youtubeUpload" type="url" value="http://"/><br/>
+                    <button onclick="$('#textentryBoxYoutube').dialog('close');" type="button">{{fileVideoCancel}}
+                    </button>
+                    <button type="submit">{{fileVideoSend}}</button>
+                    <iframe id="upload_target2" name="upload_target2" class="nodisplay"></iframe>
+                    <input type="hidden" name="method" value="youtube"/></form>
+            </fieldset>
+            <br/>
+            <fieldset>
+                <legend>{{fileVideoSearchLegend}}</legend>
+                <form action="#" onsubmit="return false;"><input type="text" onkeyup="updateVids(this.value);"/>
+                    <div id="youtubeResultsContainer">
+                        <table id="youtubeResults">
+                            <tr>
+                                <td>{{fileVideoSearchHolder}}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </form>
+            </fieldset>
+        </div>
+        </form>
+    </div>
+
     <div id="tooltext" class="tooltip-content"></div>
     <div id="page" data-role="page" class="row"><!-- START links -->
         <div id="menuParent" class="col-med-auto" style="width: 300px;" role="tablist">
@@ -128,195 +325,195 @@
 
         <div id="content" data-role="content" class="col">
             <{{!}}script id="view-room" type="text/x-handlebars-template">
-                <div id="roomTemplateContainer">
-                    <div id="chatContainer" class="card">
-                        <div id="messageListCard">
-                            <div id="title" class="card-header">
-                                <div id="rightTitle" class="rightPart">
-                                    <form action="#" onsubmit="return false;" class="rightPart">
-                                        <button type="button" class="btn btn-primary" title="Settings" onclick="location.hash='#settings'">
-                                            <i class="fa fa-cog" aria-hidden="true"></i>
-                                        </button>
+            <div id="roomTemplateContainer">
+                <div id="chatContainer" class="card">
+                    <div id="messageListCard">
+                        <div id="title" class="card-header">
+                            <div id="rightTitle" class="rightPart">
+                                <form action="#" onsubmit="return false;" class="rightPart">
+                                    <button type="button" class="btn btn-primary" title="Settings" onclick="location.hash='#settings'">
+                                        <i class="fa fa-cog" aria-hidden="true"></i>
+                                    </button>
 
-                                        <button type="button" class="btn btn-primary" title="Archive" onclick="location.hash='#archive'">
-                                            <i class="fa fa-history"></i>
-                                        </button>
+                                    <button type="button" class="btn btn-primary" title="Archive" onclick="location.hash='#archive'">
+                                        <i class="fa fa-history"></i>
+                                    </button>
 
-                                        <button type="button" class="btn btn-primary" title="Help" accesskey="?" onclick="location.hash='#help'">
-                                            <i class="fa fa-question-circle"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                                <span id="roomName"></span><br/><em id="topic"></em>
+                                    <button type="button" class="btn btn-primary" title="Help" accesskey="?" onclick="location.hash='#help'">
+                                        <i class="fa fa-question-circle"></i>
+                                    </button>
+                                </form>
                             </div>
-                            <div id="messageListContainer">
-                                <div id="messageList"></div>
-                            </div>
+                            <span id="roomName"></span><br/><em id="topic"></em>
                         </div>
-                        <div id="textentryBoxMessage" class="card">
-                            <form id="sendForm" action="#" method="post">
-                                <div class="card-header">
-                                    <div class="row">
-                                        <div class="col">
-                                            <button type="button" class="btn btn-primary" id="icon_url" title="Upload File" accesskey="u">
-                                                <i class="fa fa-upload" aria-hidden="true"></i>
-                                            </button>
-                                        </div>
-                                        <div class="col" style="text-align: right;">
-                                            <button type="submit" class="btn btn-primary" id="icon_submit" title="Submit Message">
-                                                <i class="fa fa-paper-plane" aria-hidden="true"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <textarea id="messageInput" autofocus="autofocus" placeholder="Enter your text."></textarea>
-                                </div>
-                            </form>
+                        <div id="messageListContainer">
+                            <div id="messageList"></div>
                         </div>
                     </div>
+                    <div id="textentryBoxMessage" class="card">
+                        <form id="sendForm" action="#" method="post">
+                            <div class="card-header">
+                                <div class="row">
+                                    <div class="col">
+                                        <button type="button" class="btn btn-primary" id="icon_url" title="Upload File" accesskey="u">
+                                            <i class="fa fa-upload" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <div class="col" style="text-align: right;">
+                                        <button type="submit" class="btn btn-primary" id="icon_submit" title="Submit Message">
+                                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <textarea id="messageInput" autofocus="autofocus" placeholder="Enter your text."></textarea>
+                            </div>
+                        </form>
+                    </div>
                 </div>
+            </div>
             <{{!}}/script>
 
             <{{!}}script id="view-help" type="text/x-handlebars-template">
-                <ul>
-                    <li><a href="#intro">{{helpTabIntro}}</a></li>
-                    <li><a href="#rules">{{helpTabRules}}</a></li>
-                    <li><a href="#help">{{helpTabHelp}}</a></li>
-                    <li><a href="#browser">{{helpTabReqs}}</a></li>
-                    <li><a href="#faqs">{{helpTabFAQs}}</a></li>
-                </ul>
+            <ul>
+                <li><a href="#intro">{{helpTabIntro}}</a></li>
+                <li><a href="#rules">{{helpTabRules}}</a></li>
+                <li><a href="#help">{{helpTabHelp}}</a></li>
+                <li><a href="#browser">{{helpTabReqs}}</a></li>
+                <li><a href="#faqs">{{helpTabFAQs}}</a></li>
+            </ul>
 
-                <div id="intro">{{helpIntro}}</div>
-                <div id="rules">{{helpRules}}</div>
-                <div id="help">{{helpHelp}}</div>
-                <div id="browser">{{helpBrowser}}</div>
-                <div id="faqs">{{helpFAQs}}</div>
+            <div id="intro">{{helpIntro}}</div>
+            <div id="rules">{{helpRules}}</div>
+            <div id="help">{{helpHelp}}</div>
+            <div id="browser">{{helpBrowser}}</div>
+            <div id="faqs">{{helpFAQs}}</div>
             <{{!}}/script>
 
             <{{!}}script id="view-copyright" type="text/x-handlebars-template">
-                <ul class="tabList">
-                    <li><a href="#copyright1">{{copyrightTabCopyright}}</a></li>
-                    <li><a href="#copyright2">{{copyrightTabLicense}}</a></li>
-                    <li><a href="#copyright3">{{copyrightTabThanks}}</a></li>
-                </ul>
+            <ul class="tabList">
+                <li><a href="#copyright1">{{copyrightTabCopyright}}</a></li>
+                <li><a href="#copyright2">{{copyrightTabLicense}}</a></li>
+                <li><a href="#copyright3">{{copyrightTabThanks}}</a></li>
+            </ul>
 
-                <div style="text-align: center;" id="copyright1">{{copyrightCopyright}}</div>
-                <div id="copyright2">{{copyrightLicense}}</div>
-                <div style="text-align: center;" id="copyright3">{{copyrightThanks}}</div>
+            <div style="text-align: center;" id="copyright1">{{copyrightCopyright}}</div>
+            <div id="copyright2">{{copyrightLicense}}</div>
+            <div style="text-align: center;" id="copyright3">{{copyrightThanks}}</div>
             <{{!}}/script>
 
 
             <{{!}}script id="view-uploads" type="text/x-handlebars-template">
-                <table align="center">
-                    <thead>
-                        <tr>
-                            <td>File</td>
-                            <td>Size</td>
-                            <td>Parental Info</td>
-                            <td>Actions</td>
-                        </tr>
-                    </thead>
-                    <tbody id="viewUploadsBody">
-                    </tbody>
-                </table>
+            <table align="center">
+                <thead>
+                <tr>
+                    <td>File</td>
+                    <td>Size</td>
+                    <td>Parental Info</td>
+                    <td>Actions</td>
+                </tr>
+                </thead>
+                <tbody id="viewUploadsBody">
+                </tbody>
+            </table>
             <{{!}}/script>
 
             <{{!}}script id="view-archive" type="text/x-handlebars-template">
-                <form id="archiveSearch" action="#" method="get" style="text-align: center;">
-                    <table style="text-align: center; margin-left: auto; margin-right: auto;">
-                        <thead>
-                        <tr>
-                            <th align="center">
-                                <small>{{archiveSearchTextLabel}}</small>
-                            </th>
-                            <th>
-                                <small>{{archiveSearchUserLabel}}</small>
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td><input type="text" id="searchText" name="searchText"
-                                       style="margin-left: auto; margin-right: auto; text-align: left;"/></td>
-                            <td><input type="text" id="searchUser" name="searchUser"
-                                       style="margin-left: auto; margin-right: auto; text-align: left;"/></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </form><br/><br/>
-                <table class="messageTable center">
+            <form id="archiveSearch" action="#" method="get" style="text-align: center;">
+                <table style="text-align: center; margin-left: auto; margin-right: auto;">
                     <thead>
                     <tr>
-                        <th style="width: 20%;">{{archiveHeaderUser}}</th>
-                        <th style="width: 20%;">{{archiveHeaderTime}}</th>
-                        <th style="width: 50%;">{{archiveHeaderMessage}}</th>
-                        <th>-</th>
+                        <th align="center">
+                            <small>{{archiveSearchTextLabel}}</small>
+                        </th>
+                        <th>
+                            <small>{{archiveSearchUserLabel}}</small>
+                        </th>
                     </tr>
                     </thead>
-                    <tbody id="archiveMessageList"></tbody>
-                </table><br/><br/>
-                <div align="center">
-                    <button id="archivePrev">{{archivePreviousButton}}</button>
-                    <button id="export">{{archiveExportButton}}</button>
-                    <button id="archiveNext">{{archiveNextButton}}</button>
-                </div>
+                    <tbody>
+                    <tr>
+                        <td><input type="text" id="searchText" name="searchText"
+                                   style="margin-left: auto; margin-right: auto; text-align: left;"/></td>
+                        <td><input type="text" id="searchUser" name="searchUser"
+                                   style="margin-left: auto; margin-right: auto; text-align: left;"/></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </form><br/><br/>
+            <table class="messageTable center">
+                <thead>
+                <tr>
+                    <th style="width: 20%;">{{archiveHeaderUser}}</th>
+                    <th style="width: 20%;">{{archiveHeaderTime}}</th>
+                    <th style="width: 50%;">{{archiveHeaderMessage}}</th>
+                    <th>-</th>
+                </tr>
+                </thead>
+                <tbody id="archiveMessageList"></tbody>
+            </table><br/><br/>
+            <div align="center">
+                <button id="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
+                <button id="export" class="btn btn-secondary">{{archiveExportButton}}</button>
+                <button id="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
+            </div>
             <{{!}}/script>
 
             <{{!}}script id="view-rooms" type="text/x-handlebars-template">
-                <form id="roomSearch" action="#" method="get" style="text-align: center;">
-                    <table style="text-align: center; margin-left: auto; margin-right: auto;">
-                        <thead>
-                        <tr>
-                            <th align="center">
-                                <small>{{selectRoomSearchTextLabel}}</small>
-                            </th>
-                            <th>
-                                <small>{{selectRoomPermissionLevelLabel}}</small>
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td><input type="text" id="roomNameSearchText" name="roomNameSearchText"
-                                       style="margin-left: auto; margin-right: auto; text-align: left;"/></td>
-                            <td><select id="permissionLevel" name="permissionLevel"
-                                        style="margin-left: auto; margin-right: auto; text-align: left;">
-                                <option value="10">{{selectRoomPermissionLevel.view}}</option>
-                                <option value="25" selected="selected">{{selectRoomPermissionLevel.post}}</option>
-                                <option value="50">{{selectRoomPermissionLevel.moderate}}</option>
-                                <option value="100">{{selectRoomPermissionLevel.own}}</option>
-                            </select></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </form><br/><br/>
-                <table class="roomTable center">
+            <form id="roomSearch" action="#" method="get" style="text-align: center;">
+                <table style="text-align: center; margin-left: auto; margin-right: auto;">
                     <thead>
                     <tr>
-                        <th style="width: 20%;">{{selectRoomHeaderName}}</th>
-                        <th style="width: 60%;">{{selectRoomHeaderTopic}}</th>
-                        <th style="width: 20%;">{{selectRoomHeaderActions}}</th>
+                        <th align="center">
+                            <small>{{selectRoomSearchTextLabel}}</small>
+                        </th>
+                        <th>
+                            <small>{{selectRoomPermissionLevelLabel}}</small>
+                        </th>
                     </tr>
                     </thead>
-                    <tbody id="roomTableHtml"></tbody>
-                </table><br/><br/>
-                <div align="center">
-                    <button id="roomListPrev">{{selectRoomPreviousButton}}</button>
-                    <button id="roomListNext">{{selectRoomNextButton}}</button>
-                </div>
+                    <tbody>
+                    <tr>
+                        <td><input type="text" id="roomNameSearchText" name="roomNameSearchText"
+                                   style="margin-left: auto; margin-right: auto; text-align: left;"/></td>
+                        <td><select id="permissionLevel" name="permissionLevel"
+                                    style="margin-left: auto; margin-right: auto; text-align: left;">
+                            <option value="10">{{selectRoomPermissionLevel.view}}</option>
+                            <option value="25" selected="selected">{{selectRoomPermissionLevel.post}}</option>
+                            <option value="50">{{selectRoomPermissionLevel.moderate}}</option>
+                            <option value="100">{{selectRoomPermissionLevel.own}}</option>
+                        </select></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </form><br/><br/>
+            <table class="roomTable center">
+                <thead>
+                <tr>
+                    <th style="width: 20%;">{{selectRoomHeaderName}}</th>
+                    <th style="width: 60%;">{{selectRoomHeaderTopic}}</th>
+                    <th style="width: 20%;">{{selectRoomHeaderActions}}</th>
+                </tr>
+                </thead>
+                <tbody id="roomTableHtml"></tbody>
+            </table><br/><br/>
+            <div align="center">
+                <button id="roomListPrev">{{selectRoomPreviousButton}}</button>
+                <button id="roomListNext">{{selectRoomNextButton}}</button>
+            </div>
             <{{!}}/script>
-            
+
             <{{!}}script id="view-settings" type="text/x-handlebars-template">
-                <ul class="nav nav-tabs" role="tablist" id="settingsTabs">
-                    <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#settings5">{{settingsTabGeneral}}</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsTabPrivacy}}</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings1">{{settingsTabDisplay}}</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings4">{{settingsTabFormatting}}</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings2">{{settingsTabHacks}}</a></li>
-                </ul>
-                <form action="#" method="post" id="changeSettingsForm">
-                    <div class="tab-content" id="settingsTabsContent">
+            <ul class="nav nav-tabs" role="tablist" id="settingsTabs">
+                <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#settings5">{{settingsTabGeneral}}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsTabPrivacy}}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings1">{{settingsTabDisplay}}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings4">{{settingsTabFormatting}}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings2">{{settingsTabHacks}}</a></li>
+            </ul>
+            <form action="#" method="post" id="changeSettingsForm">
+                <div class="tab-content" id="settingsTabsContent">
                     <div class="tab-pane fade show active" role="tabpanel" id="settings1">
                         <div id="settings1theme">
                             <label for="theme">{{settingsThemeLabel}}</label>
@@ -548,11 +745,92 @@
                         <button type="submit">{{settingsSave}}</button>
                         <button type="reset">{{settingsReset}}</button>
                         <input type="hidden" name="settingsOfficialAjax" value="true"/></div>
-                    </div>
                 </div>
-                </form>
-            <{{!}}/script>
         </div>
+        </form>
+        <{{!}}/script>
+
+        <{{!}}script id="view-editRoom" type="text/x-handlebars-template">
+        <ul class="tabList">
+            <li><a href="#editRoom1">{{editRoomTabGeneral}}</a></li>
+            <li><a href="#editRoom2">{{editRoomTabPermissions}}</a></li>
+        </ul>
+        <form action="#" method="post" id="editRoomForm">
+            <div id="editRoom1">
+                <div id="editRoom1Name"><label for="name">{{editRoomNameLabel}}</label>: <input type="text" name="name"
+                                                                                                id="name"/><br/>
+                    <small><span class="indent">{{editRoomNameBlurb}}</span></small>
+                    <br/><br/></div>
+                <div id="editRoom1ParentalAge"><label for="parentalAge">{{editRoomParentalAgeLabel}}</label><select
+                        name="parentalAge" id="parentalAge"></select><br/>
+                    <small><span class="indent">{{editRoomParentalAgeBlurb}}</span></small>
+                    <br/><br/></div>
+                <div id="editRoom1ParentalFlags"><label for="parentalFlagsList">{{editRoomParentalFlagsLabel}}</label>
+                    <div name="parentalFlagsList" id="parentalFlagsList" class="indent"></div>
+                    <small><span class="indent">{{editRoomParentalFlagsBlurb}}</span></small>
+                    <br/><br/></div>
+                <div id="editRoom1Censor"><label>{{editRoomCensorLabel}}</label>:<br/>
+                    <div class="indent" id="censorLists"></div>
+                    <br/></div>
+                <div id="editRoom1Hidden"><label><input type="checkbox" id="allowHidden" name="allowHidden"/>{{editRoomHiddenLabel}}</label><br/>
+                    <small><span class="indent">{{editRoomHiddenBlurb}}</span></small>
+                    <br/><br/></div>
+                <div id="editRoom1Official"><label><input type="checkbox" id="allowOfficial" name="allowOfficial"/>{{editRoomOfficialLabel}}</label><br/>
+                    <small><span class="indent">{{editRoomOfficialBlurb}}</span></small>
+                    <br/><br/></div>
+                <button type="submit">{{editRoomSubmit}}</button>
+                <button type="reset">{{editRoomReset}}</button>
+            </div>
+            <div id="editRoom2">
+                <div id="editRoom2AllowViewing"><label><input type="checkbox" id="allowViewing" name="allowViewing"/>{{editRoomAllowViewingLabel}}</label><br/>
+                    <small><span class="indent">{{editRoomAllowViewingBlurb}}</span></small>
+                    <br/><br/></div>
+                <div id="editRoom2AllowAll">
+                    <fieldset>
+                        <legend><label><input type="checkbox" id="allowPosting" name="allowPosting"/>{{editRoomAllowAll}}</label>
+                        </legend>
+                        <div id="editRoom2AllowedUsers"><label
+                                for="allowedUsers">{{editRoomAllowedUsersLabel}}</label><span
+                                name="allowedUsersContainer" id="allowedUsersContainer"/></span><br/>
+                            <small><span class="indent">{{editRoomAllowedUsersCurrent}}<span
+                                    id="allowedUsersList"></span></span></small>
+                            <br/><br/></div>
+                        <div id="editRoom2AllowedGroups"><label
+                                for="allowedGroups">{{editRoomAllowedGroupsLabel}}</label><span
+                                name="allowedGroupsContainer" id="allowedGroupsContainer"></span><br/>
+                            <small><span class="indent">{{editRoomAllowedGroupsCurrent}}<span
+                                    id="allowedGroupsList"></span></span></small>
+                        </div>
+                    </fieldset>
+                </div>
+                <br/>
+                <div id="editRoom2Moderators"><label for="moderators">{{editRoomModeratorsLabel}}</label><span
+                        name="moderatorsContainer" id="moderatorsContainer"></span><br/>
+                    <small><span class="indent">{{editRoomModeratorsCurrent}}<span id="moderatorsList"></span></span>
+                    </small>
+                    <br/><br/></div>
+                <button type="submit">{{createRoomSubmit}}</button>
+                <button type="reset">{{editRoomReset}}</button>
+            </div>
+        </form>
+        <{{!}}/script>
+
+        <{{!}}script id="view-kicks" type="text/x-handlebars-template">
+        <table class="center">
+            <thead>
+            <tr class="hrow">
+                <th>User</th>
+                <th>Kicked By</th>
+                <th>In Room</th>
+                <th>On</th>
+                <th>Until</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="kickedUsers"></tbody>
+        </table>
+        <{{!}}/script>
+    </div>
     </div>
 </script>
 

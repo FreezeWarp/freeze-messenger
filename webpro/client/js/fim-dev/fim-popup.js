@@ -10,7 +10,7 @@ var popup = function() {
 
 popup.prototype.login = function() {
     function login_success(activeLogin) {
-        $('#loginDialogue').dialog('close'); // Close any open login forms.
+        $('#modal-login').modal('hide');
 
         if (!activeLogin.userData.permissions.view)
             dia.info('You are now logged in as ' + activeLogin.userData.name + '. However, you are not allowed to view and have been banned by an administrator.', 'Logged In'); // dia.error(window.phrases.errorBanned);
@@ -32,35 +32,32 @@ popup.prototype.login = function() {
         }
     }
 
-    dia.full({
-        content : $t('login'),
-        title : 'Login',
-        id : 'loginDialogue',
-        width : 600,
-        oF : function() {
-            $("#loginForm").submit(function() {
-                var loginForm = $('#loginForm');
-                standard.initialLogin({
-                    username : $('#userName', loginForm).val(),
-                    password : $('#password', loginForm).val(),
-                    rememberMe : $('#rememberme', loginForm).is('checked'),
-                    finish : login_success,
-                    error : login_fail
-                });
+    $('#modal-login').modal();
 
-                return false;
+    // Submission
+    $("#loginForm").submit(function() {
+        var loginForm = $('#loginForm');
+        standard.initialLogin({
+            username : $('#userName', loginForm).val(),
+            password : $('#password', loginForm).val(),
+            rememberMe : $('#rememberme', loginForm).is('checked'),
+            finish : login_success,
+            error : login_fail
+        });
+
+        return false;
+    });
+
+    // Close
+    $('#modal-login').on('hidden.bs.modal', function () {
+        if (!window.userId) {
+            standard.initialLogin({
+                username : '',
+                password : '',
+                rememberMe : false,
+                finish : login_success,
+                error : login_fail
             });
-        },
-        cF : function() {
-            if (!window.userId) {
-                standard.initialLogin({
-                    username : '',
-                    password : '',
-                    rememberMe : false,
-                    finish : login_success,
-                    error : login_fail
-                });
-            }
         }
     });
 };

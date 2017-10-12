@@ -332,15 +332,6 @@ $.when(
         url: 'client/js/fim-dev/fim-loader.js',
         dataType:'script'
     }),
-    /*  $.get('client/css/' + window.webproDisplay.theme + '/jquery-ui-1.8.16.custom.css', function(response) {
-     $('#stylesjQ').text(response);
-     }),
-     $.get('client/css/' + window.webproDisplay.theme + '/fim.css', function(response) {
-     $('#stylesVIM').text(response);
-     }),
-     $.get("client/css/stylesv2.css", function(response) {
-     $('#stylesv2').text(response);
-     }),*/
     $.ajax({
         url: window.directory + 'api/serverStatus.php',
         dataType: 'json',
@@ -399,7 +390,7 @@ $.when(
 
         /*** Image Buttons! ***/
         // todo: move to upload popup
-        $("#imageUploadSubmitButton").button("option", "disabled", true);
+        //$("#imageUploadSubmitButton").button("option", "disabled", true);
 
 
         /*** Button Click Events ***/
