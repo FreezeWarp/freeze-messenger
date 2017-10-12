@@ -158,6 +158,15 @@ standard.prototype.roomEventListener = function(roomId) {
     roomSource.addEventListener('deletedMessage', eventHandler(function(active) {
         $('#message' + active.id).fadeOut();
     }), false);
+
+    roomSource.addEventListener('editedMessage', eventHandler(function(active) {
+        if ($('#message' + active.id).length > 0) {
+            active.userId = $('#message' + active.id + ' .userName').attr('data-userid');
+            active.time = $('#message' + active.id + ' .messageText').attr('data-time');
+
+            fim_newMessage(roomId, Number(active.id), fim_messageFormat(active, 'list'));
+        }
+    }), false);
 };
 
 

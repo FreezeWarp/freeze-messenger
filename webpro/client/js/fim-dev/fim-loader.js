@@ -229,7 +229,7 @@ function fim_showMissedMessage(message) {
 function fim_messageFormat(json, format) {
     var data,
         text = json.text,
-        messageTime = fim_dateFormat(json.time),
+        messageTime = json.time,
         messageId = json.id,
         roomId = json.roomId,
         flag = json.flag,
@@ -327,7 +327,7 @@ function fim_messageFormat(json, format) {
                     fim_buildUsernameTag($('<span class="userName userNameTable">'), userId, userNameDeferred, true)
                 )
             ).append(
-                $('<td>').text(messageTime)
+                $('<td>').text(fim_dateFormat(messageTime))
             ).append(
                 $('<td>').append(
                     fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred).append(text)
@@ -348,7 +348,7 @@ function fim_messageFormat(json, format) {
                     fim_buildUsernameTag($('<span>'), userId, userNameDeferred)
                 ).append(
                     !settings.showAvatars ?
-                        $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(messageTime))
+                        $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(fim_dateFormat(messageTime)))
                         : ''
                 )
             ).append(
@@ -629,30 +629,35 @@ function fim_messagePreview(container, content) {
 function fim_newMessage(roomId, messageId, messageText) {
     if ($.inArray(messageId, messageIndex) > -1) { return; } // Double post hack
 
-    var foundMatch = false;
-    $('#messageList .messageLine').each(function() {
-        if (settings.reversePostOrder) {
-            if ($('.messageText', this).attr('data-messageId') < messageId) {
-                $(messageText).insertBefore(this);
-                foundMatch = true;
-                return false; // break each
+    if ($('#message' + messageId).length > 0) {
+        $('#message' + messageId).replaceWith(messageText);
+    }
+    else {
+        var foundMatch = false;
+        $('#messageList .messageLine').each(function() {
+            if (settings.reversePostOrder) {
+                if ($('.messageText', this).attr('data-messageId') < messageId) {
+                    $(messageText).insertBefore(this);
+                    foundMatch = true;
+                    return false; // break each
+                }
             }
-        }
-        else {
-            if ($('.messageText', this).attr('data-messageId') > messageId) {
-                $(messageText).insertBefore(this);
-                foundMatch = true;
-                return false;
+            else {
+                if ($('.messageText', this).attr('data-messageId') > messageId) {
+                    $(messageText).insertBefore(this);
+                    foundMatch = true;
+                    return false;
+                }
             }
-        }
-    });
+        });
 
-    if (!foundMatch) {
-        if (settings.reversePostOrder) {
-            $('#messageList').prepend(messageText);
-        }
-        else {
-            $('#messageList').append(messageText);
+        if (!foundMatch) {
+            if (settings.reversePostOrder) {
+                $('#messageList').prepend(messageText);
+            }
+            else {
+                $('#messageList').append(messageText);
+            }
         }
     }
 
@@ -695,7 +700,9 @@ function fim_newMessage(roomId, messageId, messageText) {
     if (settings.showAvatars) {
         $('.messageText').tipTip({
             activate: 'hover',
-            attribute: 'data-time'
+            callback: function(element) {
+                return fim_dateFormat(element.attr('data-time'))
+            }
         });
     }
 

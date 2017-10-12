@@ -542,6 +542,9 @@ function contextMenuSub(e, o, el, offset, callback, srcElement) {
             if (opts.content) {
                 var org_title = opts.content;
             }
+            else if (opts.callback) {
+                var org_title = opts.callback($(this));
+            }
             else {
                 var org_title = $(this).attr(opts.attribute);
             }
