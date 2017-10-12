@@ -29,33 +29,12 @@ abbr {
   border-bottom: 1px dotted;
 }
 
-
-
-/***** Menu *****/
-
-#menuParent {
-  float: left;
-  width: 24%;
-}
-#menu {
-  padding: 4px;
-  width: 100%;
-}
-#menu div, #menu ul {
-  width: 100%;
-}
-#rooms {
-  max-height: 300px;
-  overflow: auto;
+html, body, #content {
+    max-height: 100%;
 }
 
 
 /***** Content *****/
-
-#content {
-  float: right;
-  width: 75%;
-}
 
 #buttonMenuLeft {
   float: left;

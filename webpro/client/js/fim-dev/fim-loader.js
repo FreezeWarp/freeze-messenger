@@ -906,11 +906,14 @@ function windowResize() {
     var windowWidth = $(window).width(); // Get the browser window "viewport" width, excluding scrollbars.
     var windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
 
-    $('#messageListContainer').css('height', Math.floor(windowHeight -
-        $('#textentryBoxMessage').height() -
-        $('#messageList').parents().eq(4).children('thead').height() -
-        50)); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
-    $('#menuParent').css('height', windowHeight - 30); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
+    // Set the message list height to fill as much of the screen that remains after the textarea is placed.
+    $('#messageListContainer').css('height', Math.floor(
+        windowHeight
+        - ($('#messageListCard').height() - $('#messageListContainer').height())
+        - $('#textentryBoxMessage').height()
+        - 50));
+
+    //$('#menuParent').css('height', windowHeight - 30); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
 
     // should be fixed, need browser test
     //$('#messageList').css('max-width', ((windowWidth - 40) * (windowWidth < 600 ? 1 : .75))); // Prevent box-stretching. This is common on... many chats.

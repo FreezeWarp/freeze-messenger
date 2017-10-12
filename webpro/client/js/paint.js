@@ -384,20 +384,6 @@ $.when(
         if (settings.disableFx) jQuery.fx.off = true;
 
 
-        /*** Create the Accordion Menu ***/
-        $('#menu').accordion({
-            heightStyle : 'fill',
-            navigation : true,
-            collapsible: true,
-            active : Number($.cookie('webpro_menustate')) - 1,
-            activate: function(event, ui) {
-                var sid = ui.newHeader.children('a').attr('data-itemId');
-
-                $.cookie('webpro_menustate', sid, { expires: 14 });
-            }
-        });
-
-
         /*** Window Manipulation (see below) ***/
         $(window).bind('resize', windowResize);
         $(window).bind('hashchange', fim_hashParse);
@@ -412,13 +398,7 @@ $.when(
 
 
         /*** Image Buttons! ***/
-        $("#icon_help").button({ icons: {primary:'ui-icon-help'} });
-        $("#icon_note").button({ icons: {primary:'ui-icon-note'} });
-        $("#icon_settings").button({ icons: {primary:'ui-icon-wrench'} });
-        $("#icon_url").button({ icons: {primary: 'ui-icon-link'} });
-        $("#icon_submit").button({ icons: {primary: 'ui-icon-circle-check'} });
-        $("#icon_reset").button({ icons: {primary: 'ui-icon-circle-close'} });
-
+        // todo: move to upload popup
         $("#imageUploadSubmitButton").button("option", "disabled", true);
 
 

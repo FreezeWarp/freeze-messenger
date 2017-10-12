@@ -42,119 +42,136 @@
     <link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css"/>
     <script type="text/javascript" src="client/colorpicker/js/colorpicker.js"></script>
 
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+          integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
     <!-- END Scripts -->
 </head>
 <body>
 
 <script id="entry-template" type="text/x-handlebars-template">
     <div id="tooltext" class="tooltip-content"></div>
-    <div id="page" data-role="page"><!-- START links -->
-        <div id="menuParent" style="height: 100%;" class="col-4">
-            <div id="menu" data-role="header"><h3 id="quickCat"><a href="#" data-itemId="1" accesskey="v">{{template.quickCat}}</a>
-            </h3>
-                <div>
-                    <ul>
-                        <li style="border-bottom: 1px solid;"><a href="#archive" id="messageArchive" accesskey="a">{{template.archive}}</a>
-                        </li>
-                        <li><a href="#rooms" id="roomList" accesskey="r">{{template.roomList}}</a></li>
-                        <li><a href="#createRoom" id="createRoom" accesskey="c">{{template.createRoom}}</a></li>
-                        <li style="border-bottom: 1px solid;"><a href="javascript:void(0)" id="privateRoom" accesskey="p">{{template.privateIM}}</a>
-                        </li>
-                        <li><a href="#" id="online" accesskey="o">{{template.activeUsers}}</a></li>
-                        <li style="border-bottom: 1px solid;"><a href="javascript:void(0)" id="viewStats" accesskey="t">{{template.stats}}</a>
-                        </li>
-                        <li><a href="#uploads" id="viewUploads" accesskey="l">{{template.viewUploads}}</a></li>
-                        <li><a href="#settings" id="changeSettings" accesskey="s">{{template.changeSettings}}</a></li>
-                        <li><a href="javascript:void(0)" id="myKicks" accesskey="k">{{template.myKicks}}</a></li>
-                        <li><a href="javascript:void(0)" id="logout" accesskey="x">{{template.logout}}</a></li>
-                        <li><a href="javascript:void(0)" id="login" accesskey="i">{{template.login}}</a></li>
-                        <li style="border-top: 1px solid;"><a href="#"
-                                                              id="copyrightLink">{{template.allCopyrights}}</a>
-                        </li>
-                    </ul>
-                </div>
-                <h3 id="roomCat"><a href="#" data-itemId="3" accesskey="x">{{template.roomListCat}}</a></h3>
-                <div><a href="#" accesskey="r">{{template.roomList}}</a>
-                    <hr style="border: 0px; border-bottom: 1px solid;"/>
-                    <div id="roomListShort"><h4>{Owned Rooms}</h4>
-                        <ul id="ownedRoomsList"></ul>
-                        <h4>{Fav Rooms}</h4>
-                        <ul id="favRoomsList"></ul>
-                        <h4>{Watch Rooms}</h4>
-                        <ul id="watchRoomsList"></ul>
-                        <h4>{Promoted Rooms}</h4>
-                        <ul id="officialRoomsList"></ul>
+    <div id="page" data-role="page" class="row"><!-- START links -->
+        <div id="menuParent" class="col-med-auto" style="width: 300px;" role="tablist">
+            <div class="card">
+                <a data-toggle="collapse" href="#quickCatContents" aria-expanded="true" aria-controls="quickCatContents" accesskey="v">
+                    <div class="card-header" role="tab" id="quickCat">
+                        <h5 class="mb-0">{{template.quickCat}}</h5>
+                    </div>
+                </a>
+
+                <div id="quickCatContents" class="collapse show" role="tabpanel" aria-labelledby="quickCat" data-parent="#menuParent">
+                    <div class="card-body">
+                        <ul>
+                            <li style="border-bottom: 1px solid;"><a href="#archive" id="messageArchive" accesskey="a">{{template.archive}}</a>
+                            </li>
+                            <li><a href="#rooms" id="roomList" accesskey="r">{{template.roomList}}</a></li>
+                            <li><a href="#createRoom" id="createRoom" accesskey="c">{{template.createRoom}}</a></li>
+                            <li style="border-bottom: 1px solid;"><a href="javascript:void(0)" id="privateRoom" accesskey="p">{{template.privateIM}}</a>
+                            </li>
+                            <li><a href="#" id="online" accesskey="o">{{template.activeUsers}}</a></li>
+                            <li style="border-bottom: 1px solid;"><a href="javascript:void(0)" id="viewStats" accesskey="t">{{template.stats}}</a>
+                            </li>
+                            <li><a href="#uploads" id="viewUploads" accesskey="l">{{template.viewUploads}}</a></li>
+                            <li><a href="#settings" id="changeSettings" accesskey="s">{{template.changeSettings}}</a></li>
+                            <li><a href="javascript:void(0)" id="myKicks" accesskey="k">{{template.myKicks}}</a></li>
+                            <li><a href="javascript:void(0)" id="logout" accesskey="x">{{template.logout}}</a></li>
+                            <li><a href="javascript:void(0)" id="login" accesskey="i">{{template.login}}</a></li>
+                            <li style="border-top: 1px solid;"><a href="#copyright" id="copyrightLink">{{template.allCopyrights}}</a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
-                <h3 id="activeCat"><a href="#" data-itemId="4" accesskey="y">{{template.activeUsersCat}}</a></h3>
-                <div id="activeUsers">{{template.loading}}</div>
+            </div>
+
+
+            <div class="card">
+                <a data-toggle="collapse" href="#roomCatContents" aria-expanded="true" aria-controls="roomCatContents" accesskey="x">
+                    <div class="card-header" role="tab" id="roomCat">
+                        <h5 class="mb-0">{{template.roomListCat}}</h5>
+                    </div>
+                </a>
+
+                <div id="roomCatContents" class="collapse" role="tabpanel" aria-labelledby="roomCat" data-parent="#menuParent">
+                    <div class="card-body">
+                        <a href="#" accesskey="r">{{template.roomList}}</a>
+                        <hr style="border: 0px; border-bottom: 1px solid;"/>
+                        <div id="roomListShort"><h4>{Owned Rooms}</h4>
+                            <ul id="ownedRoomsList"></ul>
+                            <h4>{Fav Rooms}</h4>
+                            <ul id="favRoomsList"></ul>
+                            <h4>{Watch Rooms}</h4>
+                            <ul id="watchRoomsList"></ul>
+                            <h4>{Promoted Rooms}</h4>
+                            <ul id="officialRoomsList"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <a data-toggle="collapse" href="#activeCatContents" aria-expanded="true" aria-controls="activeCatContents" accesskey="x">
+                    <div class="card-header" role="tab" id="activeCat">
+                        <h5 class="mb-0">{{template.activeUsersCat}}</h5>
+                    </div>
+                </a>
+
+                <div id="activeCatContents" class="collapse" role="tabpanel" aria-labelledby="activeCat" data-parent="#menuParent">
+                    <div class="card-body">
+                        <div id="activeUsers">{{template.loading}}</div>
+                    </div>
+                </div>
             </div>
         </div><!-- END links -->
 
 
-        <div id="content" data-role="content" class="col-8">
+        <div id="content" data-role="content" class="col">
             <{{!}}script id="view-room" type="text/x-handlebars-template">
                 <div id="roomTemplateContainer">
-                    <div id="chatContainer">
-                        <table class="page ui-widget">
-                            <thead>
-                            <tr class="hrow ui-widget-header ui-corner-top">
-                                <td>
-                                    <div id="title">
-                                        <div id="rightTitle" class="rightPart">
-                                            <form action="#" onsubmit="return false;" class="rightPart">
-                                                <button type="button" class="standard" id="icon_settings"
-                                                        title="Settings"></button>
-                                                <button type="button" class="standard" id="icon_note"
-                                                        title="Archive" onclick="location.hash='#archive'"></button>
-                                                <button type="button" class="standard" id="icon_help" title="Help"
-                                                        accesskey="?"></button>
-                                            </form>
-                                        </div>
-                                        <span id="roomName"></span><br/><em id="topic"></em></div>
-                                </td>
-                            </tr>
-                            </thead>
-                            <tbody class="ui-widget-content ui-corner-bottom">
-                            <tr>
-                                <td id="messageListTD">
-                                    <div id="messageListContainer">
-                                        <div id="messageList"></div>
-                                    </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <div id="textentryBoxMessage">
+                    <div id="chatContainer" class="card">
+                        <div id="messageListCard">
+                            <div id="title" class="card-header">
+                                <div id="rightTitle" class="rightPart">
+                                    <form action="#" onsubmit="return false;" class="rightPart">
+                                        <button type="button" class="btn btn-primary" title="Settings" onclick="location.hash='#settings'">
+                                            <i class="fa fa-cog" aria-hidden="true"></i>
+                                        </button>
+
+                                        <button type="button" class="btn btn-primary" title="Archive" onclick="location.hash='#archive'">
+                                            <i class="fa fa-history"></i>
+                                        </button>
+
+                                        <button type="button" class="btn btn-primary" title="Help" accesskey="?" onclick="location.hash='#help'">
+                                            <i class="fa fa-question-circle"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                <span id="roomName"></span><br/><em id="topic"></em>
+                            </div>
+                            <div id="messageListContainer">
+                                <div id="messageList"></div>
+                            </div>
+                        </div>
+                        <div id="textentryBoxMessage" class="card">
                             <form id="sendForm" action="#" method="post">
-                                <table class="page ui-widget">
-                                    <thead>
-                                    <tr class="hrow ui-widget-header ui-corner-top">
-                                        <td>
-                                            <div class="leftPart">
-                                                <button type="button" class="standard" id="icon_url" title="Upload File"
-                                                        accesskey="u"></button>
-                                            </div>
-                                            <div class="rightPart">
-                                                <button type="submit" class="standard" id="icon_submit"
-                                                        title="Submit Message"></button>
-                                                <button type="reset" class="standard" id="icon_reset"
-                                                        title="Reset Text"></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    </thead>
-                                    <tbody class="ui-widget-content ui-corner-bottom">
-                                    <tr>
-                                        <td>
-                                            <div id="messageInputContainer" class="middle"><textarea id="messageInput"
-                                                                                                     autofocus="autofocus"
-                                                                                                     placeholder="Enter your text."></textarea>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                                <div class="card-header">
+                                    <div class="row">
+                                        <div class="col">
+                                            <button type="button" class="btn btn-primary" id="icon_url" title="Upload File" accesskey="u">
+                                                <i class="fa fa-upload" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                        <div class="col" style="text-align: right;">
+                                            <button type="submit" class="btn btn-primary" id="icon_submit" title="Submit Message">
+                                                <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <textarea id="messageInput" autofocus="autofocus" placeholder="Enter your text."></textarea>
+                                </div>
                             </form>
                         </div>
                     </div>
