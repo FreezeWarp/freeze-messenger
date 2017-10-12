@@ -737,43 +737,75 @@ function fim_newMessage(roomId, messageId, messageText) {
  */
 function fim_hashParse(options) {
     var urlHashComponents = window.location.hash.split('#'),
-        page, messageId, roomId;
-
+        urlHashComponentsMap = Object.assign({}, options);
 
     for (var i = 0; i < urlHashComponents.length; i++) {
         var componentPieces = urlHashComponents[i].split('=');
 
-        switch (componentPieces[0]) {
-            case 'page': page = componentPieces[1]; break;
-            case 'room': roomId = componentPieces[1]; break;
-            case 'message': messageId = componentPieces[1]; break;
-        }
+        if (componentPieces.length == 2)
+            urlHashComponentsMap[componentPieces[0]] = componentPieces[1];
     }
 
+    if ('room' in urlHashComponentsMap) {
+        urlHashComponentsMap['roomId'] = urlHashComponentsMap['room'];
+    }
 
-    if (roomId && messageId)
-        page = 'archive';
-
-    switch (page) {
+    switch (urlHashComponents[1]) {
         case 'archive':
-            prepopup = function() {
-                popup.archive.init({
-                    'roomId' : roomId,
-                    'firstMessage' : messageId - 1
-                });
-            };
+            fim_openView('archive', urlHashComponentsMap);
+            break;
+
+        case 'rooms':
+            fim_openView('rooms', urlHashComponentsMap);
             break;
 
         case 'settings':
-            prepopup = function() { popup.userSettings(); };
+            popup.userSettings();
+            break;
+
+        case 'online':
+            popup.online();
+            break;
+
+        case 'stats':
+            history.replaceState(undefined, undefined, "#page=stats#room=" + window.roomId);
+            popup.viewStats();
+            break;
+
+        case 'createRoom':
+            popup.editRoom();
+            break;
+
+        case 'uploads':
+            popup.viewUploads();
+            break;
+
+        case 'private':
+            popup.privateRoom();
+            break;
+
+        default:
+        case 'room':
+            fim_openView('room', urlHashComponentsMap);
             break;
     }
+}
 
-    if (!roomId && options.defaultRoomId)
-        roomId = options.defaultRoomId;
+// 1. default view is implied -- pulls in room=
+// 2. get next hash as viewname
+// 3. switch on viewname
+// 4. pull all valid hash parameters (e.g. editRoom pulls in room=, archive pulls in room=, message=, page=, and so-on)
+// 5. goto 2
 
-    if (roomId && roomId !== window.roomId)
-        standard.changeRoom(roomId); // If the room is different than current, change it.
+// 1.
+
+function fim_setHashParameter() {}
+
+function fim_closeView() {
+    // hash stuff
+
+
+    // do close
 }
 
 /*********************************************************
@@ -1196,11 +1228,6 @@ function windowDraw() {
     $('tbody').addClass('widget ui-widget-content');
 
 
-    // Disable the chatbox if the user is not allowed to post.
-    if (roomId && (userId || anonId)) { /* TODO */ } // The user is able to post.
-    else { disableSender(); } // The user is _not_ able to post.
-
-
     /*** Call Resize ***/
     windowResize();
 
@@ -1278,35 +1305,6 @@ function fim_showLoader() {
 
 function fim_hideLoader() {
     $('#waitOverlay, #waitThrobber').empty().remove();
-}
-
-
-/**
- * Disables the input boxes.
- *
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2017
- */
-function disableSender() {
-    $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
-    $('#icon_url').button({ disabled : true }); // "
-    $('#icon_submit').button({ disabled : true }); // "
-    $('#icon_reset').button({ disabled : true }); // "
-}
-
-
-
-/**
- * Enables the input boxes.
- *
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2017
- */
-function enableSender() {
-    $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
-    $('#icon_url').button({ disabled : false }); // "
-    $('#icon_submit').button({ disabled : false }); // "
-    $('#icon_reset').button({ disabled : false }); // "
 }
 
 

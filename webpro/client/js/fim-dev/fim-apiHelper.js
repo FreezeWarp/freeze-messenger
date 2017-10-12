@@ -2,7 +2,7 @@ var Resolver = (function () {
     function Resolver() {
     }
     Resolver.cacheEntry = function (type, entry) {
-        console.log(["resolveAddedToCache", type, entry]);
+        //console.log(["resolveAddedToCache", type, entry]);
         if (Resolver["cached" + type + "Ids"].indexOf(entry.id) === -1) {
             Resolver["cached" + type + "Ids"].push(Number(entry.id));
             Resolver["cached" + type + "Names"].push(String(entry.name));

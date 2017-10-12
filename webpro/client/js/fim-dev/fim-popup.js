@@ -1303,7 +1303,7 @@ popup.prototype.archive = {
         searchText : '',
         resultLimit : 40,
         searchUser : 0,
-        firstMessage : 0,
+        firstMessage : null,
         page : 0,
         roomId : 0
     },
@@ -1313,54 +1313,49 @@ popup.prototype.archive = {
     init : function(options) {
         var _this = this;
 
-        for (i in options) this.options[i] = options[i];
+        for (i in options)
+            this.options[i] = options[i];
 
-        dia.full({
-            content : $t('archive'),
-            title : 'Archive',
-            id : 'archiveDialogue',
-            position : 'top',
-            width : 1000,
-            oF : function() {
-                $('#searchText, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
+        if (!this.options.roomId)
+            this.options.roomId = window.roomId;
+
+        $('#searchText, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
 
 
-                $('#searchText').bind('change', function() {
-                    _this.update('searchText', $(this).val());
-                    _this.retrieve();
-                });
-
-
-                $('#searchUser').bind('change', function() {
-                    _this.update('searchUser', $(this).attr('data-id'));
-                    _this.retrieve();
-                }).autocompleteHelper('users');
-
-
-                $('#archiveNext').bind('click', function() {
-                    _this.nextPage();
-                });
-                $('#archivePrev').bind('click', function() {
-                    _this.prevPage();
-                });
-
-
-                $('#archiveDialogue > table').on('click', '.updateArchiveHere', function() {
-                    _this.update('firstMessage', $(this).attr('data-messageId'));
-                    window.location.hash = '#room=' + _this.options.roomId + '#message=' + $(this).attr('data-messageId');
-
-                    _this.retrieve();
-                });
-
-
-                $('#export').bind('click', function() {
-                    popup.exportArchive();
-                });
-
-
-                _this.retrieve();
-            }
+        $('#searchText').bind('change', function() {
+            _this.update('searchText', $(this).val());
+            _this.retrieve();
         });
+
+
+        $('#searchUser').bind('change', function() {
+            _this.update('searchUser', $(this).attr('data-id'));
+            _this.retrieve();
+        }).autocompleteHelper('users');
+
+
+        $('#archiveNext').bind('click', function() {
+            _this.nextPage();
+        });
+        $('#archivePrev').bind('click', function() {
+            _this.prevPage();
+        });
+
+
+        $('#archiveDialogue > table').on('click', '.updateArchiveHere', function() {
+            _this.update('firstMessage', $(this).attr('data-messageId'));
+            window.location.hash = '#room=' + _this.options.roomId + '#message=' + $(this).attr('data-messageId');
+
+            _this.retrieve();
+        });
+
+
+        $('#export').bind('click', function() {
+            popup.exportArchive();
+        });
+
+
+        _this.retrieve();
     },
 
     retrieve : function() {
@@ -1368,7 +1363,7 @@ popup.prototype.archive = {
 
         $('#archiveMessageList').html('');
         this.messageData = {};
-
+console.log(_this.options);
         fimApi.getMessages({
             'roomId' : _this.options.roomId,
             'userIds' : [_this.options.searchUser],
@@ -1521,7 +1516,228 @@ popup.prototype.copyright = function() {
 };
 
 
-popup.prototype.selectRoom = {
+popup.prototype.room = {
+    options : {
+        roomId : 0,
+        intervalPing : false,
+        lastEvent : 0,
+        lastMessage : 0
+    },
+
+    init : function(options) {
+        var _this = this;
+
+        for (i in options)
+            _this.options[i] = options[i];
+
+        var intervalPing;
+
+        fimApi.getRooms({
+            'id' : _this.options.roomId,
+            'permLevel' : 'view'
+        }, {'each' : function(roomData) {
+            if (!roomData.permissions.view) { // If we can not view the room
+                window.roomId = false; // Set the global roomId false.
+                window.location.hash = "#rooms";
+                dia.error('You have been restricted access from this room. Please select a new room.');
+            }
+
+            else if (!roomData.permissions.post) { // If we can view, but not post
+                dia.error('You are not allowed to post in this room. You will be able to view it, though.');
+                _this.disableSender();
+            }
+
+            else { // If we can both view and post.
+                _this.enableSender();
+            }
+
+
+            if (roomData.permissions.view) { // If we can view the room...
+                window.roomId = roomData.id;
+
+                $('#roomName').html(roomData.name); // Update the room name.
+                $('#topic').html(roomData.topic); // Update the room topic.
+
+                /*** Get Messages ***/
+                _this.populateMessages();
+            }
+        }});
+
+
+        /* Populate Active Users for the Room */
+        fimApi.getActiveUsers({
+            'roomIds' : [roomId]
+        }, {
+            'refresh' : 15000,
+            'timerId' : 1,
+            'begin' : function() {
+                $('#activeUsers').html('<ul></ul>');
+            },
+            'each' : function(user) {
+                $('#activeUsers > ul').append($('<li>').append(fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)));
+            }
+        });
+    },
+
+    eventListener : function() {
+        var roomSource = new EventSource(directory + 'stream.php?queryId=' + _this.options.roomId + '&streamType=room&lastEvent=' + _this.options.lastEvent + '&lastMessage=' + _this.options.lastMessage + '&access_token=' + window.sessionHash);
+        var eventHandler = function(callback) {
+            return function(event) {
+                if (event.id > _this.options.lastEvent) {
+                    _this.options.lastEvent = event.id;
+                }
+
+                callback(JSON.parse(event.data));
+            }
+        };
+
+        roomSource.addEventListener('newMessage', eventHandler(function(active) {
+            _this.options.lastMessage = Math.max(_this.options.lastMessage, active.id);
+
+            fim_newMessage(_this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
+        }), false);
+
+        roomSource.addEventListener('topicChange', eventHandler(function(active) {
+            $('#topic').html(active.param1);
+            console.log('Event (Topic Change): ' + active.param1);
+        }), false);
+
+        roomSource.addEventListener('deletedMessage', eventHandler(function(active) {
+            $('#message' + active.id).fadeOut();
+        }), false);
+
+        roomSource.addEventListener('editedMessage', eventHandler(function(active) {
+            if ($('#message' + active.id).length > 0) {
+                active.userId = $('#message' + active.id + ' .userName').attr('data-userid');
+                active.time = $('#message' + active.id + ' .messageText').attr('data-time');
+
+                fim_newMessage(_this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
+            }
+        }), false);
+    },
+
+    getMessages : function() {
+        var _this = this;
+
+        if (_this.options.roomId) {
+            fimApi.getMessages({
+                'roomId': _this.options.roomId,
+            }, {
+                autoId : true,
+                refresh : (window.requestSettings.serverSentEvents ? 3000 : 3000),
+                each: function (messageData) {
+                    fim_newMessage(Number(_this.options.roomId), Number(messageData.id), fim_messageFormat(messageData, 'list'));
+                },
+                end: function () {
+                    if (window.requestSettings.serverSentEvents) {
+                        fimApi.getMessages(null, {'close' : true});
+
+                        this.roomEventListener();
+                    }
+                }
+            });
+        }
+        else {
+            console.log('Not requesting messages; room undefined.');
+        }
+
+        return false;
+    },
+
+    populateMessages : function() {
+        var _this = this;
+
+        $(document).ready(function() {
+            // Clear the message list.
+            $('#messageList').html('');
+
+            window.requestSettings[_this.options.roomId] = {
+                lastMessage : null,
+                firstRequest : true
+            };
+            messageIndex[_this.options.roomId] = [];
+
+            // Get New Messages
+            _this.getMessages();
+
+            if (_this.options.intervalPing)
+                clearInterval(_this.options.intervalPing);
+
+            fimApi.ping(_this.options.roomId);
+            _this.options.intervalPing = window.setInterval(function() {
+                fimApi.ping(_this.options.roomId)
+            }, 5 * 60 * 1000);
+
+            windowDraw();
+            windowDynaLinks();
+        });
+    },
+
+    sendMessage : function(message, ignoreBlock, flag) {
+        var _this = this;
+
+        if (!_this.options.roomId) {
+            window.location.hash = '#rooms';
+        }
+        else {
+            ignoreBlock = (ignoreBlock === 1 ? 1 : '');
+
+            fimApi.sendMessage(_this.options.roomId, {
+                'ignoreBlock' : ignoreBlock,
+                'message' : message,
+                'flag' : (flag ? flag : '')
+            }, {
+                end : function (message) {
+                    if ("censor" in message && Object.keys(message.censor).length > 0) {
+                        dia.info(Object.values(message.censor).join('<br /><br />'), "Censor warning: " + Object.keys(message.censor).join(', '));
+                    }
+                },
+
+                exception : function(exception) {
+                    if (exception.string === 'confirmCensor')
+                        dia.confirm({
+                            'text' : exception.details,
+                            'true' : function() {
+                                _this.sendMessage(message, 1, flag);
+                            }
+                        }, "Censor Warning");
+                    else if (exception.string === 'spaceMessage') {
+                        dia.error("Too... many... spaces!")
+                    }
+                    else { fimApi.getDefaultExceptionHandler()(exception); }
+                },
+
+                error : function(request) {
+                    if (settings.reversePostOrder)
+                        $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
+                    else
+                        $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
+
+                    window.setTimeout(function() { _this.sendMessage(message) }, 5000);
+
+                    return false;
+                }
+            });
+        }
+    },
+
+    disableSender : function() {
+        $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
+        $('#icon_url').button({ disabled : true }); // "
+        $('#icon_submit').button({ disabled : true }); // "
+        $('#icon_reset').button({ disabled : true }); // "
+    },
+
+    enableSender : function() {
+        $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
+        $('#icon_url').button({ disabled : false }); // "
+        $('#icon_submit').button({ disabled : false }); // "
+        $('#icon_reset').button({ disabled : false }); // "
+    }
+};
+
+
+popup.prototype.rooms = {
     options : {
         searchText : '',
         page : 0
@@ -1533,31 +1749,23 @@ popup.prototype.selectRoom = {
         for (i in options)
             _this.options[i] = options[i];
 
-        dia.full({
-            content : $t('selectRoom'),
-            title : 'Room List',
-            id : 'roomListDialogue',
-            width: 1000,
-            oF: function() {
-                // TODO: names, not IDs
-                $('#permissionLevel, #roomNameSearchText, #roomListNext, #roomListPrev').unbind('change');
+        // TODO: names, not IDs
+        $('#permissionLevel, #roomNameSearchText, #roomListNext, #roomListPrev').unbind('change');
 
-                $('#roomNameSearchText').bind('change', function() {
-                    _this.update('searchText', $(this).val());
-                    _this.retrieve();
-                });
-
-                $('#roomListNext').bind('click', function() {
-                    _this.nextPage();
-                });
-
-                $('#roomListPrev').bind('click', function() {
-                    _this.prevPage();
-                });
-
-                _this.retrieve();
-            }
+        $('#roomNameSearchText').bind('change', function() {
+            _this.update('searchText', $(this).val());
+            _this.retrieve();
         });
+
+        $('#roomListNext').bind('click', function() {
+            _this.nextPage();
+        });
+
+        $('#roomListPrev').bind('click', function() {
+            _this.prevPage();
+        });
+
+        _this.retrieve();
     },
 
     retrieve : function() {

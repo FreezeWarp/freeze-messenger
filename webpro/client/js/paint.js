@@ -7,7 +7,9 @@ function $q(message, error) {
     throw new Error(error || message);
 }
 
-/** Returns a localised string.
+/**
+ * TODO: DEPRECATED
+ * Returns a localised string.
  * Note that this currently is using "window.phrase", as that is how I did things prior to creating this function, but I will likely change this later.
  * (Also, this framework is decidedly original and custom-made. That said, if you like it, you are free to take it, assuming you follow WebPro's GPL licensing guidelines.)
  *
@@ -53,6 +55,7 @@ function $l(stringName, substitutions, extra) {
 }
 
 /** Returns a formatted template.
+ * TODO: deprecated
  *
  * @param stringName - The name of the template we will return.
  * @param substitutions - A list of "additional" template substitutions. Those included in the language.json files are automatically included.
@@ -72,6 +75,43 @@ function $t(templateName, substitutions) {
         return templateData = templateData.replace(/\{\{\{\{([a-zA-Z0-9\.]+)\}\}\}\}/g, function($1, $2) {
             return $l($2, false, substitutions);
         });
+    }
+}
+
+
+function renderHandlebarsInPlace(tag, name) {
+    var id       = tag.attr('id'); console.log(id);
+    var source   = tag.html();
+    var template = Handlebars.compile(source);
+    tag.replaceWith('<div id="' + id + '">' + template(window.phrases) + '</div>');
+}
+
+function fim_openView(viewName, options) {
+    if ($('.fim-activeView').attr('id') == 'view-' + viewName) {
+        // do nothing
+    }
+
+    else {
+        tag = $('#view-' + viewName);
+
+        if (tag.length > 0) {
+            $('.fim-activeView').each(function() {
+                var id = $(this).attr('id');
+
+                $(this).removeClass('fim-activeView');
+                $(this).replaceWith('<script id="' + id + '" type="text/x-handlebars-template">' + $(this).prop('innerHTML') + '</script>');
+            });
+
+            renderHandlebarsInPlace(tag);
+            $('#view-' + viewName).addClass('fim-activeView');
+
+            if (typeof popup[viewName] != "undefined") {
+                popup[viewName].init(options);
+            }
+        }
+        else {
+            throw "Unknown view.";
+        }
     }
 }
 
@@ -338,7 +378,7 @@ $.when(
      * @copyright Joseph T. Parsons 2017
      */
     $(document).ready(function() {
-        $('body').append($t('main')).append($t('contextMenu'));
+        renderHandlebarsInPlace($("#entry-template"));
 
 
         if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');
@@ -386,7 +426,6 @@ $.when(
         /*** Button Click Events ***/
         $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
 
-        $('#icon_note, #messageArchive').bind('click', function() { popup.archive.init({roomId : roomId}); }); // Archive
         $('a#editRoom').bind('click', function() { popup.editRoom(roomId); }); // Edit Room
         $('#logout').bind('click', function() { standard.logout(); }); // Logout
         $('a#kick').bind('click', function() { popup.kick(); }); // Kick
@@ -397,7 +436,6 @@ $.when(
         $('a#createRoom').bind('click', function() { popup.editRoom();}); // Create Room
         $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
         $('#icon_help').bind('click', function() { popup.help(); }); // Help
-        $('#roomList, #roomList2').bind('click', function() { popup.selectRoom.init(); }); // Room List
         $('#viewStats').bind('click', function() { popup.viewStats(); }); // Room Post Stats
         $('#copyrightLink').bind('click', function() { popup.copyright(); }); // Copyright & Credits
         $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click', function() { popup.userSettings(); }); // User Settings

@@ -33,7 +33,7 @@ class Resolver {
 
 
     private static cacheEntry(type, entry) {
-        console.log(["resolveAddedToCache", type, entry]);
+        //console.log(["resolveAddedToCache", type, entry]);
 
         if (Resolver["cached" + type + "Ids"].indexOf(entry.id) === -1) {
             Resolver["cached" + type + "Ids"].push(Number(entry.id));
