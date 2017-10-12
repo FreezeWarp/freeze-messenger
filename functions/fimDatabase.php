@@ -1209,11 +1209,11 @@ class fimDatabase extends DatabaseSQL
      *
      * @return bool|object|resource
      */
-    public function getPostStats($options, $sort = array('messages' => 'desc', 'roomId' => 'asc', 'userId' => 'asc'))
+    public function getPostStats($options, $sort = array('messages' => 'desc', 'roomId' => 'asc', 'userId' => 'asc'), $limit = 10, $page = 0)
     {
         $options = $this->argumentMerge(array(
             'userIds' => array(),
-            'roomIds' => array(),
+            'roomId' => false,
         ), $options);
 
 
@@ -1230,11 +1230,13 @@ class fimDatabase extends DatabaseSQL
         );
 
 
-        if (count($options['roomIds']) > 0) $conditions['both']['sroomId 2'] = $this->in($options['roomIds']);
-        if (count($options['userIds']) > 0) $conditions['both']['suserId 2'] = $this->in($options['userIds']);
+        if ($options['roomId'])
+            $conditions['both']['sroomId 2'] = $options['roomId'];
+        if (count($options['userIds']) > 0)
+            $conditions['both']['suserId 2'] = $this->in($options['userIds']);
 
 
-        return $this->select($columns, $conditions, $sort);
+        return $this->select($columns, $conditions, $sort, $limit, $page);
     }
 
 

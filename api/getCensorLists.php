@@ -62,7 +62,7 @@ $xmlData = array(
 /* Get Censor Lists from Slave Database */
 $censorLists = $slaveDatabase->getCensorLists(array(
     'listIds' => $request['listIds'],
-    'includeStatus' => $request['roomId'],
+    'includeStatus' => $request['roomId'] ?? false,
     'hiddenStatus' => 'unhidden', // Don't include hidden lists.
     'activeStatus' => 'active' // Don't include "archived"/inactive lists.
 ))->getAsArray(array('listId'));
@@ -92,12 +92,7 @@ foreach ($censorLists AS $listId => $list) { // Run through each censor list ret
 
         if ($request['includeWords']) {
             foreach($censorWords[$list['listId']] AS $wordId => $censorListWord) {
-                $xmlData['lists'][$list['listId']]['words'][$censorListWord['wordId']] = array(
-                    'wordId' => $censorListWord['wordId'],
-                    'word' => $censorListWord['word'],
-                    'severity' => $censorListWord['severity'],
-                    'param' => $censorListWord['param'],
-                );
+                $xmlData['lists'][$list['listId']]['words'][$censorListWord['wordId']] = fim_arrayFilterKeys($censorListWord, ['wordId', 'word', 'severity', 'param']);
             }
         }
     }

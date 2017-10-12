@@ -312,7 +312,7 @@ popup.prototype.viewStats = function() {
             }
 
             fimApi.getStats({
-                'roomIds' : [window.roomId]
+                'roomId' : window.roomId
             }, {
                 each : function(room) {
                     $('table#viewStats > thead > tr').append(
@@ -328,7 +328,8 @@ popup.prototype.viewStats = function() {
                     jQuery.each(room.users, function(userId, user) {
                         $('table#viewStats > tbody > tr').eq(i).append(
                             $('<td>').append(
-                                fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)
+                                fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true),
+                                $('<span>').text('(' + user.messageCount + ')')
                             )
                         );
 
@@ -917,7 +918,7 @@ popup.prototype.editRoom = function(roomId) {
 
             /* Censor Lists */
             fimApi.getCensorLists({
-                'roomId' : roomId ? roomId : 0,
+                'roomId' : roomId ? roomId : null,
                 'includeWords' : 0,
             }, {
                 'each' : function(listData) {
@@ -1154,7 +1155,7 @@ popup.prototype.online = function() {
 
                 $('#onlineUsers').append($('<tr>').append(
                     $('<td>').append(
-                        fim_buildUsernameTag($('<span>'), user.userData.id, fim_getUsernameDeferred(user.userData.id), true)
+                        fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)
                     )
                 ).append($('<td>').append(roomData)));
             }

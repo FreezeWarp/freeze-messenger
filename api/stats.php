@@ -35,11 +35,9 @@ require('../global.php');
 
 /* Get Request */
 $request = fim_sanitizeGPC('g', array(
-    'roomIds' => array(
-        'default' => [],
-        'cast' => 'list',
-        'filter' => 'int',
-        'evaltrue' => true,
+    'roomId' => array(
+        'cast' => 'roomId',
+        'require' => true,
     ),
 
     'userIds' => array(
@@ -49,10 +47,10 @@ $request = fim_sanitizeGPC('g', array(
         'evaltrue' => true,
     ),
 
-    'number' => array(
-        'default' => 10,
+    'page' => [
         'cast' => 'int',
-    ),
+        'default' => 0
+    ]
 ));
 $database->accessLog('getStats', $request);
 
@@ -67,26 +65,16 @@ $xmlData = array(
 
 /* Start Processing */
 
-$totalPosts = $database->getPostStats(array(
-    'roomIds' => $request['roomIds'],
-))->getAsArray(array('roomId', 'userId'), false);
+if (!($room = fimRoomFactory::getFromId($request['roomId']))->exists() || !($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)) {
+    new fimError('roomIdNoExist', 'The given "roomId" parameter does not correspond with a real room.');
+}
 
+else {
+    $totalPosts = $database->getPostStats(array(
+        'roomId' => $request['roomId'],
+    ), array('messages' => 'desc', 'roomId' => 'asc', 'userId' => 'asc'), 10, $request['page'])->getAsArray(['userId']);
 
-foreach ($totalPosts AS $roomId => $room) {
-    // Users must be able to view the room to see the respective post counts.
-    if (!($database->hasPermission($user, fimRoomFactory::getFromId($roomId)) & fimRoom::ROOM_PERMISSION_VIEW)) {
-        continue;
-    }
-
-    foreach ($room AS $userId => $totalPoster) {
-        if (!isset($xmlData['roomStats']['room ' . $totalPoster['roomId']])) {
-            $xmlData['roomStats']['room ' . $totalPoster['roomId']] = array(
-                'id' => (int) $totalPoster['roomId'],
-                'name' => $totalPoster['roomName'],
-                'users' => array(),
-            );
-        }
-
+    foreach ($totalPosts AS $roomId => $totalPoster) {
         $xmlData['roomStats']['room ' . $totalPoster['roomId']]['users']['user ' . $totalPoster['userId']] = [
             'id' => (int) $totalPoster['userId'],
             'name' => $totalPoster['userName'],

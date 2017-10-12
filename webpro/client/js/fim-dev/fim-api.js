@@ -400,7 +400,7 @@ fimApi.prototype.getStats = function(params, requestSettings) {
         url: directory + 'api/stats.php',
         data: fimApi.mergeDefaults(params, {
             'access_token' : window.sessionHash,
-            'roomIds' : null,
+            'roomId' : null,
             'number' : 10
         }),
         timeout: requestSettings.timeout,

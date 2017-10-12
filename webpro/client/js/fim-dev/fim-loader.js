@@ -191,7 +191,7 @@ function fim_showMissedMessage(message) {
         // Do nothing
     }
     else {
-        $('.missedMessage').find('[data-roomId=' + message.roomId + ']').find('.jGrowl-close').click(); // Close missed messages that are from the same room.
+        $('.missedMessage').find('[data-roomId="' + message.roomId + '"]').find('.jGrowl-close').click(); // Close missed messages that are from the same room.
 
         $.jGrowl($('<span>').attr({
             'class': 'missedMessage',

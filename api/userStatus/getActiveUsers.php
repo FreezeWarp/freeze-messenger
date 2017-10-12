@@ -77,12 +77,7 @@ $activeUsers = $database->getActiveUsers(array(
 foreach ($activeUsers AS $activeUser) {
     if (!isset($xmlData['users']['user ' . $activeUser['userId']])) {
         $xmlData['users']['user ' . $activeUser['userId']] = array(
-            'userData' => array(
-                'id' => (int) $activeUser['userId'],
-                'name' => (string) $activeUser['userName'],
-                'nameFormat' => (string) $activeUser['userNameFormat'],
-                'avatar' => (string) $activeUser['avatar'],
-            ),
+            'id' => (int) $activeUser['userId'],
             'rooms' => array(),
         );
     }
