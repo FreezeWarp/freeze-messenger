@@ -40,6 +40,8 @@ class StreamPgSQL implements StreamInterface {
     }
 
     public function publish($stream, $eventName, $data) {
+        StreamFactory::getDatabaseInstance()->publish($stream, $eventName, $data);
+
         $json = json_encode([
            'eventName' => $eventName,
            'data' => $data

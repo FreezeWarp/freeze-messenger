@@ -33,6 +33,8 @@ class StreamRedis implements StreamInterface {
     }
 
     public function publish($stream, $eventName, $data) {
+        StreamFactory::getDatabaseInstance()->publish($stream, $eventName, $data);
+
         $this->redis->publish($stream, json_encode([
             'eventName' => $eventName,
             'data' => $data

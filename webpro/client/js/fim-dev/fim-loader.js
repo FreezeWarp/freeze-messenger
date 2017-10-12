@@ -464,8 +464,6 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
             text : 'Are you sure you want to delete this message?',
             'true' : function() {
                 standard.deleteMessage(roomId, messageId);
-
-                $(el).parent().fadeOut();
             }
         });
     }

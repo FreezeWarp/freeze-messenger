@@ -2295,6 +2295,11 @@ class fimDatabase extends DatabaseSQL
                 "roomId" => $message->room->id,
                 "messageId" => $message->id
             ]);
+
+            \Stream\StreamFactory::publish('room_' . $message->room->id, 'deletedMessage', [
+                'id' => $message->id,
+                'roomId' => $message->room->id,
+            ]);
         }
         else {
             // Note: this does mean that undeleting a message will not put it back into the message cache.

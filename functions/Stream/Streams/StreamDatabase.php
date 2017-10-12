@@ -60,7 +60,7 @@ class StreamDatabase implements StreamInterface {
             ],
             'eventName' => [
                 'type' => 'string',
-                'maxlen' => 10,
+                'maxlen' => 20,
             ]
         ], [
             'id' => [

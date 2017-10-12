@@ -155,9 +155,9 @@ standard.prototype.roomEventListener = function(roomId) {
         console.log('Event (Topic Change): ' + active.param1);
     }), false);
 
-    // TODO
-    roomSource.addEventListener('deletedMessage', function(e) {
-    });
+    roomSource.addEventListener('deletedMessage', eventHandler(function(active) {
+        $('#message' + active.id).fadeOut();
+    }), false);
 };
 
 

@@ -70,7 +70,7 @@ else {
 
     \Stream\StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent'], function($message) use ($request) {
         if ($request['streamType'] === 'room') {
-            if (isset($message['data']['id']) && $message['data']['id'] <= $request['lastMessage']) return;
+            if (isset($message['data']['id']) && $message['eventName'] === 'newMessage' && $message['data']['id'] <= $request['lastMessage']) return;
         }
 
         echo "\nid: " . (int)$message['id'] . "\n";
