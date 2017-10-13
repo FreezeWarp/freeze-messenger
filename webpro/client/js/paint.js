@@ -396,18 +396,11 @@ $.when(
         /*** Button Click Events ***/
         $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
 
-        $('a#editRoom').bind('click', function() { popup.editRoom(roomId); }); // Edit Room
         $('#logout').bind('click', function() { standard.logout(); }); // Logout
         $('a#kick').bind('click', function() { popup.kick(); }); // Kick
-        $('a#privateRoom').bind('click', function() { popup.privateRoom(); }); // Private Room
         $('a#manageKick').bind('click', function() { popup.manageKicks({'roomId' : window.roomId}); }); // Manage Kicks
         $('a#myKicks').bind('click', function() { popup.manageKicks({'userId' : window.userId}); }); // Manage Kicks
-        $('a#online').bind('click', function() { popup.online(); }); // Online
-        $('a#createRoom').bind('click', function() { popup.editRoom();}); // Create Room
         $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
-        $('#icon_help').bind('click', function() { popup.help(); }); // Help
-        $('#viewStats').bind('click', function() { popup.viewStats(); }); // Room Post Stats
-        $('#copyrightLink').bind('click', function() { popup.copyright(); }); // Copyright & Credits
         $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click', function() { popup.userSettings(); }); // User Settings
         $('#icon_url').bind('click', function() { popup.insertDoc('url'); }); // Upload
 

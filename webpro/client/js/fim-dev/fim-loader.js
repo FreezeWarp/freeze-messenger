@@ -746,7 +746,7 @@ function fim_hashParse(options) {
             urlHashComponentsMap[componentPieces[0]] = componentPieces[1];
     }
 
-    if (!('room' in urlHashComponents)) {
+    if (!('room' in urlHashComponentsMap)) {
         urlHashComponentsMap['room'] = window.activeLogin.userData.defaultRoomId;
     }
     urlHashComponentsMap['roomId'] = urlHashComponentsMap['room'];
@@ -759,10 +759,11 @@ function fim_hashParse(options) {
         case 'help':
         case 'room':
         case 'settings':
+        case 'editRoom':
             fim_openView(urlHashComponents[1], urlHashComponentsMap);
             break;
 
-        default:
+        default: console.log("no action", urlHashComponentsMap);
             fim_openView('room', urlHashComponentsMap);
             break;
     }

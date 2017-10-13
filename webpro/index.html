@@ -102,40 +102,80 @@
         </form>
     </div>
 
-    <div id="modal-stats" class="modal">
-        <table class="center" id="viewStats">
-            <thead>
-            <tr>
-                <th>Position</th>
-            </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+    <div id="modal-stats" class="modal" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Room Stats</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="center" id="viewStats">
+                        <thead>
+                        <tr>
+                            <th>Position</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="modal-privateRoom" class="modal">
-        <form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm"><label for="userName">Username</label>:
-            <input type="text" name="userName" id="userName"/><br/>
-            <small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small>
-            <br/><br/>
-            <button type="submit">Go</button>
-        </form>
+    <div id="modal-privateRoom" class="modal" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Enter Private Room</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm">
+                    <div class="modal-body">
+                        <div class="input-group">
+                            <label class="input-group-addon" for="userName">Username</label>
+                            <input type="text" name="userName" class="form-control" />
+                        </div>
+                        <small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn">Go</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <div id="modal-online" class="modal">
-        <table class="center">
-            <thead>
-            <tr class="hrow">
-                <th>User</th>
-                <th>Rooms</th>
-            </tr>
-            </thead>
-            <tbody id="onlineUsers">
-            <tr>
-                <td colspan="2">Loading...</td>
-            </tr>
-            </tbody>
-        </table>
+    <div id="modal-online" class="modal" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Online Users</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="center">
+                        <thead>
+                        <tr class="hrow">
+                            <th>User</th>
+                            <th>Rooms</th>
+                        </tr>
+                        </thead>
+                        <tbody id="onlineUsers">
+                        <tr>
+                            <td colspan="2">Loading...</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="modal-insertDoc" class="modal">
@@ -263,11 +303,11 @@
                             <li style="border-bottom: 1px solid;"><a href="#archive" id="messageArchive" accesskey="a">{{template.archive}}</a>
                             </li>
                             <li><a href="#rooms" id="roomList" accesskey="r">{{template.roomList}}</a></li>
-                            <li><a href="#createRoom" id="createRoom" accesskey="c">{{template.createRoom}}</a></li>
-                            <li style="border-bottom: 1px solid;"><a href="javascript:void(0)" id="privateRoom" accesskey="p">{{template.privateIM}}</a>
+                            <li><a href="#editRoom" class="createRoomLink" accesskey="c">{{template.createRoom}}</a></li>
+                            <li style="border-bottom: 1px solid;"><a href="javascript:popup.privateRoom();" accesskey="p">{{template.privateIM}}</a>
                             </li>
-                            <li><a href="#" id="online" accesskey="o">{{template.activeUsers}}</a></li>
-                            <li style="border-bottom: 1px solid;"><a href="javascript:void(0)" id="viewStats" accesskey="t">{{template.stats}}</a>
+                            <li><a href="javascript:popup.online()" id="online" accesskey="o">{{template.activeUsers}}</a></li>
+                            <li style="border-bottom: 1px solid;"><a href="javascript:popup.viewStats();" accesskey="t">{{template.stats}}</a>
                             </li>
                             <li><a href="#uploads" id="viewUploads" accesskey="l">{{template.viewUploads}}</a></li>
                             <li><a href="#settings" id="changeSettings" accesskey="s">{{template.changeSettings}}</a></li>
@@ -329,27 +369,47 @@
                 <div id="chatContainer" class="card">
                     <div id="messageListCard">
                         <div id="title" class="card-header">
-                            <div id="rightTitle" class="rightPart">
-                                <form action="#" onsubmit="return false;" class="rightPart">
-                                    <button type="button" class="btn btn-primary" title="Settings" onclick="location.hash='#settings'">
-                                        <i class="fa fa-cog" aria-hidden="true"></i>
-                                    </button>
+                            <div class="row">
+                                <div class="col">
+                                    <span id="roomName"></span><br/><em id="topic"></em>
+                                </div>
 
-                                    <button type="button" class="btn btn-primary" title="Archive" onclick="location.hash='#archive'">
-                                        <i class="fa fa-history"></i>
-                                    </button>
+                                <div class="col-auto">
+                                    <div class="btn-toolbar" role="toolbar">
+                                        <button
+                                                type="button"
+                                                class="btn btn-primary"
+                                                title="Settings"
+                                                onclick="location.hash='#settings'">
+                                            <i class="fa fa-cog" aria-hidden="true"></i>
+                                        </button>
 
-                                    <button type="button" class="btn btn-primary" title="Help" accesskey="?" onclick="location.hash='#help'">
-                                        <i class="fa fa-question-circle"></i>
-                                    </button>
-                                </form>
+                                        <button
+                                                type="button"
+                                                class="btn btn-primary"
+                                                title="Archive"
+                                                onclick="location.hash='#archive'">
+                                            <i class="fa fa-history"></i>
+                                        </button>
+
+                                        <button
+                                                type="button"
+                                                class="btn btn-primary"
+                                                title="Help"
+                                                accesskey="?"
+                                                onclick="location.hash='#help'">
+                                            <i class="fa fa-question-circle"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <span id="roomName"></span><br/><em id="topic"></em>
                         </div>
+
                         <div id="messageListContainer">
                             <div id="messageList"></div>
                         </div>
                     </div>
+
                     <div id="textentryBoxMessage" class="card">
                         <form id="sendForm" action="#" method="post">
                             <div class="card-header">
@@ -405,19 +465,20 @@
 
 
             <{{!}}script id="view-uploads" type="text/x-handlebars-template">
-            <table align="center">
-                <thead>
-                <tr>
-                    <td>File</td>
-                    <td>Size</td>
-                    <td>Parental Info</td>
-                    <td>Actions</td>
-                </tr>
+            <table class="table">
+                <thead class="thead-default">
+                    <tr>
+                        <th>File</th>
+                        <th>Size</th>
+                        <th>Parental Info</th>
+                        <th>Actions</th>
+                    </tr>
                 </thead>
-                <tbody id="viewUploadsBody">
-                </tbody>
+
+                <tbody id="viewUploadsBody"></tbody>
             </table>
             <{{!}}/script>
+
 
             <{{!}}script id="view-archive" type="text/x-handlebars-template">
             <form id="archiveSearch" action="#" method="get" style="text-align: center;">
@@ -434,10 +495,8 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td><input type="text" id="searchText" name="searchText"
-                                   style="margin-left: auto; margin-right: auto; text-align: left;"/></td>
-                        <td><input type="text" id="searchUser" name="searchUser"
-                                   style="margin-left: auto; margin-right: auto; text-align: left;"/></td>
+                        <td><input type="text" id="searchText" name="searchText" class="form-control" /></td>
+                        <td><input type="text" id="searchUser" name="searchUser" class="form-control" /></td>
                     </tr>
                     </tbody>
                 </table>
@@ -475,15 +534,17 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td><input type="text" id="roomNameSearchText" name="roomNameSearchText"
-                                   style="margin-left: auto; margin-right: auto; text-align: left;"/></td>
-                        <td><select id="permissionLevel" name="permissionLevel"
-                                    style="margin-left: auto; margin-right: auto; text-align: left;">
-                            <option value="10">{{selectRoomPermissionLevel.view}}</option>
-                            <option value="25" selected="selected">{{selectRoomPermissionLevel.post}}</option>
-                            <option value="50">{{selectRoomPermissionLevel.moderate}}</option>
-                            <option value="100">{{selectRoomPermissionLevel.own}}</option>
-                        </select></td>
+                        <td>
+                            <input type="text" id="roomNameSearchText" name="roomNameSearchText" class="form-control" />
+                        </td>
+                        <td>
+                            <select id="permissionLevel" name="permissionLevel" class="form-control">
+                                <option value="10">{{selectRoomPermissionLevel.view}}</option>
+                                <option value="25" selected="selected">{{selectRoomPermissionLevel.post}}</option>
+                                <option value="50">{{selectRoomPermissionLevel.moderate}}</option>
+                                <option value="100">{{selectRoomPermissionLevel.own}}</option>
+                            </select>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -499,13 +560,13 @@
                 <tbody id="roomTableHtml"></tbody>
             </table><br/><br/>
             <div align="center">
-                <button id="roomListPrev">{{selectRoomPreviousButton}}</button>
-                <button id="roomListNext">{{selectRoomNextButton}}</button>
+                <button id="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
+                <button id="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
             </div>
             <{{!}}/script>
 
             <{{!}}script id="view-settings" type="text/x-handlebars-template">
-            <ul class="nav nav-tabs" role="tablist" id="settingsTabs">
+            <ul class="nav nav-tabs justify-content-center" role="tablist" id="settingsTabs">
                 <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#settings5">{{settingsTabGeneral}}</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsTabPrivacy}}</a></li>
                 <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings1">{{settingsTabDisplay}}</a></li>
@@ -515,6 +576,7 @@
             <form action="#" method="post" id="changeSettingsForm">
                 <div class="tab-content" id="settingsTabsContent">
                     <div class="tab-pane fade show active" role="tabpanel" id="settings1">
+                        <!--
                         <div id="settings1theme">
                             <label for="theme">{{settingsThemeLabel}}</label>
                             <select name="theme" id="theme">
@@ -534,6 +596,7 @@
                             <small><span style="margin-left: 10px;">{{settingsThemeBlurb}}</span></small>
                             <br/><br/>
                         </div>
+                        -->
 
                         <div id="settings1fontsize">
                             <label for="fontsize">{{settingsFontsizeLabel}}</label>
@@ -751,22 +814,32 @@
         <{{!}}/script>
 
         <{{!}}script id="view-editRoom" type="text/x-handlebars-template">
-        <ul class="tabList">
-            <li><a href="#editRoom1">{{editRoomTabGeneral}}</a></li>
-            <li><a href="#editRoom2">{{editRoomTabPermissions}}</a></li>
+        <ul class="nav nav-tabs justify-content-center" role="tablist" id="editRoomTabs">
+            <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#editRoom1">{{editRoomTabGeneral}}</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#editRoom2">{{editRoomTabPermissions}}</a></li>
         </ul>
         <form action="#" method="post" id="editRoomForm">
-            <div id="editRoom1">
-                <div id="editRoom1Name"><label for="name">{{editRoomNameLabel}}</label>: <input type="text" name="name"
-                                                                                                id="name"/><br/>
-                    <small><span class="indent">{{editRoomNameBlurb}}</span></small>
-                    <br/><br/></div>
-                <div id="editRoom1ParentalAge"><label for="parentalAge">{{editRoomParentalAgeLabel}}</label><select
-                        name="parentalAge" id="parentalAge"></select><br/>
+            <div class="tab-content" id="editRoomTabsContent">
+                <div class="tab-pane fade show active" role="tabpanel" id="editRoom1">
+                <div id="editRoom1Name">
+                    <div class="input-group">
+                        <span class="input-group-addon">{{editRoomNameLabel}}</span>
+                        <input type="text" name="name" />
+                    </div>
+                    <small><span class="indent">{{editRoomNameBlurb}}</span></small><br/><br/>
+                </div>
+
+                <div id="editRoom1ParentalAge">
+                    <div class="input-group">
+                        <span class="input-group-addon">{{editRoomParentalAgeLabel}}</span>
+                        <select name="parentalAge"></select>
+                    </div>
                     <small><span class="indent">{{editRoomParentalAgeBlurb}}</span></small>
                     <br/><br/></div>
-                <div id="editRoom1ParentalFlags"><label for="parentalFlagsList">{{editRoomParentalFlagsLabel}}</label>
-                    <div name="parentalFlagsList" id="parentalFlagsList" class="indent"></div>
+
+                <div id="editRoom1ParentalFlags">
+                    <span>{{editRoomParentalFlagsLabel}}</span>
+                    <div name="parentalFlagsList" class="indent"></div>
                     <small><span class="indent">{{editRoomParentalFlagsBlurb}}</span></small>
                     <br/><br/></div>
                 <div id="editRoom1Censor"><label>{{editRoomCensorLabel}}</label>:<br/>
@@ -781,7 +854,8 @@
                 <button type="submit">{{editRoomSubmit}}</button>
                 <button type="reset">{{editRoomReset}}</button>
             </div>
-            <div id="editRoom2">
+
+            <div class="tab-pane fade" role="tabpanel" id="editRoom2">
                 <div id="editRoom2AllowViewing"><label><input type="checkbox" id="allowViewing" name="allowViewing"/>{{editRoomAllowViewingLabel}}</label><br/>
                     <small><span class="indent">{{editRoomAllowViewingBlurb}}</span></small>
                     <br/><br/></div>

@@ -144,15 +144,6 @@ table#fileUploadInfo td {
   padding: 5px;
 }
 
-.leftPart {
-  float: left;
-  text-align: left;
-}
-.rightPart {
-  float: right;
-  text-align: right;
-}
-
 .userNameTable {
   width: 150px;
   overflow: hidden;

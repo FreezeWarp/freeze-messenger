@@ -298,45 +298,39 @@ popup.prototype.insertDoc = function(preSelect) {
 popup.prototype.viewStats = function() {
     var number = 10;
 
-    dia.full({
-        content : $t('viewStats'),
-        title : 'Room Stats',
-        id : 'roomStatsDialogue',
-        width : 600,
-        oF : function() {
-            for (i = 1; i <= number; i += 1) {
-                $('table#viewStats > tbody').append('<tr><th>' + i + '</th></tr>');
-            }
+    $('#modal-stats').modal();
 
-            fimApi.getStats({
-                'roomId' : window.roomId
-            }, {
-                each : function(room) {
-                    $('table#viewStats > thead > tr').append(
-                        $('<th>').append(
-                            $('<span>').attr({
-                                'class' : 'roomName',
-                                'data-roomId' : room.id
-                            }).text(room.name)
-                        )
-                    );
+    for (i = 1; i <= number; i += 1) {
+        $('table#viewStats > tbody').append('<tr><th>' + i + '</th></tr>');
+    }
 
-                    var i = 0;
-                    jQuery.each(room.users, function(userId, user) {
-                        $('table#viewStats > tbody > tr').eq(i).append(
-                            $('<td>').append(
-                                fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true),
-                                $('<span>').text('(' + user.messageCount + ')')
-                            )
-                        );
+    fimApi.getStats({
+        'roomId' : window.roomId
+    }, {
+        each : function(room) {
+            $('table#viewStats > thead > tr').append(
+                $('<th>').append(
+                    $('<span>').attr({
+                        'class' : 'roomName',
+                        'data-roomId' : room.id
+                    }).text(room.name)
+                )
+            );
 
-                        i++;
-                    });
-                },
-                'end' : function() {
-                    windowDraw();
-                }
+            var i = 0;
+            jQuery.each(room.users, function(userId, user) {
+                $('table#viewStats > tbody > tr').eq(i).append(
+                    $('<td>').append(
+                        fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true),
+                        $('<span>').text('(' + user.messageCount + ')')
+                    )
+                );
+
+                i++;
             });
+        },
+        end : function() {
+            windowDraw();
         }
     });
 };
@@ -515,13 +509,13 @@ popup.prototype.settings = {
             if (window.serverSettings.parentalControls.parentalEnabled) {
                 // Parental Age Values
                 jQuery.each(window.serverSettings.parentalControls.parentalAges, function(key, age) {
-                    $('#parentalAge').append(
+                    $('#changeSettingsForm select[name=parentalAge]').append(
                         $('<option>').attr('value', age).text($l('parentalAges.' + age))
                     );
                 });
 
                 // Parental Age Default
-                $('select#parentalAge option[value=' + active.parentalAge + ']').attr('selected', 'selected');
+                $('#changeSettingsForm select[name=parentalAge] option[value=' + active.parentalAge + ']').attr('selected', 'selected');
 
                 // Parental Flags Values
                 jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(key, flag) {
@@ -711,7 +705,7 @@ popup.prototype.settings = {
                 "ignoreList" : $('#ignoreList').val().split(','),
                 "friendsList" : $('#friendsList').val().split(','),
                 "profile" : $('#profile').val(),
-                "parentalAge" : $('#parentalAge option:selected').val(),
+                "parentalAge" : $('#changeSettingsForm select[name=parentalAge] option:selected').val(),
                 "parentalFlags" : parentalFlags,
                 "privacyLevel" : $('input[name=privacyLevel]:radio:checked').val()
             }, {
@@ -815,249 +809,248 @@ popup.prototype.uploads = {
 
 /*** START Create Room ***/
 
-popup.prototype.editRoom = function(roomId) {
-    if (roomId)
-        var action = 'edit';
-    else
-        var action = 'create';
+popup.prototype.editRoom = {
+    options : {
+        roomId : 0
+    },
 
-    dia.full({
-        content : $t('editRoomForm'),
-        id : 'editRoomDialogue',
-        width : 1000,
-        tabs : true,
-        oF : function() {
-            /* Events */
-            $('#allowPosting').change(function() {
-                if ($(this).is(':checked')) {
-                    $('#allowedUsersBridge, #allowedGroupsBridge').attr('disabled', 'disabled');
-                    $('#allowedUsersBridge, #allowedGroupsBridge').next().attr('disabled', 'disabled');
-                }
-                else {
-                    $('#allowedUsersBridge, #allowedGroupsBridge').removeAttr('disabled');
-                    $('#allowedUsersBridge, #allowedGroupsBridge').next().removeAttr('disabled');
-                }
-            });
+    init : function(options) {
+        for (i in options)
+            this.options[i] = options[i];
 
+        if (this.options.roomId)
+            var action = 'edit';
+        else
+            var action = 'create';
 
-            /* Autocomplete Users and Groups */
-            moderatorsList = new autoEntry($("#moderatorsContainer"), {
-                'name' : 'moderators',
-                'list' : 'users',
-                'onAdd' : function(id) {
-                    if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post", "moderate", "properties", "grant"])
-                },
-                'onRemove' : function(id) {
-                    if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"]) // todo: just remove moderate privs
-                },
-                'resolveFromIds' : Resolver.resolveUsersFromIds,
-                'resolveFromNames' : Resolver.resolveUsersFromNames
-            });
-
-            allowedUsersList = new autoEntry($("#allowedUsersContainer"), {
-                'name' : 'allowedUsers',
-                'list' : 'users',
-                'onAdd' : function(id) {
-                    if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"])
-                },
-                'onRemove' : function(id) {
-                    if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, [])
-                },
-                'resolveFromIds' : Resolver.resolveUsersFromIds,
-                'resolveFromNames' : Resolver.resolveUsersFromNames
-            });
-
-            allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
-                'name' : 'allowedGroups',
-                'list' : 'groups',
-                'onAdd' : function(id) {
-                    if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, ["post"])
-                },
-                'onRemove' : function(id) {
-                    if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, [])
-                },
-                'resolveFromIds' : Resolver.resolveGroupsFromIds,
-                'resolveFromNames' : Resolver.resolveGroupsFromNames
-            });
-
-
-            /* Parental Controls */
-            if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
-                $('#editRoom1ParentalAge, #editRoom1ParentalFlags').remove();
+        /* Events */
+        $('#allowPosting').change(function() {
+            if ($(this).is(':checked')) {
+                $('#allowedUsersBridge, #allowedGroupsBridge').attr('disabled', 'disabled');
+                $('#allowedUsersBridge, #allowedGroupsBridge').next().attr('disabled', 'disabled');
             }
             else {
-                jQuery.each(serverSettings.parentalControls.parentalAges, function(i, age) {
-                    $('#parentalAge').append('<option value="' + age + '">' + $l('parentalAges.' + age) + '</option>');
-                });
-
-                jQuery.each(serverSettings.parentalControls.parentalFlags, function(i, flag) {
-                    $('#parentalFlagsList').append('<label><input type="checkbox" value="true" name="flag' + flag + '" data-cat="parentalFlag" data-name="' + flag + '" />' +  $l('parentalFlags.' + flag) + '</label><br />');
-                });
+                $('#allowedUsersBridge, #allowedGroupsBridge').removeAttr('disabled');
+                $('#allowedUsersBridge, #allowedGroupsBridge').next().removeAttr('disabled');
             }
+        });
 
 
-            /* Censor Lists */
-            fimApi.getCensorLists({
-                'roomId' : roomId ? roomId : null,
-                'includeWords' : 0,
-            }, {
-                'each' : function(listData) {
-                    var listStatus;
+        /* Autocomplete Users and Groups */
+        moderatorsList = new autoEntry($("#moderatorsContainer"), {
+            'name' : 'moderators',
+            'list' : 'users',
+            'onAdd' : function(id) {
+                if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post", "moderate", "properties", "grant"])
+            },
+            'onRemove' : function(id) {
+                if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"]) // todo: just remove moderate privs
+            },
+            'resolveFromIds' : Resolver.resolveUsersFromIds,
+            'resolveFromNames' : Resolver.resolveUsersFromNames
+        });
 
-                    if (listData.status) listStatus = listData.status;
-                    else if (listData.listType === 'white') listStatus = 'block';
-                    else if (listData.listType === 'black') listStatus = 'unblock';
-                    else throw 'Bad logic.';
+        allowedUsersList = new autoEntry($("#allowedUsersContainer"), {
+            'name' : 'allowedUsers',
+            'list' : 'users',
+            'onAdd' : function(id) {
+                if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"])
+            },
+            'onRemove' : function(id) {
+                if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, [])
+            },
+            'resolveFromIds' : Resolver.resolveUsersFromIds,
+            'resolveFromNames' : Resolver.resolveUsersFromNames
+        });
 
-                    $('#censorLists').append($('<label>').append(
-                        $('<input>').attr({
-                            'type' : 'checkbox',
-                            'name' : 'list' + listData.listId,
-                            'data-listId' : listData.listId,
-                            'data-checkType' : 'list',
-                            'value' : 'true',
-
-                        })
-                            .attr(listData.listOptions & 2 ? { 'disabled' : 'disabled' } : {})
-                            .attr(listStatus == 'block' ? { 'checked' : 'checked' } : {})
-                    , $('<span>').text(listData.listName), $('<br>')));
-                }
-            });
-
-
-            /* Prepopulate Data if Editing a Room */
-            if (roomId) {
-                fimApi.getRooms({
-                    'id' : roomId
-                }, {'each' : function(roomData) {
-                    // User Permissions
-                    var allowedUsersArray = [], moderatorsArray = [];
-                    jQuery.each(roomData.userPermissions, function(userId, privs) {
-                        if (privs.moderate && privs.properties && privs.grant) // Are all bits up to 8 present?
-                            moderatorsArray.push(userId);
-
-                        if (privs.post) // Are the 1, 2, and 4 bits all present?
-                            allowedUsersArray.push(userId);
-                    });
-
-                    allowedUsersList.displayEntries(allowedUsersArray);
-                    moderatorsList.displayEntries(moderatorsArray);
-
-                    // Group Permissions
-                    var allowedGroupsArray = []
-                    jQuery.each(roomData.groupPermissions, function(userId, privs) {
-                        if (privs.post) // Are the 1, 2, and 4 bits all present?
-                            allowedGroupsArray.push(userId);
-                    });
-                    allowedGroupsList.displayEntries(allowedGroupsArray);
-
-                    // Default Permissions
-                    if ('view' in roomData.defaultPermissions) // If all users are currently allowed, check the box (which triggers other stuff above).
-                        $('#allowViewing').prop('checked', true);
-                    if ('post' in roomData.defaultPermissions) // If all users are currently allowed, check the box (which triggers other stuff above).
-                        $('#allowPosting').prop('checked', true);
-
-                    // Name
-                    $('#name').val(roomData.name);
-
-                    // Options
-                    $('#allowOfficial').prop('checked', roomData.official);
-                    $('#allowHidden').prop('checked', roomData.hidden);
-
-                    // Parental Data
-                    jQuery.each(roomData.parentalFlags, function(index, flag) {
-                        $('input[data-cat=parentalFlag][data-name=' + flag + ']').prop('checked', true);
-                    });
-                    $('select#parentalAge option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
-                }});
-            }
+        allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
+            'name' : 'allowedGroups',
+            'list' : 'groups',
+            'onAdd' : function(id) {
+                if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, ["post"])
+            },
+            'onRemove' : function(id) {
+                if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, [])
+            },
+            'resolveFromIds' : Resolver.resolveGroupsFromIds,
+            'resolveFromNames' : Resolver.resolveGroupsFromNames
+        });
 
 
-            /* Submit */
-            $("#editRoomForm").submit(function() {console.log("allowed users", allowedUsersList, allowedUsersList.getList());
-                var name = $('#name').val(),
-                    censor = {},
-                    parentalAge = $('#parentalAge option:selected').val(),
-                    parentalFlags = [],
-                    combinedUserPermissions = {},
-                    combinedGroupPermissions = {};
-
-                // Parse Alloewd Users
-                if (action === 'create') {
-                    allowedUsersList.getList().forEach(function(user) {
-                        combinedUserPermissions["+" + user] = ['view', 'post'];
-                    });
-                    moderatorsList.getList().forEach(function(user) {
-                        combinedUserPermissions["+" + user] = ['view', 'post', 'moderate'];
-                    });
-                    allowedGroupsList.getList().forEach(function(group) {
-                        combinedGroupPermissions["+" + group] = ['post'];
-                    });
-                }
-
-                // Parse Censor Lists
-                $('input[data-checkType="list"]').each(function() {
-                    censor[$(this).attr('data-listId')] = ($(this).is(':checked') ? 1 : 0);
-                });
-
-                // Parse Parental Flags
-                $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
-                    parentalFlags.push($(b).attr('data-name'));
-                });
-
-                // Parse Default Permissions
-                defaultPermissions = [];
-                if ($('#allowViewing').is(':checked'))
-                    defaultPermissions.push("view");
-                if ($('#allowPosting').is(':checked'))
-                    defaultPermissions.push("post");
-
-                // Do Edit
-                fimApi.editRoom(roomId, action, {
-                    "name" : name,
-                    "defaultPermissions" : defaultPermissions,
-                    "userPermissions" : combinedUserPermissions,
-                    "groupPermissions" : combinedGroupPermissions,
-                    "parentalAge" : parentalAge,
-                    "parentalFlags" : parentalFlags,
-                    "censorLists" : censor,
-                    "official" : $("#allowOfficial").is(":checked"),
-                    "hidden" : $("#allowHidden").is(":checked")
-                }, {
-                    end : function(room) {
-                        dia.full({
-                            content : 'The room has been created at the following URL: <br /><br /><form action="' + currentLocation + '#room=' + room.id + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + room.id + '" name="url" /></form>',
-                            title : 'Room Created!',
-                            id : 'editRoomResultsDialogue',
-
-                            width : 600,
-                            buttons : {
-                                Open : function() {
-                                    $('#editRoomResultsDialogue').dialog('close');
-                                    standard.changeRoom(room.id);
-
-                                    return false;
-                                },
-                                Okay : function() {
-                                    $('#editRoomResultsDialogue').dialog('close');
-
-                                    return false;
-                                }
-                            }
-                        });
-
-                        $("#editRoomDialogue").dialog('close');
-                    }
-                });
-
-                return false; // Don't submit the form.
-            });
-
-            return false;
+        /* Parental Controls */
+        if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
+            $('#editRoom1ParentalAge, #editRoom1ParentalFlags').remove();
         }
-    });
+        else {
+                jQuery.each(window.serverSettings.parentalControls.parentalAges, function(i, age) {
+                    $('#editRoomForm select[name=parentalAge]').append($('<option>').attr('value', age).text($l('parentalAges.' + age)));
+                });
 
-    return false;
+                jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(i, flag) {
+                    $('#editRoomForm div[name=parentalFlagsList]').append('<label><input type="checkbox" value="true" name="flag' + flag + '" data-cat="parentalFlag" data-name="' + flag + '" />' +  $l('parentalFlags.' + flag) + '</label><br />');
+                });
+        }
+
+
+        /* Censor Lists */
+        fimApi.getCensorLists({
+            'roomId' : roomId ? roomId : null,
+            'includeWords' : 0,
+        }, {
+            'each' : function(listData) {
+                var listStatus;
+
+                if (listData.status) listStatus = listData.status;
+                else if (listData.listType === 'white') listStatus = 'block';
+                else if (listData.listType === 'black') listStatus = 'unblock';
+                else throw 'Bad logic.';
+
+                $('#censorLists').append($('<label>').append(
+                    $('<input>').attr({
+                        'type' : 'checkbox',
+                        'name' : 'list' + listData.listId,
+                        'data-listId' : listData.listId,
+                        'data-checkType' : 'list',
+                        'value' : 'true'
+
+                    })
+                        .attr(listData.listOptions & 2 ? { 'disabled' : 'disabled' } : {})
+                        .attr(listStatus == 'block' ? { 'checked' : 'checked' } : {})
+                , $('<span>').text(listData.listName), $('<br>')));
+            }
+        });
+
+
+        /* Prepopulate Data if Editing a Room */
+        if (roomId) {
+            fimApi.getRooms({
+                'id' : roomId
+            }, {'each' : function(roomData) {
+                // User Permissions
+                var allowedUsersArray = [], moderatorsArray = [];
+                jQuery.each(roomData.userPermissions, function(userId, privs) {
+                    if (privs.moderate && privs.properties && privs.grant) // Are all bits up to 8 present?
+                        moderatorsArray.push(userId);
+
+                    if (privs.post) // Are the 1, 2, and 4 bits all present?
+                        allowedUsersArray.push(userId);
+                });
+
+                allowedUsersList.displayEntries(allowedUsersArray);
+                moderatorsList.displayEntries(moderatorsArray);
+
+                // Group Permissions
+                var allowedGroupsArray = []
+                jQuery.each(roomData.groupPermissions, function(userId, privs) {
+                    if (privs.post) // Are the 1, 2, and 4 bits all present?
+                        allowedGroupsArray.push(userId);
+                });
+                allowedGroupsList.displayEntries(allowedGroupsArray);
+
+                // Default Permissions
+                if ('view' in roomData.defaultPermissions) // If all users are currently allowed, check the box (which triggers other stuff above).
+                    $('#allowViewing').prop('checked', true);
+                if ('post' in roomData.defaultPermissions) // If all users are currently allowed, check the box (which triggers other stuff above).
+                    $('#allowPosting').prop('checked', true);
+
+                // Name
+                $('#name').val(roomData.name);
+
+                // Options
+                $('#allowOfficial').prop('checked', roomData.official);
+                $('#allowHidden').prop('checked', roomData.hidden);
+
+                // Parental Data
+                jQuery.each(roomData.parentalFlags, function(index, flag) {
+                    $('input[data-cat=parentalFlag][data-name=' + flag + ']').prop('checked', true);
+                });
+                $('select#parentalAge option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
+            }});
+        }
+
+
+        /* Submit */
+        $("#editRoomForm").submit(function() {console.log("allowed users", allowedUsersList, allowedUsersList.getList());
+            var name = $('#name').val(),
+                censor = {},
+                parentalAge = $('#parentalAge option:selected').val(),
+                parentalFlags = [],
+                combinedUserPermissions = {},
+                combinedGroupPermissions = {};
+
+            // Parse Alloewd Users
+            if (action === 'create') {
+                allowedUsersList.getList().forEach(function(user) {
+                    combinedUserPermissions["+" + user] = ['view', 'post'];
+                });
+                moderatorsList.getList().forEach(function(user) {
+                    combinedUserPermissions["+" + user] = ['view', 'post', 'moderate'];
+                });
+                allowedGroupsList.getList().forEach(function(group) {
+                    combinedGroupPermissions["+" + group] = ['post'];
+                });
+            }
+
+            // Parse Censor Lists
+            $('input[data-checkType="list"]').each(function() {
+                censor[$(this).attr('data-listId')] = ($(this).is(':checked') ? 1 : 0);
+            });
+
+            // Parse Parental Flags
+            $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
+                parentalFlags.push($(b).attr('data-name'));
+            });
+
+            // Parse Default Permissions
+            defaultPermissions = [];
+            if ($('#allowViewing').is(':checked'))
+                defaultPermissions.push("view");
+            if ($('#allowPosting').is(':checked'))
+                defaultPermissions.push("post");
+
+            // Do Edit
+            fimApi.editRoom(roomId, action, {
+                "name" : name,
+                "defaultPermissions" : defaultPermissions,
+                "userPermissions" : combinedUserPermissions,
+                "groupPermissions" : combinedGroupPermissions,
+                "parentalAge" : parentalAge,
+                "parentalFlags" : parentalFlags,
+                "censorLists" : censor,
+                "official" : $("#allowOfficial").is(":checked"),
+                "hidden" : $("#allowHidden").is(":checked")
+            }, {
+                end : function(room) {
+                    dia.full({
+                        content : 'The room has been created at the following URL: <br /><br /><form action="' + currentLocation + '#room=' + room.id + '" method="post"><input type="text" style="width: 300px;" value="' + currentLocation + '#room=' + room.id + '" name="url" /></form>',
+                        title : 'Room Created!',
+                        id : 'editRoomResultsDialogue',
+
+                        width : 600,
+                        buttons : {
+                            Open : function() {
+                                $('#editRoomResultsDialogue').dialog('close');
+                                standard.changeRoom(room.id);
+
+                                return false;
+                            },
+                            Okay : function() {
+                                $('#editRoomResultsDialogue').dialog('close');
+
+                                return false;
+                            }
+                        }
+                    });
+
+                    $("#editRoomDialogue").dialog('close');
+                }
+            });
+
+            return false; // Don't submit the form.
+        });
+
+        return false;
+    }
 };
 
 /*** END Create Room ***/
@@ -1068,42 +1061,33 @@ popup.prototype.editRoom = function(roomId) {
 /*** START Private Rooms ***/
 
 popup.prototype.privateRoom = function() {
-    dia.full({
-        content : $t('privateRoom'),
-        title : 'Enter Private Room',
-        id : 'privateRoomDialogue',
-        width : 500,
-        oF : function() {
-            $('#userName').autocompleteHelper('users');
+    $('#modal-privateRoom').modal();
 
-            $("#privateRoomForm").submit(function() {
-                var userName = $("#privateRoomForm > #userName").val();
-                var userId = $("#privateRoomForm > #userName").attr('data-id');
+    $('#privateRoomForm input[name=userName]').autocompleteHelper('users');
 
-                whenUserIdAvailable = function(userId) {
-                    standard.changeRoom("p" + [window.userId, userId].join(','), true);
-                };
+    $("#privateRoomForm").submit(function() {
+        console.log("form submitted");
+        var userName = $("#privateRoomForm input[name=userName]").val();
+        var userId = $("#privateRoomForm input[name=userName]").attr('data-id');
 
-                if (!userId && userName) {
-                    whenUserIdAvailable(userId);
-                }
-                else if (!userName) {
-                    dia.error('Please enter a username.');
-                }
-                else {
-                    var userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
-                        whenUserIdAvailable(pairs[userName].id);
-                    }));
-                }
+        whenUserIdAvailable = function(userId) {
+            window.location.hash = "#room=p" + [window.userId, userId].join(',');
+        };
 
-                return false; // Don't submit the form.
-            });
-
-            return false;
+        if (!userId && userName) {
+            whenUserIdAvailable(userId);
         }
-    });
+        else if (!userName) {
+            dia.error('Please enter a username.');
+        }
+        else {
+            var userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
+                whenUserIdAvailable(pairs[userName].id);
+            }));
+        }
 
-    return false;
+        return false; // Don't submit the form.
+    });
 };
 
 /*** END Private Rooms ***/
@@ -1114,37 +1098,33 @@ popup.prototype.privateRoom = function() {
 /*** START Online ***/
 
 popup.prototype.online = function() {
-    dia.full({
-        content : $t('online'),
-        title : 'Active Users',
-        id : 'onlineDialogue',
-        position : 'top',
-        width : 600,
-        oF : fimApi.getActiveUsers({}, {
-            'refresh' : 60 * 1000,
-            'begin' : function() {
-                $('#onlineUsers').html('');
-            },
-            'each' : function(user) {
-                var roomData = [];
-                jQuery.each(user.rooms, function(roomId, room) {
-                    if (roomData.length) roomData.push($('<span>').text(', '));
+    $('#modal-online').modal();
 
-                    roomData.push($('<a>').attr('href', '"#room=' + room.id).text(room.name));
-                });
+    fimApi.getActiveUsers({}, {
+        'refresh' : 60 * 1000,
+        'begin' : function() {
+            $('#onlineUsers').html('');
+        },
+        'each' : function(user) {
+            var roomData = [];
+            jQuery.each(user.rooms, function(roomId, room) {
+                if (roomData.length) roomData.push($('<span>').text(', '));
 
-                $('#onlineUsers').append($('<tr>').append(
-                    $('<td>').append(
-                        fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)
-                    )
-                ).append($('<td>').append(roomData)));
-            }
-        }),
-        cF : function() {
-            fimApi.getActiveUsers({}, {
-                'close' : true
-            })
+                roomData.push($('<a>').attr('href', '"#room=' + room.id).text(room.name));
+            });
+
+            $('#onlineUsers').append($('<tr>').append(
+                $('<td>').append(
+                    fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)
+                )
+            ).append($('<td>').append(roomData)));
         }
+    });
+
+    $('#modal-online').on('hidden.bs.modal', function () {
+        fimApi.getActiveUsers({}, {
+            'close' : true
+        });
     });
 };
 
@@ -1750,70 +1730,65 @@ popup.prototype.rooms = {
                         ),
                         $('<td>').text(roomData.topic),
                         $('<td>').append(
-                            (roomData.permissions.properties
-                                    ? $('<button>').attr('data-roomId', roomData.id).attr('class', 'editRoomMulti standard')
-                                    : ''
-                            ), (roomData.permissions.properties
-                                    ? $('<button>').attr('data-roomId', roomData.id).attr('class', 'deleteRoomMulti standard')
-                                    : ''
-                            ), $('<button>').attr('data-roomId', roomData.id).attr('class', 'archiveMulti standard')
-                            , $('<button>').attr('data-roomId', roomData.id).attr('class', 'favRoomMulti standard')
-                            , $('<button>').attr('data-roomId', roomData.id).attr('class', 'watchRoomMulti standard')
+                            $('<div class="btn-toolbar" role="toolbar">').append(
+                                (roomData.permissions.properties
+                                        ? $('<button>').attr({
+                                            'class' : 'btn btn-secondary',
+                                            'title' : 'Edit Room'
+                                        }).append($('<i class="fa fa-sliders"></i>')).click(function() {
+                                            window.location.hash = '#editRoom#room=' + roomData.id;
+                                        })
+                                        : ''
+                                ),
+
+                                // TODO: test
+                                (roomData.permissions.properties
+                                        ? $('<button>').attr({
+                                            'class' : 'btn btn-danger',
+                                            'title' : 'Delete Room'
+                                        }).append($('<i class="fa fa-trash"></i>')).click(function() {
+                                            if (dia.confirm("Are you sure you want to delete this room?")) {
+                                                standard.deleteRoom(roomData.id);
+                                            }
+                                        })
+                                        : ''
+                                ),
+
+                                $('<button>').attr({
+                                    'class' : 'btn btn-secondary',
+                                    'title' : 'View History'
+                                }).append($('<i class="fa fa-history"></i>')).click(function() {
+                                    window.location.hash = '#archive#room=' + roomData.id;
+                                }),
+
+                                $('<button>').attr({
+                                    'class' : 'btn btn-secondary',
+                                    'title' : 'Favourite Room'
+                                }).append($('<i class="fa fa-star" style="color: yellow;"></i>')),
+
+                                $('<button>').attr({
+                                    'data-toggle' : 'button',
+                                    'class' : 'btn btn-secondary' + (window.activeLogin.userData.watchRooms.indexOf(roomData.id) !== -1 ? ' active' : ''),
+                                    'aria-pressed' : (window.activeLogin.userData.watchRooms.indexOf(roomData.id) !== -1 ? 'true' : 'false'),
+                                    'title' : 'Get Notifications About New Messages in This Room'
+                                }).append($('<i class="fa fa-eye"></i>')).click(function() {
+                                    if (window.activeLogin.userData.watchRooms.indexOf(roomData.id) === -1) {
+                                        dia.info("You will now be notified of new messages made in this room.");
+                                        window.activeLogin.userData.watchRooms.push(roomData.id);
+                                        fimApi.watchRoom(roomData.id);
+                                        $(this).addClass("active");
+                                    }
+
+                                    else {
+                                        window.activeLogin.userData.watchRooms.remove(roomData.id);
+                                        fimApi.unwatchRoom(roomData.id);
+                                        $(this).removeClass("active");
+                                    }
+                                })
+                            )
                         )
                     )
                 );
-            },
-            'end' : function() {
-                $('button.editRoomMulti, button.favRoomMulti, button.archiveMulti, button.deleteRoomMulti').unbind('click'); // Prevent the below from being bound multiple times.
-
-                /* Favorites */
-                var roomLists = {
-                    'favRoom' : window.activeLogin.userData.favRooms,
-                    'watchRoom' : window.activeLogin.userData.watchRooms
-                };
-
-                for (i in roomLists) {
-                    $('#roomTableHtml button.' + i + 'Multi').each(function() {
-                        var roomId = $(this).attr('data-roomId');
-
-                        $(this).button({
-                            icons : {primary : (i === 'favRoom' ? 'ui-icon-star' : 'ui-icon-search')},
-                        }).bind('click', function() {
-                            if (roomLists[i].indexOf(roomId) === -1) {
-                                dia.info("You will now be notified of new messages made in this room.");
-                                roomLists[i].push(roomId);
-                                fimApi[i](roomId);
-                                $(this).addClass("ui-state-highlight");
-                            }
-
-                            else {
-                                roomLists[i].remove(roomId);
-                                fimApi["un" + i](roomId);
-                                $(this).removeClass("ui-state-highlight");
-                            }
-                        });
-
-                        if (roomLists[i].indexOf(roomId) !== -1) {
-                            $(this).addClass("ui-state-highlight");
-                        }
-                    });
-                }
-
-                $('button.editRoomMulti').button({icons : {primary : 'ui-icon-gear'}}).bind('click', function() {
-                    popup.editRoom($(this).attr('data-roomId'));
-                });
-
-                $('button.archiveMulti').button({icons : {primary : 'ui-icon-note'}}).bind('click', function() {
-                    popup.archive.init({roomId : $(this).attr('data-roomId')});
-                });
-
-                $('button.deleteRoomMulti').button({icons : {primary : 'ui-icon-trash'}}).bind('click', function() {
-                    if (dia.confirm("Are you sure you want to delete this room?")) {
-                        standard.deleteRoom($(this).attr('data-roomId'));
-                    }
-                });
-
-                windowDraw();
             }
         });
     },
