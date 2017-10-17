@@ -18645,7 +18645,7 @@
                 down: [ "top", "bottom" ],
                 left: [ "right", "left" ],
                 right: [ "left", "right" ]
-            },
+            }
             mode = options.mode,
             direction = options.direction || "left",
             ref = ( direction === "up" || direction === "down" ) ? "top" : "left",

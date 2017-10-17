@@ -230,15 +230,6 @@ if (window.webproDisplay.audioVolume > 1 || window.webproDisplay.audioVolume < 0
 
 
 
-$('<link>', {
-    id: 'stylesv2',
-    rel: 'stylesheet',
-    type: 'text/css',
-    href: "client/css/stylesv2.css"
-}).appendTo('head');
-
-
-
 /* Audio File (a hack I placed here just for fun)
  * Essentially, if a cookie has a custom audio file, we play it instead.
  * If not, we will try to play the default, either via ogg, mp3, or wav. */
