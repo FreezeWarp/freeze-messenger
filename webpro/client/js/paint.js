@@ -230,32 +230,11 @@ if (window.webproDisplay.audioVolume > 1 || window.webproDisplay.audioVolume < 0
 
 
 
-/* Load Themes */
-$('<link>', {
-    id: 'stylesjQ',
-    rel: 'stylesheet',
-    type: 'text/css',
-    href: 'client/css/' + window.webproDisplay.theme + '/jquery-ui-1.8.16.custom.css'
-}).appendTo('head');
-
-// Transitional note: the newer jQuery structure file overrides the older jQueryUI themes, but they still need to be updated as well.
-$('<link>', {
-    id: 'stylesjQ',
-    rel: 'stylesheet',
-    type: 'text/css',
-    href: 'client/css/jquery-ui-1.12.1.structure.min.css'
-}).appendTo('head');
 $('<link>', {
     id: 'stylesv2',
     rel: 'stylesheet',
     type: 'text/css',
     href: "client/css/stylesv2.css"
-}).appendTo('head');
-$('<link>', {
-    id: 'stylesVIM',
-    rel: 'stylesheet',
-    type: 'text/css',
-    href: 'client/css/' + window.webproDisplay.theme + '/fim.css'
 }).appendTo('head');
 
 

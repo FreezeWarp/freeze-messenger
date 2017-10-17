@@ -915,11 +915,19 @@ var autoEntry = function(target, options) {
     this.options = options;
     var _this = this;
 
-    target.append($('<input type="text" name="' + this.options.name + 'Bridge" id="' + this.options.name + 'Bridge" class="ui-autocomplete-input" autocomplete="off" />').autocompleteHelper(this.options.list))
-        .append($('<input type="button" value="Add">').click(function() {
+    target.append($('<div>').attr('class', 'input-group').append(
+        $('<input type="button" value="Add" class="input-group-addon">').click(function() {
             _this.addEntry($("#" + _this.options.name + "Bridge").attr('data-id'), $("#" + _this.options.name + "Bridge").val());
-        }))
-        .append('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">');
+        }),
+        $('<input>').attr({
+            type : "text",
+            name : this.options.name + 'Bridge',
+            id : this.options.name + 'Bridge',
+            class : 'ui-autocomplete-input form-control',
+            autocomplete : 'off'
+        }).autocompleteHelper(this.options.list),
+        $('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">')
+    ));
 
     if ('default' in options) {
         this.displayEntries(options.default);

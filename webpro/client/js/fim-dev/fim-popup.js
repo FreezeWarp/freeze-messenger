@@ -38,9 +38,8 @@ popup.prototype.login = function() {
     $("#loginForm").submit(function() {
         var loginForm = $('#loginForm');
         standard.initialLogin({
-            username : $('#userName', loginForm).val(),
-            password : $('#password', loginForm).val(),
-            rememberMe : $('#rememberme', loginForm).is('checked'),
+            username : $('input[name=userName]', loginForm).val(),
+            password : $('input[name=password]', loginForm).val(),
             finish : login_success,
             error : login_fail
         });
@@ -153,8 +152,8 @@ popup.prototype.insertDoc = function() {
                             "roomId" : window.roomId,
                             "fileName" : filesList.item(0).name,
                             "access_token" : window.sessionHash,
-                            "parentalAge" : $('select[name=parentalAge] option:selected').val(),
-                            "parentalFlags" : $('input[name=parentalFlags]:checked').map(function(){
+                            "parentalAge" : $('form#uploadFileForm select[name=parentalAge] option:selected').val(),
+                            "parentalFlags" : $('form#uploadFileForm input[name=parentalFlags]:checked').map(function(){
                                 return $(this).attr('value');
                             }).get(),
                         }),
@@ -238,6 +237,7 @@ popup.prototype.viewStats = function() {
 
     $('#modal-stats').modal();
 
+    $('table#viewStats > tbody').html('');
     for (i = 1; i <= number; i += 1) {
         $('table#viewStats > tbody').append('<tr><th>' + i + '</th></tr>');
     }
@@ -452,28 +452,21 @@ popup.prototype.settings = {
                     );
                 });
 
-                // Parental Age Default
-                $('#changeSettingsForm select[name=parentalAge] option[value=' + active.parentalAge + ']').attr('selected', 'selected');
-
-                // Parental Flags Values
-                jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(key, flag) {
-                    $('#parentalFlagsList').append($('<br />'),
-                        $('<label>').append(
+                jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(index, flag) {
+                    $('#changeSettingsForm [name=parentalFlagsList]').append(
+                        $('<label>').attr('class', 'btn btn-secondary m-1').text($l('parentalFlags.' + flag)).prepend(
                             $('<input>').attr({
-                                type : "checkbox",
-                                value : "true",
-                                name : "flag" + flag,
-                                'data-cat' : "parentalFlag",
-                                'data-name' : flag
-                            }),
-                            $('<span>').text($l('parentalFlags.' + flag))
+                                'type' : 'checkbox',
+                                'value' : flag,
+                                'name' : 'parentalFlags'
+                            })
                         )
                     );
                 });
 
                 // Parental Flags Default
                 jQuery.each(active.parentalFlags, function(key, flag) {
-                    $('input[data-cat=parentalFlag][data-name=' + flag + ']').attr('checked', true);
+                    $('input[name=parentalFlags][value=' + flag + ']').attr('checked', true);
                 });
             }
             else {
@@ -629,10 +622,6 @@ popup.prototype.settings = {
             if ($('#defaultBold').is(':checked')) defaultFormatting.push("bold");
             if ($('#defaultItalics').is(':checked')) defaultFormatting.push("italic");
 
-            $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
-                parentalFlags.push($(b).attr('data-name'));
-            });
-
             fimApi.editUserOptions('edit', {
                 "defaultFontface" : $('#defaultFace option:selected').val(),
                 "defaultFormatting" : defaultFormatting,
@@ -643,8 +632,10 @@ popup.prototype.settings = {
                 "ignoreList" : $('#ignoreList').val().split(','),
                 "friendsList" : $('#friendsList').val().split(','),
                 "profile" : $('#profile').val(),
-                "parentalAge" : $('#changeSettingsForm select[name=parentalAge] option:selected').val(),
-                "parentalFlags" : parentalFlags,
+                "parentalAge" : $('form#changeSettingsForm select[name=parentalAge] option:selected').val(),
+                "parentalFlags" : $('form#changeSettingsForm input[name=parentalFlags]:checked').map(function(){
+                    return $(this).attr('value');
+                }).get(),
                 "privacyLevel" : $('input[name=privacyLevel]:radio:checked').val()
             }, {
                 'each' : function(value) {
@@ -820,13 +811,22 @@ popup.prototype.editRoom = {
             $('#editRoom1ParentalAge, #editRoom1ParentalFlags').remove();
         }
         else {
-                jQuery.each(window.serverSettings.parentalControls.parentalAges, function(i, age) {
-                    $('#editRoomForm select[name=parentalAge]').append($('<option>').attr('value', age).text($l('parentalAges.' + age)));
-                });
+            jQuery.each(window.serverSettings.parentalControls.parentalAges, function(i, age) {
+                $('#editRoomForm select[name=parentalAge]').append($('<option>').attr('value', age).text($l('parentalAges.' + age)));
+            });
 
-                jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(i, flag) {
-                    $('#editRoomForm div[name=parentalFlagsList]').append('<label><input type="checkbox" value="true" name="flag' + flag + '" data-cat="parentalFlag" data-name="' + flag + '" />' +  $l('parentalFlags.' + flag) + '</label><br />');
-                });
+
+            jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(index, flag) {
+                $('#editRoomForm div[name=parentalFlagsList]').append(
+                    $('<label>').attr('class', 'btn btn-secondary m-1').text($l('parentalFlags.' + flag)).prepend(
+                        $('<input>').attr({
+                            'type' : 'checkbox',
+                            'value' : flag,
+                            'name' : 'parentalFlags'
+                        })
+                    )
+                );
+            });
         }
 
 
@@ -843,18 +843,16 @@ popup.prototype.editRoom = {
                 else if (listData.listType === 'black') listStatus = 'unblock';
                 else throw 'Bad logic.';
 
-                $('#censorLists').append($('<label>').append(
-                    $('<input>').attr({
-                        'type' : 'checkbox',
-                        'name' : 'list' + listData.listId,
-                        'data-listId' : listData.listId,
-                        'data-checkType' : 'list',
-                        'value' : 'true'
-
-                    })
-                        .attr(listData.listOptions & 2 ? { 'disabled' : 'disabled' } : {})
-                        .attr(listStatus == 'block' ? { 'checked' : 'checked' } : {})
-                , $('<span>').text(listData.listName), $('<br>')));
+                $('#censorLists').append(
+                    $('<label>').attr('class', 'btn btn-secondary m-1').text(listData.listName).prepend(
+                        $('<input>').attr({
+                            'type' : 'checkbox',
+                            'name' : 'censorLists',
+                            'value' : listData.listId
+                        }).attr(listData.listOptions & 2 ? { 'disabled' : 'disabled' } : {})
+                            .attr(listStatus == 'block' ? { 'checked' : 'checked' } : {})
+                    )
+                );
             }
         });
 
@@ -900,9 +898,9 @@ popup.prototype.editRoom = {
 
                 // Parental Data
                 jQuery.each(roomData.parentalFlags, function(index, flag) {
-                    $('input[data-cat=parentalFlag][data-name=' + flag + ']').prop('checked', true);
+                    $('#editRoomForm input[name=parentalFlags][value=' + flag + ']').prop('checked', true);
                 });
-                $('select#parentalAge option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
+                $('#editRoomForm select[name=parentalAge] option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
             }});
         }
 
@@ -911,8 +909,6 @@ popup.prototype.editRoom = {
         $("#editRoomForm").submit(function() {console.log("allowed users", allowedUsersList, allowedUsersList.getList());
             var name = $('#name').val(),
                 censor = {},
-                parentalAge = $('#parentalAge option:selected').val(),
-                parentalFlags = [],
                 combinedUserPermissions = {},
                 combinedGroupPermissions = {};
 
@@ -930,13 +926,8 @@ popup.prototype.editRoom = {
             }
 
             // Parse Censor Lists
-            $('input[data-checkType="list"]').each(function() {
-                censor[$(this).attr('data-listId')] = ($(this).is(':checked') ? 1 : 0);
-            });
-
-            // Parse Parental Flags
-            $('input[data-cat=parentalFlag]:checked').each(function(a, b) {
-                parentalFlags.push($(b).attr('data-name'));
+            $('input[name=censorLists]').each(function() {
+                censor[$(this).attr('value')] = ($(this).is(':checked') ? 1 : 0);
             });
 
             // Parse Default Permissions
@@ -952,8 +943,10 @@ popup.prototype.editRoom = {
                 "defaultPermissions" : defaultPermissions,
                 "userPermissions" : combinedUserPermissions,
                 "groupPermissions" : combinedGroupPermissions,
-                "parentalAge" : parentalAge,
-                "parentalFlags" : parentalFlags,
+                "parentalAge" : $('#editRoomForm select[name=parentalAge] option:selected').val(),
+                "parentalFlags" : $('input[name=parentalFlags]:checked').map(function(){
+                    return $(this).attr('value');
+                }).get(),
                 "censorLists" : censor,
                 "official" : $("#allowOfficial").is(":checked"),
                 "hidden" : $("#allowHidden").is(":checked")
@@ -1197,7 +1190,7 @@ popup.prototype.archive = {
         if (!this.options.roomId)
             this.options.roomId = window.roomId;
 
-        $('#searchText, #searchUser, #archiveNext, #archivePrev, #export, .updateArchiveHere').unbind('change');
+        $('#searchText, #searchUser, #archiveNext, #view-archive button[name=archiveNext], #view-archive button[name=archivePrev], #view-archive button[name=export], .updateArchiveHere').unbind('change');
 
 
         $('#searchText').bind('change', function() {
@@ -1212,10 +1205,10 @@ popup.prototype.archive = {
         }).autocompleteHelper('users');
 
 
-        $('#archiveNext').bind('click', function() {
+        $('#view-archive button[name=archiveNext]').bind('click', function() {
             _this.nextPage();
         });
-        $('#archivePrev').bind('click', function() {
+        $('#view-archive button[name=archivePrev]').bind('click', function() {
             _this.prevPage();
         });
 
@@ -1228,7 +1221,7 @@ popup.prototype.archive = {
         });
 
 
-        $('#export').bind('click', function() {
+        $('#view-archive button[name=export]').bind('click', function() {
             popup.exportArchive();
         });
 
@@ -1241,7 +1234,7 @@ popup.prototype.archive = {
 
         $('#archiveMessageList').html('');
         this.messageData = {};
-console.log(_this.options);
+
         fimApi.getMessages({
             'roomId' : _this.options.roomId,
             'userIds' : [_this.options.searchUser],
@@ -1634,18 +1627,18 @@ popup.prototype.rooms = {
             _this.options[i] = options[i];
 
         // TODO: names, not IDs
-        $('#permissionLevel, #roomNameSearchText, #roomListNext, #roomListPrev').unbind('change');
+        $('#permissionLevel, #roomNameSearchText, #view-rooms button').unbind('change');
 
         $('#roomNameSearchText').bind('change', function() {
             _this.update('searchText', $(this).val());
             _this.retrieve();
         });
 
-        $('#roomListNext').bind('click', function() {
+        $('#view-rooms button[name=roomListNext]').bind('click', function() {
             _this.nextPage();
         });
 
-        $('#roomListPrev').bind('click', function() {
+        $('#view-rooms button[name=roomListPrev]').bind('click', function() {
             _this.prevPage();
         });
 
