@@ -338,43 +338,6 @@ button.small.ui-widget .ui-icon {
 
 
 
-/********************************
- ***** Context Menu Styling *****
- ********************************/
-
-.contextMenu {
-  position: absolute;
-  width: 120px;
-  z-index: 99999;
-  padding: 0px;
-  margin: 0px;
-  display: none;
-}
-
-.contextMenu li {
-  list-style: none;
-  padding: 0px;
-  padding-bottom: 3px;
-  margin: 0px;
-}
-
-.contextMenu a {
-  text-decoration: none;
-  display: block;
-  line-height: 20px;
-  height: 20px;
-  border: none;
-  padding-left: 10px;
-}
-
-.contextMenu li.hover a { }
-
-.contextMenu li.disabled a {
-  cursor: default;
-}
-
-
-
 
 
 
@@ -522,120 +485,293 @@ div.jGrowl div.jGrowl-closer {
 
 
 /********************************
- ***** EZPZ Tooltip Styling *****
+ ***** Context Menu Styling *****
  ********************************/
 
-.tooltip-content {
-  display: none;
-  position: absolute;
-  padding: 10px;
-  z-index: 15000;
+@charset "UTF-8";
+/*!
+ * jQuery contextMenu - Plugin for simple contextMenu handling
+ *
+ * Version: v2.5.0
+ *
+ * Authors: Björn Brala (SWIS.nl), Rodney Rehm, Addy Osmani (patches for FF)
+ * Web: http://swisnl.github.io/jQuery-contextMenu/
+ *
+ * Copyright (c) 2011-2017 SWIS BV and contributors
+ *
+ * Licensed under
+ *   MIT License http://www.opensource.org/licenses/mit-license
+ *
+ * Date: 2017-09-08T12:18:57.153Z
+ */
+@-webkit-keyframes cm-spin {
+    0% {
+        -webkit-transform: translateY(-50%) rotate(0deg);
+        transform: translateY(-50%) rotate(0deg);
+    }
+    100% {
+        -webkit-transform: translateY(-50%) rotate(359deg);
+        transform: translateY(-50%) rotate(359deg);
+    }
+}
+@-o-keyframes cm-spin {
+    0% {
+        -webkit-transform: translateY(-50%) rotate(0deg);
+        -o-transform: translateY(-50%) rotate(0deg);
+        transform: translateY(-50%) rotate(0deg);
+    }
+    100% {
+        -webkit-transform: translateY(-50%) rotate(359deg);
+        -o-transform: translateY(-50%) rotate(359deg);
+        transform: translateY(-50%) rotate(359deg);
+    }
+}
+@keyframes cm-spin {
+    0% {
+        -webkit-transform: translateY(-50%) rotate(0deg);
+        -o-transform: translateY(-50%) rotate(0deg);
+        transform: translateY(-50%) rotate(0deg);
+    }
+    100% {
+        -webkit-transform: translateY(-50%) rotate(359deg);
+        -o-transform: translateY(-50%) rotate(359deg);
+        transform: translateY(-50%) rotate(359deg);
+    }
 }
 
+@font-face {
+    font-family: "context-menu-icons";
+    font-style: normal;
+    font-weight: normal;
 
-
-
-
-
-/********************************
- ******** TipTip Styling ********
- ********************************/
-
-#tiptip_holder {
-  display: none;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 99999;
+    src: url("font/context-menu-icons.eot?2u731");
+    src: url("font/context-menu-icons.eot?2u731#iefix") format("embedded-opentype"), url("font/context-menu-icons.woff2?2u731") format("woff2"), url("font/context-menu-icons.woff?2u731") format("woff"), url("font/context-menu-icons.ttf?2u731") format("truetype");
 }
 
-#tiptip_holder.tip_top {
-  padding-bottom: 5px;
+.context-menu-icon-add:before {
+    content: "\EA01";
 }
 
-#tiptip_holder.tip_bottom {
-  padding-top: 5px;
+.context-menu-icon-copy:before {
+    content: "\EA02";
 }
 
-#tiptip_holder.tip_right {
-  padding-left: 5px;
+.context-menu-icon-cut:before {
+    content: "\EA03";
 }
 
-#tiptip_holder.tip_left {
-  padding-right: 5px;
+.context-menu-icon-delete:before {
+    content: "\EA04";
 }
 
-#tiptip_content {
-  /* Unstyled */
+.context-menu-icon-edit:before {
+    content: "\EA05";
 }
 
-#tiptip_arrow, #tiptip_arrow_inner {
-  position: absolute;
-  border-color: transparent;
-  border-style: solid;
-  border-width: 6px;
-  height: 0;
-  width: 0;
+.context-menu-icon-loading:before {
+    content: "\EA06";
 }
 
-#tiptip_holder.tip_top #tiptip_arrow {
-  /* Unstyled */
+.context-menu-icon-paste:before {
+    content: "\EA07";
 }
 
-#tiptip_holder.tip_bottom #tiptip_arrow {
-  /* Unstyled */
+.context-menu-icon-quit:before {
+    content: "\EA08";
 }
 
-#tiptip_holder.tip_right #tiptip_arrow {
-  /* Unstyled */
+.context-menu-icon::before {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 2em;
+    font-family: "context-menu-icons";
+    font-size: 1em;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    color: #2980b9;
+    text-align: center;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-#tiptip_holder.tip_left #tiptip_arrow {
-  /* Unstyled */
+.context-menu-icon.context-menu-hover:before {
+    color: #fff;
 }
 
-#tiptip_holder.tip_top #tiptip_arrow_inner {
-  margin-top: -7px;
-  margin-left: -6px;
+.context-menu-icon.context-menu-disabled::before {
+    color: #bbb;
 }
 
-#tiptip_holder.tip_bottom #tiptip_arrow_inner {
-  margin-top: -5px;
-  margin-left: -6px;
+.context-menu-icon.context-menu-icon-loading:before {
+    -webkit-animation: cm-spin 2s infinite;
+    -o-animation: cm-spin 2s infinite;
+    animation: cm-spin 2s infinite;
 }
 
-#tiptip_holder.tip_right #tiptip_arrow_inner {
-  margin-top: -6px;
-  margin-left: -5px;
+.context-menu-icon.context-menu-icon--fa {
+    display: list-item;
+    font-family: inherit;
+}
+.context-menu-icon.context-menu-icon--fa::before {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 2em;
+    font-family: FontAwesome;
+    font-size: 1em;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    color: #2980b9;
+    text-align: center;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.context-menu-icon.context-menu-icon--fa.context-menu-hover:before {
+    color: #fff;
+}
+.context-menu-icon.context-menu-icon--fa.context-menu-disabled::before {
+    color: #bbb;
 }
 
-#tiptip_holder.tip_left #tiptip_arrow_inner {
-  margin-top: -6px;
-  margin-left: -7px;
+.context-menu-list {
+    position: absolute;
+    display: inline-block;
+    min-width: 13em;
+    max-width: 26em;
+    padding: .25em 0;
+    margin: .3em;
+    font-family: inherit;
+    font-size: inherit;
+    list-style-type: none;
+    background: #fff;
+    border: 1px solid #bebebe;
+    border-radius: .2em;
+    -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, .5);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .5);
 }
 
+.context-menu-item {
+    position: relative;
+    padding: .2em 2em;
+    color: #2f2f2f;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-color: #fff;
+}
 
+.context-menu-separator {
+    padding: 0;
+    margin: .35em 0;
+    border-bottom: 1px solid #e6e6e6;
+}
 
-.ui-dialog-titlebar-close {
-    top: 1.5em !important;
-    right: 1em !important;
+.context-menu-item > label > input,
+.context-menu-item > label > textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
-.ui-dialog .ui-dialog-titlebar-close span {
-    margin: -8px 0 0 -8px;
+
+.context-menu-item.context-menu-hover {
+    color: #fff;
+    cursor: pointer;
+    background-color: #2980b9;
 }
-.ui-dialog {
-    z-index: 8000 !important;
-    overflow: visible;
+
+.context-menu-item.context-menu-disabled {
+    color: #bbb;
+    cursor: default;
+    background-color: #fff;
 }
-.ui-accordion .ui-accordion-content {
-    padding: 1em 1em;
+
+.context-menu-input.context-menu-hover {
+    color: #2f2f2f;
+    cursor: default;
 }
-.ui-accordion .ui-accordion-content ul {
-    padding-left: 1.5em;
+
+.context-menu-submenu:after {
+    position: absolute;
+    top: 50%;
+    right: .5em;
+    z-index: 1;
+    width: 0;
+    height: 0;
+    content: '';
+    border-color: transparent transparent transparent #2f2f2f;
+    border-style: solid;
+    border-width: .25em 0 .25em .25em;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
 }
-.ui-widget-header td {
-    padding: 5px;
+
+/**
+ * Inputs
+ */
+.context-menu-item.context-menu-input {
+    padding: .3em .6em;
 }
-.ui-autocomplete.ui-front {
-    z-index: 10000 !important;
+
+/* vertically align inside labels */
+.context-menu-input > label > * {
+    vertical-align: top;
+}
+
+/* position checkboxes and radios as icons */
+.context-menu-input > label > input[type="checkbox"],
+.context-menu-input > label > input[type="radio"] {
+    position: relative;
+    top: .12em;
+    margin-right: .4em;
+}
+
+.context-menu-input > label {
+    margin: 0;
+}
+
+.context-menu-input > label,
+.context-menu-input > label > input[type="text"],
+.context-menu-input > label > textarea,
+.context-menu-input > label > select {
+    display: block;
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.context-menu-input > label > textarea {
+    height: 7em;
+}
+
+.context-menu-item > .context-menu-list {
+    top: .3em;
+    /* re-positioned by js */
+    right: -.3em;
+    display: none;
+}
+
+.context-menu-item.context-menu-visible > .context-menu-list {
+    display: block;
+}
+
+.context-menu-accesskey {
+    text-decoration: underline;
 }

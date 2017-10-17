@@ -340,6 +340,18 @@ function fim_messageFormat(json, format) {
             break;
 
         case 'list':
+            var messageLine = fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred);
+
+            if (settings.showAvatars) {
+                messageLine.popover({
+                    content : function() {
+                        return fim_dateFormat($(this).attr('data-time'))
+                    },
+                    html : false,
+                    trigger : 'hover',
+                    placement : 'bottom'
+                });
+            }
             data = $('<span>').attr({
                 'id': 'message' + messageId,
                 'class': 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
@@ -351,9 +363,7 @@ function fim_messageFormat(json, format) {
                         $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(fim_dateFormat(messageTime)))
                         : ''
                 )
-            ).append(
-                fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred)
-            );
+            ).append(messageLine);
             break;
     }
 
@@ -387,44 +397,12 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
                 $('<span>').text(userName) : ''
         );
 
-        tag.contextMenu({
-            menu: 'userMenu',
-            altMenu : settings.disableRightClick
-        }, function(action, el) {
-            var userId = $(el).attr('data-userId'),
-                userName = '',
-                avatarUrl = '',
-                profileUrl = '';
-
-            switch(action) {
-                case 'profile':
-                    var resolver = $.when(Resolver.resolveUsersFromIds([userId])).then(function(userData) {
-                        dia.full({
-                            title : 'User Profile',
-                            id : 'messageLink',
-                            content : (userData[userId].profile ? '<iframe src="' + userData[userId].profile + '" style="width: 100%; height: 90%;" /><br /><a href="' + userData[userId].profile + '" target="_BLANK">Visit The Page Directly</a>' : 'The user has not yet registered a profile.'),
-                            width: $(window).width() * .8,
-                            height: $(window).height() * .9
-                        });
-                    });
-
-                    break;
-
-                case 'private_im':
-                    standard.changeRoom("p" + [window.userId, userId].join(','), true);
-                    break;
-                case 'kick': popup.kick(userId, roomId); break;
-                case 'ban': standard.banUser(userId); break; // TODO
-                case 'ignore': standard.ignoreUser(userId); break; // TODO
-            }
-        });
-
-        tag.ezpz_tooltip({
-            contentId: 'tooltext',
-            beforeShow: function(content, el) {
-                content.html("");
-                content.append(
-                    $('<div style="width: 400px;">').append(
+        tag.popover({
+            content : function() {
+                console.log("hi!");
+                var el = $('<div>');
+                el.append(
+                    $('<div style="width: 600px;">').append(
                         $('<img style="float: left; max-height: 200px; max-width: 200px;">').attr('src', avatar)
                     ).append(
                         $('<span class="userName">').attr({
@@ -435,14 +413,21 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
                 );
 
                 if (pairs[userId].bio)
-                    content.append($('<span>').text(pairs[userId].bio), $('<br>'));
+                    el.append($('<span>').text(pairs[userId].bio), $('<br>'));
 
                 if (pairs[userId].profile)
-                    content.append($('<span>').append($('<em>Profile</em>'), ': ', $('<a>').attr('href', pairs[userId].profile).text(pairs[userId].profile), $('<br>')));
+                    el.append($('<span>').append($('<em>Profile</em>'), ': ', $('<a>').attr('href', pairs[userId].profile).text(pairs[userId].profile), $('<br>')));
 
                 if (pairs[userId].joinDate)
-                    content.append($('<span>').append($('<em>Member Since</em>'), ': ', $('<span>').text(fim_dateFormat(pairs[userId].joinDate, {year : "numeric", month : "numeric", day : "numeric"})), $('<br>'))); // TODO:just date
-            }
+                    el.append($('<span>').append($('<em>Member Since</em>'), ': ', $('<span>').text(fim_dateFormat(pairs[userId].joinDate, {year : "numeric", month : "numeric", day : "numeric"})), $('<br>'))); // TODO:just date
+
+                return el.html();
+            },
+            html : true,
+            trigger : 'hover'
+        }).on("show.bs.popover", function(e){
+            console.log($(this).data("bs.popover"), $(this).data("bs.popover").tip)
+            $($(this).data("bs.popover").tip).css({"max-width": "400px"});
         });
     });
 
@@ -450,27 +435,6 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
 }
 
 function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred) {
-    var contextAction_msgLink = function() {
-        dia.full({
-            title : 'Link to this Message',
-            id : 'messageLink',
-            content : 'This message can be bookmarked using the following archive link:<br /><br /><input type="text" value="' + currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId + '" style="width: 100%;" />',
-            width: 600
-        });
-    };
-
-    var contextAction_msgDelete = function() {
-        dia.confirm({
-            text : 'Are you sure you want to delete this message?',
-            'true' : function() {
-                standard.deleteMessage(roomId, messageId);
-            }
-        });
-    }
-
-    var contextAction_msgEdit = function() {
-        $('#message' + messageId + ' .messageText').dblclick();
-    }
 
     var tag = $('<span>');
 
@@ -481,93 +445,6 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
         'data-time': messageTime,
         'tabindex': 1000
     }).append(text);
-
-    tag.contextMenu({
-        menu: 'messageMenu',
-        altMenu : settings.disableRightClick
-    }, function(action, el) {
-        var messageId = $(el).attr('data-messageId'),
-            roomId = $(el).attr('data-roomId');
-
-        switch(action) {
-            case 'delete': contextAction_msgDelete(); break;
-            case 'link': contextAction_msgLink(); break;
-            case 'edit': contextAction_msgEdit(); break;
-        }
-
-        return false;
-    });
-
-    tag.find('img').contextMenu({
-        menu: 'messageMenuImage',
-        altMenu : settings.disableRightClick
-    }, function(action, el) {
-        var messageId = $(el).parent().attr('data-messageId'),
-            roomId = $(el).parent().attr('data-roomId'),
-            src = $(el).attr('src');
-
-        switch(action) {
-            case 'delete': contextAction_msgDelete(); break;
-            case 'link': contextAction_msgLink(); break;
-            case 'edit': contextAction_msgEdit(); break;
-
-            case 'click':
-                $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
-                $('#contextMenuClickHelper').remove();
-                break;
-
-
-            case 'url':
-                dia.full({
-                    title : 'Copy Image URL',
-                    content : '<img src="' + src + '" style="max-width: 550px; max-height: 550px; margin-left: auto; margin-right: auto; display: block;" /><br /><br /><input type="text" name="url" value="' + src +  '" style="width: 100%;" />',
-                    width : 800,
-                    position : 'top',
-                    oF : function() {
-                        $('input[name=url]', this).first().focus();
-                    }
-                });
-                break;
-        }
-
-        return false;
-    });
-
-    tag.find('a').contextMenu({
-        menu: 'messageMenuLink',
-        altMenu : settings.disableRightClick
-    }, function(action, el) {
-        var messageId = $(el).parent().attr('data-messageId'),
-            roomId = $(el).parent().attr('data-roomId'),
-            src = $(el).attr('href');
-
-        switch(action) {
-            case 'delete': contextAction_msgDelete(); break;
-            case 'link': contextAction_msgLink(); break;
-            case 'edit': contextAction_msgEdit(); break;
-
-            case 'click':
-                $('<a id="contextMenuClickHelper" style="display: none;" />').attr('href', src).attr('target', '_blank').text('-').appendTo('body').get(0).click();
-                $('#contextMenuClickHelper').remove();
-                break;
-
-
-            case 'url':
-                dia.full({
-                    title : 'Copy URL',
-                    position : 'top',
-                    content : '<iframe style="width: 100%; display: none; height: 0px;"></iframe><a href="javascript:void(0);" onclick="$(this).prev().attr(\'src\',\'' + src.replace(/\'/g, "\\'").replace(/\"/g, '\\"') + '\').show().animate({height : \'80%\'}, 500); $(this).hide(); windowDraw();">View<br /></a><br /><input type="text" name="url" value="' + src.replace(/\"/g, '\\"') +  '" style="width: 100%;" />',
-                    width : 800,
-                    oF : function() {
-                        $('input[name=url]', this).first().focus();
-                    }
-                });
-                break;
-        }
-
-        return false;
-    });
-
 
     if (window.userId == userId && window.permissions.editOwnPosts) {
         tag.on('dblclick', function() {
@@ -694,16 +571,6 @@ function fim_newMessage(roomId, messageId, messageText) {
         if (notify.webkitNotifySupported() && settings.webkitNotifications) {
             notify.webkitNotify("images/favicon.ico", "New Message", $(messageText).text());
         }
-    }
-
-    /*** Time Tooltip ***/
-    if (settings.showAvatars) {
-        $('.messageText').tipTip({
-            activate: 'hover',
-            callback: function(element) {
-                return fim_dateFormat(element.attr('data-time'))
-            }
-        });
     }
 
 
@@ -1182,32 +1049,6 @@ function windowDraw() {
     console.log('Redrawing window.');
 
 
-    /*** Funky Little Dialog Thing ***/
-    $('.ui-dialog-titlebar-tabbed').on('dblclick', function() {
-        var newHeight = $(window).height();
-        var newWidth = $(window).width();
-
-        if (($(this).parent().css('width') == newWidth && $(this).parent().css('height') == newHeight) === false) { // Only maximize if not already maximized.
-            $(this).parent().css({ width: newWidth, height: newHeight, left: 0, top : 0 });  // Set to the size of the window, realign to the upper-let corner.
-            //$(this).removeClass('ui-dialog-draggable'); // Remove the drag indicator.
-            //$(this).parent().draggable("destroy").resizable("destroy"); // Remove the ability to drag and resize.
-        }
-    });
-
-
-    /*** General Generic Styling ***/
-    $('table > thead > tr:first-child > td:first-child, table > tr:first-child > td:first-child').addClass('ui-corner-tl');
-    $('table > thead > tr:first-child > td:last-child, table > tr:first-child > td:last-child').addClass('ui-corner-tr');
-    $('table > tbody > tr:last-child > td:first-child, table > tr:last-child > td:first-child').addClass('ui-corner-bl');
-    $('table > tbody > tr:last-child > td:last-child, table > tr:last-child > td:last-child').addClass('ui-corner-br');
-
-    $('button').button();
-    $('legend').addClass('ui-widget-header').addClass('ui-corner-all'); // Can these combine?
-    $('fieldset').addClass('ui-widget ui-widget-content');
-
-    $('thead').addClass('ui-widget-header');
-    $('tbody').addClass('widget ui-widget-content');
-
 
     /*** Call Resize ***/
     windowResize();
@@ -1272,6 +1113,241 @@ function windowDynaLinks() {
     // Remove Link Categories If They Are to Appear Empty (the counter is incremented in the above code block)
     if (noAdminCounter === 8) { $('li > #modGeneral').parent().hide(); }
     if (noModCounter === 3 && noAdminCounter === 8) { $('#moderateCat').hide(); }
+
+
+
+    /*** Context Menus ***/
+    var contextAction_msgLink = function(roomId, messageId) {
+        dia.full({
+            title : 'Link to this Message',
+            content : $('<span>').text('This message can be bookmarked using the following archive link:').append(
+                $('<br>'), $('<br>'), $('<input>').attr({
+                    type : "text",
+                    value : currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId,
+                    autofocus : true,
+                    id : 'messageLink-' + roomId + '-' + messageId,
+                    style : "width: 100%;"
+                })).prop('outerHTML'),
+            oF : function() {
+                $('#' + 'messageLink-' + roomId + '-' + messageId).focus().select();
+            }
+        });
+    };
+
+    var contextAction_msgDelete = function(roomId, messageId) {
+        dia.confirm({
+            text : 'Are you sure you want to delete this message?',
+            'true' : function() {
+                standard.deleteMessage(roomId, messageId);
+            }
+        });
+    };
+
+    var contextAction_msgEdit = function(messageId) {
+        $('#message' + messageId + ' .messageText').dblclick();
+    };
+
+
+    var classNames = {
+        //hover:            'bg-primary',          // Item hover
+        disabled:         'bg-inverse',       // Item disabled
+        visible:          'bg-primary',        // Item visible
+        notSelectable:    'not-selectable', // Item not selectable
+    }
+
+
+    $.contextMenu({
+        classNames : classNames,
+        selector : '.messageText',
+        items : {
+            delete : {
+                name : 'Delete',
+                callback: function() {
+                    contextAction_msgDelete($(this).attr('data-roomid'), $(this).attr('data-messageid'))
+                }
+            },
+
+            link : {
+                name : 'Link',
+                callback: function() {
+                    contextAction_msgLink($(this).attr('data-roomid'), $(this).attr('data-messageid'))
+                }
+            },
+
+            edit : {
+                name : 'Edit',
+                callback : function() {
+                    contextAction_msgEdit($(this).attr('data-messageid'))
+                },
+                visible : function() {
+                    return $(this).parent('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
+                }
+            }
+        }
+    });
+
+    $.contextMenu({
+        classNames : classNames,
+        selector : '.messageText img', // Todo: exclude emoticons
+        items : {
+            delete : {
+                name : 'Delete',
+                callback: function() {
+                    contextAction_msgDelete($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                }
+            },
+
+            link : {
+                name : 'Link',
+                callback: function() {
+                    contextAction_msgLink($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                }
+            },
+
+            edit : {
+                name : 'Edit',
+                callback : function() {
+                    contextAction_msgEdit($(this).closest('.messageText').attr('data-messageid'))
+                },
+                visible : function() {
+                    return $(this).closest('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
+                }
+            },
+
+            click : {
+                name : 'URL',
+                callback : function() {
+                    dia.full({
+                        title : 'Copy Image URL',
+                        content : $('<div>').append(
+                            $('<img>').attr({
+                                src : $(this).attr('src'),
+                                style : 'max-width: 550px; max-height: 550px; margin-left: auto; margin-right: auto; display: block;'
+                            }), $('<br>'), $('<br>'), $('<input>').attr({
+                                type : 'text',
+                                name : 'url',
+                                value : $(this).attr('src'),
+                                style : 'width: 100%'
+                            })).prop('outerHTML'),
+                        width : 800,
+                        position : 'top',
+                        oF : function() {
+                            $('input[name=url]', this).first().focus();
+                        }
+                    });
+                },
+            }
+        }
+    });
+
+    $.contextMenu({
+        classNames : classNames,
+        selector : '.messageText a', // Todo: exclude emoticons
+        items : {
+            delete : {
+                name : 'Delete',
+                callback: function() {
+                    contextAction_msgDelete($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                }
+            },
+
+            link : {
+                name : 'Link',
+                callback: function() {
+                    console.log($(this), $(this).closest('.messageText'), $(this).closest('.messageText').attr('data-roomid'))
+                    contextAction_msgLink($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                }
+            },
+
+            edit : {
+                name : 'Edit',
+                callback : function() {
+                    contextAction_msgEdit($(this).closest('.messageText').attr('data-messageid'))
+                },
+                visible : function() {
+                    return $(this).closest('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
+                }
+            },
+
+            click : {
+                name : 'URL',
+                callback : function() {
+                    dia.full({
+                        title : 'Copy URL',
+                        position : 'top',
+                        content : $('<input>').attr({
+                            type : 'text',
+                            name : 'url',
+                            value : $(this).attr('href'),
+                            style : 'width: 100%;'
+                        }).prop('outerHTML'),
+                        width : 800,
+                        oF : function() {
+                            $('input[name=url]', this).first().focus();
+                        }
+                    });
+                },
+            }
+        }
+    });
+
+    $.contextMenu({
+        classNames : classNames,
+        selector : '.userName', // Todo: exclude emoticons
+        items : {
+            profile : {
+                name : 'Profile',
+                callback : function() {
+                    var resolver = $.when(Resolver.resolveUsersFromIds([userId])).then(function(userData) {
+                        dia.full({
+                            title : 'User Profile',
+                            id : 'messageLink',
+                            content : (userData[userId].profile ? '<iframe src="' + userData[userId].profile + '" style="width: 100%; height: 90%;" /><br /><a href="' + userData[userId].profile + '" target="_BLANK">Visit The Page Directly</a>' : 'The user has not yet registered a profile.'),
+                            width: $(window).width() * .8,
+                            height: $(window).height() * .9
+                        });
+                    });
+                }
+            },
+
+            privateIm : {
+                name : 'Private IM',
+                callback : function() {
+                    window.location.hash = '#room=p' + [window.userId, $(this).attr('data-userid')].join(',');
+                },
+                visible : function() {
+                    return $(this).attr('data-userid') != window.userId;
+                }
+            },
+
+            kick : {
+                name : 'Kick',
+                callback : function() {
+                    popup.kick($('data-userid'), window.roomId)
+                },
+                visible : function() {
+                    return false; // TODO!
+                }
+            },
+
+            ban : {
+                name : 'Ban',
+                callback : function() {
+                    standard.banUser($('data-userid'))
+                },
+                visible : function() {
+                    return false; // TODO!
+                }
+            },
+
+            ignore : {
+                name : 'Ignore',
+                callback : function() {
+                    dia.alert('This functionality is not yet implemented.');
+                }
+            },
+        }
+    });
 }
 
 

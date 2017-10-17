@@ -71,219 +71,157 @@ popup.prototype.login = function() {
 /*** START Insert Docs ***/
 /* Note: This dialogue will calculate only "expected" errors before submit. The rest of the errors, though we could calculate, will be left up to the server to tell us. */
 
-popup.prototype.insertDoc = function(preSelect) {
-    var selectTab;
+popup.prototype.insertDoc = function() {
+    $('#modal-insertDoc').modal();
 
-    switch (preSelect) {
-        case 'video': selectTab = 2; break;
-        case 'image': selectTab = 1; break;
-        case 'link': default: selectTab = 0; break;
+
+    var fileName = '',
+        fileSize = 0,
+        fileContent = '',
+        fileParts = [],
+        filePartsLast = '',
+        md5hash = '';
+
+
+    /* File Upload Info */
+    if (!('fileUploads' in serverSettings)) {
+        $('#insertDocUpload').html('Disabled.');
     }
+    else {
+        serverSettings.fileUploads.extensionChangesReverse = {};
 
-    dia.full({
-        content : $t('insertDoc'),
-        id : 'insertDoc',
-        width: 1000,
-        position: 'top',
-        tabs : true,
-        oF : function() {
-            /* Define Variables (these are updated onChange and used onSubmit) */
-            var fileName = '',
-                fileSize = 0,
-                fileContent = '',
-                fileParts = [],
-                filePartsLast = '',
-                md5hash = '';
+        jQuery.each(serverSettings.fileUploads.extensionChanges, function(index, extension) {
+            if (!(extension in serverSettings.fileUploads.extensionChangesReverse))
+                serverSettings.fileUploads.extensionChangesReverse[extension] = [extension];
 
-            /* Form Stuff */
-            $('#fileUpload, #urlUpload').unbind('change'); // Prevent duplicate binds.
-            $('#uploadFileForm, #uploadUrlForm, #linkForm, #uploadYoutubeForm').unbind('submit'); // Disable default submit action.
-            $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Disable submit button until conditions are fulfilled.
+            serverSettings.fileUploads.extensionChangesReverse[extension].push(extension);
+        });
+
+        jQuery.each(serverSettings.fileUploads.allowedExtensions, function(index, extension) {
+            var maxFileSize = serverSettings.fileUploads.sizeLimits[extension],
+                fileContainer = serverSettings.fileUploads.fileContainers[extension],
+                fileExtensions = serverSettings.fileUploads.extensionChangesReverse[extension];
+
+            $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : extension) + '</td><td>' + $l('fileContainers.' + fileContainer) + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
+        });
 
 
-            /* File Upload Info */
-            if (!('fileUploads' in serverSettings)) {
-                $('#insertDocUpload').html('Disabled.');
+        /* File Upload Form */
+        if (typeof FileReader !== 'function') {
+            $('#uploadFileForm').html($l('uploadErrors.notSupported'));
+        }
+        else {
+            /* Parental Controls */
+            if (!window.serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
+                $('#insertDocParentalAge, #insertDocParentalFlags').remove();
             }
             else {
-                serverSettings.fileUploads.extensionChangesReverse = {};
-
-                jQuery.each(serverSettings.fileUploads.extensionChanges, function(index, extension) {
-                    if (!(extension in serverSettings.fileUploads.extensionChangesReverse))
-                        serverSettings.fileUploads.extensionChangesReverse[extension] = [extension];
-
-                    serverSettings.fileUploads.extensionChangesReverse[extension].push(extension);
+                jQuery.each(window.serverSettings.parentalControls.parentalAges, function(index, age) {
+                    $('form#uploadFileForm select[name=parentalAge]').append(
+                        $('<option>').attr('value', age).text($l('parentalAges.' + age))
+                    );
                 });
 
-                jQuery.each(serverSettings.fileUploads.allowedExtensions, function(index, extension) {
-                    var maxFileSize = serverSettings.fileUploads.sizeLimits[extension],
-                        fileContainer = serverSettings.fileUploads.fileContainers[extension],
-                        fileExtensions = serverSettings.fileUploads.extensionChangesReverse[extension];
-
-                    $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : extension) + '</td><td>' + $l('fileContainers.' + fileContainer) + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
+                jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(index, flag) {
+                    $('form#uploadFileForm [name=parentalFlagsList]').append(
+                        $('<label>').attr('class', 'btn btn-secondary').text($l('parentalFlags.' + flag)).append(
+                            $('<input>').attr({
+                                'type' : 'checkbox',
+                                'value' : flag,
+                                'name' : 'parentalFlags'
+                            })
+                        )
+                    );
                 });
-
-
-                /* File Upload Form */
-                if (typeof FileReader !== 'function') {
-                    $('#uploadFileForm').html($l('uploadErrors.notSupported'));
-                }
-                else {
-                    /* Parental Controls */
-                    if (!serverSettings.parentalControls.parentalEnabled) { // Hide if Subsystem is Disabled
-                        $('#insertDocParentalAge, #insertDocParentalFlags').remove();
-                    }
-                    else {
-                        for (var i = 0; i < serverSettings.parentalControls.parentalAges.length; i++) {
-                            $('#parentalAge').append('<option value="' + serverSettings.parentalControls.parentalAges[i] + '">' + $l('parentalAges.' + serverSettings.parentalControls.parentalAges[i]) + '</option>');
-                        }
-
-                        for (var i = 0; i < serverSettings.parentalControls.parentalFlags.length; i++) {
-                            $('#parentalFlagsList').append('<br /><label><input type="checkbox" value="true" name="flag' + serverSettings.parentalControls.parentalFlags[i] + '" data-cat="parentalFlag" data-name="' + serverSettings.parentalControls.parentalFlags[i] + '" />' + $l('parentalFlags.' + serverSettings.parentalControls.parentalFlags[i]) + '</label>');
-                        }
-                    }
-
-                    $('#imageUploadSubmitButton').click(function () {
-                        filesList = $('input#fileUpload[type="file"]').prop('files');
-                        $('#fileUpload').fileupload();
-                        $('#fileUpload').fileupload('add', {
-                            files: filesList,
-                            url: directory + 'api/editFile.php?' + $.param({
-                                "_action" : "create",
-                                "uploadMethod" : "put",
-                                "dataEncode" : "binary",
-                                "roomId" : window.roomId,
-                                "fileName" : filesList.item(0).name,
-                                "access_token" : window.sessionHash,
-                                "parentalAge" : $('#parentalAge option:selected').val(),
-                                "parentalFlags" : $('input[data-cat=parentalFlag]:checked').map(function(){
-                                    return $(this).attr('data-name');
-                                }).get(),
-                            }),
-                            type: 'PUT',
-                            multipart: false,
-                        });
-//                                .success(function (result, textStatus, jqXHR) {})
-//                                .error(function (jqXHR, textStatus, errorThrown) {})
-//                                .complete(function (result, textStatus, jqXHR) {});
-                        $('#fileUpload').fileupload('destroy');
-                        $('#insertDoc').dialog('close');
-                        return false;
-                    });
-
-                    /* Previewer for Files */
-                    $('#fileUpload').bind('change', function() {
-                        var reader = new FileReader(),
-                            reader2 = new FileReader();
-
-                        console.log('FileReader triggered.');
-                        $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Redisable the submit button if it has been enabled prior.
-
-                        if (this.files.length === 0) dia.error('No files selected!');
-                        else if (this.files.length > 1) dia.error('Too many files selected!');
-                        else {
-                            console.log('FileReader started.');
-
-                            // File Information
-                            fileName = this.files[0].name,
-                                fileSize = this.files[0].size,
-                                fileContent = '',
-                                fileParts = fileName.split('.'),
-                                filePartsLast = fileParts[fileParts.length - 1];
-
-                            // If there are two identical file extensions (e.g. jpg and jpeg), we only process the primary one. This converts a secondary extension to a primary.
-                            if (filePartsLast in serverSettings.fileUploads.extensionChanges) {
-                                filePartsLast = serverSettings.fileUploads.extensionChanges[filePartsLast];
-                            }
-
-                            if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) {
-                                $('#uploadFileFormPreview').html($l('uploadErrors.badExtPersonal'));
-                            }
-                            else if ((fileSize) > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
-                                $('#uploadFileFormPreview').html($l('uploadErrors.tooLargePersonal', {
-                                    'fileSize' : serverSettings.fileUploads.sizeLimits[filePartsLast]
-                                }));
-                            }
-                            else {
-                                $('#uploadFileFormPreview').html('Loading Preview...');
-
-                                reader.readAsBinaryString(this.files[0]);
-                                reader.onloadend = function() {
-                                    fileContent = window.btoa(reader.result);
-                                    md5hash = md5.hex_md5(fileContent);
-                                };
-
-                                reader2.readAsDataURL(this.files[0]);
-                                reader2.onloadend = function() {
-                                    $('#uploadFileFormPreview').html(fim_messagePreview(serverSettings.fileUploads.fileContainers[filePartsLast], this.result));
-                                };
-
-                                $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
-                            }
-                        }
-                    });
-                }
             }
 
+            $('#uploadFileForm').submit(function () {
+                filesList = $('input#fileUpload[type="file"]').prop('files');
 
-            /* Upload URL */
-            $('#uploadUrlForm').bind('submit', function() {
-                var linkName = $('#urlUpload').val();
-
-                if (linkName.length > 0 && linkName !== 'http://') {
-                    standard.sendMessage(linkName, 0, 'image');
-                    $('#insertDoc').dialog('close');
+                if (filesList.length == 0) {
+                    dia.error('Please select a file to upload.');
+                    return false;
                 }
                 else {
-                    dia.error($l('uploadErrors.imageEmpty'));
+                    $('#fileUpload').fileupload();
+                    $('#fileUpload').fileupload('add', {
+                        files: filesList,
+                        url: directory + 'api/editFile.php?' + $.param({
+                            "_action" : "create",
+                            "uploadMethod" : "put",
+                            "dataEncode" : "binary",
+                            "roomId" : window.roomId,
+                            "fileName" : filesList.item(0).name,
+                            "access_token" : window.sessionHash,
+                            "parentalAge" : $('select[name=parentalAge] option:selected').val(),
+                            "parentalFlags" : $('input[name=parentalFlags]:checked').map(function(){
+                                return $(this).attr('value');
+                            }).get(),
+                        }),
+                        type: 'PUT',
+                        multipart: false,
+                    });
+                    $('#fileUpload').fileupload('destroy');
+
+                    $('#modal-insertDoc').modal('hide');
+
+                    return false;
                 }
-
-                return false;
             });
 
+            /* Previewer for Files */
+            $('#fileUpload').bind('change', function() {
+                var reader = new FileReader(),
+                    reader2 = new FileReader();
 
-            /* Previewer for URLs */
-            $('#urlUpload').bind('change', function() {
-                var linkName = $('#urlUpload').val();
+                console.log('FileReader triggered.');
+                $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Redisable the submit button if it has been enabled prior.
 
-                if (linkName.length > 0 && linkName !== 'http://') {
-                    $('#uploadUrlFormPreview').html('<img src="' + linkName + '" alt="" style="max-width: 200px; max-height: 250px; height: auto;" />');
+                if (this.files.length === 0) dia.error('No files selected!');
+                else if (this.files.length > 1) dia.error('Too many files selected!');
+                else {
+                    console.log('FileReader started.');
+
+                    // File Information
+                    fileName = this.files[0].name,
+                        fileSize = this.files[0].size,
+                        fileContent = '',
+                        fileParts = fileName.split('.'),
+                        filePartsLast = fileParts[fileParts.length - 1];
+
+                    // If there are two identical file extensions (e.g. jpg and jpeg), we only process the primary one. This converts a secondary extension to a primary.
+                    if (filePartsLast in serverSettings.fileUploads.extensionChanges) {
+                        filePartsLast = serverSettings.fileUploads.extensionChanges[filePartsLast];
+                    }
+
+                    if ($.inArray(filePartsLast, $.toArray(serverSettings.fileUploads.allowedExtensions)) === -1) {
+                        $('#uploadFileFormPreview').html($l('uploadErrors.badExtPersonal'));
+                    }
+                    else if ((fileSize) > serverSettings.fileUploads.sizeLimits[filePartsLast]) {
+                        $('#uploadFileFormPreview').html($l('uploadErrors.tooLargePersonal', {
+                            'fileSize' : serverSettings.fileUploads.sizeLimits[filePartsLast]
+                        }));
+                    }
+                    else {
+                        $('#uploadFileFormPreview').html('Loading Preview...');
+
+                        reader.readAsBinaryString(this.files[0]);
+                        reader.onloadend = function() {
+                            fileContent = window.btoa(reader.result);
+                            md5hash = md5.hex_md5(fileContent);
+                        };
+
+                        reader2.readAsDataURL(this.files[0]);
+                        reader2.onloadend = function() {
+                            $('#uploadFileFormPreview').html(fim_messagePreview(serverSettings.fileUploads.fileContainers[filePartsLast], this.result));
+                        };
+
+                        $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
+                    }
                 }
             });
-
-
-            /* Upload Link */
-            $('#linkForm').bind('submit', function() {
-                var linkUrl = $('#linkUrl').val(),
-                    linkMail = $('#linkEmail').val();
-
-                if (linkUrl.length === 0 && linkMail.length === 0) { dia.error($l('uploadErrors.linkEmpty')); } // No value for either.
-                else if (linkUrl.length > 0) { standard.sendMessage(linkUrl, 0, 'url'); } // Link specified for URL.
-                else if (linkMail.length > 0) { standard.sendMessage(linkMail, 0, 'email'); } // Link specified for mail, not URL.
-                else { dia.error('Logic Error'); } // Eh, why not?
-
-                $('#insertDoc').dialog('close');
-
-                return false;
-            });
-
-
-            /* Upload Youtube */
-            $('#uploadYoutubeForm').bind('submit', function() {
-                linkVideo = $('#youtubeUpload');
-
-                if (linkVideo.search(/^http\:\/\/(www\.|)youtube\.com\/(.*?)?v=(.+?)(&|)(.*?)$/) === 0) { dia.error($l('uploadErrors.videoEmpty')); } // Bad format
-                else { standard.sendMessage(linkVideo, 0, 'source'); }
-
-                $('#insertDoc').dialog('close');
-
-                return false;
-            });
-
-            return false;
-        },
-        selectTab : selectTab
-    });
+        }
+    }
 
     return false;
 };
