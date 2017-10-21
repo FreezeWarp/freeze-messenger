@@ -1170,7 +1170,6 @@ popup.prototype.kick = function() {
 
 popup.prototype.archive = {
     options : {
-        encrypt : 'base64',
         searchText : '',
         resultLimit : 40,
         searchUser : 0,
@@ -1190,38 +1189,27 @@ popup.prototype.archive = {
         if (!this.options.roomId)
             this.options.roomId = window.roomId;
 
-        $('#searchText, #searchUser, #archiveNext, #view-archive button[name=archiveNext], #view-archive button[name=archivePrev], #view-archive button[name=export], .updateArchiveHere').unbind('change');
 
-
-        $('#searchText').bind('change', function() {
+        $('#active-view-archive form#archiveSearch input[name=searchText]').unbind('change').bind('change', function() {
             _this.update('searchText', $(this).val());
             _this.retrieve();
         });
 
-
-        $('#searchUser').bind('change', function() {
+        $('#active-view-archive form#archiveSearch input[name=searchUser]').unbind('change').bind('change', function() {
+            console.log('search user', $(this).attr('data-id'));
             _this.update('searchUser', $(this).attr('data-id'));
             _this.retrieve();
         }).autocompleteHelper('users');
 
 
-        $('#view-archive button[name=archiveNext]').bind('click', function() {
+        $('#active-view-archive button[name=archiveNext]').unbind('click').bind('click', function() {
             _this.nextPage();
         });
-        $('#view-archive button[name=archivePrev]').bind('click', function() {
+        $('#active-view-archive button[name=archivePrev]').unbind('click').bind('click', function() {
             _this.prevPage();
         });
 
-
-        $('#archiveDialogue > table').on('click', '.updateArchiveHere', function() {
-            _this.update('firstMessage', $(this).attr('data-messageId'));
-            window.location.hash = '#room=' + _this.options.roomId + '#message=' + $(this).attr('data-messageId');
-
-            _this.retrieve();
-        });
-
-
-        $('#view-archive button[name=export]').bind('click', function() {
+        $('#active-view-archive button[name=export]').unbind('click').bind('click', function() {
             popup.exportArchive();
         });
 
@@ -1229,61 +1217,78 @@ popup.prototype.archive = {
         _this.retrieve();
     },
 
+    setRoom : function(roomId) {
+        if (this.options.roomId != roomId) {
+            this.options.roomId = roomId;
+            this.retrieve();
+        }
+    },
+
+    setFirstMessage : function(firstMessage) {
+        this.options.firstMessage = firstMessage;
+        this.options.lastMessage = null;
+        this.retrieve();
+    },
+
+    setLastMessage : function(lastMessage) {
+        this.options.lastMessage = lastMessage;
+        this.options.firstMessage = null;
+        this.retrieve();
+    },
+
+    nextPage : function () {
+        fim_atomicRemoveHashParameterSetHashParameter('firstMessage', 'lastMessage', $('#active-view-archive table.messageTable tr:last-child > td > span.messageText').attr('data-messageid'));
+    },
+
+    prevPage : function () {
+        fim_atomicRemoveHashParameterSetHashParameter('lastMessage', 'firstMessage', $('#active-view-archive table.messageTable tr:first-child > td > span.messageText').attr('data-messageid'));
+    },
+
     retrieve : function() {
         var _this = this;
-
-        $('#archiveMessageList').html('');
-        this.messageData = {};
 
         fimApi.getMessages({
             'roomId' : _this.options.roomId,
             'userIds' : [_this.options.searchUser],
             'messageTextSearch' : _this.options.searchText,
             'messageIdStart' : _this.options.firstMessage,
+            'messageIdEnd' : _this.options.lastMessage,
             'archive' : 1,
             'page' : _this.options.page
         }, {
-            'reverseEach' : false,
-            'each' : function(messageData) {
-                $('#archiveMessageList').append(fim_messageFormat(messageData, 'table'));
-                _this.messageData[messageData.id] = messageData;
-                windowDraw();
-            },
+            'reverseEach' : (_this.options.firstMessage ? true : false),
             'end' : function(messages) {
-                if (!Object.keys(messages).length) {
-                    $('#archiveNext').button({ disabled : true });
+                $('#active-view-archive table.messageTable > tbody').html('');
+                $('#active-view-archive button[name=archivePrev]').prop('disabled', false);
+
+                this.messageData = {};
+
+                jQuery.each(messages, function(index, messageData) {
+                    $('#active-view-archive table.messageTable > tbody').append(fim_messageFormat(messageData, 'table').append(
+                        $('<td>').append(
+                            $('<a href="#archive#room=' + _this.options.roomId + '#lastMessage=' + messageData.id + '">Show</a>')
+                        )
+                    ));
+
+                    _this.messageData[messageData.id] = messageData;
+                });
+
+                if (messages.length < 2) {
+                    if (_this.options.firstMessage)
+                        $('#active-view-archive button[name=archivePrev]').prop('disabled', true);
+
+                    if (_this.options.lastMessage)
+                        $('#active-view-archive button[name=archiveNext]').prop('disabled', true);
                 }
                 else {
-                    $('#archiveNext').button({ disabled : false });
+                    if (_this.options.firstMessage)
+                        $('#active-view-archive button[name=archiveNext]').prop('disabled', false);
+
+                    if (_this.options.lastMessage)
+                        $('#active-view-archive button[name=archivePage]').prop('disabled', false);
                 }
-            }
+            },
         });
-    },
-
-    nextPage : function () {
-        $('#archivePrev').button({ disabled : false });
-
-        if (this.options.firstMessage) {
-            this.options.firstMessage -= this.options.searchLimit;
-        }
-        else {
-            this.options.page++;
-        }
-
-        this.retrieve();
-    },
-
-    prevPage : function () {
-        if (this.options.firstMessage) {
-            this.options.firstMessage += this.options.searchLimit;
-        }
-        else if (this.options.page !== 0) this.options.page--;
-
-        if (this.options.page <= 0) {
-            $('#archivePrev').button({ disabled : true });
-        }
-
-        this.retrieve();
     },
 
     update : function (option, value) {
@@ -1627,18 +1632,18 @@ popup.prototype.rooms = {
             _this.options[i] = options[i];
 
         // TODO: names, not IDs
-        $('#permissionLevel, #roomNameSearchText, #view-rooms button').unbind('change');
+        $('#permissionLevel, #roomNameSearchText, #active-view-rooms button').unbind('change');
 
         $('#roomNameSearchText').bind('change', function() {
             _this.update('searchText', $(this).val());
             _this.retrieve();
         });
 
-        $('#view-rooms button[name=roomListNext]').bind('click', function() {
+        $('#active-view-rooms button[name=roomListNext]').bind('click', function() {
             _this.nextPage();
         });
 
-        $('#view-rooms button[name=roomListPrev]').bind('click', function() {
+        $('#active-view-rooms button[name=roomListPrev]').bind('click', function() {
             _this.prevPage();
         });
 

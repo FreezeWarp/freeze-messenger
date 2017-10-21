@@ -332,10 +332,6 @@ function fim_messageFormat(json, format) {
                 $('<td>').append(
                     fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred).append(text)
                 )
-            ).append(
-                $('<td>').append(
-                    $('<a href="javascript:void(0);" class="updateArchiveHere">').attr({'data-messageId': messageId}).text('Show')
-                )
             );
             break;
 
@@ -594,64 +590,6 @@ function fim_newMessage(roomId, messageId, messageText) {
     });
 }
 
-
-
-/**
- * Hash Parse for URL-Defined Actions.
- *
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2017
- */
-function fim_hashParse(options) {
-    var urlHashComponents = window.location.hash.split('#'),
-        urlHashComponentsMap = Object.assign({}, options);
-
-    for (var i = 0; i < urlHashComponents.length; i++) {
-        var componentPieces = urlHashComponents[i].split('=');
-
-        if (componentPieces.length == 2)
-            urlHashComponentsMap[componentPieces[0]] = componentPieces[1];
-    }
-
-    if (!('room' in urlHashComponentsMap)) {
-        urlHashComponentsMap['room'] = window.activeLogin.userData.defaultRoomId;
-    }
-    urlHashComponentsMap['roomId'] = urlHashComponentsMap['room'];
-
-    switch (urlHashComponents[1]) {
-        case 'archive':
-        case 'rooms':
-        case 'uploads':
-        case 'copyright':
-        case 'help':
-        case 'room':
-        case 'settings':
-        case 'editRoom':
-            fim_openView(urlHashComponents[1], urlHashComponentsMap);
-            break;
-
-        default: console.log("no action", urlHashComponentsMap);
-            fim_openView('room', urlHashComponentsMap);
-            break;
-    }
-}
-
-// 1. default view is implied -- pulls in room=
-// 2. get next hash as viewname
-// 3. switch on viewname
-// 4. pull all valid hash parameters (e.g. editRoom pulls in room=, archive pulls in room=, message=, page=, and so-on)
-// 5. goto 2
-
-// 1.
-
-function fim_setHashParameter() {}
-
-function fim_closeView() {
-    // hash stuff
-
-
-    // do close
-}
 
 /*********************************************************
  ************************* END ***************************

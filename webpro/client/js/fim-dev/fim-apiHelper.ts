@@ -43,7 +43,7 @@ class Resolver {
     }
 
     private static resolve(type : string, property : string, items: Array<any>) {
-        console.log(["resolve", type, property, items]);
+        //console.log(["resolve", type, property, items]);
 
         let deferred = $.Deferred();
         let returnData = {};
@@ -66,7 +66,7 @@ class Resolver {
             if (Resolver["cached" + typeProperty].indexOf(item) !== -1) {
                 returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + typeProperty].indexOf(item)];
 
-                console.log(["resolveFoundInCache", type, property, item, returnData[item]]);
+                //console.log(["resolveFoundInCache", type, property, item, returnData[item]]);
             }
 
             // If we are waiting on a result for the entry, wait for it to appear in the cache.

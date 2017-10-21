@@ -10,7 +10,7 @@ var Resolver = (function () {
         }
     };
     Resolver.resolve = function (type, property, items) {
-        console.log(["resolve", type, property, items]);
+        //console.log(["resolve", type, property, items]);
         var deferred = $.Deferred();
         var returnData = {};
         var unresolvedItems = [];
@@ -26,7 +26,7 @@ var Resolver = (function () {
             // If we already have a cached entry, return it.
             if (Resolver["cached" + typeProperty].indexOf(item) !== -1) {
                 returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + typeProperty].indexOf(item)];
-                console.log(["resolveFoundInCache", type, property, item, returnData[item]]);
+                //console.log(["resolveFoundInCache", type, property, item, returnData[item]]);
             }
             else if (Resolver["waiting" + typeProperty].indexOf(item) !== -1) {
                 var retry_1 = setInterval(function () {

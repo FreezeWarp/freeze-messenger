@@ -79,31 +79,36 @@ function $t(templateName, substitutions) {
 }
 
 
-function renderHandlebarsInPlace(tag, name) { console.log(tag);
+function fim_renderHandlebarsInPlace(tag, name) {
+    console.log(tag);
+
     var id       = tag.attr('id');
     var source   = tag.html();
     var template = Handlebars.compile(source);
-    tag.replaceWith('<div id="' + id + '">' + template(window.phrases) + '</div>');
+
+    $('<div id="active-' + id + '">' + template(window.phrases) + '</div>').insertAfter(tag);
 }
 
 function fim_openView(viewName, options) {
-    if ($('.fim-activeView').attr('id') == 'view-' + viewName) {
-        // do nothing
+    if ($('.fim-activeView').attr('id') == 'active-view-' + viewName) {
+        jQuery.each(options, function(name, value) {
+            var setterName = "set" + name.charAt(0).toUpperCase() + name.slice(1);
+
+            if (typeof popup[viewName] != "undefined"
+                && typeof popup[viewName][setterName] != "undefined") {
+                popup[viewName][setterName](value);
+            }
+        });
     }
 
     else {
         tag = $('#view-' + viewName);
 
         if (tag.length > 0) {
-            $('.fim-activeView').each(function() {
-                var id = $(this).attr('id');
+            fim_closeView();
+            fim_renderHandlebarsInPlace(tag);
 
-                $(this).removeClass('fim-activeView');
-                $(this).replaceWith('<script id="' + id + '" type="text/x-handlebars-template">' + $(this).prop('innerHTML') + '</script>');
-            });
-
-            renderHandlebarsInPlace(tag);
-            $('#view-' + viewName).addClass('fim-activeView');
+            $('#active-view-' + viewName).addClass('fim-activeView');
 
             if (typeof popup[viewName] != "undefined") {
                 popup[viewName].init(options);
@@ -113,6 +118,98 @@ function fim_openView(viewName, options) {
             throw "Unknown view.";
         }
     }
+}
+
+function fim_closeView() {
+    $('.fim-activeView').each(function() {
+        var viewName = $(this).attr('id').slice(12);
+
+        if (typeof popup[viewName] != "undefined"
+            && typeof popup[viewName].close != "undefined") {
+            popup[viewName].close(options);
+        }
+
+        $(this).remove();
+    });
+}
+
+/**
+ * Hash Parse for URL-Defined Actions.
+ *
+ * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+ * @copyright Joseph T. Parsons 2017
+ */
+function fim_hashParse(options) {
+    var urlHashComponents = window.location.hash.split('#'),
+        urlHashComponentsMap = Object.assign({}, options);
+
+    for (var i = 0; i < urlHashComponents.length; i++) {
+        var componentPieces = urlHashComponents[i].split('=');
+
+        if (componentPieces.length == 2)
+            urlHashComponentsMap[componentPieces[0]] = componentPieces[1];
+    }
+
+    if (!('room' in urlHashComponentsMap)) {
+        urlHashComponentsMap['room'] = window.activeLogin.userData.defaultRoomId;
+    }
+    urlHashComponentsMap['roomId'] = urlHashComponentsMap['room'];
+
+    switch (urlHashComponents[1]) {
+        case 'archive':
+        case 'rooms':
+        case 'uploads':
+        case 'copyright':
+        case 'help':
+        case 'room':
+        case 'settings':
+        case 'editRoom':
+            fim_openView(urlHashComponents[1], urlHashComponentsMap);
+            break;
+
+        default: console.log("no action", urlHashComponentsMap);
+            fim_openView('room', urlHashComponentsMap);
+            break;
+    }
+}
+
+
+// 1. default view is implied -- pulls in room=
+// 2. get next hash as viewname
+// 3. switch on viewname
+// 4. pull all valid hash parameters (e.g. editRoom pulls in room=, archive pulls in room=, message=, page=, and so-on)
+// 5. goto 2
+
+function fim_getHashRegex(name) {
+    return new RegExp('#' + name + '(=([^#]+))?(#|$)');
+}
+
+function fim_setHashParameter(name, value) {
+    if (window.location.hash.match(fim_getHashRegex(name))) {
+        window.location.hash = window.location.hash.replace(fim_getHashRegex(name), '#' + name + '=' + value + '$3');
+    }
+    else {
+        window.location.hash += '#' + name + '=' + value;
+    }
+}
+
+function fim_removeHashParameter(name) {
+    window.location.hash = window.location.hash.replace(fim_getHashRegex(name), '');
+}
+
+function fim_atomicRemoveHashParameterSetHashParameter(removeName, setName, setValue) {
+    var hash = window.location.hash;
+
+    hash = hash.replace(fim_getHashRegex(removeName), '');
+
+    if (hash.match(fim_getHashRegex(setName))) {
+        hash = window.location.hash.replace(fim_getHashRegex(setName), '#' + setName + '=' + setValue + '$3');
+    }
+    else {
+        hash += ('#' + setName + '=' + setValue);
+    }
+
+    window.location.hash = hash;
 }
 
 
@@ -338,7 +435,7 @@ $.when(
      * @copyright Joseph T. Parsons 2017
      */
     $(document).ready(function() {
-        renderHandlebarsInPlace($("#entry-template"));
+        fim_renderHandlebarsInPlace($("#entry-template"));
 
 
         if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');
