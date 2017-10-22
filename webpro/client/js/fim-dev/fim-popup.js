@@ -1611,12 +1611,12 @@ popup.prototype.rooms = {
                         ),
                         $('<td>').text(roomData.topic),
                         $('<td>').append(
-                            $('<div class="btn-toolbar" role="toolbar">').append(
+                            $('<div>').append(
                                 (roomData.permissions.properties
                                         ? $('<button>').attr({
-                                            'class' : 'btn btn-secondary',
+                                            'class' : 'btn btn-secondary m-1',
                                             'title' : 'Edit Room'
-                                        }).append($('<i class="fa fa-sliders"></i>')).click(function() {
+                                        }).text('Edit').prepend($('<i class="fa fa-sliders"></i>')).click(function() {
                                             window.location.hash = '#editRoom#room=' + roomData.id;
                                         })
                                         : ''
@@ -1625,9 +1625,9 @@ popup.prototype.rooms = {
                                 // TODO: test
                                 (roomData.permissions.properties
                                         ? $('<button>').attr({
-                                            'class' : 'btn btn-danger',
+                                            'class' : 'btn btn-danger m-1',
                                             'title' : 'Delete Room'
-                                        }).append($('<i class="fa fa-trash"></i>')).click(function() {
+                                        }).text('Delete').prepend($('<i class="fa fa-trash"></i>')).click(function() {
                                             if (dia.confirm("Are you sure you want to delete this room?")) {
                                                 standard.deleteRoom(roomData.id);
                                             }
@@ -1636,25 +1636,25 @@ popup.prototype.rooms = {
                                 ),
 
                                 $('<button>').attr({
-                                    'class' : 'btn btn-secondary',
+                                    'class' : 'btn btn-secondary m-1',
                                     'title' : 'View History'
-                                }).append($('<i class="fa fa-history"></i>')).click(function() {
+                                }).text('Archive').prepend($('<i class="fa fa-history"></i>')).click(function() {
                                     window.location.hash = '#archive#room=' + roomData.id;
                                 }),
 
                                 $('<button>').attr({
-                                    'class' : 'btn btn-secondary',
+                                    'class' : 'btn btn-secondary m-1',
                                     'title' : 'Favourite Room'
-                                }).append($('<i class="fa fa-star" style="color: yellow;"></i>')),
+                                }).text('Fav').prepend($('<i class="fa fa-star" style="color: yellow;"></i>')),
 
                                 $('<button>').attr({
                                     'data-toggle' : 'button',
-                                    'class' : 'btn btn-secondary' + (window.activeLogin.userData.watchRooms.indexOf(roomData.id) !== -1 ? ' active' : ''),
+                                    'class' : 'btn btn-secondary m-1' + (window.activeLogin.userData.watchRooms.indexOf(roomData.id) !== -1 ? ' active' : ''),
                                     'aria-pressed' : (window.activeLogin.userData.watchRooms.indexOf(roomData.id) !== -1 ? 'true' : 'false'),
                                     'title' : 'Get Notifications About New Messages in This Room'
-                                }).append($('<i class="fa fa-eye"></i>')).click(function() {
+                                }).text('Watch').prepend($('<i class="fa fa-eye"></i>')).click(function() {
                                     if (window.activeLogin.userData.watchRooms.indexOf(roomData.id) === -1) {
-                                        dia.info("You will now be notified of new messages made in this room.");
+                                        dia.info("You will now be notified of new messages made in this room.", "Now Watching");
                                         window.activeLogin.userData.watchRooms.push(roomData.id);
                                         fimApi.watchRoom(roomData.id);
                                         $(this).addClass("active");

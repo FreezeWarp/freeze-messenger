@@ -142,11 +142,9 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <table class="table" id="viewStats">
-                        <tbody></tbody>
-                    </table>
-                </div>
+                <table class="table modal-body" id="viewStats">
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -161,7 +159,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <table class="table table-sm">
+                    <table class="center table table-sm">
                         <thead class="thead-default">
                             <tr class="hrow">
                                 <th>User</th>
@@ -339,7 +337,7 @@
 
                     <li class="nav-item dropdown dropdown-primary">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarRooms" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Quick Rooms
+                            Rooms
                         </a>
                         <div class="dropdown-menu" name="roomMenu" aria-labelledby="navbarRooms">
                             <h6 class="dropdown-header" name="favRoomsHeader">Favourite Rooms</h6>
@@ -467,7 +465,7 @@
                                                 class="btn btn-primary mx-1"
                                                 title="Edit Room"
                                                 name="editRoom"
-                                                onclick="location.hash='#editRoom'">
+                                                onclick="location.hash='#editRoom#room=' + window.roomId">
                                             <i class="fa fa-cog" aria-hidden="true"></i> Edit Room
                                         </button>
 
@@ -483,7 +481,7 @@
                                                 class="btn btn-primary mx-1"
                                                 title="Archive"
                                                 name="archive"
-                                                onclick="location.hash='#archive'">
+                                                onclick="location.hash='#archive#room=' + window.roomId">
                                             <i class="fa fa-history"></i> Archive
                                         </button>
 
@@ -579,7 +577,7 @@
 
 
             <{{!}}script id="view-uploads" type="text/x-handlebars-template">
-            <table class="table">
+            <table class="table center">
                 <thead class="thead-default">
                     <tr>
                         <th>File</th>
@@ -623,7 +621,7 @@
                 </div>
 
                 <div class="card-body p-0">
-                    <table class="messageTable table table-striped table-sm">
+                    <table class="messageTable center table table-striped table-sm">
                         <thead class="table-primary">
                         <tr>
                             <th style="width: 20%;">{{archiveHeaderUser}}</th>
@@ -694,12 +692,12 @@
                     </div>
                 </div>
 
-                <table class="table card-content table-sm table-striped">
+                <table class="table card-body table-sm table-striped center">
                     <thead class="table-primary">
                     <tr>
-                        <th style="width: 20%;">{{selectRoomHeaderName}}</th>
-                        <th style="width: 60%;">{{selectRoomHeaderTopic}}</th>
-                        <th style="width: 20%;">{{selectRoomHeaderActions}}</th>
+                        <th>{{selectRoomHeaderName}}</th>
+                        <th>{{selectRoomHeaderTopic}}</th>
+                        <th>{{selectRoomHeaderActions}}</th>
                     </tr>
                     </thead>
                     <tbody id="roomTableHtml"></tbody>
@@ -723,10 +721,9 @@
                     <div class="card-header p-0">
                         <ul class="nav nav-tabs justify-content-center" role="tablist" id="settingsTabs">
                             <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#settings5">{{settingsTabGeneral}}</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsTabPrivacy}}</a></li>
                             <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings1">{{settingsTabDisplay}}</a></li>
+                            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsTabPrivacy}}</a></li>
                             <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings4">{{settingsTabFormatting}}</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings2">{{settingsTabHacks}}</a></li>
                         </ul>
                     </div>
 
@@ -755,88 +752,72 @@
                                 </div>
                                 -->
 
-                                <div id="settings1fontsize">
-                                    <label for="fontsize">{{settingsFontsizeLabel}}</label>
-                                    <select name="fontsize" id="fontsize">
-                                        <option value=".7">{{settingsFontsize50}}</option>
-                                        <option value=".8">{{settingsFontsize60}}</option>
-                                        <option value=".9">{{settingsFontsize75}}</option>
-                                        <option value="1">{{settingsFontsize100}}</option>
-                                        <option value="1.2">{{settingsFontsize125}}</option>
-                                        <option value="1.4">{{settingsFontsize140}}</option>
-                                        <option value="1.5">{{settingsFontsize150}}</option>
-                                    </select><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsFontsizeBlurb}}</span></small>
-                                    <br/><br/>
+                                <div id="settings1fontsize" class="pb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">{{settingsFontsizeLabel}}</span>
+                                        <select name="fontsize" id="fontsize" class="form-control">
+                                            <option value=".7">{{settingsFontsize50}}</option>
+                                            <option value=".8">{{settingsFontsize60}}</option>
+                                            <option value=".9">{{settingsFontsize75}}</option>
+                                            <option value="1">{{settingsFontsize100}}</option>
+                                            <option value="1.2">{{settingsFontsize125}}</option>
+                                            <option value="1.4">{{settingsFontsize140}}</option>
+                                            <option value="1.5">{{settingsFontsize150}}</option>
+                                        </select>
+                                    </div>
+                                    <small class="form-text text-muted">{{settingsFontsizeBlurb}}</small>
                                 </div>
 
-                                <div id="settings1showAvatars">
+                                <div id="settings1showAvatars" class="pb-3">
                                     <label>
-                                        <input type="checkbox" name="showAvatars" id="showAvatars" value="true"/>
-                                        {{settingsShowAvatarsLabel}}
-                                    </label><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsShowAvatarsBlurb}}</span></small>
-                                    <br/><br/>
+                                        <span class="btn btn-primary">
+                                            <input type="checkbox" name="showAvatars" id="showAvatars" />
+                                            <strong>{{settingsShowAvatarsLabel}}</strong>
+                                        </span><br />
+                                        <small class="form-text text-muted">{{settingsShowAvatarsBlurb}}</small>
+                                    </label>
                                 </div>
 
-                                <div id="settings1reversePostOrder">
+                                <div id="settings1reversePostOrder" class="pb-3">
                                     <label>
-                                        <input type="checkbox" name="reversePostOrder" id="reversePostOrder" value="true"/>
-                                        {{settingsReversePostOrderLabel}}
-                                    </label><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsReversePostOrderBlurb}}</span></small>
-                                    <br/><br/>
+                                        <span class="btn btn-primary">
+                                            <input type="checkbox" name="reversePostOrder" id="reversePostOrder" />
+                                            <strong>{{settingsReversePostOrderLabel}}</strong>
+                                        </span><br />
+                                        <small class="form-text text-muted">{{settingsReversePostOrderBlurb}}</small>
+                                    </label>
                                 </div>
 
-                                <div id="settings1audioDing">
+                                <div id="settings1audioDing" class="pb-2">
                                     <label>
-                                        <input type="checkbox" name="audioDing" id="audioDing" value="true"/>
-                                        {{settingsAudioDingLabel}}
-                                    </label><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsAudioDingBlurb}}</span></small>
-                                    <br/><br/>
-                                </div>
-                            </div>
-
-                            <div class="tab-pane fade" role="tabpanel" id="settings6">
-                                <div id="settings6ignoreList">
-                                    <label for="ignoreList">{{settingsIgnoreListLabel}}</label>
-                                    <span id="ignoreListContainer"></span><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsIgnoreListBlurb}}</span></small>
-                                    <br/>
-                                    <small><span style="margin-left: 10px;"><span id="ignoreListList"></span></span></small>
-                                    <br/><br/>
+                                        <span class="btn btn-primary">
+                                            <input type="checkbox" name="audioDing" id="audioDing" />
+                                            <strong>{{settingsAudioDingLabel}}</strong>
+                                        </span><br />
+                                        <small class="form-text text-muted">{{settingsAudioDingBlurb}}</small>
+                                    </label>
                                 </div>
 
-                                <div id="settings6friendsList">
-                                    <label for="friendsList">{{settingsFriendsListLabel}}</label>
-                                    <span id="friendsListContainer"></span><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsFriendsListBlurb}}</span></small>
-                                    <br/>
-                                    <small><span style="margin-left: 10px;"><span id="friendsListList"></span></span></small>
-                                    <br/><br/>
+                                <div id="settings2audioVolume" class="pb-4">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">{{settingsAudioVolumeLabel}}</span>
+                                        <input type="range" min="0" max="1" name="audioVolume" id="audioVolume" value=".5" step=".01"/>
+                                    </div>
+                                    <small class="form-text text-muted">{{settingsAudioVolumeBlurb}}</small>
                                 </div>
 
-                                <div id="settings6privacyLevel">
-                                    <fieldset>
-                                        <legend>{{settingsPrivacyLegend}}</legend>
-                                        <label><input type="radio" name="privacyLevel" value="allow">{{settingsPrivacyAllowAll}}</label><br/>
-                                        <small><span style="margin-left: 10px;">{{settingsPrivacyAllowAllBlurb}}</span></small>
-                                        <br/><br/><label><input type="radio" name="privacyLevel" value="friends">{{settingsPrivacyAllowFriends}}</label><br/>
-                                        <small><span style="margin-left: 10px;">{{settingsPrivacyAllowFriendsBlurb}} </span></small>
-                                        <br/><br/><label><input type="radio" name="privacyLevel" value="block">{{settingsPrivacyAllowNone}}</label><br/>
-                                        <small><span style="margin-left: 10px;">{{settingsPrivacyAllowNoneBlurb}} </span></small>
-                                    </fieldset>
-                                    <br/><br/>
+                                <div id="settings2webkitNotifications">
+                                    <label>
+                                        <span class="btn btn-primary">
+                                            <input type="checkbox" name="webkitNotifications" id="webkitNotifications" />
+                                            <strong>{{settingsWebkitNotificationsLabel}}</strong>
+                                        </span><br />
+                                        <small class="form-text text-muted">{{settingsWebkitNotificationsBlurb}}</small>
+                                    </label><br /><br />
                                 </div>
-                                <input type="hidden" name="ignoreList" id="ignoreList"/></div>
 
-                            <div class="tab-pane fade" role="tabpanel" id="settings2">
-                                <div id="settings2disableFx">
-                                    <label><input type="checkbox" name="disableFx" id="disableFx" value="true"/>{{settingsDisableFxLabel}}</label><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsDisableFxBlurb}}</span></small>
-                                    <br/><br/>
-                                </div>
+                                <!--
+
 
                                 <div id="settings2disableRightClick">
                                     <label>
@@ -846,41 +827,80 @@
                                     <small><span style="margin-left: 10px;">{{settingsDisableRightClickBlurb}}</span></small>
                                     <br/><br/>
                                 </div>
-
-                                <div id="settings2webkitNotifications">
-                                    <label>
-                                        <input type="checkbox" name="webkitNotifications" id="webkitNotifications" value="true"/>
-                                        {{settingsWebkitNotificationsLabel}}
-                                    </label><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsWebkitNotificationsBlurb}}</span></small>
-                                    <br/><br/>
-                                </div>
-
-                                <div id="settings2audioVolume">
-                                    <label for="audioVolume">{{settingsAudioVolumeLabel}}</label>
-                                    <input type="range" min="0" max="1" name="audioVolume" id="audioVolume" value=".5" step=".01"/><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsAudioVolumeBlurb}}</span></small>
-                                    <br/><br/>
-                                </div>
+                                -->
                             </div>
 
-                            <div class="tab-pane fade" role="tabpanel" id="settings4">{{settingsDefaultFormattingLabel}}<br/>
+                            <div class="tab-pane fade" role="tabpanel" id="settings6">
+                                <div id="settings6ignoreList" class="pb-3">
+                                    <span>{{settingsIgnoreListLabel}}</span>
+                                    <div id="ignoreListContainer"></div>
+                                    <small class="form-text text-muted">{{settingsIgnoreListBlurb}}</small>
+                                </div>
+
+                                <div id="settings6friendsList" class="pb-4">
+                                    <span>{{settingsFriendsListLabel}}</span>
+                                    <div id="friendsListContainer"></div>
+                                    <small class="form-text text-muted">{{settingsFriendsListBlurb}}</small>
+                                </div>
+
+                                <div id="settings6privacyLevel">
+                                    <fieldset>
+                                        <legend>{{settingsPrivacyLegend}}</legend>
+                                        <label>
+                                            <input type="radio" name="privacyLevel" value="allow">{{settingsPrivacyAllowAll}}<br/>
+                                            <small class="form-text text-muted">{{settingsPrivacyAllowAllBlurb}}</small>
+                                        </label><br/>
+
+                                        <label>
+                                            <input type="radio" name="privacyLevel" value="friends">{{settingsPrivacyAllowFriends}}<br/>
+                                            <small class="form-text text-muted">{{settingsPrivacyAllowFriendsBlurb}}</small>
+                                        </label><br />
+
+                                        <label>
+                                            <input type="radio" name="privacyLevel" value="block">{{settingsPrivacyAllowNone}}<br/>
+                                            <small class="form-text text-muted">{{settingsPrivacyAllowNoneBlurb}}</small>
+                                        </label>
+                                    </fieldset>
+                                    <br/><br/>
+                                </div>
+                                <input type="hidden" name="ignoreList" id="ignoreList"/>
+                            </div>
+
+                            <div class="tab-pane fade" role="tabpanel" id="settings4">
+                                <h4>{{settingsDefaultFormattingLabel}}</h4>
                                 <div id="settings4defaultFont">
-                                    <select name="defaultFace" id="defaultFace" style="margin-left: 10px;"></select>
-                                    <input style="width: 40px;" id="defaultColour" name="defaultColour"/>
-                                    <input style="width: 40px;" id="defaultHighlight" name="defaultHighlight"/><br/>
+                                    <div class="row mb-2">
+                                        <div class="input-group col">
+                                            <span class="input-group-addon">Colour</span>
+                                            <input class="form-control" id="defaultColour" name="defaultColour"/>
+                                        </div>
 
-                                    <div id="defaultBoldItalics" class="indent">
+                                        <div class="input-group col">
+                                            <span class="input-group-addon">Highlight</span>
+                                            <input class="form-control" id="defaultHighlight" name="defaultHighlight"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-addon">Face</span>
+                                        <select name="defaultFace" id="defaultFace" class="form-control"></select>
+                                    </div>
+
+                                    <div id="defaultBoldItalics">
                                         <label>
-                                            <input type="checkbox" name="defaultBold" id="defaultBold" value="true"/>
-                                            {{settingsDefaultFormattingBoldLabel}}
-                                        </label><br/>
+                                            <span class="btn btn-secondary">
+                                                <input type="checkbox" name="defaultBold" id="defaultBold" />
+                                                <strong>{{settingsDefaultFormattingBoldLabel}}</strong>
+                                            </span>
+                                        </label>
 
                                         <label>
-                                            <input type="checkbox" name="defaultItalics" id="defaultItalics" value="true"/>
-                                            {{settingsDefaultFormattingItalicsLabel}}
-                                        </label><br/>
-                                    </div><br/>
+                                            <span class="btn btn-secondary">
+                                                <input type="checkbox" name="defaultItalics" id="defaultItalics" />
+                                                <strong>{{settingsDefaultFormattingItalicsLabel}}</strong>
+                                            </span>
+                                        </label>
+                                    </div>
 
                                     <small>
                                         <span style="margin-left: 10px;" id="fontPreview">{{settingsDefaultFormattingPreview}}</span>
@@ -962,11 +982,9 @@
                                 </div>
 
                                 <div id="settings5watchRooms">
-                                    <label for="watchRoomsList">{{settingsWatchRoomsLabel}}</label>
-                                    <span name="watchRoomsContainer" id="watchRoomsContainer"></span><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsWatchRoomsBlurb}}</span></small>
-                                    <br/>
-                                    <small><span style="margin-left: 10px;"><span id="watchRoomsList"></span></span></small><br/><br/>
+                                    <span>{{settingsWatchRoomsLabel}}</span>
+                                    <div name="watchRoomsContainer" id="watchRoomsContainer"></div>
+                                    <small class="form-text text-muted">{{settingsWatchRoomsBlurb}}</small>
                                 </div>
 
                                 <input type="hidden" name="watchRooms" id="watchRooms"/>
@@ -981,125 +999,120 @@
                     </div>
                 </div>
             </form>
-            <{{!}}/script>
+        <{{!}}/script>
 
         <{{!}}script id="view-editRoom" type="text/x-handlebars-template">
-        <ul class="nav nav-tabs justify-content-center bg-light" role="tablist" id="editRoomTabs">
-            <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" role="tab" href="#editRoom1">{{editRoomTabGeneral}}</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" role="tab" href="#editRoom2">{{editRoomTabPermissions}}</a>
-            </li>
-        </ul>
+
         <form action="#" method="post" id="editRoomForm">
-            <div class="tab-content p-4" id="editRoomTabsContent">
-                <div class="tab-pane fade show active" role="tabpanel" id="editRoom1">
-                    <div id="editRoom1Name">
-                        <div class="input-group">
-                            <span class="input-group-addon">{{editRoomNameLabel}}</span>
-                            <input type="text" class="form-control" name="name"/>
-                        </div>
-                        <small class="form-text text-muted">{{editRoomNameBlurb}}</small>
-                        <br />
-                    </div>
-
-                    <div id="editRoom1ParentalAge">
-                        <div class="input-group">
-                            <span class="input-group-addon">{{editRoomParentalAgeLabel}}</span>
-                            <select class="form-control" name="parentalAge"></select>
-                        </div>
-                        <small class="form-text text-muted">{{editRoomParentalAgeBlurb}}</small>
-                        <br/>
-                    </div>
-
-                    <div id="editRoom1ParentalFlags">
-                        <h4>{{editRoomParentalFlagsLabel}}</h4>
-                        <div name="parentalFlagsList"></div>
-                        <small class="form-text text-muted">{{editRoomParentalFlagsBlurb}}</small>
-                        <br/>
-                    </div>
-
-                    <div id="editRoom1Censor">
-                        <h4>{{editRoomCensorLabel}}</h4>
-                        <div name="censorLists" id="censorLists"></div>
-                        <small class="form-text text-muted">{{editRoomCensorBlurb}}</small>
-                        <br/>
-                    </div>
-
-                    <h4>Room Options</h4>
-                    <div id="editRoom1Hidden">
-                        <label>
-                            <span class="btn btn-secondary">
-                                <input type="checkbox" id="allowHidden" name="allowHidden"/>
-                                <strong>{{editRoomHiddenLabel}}</strong>
-                            </span><br />
-                            <small class="form-text text-muted">{{editRoomHiddenBlurb}}</small>
-                        </label>
-                    </div>
-
-                    <div id="editRoom1Official">
-                        <label>
-                            <span class="btn btn-secondary">
-                                <input type="checkbox" id="allowOfficial" name="allowOfficial"/>
-                                <strong>{{editRoomOfficialLabel}}</strong>
-                            </span><br />
-                            <small class="form-text text-muted">{{editRoomOfficialBlurb}}</small>
-                        </label>
-                    </div><br />
+            <div class="card">
+                <div class="card-header p-0">
+                    <ul class="nav nav-tabs justify-content-center bg-light" role="tablist" id="editRoomTabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" role="tab" href="#editRoom1">{{editRoomTabGeneral}}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" role="tab" href="#editRoom2">{{editRoomTabPermissions}}</a>
+                        </li>
+                    </ul>
                 </div>
 
-                <div class="tab-pane fade" role="tabpanel" id="editRoom2">
-                    <div id="editRoom2AllowViewing">
-                        <label class="btn btn-secondary">
-                            <input type="checkbox" id="allowViewing" name="allowViewing"/>
-                            {{editRoomAllowViewingLabel}}
-                        </label><br/>
-                        <small class="form-text text-muted">{{editRoomAllowViewingBlurb}}</small>
-                        <br/>
-                    </div>
-
-                    <div id="editRoom2AllowAll">
-                        <fieldset class="p-3 border border-dark rounded">
-                            <legend style="display: inline; width: auto;">
-                                <label class="btn btn-secondary">
-                                    <input type="checkbox" id="allowPosting" name="allowPosting"/>
-                                    {{editRoomAllowAll}}
-                                </label>
-                            </legend>
-
-                            <div id="editRoom2AllowedUsers">
-                                <span>{{editRoomAllowedUsersLabel}}</span>
-                                <div name="allowedUsersContainer" id="allowedUsersContainer"></div>
-                                <small class="text-muted form-text">
-                                    {{editRoomAllowedUsersCurrent}}
-                                    <span id="allowedUsersList"></span>
-                                </small>
-                            </div><br />
-
-                            <div id="editRoom2AllowedGroups">
-                                <span>{{editRoomAllowedGroupsLabel}}</span>
-                                <div name="allowedGroupsContainer" id="allowedGroupsContainer"></div>
-                                <small class="text-muted form-text">
-                                    {{editRoomAllowedGroupsCurrent}}
-                                    <span id="allowedGroupsList"></span>
-                                </small>
+                <div class="card-body">
+                    <div class="tab-content p-4" id="editRoomTabsContent">
+                        <div class="tab-pane fade show active" role="tabpanel" id="editRoom1">
+                            <div id="editRoom1Name" class="mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-addon">{{editRoomNameLabel}}</span>
+                                    <input type="text" class="form-control" name="name"/>
+                                </div>
+                                <small class="form-text text-muted">{{editRoomNameBlurb}}</small>
                             </div>
-                        </fieldset>
-                    </div><br/>
 
-                    <div id="editRoom2Moderators">
-                        <span>{{editRoomModeratorsLabel}}</span>
-                        <div name="moderatorsContainer" id="moderatorsContainer"></div>
-                        <small class="form-text text-muted">
-                            {{editRoomModeratorsCurrent}}
-                            <span id="moderatorsList"></span></span>
-                        </small>
-                    </div><br />
+                            <div id="editRoom1ParentalAge" class="mb-4">
+                                <div class="input-group">
+                                    <span class="input-group-addon">{{editRoomParentalAgeLabel}}</span>
+                                    <select class="form-control" name="parentalAge"></select>
+                                </div>
+                                <small class="form-text text-muted">{{editRoomParentalAgeBlurb}}</small>
+                            </div>
+
+                            <div id="editRoom1ParentalFlags" class="mb-4">
+                                <h4>{{editRoomParentalFlagsLabel}}</h4>
+                                <div name="parentalFlagsList"></div>
+                                <small class="form-text text-muted">{{editRoomParentalFlagsBlurb}}</small>
+                            </div>
+
+                            <div id="editRoom1Censor" class="mb-4">
+                                <h4>{{editRoomCensorLabel}}</h4>
+                                <div name="censorLists" id="censorLists"></div>
+                                <small class="form-text text-muted">{{editRoomCensorBlurb}}</small>
+                            </div>
+
+                            <h4>Room Options</h4>
+                            <div id="editRoom1Hidden" class="mb-3">
+                                <label>
+                                    <span class="btn btn-primary">
+                                        <input type="checkbox" id="allowHidden" name="allowHidden"/>
+                                        <strong>{{editRoomHiddenLabel}}</strong>
+                                    </span><br />
+                                    <small class="form-text text-muted">{{editRoomHiddenBlurb}}</small>
+                                </label>
+                            </div>
+
+                            <div id="editRoom1Official">
+                                <label>
+                                    <span class="btn btn-primary">
+                                        <input type="checkbox" id="allowOfficial" name="allowOfficial"/>
+                                        <strong>{{editRoomOfficialLabel}}</strong>
+                                    </span><br />
+                                    <small class="form-text text-muted">{{editRoomOfficialBlurb}}</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" role="tabpanel" id="editRoom2">
+                            <div id="editRoom2AllowViewing">
+                                <label class="btn btn-secondary">
+                                    <input type="checkbox" id="allowViewing" name="allowViewing"/>
+                                    {{editRoomAllowViewingLabel}}
+                                </label><br/>
+                                <small class="form-text text-muted">{{editRoomAllowViewingBlurb}}</small>
+                                <br/>
+                            </div>
+
+                            <div id="editRoom2AllowAll">
+                                <fieldset class="p-3 border border-dark rounded">
+                                    <legend style="display: inline; width: auto;">
+                                        <label class="btn btn-secondary">
+                                            <input type="checkbox" id="allowPosting" name="allowPosting"/>
+                                            {{editRoomAllowAll}}
+                                        </label>
+                                    </legend>
+
+                                    <div id="editRoom2AllowedUsers">
+                                        <span>{{editRoomAllowedUsersLabel}}</span>
+                                        <div name="allowedUsersContainer" id="allowedUsersContainer"></div>
+                                    </div><br />
+
+                                    <div id="editRoom2AllowedGroups">
+                                        <span>{{editRoomAllowedGroupsLabel}}</span>
+                                        <div name="allowedGroupsContainer" id="allowedGroupsContainer"></div>
+                                    </div>
+                                </fieldset>
+                            </div><br/>
+
+                            <div id="editRoom2Moderators">
+                                <span>{{editRoomModeratorsLabel}}</span>
+                                <div name="moderatorsContainer" id="moderatorsContainer"></div>
+                            </div><br />
+                        </div>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">{{editRoomSubmit}}</button>
-                <button type="reset" class="btn btn-secondary">{{editRoomReset}}</button>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">{{editRoomSubmit}}</button>
+                    <button type="reset" class="btn btn-secondary">{{editRoomReset}}</button>
+                </div>
+            </div>
         </form>
         <{{!}}/script>
 

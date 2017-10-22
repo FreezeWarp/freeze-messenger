@@ -231,8 +231,9 @@ form.center {
   text-align: center;
 }
 
-table.center td {
+table.center td, table.center th {
   text-align: center;
+  vertical-align: middle;
 }
 
 .indent {

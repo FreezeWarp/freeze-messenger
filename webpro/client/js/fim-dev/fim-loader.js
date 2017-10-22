@@ -903,6 +903,7 @@ var autoEntry = function(target, options) {
     );
 
     $('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">').insertAfter(target);
+    $('<div>').attr('id', this.options.name + 'List').insertAfter(target);
 
     if ('default' in options) {
         this.displayEntries(options.default);
