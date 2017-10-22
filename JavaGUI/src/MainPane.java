@@ -227,18 +227,19 @@ public class MainPane {
                         @Override
                         public void run() {
 
-                            TextFlow t;
+                            TextFlow t = new TextFlow();
+                            TextFlow t2;
                             if(MessengerAPI.user.getId() == userId) {
-
-
-                                t = new TextFlow(messageText, new Text("  "), user.getAvatarImageView());
+                                t2 = new TextFlow(messageText, new Text("  "), user.getAvatarImageView());
                                 t.setTextAlignment(RIGHT);
                             }
 
                             else{
-                                t = new TextFlow(user.getAvatarImageView(), userName, new Text(": "), messageText);
+                                t2 = new TextFlow(user.getAvatarImageView(), userName, new Text(": "), messageText);
                                 t.setTextAlignment(LEFT);
                             }
+                            t2.setMaxWidth(messageList.getWidth() * .6);
+                            t.getChildren().add(t2);
                             messageList.getChildren().add(t);
                             messageListScroll.setVvalue(1.0);
 
