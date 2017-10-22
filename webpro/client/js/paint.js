@@ -54,31 +54,6 @@ function $l(stringName, substitutions, extra) {
     }
 }
 
-/** Returns a formatted template.
- * TODO: deprecated
- *
- * @param stringName - The name of the template we will return.
- * @param substitutions - A list of "additional" template substitutions. Those included in the language.json files are automatically included.
- *
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2017
- */
-function $t(templateName, substitutions) {
-    if (!(templateName in window.templates)) {
-        $q('Template Error: ' + templateName + ' not found.');
-
-        return false;
-    }
-    else {
-        templateData = window.templates[templateName];
-
-        return templateData = templateData.replace(/\{\{\{\{([a-zA-Z0-9\.]+)\}\}\}\}/g, function($1, $2) {
-            return $l($2, false, substitutions);
-        });
-    }
-}
-
-
 function fim_renderHandlebarsInPlace(tag, name) {
     console.log(tag);
 
@@ -151,25 +126,19 @@ function fim_hashParse(options) {
     }
 
     if (!('room' in urlHashComponentsMap)) {
-        urlHashComponentsMap['room'] = window.activeLogin.userData.defaultRoomId;
+        urlHashComponentsMap['room'] = window.roomId;
     }
     urlHashComponentsMap['roomId'] = urlHashComponentsMap['room'];
 
-    switch (urlHashComponents[1]) {
-        case 'archive':
-        case 'rooms':
-        case 'uploads':
-        case 'copyright':
-        case 'help':
-        case 'room':
-        case 'settings':
-        case 'editRoom':
-            fim_openView(urlHashComponents[1], urlHashComponentsMap);
-            break;
+    if (!urlHashComponents[1])
+        fim_openView('room', urlHashComponentsMap);
 
-        default: console.log("no action", urlHashComponentsMap);
-            fim_openView('room', urlHashComponentsMap);
-            break;
+    else if ($('#view-' + urlHashComponents[1].split('=')[0]).length > 0)
+        fim_openView(urlHashComponents[1].split('=')[0], urlHashComponentsMap);
+
+    else {
+        console.log("no action", urlHashComponentsMap);
+        fim_openView('room', urlHashComponentsMap);
     }
 }
 
@@ -435,7 +404,38 @@ $.when(
      * @copyright Joseph T. Parsons 2017
      */
     $(document).ready(function() {
+        /* Draw Template */
         fim_renderHandlebarsInPlace($("#entry-template"));
+
+
+
+        /* Private Room Form */
+        $('#privateRoomForm input[name=userName]').autocompleteHelper('users');
+
+        $("#privateRoomForm").submit(function() {
+            console.log("form submitted");
+            var userName = $("#privateRoomForm input[name=userName]").val();
+            var userId = $("#privateRoomForm input[name=userName]").attr('data-id');
+
+            whenUserIdAvailable = function(userId) {
+                window.location.hash = "#room=p" + [window.userId, userId].join(',');
+            };
+
+            if (!userId && userName) {
+                whenUserIdAvailable(userId);
+            }
+            else if (!userName) {
+                dia.error('Please enter a username.');
+            }
+            else {
+                var userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
+                    whenUserIdAvailable(pairs[userName].id);
+                }));
+            }
+
+            return false; // Don't submit the form.
+        });
+
 
 
         if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');
@@ -458,18 +458,6 @@ $.when(
         /*** Image Buttons! ***/
         // todo: move to upload popup
         //$("#imageUploadSubmitButton").button("option", "disabled", true);
-
-
-        /*** Button Click Events ***/
-        $('#icon_note, #messageArchive, a#editRoom').unbind('click'); // Cleanup
-
-        $('#logout').bind('click', function() { standard.logout(); }); // Logout
-        $('a#kick').bind('click', function() { popup.kick(); }); // Kick
-        $('a#manageKick').bind('click', function() { popup.manageKicks({'roomId' : window.roomId}); }); // Manage Kicks
-        $('a#myKicks').bind('click', function() { popup.manageKicks({'userId' : window.userId}); }); // Manage Kicks
-        $('a.editRoomMulti').bind('click', function() { popup.editRoom($(this).attr('data-roomId')); }); // Edit Room
-        $('#icon_settings, #changeSettings, a.changeSettingsMulti').bind('click', function() { popup.userSettings(); }); // User Settings
-        $('#icon_url').bind('click', function() { popup.insertDoc('url'); }); // Upload
 
         // Room Shower Thing
         $('#showMoreRooms').bind('click', function() { $('#roomListShort').slideUp(); $('#roomListLong').slideDown(); });

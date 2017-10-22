@@ -12,10 +12,6 @@
 }
 
 body {
-  padding-top: 3px;
-  padding-left: 5px;
-  padding-right: 5px;
-  padding-bottom: 20px;
   margin: 0px;
   overflow-x: hidden;
   font-family: Ubuntu, Calibria, Arial;
@@ -140,10 +136,6 @@ table#fileUploadInfo td {
 
 /***** Other Crap *****/
 
-#chatContainer {
-  padding: 5px;
-}
-
 .userNameTable {
   width: 150px;
   overflow: hidden;
@@ -159,15 +151,9 @@ table#fileUploadInfo td {
   max-width: 24px;
   max-height: 24px;
 }
-
-.inline {
-  display: inline;
-}
-.inlineBlock {
-  display: inline-block;
-}
-.hidden {
-  display: none;
+.input-group .userNameAvatar > img {
+    max-width: 16px;
+    max-height: 16px;
 }
 
 .embedImage {

@@ -184,6 +184,8 @@ function fim_formatAsUrl(url) {
 }
 
 function fim_showMissedMessage(message) {
+    // todo
+
     if (message.roomId == window.roomId) {
         // we'll eventually probably want to do something fancy here, like offering to scroll to the last-viewed message.
     }
@@ -372,7 +374,7 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
     $.when(deferred).then(function(pairs) {
         var userName = pairs[userId].name,
             userNameFormat = pairs[userId].nameFormat,
-            avatar = pairs[userId].avatar,
+            avatar = pairs[userId].avatar ? pairs[userId].avatar : 'client/images/blankperson.png',
             style = settings.disableFormatting ? '' : pairs[userId].messageFormatting;
 
         tag.attr({
@@ -395,36 +397,56 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
 
         tag.popover({
             content : function() {
-                console.log("hi!");
-                var el = $('<div>');
-                el.append(
-                    $('<div style="width: 600px;">').append(
-                        $('<img style="float: left; max-height: 200px; max-width: 200px;">').attr('src', avatar)
-                    ).append(
-                        $('<span class="userName">').attr({
-                            'data-userId' : userId,
-                            'style' : userNameFormat
-                        }).text(userName)
-                    )
+                var el = $('<div class="row no-gutters">');
+                var data = $('<div class="col">').append(
+                    $('<div class="userName">').attr({
+                        'data-userId' : userId,
+                        'style' : userNameFormat
+                    }).css('font-weight', 'bold').text(userName),
+                    $('<hr>')
                 );
 
                 if (pairs[userId].bio)
-                    el.append($('<span>').text(pairs[userId].bio), $('<br>'));
+                    data.append($('<div>').text(pairs[userId].bio));
 
                 if (pairs[userId].profile)
-                    el.append($('<span>').append($('<em>Profile</em>'), ': ', $('<a>').attr('href', pairs[userId].profile).text(pairs[userId].profile), $('<br>')));
+                    data.append($('<div>').append($('<em><strong>Profile</strong></em>'), ': ', $('<a>').attr('href', pairs[userId].profile).text(pairs[userId].profile)));
 
                 if (pairs[userId].joinDate)
-                    el.append($('<span>').append($('<em>Member Since</em>'), ': ', $('<span>').text(fim_dateFormat(pairs[userId].joinDate, {year : "numeric", month : "numeric", day : "numeric"})), $('<br>'))); // TODO:just date
+                    data.append($('<div>').append($('<em><strong>Member Since</strong></em>'), ': ', $('<span>').text(fim_dateFormat(pairs[userId].joinDate, {year : "numeric", month : "numeric", day : "numeric"})))); // TODO:just date
 
-                return el.html();
+                el.append(
+                    $('<div class="col-sm-auto">').append(
+                        $('<img style="max-height: 200px; max-width: 200px;" class="mr-2">').attr('src', avatar)
+                    ),
+                    data
+                );
+
+                return el.prop('outerHTML');
             },
             html : true,
             trigger : 'hover'
         }).on("show.bs.popover", function(e){
             console.log($(this).data("bs.popover"), $(this).data("bs.popover").tip)
-            $($(this).data("bs.popover").tip).css({"max-width": "400px"});
+            $($(this).data("bs.popover").tip).css({"max-width": "600px"});
         });
+    });
+
+    return tag;
+}
+
+function fim_buildRoomNameTag(tag, roomId, deferred) {
+    $.when(deferred).then(function(pairs) { console.log("pairs: ", roomId, pairs);
+        var roomName = pairs[roomId].name;
+
+        tag.attr({
+            'class': 'roomName',
+            'data-roomId': roomId,
+            'data-roomName': roomName,
+            'tabindex': 1000
+        }).append(
+           $('<a>').attr('href', '#room=' + roomId).text(roomName)
+        );
     });
 
     return tag;
@@ -469,6 +491,10 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
 
 function fim_getUsernameDeferred(userId) {
     return $.when(Resolver.resolveUsersFromIds([userId]));
+}
+
+function fim_getRoomNameDeferred(roomId) {
+    return $.when(Resolver.resolveRoomsFromIds([roomId]));
 }
 
 
@@ -717,6 +743,7 @@ function windowResize() {
         windowHeight
         - ($('#messageListCard').height() - $('#messageListContainer').height())
         - $('#textentryBoxMessage').height()
+        - $('#navbar').height()
         - 50));
 
     //$('#menuParent').css('height', windowHeight - 30); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
@@ -726,7 +753,7 @@ function windowResize() {
 
     if ($("#menu").hasClass("ui-accordion")) $("#menu").accordion("refresh");
 
-    $('body').css('min-height', windowHeight - 1); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
+    //$('body').css('min-height', windowHeight - 1); // Set the body height to equal that of the window; this fixes many gradient issues in theming.
 
     $('.ui-widget-overlay').each(function() {
         $(this).height(windowHeight);
@@ -853,19 +880,29 @@ var autoEntry = function(target, options) {
     this.options = options;
     var _this = this;
 
-    target.append($('<div>').attr('class', 'input-group').append(
-        $('<input type="button" value="Add" class="input-group-addon">').click(function() {
+    target.append(
+        $('<form>').attr('class', 'input-group').append(
+            $('<span>').attr('class', 'input-group-btn').append(
+                $('<button>').attr({
+                    'class' : 'btn btn-success'
+                }).text('Add')
+            ),
+
+            $('<input>').attr({
+                type : "text",
+                name : this.options.name + 'Bridge',
+                id : this.options.name + 'Bridge',
+                class : 'ui-autocomplete-input form-control',
+                autocomplete : 'off'
+            }).autocompleteHelper(this.options.list)
+        ).submit(function() {
             _this.addEntry($("#" + _this.options.name + "Bridge").attr('data-id'), $("#" + _this.options.name + "Bridge").val());
-        }),
-        $('<input>').attr({
-            type : "text",
-            name : this.options.name + 'Bridge',
-            id : this.options.name + 'Bridge',
-            class : 'ui-autocomplete-input form-control',
-            autocomplete : 'off'
-        }).autocompleteHelper(this.options.list),
-        $('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">')
-    ));
+
+            return false;
+        })
+    );
+
+    $('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">').insertAfter(target);
 
     if ('default' in options) {
         this.displayEntries(options.default);
@@ -902,7 +939,9 @@ autoEntry.prototype = {
                 dia.error("Invalid entry.");
             }
             else if ($("span #" + _this.options.name + "SubList" + id).length) {
-                console.log("autoEntry: attempted to add duplicate");
+                dia.info("Duplicate entry.");
+
+                $("#" + _this.options.name + "Bridge").val('');
             }
             else {
                 var nameTag = $('<span>');
@@ -918,17 +957,29 @@ autoEntry.prototype = {
                 $("#" + _this.options.name).val($("#" + _this.options.name).val() + "," + id);
 
                 $("#" + _this.options.name + "List").append(
-                    $("<span>").attr('id', _this.options.name + "SubList" + id).text(
-                        ($("#" + _this.options.name + "List > span").length > 0 ? ', ' : '')
-                    ).append(nameTag)
-                    .append(
-                        $('<span class="close">(<a href="javascript:void(0);">×</a>)</span>').click(function () {
-                            _this.removeEntry(id)
-                        })
-                    )
-                )
+                    $("<div>").attr({
+                        'id' : _this.options.name + "SubList" + id,
+                        'class' : 'input-group input-group-sm m-1',
+                        'style' : 'display: inline-block; width: auto; white-space: nowrap'
+                    }).append(
+                        $('<span>').attr({
+                            'class' : 'input-group-btn',
+                            'style' : 'display: inline-block'
+                        }).append(
+                            $('<button>').attr({
+                                'type' : 'button',
+                                'class' : 'btn btn-danger'
+                            }).text('×').click(function () {
+                                _this.removeEntry(id)
+                            })
+                        ),
 
-                $("#" + _this.options.name + "Bridge").val('');
+                        $('<span>').attr({
+                            'class' : 'input-group-addon',
+                            'style' : 'display: inline-block'
+                        }).append(nameTag)
+                    )
+                );
 
                 if (!suppressEvents && _this.options.onAdd) _this.options.onAdd(id);
             }

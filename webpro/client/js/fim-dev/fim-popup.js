@@ -3,6 +3,26 @@
  ************** Repeat-Action Popup Methods **************
  *********************************************************/
 
+
+function fim_createParentalControls(parent) {
+    jQuery.each(window.serverSettings.parentalControls.parentalAges, function(i, age) {
+        $('select[name=parentalAge]', parent).append($('<option>').attr('value', age).text($l('parentalAges.' + age)));
+    });
+
+
+    jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(index, flag) {
+        $('[name=parentalFlagsList]', parent).append(
+            $('<label>').attr('class', 'btn btn-secondary m-1').text($l('parentalFlags.' + flag)).prepend(
+                $('<input>').attr({
+                    'type' : 'checkbox',
+                    'value' : flag,
+                    'name' : 'parentalFlags'
+                })
+            )
+        );
+    });
+}
+
 var popup = function() {
     return;
 }
@@ -115,23 +135,7 @@ popup.prototype.insertDoc = function() {
                 $('#insertDocParentalAge, #insertDocParentalFlags').remove();
             }
             else {
-                jQuery.each(window.serverSettings.parentalControls.parentalAges, function(index, age) {
-                    $('form#uploadFileForm select[name=parentalAge]').append(
-                        $('<option>').attr('value', age).text($l('parentalAges.' + age))
-                    );
-                });
-
-                jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(index, flag) {
-                    $('form#uploadFileForm [name=parentalFlagsList]').append(
-                        $('<label>').attr('class', 'btn btn-secondary').text($l('parentalFlags.' + flag)).append(
-                            $('<input>').attr({
-                                'type' : 'checkbox',
-                                'value' : flag,
-                                'name' : 'parentalFlags'
-                            })
-                        )
-                    );
-                });
+                fim_createParentalControls($('form#uploadFileForm'));
             }
 
             $('#uploadFileForm').submit(function () {
@@ -207,7 +211,6 @@ popup.prototype.insertDoc = function() {
                         reader.readAsBinaryString(this.files[0]);
                         reader.onloadend = function() {
                             fileContent = window.btoa(reader.result);
-                            md5hash = md5.hex_md5(fileContent);
                         };
 
                         reader2.readAsDataURL(this.files[0]);
@@ -445,24 +448,7 @@ popup.prototype.settings = {
 
             // Parental Ages/Flags
             if (window.serverSettings.parentalControls.parentalEnabled) {
-                // Parental Age Values
-                jQuery.each(window.serverSettings.parentalControls.parentalAges, function(key, age) {
-                    $('#changeSettingsForm select[name=parentalAge]').append(
-                        $('<option>').attr('value', age).text($l('parentalAges.' + age))
-                    );
-                });
-
-                jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(index, flag) {
-                    $('#changeSettingsForm [name=parentalFlagsList]').append(
-                        $('<label>').attr('class', 'btn btn-secondary m-1').text($l('parentalFlags.' + flag)).prepend(
-                            $('<input>').attr({
-                                'type' : 'checkbox',
-                                'value' : flag,
-                                'name' : 'parentalFlags'
-                            })
-                        )
-                    );
-                });
+                fim_createParentalControls($('#changeSettingsForm'));
 
                 // Parental Flags Default
                 jQuery.each(active.parentalFlags, function(key, flag) {
@@ -704,7 +690,7 @@ popup.prototype.uploads = {
                             .append(parentalFlagsFormatted.join(', '))
                     ).append(
                         $('<td align="center">').append(
-                            $('<button>').click(function() {
+                            $('<button>').attr('class', 'btn btn-primary').click(function() {
                                 fimApi.editUserOptions('edit', {
                                     'avatar': serverSettings.installUrl + "file.php?sha256hash=" + active.sha256hash + '&thumbnailWidth=200&thumbnailHeight=200',
                                 }, {
@@ -717,7 +703,7 @@ popup.prototype.uploads = {
                                         }
                                     }
                                 });
-                            }).text('Set to Avatar')
+                            }).text($l("uploads.setToAvatar")).prepend($('<i class="fa fa-picture-o" aria-hidden="true"></i> '))
                         )
                     )
                 );
@@ -786,7 +772,7 @@ popup.prototype.editRoom = {
                 if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, ["post"])
             },
             'onRemove' : function(id) {
-                if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, [])
+                if (action === 'edit') fimApi.editRoomPermissionUser(roomId, id, [""])
             },
             'resolveFromIds' : Resolver.resolveUsersFromIds,
             'resolveFromNames' : Resolver.resolveUsersFromNames
@@ -799,7 +785,7 @@ popup.prototype.editRoom = {
                 if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, ["post"])
             },
             'onRemove' : function(id) {
-                if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, [])
+                if (action === 'edit') fimApi.editRoomPermissionGroup(roomId, id, [""])
             },
             'resolveFromIds' : Resolver.resolveGroupsFromIds,
             'resolveFromNames' : Resolver.resolveGroupsFromNames
@@ -811,22 +797,7 @@ popup.prototype.editRoom = {
             $('#editRoom1ParentalAge, #editRoom1ParentalFlags').remove();
         }
         else {
-            jQuery.each(window.serverSettings.parentalControls.parentalAges, function(i, age) {
-                $('#editRoomForm select[name=parentalAge]').append($('<option>').attr('value', age).text($l('parentalAges.' + age)));
-            });
-
-
-            jQuery.each(window.serverSettings.parentalControls.parentalFlags, function(index, flag) {
-                $('#editRoomForm div[name=parentalFlagsList]').append(
-                    $('<label>').attr('class', 'btn btn-secondary m-1').text($l('parentalFlags.' + flag)).prepend(
-                        $('<input>').attr({
-                            'type' : 'checkbox',
-                            'value' : flag,
-                            'name' : 'parentalFlags'
-                        })
-                    )
-                );
-            });
+            fim_createParentalControls($('#editRoomForm'));
         }
 
 
@@ -989,42 +960,6 @@ popup.prototype.editRoom = {
 
 
 
-/*** START Private Rooms ***/
-
-popup.prototype.privateRoom = function() {
-    $('#modal-privateRoom').modal();
-
-    $('#privateRoomForm input[name=userName]').autocompleteHelper('users');
-
-    $("#privateRoomForm").submit(function() {
-        console.log("form submitted");
-        var userName = $("#privateRoomForm input[name=userName]").val();
-        var userId = $("#privateRoomForm input[name=userName]").attr('data-id');
-
-        whenUserIdAvailable = function(userId) {
-            window.location.hash = "#room=p" + [window.userId, userId].join(',');
-        };
-
-        if (!userId && userName) {
-            whenUserIdAvailable(userId);
-        }
-        else if (!userName) {
-            dia.error('Please enter a username.');
-        }
-        else {
-            var userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
-                whenUserIdAvailable(pairs[userName].id);
-            }));
-        }
-
-        return false; // Don't submit the form.
-    });
-};
-
-/*** END Private Rooms ***/
-
-
-
 
 /*** START Online ***/
 
@@ -1041,7 +976,7 @@ popup.prototype.online = function() {
             jQuery.each(user.rooms, function(roomId, room) {
                 if (roomData.length) roomData.push($('<span>').text(', '));
 
-                roomData.push($('<a>').attr('href', '"#room=' + room.id).text(room.name));
+                roomData.push(fim_buildRoomNameTag($('<span>'), room.id, fim_getRoomNameDeferred(room.id)));
             });
 
             $('#onlineUsers').append($('<tr>').append(
@@ -1066,49 +1001,43 @@ popup.prototype.online = function() {
 
 /*** START Kick Manager ***/
 
-popup.prototype.manageKicks = function(params) {
-    var dateOptions = {year : "numeric", month : "numeric", day : "numeric", hour: "numeric", minute: "numeric", second: "numeric"};
+popup.prototype.kicks = {
+    dateOptions : {year : "numeric", month : "numeric", day : "numeric", hour: "numeric", minute: "numeric", second: "numeric"},
 
-    dia.full({
-        content : $t('manageKicks'),
-        title : 'Manage/View Kicked Users',
-        width : 1000,
-        oF : function() {
-            fimApi.getKicks(params, {
-                'each' : function(kick) {
-                    jQuery.each(kick.kicks, function(kickId, kickData) {
-                        console.log(kickData);
-                        $('#kickedUsers').append(
-                            $('<tr>').append(
-                                $('<td>').append(
-                                    $('<span class="userName userNameTable">').attr({'data-userId' : kick.userId, 'style' : kick.userNameFormat}).text(kick.userName)
-                                )
-                            ).append(
-                                $('<td>').append(
-                                    $('<span class="userName userNameTable">').attr({'data-userId' : kickData.kickerId, 'style' : kickData.kickerNameFormat}).text(kickData.kickerName)
-                                )
-                            ).append(
-                                $('<td>').append(
-                                    $('<span class="roomName roomNameTable">').attr({'data-roomId' : kickData.roomId}).text(kickData.roomName)
-                                )
-                            ).append(
-                                $('<td>').text(fim_dateFormat(kickData.set, dateOptions))
-                            ).append(
-                                $('<td>').text(fim_dateFormat(kickData.expires, dateOptions))
-                            ).append(
-                                $('<td>').append(
-                                    $('<button>').click(function() {
-                                        standard.unkick(kick.userId, kickData.roomId)
-                                    }).text('Unkick')
-                                )
+    init : function() {
+        fimApi.getKicks(params, {
+            'each' : function(kick) {
+                jQuery.each(kick.kicks, function(kickId, kickData) {
+                    console.log(kickData);
+                    $('#kickedUsers').append(
+                        $('<tr>').append(
+                            $('<td>').append(
+                                $('<span class="userName userNameTable">').attr({'data-userId' : kick.userId, 'style' : kick.userNameFormat}).text(kick.userName)
                             )
-                        );
-                    });
-                },
-                'end' : windowDraw
-            });
-        }
-    });
+                        ).append(
+                            $('<td>').append(
+                                $('<span class="userName userNameTable">').attr({'data-userId' : kickData.kickerId, 'style' : kickData.kickerNameFormat}).text(kickData.kickerName)
+                            )
+                        ).append(
+                            $('<td>').append(
+                                $('<span class="roomName roomNameTable">').attr({'data-roomId' : kickData.roomId}).text(kickData.roomName)
+                            )
+                        ).append(
+                            $('<td>').text(fim_dateFormat(kickData.set, dateOptions))
+                        ).append(
+                            $('<td>').text(fim_dateFormat(kickData.expires, dateOptions))
+                        ).append(
+                            $('<td>').append(
+                                $('<button>').click(function() {
+                                    standard.unkick(kick.userId, kickData.roomId)
+                                }).text('Unkick')
+                            )
+                        )
+                    );
+                });
+            }
+        });
+    }
 };
 
 /*** END Kick Manager ***/
@@ -1119,44 +1048,38 @@ popup.prototype.manageKicks = function(params) {
 /*** START Kick ***/
 
 popup.prototype.kick = function() {
-    dia.full({
-        content : $t('kick'),
-        title : 'Kick User',
-        id : 'kickUserDialogue',
-        width : 500,
-        oF : function() {
-            $('#userName').autocompleteHelper('users');
-            $('#roomNameKick').autocompleteHelper('rooms');
+    $('#modal-kick').modal();
 
-            $("#kickUserForm").submit(function() {
-                var userName = $('#kickUserForm > #userName').val();
-                var userId = $("#kickUserForm > #userName").attr('data-id');
-                var roomName = $('#kickUserForm > #roomNameKick').val();
-                var roomId = $("#kickUserForm > #roomNameKick").attr('data-id');
-                var length = Math.floor(Number($('#kickUserForm > #time').val() * Number($('#kickUserForm > #interval > option:selected').attr('value'))));
+    $('#userName').autocompleteHelper('users');
+    $('#roomNameKick').autocompleteHelper('rooms');
 
-                var userIdDeferred = true;
-                var roomIdDeferred = true;
+    $("#kickUserForm").submit(function() {
+        var userName = $('#kickUserForm > #userName').val();
+        var userId = $("#kickUserForm > #userName").attr('data-id');
+        var roomName = $('#kickUserForm > #roomNameKick').val();
+        var roomId = $("#kickUserForm > #roomNameKick").attr('data-id');
+        var length = Math.floor(Number($('#kickUserForm > #time').val() * Number($('#kickUserForm > #interval > option:selected').attr('value'))));
 
-                if (roomName && !roomId) {
-                    userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
-                        userId = pairs[userName].id;
-                    }));
-                }
+        var userIdDeferred = true;
+        var roomIdDeferred = true;
 
-                if (roomName && !roomId) {
-                    roomIdDeferred = $.when(Resolver.resolveRoomsFromNames([roomName]).then(function(pairs) {
-                        roomId = pairs[roomName].id;
-                    }));
-                }
-
-                $.when(userIdDeferred, roomIdDeferred).then(function() {
-                    standard.kick(userId, roomId, length);
-                });
-
-                return false;
-            });
+        if (roomName && !roomId) {
+            userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
+                userId = pairs[userName].id;
+            }));
         }
+
+        if (roomName && !roomId) {
+            roomIdDeferred = $.when(Resolver.resolveRoomsFromNames([roomName]).then(function(pairs) {
+                roomId = pairs[roomName].id;
+            }));
+        }
+
+        $.when(userIdDeferred, roomIdDeferred).then(function() {
+            standard.kick(userId, roomId, length);
+        });
+
+        return false;
     });
 
     return false;
@@ -1414,34 +1337,48 @@ popup.prototype.room = {
 
         fimApi.getRooms({
             'id' : _this.options.roomId,
-            'permLevel' : 'view'
-        }, {'each' : function(roomData) {
-            if (!roomData.permissions.view) { // If we can not view the room
-                window.roomId = false; // Set the global roomId false.
-                window.location.hash = "#rooms";
-                dia.error('You have been restricted access from this room. Please select a new room.');
+        }, {
+            each : function(roomData) {
+                if (!roomData.permissions.view) { // If we can not view the room
+                    window.roomId = false; // Set the global roomId false.
+                    window.location.hash = "#rooms";
+                    dia.error('You have been restricted access from this room. Please select a new room.');
+                }
+
+                else if (!roomData.permissions.post) { // If we can view, but not post
+                    dia.error('You are not allowed to post in this room. You will be able to view it, though.');
+                    _this.disableSender();
+                }
+
+                else { // If we can both view and post.
+                    _this.enableSender();
+                }
+
+
+                if (roomData.permissions.view) { // If we can view the room...
+                    window.roomId = roomData.id;
+
+                    $('#roomName').html(roomData.name); // Update the room name.
+                    $('#topic').html(roomData.topic); // Update the room topic.
+
+                    /*** Get Messages ***/
+                    _this.populateMessages();
+                }
+
+                if (!(roomData.permissions.properties || roomData.permissions.grant)) {
+                    $('#active-view-room #chatContainer button[name=editRoom]').hide();
+                }
+            },
+
+            exception : function(exception) {
+                if (exception.string === 'idNoExist') {
+                    window.roomId = false; // Set the global roomId false.
+                    window.location.hash = "#rooms";
+                    dia.error('That room doesn\'t exist. Please select a room.');
+                }
+                else { fimApi.getDefaultExceptionHandler()(exception); }
             }
-
-            else if (!roomData.permissions.post) { // If we can view, but not post
-                dia.error('You are not allowed to post in this room. You will be able to view it, though.');
-                _this.disableSender();
-            }
-
-            else { // If we can both view and post.
-                _this.enableSender();
-            }
-
-
-            if (roomData.permissions.view) { // If we can view the room...
-                window.roomId = roomData.id;
-
-                $('#roomName').html(roomData.name); // Update the room name.
-                $('#topic').html(roomData.topic); // Update the room topic.
-
-                /*** Get Messages ***/
-                _this.populateMessages();
-            }
-        }});
+        });
 
 
         /* Populate Active Users for the Room */
@@ -1457,6 +1394,14 @@ popup.prototype.room = {
                 $('#activeUsers > ul').append($('<li>').append(fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)));
             }
         });
+    },
+
+    setRoom : function(roomId) {
+        if (this.options.roomId != roomId) {
+            this.init({
+                'roomId' : roomId
+            });
+        }
     },
 
     eventListener : function() {

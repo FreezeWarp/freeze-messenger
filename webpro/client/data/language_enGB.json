@@ -318,9 +318,10 @@
   "statsNumResultsHook" : "",
   "statsPlace" : "#",
   "statsRoomList" : "Room List (IDs): ",
-  "template" : { "activeUsers" : "Who's Online",
+  "template" : {
+    "activeUsers" : "Who's Online",
     "activeUsersCat" : "Online",
-    "admin" : "AdminCP",
+    "admin" : "Admin Control Panel",
     "adminBanUser" : "Ban a User",
     "adminCensor" : "Modify Censor",
     "adminHooks" : "Modify Hooks",
@@ -396,5 +397,16 @@
   "uploadNewFileComputer" : "Upload from Computer",
   "uploadNewFilePreview" : "Preview & Submit",
   "uploadNewFileSubmitButton" : "Upload",
-  "uploadNewFileTitle" : "Upload New File"
+  "uploadNewFileTitle" : "Upload New File",
+  "uploads" : {
+    "setToAvatar" : "Set to Avatar"
+  },
+  "kicks" : {
+    "userName" : "User",
+    "kickedBy" : "Kicked By",
+    "inRoom" : "In Room",
+    "onDate" : "On",
+    "untilDate" : "Until",
+    "actions" : "Actions"
+  }
 }

@@ -19,7 +19,11 @@ standard.prototype.initialLogin = function(options) {
             }});
         }
 
-        fim_hashParse({room : activeLogin.userData.defaultRoomId}); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
+        if (!window.roomId) {
+            window.roomId = activeLogin.userData.defaultRoomId ? activeLogin.userData.defaultRoomId : 1;
+        }
+
+        fim_hashParse(); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
     };
 
     standard.login(options);
@@ -71,31 +75,26 @@ standard.prototype.login = function(options) {
 
             // TODO: only once
             fimApi.getRooms({
-                roomIds : window.activeLogin.userData.favRooms
+                roomIds : window.activeLogin.userData.favRooms.concat(window.activeLogin.userData.watchRooms).concat(window.serverSettings.officialRooms)
             }, {
                 begin : function() {
-                    $('#favRoomsList').html('');
+                    $('#navbar div[name=favRoomsList]').html('');
+                    $('#navbar div[name=watchRoomsList]').html('');
                 },
                 each : function(roomData) {
-                    console.log(roomData);
-
-                    var html = $('<li>').append(
-                        $('<a>').attr('href', '#room=' + roomData.id).text(roomData.name)
-                    );
-
-                    //TODO
-                    //if (roomData.ownerId = window.activeLogin.userId)
-                    //    $('#ownedRoomsList').append(html);
-
+                    var html = $('<a>').attr({
+                        'href' : '#room=' + roomData.id,
+                        'class' : 'dropdown-item'
+                    }).text(roomData.name);
+console.log(roomData, "a");
                     if (window.activeLogin.userData.favRooms.indexOf(roomData.id) != -1)
-                        $('#favRoomsList').append(html);
+                        $('#navbar div[name=favRoomsList]').append(html);
 
                     if (window.activeLogin.userData.watchRooms.indexOf(roomData.id) != -1)
-                        $('#watchRoomsList').append(html);
+                        $('#navbar div[name=watchRoomsList]').append(html);
 
-                    //TODO
-                    //if (roomData.official)
-                    //    $('#officialRoomsList').append(html);
+                    if (roomData.official)
+                        $('#navbar div[name=officialRoomsList]').append(html);
                 }
             });
 

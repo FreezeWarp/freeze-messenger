@@ -1261,6 +1261,7 @@ class fimDatabase extends DatabaseSQL
             'lastMessageTimeMax' => 0,
             'showHidden'         => true, // This is true by default, because getRoom() should be able to load hidden rooms by default.
             'showDeleted'        => false,
+            'onlyOfficial'       => false,
             'roomNameSearch'     => false,
             'columns'            => ['id', 'name', 'topic', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount'],
         ), $options);
@@ -1277,6 +1278,8 @@ class fimDatabase extends DatabaseSQL
         // Modify Query Data for Directives
       	if (!$options['showDeleted']) $conditions['both']['!options'] = $this->int(fimRoom::ROOM_DELETED, 'bAnd');
         if (!$options['showHidden']) $conditions['both']['!options'] = $this->int(fimRoom::ROOM_HIDDEN, 'bAnd');
+
+        if ($options['onlyOfficial']) $conditions['both']['options'] = $this->int(fimRoom::ROOM_OFFICIAL, 'bAnd');
 
         if (count($options['roomIds']) > 0) $conditions['both']['either']['id'] = $this->in($options['roomIds']);
         if (count($options['roomNames']) > 0) $conditions['both']['either']['name'] = $this->in($options['roomNames']);

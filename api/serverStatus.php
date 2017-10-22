@@ -81,6 +81,8 @@ echo new Http\ApiData([
             'hiddenRooms' => (bool) fimConfig::$hiddenRooms,
         ),
 
+        'officialRooms' => new Http\ApiOutputList($database->getRooms(['onlyOfficial' => true])->getColumnValues('id')),
+
         'formatting' => array(
             'fonts' => fimConfig::$defaultFormattingFont ? fimConfig::$fonts : false,
             'highlight' => fimConfig::$defaultFormattingHighlight,

@@ -34,7 +34,7 @@ var fimApi = function() {
                 requestSettings.each(value);
             });
 
-            requestSettings.end(firstElement, json.metadata);
+            requestSettings.end(firstElement, json.metadata );
         }
     };
 

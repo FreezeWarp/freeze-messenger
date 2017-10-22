@@ -49,7 +49,7 @@
 
     <!-- END Scripts -->
 </head>
-<body>
+<body class="bg-light">
 
 <script id="entry-template" type="text/x-handlebars-template">
     <div id="modal-login" class="modal">
@@ -151,31 +151,6 @@
         </div>
     </div>
 
-    <div id="modal-privateRoom" class="modal" tabindex="-1">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Enter Private Room</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form action="index.php?action=privateRoom&phase=2" method="post" id="privateRoomForm">
-                    <div class="modal-body">
-                        <div class="input-group">
-                            <label class="input-group-addon" for="userName">Username</label>
-                            <input type="text" name="userName" class="form-control" />
-                        </div>
-                        <small><span style="margin-left: 10px;">The other user you would like to talk to.</span></small>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn">Go</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <div id="modal-online" class="modal" tabindex="-1">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -207,13 +182,13 @@
 
     <div id="modal-insertDoc" class="modal" tabindex="-1">
         <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">{{fileUploadLegend}}</h3>
-                </div>
+            <form method="post" enctype="multipart/form-data" id="uploadFileForm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">{{fileUploadLegend}}</h3>
+                    </div>
 
-                <div class="modal-body">
-                    <form method="post" enctype="multipart/form-data" id="uploadFileForm" class="row">
+                    <div class="modal-body row">
                         <div class="col">
                             <div id="uploadFile">
                                 <div class="input-group">
@@ -224,7 +199,7 @@
                                             type="file"
                                             class="form-control"/><br/>
                                 </div>
-                                <span class="indent"><small>{{fileUploadFileBlurb}}</small></span><br/><br/>
+                                <small class="form-text text-muted">{{fileUploadFileBlurb}}</small><br/>
                             </div>
 
                             <div id="uploadParentalAge">
@@ -232,23 +207,18 @@
                                     <span class="input-group-addon">{{fileUploadAgeLabel}}</span>
                                     <select name="parentalAge" class="form-control"></select>
                                 </div>
-                                <span class="indent"><small>{{fileUploadAgeBlurb}}</small></span><br/><br/>
+                                <small class="form-text text-muted">{{fileUploadAgeBlurb}}</small><br />
                             </div>
 
                             <div id="uploadParentalFlags">
-                                <div class="btn-group btn-group-vertical" data-toggle="buttons" name="parentalFlagsList"></div><br/>
-                                <span class="indent"><small>{{fileUploadFlagsBlurb}}</small></span><br/><br/>
+                                <div name="parentalFlagsList"></div>
+                                <small class="form-text text-muted">{{fileUploadFlagsBlurb}}</small><br/>
                             </div>
-
-                            <button onclick="$('#modal-insertDoc').modal('hide');" type="button" class="btn btn-secondary">
-                                {{fileUploadCancel}}
-                            </button>
-                            <button type="submit" class="btn btn-primary">{{fileUploadSend}}</button>
                         </div>
 
                         <div class="col-sm-auto">
                             <h3>{{fileUploadInfoLegend}}</h3>
-                            <table id="fileUploadInfo" class="table">
+                            <table id="fileUploadInfo" class="table table-sm">
                                 <thead>
                                 <tr>
                                     <th>{{fileUploadInfoExtensions}}</th>
@@ -262,9 +232,16 @@
                             <h3>{{fileUploadPreviewLegend}}</h3>
                             <div id="uploadFileFormPreview"></div>
                         </div>
-                    </form>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button onclick="$('#modal-insertDoc').modal('hide');" type="button" class="btn btn-secondary">
+                            {{fileUploadCancel}}
+                        </button>
+                        <button type="submit" class="btn btn-success">{{fileUploadSend}}</button>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -302,7 +279,22 @@
         </div>
     </div>
 
-    <div id="modal-dynamicError" class="modal" tabindex="-4">
+    <div id="modal-dynamicInfo" class="modal" tabindex="-4">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title">Error</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-dynamicError" class="modal" tabindex="-5">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-warning">
@@ -317,7 +309,7 @@
         </div>
     </div>
 
-    <div id="modal-dynamicException" class="modal" tabindex="-5">
+    <div id="modal-dynamicException" class="modal" tabindex="-6">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-warning">
@@ -332,8 +324,61 @@
         </div>
     </div>
 
-    <div id="page" data-role="page" class="row"><!-- START links -->
-        <div id="menuParent" class="col-med-auto" style="width: 300px;" role="tablist">
+    <div id="page" data-role="page" class="mt-1 ml-1 mr-1"><!-- START links -->
+        <nav class="navbar sticky-top navbar-expand-md navbar-dark bg-primary mb-2 rounded" id="navbar">
+            <a class="navbar-brand" href="#">FlexChat</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    </li>
+
+                    <li class="nav-item dropdown dropdown-primary">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarRooms" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Quick Rooms
+                        </a>
+                        <div class="dropdown-menu" name="roomMenu" aria-labelledby="navbarRooms">
+                            <h6 class="dropdown-header" name="favRoomsHeader">Favourite Rooms</h6>
+                            <div name="favRoomsList"></div>
+                            <h6 class="dropdown-header" name="watchRoomsHeader">Watched Rooms</h6>
+                            <div name="watchRoomsList"></div>
+                            <h6 class="dropdown-header" name="officialRoomsHeader">Promoted Rooms</h6>
+                            <div name="officialRoomsList"></div>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#rooms">All Rooms</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#editRoom">Create a Room</a>
+                        </div>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="#settings">Settings</a>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            More
+                        </a>
+                        <div class="dropdown-menu" name="roomMenu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="javascript:popup.online()">View Active Users</a>
+                            <a class="dropdown-item" href="#uploads">View My Uploads</a>
+                            <a class="dropdown-item" href="javascript:standard.logout()">Logout</a>
+                        </div>
+                    </li>
+                </ul>
+
+                <form class="form-inline my-2 my-lg-0" id="privateRoomForm">
+                    <input class="form-control mr-sm-2" name="userName" type="search" placeholder="Enter Private Message" aria-label="Enter Private Message">
+                    <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Go</button>
+                </form>
+            </div>
+        </nav>
+
+        <!--<div id="menuParent" class="col-med-auto" style="width: 300px;" role="tablist">
             <div class="card">
                 <a data-toggle="collapse" href="#quickCatContents" aria-expanded="true" aria-controls="quickCatContents" accesskey="v">
                     <div class="card-header" role="tab" id="quickCat">
@@ -351,13 +396,11 @@
                             <li style="border-bottom: 1px solid;"><a href="javascript:popup.privateRoom();" accesskey="p">{{template.privateIM}}</a>
                             </li>
                             <li><a href="javascript:popup.online()" id="online" accesskey="o">{{template.activeUsers}}</a></li>
-                            <li style="border-bottom: 1px solid;"><a href="javascript:popup.viewStats();" accesskey="t">{{template.stats}}</a>
-                            </li>
                             <li><a href="#uploads" id="viewUploads" accesskey="l">{{template.viewUploads}}</a></li>
                             <li><a href="#settings" id="changeSettings" accesskey="s">{{template.changeSettings}}</a></li>
-                            <li><a href="javascript:void(0)" id="myKicks" accesskey="k">{{template.myKicks}}</a></li>
-                            <li><a href="javascript:void(0)" id="logout" accesskey="x">{{template.logout}}</a></li>
-                            <li><a href="javascript:void(0)" id="login" accesskey="i">{{template.login}}</a></li>
+                            <li><a href="#kicks" accesskey="k">{{template.myKicks}}</a></li>
+                            <li><a href="javascript:standard.logout()" id="logout" accesskey="x">{{template.logout}}</a></li>
+                            <li><a href="javascript:popup.login()" id="login" accesskey="i">{{template.login}}</a></li>
                             <li style="border-top: 1px solid;"><a href="#copyright" id="copyrightLink">{{template.allCopyrights}}</a>
                             </li>
                         </ul>
@@ -404,10 +447,10 @@
                     </div>
                 </div>
             </div>
-        </div><!-- END links -->
+        </div>-->
 
 
-        <div id="content" data-role="content" class="col">
+        <div id="content" data-role="content">
             <{{!}}script id="view-room" type="text/x-handlebars-template">
             <div id="roomTemplateContainer">
                 <div id="chatContainer" class="card">
@@ -422,25 +465,35 @@
                                     <div class="btn-toolbar text-center" role="toolbar">
                                         <button type="button"
                                                 class="btn btn-primary mx-1"
-                                                title="Settings"
-                                                onclick="location.hash='#settings'">
-                                            <i class="fa fa-cog" aria-hidden="true"></i>
+                                                title="Edit Room"
+                                                name="editRoom"
+                                                onclick="location.hash='#editRoom'">
+                                            <i class="fa fa-cog" aria-hidden="true"></i> Edit Room
+                                        </button>
+
+                                        <button type="button"
+                                                class="btn btn-primary mx-1"
+                                                title="Top Posters"
+                                                name="topPosters"
+                                                onclick="popup.viewStats()">
+                                            <i class="fa fa-list-ol" aria-hidden="true"></i> Top Posters
                                         </button>
 
                                         <button type="button"
                                                 class="btn btn-primary mx-1"
                                                 title="Archive"
+                                                name="archive"
                                                 onclick="location.hash='#archive'">
-                                            <i class="fa fa-history"></i>
+                                            <i class="fa fa-history"></i> Archive
                                         </button>
 
-                                        <button type="button"
+                                        <!--<button type="button"
                                                 class="btn btn-primary mx-1"
                                                 title="Help"
                                                 accesskey="?"
                                                 onclick="location.hash='#help'">
                                             <i class="fa fa-question-circle"></i>
-                                        </button>
+                                        </button>-->
                                     </div>
                                 </div>
                             </div>
@@ -462,7 +515,7 @@
                                                 title="Upload File"
                                                 onclick="popup.insertDoc();"
                                                 accesskey="u">
-                                            <i class="fa fa-upload" aria-hidden="true"></i>
+                                            <i class="fa fa-upload" aria-hidden="true"></i> Upload File
                                         </button>
                                     </div>
                                     <div class="col" style="text-align: right;">
@@ -470,7 +523,7 @@
                                                 class="btn btn-primary"
                                                 id="icon_submit"
                                                 title="Submit Message">
-                                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                            <i class="fa fa-paper-plane" aria-hidden="true"></i> Send
                                         </button>
                                     </div>
                                 </div>
@@ -542,8 +595,8 @@
 
 
             <{{!}}script id="view-archive" type="text/x-handlebars-template">
-            <form id="archiveSearch" action="#" method="get" style="text-align: center;">
-                <div class="form-row mx-auto" style="max-width: 800px">
+            <form id="archiveSearch" action="#" method="get" style="text-align: center;" class="card">
+                <div class="form-row card-body mx-auto" style="max-width: 800px">
                     <div class="form-group col-md-6">
                         <label>{{archiveSearchTextLabel}}</label>
                         <input type="text" name="searchText" class="form-control" />
@@ -554,31 +607,48 @@
                         <input type="text" name="searchUser" class="form-control" />
                     </div>
                 </div>
-            </form><br/><br/>
+            </form>
 
-            <div align="center">
-                <button name="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
-                <button name="export" class="btn btn-secondary">{{archiveExportButton}}</button>
-                <button name="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
-            </div><br />
+            <div class="card">
+                <div align="center" class="card-header row">
+                    <div class="col">
+                        <button name="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
+                    </div>
+                    <div class="col">
+                        <button name="export" class="btn btn-secondary"><span class="fa fa-floppy-o"></span> {{archiveExportButton}}</button>
+                    </div>
+                    <div class="col">
+                        <button name="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
+                    </div>
+                </div>
 
-            <table class="messageTable table table-striped table-sm">
-                <thead class="thead-inverse">
-                <tr>
-                    <th style="width: 20%;">{{archiveHeaderUser}}</th>
-                    <th style="width: 20%;">{{archiveHeaderTime}}</th>
-                    <th style="width: 50%;">{{archiveHeaderMessage}}</th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody></tbody>
-            </table><br/>
+                <div class="card-body p-0">
+                    <table class="messageTable table table-striped table-sm">
+                        <thead class="table-primary">
+                        <tr>
+                            <th style="width: 20%;">{{archiveHeaderUser}}</th>
+                            <th style="width: 20%;">{{archiveHeaderTime}}</th>
+                            <th style="width: 50%;">{{archiveHeaderMessage}}</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
 
-            <div align="center">
-                <button name="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
-                <button name="export" class="btn btn-secondary">{{archiveExportButton}}</button>
-                <button name="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
+                <div align="center" class="card-header row">
+                    <div class="col">
+                        <button name="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
+                    </div>
+                    <div class="col">
+                        <button name="export" class="btn btn-secondary"><span class="fa fa-floppy-o"></span> {{archiveExportButton}}</button>
+                    </div>
+                    <div class="col">
+                        <button name="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
+                    </div>
+                </div>
             </div>
+
             <{{!}}/script>
 
             <{{!}}script id="view-rooms" type="text/x-handlebars-template">
@@ -612,284 +682,306 @@
                 </table>
             </form><br/>
 
-            <div align="center">
-                <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
-                <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
-            </div><br />
+            <div class="card">
+                <div class="card-header" align="center">
+                    <div class="row">
+                        <div class="col">
+                            <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
+                        </div>
+                        <div class="col">
+                            <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
+                        </div>
+                    </div>
+                </div>
 
-            <table class="table table-sm">
-                <thead class="thead-inverse">
-                <tr>
-                    <th style="width: 20%;">{{selectRoomHeaderName}}</th>
-                    <th style="width: 60%;">{{selectRoomHeaderTopic}}</th>
-                    <th style="width: 20%;">{{selectRoomHeaderActions}}</th>
-                </tr>
-                </thead>
-                <tbody id="roomTableHtml"></tbody>
-            </table><br/>
+                <table class="table card-content table-sm table-striped">
+                    <thead class="table-primary">
+                    <tr>
+                        <th style="width: 20%;">{{selectRoomHeaderName}}</th>
+                        <th style="width: 60%;">{{selectRoomHeaderTopic}}</th>
+                        <th style="width: 20%;">{{selectRoomHeaderActions}}</th>
+                    </tr>
+                    </thead>
+                    <tbody id="roomTableHtml"></tbody>
+                </table>
 
-            <div align="center">
-                <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
-                <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
-            </div>
+                <div class="card-footer" align="center">
+                    <div class="row">
+                        <div class="col">
+                            <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
+                        </div>
+                        <div class="col">
+                            <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
+                        </div>
+                    </div>
+                </div>
             <{{!}}/script>
 
             <{{!}}script id="view-settings" type="text/x-handlebars-template">
-            <ul class="nav nav-tabs justify-content-center" role="tablist" id="settingsTabs">
-                <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#settings5">{{settingsTabGeneral}}</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsTabPrivacy}}</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings1">{{settingsTabDisplay}}</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings4">{{settingsTabFormatting}}</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings2">{{settingsTabHacks}}</a></li>
-            </ul>
             <form action="#" method="post" id="changeSettingsForm">
-                <div class="tab-content p-4" id="settingsTabsContent">
-                    <div class="tab-pane fade" role="tabpanel" id="settings1">
-                        <!--
-                        <div id="settings1theme">
-                            <label for="theme">{{settingsThemeLabel}}</label>
-                            <select name="theme" id="theme">
-                                <option value="high-contrast">{{settingsThemeHighContrast}}</option>
-                                <option value="absolution">{{settingsThemeAbsolution}}</option>
-                                <option value="cupertino">{{settingsThemeCupertino}}</option>
-                                <option value="dark-hive">{{settingsThemeDarkhive}}</option>
-                                <option value="humanity">{{settingsThemeHumanity}}</option>
-                                <option value="ui-darkness">{{settingsThemejQueryUIDarkness}}</option>
-                                <option value="ui-lightness">{{settingsThemejQueryUILightness}}</option>
-                                <option value="memetically-pink">{{settingsThemeMemeticallyPink}}</option>
-                                <option value="metro">{{settingsThemeMetro}}</option>
-                                <option value="start">{{settingsThemeStart}}</option>
-                                <option value="trontastic">{{settingsThemeTrontastic}}</option>
-                                <option value="vader">{{settingsThemeVader}}</option>
-                            </select><br/>
-                            <small><span style="margin-left: 10px;">{{settingsThemeBlurb}}</span></small>
-                            <br/><br/>
-                        </div>
-                        -->
+                <div class="card">
+                    <div class="card-header p-0">
+                        <ul class="nav nav-tabs justify-content-center" role="tablist" id="settingsTabs">
+                            <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#settings5">{{settingsTabGeneral}}</a></li>
+                            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsTabPrivacy}}</a></li>
+                            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings1">{{settingsTabDisplay}}</a></li>
+                            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings4">{{settingsTabFormatting}}</a></li>
+                            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings2">{{settingsTabHacks}}</a></li>
+                        </ul>
+                    </div>
 
-                        <div id="settings1fontsize">
-                            <label for="fontsize">{{settingsFontsizeLabel}}</label>
-                            <select name="fontsize" id="fontsize">
-                                <option value=".7">{{settingsFontsize50}}</option>
-                                <option value=".8">{{settingsFontsize60}}</option>
-                                <option value=".9">{{settingsFontsize75}}</option>
-                                <option value="1">{{settingsFontsize100}}</option>
-                                <option value="1.2">{{settingsFontsize125}}</option>
-                                <option value="1.4">{{settingsFontsize140}}</option>
-                                <option value="1.5">{{settingsFontsize150}}</option>
-                            </select><br/>
-                            <small><span style="margin-left: 10px;">{{settingsFontsizeBlurb}}</span></small>
-                            <br/><br/>
-                        </div>
+                    <div class="card-body">
+                        <div class="tab-content p-4" id="settingsTabsContent">
+                            <div class="tab-pane fade" role="tabpanel" id="settings1">
+                                <!--
+                                <div id="settings1theme">
+                                    <label for="theme">{{settingsThemeLabel}}</label>
+                                    <select name="theme" id="theme">
+                                        <option value="high-contrast">{{settingsThemeHighContrast}}</option>
+                                        <option value="absolution">{{settingsThemeAbsolution}}</option>
+                                        <option value="cupertino">{{settingsThemeCupertino}}</option>
+                                        <option value="dark-hive">{{settingsThemeDarkhive}}</option>
+                                        <option value="humanity">{{settingsThemeHumanity}}</option>
+                                        <option value="ui-darkness">{{settingsThemejQueryUIDarkness}}</option>
+                                        <option value="ui-lightness">{{settingsThemejQueryUILightness}}</option>
+                                        <option value="memetically-pink">{{settingsThemeMemeticallyPink}}</option>
+                                        <option value="metro">{{settingsThemeMetro}}</option>
+                                        <option value="start">{{settingsThemeStart}}</option>
+                                        <option value="trontastic">{{settingsThemeTrontastic}}</option>
+                                        <option value="vader">{{settingsThemeVader}}</option>
+                                    </select><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsThemeBlurb}}</span></small>
+                                    <br/><br/>
+                                </div>
+                                -->
 
-                        <div id="settings1showAvatars">
-                            <label>
-                                <input type="checkbox" name="showAvatars" id="showAvatars" value="true"/>
-                                {{settingsShowAvatarsLabel}}
-                            </label><br/>
-                            <small><span style="margin-left: 10px;">{{settingsShowAvatarsBlurb}}</span></small>
-                            <br/><br/>
-                        </div>
+                                <div id="settings1fontsize">
+                                    <label for="fontsize">{{settingsFontsizeLabel}}</label>
+                                    <select name="fontsize" id="fontsize">
+                                        <option value=".7">{{settingsFontsize50}}</option>
+                                        <option value=".8">{{settingsFontsize60}}</option>
+                                        <option value=".9">{{settingsFontsize75}}</option>
+                                        <option value="1">{{settingsFontsize100}}</option>
+                                        <option value="1.2">{{settingsFontsize125}}</option>
+                                        <option value="1.4">{{settingsFontsize140}}</option>
+                                        <option value="1.5">{{settingsFontsize150}}</option>
+                                    </select><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsFontsizeBlurb}}</span></small>
+                                    <br/><br/>
+                                </div>
 
-                        <div id="settings1reversePostOrder">
-                            <label>
-                                <input type="checkbox" name="reversePostOrder" id="reversePostOrder" value="true"/>
-                                {{settingsReversePostOrderLabel}}
-                            </label><br/>
-                            <small><span style="margin-left: 10px;">{{settingsReversePostOrderBlurb}}</span></small>
-                            <br/><br/>
-                        </div>
+                                <div id="settings1showAvatars">
+                                    <label>
+                                        <input type="checkbox" name="showAvatars" id="showAvatars" value="true"/>
+                                        {{settingsShowAvatarsLabel}}
+                                    </label><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsShowAvatarsBlurb}}</span></small>
+                                    <br/><br/>
+                                </div>
 
-                        <div id="settings1audioDing">
-                            <label>
-                                <input type="checkbox" name="audioDing" id="audioDing" value="true"/>
-                                {{settingsAudioDingLabel}}
-                            </label><br/>
-                            <small><span style="margin-left: 10px;">{{settingsAudioDingBlurb}}</span></small>
-                            <br/><br/>
+                                <div id="settings1reversePostOrder">
+                                    <label>
+                                        <input type="checkbox" name="reversePostOrder" id="reversePostOrder" value="true"/>
+                                        {{settingsReversePostOrderLabel}}
+                                    </label><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsReversePostOrderBlurb}}</span></small>
+                                    <br/><br/>
+                                </div>
+
+                                <div id="settings1audioDing">
+                                    <label>
+                                        <input type="checkbox" name="audioDing" id="audioDing" value="true"/>
+                                        {{settingsAudioDingLabel}}
+                                    </label><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsAudioDingBlurb}}</span></small>
+                                    <br/><br/>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" role="tabpanel" id="settings6">
+                                <div id="settings6ignoreList">
+                                    <label for="ignoreList">{{settingsIgnoreListLabel}}</label>
+                                    <span id="ignoreListContainer"></span><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsIgnoreListBlurb}}</span></small>
+                                    <br/>
+                                    <small><span style="margin-left: 10px;"><span id="ignoreListList"></span></span></small>
+                                    <br/><br/>
+                                </div>
+
+                                <div id="settings6friendsList">
+                                    <label for="friendsList">{{settingsFriendsListLabel}}</label>
+                                    <span id="friendsListContainer"></span><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsFriendsListBlurb}}</span></small>
+                                    <br/>
+                                    <small><span style="margin-left: 10px;"><span id="friendsListList"></span></span></small>
+                                    <br/><br/>
+                                </div>
+
+                                <div id="settings6privacyLevel">
+                                    <fieldset>
+                                        <legend>{{settingsPrivacyLegend}}</legend>
+                                        <label><input type="radio" name="privacyLevel" value="allow">{{settingsPrivacyAllowAll}}</label><br/>
+                                        <small><span style="margin-left: 10px;">{{settingsPrivacyAllowAllBlurb}}</span></small>
+                                        <br/><br/><label><input type="radio" name="privacyLevel" value="friends">{{settingsPrivacyAllowFriends}}</label><br/>
+                                        <small><span style="margin-left: 10px;">{{settingsPrivacyAllowFriendsBlurb}} </span></small>
+                                        <br/><br/><label><input type="radio" name="privacyLevel" value="block">{{settingsPrivacyAllowNone}}</label><br/>
+                                        <small><span style="margin-left: 10px;">{{settingsPrivacyAllowNoneBlurb}} </span></small>
+                                    </fieldset>
+                                    <br/><br/>
+                                </div>
+                                <input type="hidden" name="ignoreList" id="ignoreList"/></div>
+
+                            <div class="tab-pane fade" role="tabpanel" id="settings2">
+                                <div id="settings2disableFx">
+                                    <label><input type="checkbox" name="disableFx" id="disableFx" value="true"/>{{settingsDisableFxLabel}}</label><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsDisableFxBlurb}}</span></small>
+                                    <br/><br/>
+                                </div>
+
+                                <div id="settings2disableRightClick">
+                                    <label>
+                                        <input type="checkbox" name="disableRightClick" id="disableRightClick" value="true"/>
+                                        {{settingsDisableRightClickLabel}}
+                                    </label><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsDisableRightClickBlurb}}</span></small>
+                                    <br/><br/>
+                                </div>
+
+                                <div id="settings2webkitNotifications">
+                                    <label>
+                                        <input type="checkbox" name="webkitNotifications" id="webkitNotifications" value="true"/>
+                                        {{settingsWebkitNotificationsLabel}}
+                                    </label><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsWebkitNotificationsBlurb}}</span></small>
+                                    <br/><br/>
+                                </div>
+
+                                <div id="settings2audioVolume">
+                                    <label for="audioVolume">{{settingsAudioVolumeLabel}}</label>
+                                    <input type="range" min="0" max="1" name="audioVolume" id="audioVolume" value=".5" step=".01"/><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsAudioVolumeBlurb}}</span></small>
+                                    <br/><br/>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" role="tabpanel" id="settings4">{{settingsDefaultFormattingLabel}}<br/>
+                                <div id="settings4defaultFont">
+                                    <select name="defaultFace" id="defaultFace" style="margin-left: 10px;"></select>
+                                    <input style="width: 40px;" id="defaultColour" name="defaultColour"/>
+                                    <input style="width: 40px;" id="defaultHighlight" name="defaultHighlight"/><br/>
+
+                                    <div id="defaultBoldItalics" class="indent">
+                                        <label>
+                                            <input type="checkbox" name="defaultBold" id="defaultBold" value="true"/>
+                                            {{settingsDefaultFormattingBoldLabel}}
+                                        </label><br/>
+
+                                        <label>
+                                            <input type="checkbox" name="defaultItalics" id="defaultItalics" value="true"/>
+                                            {{settingsDefaultFormattingItalicsLabel}}
+                                        </label><br/>
+                                    </div><br/>
+
+                                    <small>
+                                        <span style="margin-left: 10px;" id="fontPreview">{{settingsDefaultFormattingPreview}}</span>
+                                    </small><br/><br/>
+                                </div>
+
+                                <div id="settings4disableFormatting">
+                                    <label>
+                                        <input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true"/>
+                                        {{settingsDisableFormattingLabel}}
+                                    </label><br/>
+
+                                    <small>
+                                        <span style="margin-left: 10px;">{{settingsDisableFormattingBlurb}}</span>
+                                    </small><br/><br/>
+                                </div>
+
+                                <div id="settings4disableVideo">
+                                    <label>
+                                        <input type="checkbox" name="settingsOfficialAjax_disableVideo" id="disableVideo" value="true"/>
+                                        {{settingsDisableVideoLabel}}
+                                    </label><br/>
+
+                                    <small>
+                                        <span style="margin-left: 10px;">{{settingsDisableVideoBlurb}}</span>
+                                    </small><br/><br/>
+                                </div>
+
+                                <div id="settings4disableImage">
+                                    <label>
+                                        <input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true"/>
+                                        {{settingsDisableImageLabel}}
+                                    </label><br/>
+
+                                    <small>
+                                        <span style="margin-left: 10px;">{{settingsDisableImageBlurb}}</span>
+                                    </small><br/><br/>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade show active" role="tabpanel" id="settings5">
+                                <div class="input-group">
+                                    <span class="input-group-addon">{{settingsLanguageLabel}}</span>
+                                    <select class="form-control" name="language" id="language">
+                                        <option value="enGB">English (United Kingdom)</option>
+                                        <option value="enUS">English (United States)</option>
+                                    </select>
+                                </div>
+                                <small><span style="margin-left: 10px;">{{settingsLanguageBlurb}}</span></small><br/><br/>
+
+                                <div id="settings5parentalRating">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">{{settingsParentalAgeLabel}}</span>
+                                        <select class="form-control" name="parentalAge" id="parentalAge"></select>
+                                    </div>
+                                    <small class="form-text text-muted">{{settingsParentalAgeBlurb}}</small><br/>
+                                </div>
+
+                                <div id="settings5parentalFlags">
+                                    <span>{{settingsParentalFlagsLabel}}</span>
+                                    <div name="parentalFlagsList"></div>
+                                    <small class="form-text text-muted">{{settingsParentalFlagsBlurb}}</small><br />
+                                </div>
+
+                                <div id="settings5profile">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">{{settingsProfileLabel}}</span>
+                                        <input class="form-control" type="text" name="profile" id="profile"/><br/>
+                                    </div>
+                                    <small class="form-text text-muted">{{settingsProfileBlurb}}</small><br/>
+                                </div>
+
+                                <div id="settings5defaultRoom">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">{{settingsDefaultRoomLabel}}</span>
+                                        <input class="form-control" type="text" name="defaultRoom" id="defaultRoom"/><br/>
+                                    </div>
+                                    <small class="form-text text-muted">{{settingsDefaultRoomBlurb}}</small><br/>
+                                </div>
+
+                                <div id="settings5watchRooms">
+                                    <label for="watchRoomsList">{{settingsWatchRoomsLabel}}</label>
+                                    <span name="watchRoomsContainer" id="watchRoomsContainer"></span><br/>
+                                    <small><span style="margin-left: 10px;">{{settingsWatchRoomsBlurb}}</span></small>
+                                    <br/>
+                                    <small><span style="margin-left: 10px;"><span id="watchRoomsList"></span></span></small><br/><br/>
+                                </div>
+
+                                <input type="hidden" name="watchRooms" id="watchRooms"/>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" role="tabpanel" id="settings6">
-                        <div id="settings6ignoreList">
-                            <label for="ignoreList">{{settingsIgnoreListLabel}}</label>
-                            <span id="ignoreListContainer"></span><br/>
-                            <small><span style="margin-left: 10px;">{{settingsIgnoreListBlurb}}</span></small>
-                            <br/>
-                            <small><span style="margin-left: 10px;"><span id="ignoreListList"></span></span></small>
-                            <br/><br/>
-                        </div>
-
-                        <div id="settings6friendsList">
-                            <label for="friendsList">{{settingsFriendsListLabel}}</label>
-                            <span id="friendsListContainer"></span><br/>
-                            <small><span style="margin-left: 10px;">{{settingsFriendsListBlurb}}</span></small>
-                            <br/>
-                            <small><span style="margin-left: 10px;"><span id="friendsListList"></span></span></small>
-                            <br/><br/>
-                        </div>
-
-                        <div id="settings6privacyLevel">
-                            <fieldset>
-                                <legend>{{settingsPrivacyLegend}}</legend>
-                                <label><input type="radio" name="privacyLevel" value="allow">{{settingsPrivacyAllowAll}}</label><br/>
-                                <small><span style="margin-left: 10px;">{{settingsPrivacyAllowAllBlurb}}</span></small>
-                                <br/><br/><label><input type="radio" name="privacyLevel" value="friends">{{settingsPrivacyAllowFriends}}</label><br/>
-                                <small><span style="margin-left: 10px;">{{settingsPrivacyAllowFriendsBlurb}} </span></small>
-                                <br/><br/><label><input type="radio" name="privacyLevel" value="block">{{settingsPrivacyAllowNone}}</label><br/>
-                                <small><span style="margin-left: 10px;">{{settingsPrivacyAllowNoneBlurb}} </span></small>
-                            </fieldset>
-                            <br/><br/>
-                        </div>
-                        <input type="hidden" name="ignoreList" id="ignoreList"/></div>
-
-                    <div class="tab-pane fade" role="tabpanel" id="settings2">
-                        <div id="settings2disableFx">
-                            <label><input type="checkbox" name="disableFx" id="disableFx" value="true"/>{{settingsDisableFxLabel}}</label><br/>
-                            <small><span style="margin-left: 10px;">{{settingsDisableFxBlurb}}</span></small>
-                            <br/><br/>
-                        </div>
-
-                        <div id="settings2disableRightClick">
-                            <label>
-                                <input type="checkbox" name="disableRightClick" id="disableRightClick" value="true"/>
-                                {{settingsDisableRightClickLabel}}
-                            </label><br/>
-                            <small><span style="margin-left: 10px;">{{settingsDisableRightClickBlurb}}</span></small>
-                            <br/><br/>
-                        </div>
-
-                        <div id="settings2webkitNotifications">
-                            <label>
-                                <input type="checkbox" name="webkitNotifications" id="webkitNotifications" value="true"/>
-                                {{settingsWebkitNotificationsLabel}}
-                            </label><br/>
-                            <small><span style="margin-left: 10px;">{{settingsWebkitNotificationsBlurb}}</span></small>
-                            <br/><br/>
-                        </div>
-
-                        <div id="settings2audioVolume">
-                            <label for="audioVolume">{{settingsAudioVolumeLabel}}</label>
-                            <input type="range" min="0" max="1" name="audioVolume" id="audioVolume" value=".5" step=".01"/><br/>
-                            <small><span style="margin-left: 10px;">{{settingsAudioVolumeBlurb}}</span></small>
-                            <br/><br/>
-                        </div>
+                    <div class="card-footer" style="text-align: center;">
+                        <button class="btn btn-primary" type="submit">{{settingsSave}}</button>
+                        <button class="btn btn-secondary" type="reset">{{settingsReset}}</button>
+                        <input type="hidden" name="settingsOfficialAjax" value="true"/>
                     </div>
-
-                    <div class="tab-pane fade" role="tabpanel" id="settings4">{{settingsDefaultFormattingLabel}}<br/>
-                        <div id="settings4defaultFont">
-                            <select name="defaultFace" id="defaultFace" style="margin-left: 10px;"></select>
-                            <input style="width: 40px;" id="defaultColour" name="defaultColour"/>
-                            <input style="width: 40px;" id="defaultHighlight" name="defaultHighlight"/><br/>
-
-                            <div id="defaultBoldItalics" class="indent">
-                                <label>
-                                    <input type="checkbox" name="defaultBold" id="defaultBold" value="true"/>
-                                    {{settingsDefaultFormattingBoldLabel}}
-                                </label><br/>
-
-                                <label>
-                                    <input type="checkbox" name="defaultItalics" id="defaultItalics" value="true"/>
-                                    {{settingsDefaultFormattingItalicsLabel}}
-                                </label><br/>
-                            </div><br/>
-
-                            <small>
-                                <span style="margin-left: 10px;" id="fontPreview">{{settingsDefaultFormattingPreview}}</span>
-                            </small><br/><br/>
-                        </div>
-
-                        <div id="settings4disableFormatting">
-                            <label>
-                                <input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true"/>
-                                {{settingsDisableFormattingLabel}}
-                            </label><br/>
-
-                            <small>
-                                <span style="margin-left: 10px;">{{settingsDisableFormattingBlurb}}</span>
-                            </small><br/><br/>
-                        </div>
-
-                        <div id="settings4disableVideo">
-                            <label>
-                                <input type="checkbox" name="settingsOfficialAjax_disableVideo" id="disableVideo" value="true"/>
-                                {{settingsDisableVideoLabel}}
-                            </label><br/>
-
-                            <small>
-                                <span style="margin-left: 10px;">{{settingsDisableVideoBlurb}}</span>
-                            </small><br/><br/>
-                        </div>
-
-                        <div id="settings4disableImage">
-                            <label>
-                                <input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true"/>
-                                {{settingsDisableImageLabel}}
-                            </label><br/>
-
-                            <small>
-                                <span style="margin-left: 10px;">{{settingsDisableImageBlurb}}</span>
-                            </small><br/><br/>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade show active" role="tabpanel" id="settings5">
-                        <div class="input-group">
-                            <span class="input-group-addon">{{settingsLanguageLabel}}</span>
-                            <select class="form-control" name="language" id="language">
-                                <option value="enGB">English (United Kingdom)</option>
-                                <option value="enUS">English (United States)</option>
-                            </select>
-                        </div>
-                        <small><span style="margin-left: 10px;">{{settingsLanguageBlurb}}</span></small><br/><br/>
-
-                        <div id="settings5parentalRating">
-                            <div class="input-group">
-                                <span class="input-group-addon">{{settingsParentalAgeLabel}}</span>
-                                <select class="form-control" name="parentalAge" id="parentalAge"></select>
-                            </div>
-                            <small class="form-text text-muted">{{settingsParentalAgeBlurb}}</small><br/>
-                        </div>
-
-                        <div id="settings5parentalFlags">
-                            <span>{{settingsParentalFlagsLabel}}</span>
-                            <div name="parentalFlagsList"></div>
-                            <small class="form-text text-muted">{{settingsParentalFlagsBlurb}}</small><br />
-                        </div>
-
-                        <div id="settings5profile">
-                            <div class="input-group">
-                                <span class="input-group-addon">{{settingsProfileLabel}}</span>
-                                <input class="form-control" type="text" name="profile" id="profile"/><br/>
-                            </div>
-                            <small class="form-text text-muted">{{settingsProfileBlurb}}</small><br/>
-                        </div>
-
-                        <div id="settings5defaultRoom">
-                            <div class="input-group">
-                                <span class="input-group-addon">{{settingsDefaultRoomLabel}}</span>
-                                <input class="form-control" type="text" name="defaultRoom" id="defaultRoom"/><br/>
-                            </div>
-                            <small class="form-text text-muted">{{settingsDefaultRoomBlurb}}</small><br/>
-                        </div>
-
-                        <div id="settings5watchRooms">
-                            <label for="watchRoomsList">{{settingsWatchRoomsLabel}}</label>
-                            <span name="watchRoomsContainer" id="watchRoomsContainer"></span><br/>
-                            <small><span style="margin-left: 10px;">{{settingsWatchRoomsBlurb}}</span></small>
-                            <br/>
-                            <small><span style="margin-left: 10px;"><span id="watchRoomsList"></span></span></small><br/><br/>
-                        </div>
-
-                        <input type="hidden" name="watchRooms" id="watchRooms"/>
                 </div>
-
-                <button class="btn btn-primary" type="submit">{{settingsSave}}</button>
-                <button class="btn btn-secondary" type="reset">{{settingsReset}}</button>
-                <input type="hidden" name="settingsOfficialAjax" value="true"/>
-            </div>
-        </form>
-        <{{!}}/script>
+            </form>
+            <{{!}}/script>
 
         <{{!}}script id="view-editRoom" type="text/x-handlebars-template">
         <ul class="nav nav-tabs justify-content-center bg-light" role="tablist" id="editRoomTabs">
@@ -922,7 +1014,7 @@
                     </div>
 
                     <div id="editRoom1ParentalFlags">
-                        <h3>{{editRoomParentalFlagsLabel}}</h3>
+                        <h4>{{editRoomParentalFlagsLabel}}</h4>
                         <div name="parentalFlagsList"></div>
                         <small class="form-text text-muted">{{editRoomParentalFlagsBlurb}}</small>
                         <br/>
@@ -1012,15 +1104,15 @@
         <{{!}}/script>
 
         <{{!}}script id="view-kicks" type="text/x-handlebars-template">
-        <table class="center">
+        <table class="table table-sm">
             <thead>
             <tr class="hrow">
-                <th>User</th>
-                <th>Kicked By</th>
-                <th>In Room</th>
-                <th>On</th>
-                <th>Until</th>
-                <th>Actions</th>
+                <th>{{kicks.userName}}</th>
+                <th>{{kicks.kickedBy}}</th>
+                <th>{{kicks.inRoom}}</th>
+                <th>{{kicks.onDate}}</th>
+                <th>{{kicks.untilDate}}</th>
+                <th>{{kicks.actions}}</th>
             </tr>
             </thead>
             <tbody id="kickedUsers"></tbody>
