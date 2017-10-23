@@ -15,3 +15,7 @@
     -fx-graphic: url("Images/settings_gear.png");
     -fx-graphic-text-gap : 10;
 }
+
+#avatar {
+    -fx-alignment: center;
+}
