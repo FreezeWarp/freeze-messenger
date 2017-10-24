@@ -100,13 +100,13 @@
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
-                        <AnchorPane prefHeight="200.0" prefWidth="97.0" GridPane.columnIndex="1">
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
                            <children>
-                              <Button id="settings" fx:id="settings" accessibleText="Settings" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                              <Button id="helpButton" fx:id="helpButton" accessibleText="Help" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <graphic>
-                                    <ImageView id="settings_img" fx:id="settings_img" accessibleRole="BUTTON" fitHeight="50.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" scaleX="0.85" scaleY="0.85" GridPane.rowIndex="1">
+                                    <ImageView id="help_img" fx:id="help_img" accessibleRole="BUTTON" fitHeight="50.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" scaleX="0.85" scaleY="0.85" GridPane.rowIndex="1">
                                        <image>
-                                          <Image url="@Images/setttings_img.png" />
+                                          <Image url="@Images/help_img.png" />
                                        </image>
                                        <viewport>
                                           <Rectangle2D width="100.0" />
@@ -119,13 +119,13 @@
                               <Insets />
                            </GridPane.margin>
                         </AnchorPane>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                        <AnchorPane prefHeight="200.0" prefWidth="97.0" GridPane.columnIndex="1">
                            <children>
-                              <Button id="help" fx:id="help" accessibleText="Help" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                              <Button id="settingsButton" fx:id="settingsButton" accessibleText="Settings" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <graphic>
-                                    <ImageView id="help_img" fx:id="help_img" accessibleRole="BUTTON" fitHeight="50.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" scaleX="0.85" scaleY="0.85" GridPane.rowIndex="1">
+                                    <ImageView id="settings_img" fx:id="settings_img" accessibleRole="BUTTON" fitHeight="50.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" scaleX="0.85" scaleY="0.85" GridPane.rowIndex="1">
                                        <image>
-                                          <Image url="@Images/help_img.png" />
+                                          <Image url="@Images/setttings_img.png" />
                                        </image>
                                        <viewport>
                                           <Rectangle2D width="100.0" />
