@@ -28,23 +28,6 @@ if (!defined('API_INROOM'))
     die();
 
 
-/* Helper Functions */
-/**
- * Generates a permissions bitfield from a list of permission strings.
- *
- * @param $permissionsArray array List of strings corresponding with permissions in {@link fimRoom::$permArray}.
- */
-function getPermissionsField($permissionsArray)
-{
-    $permissionsField = 0;
-
-    foreach (fimRoom::$permArray AS $string => $byte) {
-        if (in_array($string, $permissionsArray)) $permissionsField |= $byte;
-    }
-
-    return $permissionsField;
-}
-
 /**
  * Alters a room's permissions based on a specially formatted userArray and groupArray. This function does not check for permissions -- make sure that a user has permission to alter permissions before executing this function.
  *
@@ -62,7 +45,7 @@ function alterRoomPermissions($roomId, $userArray, $groupArray)
             $operation = substr($code, 0, 1); // The first character of the code is going to be either '+', '-', or '*', representing which action we are taking.
             $param = (int)substr($code, 1); // Everything after the first character represents either a group or user ID.
 
-            $permissionsField = getPermissionsField($permissionsArray);
+            $permissionsField = fimRoom::getPermissionsField($permissionsArray);
 
             if ($attribute === 'user')
                 $databasePermissionsField = $database->getPermissionsField($roomId, $param);

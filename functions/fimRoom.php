@@ -225,12 +225,12 @@ class fimRoom extends fimDynamicObject {
      * @var array A map of string permissions to their bits in a bitfield.
      */
     public static $permArray = [
-        'post' => fimRoom::ROOM_PERMISSION_POST,
         'view' => fimRoom::ROOM_PERMISSION_VIEW,
-        'changeTopic' => fimRoom::ROOM_PERMISSION_TOPIC,
-        'moderate' => fimRoom::ROOM_PERMISSION_MODERATE,
-        'properties' => fimRoom::ROOM_PERMISSION_PROPERTIES,
-        'grant' => fimRoom::ROOM_PERMISSION_GRANT,
+        'post' => fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Post implies view.
+        'changeTopic' => fimRoom::ROOM_PERMISSION_TOPIC + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Changetopic implies post and view.
+        'moderate' => fimRoom::ROOM_PERMISSION_MODERATE + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Moderate implies post and view.
+        'properties' => fimRoom::ROOM_PERMISSION_PROPERTIES + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Properties implies post and view.
+        'grant' => fimRoom::ROOM_PERMISSION_GRANT + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW + fimRoom::ROOM_PERMISSION_MODERATE + fimRoom::ROOM_PERMISSION_PROPERTIES, // Grant implies all.
     ];
 
     /**
@@ -816,14 +816,30 @@ class fimRoom extends fimDynamicObject {
      *
      * @return array An associative array corresponding to the permissions user has based on their bitfield. Keys are "view", "post", "moderate", etc., and values are true if the user has the given permission, false otherwise.
      */
-    public function getPermissionsArray($field) {
+    public static function getPermissionsArray($field) {
         $returnArray = [];
 
         foreach(fimRoom::$permArray AS $perm => $bit) {
-            $returnArray[$perm] = (bool) ($field & $bit);
+            $returnArray[$perm] = ($field & $bit) == $bit;
         }
 
         return $returnArray;
+    }
+
+    /**
+     * Generates a permissions bitfield from a list of permission strings.
+     *
+     * @param $permissionsArray array List of strings corresponding with permissions in {@link fimRoom::$permArray}.
+     */
+    public static function getPermissionsField($permissionsArray)
+    {
+        $permissionsField = 0;
+
+        foreach (fimRoom::$permArray AS $string => $byte) {
+            if (in_array($string, $permissionsArray)) $permissionsField |= $byte;
+        }
+
+        return $permissionsField;
     }
 
 

@@ -1561,9 +1561,13 @@ class fimDatabase extends DatabaseSQL
         }
         else {
             $groupBitfield = 0;
+
             foreach ($permissions AS $permission) {
-                if ($permission['attribute'] === 'user') return $permission['permissions']; // If a user permission exists, then it overrides group permissions.
-                else $groupBitfield &= $permission['permissions']; // Group permissions, on the other hand, stack. If one group has ['view', 'post'], and another has ['view', 'moderate'], then a user in both groups has all three.
+                if ($permission['attribute'] === 'user') // If a user permission exists, then it overrides group permissions.
+                    return (int) $permission['permissions'];
+
+                else // Group permissions, on the other hand, stack. If one group has ['view', 'post'], and another has ['view', 'moderate'], then a user in both groups has all three.
+                    $groupBitfield &= (int) $permission['permissions'];
             }
 
             return $groupBitfield;
