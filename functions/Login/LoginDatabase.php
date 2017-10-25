@@ -44,8 +44,9 @@ abstract class LoginDatabase implements LoginRunner {
             $user->setClientCode($oauthResponse->getParameter('client_id')); // Mainly for logging.
 
             // Set the anonymous user ID, if applicable
-            if ($_REQUEST['grant_type'] === 'anonymous') {
-                $user->setAnonId($this->oauthGrantType->getAnonymousUserId());
+            if ($user->isAnonymousUser()) {
+                global $anonId;
+                $user->setAnonId($anonId);
             }
 
             /* Output User & Session Information */

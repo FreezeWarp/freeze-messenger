@@ -185,11 +185,15 @@ $xmlData = array(
 $updateArray = [];
 
 
+if ($user->isAnonymousUser())
+    new fimError('anonymousUser', 'Anonymous users cannot change their settings.');
+
 
 /************************************
  **** Editable Only Properties ******
  ************************************/
 if ($requestHead['_action'] === 'edit') {
+
 
     /************************************
      ***** Vanilla Only Properties ******

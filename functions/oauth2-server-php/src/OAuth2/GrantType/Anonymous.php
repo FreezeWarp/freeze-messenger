@@ -31,27 +31,14 @@ class Anonymous implements GrantTypeInterface
 
     public function validateRequest(RequestInterface $request, ResponseInterface $response)
     {
-        /* Use cache if possible, since the anonymous user will be queried quite frequently.
-         * getUser(), which is called by getUserDetails(), may also implement a general cache of all users, but since cache is redundancy to begin with, I tend not to avoid it. */
-        $cache = new \CacheFactory();
-        if ($cache->exists('fim_oauth2_anonymousUserArray'))
-            $userInfo = $cache->get('fim_oauth2_anonymousUserArray');
-        else
-            $cache->set('fim_oauth2_anonymousUserArray', $userInfo = $this->storage->getUserFromId(\fimUser::ANONYMOUS_USER_ID), 3600 * 24);
+        global $anonId;
 
-        /* Sanity checks */
-        if (empty($userInfo)) {
-            $response->setError(400, 'invalid_grant', 'Unable to retrieve user information');
-            return null;
-        }
+        $anonId = rand(1000, 9999);
 
-        if (!isset($userInfo['user_id']))
-            throw new \LogicException("you must set the user_id on the array returned by getUserDetails");
+        $this->userInfo = [
+            'user_id' => \fimUser::ANONYMOUS_USER_ID,
+        ];
 
-
-        /* Return */
-        $this->anonId = rand(1000, 9999);
-        $this->userInfo = $userInfo;
         return true;
     }
 
@@ -62,12 +49,7 @@ class Anonymous implements GrantTypeInterface
 
     public function getUserId()
     {
-        return \fimUser::ANONYMOUS_USER_ID;
-    }
-
-    public function getAnonymousUserId()
-    {
-        return $this->anonId;
+        return $this->userInfo['user_id'];
     }
 
     public function getScope()

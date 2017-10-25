@@ -242,6 +242,7 @@
             <column name="refresh_token" type="string" maxlen="40" required="true" />
             <column name="client_id" type="string" maxlen="80" required="true" />
             <column name="user_id" type="string" maxlen="80" />
+            <column name="anon_id" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
             <column name="expires" type="time" required="true" />
             <column name="scope" type="string" maxlen="4000" />
 
@@ -279,7 +280,7 @@
         <table name="messages" hardPartitions="10" type="general" comment="User-created messages.">
             <column name="id" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
             <column name="userId" type="int" maxlen="8" comment="The ID of the user who made the message." />
-            <column name="anonId" type="int" maxlen="8" comment="The anonymous ID of the user who made the message, if applicable." />
+            <column name="anonId" type="int" maxlen="6" comment="The anonymous ID of the user who made the message, if applicable." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="text" type="blob" maxlen="5000" comment="The text of the message." />
             <column name="textSha1" type="string" maxlen="40" comment="A SHA1 hash of the text of the message." />

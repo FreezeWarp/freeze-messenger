@@ -146,7 +146,7 @@ if (!$ignoreLogin) {
             $user = fimUserFactory::getFromId((int) $token['user_id']);
             $user->setSessionHash($token['access_token']);
             $user->setClientCode($token['client_id']);
-            if ($token['anon_id'] ?? false)
+            if ($token['anon_id'])
                 $user->setAnonId($token['anon_id']);
         }
 

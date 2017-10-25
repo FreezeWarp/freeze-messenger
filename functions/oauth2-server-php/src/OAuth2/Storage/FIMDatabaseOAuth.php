@@ -24,9 +24,9 @@ class FIMDatabaseOAuth implements
     protected $exceptionHandler;
 
     const CLIENT_TABLE_FIELDS = 'client_id, client_secret, redirect_uri, grant_types, scope, user_id';
-    const ACCESS_TOKEN_TABLE_FIELDS = 'access_token, client_id, user_id, expires, scope';
+    const ACCESS_TOKEN_TABLE_FIELDS = 'access_token, client_id, user_id, anon_id, expires, scope';
     const AUTHORIZATION_CODE_TABLE_FIELDS = 'authorization_code, client_id, user_id, redirect_uri, expires, scope, id_token';
-    const REFRESH_TOKEN_TABLE_FIELDS = 'refresh_token, client_id, user_id, expires, scope';
+    const REFRESH_TOKEN_TABLE_FIELDS = 'refresh_token, client_id, user_id, anon_id, expires, scope';
 
     public function __construct($db, $exceptionHandler, $config = array())
     {
@@ -111,10 +111,7 @@ class FIMDatabaseOAuth implements
 
     public function setAccessToken($access_token, $client_id, $user_id, $expires, $scope = null)
     {
-        // A lot simpler than modifying the method to pass it in.
         global $anonId;
-
-        // TODO: if a user has more than x tokens, delete the oldest.
 
         // Delete tokens that expired more than a minute ago.
         $this->db->delete($this->config['access_token_table'], [
@@ -246,11 +243,20 @@ class FIMDatabaseOAuth implements
     /* OAuth2\Storage\RefreshTokenInterface */
     public function getRefreshToken($refresh_token)
     {
-        return $this->db->where(array('refresh_token' => $refresh_token))->select(array($this->config['refresh_token_table'] => self::REFRESH_TOKEN_TABLE_FIELDS))->getAsArray(false);
+        $token = $this->db->where(array('refresh_token' => $refresh_token))->select(array($this->config['refresh_token_table'] => self::REFRESH_TOKEN_TABLE_FIELDS))->getAsArray(false);
+
+        if ($token && $token['anon_id']) {
+            global $anonId;
+            $anonId = (int) $token['anon_id'];
+        }
+
+        return $token;
     }
 
     public function setRefreshToken($refresh_token, $client_id, $user_id, $expires, $scope = null)
     {
+        global $anonId;
+
         // Delete tokens that expired more than a day ago.
         $this->db->delete($this->config['access_token_table'], [
             'expires' => $this->db->now(-60 * 60 * 24, 'lt')
@@ -260,6 +266,7 @@ class FIMDatabaseOAuth implements
             'refresh_token' => $refresh_token,
             'client_id' => $client_id,
             'user_id' => $user_id,
+            'anon_id' => $anonId,
             'expires' => $expires,
             'scope' => $scope,
         ));
