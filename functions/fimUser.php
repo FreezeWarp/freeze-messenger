@@ -690,7 +690,7 @@ class fimUser extends fimDynamicObject
     }
 
     public function checkPassword($password) {
-        switch ($this->passwordFormat) {
+        switch ($this->__get('passwordFormat')) {
             case 'phpass':
                 if (!isset($this->passwordHash)) {
                     throw new Exception('User object was not generated with password hash information.');
