@@ -40,8 +40,9 @@ echo new Http\ApiData([
             'parentalAgeChangeable' => fimConfig::$parentalAgeChangeable,
             'parentalFlags' => new Http\ApiOutputList(fimConfig::$parentalFlags),
             'parentalAges' => new Http\ApiOutputList(fimConfig::$parentalAges),
-            'enableCensor' => fimConfig::$censorEnabled,
         ),
+
+        'censorEnabled' => fimConfig::$censorEnabled,
 
         'branding' => array(
             'forumType' => $loginConfig['method'],
