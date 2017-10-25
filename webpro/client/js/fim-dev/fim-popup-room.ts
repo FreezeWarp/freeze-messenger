@@ -119,20 +119,18 @@ popup.prototype.room = {
 
     eventListener : function() {
         var roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
-        var eventHandler = function(callback) {
+        var eventHandler = ((callback) => {
             return ((event) => {
-                if (event.id > this.options.lastEvent) {
-                    this.options.lastEvent = event.id;
-                }
+                this.options.lastEvent = Math.max(this.options.lastEvent, event.id);
 
-                callback(JSON.parse(event.data));
+                callback.call(this, JSON.parse(event.data));
             });
-        };
+        });
 
         roomSource.addEventListener('newMessage', eventHandler(this.newMessageHandler), false);
         roomSource.addEventListener('topicChange', eventHandler(this.topicChangeHandler), false);
         roomSource.addEventListener('deletedMessage', eventHandler(this.deletedMessageHandler), false);
-        roomSource.addEventListener('editedMessage', eventHandler(this.edittedMesageHandler), false);
+        roomSource.addEventListener('editedMessage', eventHandler(this.editedMesageHandler), false);
     },
 
 

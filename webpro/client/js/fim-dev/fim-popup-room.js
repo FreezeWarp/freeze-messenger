@@ -86,20 +86,18 @@ popup.prototype.room = {
         }
     },
     eventListener: function () {
+        var _this = this;
         var roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
-        var eventHandler = function (callback) {
-            var _this = this;
+        var eventHandler = (function (callback) {
             return (function (event) {
-                if (event.id > _this.options.lastEvent) {
-                    _this.options.lastEvent = event.id;
-                }
-                callback(JSON.parse(event.data));
+                _this.options.lastEvent = Math.max(_this.options.lastEvent, event.id);
+                callback.call(_this, JSON.parse(event.data));
             });
-        };
+        });
         roomSource.addEventListener('newMessage', eventHandler(this.newMessageHandler), false);
         roomSource.addEventListener('topicChange', eventHandler(this.topicChangeHandler), false);
         roomSource.addEventListener('deletedMessage', eventHandler(this.deletedMessageHandler), false);
-        roomSource.addEventListener('editedMessage', eventHandler(this.edittedMesageHandler), false);
+        roomSource.addEventListener('editedMessage', eventHandler(this.editedMesageHandler), false);
     },
     newMessageHandler: function (active) {
         this.options.lastMessage = Math.max(this.options.lastMessage, active.id);
