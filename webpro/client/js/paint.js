@@ -382,8 +382,8 @@ $.when(
 
 
     /* Do some final compat testing */
-    //if (typeof window.EventSource == 'undefined') requestSettings.serverSentEvents = false;
-    //else requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;
+    if (typeof window.EventSource == 'undefined') requestSettings.serverSentEvents = false;
+    else requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;
 
     if (window.serverSettings.installUrl != (window.location.protocol + '//' + window.location.host + window.directory)) dia.error(window.phrases.errorBadInstall);
 
