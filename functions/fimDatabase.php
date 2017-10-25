@@ -1269,6 +1269,8 @@ class fimDatabase extends DatabaseSQL
         if (count($options['roomNames']) > 0) $conditions['both']['either']['name'] = $this->in($options['roomNames']);
         if ($options['roomNameSearch']) $conditions['both']['either']['name'] = $this->type('string', $options['roomNameSearch'], 'search');
 
+        if (count($options['ownerIds']) > 0) $conditions['both']['either']['ownerId'] = $this->in($options['ownerIds']);
+
         if ($options['parentalAgeMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
         if ($options['parentalAgeMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
 
