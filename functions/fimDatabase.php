@@ -1335,7 +1335,7 @@ class fimDatabase extends DatabaseSQL
             $conditions['both']['either']['name 2'] = $this->type('string', $options['userNameSearch'], 'search');
 
 
-        return $this->select($columns, $conditions, $sort);
+        return $this->select($columns, $conditions, $sort, $limit);
     }
 
 
