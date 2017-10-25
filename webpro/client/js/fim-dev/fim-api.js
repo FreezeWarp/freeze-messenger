@@ -106,9 +106,6 @@ fimApi.prototype.login = function (params, requestSettings) {
         'client_id' : ''
     });
 
-    if (params.username == '' && params.password == '')
-        params.grant_type = 'anonymous';
-
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
     return $.ajax({
@@ -206,15 +203,45 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
 };
 
 
+
+fimApi.prototype.getEventsFallback = function(params, requestSettings) {
+    var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
+
+    function getEventsFallback_query(requestSettings) {
+        $.ajax({
+            type: 'get',
+            url: directory + 'stream.php',
+            data: fimApi.mergeDefaults(params, {
+                'fallback' : true,
+                'access_token' : window.sessionHash,
+                'streamType' : null,
+                'queryId' : null,
+                'lastEvent' : null,
+                'lastMessage' : null,
+            }),
+            timeout: requestSettings.timeout,
+            cache: requestSettings.cache
+        }).done(function(response) {
+            fimApi.done(requestSettings)(response);
+        }).fail(function(response) {
+            if (requestSettings.refresh) {
+                fimApi.getEventsFallback(null, {close : true});
+            }
+
+            fimApi.fail(requestSettings, function() {
+                fimApi.getEventsFallback(params, requestSettings)
+            })(response);
+        });
+    }
+
+    fimApi.timer(requestSettings, "getEventsFallback", getEventsFallback_query);
+};
+
 /* Messages */
 fimApi.prototype.getMessages = function(params, requestSettings) {
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
     function getMessages_query(requestSettings) {
-        if (requestSettings.autoId && window.requestSettings[params.roomId].firstRequest) {
-            requestSettings.reverseEach = true;
-        }
-
         $.ajax({
             type: 'get',
             url: directory + 'api/message.php',
@@ -223,7 +250,7 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
                 'roomId' : null,
                 'userIds' : null,
                 'messageIdEnd' : null,
-                'messageIdStart' : (requestSettings.autoId && window.requestSettings[params.roomId].lastMessage ? window.requestSettings[params.roomId].lastMessage + 1 : null),
+                'messageIdStart' : null,
                 'page' : null,
                 'messageTextSearch' : null,
                 'archive' : (requestSettings.autoId ? window.requestSettings[params.roomId].firstRequest : false)
@@ -231,16 +258,6 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
         }).done(function(response) {
-            if (requestSettings.autoId) {
-                if (window.requestSettings[params.roomId].firstRequest)
-                    window.requestSettings[params.roomId].firstRequest = false;
-
-                for (var i in response["messages"]) {
-                    if (response["messages"][i]["id"])
-                        window.requestSettings[params.roomId].lastMessage = (!(Number.isNaN(Number(window.requestSettings[params.roomId].lastMessage))) ? Math.max(response["messages"][i]["id"], window.requestSettings[params.roomId].lastMessage) : response["messages"][i]["id"]);
-                }
-            }
-
             fimApi.done(requestSettings)(response);
         }).fail(function(response) {
             if (requestSettings.refresh) {

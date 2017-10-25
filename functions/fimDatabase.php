@@ -1012,7 +1012,6 @@ class fimDatabase extends DatabaseSQL
      *      @param array ['userIds']           An array of sender userIds to filter the messages by.
      *      @param array ['messageTextSearch'] Filter results by searching for this string in messageText.
      *      @param bool  ['showDeleted']       Whether to include deleted messages. Default false.
-     *      @param bool  ['archive']           Whether to query the message archive instead of the main table. Default false. (On average, the main table only includes around 100 messages, so this must be true for archive viewing.)
      *
      *      The following are still being revised:
      *      @param array ['messageIdStart']
@@ -1037,8 +1036,7 @@ class fimDatabase extends DatabaseSQL
             'messageIdStart'    => null,
             'messageIdEnd'      => null,
             'messageDateMax'    => null,
-            'messageDateMin'    => null,
-            'archive'           => false
+            'messageDateMin'    => null
         ), $options);
 
 
@@ -1048,46 +1046,32 @@ class fimDatabase extends DatabaseSQL
 
         /* Create a $messages list based on search parameter. */
         if (strlen($options['messageTextSearch']) > 0) {
-            if (!$options['archive']) {
-                $this->triggerError('The "messageTextSearch" option in getMessages can only be used if "archive" is set to true.', array('Options' => $options), 'validation');
-            } else {
-                /* Run the Query */
-                $searchMessageIds = $this->getMessagesFromPhrases(array(
-                    'roomIds' => [$options['room']->id],
-                    'userIds' => $options['userIds'],
-                    'messageTextSearch' => $options['messageTextSearch'],
-                ), null, $limit, $page)->getAsArray('messageId');
+            /* Run the Query */
+            $searchMessageIds = $this->getMessagesFromPhrases(array(
+                'roomIds' => [$options['room']->id],
+                'userIds' => $options['userIds'],
+                'messageTextSearch' => $options['messageTextSearch'],
+            ), null, $limit, $page)->getAsArray('messageId');
 
-                $searchMessageIds = $this->getMessagesFromPhrases(array(
-                    'roomIds' => [$options['room']->id],
-                    'userIds' => $options['userIds'],
-                    'messageTextSearch' => $options['messageTextSearch'],
-                ), null, $limit, $page)->getAsArray('messageId');
+            $searchMessageIds = $this->getMessagesFromPhrases(array(
+                'roomIds' => [$options['room']->id],
+                'userIds' => $options['userIds'],
+                'messageTextSearch' => $options['messageTextSearch'],
+            ), null, $limit, $page)->getAsArray('messageId');
 
-                $searchMessages = array_keys($searchMessageIds);
+            $searchMessages = array_keys($searchMessageIds);
 
 
-                /* Modify the Request Filter for Messages */
-                if ($searchMessages) $options['messageIds'] = fim_arrayValidate($searchMessages, 'int', true);
-                else                 $options['messageIds'] = array(0); // This is a fairly dirty approach, but it does work for now. TODO
-            }
+            /* Modify the Request Filter for Messages */
+            if ($searchMessages) $options['messageIds'] = fim_arrayValidate($searchMessages, 'int', true);
+            else                 $options['messageIds'] = array(0); // This is a fairly dirty approach, but it does work for now. TODO
         }
 
 
         /* Query via the Archive */
-        if ($options['archive']) {
-            $columns = array(
-                $this->sqlPrefix . "messages" => 'id, time, iv, salt, roomId, userId, anonId, deleted, flag, text',
-            );
-        }
-
-        /* Access the Stream */
-        else {
-            if ($options['room']->isPrivateRoom())
-                $columns = [$this->sqlPrefix . "messagesCachedPrivate" => "id cacheId, messageId id, roomId, time, flag, userId, text"];
-            else
-                $columns = [$this->sqlPrefix . "messagesCached" => "id cacheId, messageId id, roomId, time, flag, userId, text"];
-        }
+        $columns = array(
+            $this->sqlPrefix . "messages" => 'id, time, iv, salt, roomId, userId, anonId, deleted, flag, text',
+        );
 
 
         /* Conditions Template */
@@ -1112,7 +1096,7 @@ class fimDatabase extends DatabaseSQL
         if (isset($options['messageIdEnd']))
             $conditions['either']['both']['id 4'] = $this->int($options['messageIdEnd'], 'lte');
 
-        if (!$options['showDeleted'] && $options['archive'])
+        if (!$options['showDeleted'])
             $conditions['deleted'] = $this->bool(false);
 
         if (count($options['messageIds']) > 0)

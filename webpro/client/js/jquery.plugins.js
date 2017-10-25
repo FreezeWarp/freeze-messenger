@@ -21453,6 +21453,14 @@ var dia = {
         $('#modal-dynamicFull .modal-body').html(options.content);
 
         $('#modal-dynamicFull').modal();
+        
+        jQuery.each(options.buttons, function(buttonName, buttonAction) {
+            $('#modal-dynamicFull .modal-footer').append($('<button>').attr('class', 'btn btn-secondary').text(buttonName).click(function() {
+                buttonAction();
+                $('#modal-dynamicFull').modal('hide');
+                return false;
+            }));
+        });
 
         if (typeof options.oF !== 'undefined') options.oF();
 

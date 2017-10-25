@@ -91,12 +91,8 @@ $request = fim_sanitizeGPC('g', [
     'page' => [
         'default' => 0,
         'cast'    => 'int',
-    ],
+    ]
 ]);
-
-
-if (!$request['archive'] && $request['showDeleted'])
-    new fimError('archiveShowDeletedConflict', 'archive and showDeleted must be used together.');
 
 
 $database->accessLog('getMessages', $request);
@@ -115,8 +111,8 @@ else {
     if (!$request['noping'])
         $database->setUserStatus($room->id);
 
-    if (!$request['archive'])
-        $database->markMessageRead($room->id, $user->id);
+    //if (!$request['archive'])
+    //    $database->markMessageRead($room->id, $user->id);
 
 
     /* Get Messages from Database */
@@ -124,14 +120,15 @@ else {
         $messages = [$message];
     }
     else {
-        $messages = $database->getMessages(
+        $messageResults = $database->getMessages(
             array_merge([
                 'room' => $room,
-            ], fim_arrayFilterKeys($request, ['messageIdEnd', 'messageIdStart', 'messageDateMin', 'messageDateMax', 'showDeleted', 'messageTextSearch', 'archive', 'userIds'])),
+            ], fim_arrayFilterKeys($request, ['messageIdEnd', 'messageIdStart', 'messageDateMin', 'messageDateMax', 'showDeleted', 'messageTextSearch', 'userIds'])),
             ['id' => (isset($request['messageIdStart']) || isset($request['messageDateMin']) ? 'asc' : 'desc')],
             fimConfig::$defaultMessageLimit,
             $request['page']
-        )->getAsMessages();
+        );
+        $messages = $messageResults->getAsMessages();
     }
 
 

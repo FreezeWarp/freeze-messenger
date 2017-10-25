@@ -23,6 +23,7 @@ standard.prototype.initialLogin = function(options) {
             window.roomId = activeLogin.userData.defaultRoomId ? activeLogin.userData.defaultRoomId : 1;
         }
 
+        fim_renderHandlebarsInPlace($("#entry-template"));
         fim_hashParse(); // When a user logs in, the hash data (such as room and archive) is processed, and subsequently executed.
     };
 

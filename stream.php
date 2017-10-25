@@ -52,6 +52,10 @@ else {
         'lastMessage' => array(
             'default' => 0,
             'cast' => 'int',
+        ),
+        'fallback' => array(
+            'default' => false,
+            'cast' => 'bool'
         )
     ));
 
@@ -68,17 +72,26 @@ else {
     }
 
 
-    \Stream\StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent'], function($message) use ($request) {
-        if ($request['streamType'] === 'room') {
-            if (isset($message['data']['id']) && $message['eventName'] === 'newMessage' && $message['data']['id'] <= $request['lastMessage']) return;
-        }
+    if ($request['fallback']) {
+        $messageResults = \Stream\StreamFactory::getDatabaseInstance()->subscribeOnce($request['streamType'] . '_' . $request['queryId'], $request['lastEvent']);
 
-        echo "\nid: " . (int)$message['id'] . "\n";
-        echo "event: " . $message['eventName'] . "\n";
-        echo "data: " . json_encode($message['data']) . "\n\n";
-        fim_flush();
-    });
+        echo new Http\ApiData(["events" => $messageResults]);
+    }
+    else {
+        \Stream\StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent'], function($message) use ($request) {
+            if ($request['streamType'] === 'room') {
+                if (isset($message['data']['id']) && $message['eventName'] === 'newMessage' && $message['data']['id'] <= $request['lastMessage']) return;
+            }
+
+            echo "\nid: " . (int)$message['id'] . "\n";
+            echo "event: " . $message['eventName'] . "\n";
+            echo "data: " . json_encode($message['data']) . "\n\n";
+            fim_flush();
+        });
+    }
 }
 
-echo "retry: 0\n";
+if (!$request['fallback']) {
+    echo "retry: 0\n";
+}
 ?>

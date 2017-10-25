@@ -200,18 +200,31 @@
                                 <small class="form-text text-muted">{{fileUploadFileBlurb}}</small><br/>
                             </div>
 
-                            <div id="uploadParentalAge">
-                                <div class="input-group">
-                                    <span class="input-group-addon">{{fileUploadAgeLabel}}</span>
-                                    <select name="parentalAge" class="form-control"></select>
+                            {{#if serverSettings.parentalControls.parentalEnabled}}
+                                <div>
+                                    <div class="input-group">
+                                        <span class="input-group-addon">{{fileUploadAgeLabel}}</span>
+                                        <select class="form-control" name="parentalAge">
+                                            {{#each serverSettings.parentalControls.parentalAges}}
+                                                <option value="{{this}}">{{lookup ../parentalAges this}}</option>
+                                            {{/each}}
+                                        </select>
+                                    </div>
+                                    <small class="form-text text-muted">{{fileUploadAgeBlurb}}</small><br />
                                 </div>
-                                <small class="form-text text-muted">{{fileUploadAgeBlurb}}</small><br />
-                            </div>
 
-                            <div id="uploadParentalFlags">
-                                <div name="parentalFlagsList"></div>
-                                <small class="form-text text-muted">{{fileUploadFlagsBlurb}}</small><br/>
-                            </div>
+                                <div>
+                                    <div name="parentalFlagsList">
+                                        {{#each serverSettings.parentalControls.parentalFlags}}
+                                        <label class="btn btn-secondary m-1">
+                                            <input type="checkbox" name="parentalFlags" value="{{this}}" />
+                                            {{lookup ../parentalFlags this}}
+                                        </label>
+                                        {{/each}}
+                                    </div>
+                                    <small class="form-text text-muted">{{fileUploadFlagsBlurb}}</small><br/>
+                                </div>
+                            {{/if}}
                         </div>
 
                         <div class="col-sm-auto">
@@ -243,7 +256,7 @@
         </div>
     </div>
 
-    <div id="modal-dynamicFull" class="modal" tabindex="-2">
+    <div id="modal-dynamicFull" class="modal modal-lg" tabindex="-2">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -253,6 +266,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                </div>
+                <div class="modal-footer">
                 </div>
             </div>
         </div>
@@ -348,8 +363,11 @@
                             <div name="officialRoomsList"></div>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="#rooms">All Rooms</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#editRoom">Create a Room</a>
+
+                            {{#if activeLogin.userData.permissions.createRooms}}
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#editRoom#room=0">Create a Room</a>
+                            {{/if}}
                         </div>
                     </li>
 
@@ -361,18 +379,33 @@
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             More
                         </a>
-                        <div class="dropdown-menu" name="roomMenu" aria-labelledby="navbarDropdown">
+                        <div class="dropdown-menu" name="otherMenu" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item" href="javascript:popup.online()">View Active Users</a>
                             <a class="dropdown-item" href="#uploads">View My Uploads</a>
-                            <a class="dropdown-item" href="javascript:standard.logout()">Logout</a>
+
+                            {{#if activeLogin}}
+                                {{#unless activeLogin.userData.anonId}}
+                                    <a class="dropdown-item" name="logout" href="javascript:standard.logout()">Logout</a>
+                                {{/unless}}
+                            {{/if}}
+
+                            {{#if activeLogin.userData.anonId}}
+                                <a class="dropdown-item" name="login" href="javascript:popup.login()">Login</a>
+                            {{/if}}
+
+                            {{#unless activeLogin}}
+                                <a class="dropdown-item" name="login" href="javascript:popup.login()">Login</a>
+                            {{/unless}}
                         </div>
                     </li>
                 </ul>
 
-                <form class="form-inline my-2 my-lg-0" id="privateRoomForm">
-                    <input class="form-control mr-sm-2" name="userName" type="search" placeholder="Enter Private Message" aria-label="Enter Private Message">
-                    <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Go</button>
-                </form>
+                {{#if activeLogin.userData.permissions.privateRoomsFriends}}
+                    <form class="form-inline my-2 my-lg-0" id="privateRoomForm">
+                        <input class="form-control mr-sm-2" name="userName" type="search" placeholder="Enter Private Message" aria-label="Enter Private Message">
+                        <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Go</button>
+                    </form>
+                {{/if}}
             </div>
         </nav>
 
@@ -951,19 +984,33 @@
                                 </div>
                                 <small><span style="margin-left: 10px;">{{settingsLanguageBlurb}}</span></small><br/><br/>
 
-                                <div id="settings5parentalRating">
-                                    <div class="input-group">
-                                        <span class="input-group-addon">{{settingsParentalAgeLabel}}</span>
-                                        <select class="form-control" name="parentalAge" id="parentalAge"></select>
+                                {{#if serverSettings.parentalControls.parentalEnabled}}
+                                    <div>
+                                        <div class="input-group">
+                                            <span class="input-group-addon">{{settingsParentalAgeLabel}}</span>
+                                            <select class="form-control" name="parentalAge">
+                                                {{#each serverSettings.parentalControls.parentalAges}}
+                                                  <option value="{{this}}">{{lookup ../parentalAges this}}</option>
+                                                {{/each}}
+                                            </select>
+                                        </div>
+                                        <small class="form-text text-muted">{{settingsParentalAgeBlurb}}</small><br/>
                                     </div>
-                                    <small class="form-text text-muted">{{settingsParentalAgeBlurb}}</small><br/>
-                                </div>
 
-                                <div id="settings5parentalFlags">
-                                    <span>{{settingsParentalFlagsLabel}}</span>
-                                    <div name="parentalFlagsList"></div>
-                                    <small class="form-text text-muted">{{settingsParentalFlagsBlurb}}</small><br />
-                                </div>
+                                    <div>
+                                        <span>{{settingsParentalFlagsLabel}}</span>
+                                        <div name="parentalFlagsList">
+                                            {{#each serverSettings.parentalControls.parentalFlags}}
+                                                <label class="btn btn-secondary m-1">
+                                                    <input type="checkbox" name="parentalFlags" value="{{this}}" />
+                                                    {{lookup ../parentalFlags this}}
+                                                </label>
+                                            {{/each}}
+
+                                        </div>
+                                        <small class="form-text text-muted">{{settingsParentalFlagsBlurb}}</small><br />
+                                    </div>
+                                {{/if}}
 
                                 <div id="settings5profile">
                                     <div class="input-group">
@@ -1002,16 +1049,15 @@
         <{{!}}/script>
 
         <{{!}}script id="view-editRoom" type="text/x-handlebars-template">
-
         <form action="#" method="post" id="editRoomForm">
             <div class="card">
                 <div class="card-header p-0">
                     <ul class="nav nav-tabs justify-content-center bg-light" role="tablist" id="editRoomTabs">
                         <li class="nav-item">
-                            <a class="nav-link active" data-toggle="tab" role="tab" href="#editRoom1">{{editRoomTabGeneral}}</a>
+                            <a class="nav-link active" data-toggle="tab" role="tab" href="#editRoom1">{{editRoom.tabGeneral}}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" role="tab" href="#editRoom2">{{editRoomTabPermissions}}</a>
+                            <a class="nav-link" data-toggle="tab" role="tab" href="#editRoom2">{{editRoom.tabPermissions}}</a>
                         </li>
                     </ul>
                 </div>
@@ -1021,50 +1067,66 @@
                         <div class="tab-pane fade show active" role="tabpanel" id="editRoom1">
                             <div id="editRoom1Name" class="mb-3">
                                 <div class="input-group">
-                                    <span class="input-group-addon">{{editRoomNameLabel}}</span>
+                                    <span class="input-group-addon">{{editRoom.nameLabel}}</span>
                                     <input type="text" class="form-control" name="name"/>
                                 </div>
-                                <small class="form-text text-muted">{{editRoomNameBlurb}}</small>
+                                <small class="form-text text-muted">{{editRoom.nameBlurb}}</small>
                             </div>
 
-                            <div id="editRoom1ParentalAge" class="mb-4">
-                                <div class="input-group">
-                                    <span class="input-group-addon">{{editRoomParentalAgeLabel}}</span>
-                                    <select class="form-control" name="parentalAge"></select>
+                            {{#if serverSettings.parentalControls.parentalEnabled}}
+                                <div class="mb-4">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">{{editRoom.parentalAgeLabel}}</span>
+                                        <select class="form-control" name="parentalAge">
+                                            {{#each serverSettings.parentalControls.parentalAges}}
+                                                <option value="{{this}}">{{lookup ../parentalAges this}}</option>
+                                            {{/each}}
+                                        </select>
+                                    </div>
+                                    <small class="form-text text-muted">{{editRoom.parentalAgeBlurb}}</small>
                                 </div>
-                                <small class="form-text text-muted">{{editRoomParentalAgeBlurb}}</small>
-                            </div>
 
-                            <div id="editRoom1ParentalFlags" class="mb-4">
-                                <h4>{{editRoomParentalFlagsLabel}}</h4>
-                                <div name="parentalFlagsList"></div>
-                                <small class="form-text text-muted">{{editRoomParentalFlagsBlurb}}</small>
-                            </div>
+                                <div class="mb-4">
+                                    <h4>{{editRoom.parentalFlagsLabel}}</h4>
+                                    <div name="parentalFlagsList">
+                                        {{#each serverSettings.parentalControls.parentalFlags}}
+                                            <label class="btn btn-secondary m-1">
+                                                <input type="checkbox" name="parentalFlags" value="{{this}}" />
+                                                {{lookup ../parentalFlags this}}
+                                            </label>
+                                        {{/each}}
+                                    </div>
+                                    <small class="form-text text-muted">{{editRoom.parentalFlagsBlurb}}</small>
+                                </div>
+                            {{/if}}
 
-                            <div id="editRoom1Censor" class="mb-4">
-                                <h4>{{editRoomCensorLabel}}</h4>
-                                <div name="censorLists" id="censorLists"></div>
-                                <small class="form-text text-muted">{{editRoomCensorBlurb}}</small>
-                            </div>
+                            {{#if serverSettings.censorEnabled}}
+                                <div class="mb-4">
+                                    <h4>{{editRoom.censorLabel}}</h4>
+                                    <div name="censorLists">
+                                    </div>
+                                    <small class="form-text text-muted">{{editRoom.censorBlurb}}</small>
+                                </div>
+                            {{/if}}
 
                             <h4>Room Options</h4>
                             <div id="editRoom1Hidden" class="mb-3">
                                 <label>
                                     <span class="btn btn-primary">
-                                        <input type="checkbox" id="allowHidden" name="allowHidden"/>
-                                        <strong>{{editRoomHiddenLabel}}</strong>
+                                        <input type="checkbox" name="hidden"/>
+                                        <strong>{{editRoom.hiddenLabel}}</strong>
                                     </span><br />
-                                    <small class="form-text text-muted">{{editRoomHiddenBlurb}}</small>
+                                    <small class="form-text text-muted">{{editRoom.hiddenBlurb}}</small>
                                 </label>
                             </div>
 
                             <div id="editRoom1Official">
                                 <label>
                                     <span class="btn btn-primary">
-                                        <input type="checkbox" id="allowOfficial" name="allowOfficial"/>
-                                        <strong>{{editRoomOfficialLabel}}</strong>
+                                        <input type="checkbox" name="official"/>
+                                        <strong>{{editRoom.officialLabel}}</strong>
                                     </span><br />
-                                    <small class="form-text text-muted">{{editRoomOfficialBlurb}}</small>
+                                    <small class="form-text text-muted">{{editRoom.officialBlurb}}</small>
                                 </label>
                             </div>
                         </div>
@@ -1073,35 +1135,35 @@
                             <div id="editRoom2AllowViewing">
                                 <label class="btn btn-secondary">
                                     <input type="checkbox" id="allowViewing" name="allowViewing"/>
-                                    {{editRoomAllowViewingLabel}}
+                                    {{editRoom.allowViewingLabel}}
                                 </label><br/>
-                                <small class="form-text text-muted">{{editRoomAllowViewingBlurb}}</small>
+                                <small class="form-text text-muted">{{editRoom.allowViewingBlurb}}</small>
                                 <br/>
                             </div>
 
-                            <div id="editRoom2AllowAll">
+                            <div>
                                 <fieldset class="p-3 border border-dark rounded">
-                                    <legend style="display: inline; width: auto;">
-                                        <label class="btn btn-secondary">
-                                            <input type="checkbox" id="allowPosting" name="allowPosting"/>
-                                            {{editRoomAllowAll}}
+                                    <legend style="display: inline; width: auto;" class="m-0">
+                                        <label class="btn btn-secondary m-0">
+                                            <input type="checkbox" name="allowPosting"/>
+                                            {{editRoom.allowAll}}
                                         </label>
                                     </legend>
 
                                     <div id="editRoom2AllowedUsers">
-                                        <span>{{editRoomAllowedUsersLabel}}</span>
+                                        <span>{{editRoom.allowedUsersLabel}}</span>
                                         <div name="allowedUsersContainer" id="allowedUsersContainer"></div>
                                     </div><br />
 
                                     <div id="editRoom2AllowedGroups">
-                                        <span>{{editRoomAllowedGroupsLabel}}</span>
+                                        <span>{{editRoom.allowedGroupsLabel}}</span>
                                         <div name="allowedGroupsContainer" id="allowedGroupsContainer"></div>
                                     </div>
                                 </fieldset>
                             </div><br/>
 
                             <div id="editRoom2Moderators">
-                                <span>{{editRoomModeratorsLabel}}</span>
+                                <span>{{editRoom.moderatorsLabel}}</span>
                                 <div name="moderatorsContainer" id="moderatorsContainer"></div>
                             </div><br />
                         </div>
@@ -1109,8 +1171,8 @@
                 </div>
 
                 <div class="card-footer">
-                    <button type="submit" class="btn btn-success">{{editRoomSubmit}}</button>
-                    <button type="reset" class="btn btn-secondary">{{editRoomReset}}</button>
+                    <button type="submit" class="btn btn-success">{{editRoom.submit}}</button>
+                    <button type="reset" class="btn btn-secondary">{{editRoom.reset}}</button>
                 </div>
             </div>
         </form>

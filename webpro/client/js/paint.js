@@ -55,13 +55,13 @@ function $l(stringName, substitutions, extra) {
 }
 
 function fim_renderHandlebarsInPlace(tag, name) {
-    console.log(tag);
-
     var id       = tag.attr('id');
     var source   = tag.html();
     var template = Handlebars.compile(source);
 
-    $('<div id="active-' + id + '">' + template(window.phrases) + '</div>').insertAfter(tag);
+    $('#active-' + id).remove();
+
+    $('<div id="active-' + id + '">' + template(Object.assign({}, window.phrases, {serverSettings : window.serverSettings, activeLogin : window.activeLogin})) + '</div>').insertAfter(tag);
 }
 
 function fim_openView(viewName, options) {
@@ -118,6 +118,7 @@ function fim_hashParse(options) {
     var urlHashComponents = window.location.hash.split('#'),
         urlHashComponentsMap = Object.assign({}, options);
 
+    // Build the map of properties with corresponding values.
     for (var i = 0; i < urlHashComponents.length; i++) {
         var componentPieces = urlHashComponents[i].split('=');
 
@@ -125,29 +126,26 @@ function fim_hashParse(options) {
             urlHashComponentsMap[componentPieces[0]] = componentPieces[1];
     }
 
+    // Set the roomId property automatically to the global window roomId
     if (!('room' in urlHashComponentsMap)) {
         urlHashComponentsMap['room'] = window.roomId;
     }
     urlHashComponentsMap['roomId'] = urlHashComponentsMap['room'];
 
+    // If no first hash component, open the default (room) view.
     if (!urlHashComponents[1])
         fim_openView('room', urlHashComponentsMap);
 
+    // If we have view data for the hash component, open it.
     else if ($('#view-' + urlHashComponents[1].split('=')[0]).length > 0)
         fim_openView(urlHashComponents[1].split('=')[0], urlHashComponentsMap);
 
+    // Otherwise, fallback to the default (room) view
     else {
         console.log("no action", urlHashComponentsMap);
         fim_openView('room', urlHashComponentsMap);
     }
 }
-
-
-// 1. default view is implied -- pulls in room=
-// 2. get next hash as viewname
-// 3. switch on viewname
-// 4. pull all valid hash parameters (e.g. editRoom pulls in room=, archive pulls in room=, message=, page=, and so-on)
-// 5. goto 2
 
 function fim_getHashRegex(name) {
     return new RegExp('#' + name + '(=([^#]+))?(#|$)');
@@ -182,6 +180,7 @@ function fim_atomicRemoveHashParameterSetHashParameter(removeName, setName, setV
 }
 
 
+
 /* Requirements
  * All of these are pretty universal, but I want to be explicit with them. */
 if (typeof Date === 'undefined') { window.location.href = 'browser.html'; }
@@ -190,8 +189,7 @@ else if (false === ('encodeURIComponent' in window || 'escape' in window)) { win
 
 
 
-/* Prototyping
- * Only for Compatibility */
+/* Prototyping */
 
 // Array indexOf
 // Courtesy of https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/indexOf
@@ -213,16 +211,10 @@ if (!Array.prototype.indexOf) {
     };
 }
 
+// Array remove
 Array.prototype.remove = function(item) {
     return this.splice(this.indexOf(item), 1);
 };
-
-
-
-// Base64 encode/decode
-if (!window.btoa) window.btoa = $.base64.encode;
-if (!window.atob) window.atob = $.base64.decode;
-
 
 // console.log
 if (typeof console !== 'object' || typeof console.log !== 'function') {
@@ -232,6 +224,9 @@ if (typeof console !== 'object' || typeof console.log !== 'function') {
     };
 }
 
+
+
+/* Define Global Variables */
 
 var userId, // The user ID who is logged in.
     roomId, // The ID of the room we are in.
@@ -245,8 +240,7 @@ var userId, // The user ID who is logged in.
 /* Function-Specific Variables */
 
 window.isBlurred = false; // By default, we assume the window is active and not blurred.
-var topic,
-    favicon = $('#favicon').attr('href'),
+var favicon = $('#favicon').attr('href'),
     requestSettings = {
         serverSentEvents : false, // We may set this to true if the server supports it.
         //timeout : 2400, // We may increase this dramatically if the server supports longPolling.
@@ -255,25 +249,8 @@ var topic,
         //lastMessage : 0,
         //lastEvent : 0
     },
-    timers = {t1 : false}, // Object
-    messageSource,
-    eventSource;
-
-
-
-/* Objects for Cleanness, Caching. */
-
-var modRooms = {}, // Just a whole bunch of objects.
-    userData = {},
-    roomLists = {},
-
-    roomList = [], userList = [], groupList = [], // Arrays that serve different purposes, notably looking up IDs from names.
-    messageIndex = {},
-
-    roomUlFavHtml = '', roomUlMyHtml = '', // A bunch of strings displayed at different points.
-    roomUlHtml = '', ulText = '', roomTableHtml = '',
-
-    active = {}; // This is used as a placeholder for JSON objects where code cleanity is nice.
+    timers = {t1 : false},
+    messageIndex = {};
 
 
 
@@ -333,7 +310,7 @@ var directory = window.location.pathname.split('/').splice(0, window.location.pa
 
 
 $.when(
-    $.ajax({
+    $.ajax({ // TODO?
         url: 'client/data/config.json',
         dataType: 'json',
         success: function(data) { window.fim_config = data; }
@@ -342,11 +319,6 @@ $.when(
         url: 'client/data/language_enGB.json',
         dataType: 'json',
         success: function(data) { window.phrases = data; }
-    }),
-    $.ajax({
-        url: 'client/data/templates.json',
-        dataType: 'json',
-        success: function(data) { window.templates = data; }
     }),
     $.ajax({
         url: 'client/js/fim-dev/fim-api.js',
@@ -362,6 +334,10 @@ $.when(
     }),
     $.ajax({
         url: 'client/js/fim-dev/fim-popup.js',
+        dataType: 'script'
+    }),
+    $.ajax({
+        url: 'client/js/fim-dev/fim-popup-room.js',
         dataType: 'script'
     }),
     $.ajax({
@@ -389,8 +365,8 @@ $.when(
 
 
     /* Do some final compat testing */
-    if (typeof window.EventSource == 'undefined') requestSettings.serverSentEvents = false;
-    else requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;
+    //if (typeof window.EventSource == 'undefined') requestSettings.serverSentEvents = false;
+    //else requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;
 
     if (window.serverSettings.installUrl != (window.location.protocol + '//' + window.location.host + window.directory)) dia.error(window.phrases.errorBadInstall);
 
@@ -406,6 +382,240 @@ $.when(
     $(document).ready(function() {
         /* Draw Template */
         fim_renderHandlebarsInPlace($("#entry-template"));
+
+
+        /*** Context Menus ***/
+        var contextAction_msgLink = function(roomId, messageId) {
+            dia.full({
+                title : 'Link to this Message',
+                content : $('<span>').text('This message can be bookmarked using the following archive link:').append(
+                    $('<br>'), $('<br>'), $('<input>').attr({
+                        type : "text",
+                        value : currentLocation + '#page=archive#room=' + roomId + '#message=' + messageId,
+                        autofocus : true,
+                        id : 'messageLink-' + roomId + '-' + messageId,
+                        style : "width: 100%;"
+                    })).prop('outerHTML'),
+                oF : function() {
+                    $('#' + 'messageLink-' + roomId + '-' + messageId).focus().select();
+                }
+            });
+        };
+
+        var contextAction_msgDelete = function(roomId, messageId) {
+            dia.confirm({
+                text : 'Are you sure you want to delete this message?',
+                'true' : function() {
+                    standard.deleteMessage(roomId, messageId);
+                }
+            });
+        };
+
+        var contextAction_msgEdit = function(messageId) {
+            $('#message' + messageId + ' .messageText').dblclick();
+        };
+
+
+        var classNames = {
+            //hover:            'bg-primary',          // Item hover
+            disabled:         'bg-inverse',       // Item disabled
+            visible:          'bg-primary',        // Item visible
+            notSelectable:    'not-selectable', // Item not selectable
+        }
+
+
+        $.contextMenu({
+            classNames : classNames,
+            selector : '.messageText',
+            items : {
+                delete : {
+                    name : 'Delete',
+                    callback: function() {
+                        contextAction_msgDelete($(this).attr('data-roomid'), $(this).attr('data-messageid'))
+                    }
+                },
+
+                link : {
+                    name : 'Link',
+                    callback: function() {
+                        contextAction_msgLink($(this).attr('data-roomid'), $(this).attr('data-messageid'))
+                    }
+                },
+
+                edit : {
+                    name : 'Edit',
+                    callback : function() {
+                        contextAction_msgEdit($(this).attr('data-messageid'))
+                    },
+                    visible : function() {
+                        return $(this).parent('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
+                    }
+                }
+            }
+        });
+
+        $.contextMenu({
+            classNames : classNames,
+            selector : '.messageText img', // Todo: exclude emoticons
+            items : {
+                delete : {
+                    name : 'Delete',
+                    callback: function() {
+                        contextAction_msgDelete($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                    }
+                },
+
+                link : {
+                    name : 'Link',
+                    callback: function() {
+                        contextAction_msgLink($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                    }
+                },
+
+                edit : {
+                    name : 'Edit',
+                    callback : function() {
+                        contextAction_msgEdit($(this).closest('.messageText').attr('data-messageid'))
+                    },
+                    visible : function() {
+                        return $(this).closest('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
+                    }
+                },
+
+                click : {
+                    name : 'URL',
+                    callback : function() {
+                        dia.full({
+                            title : 'Copy Image URL',
+                            content : $('<div>').append(
+                                $('<img>').attr({
+                                    src : $(this).attr('src'),
+                                    style : 'max-width: 550px; max-height: 550px; margin-left: auto; margin-right: auto; display: block;'
+                                }), $('<br>'), $('<br>'), $('<input>').attr({
+                                    type : 'text',
+                                    name : 'url',
+                                    value : $(this).attr('src'),
+                                    style : 'width: 100%'
+                                })).prop('outerHTML'),
+                            width : 800,
+                            position : 'top',
+                            oF : function() {
+                                $('input[name=url]', this).first().focus();
+                            }
+                        });
+                    },
+                }
+            }
+        });
+
+        $.contextMenu({
+            classNames : classNames,
+            selector : '.messageText a', // Todo: exclude emoticons
+            items : {
+                delete : {
+                    name : 'Delete',
+                    callback: function() {
+                        contextAction_msgDelete($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                    }
+                },
+
+                link : {
+                    name : 'Link',
+                    callback: function() {
+                        console.log($(this), $(this).closest('.messageText'), $(this).closest('.messageText').attr('data-roomid'))
+                        contextAction_msgLink($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                    }
+                },
+
+                edit : {
+                    name : 'Edit',
+                    callback : function() {
+                        contextAction_msgEdit($(this).closest('.messageText').attr('data-messageid'))
+                    },
+                    visible : function() {
+                        return $(this).closest('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
+                    }
+                },
+
+                click : {
+                    name : 'URL',
+                    callback : function() {
+                        dia.full({
+                            title : 'Copy URL',
+                            position : 'top',
+                            content : $('<input>').attr({
+                                type : 'text',
+                                name : 'url',
+                                value : $(this).attr('href'),
+                                style : 'width: 100%;'
+                            }).prop('outerHTML'),
+                            width : 800,
+                            oF : function() {
+                                $('input[name=url]', this).first().focus();
+                            }
+                        });
+                    },
+                }
+            }
+        });
+
+        $.contextMenu({
+            classNames : classNames,
+            selector : '.userName', // Todo: exclude emoticons
+            items : {
+                profile : {
+                    name : 'Profile',
+                    callback : function() {
+                        var resolver = $.when(Resolver.resolveUsersFromIds([userId])).then(function(userData) {
+                            dia.full({
+                                title : 'User Profile',
+                                id : 'messageLink',
+                                content : (userData[userId].profile ? '<iframe src="' + userData[userId].profile + '" style="width: 100%; height: 90%;" /><br /><a href="' + userData[userId].profile + '" target="_BLANK">Visit The Page Directly</a>' : 'The user has not yet registered a profile.'),
+                                width: $(window).width() * .8,
+                                height: $(window).height() * .9
+                            });
+                        });
+                    }
+                },
+
+                privateIm : {
+                    name : 'Private IM',
+                    callback : function() {
+                        window.location.hash = '#room=p' + [window.userId, $(this).attr('data-userid')].join(',');
+                    },
+                    visible : function() {
+                        return $(this).attr('data-userid') != window.userId;
+                    }
+                },
+
+                kick : {
+                    name : 'Kick',
+                    callback : function() {
+                        popup.kick($('data-userid'), window.roomId)
+                    },
+                    visible : function() {
+                        return false; // TODO!
+                    }
+                },
+
+                ban : {
+                    name : 'Ban',
+                    callback : function() {
+                        standard.banUser($('data-userid'))
+                    },
+                    visible : function() {
+                        return false; // TODO!
+                    }
+                },
+
+                ignore : {
+                    name : 'Ignore',
+                    callback : function() {
+                        dia.alert('This functionality is not yet implemented.');
+                    }
+                },
+            }
+        });
 
 
 
