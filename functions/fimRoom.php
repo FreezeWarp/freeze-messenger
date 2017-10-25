@@ -792,28 +792,6 @@ class fimRoom extends fimDynamicObject {
     }
 
 
-    /**
-     * Resolves properties based on the passed data, presumably from either the database or a cache.
-     *
-     * @param array $roomData
-     * @param bool $dbNameMapping
-     * @return bool
-     * @throws fimError
-     */
-    protected function populateFromArray(array $roomData): bool {
-        if ($roomData) {
-            foreach ($roomData AS $attribute => $value) {
-                $this->set($attribute, $value);
-            }
-
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-
     /* TODO: move to DB, I think? */
     public function changeTopic($topic) {
         global $database;

@@ -12,6 +12,12 @@ abstract class fimDynamicObject {
 
 
     /**
+     * @var bool If this instance should be recached (because some major change has occurred).
+     */
+    public $doCache;
+
+
+    /**
      * Invokes setters, or sets by property. Adds properties to list of resolved properties.
      *
      * @param $property string The property to set.
@@ -27,11 +33,33 @@ abstract class fimDynamicObject {
 
         if (method_exists($this, 'set' . ucfirst($property)))
             $this->$setterName($value);
-        else
+        else {
             $this->{$property} = $value;
+        }
+
 
         if (!in_array($property, $this->resolved))
             $this->resolved[] = $property;
+    }
+
+
+    /**
+     * Populates the object's parameters based on an associative array.
+     *
+     * @param array $data An array of object data.
+     * @return bool Returns false if object data is empty, true otherwise.
+     */
+    public function populateFromArray(array $data) : bool {
+        if ($data) {
+            foreach ($data AS $attribute => $value) {
+                $this->set($attribute, $value);
+            }
+
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
 

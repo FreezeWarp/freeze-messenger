@@ -44,8 +44,13 @@ class fimUserFactory {
 
         foreach (fimUserFactory::$instances AS $id => $instance) {
             if (!$generalCache->exists('fim_fimUser_' . $id)) {
-                $instance->resolveAll();
                 $generalCache->add('fim_fimUser_' . $id, $instance, 5 * 60);
+            }
+            elseif ($instance->doCache) {
+                $instance->resolveAll();
+                $instance->doCache = false;
+
+                $generalCache->set('fim_fimUser_' . $id, $instance, 5 * 60);
             }
         }
     }

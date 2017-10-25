@@ -74,11 +74,6 @@ class fimUser extends fimDynamicObject
      */
     const USER_PRIV_ACTIVE_USERS = 0x400;
 
-    /**
-     * The user may view post counts.
-     */
-    const USER_PRIV_POST_COUNTS = 0x800;
-
 
     /**
      * The user has administrative grant priviledges, such that they can make other users administrators.
@@ -464,6 +459,8 @@ class fimUser extends fimDynamicObject
     public function editList($listName, $ids, $action) {
         global $database;
 
+        $this->doCache = true;
+
         // todo: room/user factories that use cached data if available, database otherwise
 
         $this->resolve([$listName]);
@@ -620,7 +617,7 @@ class fimUser extends fimDynamicObject
     /**
      * Checks to see if the user has permission to do the specified thing.
      *
-     * @param $priv The priviledge to check, one of ['protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline', 'postCounts']
+     * @param $priv The priviledge to check, one of ['protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline']
      * @return bool True if user has permission, false if not.
      * @throws Exception for unrecognised priviledges
      */
@@ -646,7 +643,6 @@ class fimUser extends fimDynamicObject
             case 'privateRoomsFriends':   return (bool)($privs & fimUser::USER_PRIV_PRIVATE_FRIENDS); break; // May create private rooms (friends only)
             case 'privateRoomsAll':       return (bool)($privs & fimUser::USER_PRIV_PRIVATE_ALL);     break; // May create private rooms (anybody)
             case 'roomsOnline':           return (bool)($privs & fimUser::USER_PRIV_ACTIVE_USERS);    break; // May see rooms online.
-            case 'postCounts':            return (bool)($privs & fimUser::USER_PRIV_POST_COUNTS);     break; // May see post counts.
 
             /* Config Aliases
              * (These may become full priviledges in the future.) */
@@ -661,7 +657,7 @@ class fimUser extends fimDynamicObject
     public function getPermissionsArray() {
         $privs = array();
 
-        foreach (array('protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline', 'postCounts', 'editOwnPosts', 'deleteOwnPosts') AS $priv)
+        foreach (array('protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline', 'editOwnPosts', 'deleteOwnPosts') AS $priv)
             $privs[$priv] = $this->hasPriv($priv);
 
         return $privs;
@@ -726,7 +722,7 @@ class fimUser extends fimDynamicObject
      */
     public function isAnonymousUser() : bool
     {
-        return ($this->id === self::ANONYMOUS_USER_ID);
+        return ((int) $this->id === self::ANONYMOUS_USER_ID);
     }
 
 
@@ -752,30 +748,6 @@ class fimUser extends fimDynamicObject
 
         else
             throw new Exception('fimUser does not have uniquely identifying information required to perform database retrieval.');
-    }
-
-
-    /**
-     * Populates the user object's parameters based on an associative array obtained from the DB.
-     *
-     * @param array $userData An array of user data obtained from the database users table.
-     * @return bool Returns false if userData is empty, true otherwise.
-     */
-    public function populateFromArray(array $userData, bool $overwrite = false) : bool
-    {
-        if ($userData) {
-            // The resolution process in set modifies the data based from an array in several ways. As a result, if we're importing from an array a second time, we either need to ignore the new value or, as in this case, uncheck the resolve[] entries to have them reparsed when set fires.
-            if ($overwrite) $this->resolved = array_diff($this->resolved, array_keys($userData));
-
-            foreach ($userData AS $attribute => $value) {
-                $this->set($attribute, $value);
-            }
-
-            return true;
-        }
-        else {
-            return false;
-        }
     }
 
 
