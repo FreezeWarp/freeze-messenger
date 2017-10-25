@@ -25,8 +25,10 @@ class fimRoomFactory {
         if (!isset($roomData['id']))
             throw new Exception('Roomdata must contain id');
 
-        elseif (isset(fimRoomFactory::$instances[$roomData['id']]))
+        elseif (isset(fimRoomFactory::$instances[$roomData['id']])) {
+            fimRoomFactory::$instances[$roomData['id']]->populateFromArray($roomData);
             return fimRoomFactory::$instances[$roomData['id']];
+        }
 
         elseif ($generalCache->exists('fim_fimRoom_' . $roomData['id'])
             && ($room = $generalCache->get('fim_fimRoom_' . $roomData['id'])) != false) {

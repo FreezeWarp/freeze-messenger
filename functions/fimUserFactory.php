@@ -25,12 +25,13 @@ class fimUserFactory {
         if (!isset($userData['id']))
             throw new Exception('Userdata must contain id');
 
-        elseif (isset(fimUserFactory::$instances[$userData['id']]))
+        elseif (isset(fimUserFactory::$instances[$userData['id']])) {
+            fimUserFactory::$instances[$userData['id']]->populateFromArray($userData);
             return fimUserFactory::$instances[$userData['id']];
+        }
 
         elseif ($generalCache->exists('fim_fimUser_' . $userData['id'])
             && ($user = $generalCache->get('fim_fimUser_' . $userData['id'])) != false) {
-            $user->populateFromArray($userData);
             return fimUserFactory::$instances[$userData['id']] = $user;
         }
 
