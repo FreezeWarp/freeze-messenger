@@ -181,7 +181,7 @@ fimApi.prototype.getRooms = function(params, requestSettings) {
         'roomIds' : null,
         'roomNames' : null,
         'roomNameSearch' : null,
-        'permLevel' : null,
+        'permFilter' : null,
         'page' : null
     });
 

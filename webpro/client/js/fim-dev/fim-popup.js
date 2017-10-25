@@ -48,7 +48,7 @@ popup.prototype.login = function() {
     });
 
     // Close
-    $('#modal-login').on('hidden.bs.modal', function () {
+    $('#modal-login').on('hide.bs.modal', function () {
         if (!window.userId) {
             standard.initialLogin({
                 grantType : 'anonymous',
@@ -278,7 +278,7 @@ popup.prototype.settings = {
                 defaultColourHashPre = [],
                 defaultColourHash = {r:0, g:0, b:0};
 
-            var ignoreList = new autoEntry($("#ignoreListContainer"), {
+            var ignoreList = new autoEntry($("#changeSettingsForm [name=ignoreListContainer]"), {
                 'name' : 'ignoreList',
                 'default' : active.ignoredUsers,
                 'list' : 'users',
@@ -286,7 +286,7 @@ popup.prototype.settings = {
                 'resolveFromNames' : Resolver.resolveUsersFromNames
             });
 
-            var friendsList = new autoEntry($("#friendsListContainer"), {
+            var friendsList = new autoEntry($("#changeSettingsForm [name=friendsListContainer]"), {
                 'name' : 'friendsList',
                 'default' : active.friendedUsers,
                 'list' : 'users',
@@ -294,7 +294,7 @@ popup.prototype.settings = {
                 'resolveFromNames' : Resolver.resolveUsersFromNames
             });
 
-            var watchRooms = new autoEntry($("#watchRoomsContainer"), {
+            var watchRooms = new autoEntry($("#changeSettingsForm [name=watchRoomsContainer]"), {
                 'name' : 'watchRooms',
                 'default' : active.watchRooms,
                 'list' : 'rooms',
@@ -418,17 +418,9 @@ popup.prototype.settings = {
 
 
             // Parental Ages/Flags
-            if (window.serverSettings.parentalControls.parentalEnabled) {
-                fim_createParentalControls($('#changeSettingsForm'));
-
-                // Parental Flags Default
-                jQuery.each(active.parentalFlags, function(key, flag) {
-                    $('input[name=parentalFlags][value=' + flag + ']').attr('checked', true);
-                });
-            }
-            else {
-                $('#settings5parentalAge, #settings5parentalFlags').hide();
-            }
+            jQuery.each(active.parentalFlags, function(key, flag) {
+                $('input[name=parentalFlags][value=' + flag + ']').attr('checked', true);
+            });
 
 
             // Default Privacy Level
@@ -709,7 +701,7 @@ popup.prototype.editRoom = {
         var _this = this;
         this.setOptions(options);
 
-        if (this.options.roomId)
+        if (this.options.roomId != 0)
             var action = 'edit';
         else
             var action = 'create';
@@ -771,7 +763,7 @@ popup.prototype.editRoom = {
 
         /* Censor Lists */
         fimApi.getCensorLists({
-            'roomId' : this.options.roomId ? this.options.roomId : null,
+            'roomId' : this.options.roomId != 0 ? this.options.roomId : null,
             'includeWords' : 0,
         }, {
             'each' : function(listData) {
@@ -799,7 +791,7 @@ popup.prototype.editRoom = {
         /*
          * Prepopulate Data if Editing a Room
          */
-        if (this.options.roomId) {
+        if (this.options.roomId != 0) {
             fimApi.getRooms({
                 'id' : this.options.roomId
             }, {'each' : function(roomData) {
@@ -1256,141 +1248,6 @@ popup.prototype.exportArchive = function() {
         return false;
     });
 };
-
-
-popup.prototype.rooms = {
-    options : {
-        searchText : '',
-        page : 0
-    },
-
-    init : function(options) {
-        var _this = this;
-
-        for (i in options)
-            _this.options[i] = options[i];
-
-        // TODO: names, not IDs
-        $('#permissionLevel, #roomNameSearchText, #active-view-rooms button').unbind('change');
-
-        $('#roomNameSearchText').bind('change', function() {
-            _this.update('searchText', $(this).val());
-            _this.retrieve();
-        });
-
-        $('#active-view-rooms button[name=roomListNext]').bind('click', function() {
-            _this.nextPage();
-        });
-
-        $('#active-view-rooms button[name=roomListPrev]').bind('click', function() {
-            _this.prevPage();
-        });
-
-        _this.retrieve();
-    },
-
-    retrieve : function() {
-        var _this = this;
-
-        $('#roomTableHtml').html('');
-
-        fimApi.getRooms({
-            page : _this.options.page
-        }, {
-            'each' : function(roomData) {
-                $('#roomTableHtml').append(
-                    $('<tr>').attr('id', 'room' + roomData.id).append(
-                        $('<td>').append(
-                            $('<a>').attr('href','#room=' + roomData.id).text(roomData.name)
-                        ),
-                        $('<td>').text(roomData.topic),
-                        $('<td>').append(
-                            $('<div>').append(
-                                (roomData.permissions.properties
-                                        ? $('<button>').attr({
-                                            'class' : 'btn btn-secondary m-1',
-                                            'title' : 'Edit Room'
-                                        }).text('Edit').prepend($('<i class="fa fa-sliders"></i>')).click(function() {
-                                            window.location.hash = '#editRoom#room=' + roomData.id;
-                                        })
-                                        : ''
-                                ),
-
-                                // TODO: test
-                                (roomData.permissions.properties
-                                        ? $('<button>').attr({
-                                            'class' : 'btn btn-danger m-1',
-                                            'title' : 'Delete Room'
-                                        }).text('Delete').prepend($('<i class="fa fa-trash"></i>')).click(function() {
-                                            if (dia.confirm("Are you sure you want to delete this room?")) {
-                                                standard.deleteRoom(roomData.id);
-                                            }
-                                        })
-                                        : ''
-                                ),
-
-                                $('<button>').attr({
-                                    'class' : 'btn btn-secondary m-1',
-                                    'title' : 'View History'
-                                }).text('Archive').prepend($('<i class="fa fa-history"></i>')).click(function() {
-                                    window.location.hash = '#archive#room=' + roomData.id;
-                                }),
-
-                                $('<button>').attr({
-                                    'class' : 'btn btn-secondary m-1',
-                                    'title' : 'Favourite Room'
-                                }).text('Fav').prepend($('<i class="fa fa-star" style="color: yellow;"></i>')),
-
-                                $('<button>').attr({
-                                    'data-toggle' : 'button',
-                                    'class' : 'btn btn-secondary m-1' + (window.activeLogin.userData.watchRooms.indexOf(roomData.id) !== -1 ? ' active' : ''),
-                                    'aria-pressed' : (window.activeLogin.userData.watchRooms.indexOf(roomData.id) !== -1 ? 'true' : 'false'),
-                                    'title' : 'Get Notifications About New Messages in This Room'
-                                }).text('Watch').prepend($('<i class="fa fa-eye"></i>')).click(function() {
-                                    if (window.activeLogin.userData.watchRooms.indexOf(roomData.id) === -1) {
-                                        dia.info("You will now be notified of new messages made in this room.", "Now Watching");
-                                        window.activeLogin.userData.watchRooms.push(roomData.id);
-                                        fimApi.watchRoom(roomData.id);
-                                        $(this).addClass("active");
-                                    }
-
-                                    else {
-                                        window.activeLogin.userData.watchRooms.remove(roomData.id);
-                                        fimApi.unwatchRoom(roomData.id);
-                                        $(this).removeClass("active");
-                                    }
-                                })
-                            )
-                        )
-                    )
-                );
-            }
-        });
-    },
-
-    nextPage : function () {
-        $('#archivePrev').button({ disabled : false });
-
-        this.options.page++;
-
-        this.retrieve();
-    },
-
-    prevPage : function () {
-        if (this.options.page !== 0) this.options.page--;
-
-        if (this.options.page <= 0) {
-            $('#archivePrev').button({ disabled : true });
-        }
-
-        this.retrieve();
-    },
-
-    update : function (option, value) {
-        this.options[option] = value;
-    }
-};
-
 /*********************************************************
  ************************* END ***************************
  ************** Repeat-Action Popup Methods **************

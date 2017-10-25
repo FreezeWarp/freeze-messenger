@@ -70,13 +70,12 @@ standard.prototype.login = function(options) {
                         grantType : 'refresh_token',
                         refreshToken : activeLogin.refresh_token
                     });
-                }, activeLogin.expires * 1000 / 2)
+                }, activeLogin.expires * 1000 / 2);
             }
-
 
             // TODO: only once
             fimApi.getRooms({
-                roomIds : window.activeLogin.userData.favRooms.concat(window.activeLogin.userData.watchRooms).concat(window.serverSettings.officialRooms)
+                roomIds : window.serverSettings.officialRooms.concat(window.activeLogin.userData.favRooms).concat(window.activeLogin.userData.watchRooms)
             }, {
                 begin : function() {
                     $('#navbar div[name=favRoomsList]').html('');
@@ -87,19 +86,19 @@ standard.prototype.login = function(options) {
                         'href' : '#room=' + roomData.id,
                         'class' : 'dropdown-item'
                     }).text(roomData.name);
-console.log(roomData, "a");
+
                     if (window.activeLogin.userData.favRooms.indexOf(roomData.id) != -1)
-                        $('#navbar div[name=favRoomsList]').append(html);
+                        $('#navbar div[name=favRoomsList]').append(html.clone());
 
                     if (window.activeLogin.userData.watchRooms.indexOf(roomData.id) != -1)
-                        $('#navbar div[name=watchRoomsList]').append(html);
+                        $('#navbar div[name=watchRoomsList]').append(html.clone());
 
                     if (roomData.official)
-                        $('#navbar div[name=officialRoomsList]').append(html);
+                        $('#navbar div[name=officialRoomsList]').append(html.clone());
                 }
             });
 
-            /*** A Hack of Sorts to Open Dialogs onLoad ***/
+            /*** A Hack of Sor ts to Open Dialogs onLoad ***/
             if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
 
             return false;

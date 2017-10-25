@@ -54,14 +54,36 @@ function $l(stringName, substitutions, extra) {
     }
 }
 
-function fim_renderHandlebarsInPlace(tag, name) {
+Handlebars.registerHelper("contains", function( value, array, options ){
+    // fallback...
+    array = ( array instanceof Array ) ? array : [array];
+    return (array.indexOf(value) > -1) ? options.fn( this ) : "";
+});
+
+function fim_renderHandlebarsInPlace(tag) {
     var id       = tag.attr('id');
     var source   = tag.html();
     var template = Handlebars.compile(source);
 
     $('#active-' + id).remove();
 
-    $('<div id="active-' + id + '">' + template(Object.assign({}, window.phrases, {serverSettings : window.serverSettings, activeLogin : window.activeLogin})) + '</div>').insertAfter(tag);
+    $('<div id="active-' + id + '">' + template(fim_getHandlebarsPhrases()) + '</div>').insertAfter(tag);
+}
+
+function fim_renderHandlebars(tag, target) {
+    var id       = tag.attr('id');
+    var source   = tag.html();
+    var template = Handlebars.compile(source);
+
+    $('#active-' + id).remove();
+
+    $(target).html($('<div id="active-' + id + '">' + template(fim_getHandlebarsPhrases()) + '</div>'));
+}
+
+function fim_getHandlebarsPhrases(extra) {
+    if (!extra) extra = {};
+
+    return Object.assign({}, window.phrases, {serverSettings : window.serverSettings, activeLogin : window.activeLogin}, extra);
 }
 
 function fim_openView(viewName, options) {
@@ -74,6 +96,9 @@ function fim_openView(viewName, options) {
                 popup[viewName][setterName](value);
             }
         });
+
+        if (typeof popup[viewName].retrieve != "undefined")
+            popup[viewName].retrieve();
     }
 
     else {
@@ -81,12 +106,24 @@ function fim_openView(viewName, options) {
 
         if (tag.length > 0) {
             fim_closeView();
-            fim_renderHandlebarsInPlace(tag);
+            fim_renderHandlebars(tag, $('#content'));
 
             $('#active-view-' + viewName).addClass('fim-activeView');
 
             if (typeof popup[viewName] != "undefined") {
-                popup[viewName].init(options);
+                popup[viewName].init(options); // transitional; TODO: remove
+
+                jQuery.each(options, function(name, value) {
+                    var setterName = "set" + name.charAt(0).toUpperCase() + name.slice(1);
+
+                    if (typeof popup[viewName] != "undefined"
+                        && typeof popup[viewName][setterName] != "undefined") {
+                        popup[viewName][setterName](value);
+                    }
+                });
+
+                if (typeof popup[viewName].retrieve != "undefined")
+                    popup[viewName].retrieve();
             }
         }
         else {
@@ -321,28 +358,8 @@ $.when(
         success: function(data) { window.phrases = data; }
     }),
     $.ajax({
-        url: 'client/js/fim-dev/fim-api.js',
+        url: 'client/js/fim-all.js',
         dataType: 'script'
-    }),
-    $.ajax({
-        url: 'client/js/fim-dev/fim-apiHelper.js',
-        dataType: 'script'
-    }),
-    $.ajax({
-        url: 'client/js/fim-dev/fim-standard.js',
-        dataType: 'script'
-    }),
-    $.ajax({
-        url: 'client/js/fim-dev/fim-popup.js',
-        dataType: 'script'
-    }),
-    $.ajax({
-        url: 'client/js/fim-dev/fim-popup-room.js',
-        dataType: 'script'
-    }),
-    $.ajax({
-        url: 'client/js/fim-dev/fim-loader.js',
-        dataType:'script'
     }),
     $.ajax({
         url: window.directory + 'api/serverStatus.php',
@@ -616,7 +633,45 @@ $.when(
                 },
             }
         });
+        /**
+         * (Re-)Parse the "room" context menus.
+         * TODO
+         *
+         * @author Jospeph T. Parsons <josephtparsons@gmail.com>
+         * @copyright Joseph T. Parsons 2017
+         */
+        /*function contextMenuParseRoom() {
+            $('.room').contextMenu({
+                    menu: 'roomMenu',
+                    altMenu : settings.disableRightClick
+                },
+                function(action, el) {
+                    roomId = $(el).attr('data-roomId');
 
+                    switch(action) {
+                        case 'delete':
+                            dia.confirm({
+                                text : 'Are you sure you want to delete this room?',
+                                'true' : function() {
+                                    standard.deleteRoom(roomId);
+
+                                    $(el).parent().fadeOut();
+
+                                    return false;
+                                }
+                            });
+                            break;
+
+                        case 'edit': popup.editRoom(roomId); break;
+                        case 'archive': popup.archive.init({roomId : roomId}); break;
+                        case 'enter': standard.changeRoom(roomId); break;
+                    }
+
+                    return false;
+                });
+
+            return false;
+        }*/
 
 
         /* Private Room Form */
@@ -668,11 +723,6 @@ $.when(
         /*** Image Buttons! ***/
         // todo: move to upload popup
         //$("#imageUploadSubmitButton").button("option", "disabled", true);
-
-        // Room Shower Thing
-        $('#showMoreRooms').bind('click', function() { $('#roomListShort').slideUp(); $('#roomListLong').slideDown(); });
-        $('#showFewerRooms').bind('click', function() { $('#roomListLong').slideUp(); $('#roomListShort').slideDown(); });
-
 
         showLogin = function() {
             /*** Initial Login ***/

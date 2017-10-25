@@ -13,8 +13,8 @@
 
     <link rel="icon" id="favicon" type="image/x-icon" href="images/favicon.ico"/>
     <link rel="stylesheet"
-          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
-          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+          integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
           crossorigin="anonymous">
 
 
@@ -25,11 +25,11 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"
             integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
             crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
-            integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4"
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
+            integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
             crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"
-            integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1"
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
+            integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
             crossorigin="anonymous"></script>
 
 
@@ -50,6 +50,88 @@
     <!-- END Scripts -->
 </head>
 <body class="bg-light">
+
+<!-- Todo: make all modals templates -->
+<div id="modal-dynamicFull" class="modal modal-lg" tabindex="-2">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-dynamicConfirm" class="modal" tabindex="-3">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title">Are you sure?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" name="confirm">Confirm</button>
+                <button type="button" class="btn btn-secondary" name="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-dynamicInfo" class="modal" tabindex="-4">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary">
+                <h5 class="modal-title">Error</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-dynamicError" class="modal" tabindex="-5">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Error</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-dynamicException" class="modal" tabindex="-6">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Exception</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
 
 <script id="entry-template" type="text/x-handlebars-template">
     <div id="modal-login" class="modal">
@@ -256,87 +338,6 @@
         </div>
     </div>
 
-    <div id="modal-dynamicFull" class="modal modal-lg" tabindex="-2">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"></h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                </div>
-                <div class="modal-footer">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-dynamicConfirm" class="modal" tabindex="-3">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-danger">
-                    <h5 class="modal-title">Are you sure?</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" name="confirm">Confirm</button>
-                    <button type="button" class="btn btn-secondary" name="cancel">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-dynamicInfo" class="modal" tabindex="-4">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary">
-                    <h5 class="modal-title">Error</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-dynamicError" class="modal" tabindex="-5">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title">Error</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-dynamicException" class="modal" tabindex="-6">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title">Exception</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="page" data-role="page" class="mt-1 ml-1 mr-1"><!-- START links -->
         <nav class="navbar sticky-top navbar-expand-md navbar-dark bg-primary mb-2 rounded" id="navbar">
             <a class="navbar-brand" href="#">FlexChat</a>
@@ -482,719 +483,795 @@
 
 
         <div id="content" data-role="content">
-            <{{!}}script id="view-room" type="text/x-handlebars-template">
-            <div id="roomTemplateContainer">
-                <div id="chatContainer" class="card">
-                    <div id="messageListCard">
-                        <div id="title" class="card-header">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <span id="roomName"></span><br/><em id="topic"></em>
-                                </div>
+        </div>
+    </div>
+</script>
 
-                                <div class="col-auto">
-                                    <div class="btn-toolbar text-center" role="toolbar">
-                                        <button type="button"
-                                                class="btn btn-primary mx-1"
-                                                title="Edit Room"
-                                                name="editRoom"
-                                                onclick="location.hash='#editRoom#room=' + window.roomId">
-                                            <i class="fa fa-cog" aria-hidden="true"></i> Edit Room
-                                        </button>
 
-                                        <button type="button"
-                                                class="btn btn-primary mx-1"
-                                                title="Top Posters"
-                                                name="topPosters"
-                                                onclick="popup.viewStats()">
-                                            <i class="fa fa-list-ol" aria-hidden="true"></i> Top Posters
-                                        </button>
+<script id="view-room" type="text/x-handlebars-template">
+<div id="roomTemplateContainer">
+    <div id="chatContainer" class="card">
+        <div id="messageListCard">
+            <div id="title" class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <span id="roomName"></span><br/><em id="topic"></em>
+                    </div>
 
-                                        <button type="button"
-                                                class="btn btn-primary mx-1"
-                                                title="Archive"
-                                                name="archive"
-                                                onclick="location.hash='#archive#room=' + window.roomId">
-                                            <i class="fa fa-history"></i> Archive
-                                        </button>
+                    <div class="col-auto">
+                        <div class="btn-toolbar text-center" role="toolbar">
+                            <button type="button"
+                                    class="btn btn-primary mx-1"
+                                    title="Edit Room"
+                                    name="editRoom"
+                                    onclick="location.hash='#editRoom#room=' + window.roomId">
+                                <i class="fa fa-cog" aria-hidden="true"></i> Edit Room
+                            </button>
 
-                                        <!--<button type="button"
-                                                class="btn btn-primary mx-1"
-                                                title="Help"
-                                                accesskey="?"
-                                                onclick="location.hash='#help'">
-                                            <i class="fa fa-question-circle"></i>
-                                        </button>-->
-                                    </div>
-                                </div>
-                            </div>
+                            <button type="button"
+                                    class="btn btn-primary mx-1"
+                                    title="Top Posters"
+                                    name="topPosters"
+                                    onclick="popup.viewStats()">
+                                <i class="fa fa-list-ol" aria-hidden="true"></i> Top Posters
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-primary mx-1"
+                                    title="Archive"
+                                    name="archive"
+                                    onclick="location.hash='#archive#room=' + window.roomId">
+                                <i class="fa fa-history"></i> Archive
+                            </button>
+
+                            <!--<button type="button"
+                                    class="btn btn-primary mx-1"
+                                    title="Help"
+                                    accesskey="?"
+                                    onclick="location.hash='#help'">
+                                <i class="fa fa-question-circle"></i>
+                            </button>-->
                         </div>
-
-                        <div id="messageListContainer">
-                            <div id="messageList"></div>
-                        </div>
-                    </div>
-
-                    <div id="textentryBoxMessage" class="card">
-                        <form id="sendForm" action="#" method="post">
-                            <div class="card-header">
-                                <div class="row">
-                                    <div class="col">
-                                        <button type="button"
-                                                class="btn btn-primary"
-                                                id="icon_url"
-                                                title="Upload File"
-                                                onclick="popup.insertDoc();"
-                                                accesskey="u">
-                                            <i class="fa fa-upload" aria-hidden="true"></i> Upload File
-                                        </button>
-                                    </div>
-                                    <div class="col" style="text-align: right;">
-                                        <button type="submit"
-                                                class="btn btn-primary"
-                                                id="icon_submit"
-                                                title="Submit Message">
-                                            <i class="fa fa-paper-plane" aria-hidden="true"></i> Send
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <textarea id="messageInput" autofocus="autofocus" placeholder="Enter your text."></textarea>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <{{!}}/script>
-
-            <{{!}}script id="view-help" type="text/x-handlebars-template">
-            Pending Update
-            <{{!}}/script>
-
-            <{{!}}script id="view-copyright" type="text/x-handlebars-template">
-                <ul class="nav nav-tabs justify-content-center" role="tablist" id="copyrightTabs">
-                    <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#copyright1">{{copyrightTabCopyright}}</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#copyright2">{{copyrightTabLicense}}</a></li>
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#copyright3">{{copyrightTabThanks}}</a></li>
-                </ul>
-
-                <div class="tab-content" id="copyrightTabsContent">
-                    <div class="tab-pane fade show active" role="tabpanel" id="copyright1">
-                        FreezeMessenger © 2010-2011 <a href="http://josephtparsons.com/" target="_BLANK">Joseph T.
-                        Parsons</a>. Some Rights Reserved.<br/><br/>
-
-                        <strong>The Following Third-Party Plugins Are Used with FreezeMessenger 3.0 (Updates Pending):</strong><br/>
-                        FileCache © 2010 <a href="http://af-design.com/blog/2010/07/30/simple-file-based-caching-in-php/">Erik Giberti</a>, All Rights Reserved<br/>
-                        Xml2Array Courtesy of <a href="http://www.phpclasses.org/package/5065-PHP-Parse-XML-documents-into-arrays.html">Vineet Sethi</a><br/><br/>
-
-                        <strong>The Following Third-Party Plugins Are Used with WebPro For Various Functionality (Updates Pending):</strong><br/>
-                        jQuery © <a href="http://jquery.org/" target="_BLANK">The jQuery Project.</a><br/>
-                        ColorPicker © <a href="http://www.eyecon.ro/colorpicker/">Stefan Petr</a><br/><br/>
-                    </div>
-                    <div class="tab-pane fade show" role="tabpanel" id="copyright2">
-                        <strong>Redistribution License of FreezeMessenger and WebPro:</strong><br/>
-                        FreezeMessenger is free software: you can redistribute it and/or modify it
-                        under the terms of the GNU General Public License as published by the Free Software Foundation,
-                        either version 3 of the License, or (at your option) any later version.<br/><br/>This program is
-                        distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
-                        implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-                        Public License for more details.<br/><br/>You should have received a copy of the GNU General
-                        Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">&lt;http://www.gnu.org/licenses/&gt;</a>
-                    </div>
-                    <div class="tab-pane fade show" role="tabpanel" id="copyright3">
-                        <strong>For continual bugtesting and related help, thanks to:</strong><br /><br />
-                    </div>
-                </div>
-            <{{!}}/script>
-
-
-            <{{!}}script id="view-uploads" type="text/x-handlebars-template">
-            <table class="table center">
-                <thead class="thead-default">
-                    <tr>
-                        <th>File</th>
-                        <th>Size</th>
-                        <th>Parental Info</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody id="viewUploadsBody"></tbody>
-            </table>
-            <{{!}}/script>
-
-
-            <{{!}}script id="view-archive" type="text/x-handlebars-template">
-            <form id="archiveSearch" action="#" method="get" style="text-align: center;" class="card">
-                <div class="form-row card-body mx-auto" style="max-width: 800px">
-                    <div class="form-group col-md-6">
-                        <label>{{archiveSearchTextLabel}}</label>
-                        <input type="text" name="searchText" class="form-control" />
-                    </div>
-
-                    <div class="form-group col-md-6">
-                        <label>{{archiveSearchUserLabel}}</label>
-                        <input type="text" name="searchUser" class="form-control" />
-                    </div>
-                </div>
-            </form>
-
-            <div class="card">
-                <div align="center" class="card-header row">
-                    <div class="col">
-                        <button name="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
-                    </div>
-                    <div class="col">
-                        <button name="export" class="btn btn-secondary"><span class="fa fa-floppy-o"></span> {{archiveExportButton}}</button>
-                    </div>
-                    <div class="col">
-                        <button name="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
-                    </div>
-                </div>
-
-                <div class="card-body p-0">
-                    <table class="messageTable center table table-striped table-sm">
-                        <thead class="table-primary">
-                        <tr>
-                            <th style="width: 20%;">{{archiveHeaderUser}}</th>
-                            <th style="width: 20%;">{{archiveHeaderTime}}</th>
-                            <th style="width: 50%;">{{archiveHeaderMessage}}</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-
-                <div align="center" class="card-header row">
-                    <div class="col">
-                        <button name="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
-                    </div>
-                    <div class="col">
-                        <button name="export" class="btn btn-secondary"><span class="fa fa-floppy-o"></span> {{archiveExportButton}}</button>
-                    </div>
-                    <div class="col">
-                        <button name="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
                     </div>
                 </div>
             </div>
 
-            <{{!}}/script>
+            <div id="messageListContainer">
+                <div id="messageList"></div>
+            </div>
+        </div>
 
-            <{{!}}script id="view-rooms" type="text/x-handlebars-template">
-            <form id="roomSearch" action="#" method="get" style="text-align: center;">
-                <table style="text-align: center; margin-left: auto; margin-right: auto;">
-                    <thead>
-                    <tr>
-                        <th align="center">
-                            <small>{{selectRoomSearchTextLabel}}</small>
-                        </th>
-                        <th>
-                            <small>{{selectRoomPermissionLevelLabel}}</small>
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>
-                            <input type="text" id="roomNameSearchText" name="roomNameSearchText" class="form-control" />
-                        </td>
-                        <td>
-                            <select id="permissionLevel" name="permissionLevel" class="form-control">
-                                <option value="10">{{selectRoomPermissionLevel.view}}</option>
-                                <option value="25" selected="selected">{{selectRoomPermissionLevel.post}}</option>
-                                <option value="50">{{selectRoomPermissionLevel.moderate}}</option>
-                                <option value="100">{{selectRoomPermissionLevel.own}}</option>
-                            </select>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </form><br/>
-
-            <div class="card">
-                <div class="card-header" align="center">
+        <div id="textentryBoxMessage" class="card">
+            <form id="sendForm" action="#" method="post">
+                <div class="card-header">
                     <div class="row">
                         <div class="col">
-                            <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    id="icon_url"
+                                    title="Upload File"
+                                    onclick="popup.insertDoc();"
+                                    accesskey="u">
+                                <i class="fa fa-upload" aria-hidden="true"></i> Upload File
+                            </button>
                         </div>
-                        <div class="col">
-                            <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
-                        </div>
-                    </div>
-                </div>
-
-                <table class="table card-body table-sm table-striped center">
-                    <thead class="table-primary">
-                    <tr>
-                        <th>{{selectRoomHeaderName}}</th>
-                        <th>{{selectRoomHeaderTopic}}</th>
-                        <th>{{selectRoomHeaderActions}}</th>
-                    </tr>
-                    </thead>
-                    <tbody id="roomTableHtml"></tbody>
-                </table>
-
-                <div class="card-footer" align="center">
-                    <div class="row">
-                        <div class="col">
-                            <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
-                        </div>
-                        <div class="col">
-                            <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
+                        <div class="col" style="text-align: right;">
+                            <button type="submit"
+                                    class="btn btn-primary"
+                                    id="icon_submit"
+                                    title="Submit Message">
+                                <i class="fa fa-paper-plane" aria-hidden="true"></i> Send
+                            </button>
                         </div>
                     </div>
                 </div>
-            <{{!}}/script>
-
-            <{{!}}script id="view-settings" type="text/x-handlebars-template">
-            <form action="#" method="post" id="changeSettingsForm">
-                <div class="card">
-                    <div class="card-header p-0">
-                        <ul class="nav nav-tabs justify-content-center" role="tablist" id="settingsTabs">
-                            <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#settings5">{{settingsTabGeneral}}</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings1">{{settingsTabDisplay}}</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsTabPrivacy}}</a></li>
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings4">{{settingsTabFormatting}}</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="card-body">
-                        <div class="tab-content p-4" id="settingsTabsContent">
-                            <div class="tab-pane fade" role="tabpanel" id="settings1">
-                                <!--
-                                <div id="settings1theme">
-                                    <label for="theme">{{settingsThemeLabel}}</label>
-                                    <select name="theme" id="theme">
-                                        <option value="high-contrast">{{settingsThemeHighContrast}}</option>
-                                        <option value="absolution">{{settingsThemeAbsolution}}</option>
-                                        <option value="cupertino">{{settingsThemeCupertino}}</option>
-                                        <option value="dark-hive">{{settingsThemeDarkhive}}</option>
-                                        <option value="humanity">{{settingsThemeHumanity}}</option>
-                                        <option value="ui-darkness">{{settingsThemejQueryUIDarkness}}</option>
-                                        <option value="ui-lightness">{{settingsThemejQueryUILightness}}</option>
-                                        <option value="memetically-pink">{{settingsThemeMemeticallyPink}}</option>
-                                        <option value="metro">{{settingsThemeMetro}}</option>
-                                        <option value="start">{{settingsThemeStart}}</option>
-                                        <option value="trontastic">{{settingsThemeTrontastic}}</option>
-                                        <option value="vader">{{settingsThemeVader}}</option>
-                                    </select><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsThemeBlurb}}</span></small>
-                                    <br/><br/>
-                                </div>
-                                -->
-
-                                <div id="settings1fontsize" class="pb-3">
-                                    <div class="input-group">
-                                        <span class="input-group-addon">{{settingsFontsizeLabel}}</span>
-                                        <select name="fontsize" id="fontsize" class="form-control">
-                                            <option value=".7">{{settingsFontsize50}}</option>
-                                            <option value=".8">{{settingsFontsize60}}</option>
-                                            <option value=".9">{{settingsFontsize75}}</option>
-                                            <option value="1">{{settingsFontsize100}}</option>
-                                            <option value="1.2">{{settingsFontsize125}}</option>
-                                            <option value="1.4">{{settingsFontsize140}}</option>
-                                            <option value="1.5">{{settingsFontsize150}}</option>
-                                        </select>
-                                    </div>
-                                    <small class="form-text text-muted">{{settingsFontsizeBlurb}}</small>
-                                </div>
-
-                                <div id="settings1showAvatars" class="pb-3">
-                                    <label>
-                                        <span class="btn btn-primary">
-                                            <input type="checkbox" name="showAvatars" id="showAvatars" />
-                                            <strong>{{settingsShowAvatarsLabel}}</strong>
-                                        </span><br />
-                                        <small class="form-text text-muted">{{settingsShowAvatarsBlurb}}</small>
-                                    </label>
-                                </div>
-
-                                <div id="settings1reversePostOrder" class="pb-3">
-                                    <label>
-                                        <span class="btn btn-primary">
-                                            <input type="checkbox" name="reversePostOrder" id="reversePostOrder" />
-                                            <strong>{{settingsReversePostOrderLabel}}</strong>
-                                        </span><br />
-                                        <small class="form-text text-muted">{{settingsReversePostOrderBlurb}}</small>
-                                    </label>
-                                </div>
-
-                                <div id="settings1audioDing" class="pb-2">
-                                    <label>
-                                        <span class="btn btn-primary">
-                                            <input type="checkbox" name="audioDing" id="audioDing" />
-                                            <strong>{{settingsAudioDingLabel}}</strong>
-                                        </span><br />
-                                        <small class="form-text text-muted">{{settingsAudioDingBlurb}}</small>
-                                    </label>
-                                </div>
-
-                                <div id="settings2audioVolume" class="pb-4">
-                                    <div class="input-group">
-                                        <span class="input-group-addon">{{settingsAudioVolumeLabel}}</span>
-                                        <input type="range" min="0" max="1" name="audioVolume" id="audioVolume" value=".5" step=".01"/>
-                                    </div>
-                                    <small class="form-text text-muted">{{settingsAudioVolumeBlurb}}</small>
-                                </div>
-
-                                <div id="settings2webkitNotifications">
-                                    <label>
-                                        <span class="btn btn-primary">
-                                            <input type="checkbox" name="webkitNotifications" id="webkitNotifications" />
-                                            <strong>{{settingsWebkitNotificationsLabel}}</strong>
-                                        </span><br />
-                                        <small class="form-text text-muted">{{settingsWebkitNotificationsBlurb}}</small>
-                                    </label><br /><br />
-                                </div>
-
-                                <!--
-
-
-                                <div id="settings2disableRightClick">
-                                    <label>
-                                        <input type="checkbox" name="disableRightClick" id="disableRightClick" value="true"/>
-                                        {{settingsDisableRightClickLabel}}
-                                    </label><br/>
-                                    <small><span style="margin-left: 10px;">{{settingsDisableRightClickBlurb}}</span></small>
-                                    <br/><br/>
-                                </div>
-                                -->
-                            </div>
-
-                            <div class="tab-pane fade" role="tabpanel" id="settings6">
-                                <div id="settings6ignoreList" class="pb-3">
-                                    <span>{{settingsIgnoreListLabel}}</span>
-                                    <div id="ignoreListContainer"></div>
-                                    <small class="form-text text-muted">{{settingsIgnoreListBlurb}}</small>
-                                </div>
-
-                                <div id="settings6friendsList" class="pb-4">
-                                    <span>{{settingsFriendsListLabel}}</span>
-                                    <div id="friendsListContainer"></div>
-                                    <small class="form-text text-muted">{{settingsFriendsListBlurb}}</small>
-                                </div>
-
-                                <div id="settings6privacyLevel">
-                                    <fieldset>
-                                        <legend>{{settingsPrivacyLegend}}</legend>
-                                        <label>
-                                            <input type="radio" name="privacyLevel" value="allow">{{settingsPrivacyAllowAll}}<br/>
-                                            <small class="form-text text-muted">{{settingsPrivacyAllowAllBlurb}}</small>
-                                        </label><br/>
-
-                                        <label>
-                                            <input type="radio" name="privacyLevel" value="friends">{{settingsPrivacyAllowFriends}}<br/>
-                                            <small class="form-text text-muted">{{settingsPrivacyAllowFriendsBlurb}}</small>
-                                        </label><br />
-
-                                        <label>
-                                            <input type="radio" name="privacyLevel" value="block">{{settingsPrivacyAllowNone}}<br/>
-                                            <small class="form-text text-muted">{{settingsPrivacyAllowNoneBlurb}}</small>
-                                        </label>
-                                    </fieldset>
-                                    <br/><br/>
-                                </div>
-                                <input type="hidden" name="ignoreList" id="ignoreList"/>
-                            </div>
-
-                            <div class="tab-pane fade" role="tabpanel" id="settings4">
-                                <h4>{{settingsDefaultFormattingLabel}}</h4>
-                                <div id="settings4defaultFont">
-                                    <div class="row mb-2">
-                                        <div class="input-group col">
-                                            <span class="input-group-addon">Colour</span>
-                                            <input class="form-control" id="defaultColour" name="defaultColour"/>
-                                        </div>
-
-                                        <div class="input-group col">
-                                            <span class="input-group-addon">Highlight</span>
-                                            <input class="form-control" id="defaultHighlight" name="defaultHighlight"/>
-                                        </div>
-                                    </div>
-
-                                    <div class="input-group mb-2">
-                                        <span class="input-group-addon">Face</span>
-                                        <select name="defaultFace" id="defaultFace" class="form-control"></select>
-                                    </div>
-
-                                    <div id="defaultBoldItalics">
-                                        <label>
-                                            <span class="btn btn-secondary">
-                                                <input type="checkbox" name="defaultBold" id="defaultBold" />
-                                                <strong>{{settingsDefaultFormattingBoldLabel}}</strong>
-                                            </span>
-                                        </label>
-
-                                        <label>
-                                            <span class="btn btn-secondary">
-                                                <input type="checkbox" name="defaultItalics" id="defaultItalics" />
-                                                <strong>{{settingsDefaultFormattingItalicsLabel}}</strong>
-                                            </span>
-                                        </label>
-                                    </div>
-
-                                    <small>
-                                        <span style="margin-left: 10px;" id="fontPreview">{{settingsDefaultFormattingPreview}}</span>
-                                    </small><br/><br/>
-                                </div>
-
-                                <div id="settings4disableFormatting">
-                                    <label>
-                                        <input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true"/>
-                                        {{settingsDisableFormattingLabel}}
-                                    </label><br/>
-
-                                    <small>
-                                        <span style="margin-left: 10px;">{{settingsDisableFormattingBlurb}}</span>
-                                    </small><br/><br/>
-                                </div>
-
-                                <div id="settings4disableVideo">
-                                    <label>
-                                        <input type="checkbox" name="settingsOfficialAjax_disableVideo" id="disableVideo" value="true"/>
-                                        {{settingsDisableVideoLabel}}
-                                    </label><br/>
-
-                                    <small>
-                                        <span style="margin-left: 10px;">{{settingsDisableVideoBlurb}}</span>
-                                    </small><br/><br/>
-                                </div>
-
-                                <div id="settings4disableImage">
-                                    <label>
-                                        <input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true"/>
-                                        {{settingsDisableImageLabel}}
-                                    </label><br/>
-
-                                    <small>
-                                        <span style="margin-left: 10px;">{{settingsDisableImageBlurb}}</span>
-                                    </small><br/><br/>
-                                </div>
-                            </div>
-
-                            <div class="tab-pane fade show active" role="tabpanel" id="settings5">
-                                <div class="input-group">
-                                    <span class="input-group-addon">{{settingsLanguageLabel}}</span>
-                                    <select class="form-control" name="language" id="language">
-                                        <option value="enGB">English (United Kingdom)</option>
-                                        <option value="enUS">English (United States)</option>
-                                    </select>
-                                </div>
-                                <small><span style="margin-left: 10px;">{{settingsLanguageBlurb}}</span></small><br/><br/>
-
-                                {{#if serverSettings.parentalControls.parentalEnabled}}
-                                    <div>
-                                        <div class="input-group">
-                                            <span class="input-group-addon">{{settingsParentalAgeLabel}}</span>
-                                            <select class="form-control" name="parentalAge">
-                                                {{#each serverSettings.parentalControls.parentalAges}}
-                                                  <option value="{{this}}">{{lookup ../parentalAges this}}</option>
-                                                {{/each}}
-                                            </select>
-                                        </div>
-                                        <small class="form-text text-muted">{{settingsParentalAgeBlurb}}</small><br/>
-                                    </div>
-
-                                    <div>
-                                        <span>{{settingsParentalFlagsLabel}}</span>
-                                        <div name="parentalFlagsList">
-                                            {{#each serverSettings.parentalControls.parentalFlags}}
-                                                <label class="btn btn-secondary m-1">
-                                                    <input type="checkbox" name="parentalFlags" value="{{this}}" />
-                                                    {{lookup ../parentalFlags this}}
-                                                </label>
-                                            {{/each}}
-
-                                        </div>
-                                        <small class="form-text text-muted">{{settingsParentalFlagsBlurb}}</small><br />
-                                    </div>
-                                {{/if}}
-
-                                <div id="settings5profile">
-                                    <div class="input-group">
-                                        <span class="input-group-addon">{{settingsProfileLabel}}</span>
-                                        <input class="form-control" type="text" name="profile" id="profile"/><br/>
-                                    </div>
-                                    <small class="form-text text-muted">{{settingsProfileBlurb}}</small><br/>
-                                </div>
-
-                                <div id="settings5defaultRoom">
-                                    <div class="input-group">
-                                        <span class="input-group-addon">{{settingsDefaultRoomLabel}}</span>
-                                        <input class="form-control" type="text" name="defaultRoom" id="defaultRoom"/><br/>
-                                    </div>
-                                    <small class="form-text text-muted">{{settingsDefaultRoomBlurb}}</small><br/>
-                                </div>
-
-                                <div id="settings5watchRooms">
-                                    <span>{{settingsWatchRoomsLabel}}</span>
-                                    <div name="watchRoomsContainer" id="watchRoomsContainer"></div>
-                                    <small class="form-text text-muted">{{settingsWatchRoomsBlurb}}</small>
-                                </div>
-
-                                <input type="hidden" name="watchRooms" id="watchRooms"/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card-footer" style="text-align: center;">
-                        <button class="btn btn-primary" type="submit">{{settingsSave}}</button>
-                        <button class="btn btn-secondary" type="reset">{{settingsReset}}</button>
-                        <input type="hidden" name="settingsOfficialAjax" value="true"/>
-                    </div>
+                <div>
+                    <textarea id="messageInput" autofocus="autofocus" placeholder="Enter your text."></textarea>
                 </div>
             </form>
-        <{{!}}/script>
+        </div>
+    </div>
+</div>
+</script>
 
-        <{{!}}script id="view-editRoom" type="text/x-handlebars-template">
-        <form action="#" method="post" id="editRoomForm">
-            <div class="card">
-                <div class="card-header p-0">
-                    <ul class="nav nav-tabs justify-content-center bg-light" role="tablist" id="editRoomTabs">
-                        <li class="nav-item">
-                            <a class="nav-link active" data-toggle="tab" role="tab" href="#editRoom1">{{editRoom.tabGeneral}}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" role="tab" href="#editRoom2">{{editRoom.tabPermissions}}</a>
-                        </li>
-                    </ul>
-                </div>
+<script id="view-help" type="text/x-handlebars-template">
+Pending Update
+</script>
 
-                <div class="card-body">
-                    <div class="tab-content p-4" id="editRoomTabsContent">
-                        <div class="tab-pane fade show active" role="tabpanel" id="editRoom1">
-                            <div id="editRoom1Name" class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-addon">{{editRoom.nameLabel}}</span>
-                                    <input type="text" class="form-control" name="name"/>
-                                </div>
-                                <small class="form-text text-muted">{{editRoom.nameBlurb}}</small>
-                            </div>
+<script id="view-copyright" type="text/x-handlebars-template">
+<ul class="nav nav-tabs justify-content-center" role="tablist" id="copyrightTabs">
+    <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#copyright1">{{copyrightTabCopyright}}</a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#copyright2">{{copyrightTabLicense}}</a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#copyright3">{{copyrightTabThanks}}</a></li>
+</ul>
 
-                            {{#if serverSettings.parentalControls.parentalEnabled}}
-                                <div class="mb-4">
-                                    <div class="input-group">
-                                        <span class="input-group-addon">{{editRoom.parentalAgeLabel}}</span>
-                                        <select class="form-control" name="parentalAge">
-                                            {{#each serverSettings.parentalControls.parentalAges}}
-                                                <option value="{{this}}">{{lookup ../parentalAges this}}</option>
-                                            {{/each}}
-                                        </select>
-                                    </div>
-                                    <small class="form-text text-muted">{{editRoom.parentalAgeBlurb}}</small>
-                                </div>
+<div class="tab-content" id="copyrightTabsContent">
+    <div class="tab-pane fade show active" role="tabpanel" id="copyright1">
+        FreezeMessenger © 2010-2011 <a href="http://josephtparsons.com/" target="_BLANK">Joseph T.
+        Parsons</a>. Some Rights Reserved.<br/><br/>
 
-                                <div class="mb-4">
-                                    <h4>{{editRoom.parentalFlagsLabel}}</h4>
-                                    <div name="parentalFlagsList">
-                                        {{#each serverSettings.parentalControls.parentalFlags}}
-                                            <label class="btn btn-secondary m-1">
-                                                <input type="checkbox" name="parentalFlags" value="{{this}}" />
-                                                {{lookup ../parentalFlags this}}
-                                            </label>
-                                        {{/each}}
-                                    </div>
-                                    <small class="form-text text-muted">{{editRoom.parentalFlagsBlurb}}</small>
-                                </div>
-                            {{/if}}
+        <strong>The Following Third-Party Plugins Are Used with FreezeMessenger 3.0 (Updates Pending):</strong><br/>
+        FileCache © 2010 <a href="http://af-design.com/blog/2010/07/30/simple-file-based-caching-in-php/">Erik Giberti</a>, All Rights Reserved<br/>
+        Xml2Array Courtesy of <a href="http://www.phpclasses.org/package/5065-PHP-Parse-XML-documents-into-arrays.html">Vineet Sethi</a><br/><br/>
 
-                            {{#if serverSettings.censorEnabled}}
-                                <div class="mb-4">
-                                    <h4>{{editRoom.censorLabel}}</h4>
-                                    <div name="censorLists">
-                                    </div>
-                                    <small class="form-text text-muted">{{editRoom.censorBlurb}}</small>
-                                </div>
-                            {{/if}}
+        <strong>The Following Third-Party Plugins Are Used with WebPro For Various Functionality (Updates Pending):</strong><br/>
+        jQuery © <a href="http://jquery.org/" target="_BLANK">The jQuery Project.</a><br/>
+        ColorPicker © <a href="http://www.eyecon.ro/colorpicker/">Stefan Petr</a><br/><br/>
+    </div>
+    <div class="tab-pane fade show" role="tabpanel" id="copyright2">
+        <strong>Redistribution License of FreezeMessenger and WebPro:</strong><br/>
+        FreezeMessenger is free software: you can redistribute it and/or modify it
+        under the terms of the GNU General Public License as published by the Free Software Foundation,
+        either version 3 of the License, or (at your option) any later version.<br/><br/>This program is
+        distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the
+        implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+        Public License for more details.<br/><br/>You should have received a copy of the GNU General
+        Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">&lt;http://www.gnu.org/licenses/&gt;</a>
+    </div>
+    <div class="tab-pane fade show" role="tabpanel" id="copyright3">
+        <strong>For continual bugtesting and related help, thanks to:</strong><br /><br />
+    </div>
+</div>
+</script>
 
-                            <h4>Room Options</h4>
-                            <div id="editRoom1Hidden" class="mb-3">
-                                <label>
-                                    <span class="btn btn-primary">
-                                        <input type="checkbox" name="hidden"/>
-                                        <strong>{{editRoom.hiddenLabel}}</strong>
-                                    </span><br />
-                                    <small class="form-text text-muted">{{editRoom.hiddenBlurb}}</small>
-                                </label>
-                            </div>
 
-                            <div id="editRoom1Official">
-                                <label>
-                                    <span class="btn btn-primary">
-                                        <input type="checkbox" name="official"/>
-                                        <strong>{{editRoom.officialLabel}}</strong>
-                                    </span><br />
-                                    <small class="form-text text-muted">{{editRoom.officialBlurb}}</small>
-                                </label>
-                            </div>
-                        </div>
+<script id="view-uploads" type="text/x-handlebars-template">
+<table class="table center">
+    <thead class="thead-default">
+    <tr>
+        <th>File</th>
+        <th>Size</th>
+        <th>Parental Info</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
 
-                        <div class="tab-pane fade" role="tabpanel" id="editRoom2">
-                            <div id="editRoom2AllowViewing">
-                                <label class="btn btn-secondary">
-                                    <input type="checkbox" id="allowViewing" name="allowViewing"/>
-                                    {{editRoom.allowViewingLabel}}
-                                </label><br/>
-                                <small class="form-text text-muted">{{editRoom.allowViewingBlurb}}</small>
-                                <br/>
-                            </div>
+    <tbody id="viewUploadsBody"></tbody>
+</table>
+</script>
 
-                            <div>
-                                <fieldset class="p-3 border border-dark rounded">
-                                    <legend style="display: inline; width: auto;" class="m-0">
-                                        <label class="btn btn-secondary m-0">
-                                            <input type="checkbox" name="allowPosting"/>
-                                            {{editRoom.allowAll}}
-                                        </label>
-                                    </legend>
 
-                                    <div id="editRoom2AllowedUsers">
-                                        <span>{{editRoom.allowedUsersLabel}}</span>
-                                        <div name="allowedUsersContainer" id="allowedUsersContainer"></div>
-                                    </div><br />
+<script id="view-archive" type="text/x-handlebars-template">
+<form id="archiveSearch" action="#" method="get" style="text-align: center;" class="card">
+    <div class="form-row card-body mx-auto" style="max-width: 800px">
+        <div class="form-group col-md-6">
+            <label>{{archiveSearchTextLabel}}</label>
+            <input type="text" name="searchText" class="form-control" />
+        </div>
 
-                                    <div id="editRoom2AllowedGroups">
-                                        <span>{{editRoom.allowedGroupsLabel}}</span>
-                                        <div name="allowedGroupsContainer" id="allowedGroupsContainer"></div>
-                                    </div>
-                                </fieldset>
-                            </div><br/>
+        <div class="form-group col-md-6">
+            <label>{{archiveSearchUserLabel}}</label>
+            <input type="text" name="searchUser" class="form-control" />
+        </div>
+    </div>
+</form>
 
-                            <div id="editRoom2Moderators">
-                                <span>{{editRoom.moderatorsLabel}}</span>
-                                <div name="moderatorsContainer" id="moderatorsContainer"></div>
-                            </div><br />
-                        </div>
-                    </div>
-                </div>
+<div class="card">
+    <div align="center" class="card-header row">
+        <div class="col">
+            <button name="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
+        </div>
+        <div class="col">
+            <button name="export" class="btn btn-secondary"><span class="fa fa-floppy-o"></span> {{archiveExportButton}}</button>
+        </div>
+        <div class="col">
+            <button name="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
+        </div>
+    </div>
 
-                <div class="card-footer">
-                    <button type="submit" class="btn btn-success">{{editRoom.submit}}</button>
-                    <button type="reset" class="btn btn-secondary">{{editRoom.reset}}</button>
-                </div>
-            </div>
-        </form>
-        <{{!}}/script>
-
-        <{{!}}script id="view-kicks" type="text/x-handlebars-template">
-        <table class="table table-sm">
-            <thead>
-            <tr class="hrow">
-                <th>{{kicks.userName}}</th>
-                <th>{{kicks.kickedBy}}</th>
-                <th>{{kicks.inRoom}}</th>
-                <th>{{kicks.onDate}}</th>
-                <th>{{kicks.untilDate}}</th>
-                <th>{{kicks.actions}}</th>
+    <div class="card-body p-0">
+        <table class="messageTable center table table-striped table-sm">
+            <thead class="table-primary">
+            <tr>
+                <th style="width: 20%;">{{archiveHeaderUser}}</th>
+                <th style="width: 20%;">{{archiveHeaderTime}}</th>
+                <th style="width: 50%;">{{archiveHeaderMessage}}</th>
+                <th></th>
             </tr>
             </thead>
-            <tbody id="kickedUsers"></tbody>
+            <tbody></tbody>
         </table>
-        <{{!}}/script>
     </div>
+
+    <div align="center" class="card-header row">
+        <div class="col">
+            <button name="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
+        </div>
+        <div class="col">
+            <button name="export" class="btn btn-secondary"><span class="fa fa-floppy-o"></span> {{archiveExportButton}}</button>
+        </div>
+        <div class="col">
+            <button name="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
+        </div>
     </div>
+</div>
+</script>
+
+<script id="view-rooms-row" type="text/x-handlebars-template">
+    <tr id="room{{id}}"></tr>
+    <td>
+        <a href="#room={{id}}">{{name}}</a>
+    </td>
+    <td>
+        {{topic}}
+    </td>
+    <td>
+        <div>
+            {{#if permissions.properties}}
+            <button class="btn btn-secondary m-1" onclick="window.location.hash = '#editRoom#room={{id}}'">
+                <i class="fa fa-sliders"></i> Edit
+            </button>
+
+            <button class="btn btn-danger m-1" onclick="if (dia.confirm('Are you sure you want to delete this room?')) {
+                                standard.deleteRoom('{{id}}');
+                            }">
+                <i class="fa fa-trash"></i> Delete
+            </button>
+            {{/if}}
+
+            <button class="btn btn-secondary m-1" onclick="window.location.hash = '#archive#room={{id}}'">
+                <i class="fa fa-history"></i> Archive</a>
+            </button>
+
+            {{#unless activeLogin.userData.anonId}}
+                <span class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-secondary m-1 {{#contains id activeLogin.userData.favRooms}} active{{/contains}}">
+                        <i class="fa fa-star"></i> Fav
+                        <input type="checkbox" onchange="if ($(this).prop('checked')) {
+                            window.activeLogin.userData.favRooms.push('{{id}}');
+                            fimApi.favRoom('{{id}}');
+                        } else {
+                            window.activeLogin.userData.favRooms.remove('{{id}}');
+                            fimApi.unfavRoom('{{id}}');
+                        }" {{#contains id activeLogin.userData.favRooms}} checked {{/contains}} />
+                    </label>
+
+                    <label class="btn btn-secondary m-1 {{#contains id activeLogin.userData.watchRooms}} active{{/contains}}">
+                        <i class="fa fa-eye"></i> Watch
+                        <input type="checkbox" onchange="if ($(this).prop('checked')) {
+                            dia.info('You will now be notified of new messages made in this room.', 'Now Watching');
+                            window.activeLogin.userData.watchRooms.push('{{id}}');
+                            fimApi.watchRoom('{{id}}');
+                        } else {
+                            window.activeLogin.userData.watchRooms.remove('{{id}}');
+                            fimApi.unwatchRoom('{{id}}');
+                        }" {{#contains id activeLogin.userData.watchRooms}} checked {{/contains}} />
+                    </label>
+                </span>
+            {{/unless}}
+        </div>
+    </td>
+</script>
+
+<script id="view-rooms" type="text/x-handlebars-template">
+<form id="roomSearch" action="#" method="get" style="text-align: center;">
+    <table style="text-align: center; margin-left: auto; margin-right: auto;">
+        <thead>
+        <tr>
+            <th align="center">
+                <small>{{selectRoomSearchTextLabel}}</small>
+            </th>
+            <th>
+                <small>{{selectRoomPermissionLevelLabel}}</small>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                <input type="text" name="roomNameSearch" class="form-control" />
+            </td>
+            <td>
+                <select name="permFilter" class="form-control">
+                    <option value="view">{{selectRoomPermissionLevel.view}}</option>
+                    <option value="post">{{selectRoomPermissionLevel.post}}</option>
+                    <option value="moderate">{{selectRoomPermissionLevel.moderate}}</option>
+                    <option value="own">{{selectRoomPermissionLevel.own}}</option>
+                </select>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</form><br/>
+
+<div class="card">
+    <div class="card-header" align="center">
+        <div class="row">
+            <div class="col">
+                <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
+            </div>
+            <div class="col">
+                <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
+            </div>
+        </div>
+    </div>
+
+    <table class="table card-body table-sm table-striped center mb-0">
+        <thead class="table-primary">
+        <tr>
+            <th>{{selectRoomHeaderName}}</th>
+            <th>{{selectRoomHeaderTopic}}</th>
+            <th>{{selectRoomHeaderActions}}</th>
+        </tr>
+        </thead>
+        <tbody id="roomTableHtml">
+        </tbody>
+    </table>
+
+    <div class="card-footer" align="center">
+        <div class="row">
+            <div class="col">
+                <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
+            </div>
+            <div class="col">
+                <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
+            </div>
+        </div>
+    </div>
+</div>
+</script>
+
+<script id="view-settings" type="text/x-handlebars-template">
+<form action="#" method="post" id="changeSettingsForm">
+    <div class="card">
+        <div class="card-header p-0">
+            <ul class="nav nav-tabs justify-content-center" role="tablist" id="settingsTabs">
+                <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#settings5">{{settingsTabGeneral}}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings1">{{settingsTabDisplay}}</a></li>
+                {{#unless activeLogin.userData.anonId}}
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsTabPrivacy}}</a></li>
+                {{/unless}}
+                {{#unless activeLogin.userData.anonId}}
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings4">{{settingsTabFormatting}}</a></li>
+                {{/unless}}
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <div class="tab-content p-4" id="settingsTabsContent">
+                <div class="tab-pane fade" role="tabpanel" id="settings1">
+                    <!--
+                    <div id="settings1theme">
+                        <label for="theme">{{settingsThemeLabel}}</label>
+                        <select name="theme" id="theme">
+                            <option value="high-contrast">{{settingsThemeHighContrast}}</option>
+                            <option value="absolution">{{settingsThemeAbsolution}}</option>
+                            <option value="cupertino">{{settingsThemeCupertino}}</option>
+                            <option value="dark-hive">{{settingsThemeDarkhive}}</option>
+                            <option value="humanity">{{settingsThemeHumanity}}</option>
+                            <option value="ui-darkness">{{settingsThemejQueryUIDarkness}}</option>
+                            <option value="ui-lightness">{{settingsThemejQueryUILightness}}</option>
+                            <option value="memetically-pink">{{settingsThemeMemeticallyPink}}</option>
+                            <option value="metro">{{settingsThemeMetro}}</option>
+                            <option value="start">{{settingsThemeStart}}</option>
+                            <option value="trontastic">{{settingsThemeTrontastic}}</option>
+                            <option value="vader">{{settingsThemeVader}}</option>
+                        </select><br/>
+                        <small><span style="margin-left: 10px;">{{settingsThemeBlurb}}</span></small>
+                        <br/><br/>
+                    </div>
+                    -->
+
+                    <div class="pb-3">
+                        <div class="input-group">
+                            <span class="input-group-addon">{{settingsFontsizeLabel}}</span>
+                            <select name="fontsize" id="fontsize" class="form-control">
+                                <option value=".7">{{settingsFontsize50}}</option>
+                                <option value=".8">{{settingsFontsize60}}</option>
+                                <option value=".9">{{settingsFontsize75}}</option>
+                                <option value="1">{{settingsFontsize100}}</option>
+                                <option value="1.2">{{settingsFontsize125}}</option>
+                                <option value="1.4">{{settingsFontsize140}}</option>
+                                <option value="1.5">{{settingsFontsize150}}</option>
+                            </select>
+                        </div>
+                        <small class="form-text text-muted">{{settingsFontsizeBlurb}}</small>
+                    </div>
+
+                    <div class="pb-3">
+                        <label>
+                                    <span class="btn btn-primary">
+                                        <input type="checkbox" name="showAvatars" id="showAvatars" />
+                                        <strong>{{settingsShowAvatarsLabel}}</strong>
+                                    </span><br />
+                            <small class="form-text text-muted">{{settingsShowAvatarsBlurb}}</small>
+                        </label>
+                    </div>
+
+                    <div class="pb-3">
+                        <label>
+                                    <span class="btn btn-primary">
+                                        <input type="checkbox" name="reversePostOrder" id="reversePostOrder" />
+                                        <strong>{{settingsReversePostOrderLabel}}</strong>
+                                    </span><br />
+                            <small class="form-text text-muted">{{settingsReversePostOrderBlurb}}</small>
+                        </label>
+                    </div>
+
+                    <div class="pb-2">
+                        <label>
+                                    <span class="btn btn-primary">
+                                        <input type="checkbox" name="audioDing" id="audioDing" />
+                                        <strong>{{settingsAudioDingLabel}}</strong>
+                                    </span><br />
+                            <small class="form-text text-muted">{{settingsAudioDingBlurb}}</small>
+                        </label>
+                    </div>
+
+                    <div class="pb-4">
+                        <div class="input-group">
+                            <span class="input-group-addon">{{settingsAudioVolumeLabel}}</span>
+                            <input type="range" min="0" max="1" name="audioVolume" id="audioVolume" value=".5" step=".01"/>
+                        </div>
+                        <small class="form-text text-muted">{{settingsAudioVolumeBlurb}}</small>
+                    </div>
+
+                    <div>
+                        <label>
+                                    <span class="btn btn-primary">
+                                        <input type="checkbox" name="webkitNotifications" id="webkitNotifications" />
+                                        <strong>{{settingsWebkitNotificationsLabel}}</strong>
+                                    </span><br />
+                            <small class="form-text text-muted">{{settingsWebkitNotificationsBlurb}}</small>
+                        </label><br /><br />
+                    </div>
+
+                    <!--
+
+
+                    <div id="settings2disableRightClick">
+                        <label>
+                            <input type="checkbox" name="disableRightClick" id="disableRightClick" value="true"/>
+                            {{settingsDisableRightClickLabel}}
+                        </label><br/>
+                        <small><span style="margin-left: 10px;">{{settingsDisableRightClickBlurb}}</span></small>
+                        <br/><br/>
+                    </div>
+                    -->
+                </div>
+
+                <div class="tab-pane fade" role="tabpanel" id="settings6">
+                    <!-- todo: global disable, login method disable -->
+                    {{#unless activeLogin.userData.anonId}}
+                    <div class="pb-3">
+                        <span>{{settingsIgnoreListLabel}}</span>
+                        <div id="ignoreListContainer"></div>
+                        <small class="form-text text-muted">{{settingsIgnoreListBlurb}}</small>
+                    </div>
+
+                    <div class="pb-4">
+                        <span>{{settingsFriendsListLabel}}</span>
+                        <div id="friendsListContainer"></div>
+                        <small class="form-text text-muted">{{settingsFriendsListBlurb}}</small>
+                    </div>
+                    {{/unless}}
+
+                    {{#unless activeLogin.userData.anonId}}
+                    <div id="settings6privacyLevel">
+                        <fieldset>
+                            <legend>{{settingsPrivacyLegend}}</legend>
+                            <label>
+                                <input type="radio" name="privacyLevel" value="allow">{{settingsPrivacyAllowAll}}<br/>
+                                <small class="form-text text-muted">{{settingsPrivacyAllowAllBlurb}}</small>
+                            </label><br/>
+
+                            <label>
+                                <input type="radio" name="privacyLevel" value="friends">{{settingsPrivacyAllowFriends}}<br/>
+                                <small class="form-text text-muted">{{settingsPrivacyAllowFriendsBlurb}}</small>
+                            </label><br />
+
+                            <label>
+                                <input type="radio" name="privacyLevel" value="block">{{settingsPrivacyAllowNone}}<br/>
+                                <small class="form-text text-muted">{{settingsPrivacyAllowNoneBlurb}}</small>
+                            </label>
+                        </fieldset>
+                        <br/><br/>
+                    </div>
+                    {{/unless}}
+                    <input type="hidden" name="ignoreList" id="ignoreList"/>
+                </div>
+
+                <div class="tab-pane fade" role="tabpanel" id="settings4">
+                    <h4>{{settingsDefaultFormattingLabel}}</h4>
+                    <div id="settings4defaultFont">
+                        <div class="row mb-2">
+                            <div class="input-group col">
+                                <span class="input-group-addon">Colour</span>
+                                <input class="form-control" id="defaultColour" name="defaultColour"/>
+                            </div>
+
+                            <div class="input-group col">
+                                <span class="input-group-addon">Highlight</span>
+                                <input class="form-control" id="defaultHighlight" name="defaultHighlight"/>
+                            </div>
+                        </div>
+
+                        <div class="input-group mb-2">
+                            <span class="input-group-addon">Face</span>
+                            <select name="defaultFace" id="defaultFace" class="form-control"></select>
+                        </div>
+
+                        <div id="defaultBoldItalics">
+                            <label>
+                                        <span class="btn btn-secondary">
+                                            <input type="checkbox" name="defaultBold" id="defaultBold" />
+                                            <strong>{{settingsDefaultFormattingBoldLabel}}</strong>
+                                        </span>
+                            </label>
+
+                            <label>
+                                        <span class="btn btn-secondary">
+                                            <input type="checkbox" name="defaultItalics" id="defaultItalics" />
+                                            <strong>{{settingsDefaultFormattingItalicsLabel}}</strong>
+                                        </span>
+                            </label>
+                        </div>
+
+                        <small>
+                            <span style="margin-left: 10px;" id="fontPreview">{{settingsDefaultFormattingPreview}}</span>
+                        </small><br/><br/>
+                    </div>
+
+                    <div id="settings4disableFormatting">
+                        <label>
+                            <input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true"/>
+                            {{settingsDisableFormattingLabel}}
+                        </label><br/>
+
+                        <small>
+                            <span style="margin-left: 10px;">{{settingsDisableFormattingBlurb}}</span>
+                        </small><br/><br/>
+                    </div>
+
+                    <div id="settings4disableVideo">
+                        <label>
+                            <input type="checkbox" name="settingsOfficialAjax_disableVideo" id="disableVideo" value="true"/>
+                            {{settingsDisableVideoLabel}}
+                        </label><br/>
+
+                        <small>
+                            <span style="margin-left: 10px;">{{settingsDisableVideoBlurb}}</span>
+                        </small><br/><br/>
+                    </div>
+
+                    <div id="settings4disableImage">
+                        <label>
+                            <input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true"/>
+                            {{settingsDisableImageLabel}}
+                        </label><br/>
+
+                        <small>
+                            <span style="margin-left: 10px;">{{settingsDisableImageBlurb}}</span>
+                        </small><br/><br/>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade show active" role="tabpanel" id="settings5">
+                    <div class="input-group">
+                        <span class="input-group-addon">{{settingsLanguageLabel}}</span>
+                        <select class="form-control" name="language" id="language">
+                            <option value="enGB">English (United Kingdom)</option>
+                            <option value="enUS">English (United States)</option>
+                        </select>
+                    </div>
+                    <small><span style="margin-left: 10px;">{{settingsLanguageBlurb}}</span></small><br/><br/>
+
+                    {{#unless activeLogin.userData.anonId}}
+                        {{#if serverSettings.parentalControls.parentalEnabled}}
+                        <div>
+                            <div class="input-group">
+                                <span class="input-group-addon">{{settingsParentalAgeLabel}}</span>
+                                <select class="form-control" name="parentalAge">
+                                    {{#each serverSettings.parentalControls.parentalAges}}
+                                    <option value="{{this}}">{{lookup ../parentalAges this}}</option>
+                                    {{/each}}
+                                </select>
+                            </div>
+                            <small class="form-text text-muted">{{settingsParentalAgeBlurb}}</small><br/>
+                        </div>
+
+                        <div>
+                            <span>{{settingsParentalFlagsLabel}}</span>
+                            <div name="parentalFlagsList">
+                                {{#each serverSettings.parentalControls.parentalFlags}}
+                                <label class="btn btn-secondary m-1">
+                                    <input type="checkbox" name="parentalFlags" value="{{this}}" />
+                                    {{lookup ../parentalFlags this}}
+                                </label>
+                                {{/each}}
+
+                            </div>
+                            <small class="form-text text-muted">{{settingsParentalFlagsBlurb}}</small><br />
+                        </div>
+                        {{/if}}
+                    {{/unless}}
+
+                    {{#unless activeLogin.userData.anonId}}
+                    <div>
+                        <div class="input-group">
+                            <span class="input-group-addon">{{settingsProfileLabel}}</span>
+                            <input class="form-control" type="text" name="profile" id="profile"/><br/>
+                        </div>
+                        <small class="form-text text-muted">{{settingsProfileBlurb}}</small><br/>
+                    </div>
+                    {{/unless}}
+
+                    {{#unless activeLogin.userData.anonId}}
+                    <div>
+                        <div class="input-group">
+                            <span class="input-group-addon">{{settingsDefaultRoomLabel}}</span>
+                            <input class="form-control" type="text" name="defaultRoom" id="defaultRoom"/><br/>
+                        </div>
+                        <small class="form-text text-muted">{{settingsDefaultRoomBlurb}}</small><br/>
+                    </div>
+                    {{/unless}}
+
+                    {{#unless activeLogin.userData.anonId}}
+                    <div>
+                        <span>{{settingsWatchRoomsLabel}}</span>
+                        <div name="watchRoomsContainer"></div>
+                        <small class="form-text text-muted">{{settingsWatchRoomsBlurb}}</small>
+                    </div>
+                    {{/unless}}
+
+                    <input type="hidden" name="watchRooms" id="watchRooms"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer" style="text-align: center;">
+            <button class="btn btn-primary" type="submit">{{settingsSave}}</button>
+            <button class="btn btn-secondary" type="reset">{{settingsReset}}</button>
+            <input type="hidden" name="settingsOfficialAjax" value="true"/>
+        </div>
+    </div>
+</form>
+</script>
+
+<script id="view-editRoom" type="text/x-handlebars-template">
+<form action="#" method="post" id="editRoomForm">
+    <div class="card">
+        <div class="card-header p-0">
+            <ul class="nav nav-tabs justify-content-center bg-light" role="tablist" id="editRoomTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" role="tab" href="#editRoom1">{{editRoom.tabGeneral}}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" role="tab" href="#editRoom2">{{editRoom.tabPermissions}}</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <div class="tab-content p-4" id="editRoomTabsContent">
+                <div class="tab-pane fade show active" role="tabpanel" id="editRoom1">
+                    <div id="editRoom1Name" class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-addon">{{editRoom.nameLabel}}</span>
+                            <input type="text" class="form-control" name="name"/>
+                        </div>
+                        <small class="form-text text-muted">{{editRoom.nameBlurb}}</small>
+                    </div>
+
+                    {{#if serverSettings.parentalControls.parentalEnabled}}
+                    <div class="mb-4">
+                        <div class="input-group">
+                            <span class="input-group-addon">{{editRoom.parentalAgeLabel}}</span>
+                            <select class="form-control" name="parentalAge">
+                                {{#each serverSettings.parentalControls.parentalAges}}
+                                <option value="{{this}}">{{lookup ../parentalAges this}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+                        <small class="form-text text-muted">{{editRoom.parentalAgeBlurb}}</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4>{{editRoom.parentalFlagsLabel}}</h4>
+                        <div name="parentalFlagsList">
+                            {{#each serverSettings.parentalControls.parentalFlags}}
+                            <label class="btn btn-secondary m-1">
+                                <input type="checkbox" name="parentalFlags" value="{{this}}" />
+                                {{lookup ../parentalFlags this}}
+                            </label>
+                            {{/each}}
+                        </div>
+                        <small class="form-text text-muted">{{editRoom.parentalFlagsBlurb}}</small>
+                    </div>
+                    {{/if}}
+
+                    {{#if serverSettings.censorEnabled}}
+                    <div class="mb-4">
+                        <h4>{{editRoom.censorLabel}}</h4>
+                        <div name="censorLists">
+                        </div>
+                        <small class="form-text text-muted">{{editRoom.censorBlurb}}</small>
+                    </div>
+                    {{/if}}
+
+                    <h4>Room Options</h4>
+                    <div id="editRoom1Hidden" class="mb-3">
+                        <label>
+                                <span class="btn btn-primary">
+                                    <input type="checkbox" name="hidden"/>
+                                    <strong>{{editRoom.hiddenLabel}}</strong>
+                                </span><br />
+                            <small class="form-text text-muted">{{editRoom.hiddenBlurb}}</small>
+                        </label>
+                    </div>
+
+                    <div id="editRoom1Official">
+                        <label>
+                                <span class="btn btn-primary">
+                                    <input type="checkbox" name="official"/>
+                                    <strong>{{editRoom.officialLabel}}</strong>
+                                </span><br />
+                            <small class="form-text text-muted">{{editRoom.officialBlurb}}</small>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" role="tabpanel" id="editRoom2">
+                    <div id="editRoom2AllowViewing">
+                        <label class="btn btn-secondary">
+                            <input type="checkbox" id="allowViewing" name="allowViewing"/>
+                            {{editRoom.allowViewingLabel}}
+                        </label><br/>
+                        <small class="form-text text-muted">{{editRoom.allowViewingBlurb}}</small>
+                        <br/>
+                    </div>
+
+                    <div>
+                        <fieldset class="p-3 border border-dark rounded">
+                            <legend style="display: inline; width: auto;" class="m-0">
+                                <label class="btn btn-secondary m-0">
+                                    <input type="checkbox" name="allowPosting"/>
+                                    {{editRoom.allowAll}}
+                                </label>
+                            </legend>
+
+                            <div id="editRoom2AllowedUsers">
+                                <span>{{editRoom.allowedUsersLabel}}</span>
+                                <div name="allowedUsersContainer" id="allowedUsersContainer"></div>
+                            </div><br />
+
+                            <div id="editRoom2AllowedGroups">
+                                <span>{{editRoom.allowedGroupsLabel}}</span>
+                                <div name="allowedGroupsContainer" id="allowedGroupsContainer"></div>
+                            </div>
+                        </fieldset>
+                    </div><br/>
+
+                    <div id="editRoom2Moderators">
+                        <span>{{editRoom.moderatorsLabel}}</span>
+                        <div name="moderatorsContainer" id="moderatorsContainer"></div>
+                    </div><br />
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success">{{editRoom.submit}}</button>
+            <button type="reset" class="btn btn-secondary">{{editRoom.reset}}</button>
+        </div>
+    </div>
+</form>
+</script>
+
+<script id="view-kicks" type="text/x-handlebars-template">
+<table class="table table-sm">
+    <thead>
+    <tr class="hrow">
+        <th>{{kicks.userName}}</th>
+        <th>{{kicks.kickedBy}}</th>
+        <th>{{kicks.inRoom}}</th>
+        <th>{{kicks.onDate}}</th>
+        <th>{{kicks.untilDate}}</th>
+        <th>{{kicks.actions}}</th>
+    </tr>
+    </thead>
+    <tbody id="kickedUsers"></tbody>
+</table>
 </script>
 
 </body>
