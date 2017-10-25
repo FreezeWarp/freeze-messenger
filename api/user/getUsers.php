@@ -67,6 +67,11 @@ $request = fim_sanitizeGPC('g', [
         'valid'   => ['profile', 'groups', 'self'],
         'default' => ['profile', 'groups', 'self'],
     ],
+
+    'page' => [
+        'cast'    => 'int',
+        'default' => 0
+    ]
 ]);
 
 $database->accessLog('getUsers', $request);
@@ -99,7 +104,9 @@ else {
 
     $users = $slaveDatabase->getUsers(
         fim_arrayFilterKeys($request, ['userIds', 'userNames', 'bannedStatus']),
-        [$request['sort'] => 'asc']
+        [$request['sort'] => 'asc'],
+        10,
+        $request['page']
     )->getAsUsers();
 }
 
