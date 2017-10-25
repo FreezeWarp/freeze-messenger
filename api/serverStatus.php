@@ -33,7 +33,7 @@ echo new Http\ApiData([
         'fim_version' => FIM_VERSION,
         'installedPlugins' => array(),
         'installUrl' => $installUrl,
-        'loginMethods' => array_keys($loginConfig['extraMethods']),
+        'loginMethods' => new Http\ApiOutputList(array_keys($loginConfig['extraMethods'])),
 
         'parentalControls' => array(
             'parentalEnabled' => fimConfig::$parentalEnabled,
