@@ -300,53 +300,6 @@
         </table>
 
 
-        <!-- Longterm, we'll almost certainly be partioning these in a different way, I'm just not exactly sure what that is yet. This old method will still be useful for those that don't have support for the more efficient method. -->
-        <table name="messagesCached" type="memory" hardPartitions="10" comment="A cache of user-created messages for scalibility.">
-            <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique (temporary) ID for the message cache entry." />
-            <column name="messageId" type="int" maxlen="9" />
-            <column name="roomId" type="int" maxlen="6" />
-            <column name="userId" type="int" maxlen="8" />
-            <column name="messageFormatting" type="string" maxlen="300" />
-            <column name="time" default="__TIME__" type="time" />
-            <column name="text" type="string" maxlen="1000" />
-            <column name="flag" type="string" maxlen="10" />
-
-            <trigger lang="postgres" comment="A trigger that watches the messagesCached table, returning results in JSON. By default the returned JSON _cannot_ be greater than 8,000 bytes.">
-                CREATE OR REPLACE FUNCTION notifyMessage() RETURNS trigger AS $$
-                DECLARE
-                BEGIN
-                SELECT row_to_json(NEW, false) AS jsonString
-                SELECT (CASE WHEN octet_length(jsonString) > 8000 THEN NEW.messageId ELSE jsonString) AS jsonStringChecked
-                PERFORM pg_notify('messagesCachedNotify', jsonStringChecked);
-                RETURN NEW;
-                END;
-                $$ LANGUAGE plpgsql;
-
-                CREATE TRIGGER notifyMessage AFTER UPDATE ON messagesCached FOR EACH ROW EXECUTE PROCEDURE notifyMessage();
-            </trigger>
-
-            <key name="messageId,roomId" type="primary" />
-            <key name="id" type="index" />
-            <key name="time" type="index" />
-        </table>
-
-
-        <table name="messagesCachedPrivate" type="memory" comment="A cache of user messages posted in private rooms. It makes sense to omit several of the cache fields from private rooms, such as user formatting, which can generally be looked up once and cached per privateRoom load. As such, we try to save space by omitting storage of such fields for private rooms.">
-            <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique (temporary) ID for the message cache entry." />
-            <column name="messageId" type="int" maxlen="9" />
-            <column name="roomId" type="string" maxlen="50" />
-            <column name="userId" type="int" maxlen="8" />
-            <column name="time" default="__TIME__" type="time" />
-            <column name="text" type="string" maxlen="1000" />
-            <column name="flag" type="string" maxlen="10" />
-
-            <key name="id" type="primary" />
-            <key name="messageId" type="index" />
-            <key name="roomId" type="index" />
-            <key name="time" type="index" />
-        </table>
-
-
         <table name="messageEditHistory" type="general" comment="A history of editted messages.">
             <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
             <column name="userId" type="int" maxlen="8" comment="The user who editted the message." />
