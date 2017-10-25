@@ -52,7 +52,7 @@
 <body class="bg-light">
 
 <!-- Todo: make all modals templates -->
-<div id="modal-dynamicFull" class="modal modal-lg" tabindex="-2">
+<div id="modal-dynamicFull" class="modal modal-lg" tabindex="-2" style="z-index: 1250">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -69,7 +69,7 @@
     </div>
 </div>
 
-<div id="modal-dynamicConfirm" class="modal" tabindex="-3">
+<div id="modal-dynamicConfirm" class="modal" tabindex="-3" style="z-index: 1500">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header bg-danger">
@@ -88,7 +88,7 @@
     </div>
 </div>
 
-<div id="modal-dynamicInfo" class="modal" tabindex="-4">
+<div id="modal-dynamicInfo" class="modal" tabindex="-4" style="z-index: 2000">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header bg-primary">
@@ -103,7 +103,7 @@
     </div>
 </div>
 
-<div id="modal-dynamicError" class="modal" tabindex="-5">
+<div id="modal-dynamicError" class="modal" tabindex="-5" style="z-index: 2000">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header bg-warning">
@@ -118,7 +118,7 @@
     </div>
 </div>
 
-<div id="modal-dynamicException" class="modal" tabindex="-6">
+<div id="modal-dynamicException" class="modal" tabindex="-6" style="z-index: 2000">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header bg-warning">
@@ -133,7 +133,7 @@
     </div>
 </div>
 
-<script id="entry-template" type="text/x-handlebars-template">
+<script id="modals-login" type="text/x-handlebars-template">
     <div id="modal-login" class="modal">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -197,7 +197,9 @@
             </div>
         </div>
     </div>
+</script>
 
+<script id="entry-template" type="text/x-handlebars-template">
     <div id="modal-kick" class="modal">
         <form action="#" id="kickUserForm" method="post">
             <label for="userName">User</label>: <input type="text" name="userName" id="userName" required/><br/>

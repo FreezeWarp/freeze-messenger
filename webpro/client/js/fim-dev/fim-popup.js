@@ -32,6 +32,7 @@ popup.prototype.login = function() {
         }
     }
 
+    fim_renderHandlebarsInPlace($('#modals-login'));
     $('#modal-login').modal();
 
     // Submission
