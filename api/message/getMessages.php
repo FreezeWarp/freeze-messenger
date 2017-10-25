@@ -147,6 +147,7 @@ else {
 
 
 $xmlData['messages'] = new Http\ApiOutputList($xmlData['messages']); // output the messages as a list
+$xmlData['metadata']['moreResults'] = $messageResults->paginated;
 
 /* Output Data */
 echo new Http\ApiData($xmlData);
