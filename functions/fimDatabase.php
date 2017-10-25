@@ -2077,6 +2077,7 @@ class fimDatabase extends DatabaseSQL
             $this->insert($this->sqlPrefix . "messages", array(
                 'roomId'   => $message->room->id,
                 'userId'   => $message->user->id,
+                'anonId'   => $message->user->anonId,
                 'text'     => $this->blob($message->textEncrypted),
                 'textSha1' => sha1($message->text),
                 'salt'     => $message->salt,
@@ -2119,6 +2120,7 @@ class fimDatabase extends DatabaseSQL
             'text' => $message->text,
             'time' => $now->value,
             'flag' => $message->flag,
+            'anonId' => $message->user->anonId,
             'userId' => $message->user->id,
             'roomId' => $message->room->id,
         ]);
