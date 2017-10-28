@@ -329,7 +329,7 @@ class fimUser extends fimDynamicObject
      * @var array User data fields that should be resolved together when a resolution is needed.
      */
     private static $userDataPullGroups = array(
-        'id,name,privs,lastSync',
+        'id,integrationId,integrationMethod,name,privs',
         'mainGroupId,socialGroupIds,parentalFlags,parentalAge,birthDate', // Permission flags.
         'joinDate,messageFormatting,profile,avatar,nameFormat,bio',
         'options,defaultRoomId',
@@ -649,6 +649,25 @@ class fimUser extends fimDynamicObject
             case 'editOwnPosts':   return fimConfig::$usersCanEditOwnPosts && !$this->isAnonymousUser();   break;
             case 'deleteOwnPosts': return fimConfig::$usersCanDeleteOwnPosts && !$this->isAnonymousUser(); break;
 
+            /* Login Features
+             */
+            case 'selfChangeProfile':
+            case 'selfChangeAvatar':
+            case 'selfChangeParentalAge':
+            case 'selfChangeParentalFlags':
+            case 'selfChangeFriends':
+            case 'selfChangeIgnore':
+                if ($this->isAnonymousUser()) {
+                    return false;
+                }
+                elseif ($loginRunner = \Login\LoginFactory::getLoginRunnerFromName($this->__get('integrationMethod'))) {
+                    return !$loginRunner::isProfileFeatureDisabled($priv);
+                }
+                else {
+                    return true;
+                }
+                break;
+
             default: throw new Exception("Invalid priv; $priv"); break;
         }
     }
@@ -657,7 +676,7 @@ class fimUser extends fimDynamicObject
     public function getPermissionsArray() {
         $privs = array();
 
-        foreach (array('protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline', 'editOwnPosts', 'deleteOwnPosts') AS $priv)
+        foreach (array('protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline', 'editOwnPosts', 'deleteOwnPosts', 'selfChangeProfile', 'selfChangeAvatar', 'selfChangeParentalAge', 'selfChangeParentalFlags', 'selfChangeFriends', 'selfChangeIgnore') AS $priv)
             $privs[$priv] = $this->hasPriv($priv);
 
         return $privs;

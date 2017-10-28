@@ -198,13 +198,16 @@ if ($requestHead['_action'] === 'edit') {
     /************************************
      ***** Vanilla Only Properties ******
      ************************************/
-    if ($loginConfig['method'] === 'vanilla') {
+    if ($loginConfig['method'] === 'vanilla') { // TODO: move into rest now that we have permissions for these
 
         /************************************
          ************ Avatar ****************
          ************************************/
         if (isset($request['avatar'])) {
-            if ($request['avatar'] === '')
+            if (!$user->hasPriv('selfChangeAvatar'))
+                $xmlData['editUserOptions']['avatar'] = (new fimError('noPerm', 'You cannot change your avatar.', null, true))->getArray();
+
+            elseif ($request['avatar'] === '')
                 $updateArray['avatar'] = $request['avatar'];
 
             elseif ((fimConfig::$avatarMustMatchRegex && !preg_match(fimConfig::$avatarMustMatchRegex, $request['avatar']))
@@ -241,8 +244,10 @@ if ($requestHead['_action'] === 'edit') {
          ************************************/
         if (isset($request['profile'])) {
             // TODO: Add/test regex policy.
-            // TODO: Disable for integration login
-            if ($request['profile'] === '')
+            if (!$user->hasPriv('selfChangeProfile'))
+                $xmlData['editUserOptions']['profile'] = (new fimError('noPerm', 'You cannot change your profile.', null, true))->getArray();
+
+            elseif ($request['profile'] === '')
                 $updateArray['profile'] = $request['profile'];
 
             elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === false)

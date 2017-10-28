@@ -83,4 +83,8 @@ class LoginGoogle extends LoginTwoStep {
             'avatar' => $userInfo->getPicture()
         ]); // If the ID wasn't resolved above, a new user will be created.
     }
+
+    public static function isProfileFeatureDisabled($feature): bool {
+        return in_array($feature, ['selfChangeAvatar']);
+    }
 }

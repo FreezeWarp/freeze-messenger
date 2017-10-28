@@ -71,4 +71,9 @@ abstract class LoginDatabase implements LoginRunner {
         }
     }
 
+
+    public static function isProfileFeatureDisabled($feature): bool {
+        return false;
+    }
+
 }

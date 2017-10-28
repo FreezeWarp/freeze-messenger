@@ -1105,15 +1105,15 @@ Pending Update
                         {{/if}}
                     {{/unless}}
 
-                    {{#unless activeLogin.userData.anonId}}
                     <div>
                         <div class="input-group">
                             <span class="input-group-addon">{{settingsProfileLabel}}</span>
-                            <input class="form-control" type="text" name="profile" id="profile"/><br/>
+                            <input class="form-control" type="text" name="profile" id="profile"
+                                   {{#unless activeLogin.userData.permissions.selfChangeProfile}} disabled {{/unless}}
+                            /><br/>
                         </div>
                         <small class="form-text text-muted">{{settingsProfileBlurb}}</small><br/>
                     </div>
-                    {{/unless}}
 
                     {{#unless activeLogin.userData.anonId}}
                     <div>

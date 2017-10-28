@@ -63,4 +63,8 @@ class LoginTwitter extends LoginTwoStep {
         ]);
     }
 
+    public static function isProfileFeatureDisabled($feature): bool {
+        return in_array($feature, ['selfChangeAvatar', 'selfChangeProfile']);
+    }
+
 }

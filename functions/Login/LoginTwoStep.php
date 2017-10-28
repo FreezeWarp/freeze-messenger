@@ -37,4 +37,9 @@ abstract class LoginTwoStep implements LoginRunner {
         die();
     }
 
+
+    public static function isProfileFeatureDisabled($feature): bool {
+        return false;
+    }
+
 }

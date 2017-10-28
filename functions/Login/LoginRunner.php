@@ -50,4 +50,11 @@ interface LoginRunner {
      */
     public function apiResponse();
 
+    /**
+     * @param $feature
+     *
+     * @return bool True if the feature is provided by the login runner, false otherwise.
+     */
+    public static function isProfileFeatureDisabled($feature): bool;
+
 }

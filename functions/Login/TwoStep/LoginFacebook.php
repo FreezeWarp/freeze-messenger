@@ -119,4 +119,8 @@ class LoginFacebook extends LoginTwoStep {
             \fimError('invalidFacebookLogin', 'Facebook Login returned bad data.');
         }
     }
+
+    public static function isProfileFeatureDisabled($feature): bool {
+        return in_array($feature, ['selfChangeAvatar']);
+    }
 }

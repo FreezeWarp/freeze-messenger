@@ -118,6 +118,25 @@ class LoginFactory {
     }
 
 
+    public static function getLoginRunnerFromName($name) {
+        $className = 'Login' . ucfirst($name);
+
+        if (class_exists("\\Login\\Database\\$className")) {
+            $className = "\\Login\\Database\\$className";
+            return $className;
+        }
+
+        else if (class_exists("\\Login\\TwoStep\\$className")) {
+            $className = "\\Login\\TwoStep\\$className";
+            return $className;
+        }
+
+        else {
+            return null;
+        }
+    }
+
+
     /**
      * Whether or not an integration login is available.
      * @return bool

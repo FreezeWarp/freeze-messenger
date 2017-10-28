@@ -116,5 +116,4 @@ class LoginReddit extends LoginTwoStep {
             @$database->autoQueue(false);
         }
     }
-
 }
