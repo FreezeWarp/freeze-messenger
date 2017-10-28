@@ -4,6 +4,10 @@
     <option name="PER_PROJECT_SETTINGS">
       <value>
         <option name="AUTODETECT_INDENTS" value="false" />
+        <option name="HTML_ATTRIBUTE_WRAP" value="4" />
+        <option name="HTML_ELEMENTS_TO_INSERT_NEW_LINE_BEFORE" value="body,div,p,form,h1,h2,h3,input,button,img,label" />
+        <option name="HTML_INLINE_ELEMENTS" value="abbr,acronym,b,basefont,bdo,big,br,cite,cite,dfn,em,font,i,kbd,q,s,samp,span,strike,strong,sub,sup,tt,u,var" />
+        <option name="HTML_ENFORCE_QUOTES" value="true" />
         <PHPCodeStyleSettings>
           <option name="ALIGN_KEY_VALUE_PAIRS" value="true" />
           <option name="ALIGN_PHPDOC_PARAM_NAMES" value="true" />

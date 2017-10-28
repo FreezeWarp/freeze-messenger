@@ -126,4 +126,8 @@ abstract class DatabaseDefinitionsMySQL extends DatabaseSQLStandard {
 
         return $tableConstraints;
     }
+
+    public function getLanguage() {
+        return 'mysql';
+    }
 }

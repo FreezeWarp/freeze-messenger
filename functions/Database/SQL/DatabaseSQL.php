@@ -618,7 +618,6 @@ class DatabaseSQL extends Database
 
     public function connect($host, $port, $user, $password, $database, $driver, $tablePrefix = '')
     {
-        $this->setLanguage($driver);
         $this->sqlPrefix = $tablePrefix;
 
 
@@ -680,20 +679,6 @@ class DatabaseSQL extends Database
     public function close()
     {
         return $this->sqlInterface->close();
-    }
-
-
-    /**
-     * Set Language / Database Driver
-     *
-     * @param string language
-     * @return void
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    private function setLanguage($language)
-    {
-        $this->driver = $language;
-        $this->language = $this->driverMap[$this->driver];
     }
 
 
@@ -897,7 +882,7 @@ class DatabaseSQL extends Database
         $error = false;
 
         if ($this->sqlInterface->selectDatabase($database)) { // Select the database.
-            if ($this->language == 'mysql' || $this->language == 'mysqli') {
+            if ($this->sqlInterface->getLanguage() == 'mysql' || $this->sqlInterface->getLanguage() == 'mysqli') {
                 if (!$this->rawQuery('SET NAMES "utf8"')) { // Sets the database encoding to utf8 (unicode).
                     $error = 'SET NAMES Query Failed';
                 }
@@ -1022,8 +1007,16 @@ class DatabaseSQL extends Database
 
                     // If we don't have serial limits and are autoincrementing, use the AUTO_INCREMENT orthogonal type identifier.
                     if (!isset($this->sqlInterface->dataTypes['columnSerialLimits']) && $column['autoincrement']) {
-                        $typePiece .= ' AUTO_INCREMENT'; // On the type itself.
-                        $tableProperties .= ' AUTO_INCREMENT = ' . (int)$column['autoincrement']; // And also on the table definition.
+                        switch ($this->sqlInterface->serialMode) {
+                            case 'autoIncrement':
+                                $typePiece .= ' AUTO_INCREMENT'; // On the type itself.
+                                $tableProperties .= ' AUTO_INCREMENT = ' . (int)$column['autoincrement']; // And also on the table definition.
+                                break;
+
+                            case 'identity':
+                                $typePiece .= ' IDENTITY(1,1)'; // On the type itself.
+                                break;
+                        }
 
                         // And also create an index for it, if we don't already have one.
                         if (!isset($tableIndexes[$columnName])) {
@@ -1126,7 +1119,7 @@ class DatabaseSQL extends Database
                             $lengths = array_map('strlen', $column['restrict']);
                             $typePiece = 'VARCHAR('
                                     . max($lengths)
-                                . ') NOT NULL CHECK ('
+                                . ') CHECK ('
                                     . $this->formatValue(DatabaseTypeType::column, $columnName)
                                     . ' IN'
                                     . $this->formatValue(DatabaseTypeType::arraylist, $column['restrict'])
@@ -1156,12 +1149,12 @@ class DatabaseSQL extends Database
                 // TODO: language trigger support check
                 if ($column['default'] === '__TIME__') {
                     $triggerName = $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, "{TABLENAME}_{$columnName}__TIME__");
-                    $triggers[] = "DROP TRIGGER IF EXISTS {$triggerName}" . ($this->language !== 'mysql' ? ' ON ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}') : '');
+                    $triggers[] = "DROP TRIGGER IF EXISTS {$triggerName}" . ($this->sqlInterface->getLanguage() !== 'mysql' ? ' ON ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}') : '');
 
-                    if ($this->language === 'mysql') {
+                    if ($this->sqlInterface->getLanguage() === 'mysql') {
                         $triggers[] = "CREATE TRIGGER {$triggerName} BEFORE INSERT ON {TABLENAME} FOR EACH ROW SET NEW.{$columnName} = IF(NEW.{$columnName}, NEW.{$columnName}, UNIX_TIMESTAMP(NOW()))";
                     }
-                    elseif ($this->language === 'pgsql') {
+                    elseif ($this->sqlInterface->getLanguage() === 'pgsql') {
                         $triggers[] = "CREATE OR REPLACE FUNCTION {$triggerName}_function()
                             RETURNS TRIGGER AS $$
                             BEGIN
@@ -1341,30 +1334,29 @@ class DatabaseSQL extends Database
 
             /* Table Comments */
             // In this mode, we add comments with separate SQL statements at the end.
-            if ($this->sqlInterface->commentMode === 'useCommentOn')
-                $triggers[] = 'COMMENT ON TABLE '
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
-                    . ' IS '
-                    . $this->formatValue(DatabaseTypeType::string, $tableComment);
+            switch ($this->sqlInterface->commentMode) {
+                case 'useCommentOn':
+                    $triggers[] = 'COMMENT ON TABLE '
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
+                        . ' IS '
+                        . $this->formatValue(DatabaseTypeType::string, $tableComment);
+                    break;
 
-            // In this mode, we define comments as attributes on the table.
-            elseif ($this->sqlInterface->commentMode === 'useAttributes')
-                $tableProperties .= " COMMENT=" . $this->formatValue(DatabaseTypeType::string, $tableComment);
-
-            // Invalid comment mode
-            else
-                throw new Exception("Invalid comment mode: {$this->sqlInterface->commentMode}");
+                case 'useAttributes':
+                    $tableProperties .= " COMMENT=" . $this->formatValue(DatabaseTypeType::string, $tableComment);
+                    break;
+            }
 
 
             /* Table Engine */
-            if ($this->language === 'mysql') {
+            if ($this->sqlInterface->getLanguage() === 'mysql') {
                 $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]);
             }
 
 
             /* Table Charset */
             // todo: postgres
-            if ($this->language === 'mysql') {
+            if ($this->sqlInterface->getLanguage() === 'mysql') {
                 $tableProperties .= ' DEFAULT CHARSET=' . $this->formatValue(DatabaseTypeType::string, 'utf8');
             }
 
@@ -1375,7 +1367,10 @@ class DatabaseSQL extends Database
             }
 
 
-            $return = $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableNameI) . ' (
+            $return = $this->rawQuery(
+                'CREATE TABLE '
+                . ($this->sqlInterface->useCreateIfNotExist ? 'IF NOT EXISTS ' : '')
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableNameI) . ' (
     ' . implode(",\n  ", $columns) . (count($indexes) > 0 ? ',
     ' . implode(",\n  ", $indexes) : '') . '
     )' . $tableProperties);
@@ -1412,7 +1407,7 @@ class DatabaseSQL extends Database
         }
 
         // TODO
-        if ($this->language === 'mysql')
+        if ($this->sqlInterface->getLanguage() === 'mysql')
             return $this->rawQuery('RENAME TABLE '
                 . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
                 . ' TO '
@@ -1518,7 +1513,11 @@ class DatabaseSQL extends Database
 
             /* Generate CREATE INDEX Statements, If Needed */
             if ((!$duringTableCreation || $this->sqlInterface->indexMode === 'useCreateIndex') && $index['type'] !== 'primary')
-                $triggers[] = "CREATE {$typePiece} INDEX ON " . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}') . " ({$indexName})";
+                $triggers[] = "CREATE {$typePiece} INDEX "
+                    . $indexName
+                    . " ON "
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
+                    . " ({$indexName})";
 
             // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
             elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
@@ -1542,7 +1541,7 @@ class DatabaseSQL extends Database
         $engine = $this->parseEngine($engine);
 
         return $this->rawQuery('ALTER TABLE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-            . (!is_null($engine) && $this->language === 'mysql' ? ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]) : '')
+            . (!is_null($engine) && $this->sqlInterface->getLanguage() === 'mysql' ? ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]) : '')
             . (!is_null($tableComment) ? ' COMMENT=' . $this->formatValue(DatabaseTypeType::string, $tableComment) : '')
             . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100' : ''));
     }
@@ -1769,7 +1768,7 @@ class DatabaseSQL extends Database
                         if ($direction->type == DatabaseTypeType::arraylist) {
                             if (count($direction->value) == 0) continue;
 
-                            if ($this->language == 'mysql') {
+                            if ($this->sqlInterface->getLanguage() == 'mysql') {
                                 $list = $direction->value;
                                 rsort($list);
                                 $list = array_merge([$this->col($sortColumn)], $list);
@@ -1831,11 +1830,21 @@ class DatabaseSQL extends Database
             ) . ($finalQuery['sort']
                 ? ' ORDER BY ' . $finalQuery['sort']
                 : ''
-            ) . ($finalQuery['limit']
-                ? ' LIMIT ' . ($finalQuery['limit'] > 1 ? $finalQuery['limit'] + 1 : $finalQuery['limit'])
-                    . ' OFFSET ' . ($finalQuery['limit'] * $finalQuery['page'])
-                : ''
             );
+
+        if ($finalQuery['limit'])
+            if ($this->sqlInterface->getLanguage() === 'sqlsrv') {
+                $finalQueryText .= ' OFFSET ' .
+                    ($finalQuery['limit'] * $finalQuery['page'])
+                    . ' ROWS FETCH NEXT '
+                    . ($finalQuery['limit'] > 1 ? $finalQuery['limit'] + 1 : $finalQuery['limit'])
+                    . ' ROWS ONLY';
+            }
+            else {
+                $finalQueryText .= ' LIMIT '
+                    . ($finalQuery['limit'] > 1 ? $finalQuery['limit'] + 1 : $finalQuery['limit'])
+                    . ' OFFSET ' . ($finalQuery['limit'] * $finalQuery['page']);
+            }
 
         /* And Run the Query */
         return $this->rawQueryReturningResult($finalQueryText, $reverseAlias, $finalQuery['limit']);
@@ -1881,7 +1890,7 @@ class DatabaseSQL extends Database
         if (!is_array($conditionArray))
             throw new Exception('Condition array must be an array.');
         elseif (!count($conditionArray))
-            return 'true';
+            return $this->sqlInterface->boolValues[true];
 
         // $key is usually a column, $value is a formatted value for the select() function.
         foreach ($conditionArray AS $key => $value) {
@@ -2150,7 +2159,7 @@ class DatabaseSQL extends Database
     {
         return $this->rawQuery(
             'DELETE FROM ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName) .
-            ' WHERE ' . ($conditionArray ? $this->recurseBothEither($conditionArray, $this->reverseAliasFromConditionArray($tableName, $conditionArray, $originalTableName), 'both', $tableName) : 'TRUE')
+            ($conditionArray ? ' WHERE ' . $this->recurseBothEither($conditionArray, $this->reverseAliasFromConditionArray($tableName, $conditionArray, $originalTableName), 'both', $tableName) : '')
         );
     }
 
@@ -2171,7 +2180,7 @@ class DatabaseSQL extends Database
         }
 
 
-        if ($this->language === 'pgsql') {
+        if ($this->sqlInterface->getLanguage() === 'pgsql') {
             // Workaround for equations to use unambiguous excluded dataset.
             foreach ($dataArray AS &$dataElement) {
                 if ($this->isTypeObject($dataElement) && $dataElement->type === DatabaseTypeType::equation) {
@@ -2220,7 +2229,7 @@ class DatabaseSQL extends Database
         $allColumns = array_keys($allArray);
         $allValues = array_values($allArray);
 
-        switch ($this->language) {
+        switch ($this->sqlInterface->getLanguage()) {
             case 'mysql':
                 $query = 'INSERT INTO ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $allColumns, $allValues)

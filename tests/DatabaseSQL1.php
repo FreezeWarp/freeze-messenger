@@ -1,5 +1,8 @@
 <?php
 // todo: upsert
+use Database\DatabaseEngine;
+use Database\DatabaseTypeComparison;
+
 class databaseSQLTests1 extends databaseSQLTests {
     private $table = "test_1";
 
@@ -492,7 +495,7 @@ class databaseSQLTests1 extends databaseSQLTests {
         $this->testInsertSelect3SortTest("Select Ascending (15-114, >55)", ["integerNormal" => $this->databaseObj->int(55, DatabaseTypeComparison::greaterThan)], ["integerNormal" => "asc"], 56);
         $this->testInsertSelect3SortTest("Select Ascending (15-114, <=45)", ["integerNormal" => $this->databaseObj->int(45, DatabaseTypeComparison::lessThanEquals)], ["integerNormal" => "desc"], 45);
 
-        $value = $this->databaseObj->select([$this->table => "integerNormal"], null, false, 11)->getCount();
+        $value = $this->databaseObj->select([$this->table => "integerNormal"], null, ["integerNormal" => "asc"], 11)->getCount();
         printRow("Select Limit 11", $value == 11, $value);
         $rows = $this->databaseObj->select([$this->table => "integerNormal, integerDefault"], null, ["integerDefault" => "desc", "integerNormal" => "asc"], 5)->getAsArray(true);
         printRow("Select i%45 Descending, i Ascending (i: 15-114)", $rows[2]["integerDefault"] == 43 && $rows[2]["integerNormal"] == 58 && $rows[3]["integerDefault"] == 43 && $rows[3]["integerNormal"] == 103, $rows);

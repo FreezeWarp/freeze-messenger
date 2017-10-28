@@ -1,4 +1,8 @@
 <?php
+
+use Database\DatabaseEngine;
+use Database\DatabaseTypeType;
+
 class databaseSQLTests2 extends databaseSQLTests {
     public function passthru($value) {
         return bin2hex($value);

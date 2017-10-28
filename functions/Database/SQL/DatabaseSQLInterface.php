@@ -101,4 +101,6 @@ interface DatabaseSQLInterface {
     public function getTablesAsArray(DatabaseSQL $database);
     public function getTableColumnsAsArray(DatabaseSQL $database);
     public function getTableConstraintsAsArray(DatabaseSQL $database);
+
+    public function getLanguage();
 }

@@ -205,4 +205,8 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
     public function getTableConstraintsAsArray(DatabaseSQL $database) {
         throw new \Exception('Unimplemented.');
     }
+
+    public function getLanguage() {
+        return 'pgsql';
+    }
 }

@@ -322,6 +322,16 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
     public $foreignKeyMode = false;
 
 
+    /**
+     * @var string {
+     *     Mode used to support foreign keys. Options:
+     *
+     *    'autoIncrement' - Use AUTO_INCREMENT.
+     *    'identity' - Use IDENTITY(1,1)
+     */
+    public $serialMode = 'autoIncrement';
+
+
 
     /*********************************************************
      ************************ START **************************
