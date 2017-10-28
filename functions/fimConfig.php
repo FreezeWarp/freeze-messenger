@@ -554,9 +554,6 @@ class fimConfig {
     /** @var float Delays all API requests by a fixed amount. Good for preventing overloading in some cases; but in practice better served by limiting number of connections by a single IP. (Which is up to you to do in your webserver configuration.) */
     public static $apiPause = 0.0;
 
-    /** @var int The maximum number of rows to be stored in the MessagesCached table. If hard partioning is enabled (as is default). the effective size of the table will be many times of this, but spread across the memory. */
-    public static $messageCacheTableMaxRows = 500;
-
     /** @var bool Set this to false to disable unread messages functionality. Can be useful if that functionality is causing database overload; though this is rare. */
     public static $enableUnreadMessages = true;
 

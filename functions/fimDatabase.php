@@ -2096,30 +2096,6 @@ class fimDatabase extends DatabaseSQL
         }
 
 
-        // Insert into cache/memory datastore.
-        if ($message->room->isPrivateRoom()) {
-            $this->insert($this->sqlPrefix . "messagesCachedPrivate", array(
-                'messageId'         => $message->id,
-                'roomId'            => $message->room->id,
-                'userId'            => $message->user->id,
-                'text'              => $message->text,
-                'flag'              => $message->flag,
-                'time'              => $now,
-            ));
-        }
-        else {
-            $this->insert($this->sqlPrefix . "messagesCached", array(
-                'messageId'         => $message->id,
-                'roomId'            => $message->room->id,
-                'userId'            => $message->user->id,
-                'text'              => $message->text,
-                'flag'              => $message->flag,
-                'time'              => $now,
-            ));
-        }
-        $messageCacheId = $this->getLastInsertId();
-
-
         // Enter message into stream
         \Stream\StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
             'id' => $message->id,
@@ -2195,13 +2171,6 @@ class fimDatabase extends DatabaseSQL
         // Increment the messages counter.
         $this->incrementCounter('messages');
 
-
-        // Delete old messages from the cache, based on the maximum allowed rows. (TODO: test)
-        if ($messageCacheId > fimConfig::$messageCacheTableMaxRows) {
-            $this->partitionAt(['roomId' => $message->room->id])->delete($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? 'Private' : ''), [
-                'id' => $this->int($messageCacheId - fimConfig::$messageCacheTableMaxRows, 'lte')
-            ]);
-        }
 
 
         // If the contact is a private communication, create an event and add to the message unread table.
@@ -2288,23 +2257,9 @@ class fimDatabase extends DatabaseSQL
 
         // Update message caches
         if ($message->deleted) {
-            $this->delete($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? "Private" : ""), [
-                "roomId" => $message->room->id,
-                "messageId" => $message->id
-            ]);
-
             \Stream\StreamFactory::publish('room_' . $message->room->id, 'deletedMessage', [
                 'id' => $message->id,
                 'roomId' => $message->room->id,
-            ]);
-        }
-        else {
-            // Note: this does mean that undeleting a message will not put it back into the message cache.
-            $this->update($this->sqlPrefix . "messagesCached" . ($message->room->isPrivateRoom() ? "Private" : ""), [
-                'text' => $message->text,
-            ], [
-                'roomId' => $message->room->id,
-                'messageId' => $message->id,
             ]);
         }
 
