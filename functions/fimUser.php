@@ -366,10 +366,6 @@ class fimUser extends fimDynamicObject
     public function __get($property) {
         global $loginConfig;
 
-        // Return a unique username for every anonymous user.
-        if ($this->isAnonymousUser() && $property === 'name')
-            return $this->name . $this->anonId;
-
         if (!property_exists($this, $property))
             throw new Exception("Invalid property accessed in fimUser: $property");
 
