@@ -60,6 +60,9 @@ public class MainPane {
     @FXML
     public Button helpButton;
 
+    @FXML
+    public Button settingsButton;
+
     /**
      * A list of users currently considered active. userList monitors this for changes, and updates accordingly.
      */
@@ -200,6 +203,20 @@ public class MainPane {
                 Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("HelpPane.fxml"));
                 Stage stage = new Stage();
                 stage.setTitle("Help");
+                stage.setScene(new Scene(root, 450, 450));
+                stage.show();
+            } catch (Exception ex) {
+                System.out.println("Exception: " + ex);
+                ex.printStackTrace();
+            }
+        } });
+
+        settingsButton.setOnAction(new EventHandler<ActionEvent>() { @Override public void handle(ActionEvent e) {
+            try {
+                System.out.println(getClass().getClassLoader().getResource("SettingsPane.fxml"));
+                Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("SettingsPane.fxml"));
+                Stage stage = new Stage();
+                stage.setTitle("Settings");
                 stage.setScene(new Scene(root, 450, 450));
                 stage.show();
             } catch (Exception ex) {
