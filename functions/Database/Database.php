@@ -57,7 +57,7 @@ abstract class Database
     /**
      * @var string The currently active/selected database, if any.
      */
-    protected $activeDatabase = null;
+    public $activeDatabase = null;
 
     /**
      * @var array Arbitrary connection information that may be set by drivers.

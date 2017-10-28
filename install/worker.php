@@ -134,8 +134,9 @@ switch ($_REQUEST['phase']) {
             }
             else {
                 /* Part 2: Create the Tables */
+                $database->holdTriggers(true); // Don't run triggers. The trigger statements set our foreign keys, and thus must be run at the very end.
+                $database->startTransaction();
 
-                $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
                 $time = time();
 
                 foreach ($xmlData['database'][0]['table'] AS $table) { // Run through each table from the XML
@@ -157,6 +158,11 @@ switch ($_REQUEST['phase']) {
                             'default' => (isset($column['@default']) ? $column['@default'] : null),
                             'comment' => (isset($column['@comment']) ? $column['@comment'] : false),
                         );
+
+                        if (isset($column['@fkey'])) {
+                            $values = explode('.', $column['@fkey']);
+                            $tableColumns[$column['@name']]['restrict'] = new \Database\DatabaseType(\Database\DatabaseTypeType::tableColumn, $values);
+                        }
                     }
 
 
@@ -179,12 +185,10 @@ switch ($_REQUEST['phase']) {
                     }
                 }
 
+                $database->holdTriggers(false);
 
 
                 /* Part 3: Insert Predefined Data */
-
-                $queries = array(); // This will be the place where all finalized queries are put when they are ready to be executed.
-
                 foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
                     if (isset($table['@mode']) && $table['@mode'] === 'dev' && !isset($_GET['db_usedev'])) // Don't insert dev data, unless asked.
                         continue;
@@ -201,6 +205,8 @@ switch ($_REQUEST['phase']) {
                         die("Failed to insert data into {$prefix}{$table['@name']}.\n" . print_r($database->queryLog, true));
                     }
                 }
+
+                $database->endTransaction();
             }
         }
 
@@ -242,9 +248,8 @@ switch ($_REQUEST['phase']) {
 
         if ($forum == 'vanilla') {
             try {
-                list ($database, $config) = fimDatabaseAndConfigFactory::init($host, $port, $userName, $password, $databaseName, $driver, $prefix);
+                $database = new fimDatabase($host, $port, $userName, $password, $databaseName, $driver, $prefix);
                 fimConfig::$displayBacktrace = true;
-                $generalCache = new fimCache(null, 'none', $database);
 
                 $user = new fimUser(1);
                 if (!$user->setDatabase(array(

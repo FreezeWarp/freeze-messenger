@@ -61,6 +61,11 @@ class DatabaseTypeType {
     const column = 'column';
 
     /**
+     * A table-column pair.
+     */
+    const tableColumn = 'tableColumn';
+
+    /**
      * An enumeration of multiple subvalues. Typically only used for defining table schema, not for inserting into it.
      */
     const enum = 'enum';

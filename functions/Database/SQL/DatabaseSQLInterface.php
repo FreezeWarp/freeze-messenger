@@ -94,4 +94,11 @@ interface DatabaseSQLInterface {
      * @return mixed False on failure; varying query data on success.
      */
     public function rollbackTransaction();
+
+
+
+
+    public function getTablesAsArray(DatabaseSQL $database);
+    public function getTableColumnsAsArray(DatabaseSQL $database);
+    public function getTableConstraintsAsArray(DatabaseSQL $database);
 }

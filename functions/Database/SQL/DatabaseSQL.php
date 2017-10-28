@@ -126,12 +126,6 @@ class DatabaseSQL extends Database
     public $versionTertiary = 0;
 
     /**
-     * @var array The list of languages supported by the current DBMS. (PDO probably isn't actually supported. Will be soon.)
-     *            TODO: remove
-     */
-    public $supportedLanguages = array('mysql', 'mysqli', 'pdo');
-
-    /**
      * @var string The database mode. This will always be SQL for us.
      */
     public $mode = 'SQL';
@@ -176,6 +170,16 @@ class DatabaseSQL extends Database
      * @var bool If rawQuery should return its query instead of executing it. Ideal for simulation and testing.
      */
     public $returnQueryString = false;
+
+    /**
+     * @var bool If enabled, triggers will be placed in {@link DatabaseSQL::triggerQueue}, and won't be run.
+     */
+    protected $holdTriggers = false;
+
+    /**
+     * @var array A queue for triggers when {@link DatabaseSQL::holdTriggers} is enabled.
+     */
+    protected $triggerQueue = [];
 
 
 
@@ -862,6 +866,19 @@ class DatabaseSQL extends Database
         $this->sqlInterface->endTransaction();
     }
 
+    public function holdTriggers($holdTriggers)
+    {
+        if (!$holdTriggers && $this->holdTriggers) {
+            foreach ($this->triggerQueue AS $trigger) {
+                $this->rawQuery($trigger);
+            }
+
+            $this->triggerQueue = [];
+        }
+
+        $this->holdTriggers = $holdTriggers;
+    }
+
 
 
     /*********************************************************
@@ -1198,6 +1215,44 @@ class DatabaseSQL extends Database
             }
 
 
+            /* Generate Foreign Key Restrictions */
+            if ($this->isTypeObject($column['restrict'])) {
+                if ($column['restrict']->type === DatabaseTypeType::tableColumn) {
+                    switch ($this->sqlInterface->foreignKeyMode) {
+                        case 'useAlterTableAddForeignKey':
+                            $indexName = 'fk_' . $tableName . '_' . $columnName;
+
+                            $tableConstraints = $this->getTableConstraintsAsArray();
+                            if (isset($tableConstraints[strtolower($tableName)])) {
+                                if (in_array(strtolower($indexName), $tableConstraints[strtolower($tableName)])) {
+                                    $triggers[] = 'ALTER TABLE '
+                                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                                        . ' DROP FOREIGN KEY '
+                                        . $this->formatValue(DatabaseTypeType::column, $indexName);
+                                }
+                            }
+
+                            $triggers[] = 'ALTER TABLE '
+                                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                                . ' ADD CONSTRAINT ' . $this->formatValue(DatabaseTypeType::column, $indexName) . ' FOREIGN KEY ('
+                                    . $this->formatValue(DatabaseTypeType::column, $columnName)
+                                . ') REFERENCES ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $column['restrict']->value[0]) . '('
+                                    . $this->formatValue(DatabaseTypeType::column, $column['restrict']->value[1])
+                                . ')';
+                            break;
+
+
+                        // Warning: will usually only work if the table already exists. So FIM can't really use this.
+                        case 'useColumnReferences':
+                            $typePiece .= " REFERENCES " . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $column['restrict']->value[0]) . '('
+                                . $this->formatValue(DatabaseTypeType::column, $column['restrict']->value[1])
+                                . ')';
+                            break;
+                    }
+                }
+            }
+
+
             /* Put it All Together As an SQL Statement Piece */
             $columns[] = $this->formatValue(DatabaseTypeType::column, $columnName)
                 . ' ' . $typePiece
@@ -1269,47 +1324,6 @@ class DatabaseSQL extends Database
     public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes = [], $partitionColumn = false, $hardPartitionCount = 1)
     {
         $engine = $this->parseEngine($engine);
-        list($columns, $triggers, $tableIndexes, $tableProperties) = $this->parseTableColumns($tableName, $tableColumns, $tableIndexes, $engine);
-
-
-        list($indexes, $indexTriggers) = $this->createTableIndexes($tableName, $tableIndexes, true);
-        $triggers = array_merge($triggers, $indexTriggers);
-
-
-        /* Table Comments */
-        // In this mode, we add comments with separate SQL statements at the end.
-        if ($this->sqlInterface->commentMode === 'useCommentOn')
-            $triggers[] = 'COMMENT ON TABLE '
-                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
-                . ' IS '
-                . $this->formatValue(DatabaseTypeType::string, $tableComment);
-
-        // In this mode, we define comments as attributes on the table.
-        elseif ($this->sqlInterface->commentMode === 'useAttributes')
-            $tableProperties .= " COMMENT=" . $this->formatValue(DatabaseTypeType::string, $tableComment);
-
-        // Invalid comment mode
-        else
-            throw new Exception("Invalid comment mode: {$this->sqlInterface->commentMode}");
-
-
-        /* Table Engine */
-        if ($this->language === 'mysql') {
-            $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]);
-        }
-
-
-        /* Table Charset */
-        // todo: postgres
-        if ($this->language === 'mysql') {
-            $tableProperties .= ' DEFAULT CHARSET=' . $this->formatValue(DatabaseTypeType::string, 'utf8');
-        }
-
-
-        /* Table Partioning */
-        if ($partitionColumn) {
-            $tableProperties .= ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100';
-        }
 
 
         /* Perform CREATEs */
@@ -1318,6 +1332,49 @@ class DatabaseSQL extends Database
         $return = true;
         for ($i = 0; $i < $hardPartitionCount; $i++) {
             $tableNameI = $tableName . ($hardPartitionCount > 1 ? "__part$i" : '');
+
+            list($columns, $triggers, $tableIndexes, $tableProperties) = $this->parseTableColumns($tableNameI, $tableColumns, $tableIndexes, $engine);
+            list($indexes, $indexTriggers) = $this->createTableIndexes($tableNameI, $tableIndexes, true);
+
+            $triggers = array_merge($triggers, $indexTriggers);
+
+
+            /* Table Comments */
+            // In this mode, we add comments with separate SQL statements at the end.
+            if ($this->sqlInterface->commentMode === 'useCommentOn')
+                $triggers[] = 'COMMENT ON TABLE '
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
+                    . ' IS '
+                    . $this->formatValue(DatabaseTypeType::string, $tableComment);
+
+            // In this mode, we define comments as attributes on the table.
+            elseif ($this->sqlInterface->commentMode === 'useAttributes')
+                $tableProperties .= " COMMENT=" . $this->formatValue(DatabaseTypeType::string, $tableComment);
+
+            // Invalid comment mode
+            else
+                throw new Exception("Invalid comment mode: {$this->sqlInterface->commentMode}");
+
+
+            /* Table Engine */
+            if ($this->language === 'mysql') {
+                $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]);
+            }
+
+
+            /* Table Charset */
+            // todo: postgres
+            if ($this->language === 'mysql') {
+                $tableProperties .= ' DEFAULT CHARSET=' . $this->formatValue(DatabaseTypeType::string, 'utf8');
+            }
+
+
+            /* Table Partioning */
+            if ($partitionColumn) {
+                $tableProperties .= ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100';
+            }
+
+
             $return = $this->rawQuery('CREATE TABLE IF NOT EXISTS ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableNameI) . ' (
     ' . implode(",\n  ", $columns) . (count($indexes) > 0 ? ',
     ' . implode(",\n  ", $indexes) : '') . '
@@ -1343,6 +1400,18 @@ class DatabaseSQL extends Database
 
     public function renameTable($oldName, $newName)
     {
+        // Delete table constraints first, to prevent name conflicts
+        $tableConstraints = $this->getTableConstraintsAsArray();
+        if (isset($tableConstraints[strtolower($oldName)])) {
+            foreach ($tableConstraints[strtolower($oldName)] AS $indexName) {
+                $this->rawQuery('ALTER TABLE '
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
+                    . ' DROP FOREIGN KEY '
+                    . $this->formatValue(DatabaseTypeType::column, $indexName));
+            }
+        }
+
+        // TODO
         if ($this->language === 'mysql')
             return $this->rawQuery('RENAME TABLE '
                 . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
@@ -1389,6 +1458,7 @@ class DatabaseSQL extends Database
     /**
      * Run a series of SQL statements in sequence, returning true if all run successfully.
      * {TABLENAME} will be converted to $tableName, if present in any trigger.
+     * If {@link holdTriggers} is enabled, the trigger statements will instead by placed in {@link triggerQueue}
      *
      * @param $tableName string The SQL tablename.
      * @param $triggers array List of SQL statements.
@@ -1399,8 +1469,15 @@ class DatabaseSQL extends Database
         $return = true;
 
         foreach ((array) $triggers AS $trigger) {
-            $return = $return
-                && $this->rawQuery(str_replace('{TABLENAME}', $tableName, $trigger)); // Make $return false if any query return false.
+            $triggerText = str_replace('{TABLENAME}', $tableName, $trigger);
+
+            if ($this->holdTriggers) {
+                $this->triggerQueue[] = $triggerText;
+            }
+            else {
+                $return = $return
+                    && $this->rawQuery($triggerText); // Make $return false if any query return false.
+            }
         }
 
         return $return;
@@ -1440,7 +1517,6 @@ class DatabaseSQL extends Database
 
 
             /* Generate CREATE INDEX Statements, If Needed */
-            // use CREATE INDEX ON statements if the table already exists, or we are in useCreateIndex mode. However, don't do so if it's a primary key.
             if ((!$duringTableCreation || $this->sqlInterface->indexMode === 'useCreateIndex') && $index['type'] !== 'primary')
                 $triggers[] = "CREATE {$typePiece} INDEX ON " . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}') . " ({$indexName})";
 
@@ -1472,46 +1548,18 @@ class DatabaseSQL extends Database
     }
 
 
-    // TODO: use select()
-    public function getTablesAsArray()
-    {
-        switch ($this->language) {
-            case 'mysql':
-                $tables = $this->rawQueryReturningResult('SELECT * FROM '
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'TABLES')
-                    . ' WHERE TABLE_SCHEMA = '
-                    . $this->formatValue(DatabaseTypeType::string, $this->activeDatabase)
-                )->getColumnValues('TABLE_NAME');
-                break;
-            case 'pgsql':
-                $tables = $this->rawQueryReturningResult('SELECT * FROM information_schema.tables WHERE TABLE_CATALOG = '
-                    . $this->formatValue(DatabaseTypeType::string, $this->activeDatabase)
-                    . ' AND table_type = \'BASE TABLE\' AND table_schema NOT IN (\'pg_catalog\', \'information_schema\')'
-                )->getColumnValues('table_name');
-            break;
-            default:
-                throw new Exception('getTablesAsArray() is unsupported in the current language.');
-        }
-
-        return $tables;
+    public function getTablesAsArray(): array {
+        return $this->sqlInterface->getTablesAsArray($this);
     }
 
 
-    public function getTableColumnsAsArray()
-    {
-        switch ($this->language) {
-            case 'mysql':
-                $columns = $this->rawQueryReturningResult('SELECT * FROM '
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'COLUMNS')
-                    . ' WHERE TABLE_SCHEMA = '
-                    . $this->formatValue(DatabaseTypeType::string, $this->activeDatabase)
-                )->getColumnValues(['TABLE_NAME', 'COLUMN_NAME']);
-                break;
-            default:
-                throw new Exception('getTablesAsArray() is unsupported in the current language.');
-        }
+    public function getTableColumnsAsArray(): array {
+        return $this->sqlInterface->getTableColumnsAsArray($this);
+    }
 
-        return $columns;
+
+    public function getTableConstraintsAsArray(): array {
+        return $this->sqlInterface->getTableConstraintsAsArray($this);
     }
 
     /*********************************************************

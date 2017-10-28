@@ -2,6 +2,32 @@
 
 <dbData version="3.0">
     <database>
+        <!-- Table rooms -->
+        <table name="rooms">
+            <column name="id" value="1" />
+            <column name="name" value="Your Room!" />
+            <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
+            <column name="options" value="1" type="bitfield" />
+        </table>
+        <table name="rooms">
+            <column name="id" value="2" />
+            <column name="name" value="Another Room!" />
+            <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
+            <column name="options" value="1" type="bitfield" />
+        </table>
+
+
+        <!-- Table users -->
+        <!-- The addUser function should be tested separately (as with addRoom, etc.) -->
+        <table name="users">
+            <column name="id" value="-1" />
+            <column name="name" value="Anonymous" />
+            <column name="privs" value="1" type="bitfield" />
+        </table>
+
+
+
+        <!-- Table configuration -->
         <table name="configuration" mode="dev">
             <column name="directive" value="displayBacktrace" />
             <column name="value" value="true" />
@@ -17,6 +43,8 @@
             <column name="value" value="true" />
             <column name="type" value="bool" />
         </table>
+
+
 
         <!-- Table censorLists -->
         <table name="censorLists">
@@ -38,34 +66,6 @@
             <column name="options" value="3" type="bitfield" />
         </table>
 
-
-
-        <!-- Table censorBlackWhiteLists -->
-        <table name="censorBlackWhiteLists" mode="dev">
-            <column name="listId" value="1" />
-            <column name="roomId" value="2" />
-            <column name="status" value="unblock" />
-        </table>
-        <table name="censorBlackWhiteLists" mode="dev">
-            <column name="listId" value="1" />
-            <column name="roomId" value="3" />
-            <column name="status" value="unblock" />
-        </table>
-        <table name="censorBlackWhiteLists" mode="dev">
-            <column name="listId" value="2" />
-            <column name="roomId" value="2" />
-            <column name="status" value="unblock" />
-        </table>
-        <table name="censorBlackWhiteLists" mode="dev">
-            <column name="listId" value="3" />
-            <column name="roomId" value="3" />
-            <column name="status" value="block" />
-        </table>
-        <table name="censorBlackWhiteLists" mode="dev">
-            <column name="listId" value="3" />
-            <column name="roomId" value="4" />
-            <column name="status" value="block" />
-        </table>
 
 
         <!-- Table censorWords -->
@@ -194,6 +194,7 @@
         </table>
 
 
+
         <!-- Table counters -->
         <table name="counters">
             <column name="counterName" value="uploads" />
@@ -213,6 +214,8 @@
         </table>
 
 
+
+        <!-- Table oauth_clients -->
         <table name="oauth_clients">
             <column name="client_id" value="WebPro" />
         </table>
@@ -226,23 +229,8 @@
         </table>
 
 
-        <!-- Table rooms -->
-        <table name="rooms">
-            <column name="id" value="1" />
-            <column name="name" value="Your Room!" />
-            <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-            <column name="ownerId" value="0" />
-            <column name="options" value="1" type="bitfield" />
-        </table>
-        <table name="rooms">
-            <column name="id" value="2" />
-            <column name="name" value="Another Room!" />
-            <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
-            <column name="ownerId" value="0" />
-            <column name="options" value="1" type="bitfield" />
-        </table>
 
-
+        <!-- Table emoticons -->
         <!--<table name="emoticons">
             <column name="emoticonText" value=":|" />
             <column name="emoticonFile" value="webpro/client/smilies/icon_neutral.gif" />
@@ -263,26 +251,5 @@
             <column name="emoticonText" value=":D" />
             <column name="emoticonFile" value="webpro/client/smilies/icon_e_biggrin.gif" />
         </table>-->
-
-
-        <!-- Table users -->
-        <!-- The addUser function should be tested separately (as with addRoom, etc.) -->
-        <table name="users">
-            <column name="id" value="-1" />
-            <column name="name" value="Anonymous" />
-            <column name="privs" value="1" type="bitfield" />
-        </table>
-        <table name="users" mode="dev">
-            <column name="id" value="3" />
-            <column name="name" value="Test Bot 1" />
-            <column name="birthDate" value="1175052655" />
-            <column name="passwordHash" value="pass1" /><!-- Unhashed passwords are only used for testing. -->
-            <column name="passwordFormat" value="plaintext" />
-            <column name="avatar" value="" /><!-- TODO -->
-            <column name="profile" value="http://www.josephtparsons.com/" />
-            <column name="nameFormat" value="color: red;" />
-            <column name="defaultRoomId" value="3" />
-            <column name="parentalFlags" value="" />
-        </table>
     </database>
 </dbData>

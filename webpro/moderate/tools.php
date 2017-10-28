@@ -72,12 +72,9 @@ else {
 
             case 'updateDatabaseSchema':
                 require(__DIR__ . '/../../functions/Xml2Array.php');
-                $showTable = (array) $database->getTablesAsArray();
-                $showTables = array_map('strtolower', $showTable); // ...In Windows, table names may not be returned as entered (uppercase letters usually become lowercase), so this is the most efficient work-around I could come up with.
-
+                $showTables = $database->getTablesAsArray();
                 $showColumns = $database->getTableColumnsAsArray();
-                $showColumns = array_change_key_case($showColumns, CASE_LOWER); // How is this even a function?
-                array_walk($showColumns, function(&$a) { $a = array_map('strtolower', $a); });
+                set_time_limit(0);
 
                 $xmlData = new Xml2Array(file_get_contents('../install/dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
                 $xmlData = $xmlData->getAsArray(); // Get the XML data as an array
@@ -100,12 +97,19 @@ else {
                             $tableColumns[$column['@name']] = [
                                 'type'          => $column['@type'],
                                 'autoincrement' => $column['@autoincrement'] ?? false,
-                                'restrict'      => (isset($column['@restrict']) ? explode(',', $column['@restrict']) : false),
+                                'restrict'      => (isset($column['@restrict'])
+                                    ? explode(',', $column['@restrict'])
+                                    : false),
                                 'maxlen'        => $column['@maxlen'] ?? false,
                                 'bits'          => $column['@bits'] ?? false,
                                 'default'       => $column['@default'] ?? null,
                                 'comment'       => $column['@comment'] ?? false,
                             ];
+
+                            if (isset($column['@fkey'])) {
+                                $values = explode('.', $column['@fkey']);
+                                $tableColumns[$column['@name']]['restrict'] = new \Database\DatabaseType(\Database\DatabaseTypeType::tableColumn, $values);
+                            }
                         }
 
 
@@ -117,15 +121,20 @@ else {
                             }
                         }
 
+                        //$database->startTransaction();
+                        $database->holdTriggers(true);
                         if (in_array(strtolower($tableName), $showTables)) {
                             echo 'Update: ' . $tableName . ': ' . $database->alterTable($tableName, $tableComment, $tableType) . '<br />';
+                            fim_flush();
 
                             foreach ($tableColumns AS $name => $column) {
                                 if (in_array(strtolower($name), $showColumns[strtolower($tableName)])) {
                                     echo 'Update: ' . $tableName . ',' . $name . ': ' . $database->alterTableColumns($tableName, [$name => $column], $tableType) . '<br />';
+                                    fim_flush();
                                 }
                                 else {
                                     echo 'Create: ' . $tableName . ',' . $name . ': ' . $database->createTableColumns($tableName, [$name => $column], $tableType) . '<br />';
+                                    fim_flush();
                                 }
                             }
                         }
@@ -135,10 +144,16 @@ else {
                             }
                             else {
                                 echo 'Created Table: ' . $tableName . '<br />';
+                                fim_flush();
                             }
                         }
+                        //$database->endTransaction();
                     }
                 }
+
+                echo 'Running Triggers for All Tables and Columns...';
+                fim_flush();
+                $database->holdTriggers(false);
                 break;
         }
     }

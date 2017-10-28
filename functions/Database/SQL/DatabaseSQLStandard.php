@@ -7,7 +7,7 @@ use Database\DatabaseEngine;
 use Database\DatabaseTypeType;
 use Database\DatabaseTypeComparison;
 
-abstract class DatabaseSQLStandard {
+abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
     /**
      * @var mixed A link to the database driver connection.
      */
@@ -312,6 +312,16 @@ abstract class DatabaseSQLStandard {
     public $upsertMode = false;
 
 
+    /**
+     * @var string {
+     *     Mode used to support foreign keys. Options:
+     *
+     *    'useAlterTableAddForeignKey' - Use MySQL's alter table syntax.
+     *    'useColumnReferences' - Use column REFERENCES clause.
+     */
+    public $foreignKeyMode = false;
+
+
 
     /*********************************************************
      ************************ START **************************
@@ -330,4 +340,10 @@ abstract class DatabaseSQLStandard {
     abstract public function startTransaction();
     abstract public function endTransaction();
     abstract public function rollbackTransaction();
+
+
+    abstract public function getTablesAsArray(DatabaseSQL $database);
+    abstract public function getTableColumnsAsArray(DatabaseSQL $database);
+    abstract public function getTableConstraintsAsArray(DatabaseSQL $database);
+
 }

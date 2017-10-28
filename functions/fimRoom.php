@@ -148,7 +148,7 @@ class fimRoom extends fimDynamicObject {
     /**
      * @var bool The ID of the owner of the room. TODO: make user object?
      */
-    protected $ownerId = 0;
+    protected $ownerId = null;
 
     /**
      * @var string The topic of the room.
@@ -692,7 +692,6 @@ class fimRoom extends fimDynamicObject {
             $this->set('parentalAge', 0);
             $this->set('parentalFlags', []);
             $this->set('topic', '');
-            $this->set('ownerId', 0);
             $this->set('defaultPermissions', 0);
         }
         else {

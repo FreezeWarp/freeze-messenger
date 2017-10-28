@@ -58,6 +58,8 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
     public $enumMode = 'useCreateType';
     public $commentMode = 'useCommentOn';
     public $indexMode = 'useCreateIndex';
+    // TODO (currently broken)
+    // public $foreignKeyMode = 'useAlterTableAddForeignKey';
     public $useCreateIfNotExist = false;
 
     public function connect($host, $port, $username, $password, $database = false) {
@@ -187,5 +189,20 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
 
     public function notify() {
         return pg_get_notify($this->connection);
+    }
+
+    public function getTablesAsArray(DatabaseSQL $database) {
+        return $database->rawQueryReturningResult('SELECT * FROM information_schema.tables WHERE TABLE_CATALOG = '
+            . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
+            . ' AND table_type = \'BASE TABLE\' AND table_schema NOT IN (\'pg_catalog\', \'information_schema\')'
+        )->getColumnValues('table_name');
+    }
+
+    public function getTableColumnsAsArray(DatabaseSQL $database) {
+        throw new \Exception('Unimplemented.');
+    }
+
+    public function getTableConstraintsAsArray(DatabaseSQL $database) {
+        throw new \Exception('Unimplemented.');
     }
 }
