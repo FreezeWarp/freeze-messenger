@@ -61,6 +61,16 @@ else {
     $ignoreLogin = true;
 }
 
+// A hack to unset the access token when a script fails.
+register_shutdown_function(function() {
+    global $user, $ignoreLogin;
+
+    if (!$user->id && !$ignoreLogin) {
+        setcookie('webproModerate_accessToken', false);
+        header('Location: ./');
+    }
+});
+
 require('../global.php');
 /*if (isset($_REQUEST['grant_type'])) {
     if ($user->id && $apiData['login']['access_token']) {
