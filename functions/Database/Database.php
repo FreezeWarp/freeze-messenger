@@ -168,7 +168,6 @@ abstract class Database
      */
     public function __destruct()
     {
-
     }
 
     /**
@@ -1254,6 +1253,21 @@ abstract class Database
     public function equation($value) {
         return $this->type(DatabaseTypeType::equation, $value);
     }
+
+
+    /**
+     * A null comparison. Shorthand for type('null', null, $comp)
+     *
+     * @param mixed $value
+     * @param string $comp
+     * @return DatabaseType
+     */
+    public function null($comp = DatabaseTypeComparison::equals)
+    {
+        return $this->type(DatabaseTypeType::null, null, $comp);
+    }
+
+
 
 
     public function auto($value) {

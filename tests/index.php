@@ -22,7 +22,7 @@ function printCompRow($name, $result, $expectedResult) {
 class databaseSQLTests
 {
     /**
-     * @var Database
+     * @var \Database\SQL\DatabaseSQL
      */
     protected $databaseObj;
 
@@ -47,14 +47,12 @@ echo "Requiring DB Configuration...<br />";
 require_once('../config.php');
 
 echo "Requiring Core Classes...<br />";
+require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
+
 require_once('../functions/fimUser.php');
 require_once('../functions/fimRoom.php');
 require_once('../functions/fimConfig.php');
 require_once('../functions/fimCache.php');
-
-echo "Requiring Database Files...<br />";
-require_once('../functions/Database.php');
-require_once('../functions/DatabaseSQL.php');
 require_once('../functions/fimDatabase.php');
 
 echo "Requiring Test Suites...<br />";
@@ -65,7 +63,7 @@ echo "Creating Object...<br />";
 $database = new fimDatabase();
 
 echo "Performing Database Connection...<br />";
-list ($database, $config) = fimDatabaseAndConfigFactory::init($dbConnect['core']['host'],
+$database = new fimDatabase($dbConnect['core']['host'],
     $dbConnect['core']['port'],
     $dbConnect['core']['username'],
     $dbConnect['core']['password'],

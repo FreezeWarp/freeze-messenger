@@ -4,13 +4,11 @@
     <database>
         <!-- Table rooms -->
         <table name="rooms">
-            <column name="id" value="1" />
             <column name="name" value="Your Room!" />
             <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
             <column name="options" value="1" type="bitfield" />
         </table>
         <table name="rooms">
-            <column name="id" value="2" />
             <column name="name" value="Another Room!" />
             <column name="topic" value="Hit the Edit Room Button to Change Things or Use /topic to Change the Topic" />
             <column name="options" value="1" type="bitfield" />
@@ -48,19 +46,16 @@
 
         <!-- Table censorLists -->
         <table name="censorLists">
-            <column name="listId" value="1" />
             <column name="listName" value="Example Censor" />
             <column name="listType" value="white" />
             <column name="options" value="3" type="bitfield" />
         </table>
         <table name="censorLists" mode="dev">
-            <column name="listId" value="2" />
             <column name="listName" value="Really Bad Words" />
             <column name="listType" value="white" />
             <column name="options" value="3" type="bitfield" />
         </table>
         <table name="censorLists" mode="dev">
-            <column name="listId" value="3" />
             <column name="listName" value="IBF" />
             <column name="listType" value="black" />
             <column name="options" value="3" type="bitfield" />
@@ -125,29 +120,6 @@
             <column name="word" value="no homo" />
             <column name="severity" value="replace" />
             <column name="param" value="marry me" />
-        </table>
-
-        <table name="censorWords" mode="dev">
-            <column name="listId" value="2" />
-            <column name="word" value="faggot" />
-            <column name="severity" value="block" />
-        </table>
-        <table name="censorWords" mode="dev">
-            <column name="listId" value="2" />
-            <column name="word" value="cuntmeister" />
-            <column name="severity" value="block" />
-        </table>
-        <table name="censorWords" mode="dev">
-            <column name="listId" value="2" />
-            <column name="word" value="fag" />
-            <column name="severity" value="warn" />
-            <column name="param" value="You better be talking about a cigarrette or annoying biker gangs..." />
-        </table>
-        <table name="censorWords" mode="dev">
-            <column name="listId" value="2" />
-            <column name="word" value="cock" />
-            <column name="severity" value="confirm" />
-            <column name="param" value="Are you talking about a bird? If not, please don't say that." />
         </table>
 
         <table name="censorWords" mode="dev">

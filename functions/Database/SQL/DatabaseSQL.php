@@ -326,10 +326,9 @@ class DatabaseSQL extends Database
                 break;
 
             case DatabaseTypeType::blob:
-                //return 'FROM_BASE64("' . base64_encode($values[1]) . '")';
-                return $this->sqlInterface->stringQuoteStart
+                return $this->sqlInterface->binaryQuoteStart
                     . $this->escape($values[1], $type)
-                    . $this->sqlInterface->stringQuoteEnd;
+                    . $this->sqlInterface->binaryQuoteEnd;
                 break;
 
             case DatabaseTypeType::bitfield:
@@ -1080,6 +1079,8 @@ class DatabaseSQL extends Database
 
                     // Search through the array encoding limits. This array should be keyed in increasing size.
                     foreach ($stringLimits AS $length => $type) {
+                        if (!is_int($length)) continue; // allow default key
+
                         if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
                             if (in_array($type, $this->sqlInterface->dataTypes['columnNoLength']))
                                 $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
@@ -1150,13 +1151,23 @@ class DatabaseSQL extends Database
                 // TODO: language trigger support check
                 if ($column['default'] === '__TIME__') {
                     $triggerName = $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, "{TABLENAME}_{$columnName}__TIME__");
-                    $triggers[] = "DROP TRIGGER IF EXISTS {$triggerName}" . ($this->sqlInterface->getLanguage() !== 'mysql' ? ' ON ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}') : '');
 
-                    if ($this->sqlInterface->getLanguage() === 'mysql') {
-                        $triggers[] = "CREATE TRIGGER {$triggerName} BEFORE INSERT ON {TABLENAME} FOR EACH ROW SET NEW.{$columnName} = IF(NEW.{$columnName}, NEW.{$columnName}, UNIX_TIMESTAMP(NOW()))";
-                    }
-                    elseif ($this->sqlInterface->getLanguage() === 'pgsql') {
-                        $triggers[] = "CREATE OR REPLACE FUNCTION {$triggerName}_function()
+                    switch ($this->sqlInterface->getLanguage()) {
+                        case 'sqlsrv':
+                            $triggers[] = 'ALTER TABLE '
+                                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                                . " ADD CONSTRAINT {$triggerName} DEFAULT DATEDIFF(s, '1970-01-01 00:00:00', GETUTCDATE()) FOR "
+                                . $this->formatValue(DatabaseTypeType::column, $columnName);
+                            break;
+
+                        case 'mysql': // This one is kinda just for testing. We should replace it with DEFAULT UNIX_TIMESTAMP.
+                            $triggers[] = "DROP TRIGGER IF EXISTS {$triggerName}";
+                            $triggers[] = "CREATE TRIGGER {$triggerName} BEFORE INSERT ON {TABLENAME} FOR EACH ROW SET NEW.{$columnName} = IF(NEW.{$columnName}, NEW.{$columnName}, UNIX_TIMESTAMP(NOW()))";
+                            break;
+
+                        case 'pgsql':
+                            $triggers[] = "DROP TRIGGER IF EXISTS {$triggerName} ON " . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}');
+                            $triggers[] = "CREATE OR REPLACE FUNCTION {$triggerName}_function()
                             RETURNS TRIGGER AS $$
                             BEGIN
                                 IF NEW.\"{$columnName}\" IS NULL THEN
@@ -1166,9 +1177,10 @@ class DatabaseSQL extends Database
                             END;
                             $$ language 'plpgsql';";
 
-                        $triggers[] = "CREATE TRIGGER {$triggerName} BEFORE INSERT ON "
-                            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
-                            . " FOR EACH ROW EXECUTE PROCEDURE {$triggerName}_function()";
+                            $triggers[] = "CREATE TRIGGER {$triggerName} BEFORE INSERT ON "
+                                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
+                                . " FOR EACH ROW EXECUTE PROCEDURE {$triggerName}_function()";
+                            break;
                     }
                 }
 
@@ -1315,7 +1327,14 @@ class DatabaseSQL extends Database
     }
 
 
-    public function createTable($tableName, $tableComment, $engine, $tableColumns, $tableIndexes = [], $partitionColumn = false, $hardPartitionCount = 1)
+    public function createTable($tableName,
+                                $tableComment,
+                                $engine,
+                                $tableColumns,
+                                $tableIndexes = [],
+                                $partitionColumn = false,
+                                $hardPartitionCount = 1,
+                                $renameOrDeleteExisting = false)
     {
         $engine = $this->parseEngine($engine);
 
@@ -1368,6 +1387,19 @@ class DatabaseSQL extends Database
             }
 
 
+            if ($renameOrDeleteExisting && in_array(strtolower($tableNameI), $this->getTablesAsArray())) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
+                if (!$this->renameTable($tableNameI, $tableNameI . '~' . time())) {
+                    if (!$this->deleteTable($tableNameI)) {
+                        throw new Exception("Could Not Rename or Delete Table '$tableNameI'");
+                    }
+                }
+            }
+            else if (!$this->sqlInterface->useCreateIfNotExist && in_array(strtolower($tableName), $this->getTablesAsArray())) {
+                $this->endTransaction();
+                return true;
+            }
+
+
             $return = $this->rawQuery(
                 'CREATE TABLE '
                 . ($this->sqlInterface->useCreateIfNotExist ? 'IF NOT EXISTS ' : '')
@@ -1396,30 +1428,36 @@ class DatabaseSQL extends Database
 
     public function renameTable($oldName, $newName)
     {
-        // Delete table constraints first, to prevent name conflicts
-        $tableConstraints = $this->getTableConstraintsAsArray();
-        if (isset($tableConstraints[strtolower($oldName)])) {
-            foreach ($tableConstraints[strtolower($oldName)] AS $indexName) {
-                $this->rawQuery('ALTER TABLE '
+        if ($this->sqlInterface->tableRenameMode === 'renameTable'
+            || $this->sqlInterface->tableRenameMode === 'alterTable') {
+            // Delete table constraints first, to prevent name conflicts
+            $tableConstraints = $this->getTableConstraintsAsArray();
+            if (isset($tableConstraints[strtolower($oldName)])) {
+                foreach ($tableConstraints[strtolower($oldName)] AS $indexName) {
+                    $this->rawQuery('ALTER TABLE '
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
+                        . ' DROP FOREIGN KEY '
+                        . $this->formatValue(DatabaseTypeType::column, $indexName));
+                }
+            }
+
+            if ($this->sqlInterface->tableRenameMode === 'renameTable') {
+                return $this->rawQuery('RENAME TABLE '
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
-                    . ' DROP FOREIGN KEY '
-                    . $this->formatValue(DatabaseTypeType::column, $indexName));
+                    . ' TO '
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $newName)
+                );
+            }
+            else if ($this->sqlInterface->tableRenameMode === 'alterTable') {
+                return $this->rawQuery('ALTER TABLE '
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
+                    . ' RENAME TO '
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $newName)
+                );
             }
         }
 
-        // TODO
-        if ($this->sqlInterface->getLanguage() === 'mysql')
-            return $this->rawQuery('RENAME TABLE '
-                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
-                . ' TO '
-                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $newName)
-            );
-        else
-            return $this->rawQuery('ALTER TABLE '
-                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
-                . ' RENAME TO '
-                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $newName)
-            );
+        return false;
     }
 
 
@@ -1500,29 +1538,45 @@ class DatabaseSQL extends Database
 
 
             if (strpos($indexName, ',') !== false) {
-                $indexCols = explode(',', $indexName);
+                $indexCols2 = explode(',', $indexName);
 
-                foreach ($indexCols AS &$indexCol)
-                    $indexCol = $this->formatValue(DatabaseTypeType::column, $indexCol);
+                $indexName = implode(',', $indexCols2);
 
-                $indexName = implode(',', $indexCols);
+                $indexCols = [];
+                foreach ($indexCols2 AS $indexCol) {
+                    $indexCols[] = $this->col($indexCol);
+                }
             }
             else {
-                $indexName = $this->formatValue(DatabaseTypeType::column, $indexName);
+                $indexCols = [$this->col($indexName)];
             }
 
 
             /* Generate CREATE INDEX Statements, If Needed */
-            if ((!$duringTableCreation || $this->sqlInterface->indexMode === 'useCreateIndex') && $index['type'] !== 'primary')
+            if ((!$duringTableCreation || $this->sqlInterface->indexMode === 'useCreateIndex') && $index['type'] !== 'primary') {
                 $triggers[] = "CREATE {$typePiece} INDEX "
-                    . $indexName
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $indexName)
                     . " ON "
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
-                    . " ({$indexName})";
+                    . ' '
+                    . $this->formatValue(DatabaseTypeType::arraylist, $indexCols);
+
+                if ($index['type'] === DatabaseIndexType::unique && $this->sqlInterface->getLanguage() === 'sqlsrv') {
+                    $indexColsConditions = [];
+                    foreach ($indexCols AS $col) {
+                        //  var_dump($col);
+
+                        $indexColsConditions["!{$col->value}"] = $this->type(DatabaseTypeType::null);
+                    }
+
+                    end($triggers);
+                    $triggers[key($triggers)] .= ' WHERE ' . $this->recurseBothEither($indexColsConditions, $this->reverseAliasFromConditionArray($tableName, $indexColsConditions), 'both');
+                }
+            }
 
             // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
             elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
-                $indexes[] = "{$typePiece} KEY ({$indexName})";
+                $indexes[] = "{$typePiece} KEY " . $this->formatValue(DatabaseTypeType::arraylist, $indexCols);
 
             // Throw an exception if the index mode is unrecognised.
             else
@@ -1549,17 +1603,33 @@ class DatabaseSQL extends Database
 
 
     public function getTablesAsArray(): array {
-        return $this->sqlInterface->getTablesAsArray($this);
+        return array_map('strtolower', $this->sqlInterface->getTablesAsArray($this));
     }
 
 
     public function getTableColumnsAsArray(): array {
-        return $this->sqlInterface->getTableColumnsAsArray($this);
+        $tableColumns = array_change_key_case(
+            $this->sqlInterface->getTableColumnsAsArray($this), CASE_LOWER
+        );
+
+        array_walk($tableColumns, function(&$val) {
+            $val = array_map('strtolower', $val);
+        });
+
+        return $tableColumns;
     }
 
 
     public function getTableConstraintsAsArray(): array {
-        return $this->sqlInterface->getTableConstraintsAsArray($this);
+        $tableConstraints = array_change_key_case(
+            $this->sqlInterface->getTableConstraintsAsArray($this), CASE_LOWER
+        );
+
+        array_walk($tableConstraints, function(&$val) {
+            $val = array_map('strtolower', $val);
+        });
+
+        return $tableConstraints;
     }
 
     /*********************************************************
@@ -1891,7 +1961,7 @@ class DatabaseSQL extends Database
         if (!is_array($conditionArray))
             throw new Exception('Condition array must be an array.');
         elseif (!count($conditionArray))
-            return $this->sqlInterface->boolValues[true];
+            return $this->sqlInterface->boolValues[true] . ' = ' . $this->sqlInterface->boolValues[true];
 
         // $key is usually a column, $value is a formatted value for the select() function.
         foreach ($conditionArray AS $key => $value) {
@@ -1933,15 +2003,12 @@ class DatabaseSQL extends Database
 
 
                 // rvalue
-                if ($value->type === DatabaseTypeType::null)
-                    $sideText['right'] = 'IS NULL';
-
-                elseif ($value->type === DatabaseTypeType::column)
+                if ($value->type === DatabaseTypeType::column)
                     $sideText['right'] = ($reverseAlias ? $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$value->value][0], $reverseAlias[$value->value][1]) : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
 
                 elseif ($value->type === DatabaseTypeType::arraylist && count($value->value) === 0) {
                     $this->triggerError('Array nullified', false, 'validationFallback');
-                    $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any
+                    $sideTextFull[$i] = "{$this->sqlInterface->boolValues[false]} = {$this->sqlInterface->boolValues[true]}"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Simply specifying "false" works on most DBMS, but not SqlServer.
                     continue;
                 }
 
@@ -1965,9 +2032,22 @@ class DatabaseSQL extends Database
 
 
                 // Combine l and rvalues
-                if ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
-                    $sideTextFull[$i] = ($this->startsWith($key, '!') ? $this->sqlInterface->concatTypes['not'] : '') . "({$sideText['left']} {$symbol} {$sideText['right']}"
-                        . ($value->comparison === DatabaseTypeComparison::binaryAnd ? ' = ' . $this->formatValue(DatabaseTypeType::integer, $value->value) : '') // Special case: postgres binaryAnd
+                // TODO: $this->null(NOT EQUALS)
+                if ($value->type === DatabaseTypeType::null) {
+                    $sideTextFull[$i] = "{$sideText['left']} IS " . ($this->startsWith($key, '!') ? "NOT " : "") . "NULL";
+                }
+
+                elseif ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
+                    $sideTextFull[$i] =
+                        ($this->startsWith($key, '!')
+                            ? $this->sqlInterface->concatTypes['not']
+                            : ''
+                        )
+                        . "({$sideText['left']} {$symbol} {$sideText['right']}"
+                        . ($value->comparison === DatabaseTypeComparison::binaryAnd
+                            ? ' = ' . $this->formatValue(DatabaseTypeType::integer, $value->value)
+                            : ''
+                        ) // Special case: postgres binaryAnd
                         . ")";
                 }
 
@@ -2003,6 +2083,9 @@ class DatabaseSQL extends Database
     private function reverseAliasFromConditionArray($tableName, $conditionArray, $originalTableName = false, $combineReverseAlias = []) {
         $reverseAlias = $combineReverseAlias;
         foreach ($conditionArray AS $column => $value) {
+            if (substr($column, 0, 1) === '!')
+                $column = substr($column, 1);
+
             if ($column === 'either' || $column === 'both') {
                 foreach ($value AS $subValue) {
                     $reverseAlias = array_merge($reverseAlias, $this->reverseAliasFromConditionArray($tableName, $subValue));
@@ -2230,42 +2313,47 @@ class DatabaseSQL extends Database
         $allColumns = array_keys($allArray);
         $allValues = array_values($allArray);
 
-        switch ($this->sqlInterface->getLanguage()) {
-            case 'mysql':
+        switch ($this->sqlInterface->upsertMode) {
+            case 'onDuplicateKey':
                 $query = 'INSERT INTO ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $allColumns, $allValues)
                     . ' ON DUPLICATE KEY UPDATE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray);
                 break;
 
-            case 'pgsql':
-                $this->loadVersion();
-
-                if (($this->versionPrimary == 9 && $this->versionSecondary >= 5) || $this->versionPrimary > 9) {
-                    // Workaround for equations to use unambiguous excluded dataset.
-                    foreach ($dataArray AS &$dataElement) {
-                        if ($this->isTypeObject($dataElement) && $dataElement->type === DatabaseTypeType::equation) {
-                            $dataElement = $this->equation(str_replace('$', 'excluded.$', $dataElement->value)); // We create a new one because we don't want to update the one pointed to in allArray.
-                        }
+            case 'onConflictDoUpdate':
+                 // Workaround for equations to use unambiguous excluded dataset.
+                foreach ($dataArray AS &$dataElement) {
+                    if ($this->isTypeObject($dataElement) && $dataElement->type === DatabaseTypeType::equation) {
+                        $dataElement = $this->equation(str_replace('$', 'excluded.$', $dataElement->value)); // We create a new one because we don't want to update the one pointed to in allArray.
                     }
+                }
 
-                    $query = 'INSERT INTO ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $allColumns, $allValues)
-                        . ' ON CONFLICT '
-                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_COLUMN_ARRAY, array_keys($conditionArray))
-                        . ' DO UPDATE SET ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray);
+                $query = 'INSERT INTO ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN_VALUES, $tableName, $allColumns, $allValues)
+                    . ' ON CONFLICT '
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_COLUMN_ARRAY, array_keys($conditionArray))
+                    . ' DO UPDATE SET ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_UPDATE_ARRAY, $tableName, $dataArray);
+                break;
+
+            case 'selectThenInsertOrUpdate':
+                if ($this->select([$tableName => array_keys($conditionArray)], $conditionArray)->getCount() > 0) {
+                    return $this->update($tableName, $dataArray, $conditionArray);
                 }
                 else {
-                    if ($this->select([$tableName => array_keys($conditionArray)], $conditionArray)->getCount() > 0) {
-                        return $this->update($tableName, $dataArray, $conditionArray);
-                    }
-                    else {
-                        return $this->insert($tableName, $allArray);
-                    }
+                    return @$this->insert($tableName, $allArray);
+                }
+                break;
+
+            case 'tryCatch':
+                try {
+                    return $this->insert($tableName, $allArray);
+                } catch (Exception $ex) {
+                    return $this->update($tableName, $dataArray, $conditionArray);
                 }
                 break;
 
             default:
-                throw new Exception('The currently active language does not support upsert.');
+                throw new \Exception('Unrecognised upsert mode: ' . $this->sqlInterface->upsertMode);
         }
 
         if ($queryData = $this->rawQuery($query)) {

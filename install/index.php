@@ -42,7 +42,7 @@ define('INSTALL_DB_MYSQLI', 2);
 define('INSTALL_DB_PDO_MYSQL', 4);
 define('INSTALL_DB_POSTGRESQL', 8);
 define('INSTALL_DB_PDO_POSTGRESQL', 16);
-define('INSTALL_DB_MSSQL', 32);
+define('INSTALL_DB_SQLSERVER', 32);
 
 
 
@@ -57,6 +57,8 @@ if (extension_loaded('pdo_pgsql'))
     $installStatusDB += INSTALL_DB_PDO_POSTGRESQL;
 if (extension_loaded('pgsql'))
     $installStatusDB += INSTALL_DB_POSTGRESQL;
+if (extension_loaded('sqlsrv'))
+    $installStatusDB += INSTALL_DB_SQLSERVER;
 
 
 // PHP Issues
@@ -378,11 +380,17 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
             </tr>
             <tr class="<?php echo ($installStatusDB & (INSTALL_DB_POSTGRESQL + INSTALL_DB_PDO_POSTGRESQL) ? 'installedFlag' : 'unininstalledFlag'); ?>">
                 <td>PostGreSQL</td>
-                <td>?</td>
+                <td>9.3 (9.5 Recommended)</td>
                 <td>*</td>
                 <td>Database</td>
-                <td>On Ubuntu: <pre>sudo apt-get install mysql-server libapache2-mod-auth-mysql php-mysql</pre><br />
-                    On Windows: See <a href="http://php.net/manual/en/install.windows.installer.msi.php">http://php.net/manual/en/install.windows.installer.msi.php</a></td>
+                <td>Google it.</td>
+            </tr>
+            <tr class="<?php echo ($installStatusDB & (INSTALL_DB_SQLSERVER) ? 'installedFlag' : 'unininstalledFlag'); ?>">
+                <td>SqlServer</td>
+                <td>2016</td>
+                <td>*</td>
+                <td>Database</td>
+                <td>Google it.</td>
             </tr>
             </tbody>
             <thead class="thead-dark">
@@ -466,13 +474,21 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                     <td><strong>Database & Driver</strong></td>
                     <td>
                         <select name="db_driver" class="form-control" onchange="
+                        $('#db_port').closest('tr').show();
+                        $('#db_createdb').prop({'disabled' : false});
+
                         switch (this.value) {
                             case 'mysql': case 'mysqli': case 'pdo-mysql':
-                                document.getElementById('db_port').value = '3306';
+                                $('#db_port').val('3306');
                                 break;
 
                             case 'pgsql': case 'pdo-pgsql':
-                                document.getElementById('db_port').value = '5432';
+                                $('#db_port').val('5432');
+                                $('#db_createdb').prop({'disabled' : true, 'checked' : false});
+                                break;
+
+                            case 'sqlsrv':
+                                $('#db_port').closest('tr').hide();
                                 $('#db_createdb').prop({'disabled' : true, 'checked' : false});
                                 break;
                         }">
@@ -481,7 +497,8 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                             if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysqli">MySQL, MySQLi Driver (Recommended for MySQL)</option>';
                             if ($installStatusDB & INSTALL_DB_PDO_MYSQL) echo '<option value="pdo-mysql">MySQL, PDO Driver</option>';
                             if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="pgsql">PostGreSQL, PostGreSQL Driver</option>';
-                            if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdo-pgsql">PostGreSQL, PDO Driver (Currently Unsupported/Broken)</option>';
+                            //if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdo-pgsql">PostGreSQL, PDO Driver (Currently Unsupported/Broken)</option>';
+                            if ($installStatusDB & INSTALL_DB_SQLSERVER) echo '<option value="sqlsrv">SqlServer (Currently Unsupported)</option>';
                             ?>
                         </select>
                         <small class="form-text text-muted">The database and corresponding driver. If you are integrating with a forum, choose the database (either MySQL or PostgreSQL) that your forum uses. Otherwise PostgreSQL, with the PostgreSQL driver, is best if available.</small>

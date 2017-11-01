@@ -89,11 +89,16 @@ switch ($_REQUEST['phase']) {
                 }
             }
             elseif ($driver === 'pgsql') {
-                if ($database->versionPrimary <= 7) { // PostGreSQL 7 is a no-go.
-                    die('You have attempted to connect to a PostGreSQL version 7 database. PostGreSQL 8.2+ is required for FreezeMessenger.');
+                if ($database->versionPrimary <= 8) { // PostGreSQL 8 is a no-go.
+                    die('You have attempted to connect to a PostGreSQL version 8 database. PostGreSQL 8.2+ is required for FreezeMessenger.');
                 }
-                elseif ($database->versionPrimary == 8 && $database->versionSecondary <= 1) { // PostGreSQL 8.1 or 8.2 is also a no-go.
-                    die('You have attempted to connect to an incompatible version of a PostGreSQL 8 database (PostGreSQL 8.0-8.1). PostGreSQL 8.2+ is required for FreezeMessenger.');
+                elseif ($database->versionPrimary == 9 && $database->versionSecondary <= 2) { // PostGreSQL 9.0-9.2 is also a no-go.
+                    die('You have attempted to connect to an out-of-date version of a PostGreSQL 9 database (PostGreSQL 9.0-9.2). PostGreSQL 9.3+ is required for FreezeMessenger.');
+                }
+            }
+            elseif ($driver === 'sqlsrv') {
+                if ($database->versionPrimary <= 12) {
+                    die('SqlServer 13+ is required for FreezeMessenger.');
                 }
             }
              else {
@@ -133,9 +138,11 @@ switch ($_REQUEST['phase']) {
                 die('The XML data source appears to be out of date. Reinstall FreezeMessenger and try again.');
             }
             else {
+                $database->startTransaction();
+
+
                 /* Part 2: Create the Tables */
                 $database->holdTriggers(true); // Don't run triggers. The trigger statements set our foreign keys, and thus must be run at the very end.
-                $database->startTransaction();
 
                 $time = time();
 
@@ -174,13 +181,8 @@ switch ($_REQUEST['phase']) {
                         }
                     }
 
-                    if (in_array(strtolower($tableName), $showTables)) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
-                        if (!$database->renameTable($tableName, $tableName . '~' . $time)) {
-                            die("Could Not Rename Table '$tableName'");
-                        }
-                    }
 
-                    if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes, isset($table['@partitionBy']) ? $table['@partitionBy'] : false, isset($table['@hardPartitions']) ? $table['@hardPartitions'] : 1)) {
+                    if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes, isset($table['@partitionBy']) ? $table['@partitionBy'] : false, isset($table['@hardPartitions']) ? $table['@hardPartitions'] : 1, true)) {
                         die("Could not create table.\n" . $database->getLastError());
                     }
                 }
@@ -189,6 +191,9 @@ switch ($_REQUEST['phase']) {
 
 
                 /* Part 3: Insert Predefined Data */
+                if ($database->sqlInterface->getLanguage() === 'sqlsrv')
+                    $database->rawQuery('SET IDENTITY_INSERT users ON');
+
                 foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
                     if (isset($table['@mode']) && $table['@mode'] === 'dev' && !isset($_GET['db_usedev'])) // Don't insert dev data, unless asked.
                         continue;
@@ -205,6 +210,10 @@ switch ($_REQUEST['phase']) {
                         die("Failed to insert data into {$prefix}{$table['@name']}.\n" . print_r($database->queryLog, true));
                     }
                 }
+
+                if ($database->sqlInterface->getLanguage() === 'sqlsrv')
+                    $database->rawQuery('SET IDENTITY_INSERT users OFF');
+
 
                 $database->endTransaction();
             }
@@ -251,7 +260,7 @@ switch ($_REQUEST['phase']) {
                 $database = new fimDatabase($host, $port, $userName, $password, $databaseName, $driver, $prefix);
                 fimConfig::$displayBacktrace = true;
 
-                $user = new fimUser(1);
+                $user = new fimUser(false);
                 if (!$user->setDatabase(array(
                     'name' => $adminUsername,
                     'password' => $adminPassword,

@@ -23,28 +23,28 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
         'columnIntLimits' => array(
             2 => 'TINYINT',
             4 => 'SMALLINT',
-            7 => 'MEDIUMINT',
             9 => 'INT',
             'default' => 'BIGINT'
         ),
 
         'columnStringPermLimits' => array(
-            255 => 'CHAR',
-            '4294967295' => 'VARCHAR'
+            4000 => 'NVARCHAR',
+            'default' => 'NVARCHAR(MAX)'
         ),
 
-        'columnStringTempLimits' => array( // In MySQL, TEXT is not allowed in memory tables.
-            255 => 'NCHAR',
-            65535 => 'NVARCHAR'
+        'columnStringTempLimits' => array(
+            4000 => 'NVARCHAR',
+            'default' => 'NVARCHAR(MAX)'
         ),
-
 
         'columnBlobPermLimits' => array(
-            2147483647 => 'VARBINARY',
+            4000 => 'VARBINARY',
+            'default' => 'VARBINARY(MAX)',
         ),
 
         'columnBlobTempLimits' => array(
-            65535 => 'VARBINARY'
+            4000 => 'VARBINARY',
+            'default' => 'VARBINARY(MAX)',
         ),
 
         'columnNoLength' => [],
@@ -52,7 +52,6 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
         'columnBitLimits' => array(
             8  => 'TINYINT',
             16 => 'SMALLINT',
-            24 => 'MEDIUMINT',
             32 => 'INTEGER',
             64 => 'BIGINT',
             'default' => 'INTEGER',
@@ -64,9 +63,13 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
         DatabaseTypeType::blob => 'VARBINARY(MAX)',
     );
 
-    /**
-     * @var bool While Postgres supports a native bitfield type, it has very strange cast rules for it. Thus, it does not exhibit the expected behaviour.
-     */
+
+    /* Hex is used. */
+    public $binaryQuoteStart = '';
+    public $binaryQuoteEnd = '';
+
+
+    public $upsertMode = 'tryCatch';
     public $enumMode = 'useCheck';
     public $indexMode = 'useCreateIndex';
     public $serialMode = 'identity';
@@ -107,21 +110,22 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
     }
 
     public function escape($text, $context) {
-        return $text; // SUUUUUUPPER TODO
         switch ($context) {
-            case DatabaseTypeType::blob:
             case DatabaseTypeType::string:
+                return str_replace("'", "''", $text);
+                break;
+
+            case DatabaseTypeType::search:
+                return ''; // TODO. We'll be adding full-text indexes, which might make this identitcal to string.
+                break;
+
+            case DatabaseTypeType::blob:
                 $unpacked = unpack('H*hex', $text);
                 return '0x' . $unpacked['hex'];
                 break;
 
-            case DatabaseTypeType::search:
-                $unpacked = unpack('H*hex', "%$text%");
-                return '0x' . $unpacked['hex'];
-                break;
-
             default:
-                return $text;
+                return $text; // SUUUUUUPPER TODO
         }
     }
 
@@ -136,7 +140,7 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
     }
 
     public function getLastInsertId() {
-        return pg_fetch_array($this->query('SELECT SCOPE_IDENTITY() AS lastval'))['lastval'];
+        return $this->queryReturningResult('SELECT @@IDENTITY AS lastval')->fetchAsArray()['lastval'];
     }
 
     public function startTransaction() {
@@ -182,7 +186,7 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
     }
 
     public function getTableConstraintsAsArray(DatabaseSQL $database) {
-        throw new \Exception('Unimplemented.');
+        return [];
     }
 
     public function getLanguage() {

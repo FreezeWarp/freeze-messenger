@@ -79,6 +79,16 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
     public $columnAliasQuoteEnd = '"';
 
     /**
+     * @var string The token that comes before an index.
+     */
+    public $indexQuoteStart = '"';
+
+    /**
+     * @var string The token that comes after an index.
+     */
+    public $indexQuoteEnd = '"';
+
+    /**
      * @var string The token that comes before strings.
      */
     public $stringQuoteStart = '\'';
@@ -92,6 +102,16 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
      * @var string The wildcard token when used in strings in LIKE clauses.
      */
     public $stringFuzzy = '%';
+
+    /**
+     * @var string The token that comes before binary blobs.
+     */
+    public $binaryQuoteStart = '\'';
+
+    /**
+     * @var string The token that comes after binary blobs.
+     */
+    public $binaryQuoteEnd = '\'';
 
     /**
      * @var string The token that comes before arrays.
@@ -174,16 +194,6 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
     public $columnAliasDivider = ' AS ';
 
     /**
-     * @var string The token that comes before an index.
-     */
-    public $indexQuoteStart = '';
-
-    /**
-     * @var string The token that comes after an index.
-     */
-    public $indexQuoteEnd = '';
-
-    /**
      * @var array The tokens corresponding to DatabaseTypeComparison enumerations.
      */
     public $comparisonTypes = array(
@@ -203,7 +213,7 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
      * @var array The tokens corresponding with 'both' and 'either' concatenations.
      */
     public $concatTypes = array(
-        'both' => ' AND ', 'either' => ' OR ', 'not' => ' !'
+        'both' => ' AND ', 'either' => ' OR ', 'not' => ' NOT '
     );
 
 
@@ -320,6 +330,16 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
      *    'useColumnReferences' - Use column REFERENCES clause.
      */
     public $foreignKeyMode = false;
+
+
+    /**
+     * @var string {
+     *     Mode used to support table renames. Options:
+     *
+     *    'alterTable' - Use ALTER TABLE syntax.
+     *    'renameTable' - Use RENAME TABLE sytnax.
+     */
+    public $tableRenameMode = false;
 
 
     /**

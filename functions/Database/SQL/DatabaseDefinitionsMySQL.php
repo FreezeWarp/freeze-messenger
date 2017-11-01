@@ -17,6 +17,8 @@ abstract class DatabaseDefinitionsMySQL extends DatabaseSQLStandard {
     public $databaseQuoteEnd = '`';
     public $databaseAliasQuoteStart = '`';
     public $databaseAliasQuoteEnd = '`';
+    public $indexQuoteStart = '`';
+    public $indexQuoteEnd = '`';
 
     public $dataTypes = array(
         'columnIntLimits' => array(
@@ -74,10 +76,12 @@ abstract class DatabaseDefinitionsMySQL extends DatabaseSQLStandard {
     );
 
     public $nativeBitfield = true;
+    public $upsertMode = 'onDuplicateKey';
     public $enumMode = 'useEnum';
     public $commentMode = 'useAttributes';
     public $indexMode = 'useTableAttribute';
     public $foreignKeyMode = 'useAlterTableAddForeignKey';
+    public $useCreateIfNotExist = true;
 
     public $tableTypes = array(
         DatabaseEngine::general => 'InnoDB',
@@ -85,46 +89,29 @@ abstract class DatabaseDefinitionsMySQL extends DatabaseSQLStandard {
     );
 
     public function getTablesAsArray(DatabaseSQL $database) {
-        $tableNames = $database->rawQueryReturningResult('SELECT * FROM '
+        return $database->rawQueryReturningResult('SELECT * FROM '
             . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'TABLES')
             . ' WHERE TABLE_SCHEMA = '
             . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
         )->getColumnValues('TABLE_NAME');
-
-        // Windows Portability
-        $tablesNames = array_map('strtolower', $tableNames);
-
-        return $tableNames;
     }
 
     public function getTableColumnsAsArray(DatabaseSQL $database) {
-        $tableColumns = $database->rawQueryReturningResult('SELECT * FROM '
+        return $database->rawQueryReturningResult('SELECT * FROM '
             . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'COLUMNS')
             . ' WHERE TABLE_SCHEMA = '
             . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
         )->getColumnValues(['TABLE_NAME', 'COLUMN_NAME']);
-
-        // Windows Portability
-        $tableColumns = array_change_key_case($tableColumns, CASE_LOWER); // How is this even a function?
-        array_walk($tableColumns, function(&$val) { $val = array_map('strtolower', $val); });
-
-        return $tableColumns;
     }
 
     private $cachedTableConstraints = [];
     public function getTableConstraintsAsArray(DatabaseSQL $database) {
-        $tableConstraints = $this->cachedTableConstraints[$database->activeDatabase] = $database->rawQueryReturningResult('SELECT * FROM '
+        return $this->cachedTableConstraints[$database->activeDatabase] = $database->rawQueryReturningResult('SELECT * FROM '
             . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'KEY_COLUMN_USAGE')
             . ' WHERE TABLE_SCHEMA = '
             . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
             . ' AND REFERENCED_TABLE_NAME IS NOT NULL'
         )->getColumnValues(['TABLE_NAME', 'CONSTRAINT_NAME']);
-
-        // Windows Portability
-        $tableConstraints = array_change_key_case($tableConstraints, CASE_LOWER); // How is this even a function?
-        array_walk($tableConstraints, function(&$val) { $val = array_map('strtolower', $val); });
-
-        return $tableConstraints;
     }
 
     public function getLanguage() {
