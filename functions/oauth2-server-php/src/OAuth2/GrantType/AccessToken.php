@@ -8,9 +8,6 @@ use OAuth2\RequestInterface;
 use OAuth2\ResponseInterface;
 use LogicException;
 
-/**
- * @author Brent Shaffer <bshafs at gmail dot com>
- */
 class AccessToken implements GrantTypeInterface
 {
     /**
@@ -59,6 +56,8 @@ class AccessToken implements GrantTypeInterface
 
         if (empty($accessToken)) {
             $response->setError(400, 'invalid_grant', 'Unable to retrieve access token.');
+
+            return null;
         }
 
         $userInfo = $this->storage->getUserFromId($accessToken['user_id']);
