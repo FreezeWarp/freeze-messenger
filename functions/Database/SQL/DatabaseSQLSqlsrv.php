@@ -10,7 +10,7 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
     /**
      * @var resource
      */
-    public $connection;
+    public $connection = null;
 
     /**
      * @var array
@@ -95,7 +95,7 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
     }
 
     public function close() {
-        if ($this->connection) {
+        if (isset($this->connection)) {
             $function = @sqlsrv_close($this->connection);
             unset($this->connection);
 

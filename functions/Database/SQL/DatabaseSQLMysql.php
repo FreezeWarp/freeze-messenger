@@ -7,7 +7,7 @@ class DatabaseSQLMysql extends DatabaseDefinitionsMySQL {
     /**
      * @var resource
      */
-    public $connection;
+    public $connection = null;
 
     public $lastInsertId;
 
@@ -26,7 +26,7 @@ class DatabaseSQLMysql extends DatabaseDefinitionsMySQL {
     }
 
     public function close() {
-        if ($this->connection) {
+        if (isset($this->connection)) {
             $function = mysql_close($this->connection);
             unset($this->connection);
 

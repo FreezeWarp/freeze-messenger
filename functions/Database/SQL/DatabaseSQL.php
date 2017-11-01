@@ -189,9 +189,8 @@ class DatabaseSQL extends Database
      *********************************************************/
 
     public function __destruct() {
-        if (@$this->sqlInterface->connection !== null) { // When close is called, the dbLink is nulled. This prevents redundancy.
-            $this->close();
-        }
+        $this->rollbackTransaction();
+        $this->close();
 
         if ($this->queryLogToFile) {
             file_put_contents($this->queryLogToFile, '*****' . $_SERVER['SCRIPT_FILENAME'] . '***** (Max Memory: ' . memory_get_peak_usage() . ') ' . PHP_EOL . print_r($this->queryLog, true) . PHP_EOL . PHP_EOL . PHP_EOL, FILE_APPEND | LOCK_EX);
@@ -838,9 +837,11 @@ class DatabaseSQL extends Database
 
     public function rollbackTransaction()
     {
-        $this->transaction = false;
+        if ($this->transaction) {
+            $this->transaction = false;
 
-        $this->sqlInterface->rollbackTransaction();
+            $this->sqlInterface->rollbackTransaction();
+        }
     }
 
 

@@ -11,7 +11,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
     /**
      * @var resource
      */
-    public $connection;
+    public $connection = null;
 
     public $storeTypes = array(DatabaseEngine::general);
 
@@ -55,6 +55,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
      * @var bool While Postgres supports a native bitfield type, it has very strange cast rules for it. Thus, it does not exhibit the expected behaviour.
      */
     public $nativeBitfield = false;
+    public $upsertMode = 'onConflictDoUpdate';
     public $enumMode = 'useCreateType';
     public $commentMode = 'useCommentOn';
     public $indexMode = 'useCreateIndex';
@@ -75,6 +76,10 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
         }
         else {
             $this->query('SET bytea_output = "escape"'); // PHP-supported binary escape format.
+
+            if (floatval($this->getVersion()) < 9.5) {
+                $this->upsertMode = 'selectThenInsertOrUpdate';
+            }
             return $this->connection;
         }
     }
@@ -88,7 +93,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
     }
 
     public function close() {
-        if ($this->connection) {
+        if (isset($this->connection)) {
             $function = @pg_close($this->connection);
             unset($this->connection);
 

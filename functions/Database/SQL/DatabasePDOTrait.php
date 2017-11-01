@@ -17,7 +17,7 @@ trait DatabasePDOTrait {
     /**
      * @var PDO
      */
-    public $connection;
+    public $connection = null;
 
     /**
      * @var array
@@ -38,7 +38,9 @@ trait DatabasePDOTrait {
     }
 
     public function close() {
-        unset($this->connection);
+        if (isset($this->connection)) {
+            unset($this->connection);
+        }
         return true;
     }
 

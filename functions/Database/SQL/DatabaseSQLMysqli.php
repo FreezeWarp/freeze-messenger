@@ -12,7 +12,7 @@ class DatabaseSQLMysqli extends DatabaseDefinitionsMySQL {
     /**
      * @var mysqli
      */
-    public $connection;
+    public $connection = null;
 
     public function connect($host, $port, $username, $password, $database = false) {
         $this->connection = new mysqli($host, $username, $password, $database ?: null, (int) $port);
@@ -29,7 +29,7 @@ class DatabaseSQLMysqli extends DatabaseDefinitionsMySQL {
     }
 
     public function close() {
-        if ($this->connection) {
+        if (isset($this->connection)) {
             $function = $this->connection->close();
             unset($this->connection);
             return $function;

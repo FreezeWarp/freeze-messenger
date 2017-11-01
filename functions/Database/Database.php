@@ -281,13 +281,6 @@ abstract class Database
 
         }
         else {
-            // If transaction mode is active, then any error will result in a rollback and the closure of the connection. Once transaction mode is ended, errors no longer result in a connection closure.
-            if ($this->transaction) {
-                $this->rollbackTransaction();
-                $this->close();
-            }
-
-
             if (!$suppressErrors) {
                 if ($this->errorFormatFunction && function_exists($this->errorFormatFunction)) {
                     throw new $this->errorFormatFunction('dbError', json_encode(array(
