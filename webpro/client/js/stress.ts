@@ -6,7 +6,7 @@ declare var $: any;
 
 let directory = window.location.pathname.split('/').splice(0, window.location.pathname.split('/').length - 2).join('/') + '/'; // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
 
-let numUsersPerRoom = 20;
+let numUsersPerRoom = 10;
 let percentUsersReuse = .5;
 let numRooms = 4;
 
@@ -18,28 +18,45 @@ class User {
     id : Number;
     lastIds : {} = {};
 
+    newMessageHandler(roomId, eventId, messageData) {
+        $('table#room' + roomId + ' > tbody > tr[name=message' + messageData.id + '] > td:eq(' + ($('table#room' + roomId + ' > thead > tr:eq(0) > th[name=user' + this.id + ']').index() - 1) + ')').css('background-color', (Number(this.id) % 2 == 0 ? 'blue' : 'green'));
+
+        if (eventId > this.lastIds[Number(roomId).toString()]) {
+            this.lastIds[Number(roomId).toString()] = eventId;
+        }
+    }
+
     getMessages(roomId) {
+        if (!this.lastIds[Number(roomId).toString()])
+            this.lastIds[Number(roomId).toString()] = false;
 
-        this.lastIds[Number(roomId).toString()] = false;
+        if (Number(this.id) % 2 == 0) {
+            let roomSource = new EventSource(directory + 'stream.php?queryId=' + roomId + '&streamType=room&access_token=' + this.sessionToken);
+            roomSource.addEventListener('newMessage', ((messageData) => {
+                this.newMessageHandler(roomId, messageData.lastEvent, JSON.parse(messageData.data));
+            }), false);
+        }
+        else {
+            window.setInterval(() => {
+                this.getMessagesOnce(roomId)
+            }, 5000);
+        }
+    },
 
-        window.setInterval(() => {
-            fimApi.getMessages({
-                'access_token' : this.sessionToken,
-                'messageIdStart' : this.lastIds[Number(roomId).toString()] ? this.lastIds[Number(roomId).toString()] + 1 : null,
-                'roomId' : roomId,
-            }, {
-                refresh : 3000,
-                each: (messageData) => {
-                    if ($('div#m' + messageData.id + 'u' + this.id).length == 0) {
-                        $('table > tbody > tr:eq(0) > td > div#m' + messageData.id).append($('<div>').attr('id', 'm' + messageData.id + 'u' + this.id).text(this.username + ' received message'));
-                    }
-
-                    if (messageData.id > this.lastIds[Number(roomId).toString()]) {
-                        this.lastIds[Number(roomId).toString()] = messageData.id;
-                    }
-                },
-            });
-        }, 3000);
+    getMessagesOnce(roomId) {
+        fimApi.getEventsFallback({
+            'access_token' : this.sessionToken,
+            'lastEvent' : this.lastIds[Number(roomId).toString()] ? this.lastIds[Number(roomId).toString()] : null,
+            'streamType' : 'room',
+            'queryId' : roomId,
+        }, {
+            each: ((messageData) => {
+                this.newMessageHandler(roomId, messageData.id, messageData.data);
+            }),
+            error : (() => {
+                console.log(this.username + ' failed to get messages in room ' + roomId);
+            })
+        });
     }
 }
 
@@ -57,8 +74,6 @@ $.when(
     fimApi = new fimApi();
 
     $(document).ready(function() {
-        $('body').append($('<table><thead><tr></tr></thead><tbody><tr></tr></tbody></table>'));
-
         let numUniqueUsers = numUsersPerRoom * (1 - percentUsersReuse);
         let numCommonUsers = numUsersPerRoom * percentUsersReuse;
         let usersToCreate = numRooms * numUniqueUsers // This is the calculation of how many unique users there are per room, times the number of rooms.
@@ -140,14 +155,16 @@ $.when(
                     'defaultPermissions' : ['view', 'post']
                 }, {
                     error : function() {
-                        $('table > tbody > tr:eq(0) > td').eq(index).text('Failed to create room.');
+                        $('body').append($('<p>Failed to create room.</p>'));
                     },
                     end : function(createdRoom) {
-                        $('table > tbody > tr:eq(0) > td').eq(index).text('Created room.');
                         room.id = createdRoom.id;
 
-                        // These users subscribe to every room.
-                        users.slice(0, numCommonUsers).forEach(function(user) {
+                        $('#tabs').append($('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#room' + room.id + '-tabContent" role="tab">' + room.name + '</a></li>'));
+                        $('#tab-content').append($('<div class="tab-pane" id="room' + room.id + '-tabContent"></div>').append($('<table style="table-layout: fixed;" id="room' + room.id + '" border="1"><thead><tr><th style="width: 300px">User</th></tr></thead><tbody><tr></tr></tbody></table>')));
+
+                        let userCallback = function(user) {
+                            $('table#room' + room.id + ' > thead > tr:eq(0)').append($('<th name="user' + user.id + '" style="width: 100px">').text(user.username));
                             user.getMessages(room.id);
 
                             window.setInterval(function() {
@@ -156,21 +173,24 @@ $.when(
                                     'message' : 'Hello',
                                 }, {
                                     error : function() {
-                                        $('table > tbody > tr:eq(0) > td').eq(index).append($('<div>').text(user.username + ' failed to send message in ' + room.name));
+                                        $('table#room' + room.id).append($('<tr>').append('<td>').text(user.username + ' failed to send message').css('background-color', 'red'));
                                     },
                                     end: function (messageData) {
-                                        $('table > tbody > tr:eq(0) > td').eq(index).append($('<div>').attr('id', 'm' + messageData.id).append(
-                                            $('<div>').css('font-weight', 'bold').text(user.username + ' sent message in ' + room.name)
-                                        ));
+                                        var tr = $('<tr name="message' + messageData.id + '">').append($('<th>').text(user.username + ' sent message'));
+                                        for (var i = 0; i < numCommonUsers + numUniqueUsers; i++) {
+                                            tr.append($('<td>'))
+                                        }
+                                        $('table#room' + room.id).append(tr);
                                     },
                                 });
                             }, 5000);
-                        });
+                        };
+
+                        // These users subscribe to every room.
+                        users.slice(0, numCommonUsers).forEach(userCallback);
 
                         // These users subscribe only to this room.
-                        users.slice(numCommonUsers + index * numUniqueUsers, numCommonUsers + (index + 1) * numUniqueUsers).forEach(function(user) {
-                            user.getMessages(room.id);
-                        });
+                        users.slice(numCommonUsers + index * numUniqueUsers, numCommonUsers + (index + 1) * numUniqueUsers).forEach(userCallback);
                     }
                 });
             });

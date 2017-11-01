@@ -4,7 +4,7 @@ var fimApi = function() {
     this.requestDefaults = {
         'close' : false,
         'timerId' : 1,
-        'refresh' : -1,
+        'refresh' : false,
         'timeout' : 5000,
         'cache' : false,
         'begin' : function() {},
@@ -40,9 +40,13 @@ var fimApi = function() {
 
     this.fail = function(requestSettings, callback) {
         return function(response) {
-            if (!("responseJSON" in response)) response.responseJSON = JSON.parse(response.responseText);
+            if (!("responseJSON" in response) && ("responseText" in response) && response.responseText.slice(0,1) === '{')
+                response.responseJSON = JSON.parse(response.responseText);
 
-            if ("exception" in response.responseJSON) {
+            if (!("responseJSON" in response)) {
+                console.log("Unable to parse failure response.");
+            }
+            else if ("exception" in response.responseJSON) {
                 if (response.responseJSON.exception.details == 'The access token provided has expired') {
                     if ($.cookie('webpro_username')) {
                         standard.login({
@@ -60,8 +64,9 @@ var fimApi = function() {
                     return requestSettings.exception(response.responseJSON.exception);
                 }
             }
-            else
-                return requestSettings.error(response);
+
+
+            return requestSettings.error(response);
         }
     };
 
@@ -74,7 +79,7 @@ var fimApi = function() {
         else {
             query(requestSettings);
 
-            if (requestSettings.refresh > -1) {
+            if (requestSettings.refresh > 0) {
                 clearInterval(fimApi.timers[name + '_' + requestSettings.timerId]);
                 fimApi.timers[name + '_' + requestSettings.timerId] = setInterval(function() {
                     query(requestSettings)
@@ -690,10 +695,10 @@ fimApi.prototype.editRoom = function(id, action, params, requestSettings) {
     var requestSettings = fimApi.mergeDefaults(requestSettings, fimApi.requestDefaults);
 
     $.ajax({
-        url: directory + 'api/room.php?' + $.param({
+        url: directory + 'api/room.php?' + $.param(fimApi.mergeDefaults({}, {
             'id' : id,
             '_action' : action
-        }),
+        })),
         method: 'POST',
         data: params,
         timeout: requestSettings.timeout,
