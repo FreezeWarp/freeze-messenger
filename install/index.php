@@ -599,6 +599,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
     </div>
 </form>
 
+<!-- TODO: paginate -->
 <form onsubmit="
     if ($.get('./worker.php?phase=2', $('#db_connect_form').serialize() + '&' + $('#config_form').serialize(), function(data) {
         if (data == 'success') {
@@ -682,10 +683,127 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                 </tbody>
                 <thead>
                 <tr class="thead-dark">
-                    <th colspan="2">Encryption</th>
+                    <th colspan="2">
+                        Secondary Login Methods
+                        <small class="form-text text-muted">
+                            You can enable login using third-party services like Google and Twitter by registering for API keys and specifying them here.
+                        </small>
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
+                <tr>
+                    <td><strong>Google</strong></td>
+                    <td>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Client ID</span>
+                                    <input type="text" class="form-control" name="oauthMethods[google][clientId]" />
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Client Secret</span>
+                                    <input type="text" class="form-control" name="oauthMethods[google][clientSecret]" />
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Facebook</strong></td>
+                    <td>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Client ID</span>
+                                    <input type="text" class="form-control" name="oauthMethods[facebook][clientId]" />
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Client Secret</span>
+                                    <input type="text" class="form-control" name="oauthMethods[facebook][clientSecret]" />
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Twitter</strong></td>
+                    <td>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Client ID</span>
+                                    <input type="text" class="form-control" name="oauthMethods[twitter][clientId]" />
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Client Secret</span>
+                                    <input type="text" class="form-control" name="oauthMethods[twitter][clientSecret]" />
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Microsoft</strong><br />(Requires HTTPS domain.)</td>
+                    <td>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Client ID</span>
+                                    <input type="text" class="form-control" name="oauthMethods[microsoft][clientId]" />
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Client Secret</span>
+                                    <input type="text" class="form-control" name="oauthMethods[microsoft][clientSecret]" />
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Steam</strong></td>
+                    <td>
+                        <div class="input-group">
+                            <span class="input-group-addon">Client ID</span>
+                            <input type="text" class="form-control" name="oauthMethods[steam][clientId]" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Reddit</strong></td>
+                    <td>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Client ID</span>
+                                    <input type="text" class="form-control" name="oauthMethods[reddit][clientId]" />
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="input-group">
+                                    <span class="input-group-addon">Client Secret</span>
+                                    <input type="text" class="form-control" name="oauthMethods[reddit][clientSecret]" />
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+                <thead>
+                <tr class="thead-dark">
+                    <th colspan="2">Other Settings</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Todo: all/nothing -->
                 <tr>
                     <td><strong>Enable Encryption?</strong></td>
                     <td>
@@ -705,13 +823,6 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                         <small class="form-text text-muted">This is a phrase used to encrypt the data. You can change this later as long as you don't remove referrences to this one.
                     </td>
                 </tr>
-                </tbody>
-                <thead>
-                <tr class="thead-dark">
-                    <th colspan="2">Other Settings</th>
-                </tr>
-                </thead>
-                <tbody>
                 <tr>
                     <td><strong>Cache Method</strong></td>
                     <td>

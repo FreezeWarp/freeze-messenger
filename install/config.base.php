@@ -129,9 +129,31 @@ $loginConfig['method'] = 'vanilla';
 
 /* $loginConfig['extraMethods']
  * Additional methods that can be enabled to allow seemless logins. */
-$loginConfig['extraMethods'] = [
-    'google' => false,
-];
+
+/*$loginConfig['extraMethods']['google'] = [
+    'clientId' => '',
+    'clientSecret' => ''
+];*/
+/*$loginConfig['extraMethods']['twitter'] = [
+    'clientId' => '',
+    'clientSecret' => ''
+];*/
+/*$loginConfig['extraMethods']['facebook'] = [
+    'clientId' => '',
+    'clientSecret' => ''
+];*/
+/*$loginConfig['extraMethods']['microsoft'] = [
+    'clientId' => '',
+    'clientSecret' => ''
+];*/
+/*$loginConfig['extraMethods']['steam'] = [
+    'clientId' => '',
+    'clientSecret' => ''
+];*/
+/*$loginConfig['extraMethods']['reddit'] = [
+    'clientId' => '',
+    'clientSecret' => ''
+];*/
 
 /* $loginConfig['portableHashing']
  * Whether FreezeMessenger has been set up to use portable hashing.

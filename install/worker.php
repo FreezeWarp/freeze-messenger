@@ -302,12 +302,24 @@ switch ($_REQUEST['phase']) {
         );
 
         $replace = array(
-            "\$dbConnect['core']['driver'] = '" . addslashes($driver) . "';\n\$dbConnect['slave']['driver'] = '" . addslashes($driver) . "';\n\$dbConnect['integration']['driver'] = '" . addslashes($driver) . "';",
-            "\$dbConnect['core']['host'] = '" . addslashes($host) . "';\n\$dbConnect['slave']['host'] = '" . addslashes($host) . "';\n\$dbConnect['integration']['host'] = '" . addslashes($host) . "';",
-            "\$dbConnect['core']['port'] = '" . addslashes($port) . "';\n\$dbConnect['slave']['port'] = '" . addslashes($port) . "';\n\$dbConnect['integration']['port'] = '" . addslashes($port) . "';",
-            "\$dbConnect['core']['username'] = '" . addslashes($userName) . "';\n\$dbConnect['slave']['username'] = '" . addslashes($userName) . "';\n\$dbConnect['integration']['username'] = '" . addslashes($userName) . "';",
-            "\$dbConnect['core']['password'] = '" . addslashes($password) . "';\n\$dbConnect['slave']['password'] = '" . addslashes($password) . "';\n\$dbConnect['integration']['password'] = '" . addslashes($password) . "';",
-            "\$dbConnect['core']['database'] = '" . addslashes($databaseName) . "';\n\$dbConnect['slave']['database'] = '" . addslashes($databaseName) . "';\n\$dbConnect['integration']['database'] = '" . addslashes($databaseName) . "';",
+            "\$dbConnect['core']['driver'] = '" . addslashes($driver) . "';
+\$dbConnect['slave']['driver'] = '" . addslashes($driver) . "';
+\$dbConnect['integration']['driver'] = '" . addslashes($driver) . "';",
+            "\$dbConnect['core']['host'] = '" . addslashes($host) . "';
+\$dbConnect['slave']['host'] = '" . addslashes($host) . "';
+\$dbConnect['integration']['host'] = '" . addslashes($host) . "';",
+            "\$dbConnect['core']['port'] = '" . addslashes($port) . "';
+\$dbConnect['slave']['port'] = '" . addslashes($port) . "';
+\$dbConnect['integration']['port'] = '" . addslashes($port) . "';",
+            "\$dbConnect['core']['username'] = '" . addslashes($userName) . "';
+\$dbConnect['slave']['username'] = '" . addslashes($userName) . "';
+\$dbConnect['integration']['username'] = '" . addslashes($userName) . "';",
+            "\$dbConnect['core']['password'] = '" . addslashes($password) . "';
+\$dbConnect['slave']['password'] = '" . addslashes($password) . "';
+\$dbConnect['integration']['password'] = '" . addslashes($password) . "';",
+            "\$dbConnect['core']['database'] = '" . addslashes($databaseName) . "';
+\$dbConnect['slave']['database'] = '" . addslashes($databaseName) . "';
+\$dbConnect['integration']['database'] = '" . addslashes($databaseName) . "';",
             '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'' . addslashes($prefix) . '\';',
             '$dbConfig[\'integration\'][\'tablePrefix\'] = \'' . addslashes($forumTablePrefix) . '\';',
             '$cacheConnect[\'driver\'] = \'' . addslashes($cacheMethod) . '\';',
@@ -324,6 +336,14 @@ switch ($_REQUEST['phase']) {
             '$loginConfig[\'adminGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin4') ? '6' : '') . ')',
             '$loginConfig[\'bannedGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin4') ? '4, 8' : '') . ')',
         );
+
+
+        foreach ($_GET['oauthMethods'] AS $methodName => $methodData) {
+            if ($methodData['clientId']) {
+                $find[] = "/*\$loginConfig['extraMethods']['$methodName'] = [\n    'clientId' => '',\n    'clientSecret' => ''\n];*/";
+                $replace[] = "\$loginConfig['extraMethods']['$methodName'] = [\n    'clientId' => '{$methodData['clientId']}',\n    'clientSecret' => '{" . ($methodData['clientSecret'] ?? '') . "}'\n];";
+            }
+        }
 
 
 
