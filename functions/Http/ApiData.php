@@ -103,10 +103,12 @@ class ApiData implements \ArrayAccess {
         $data = array();
 
         foreach ($array AS $key => $value) {
-            $data[] = '"' . $key . '":' . $this->formatJsonValue($value, $depth + 1);
+            $data[] = str_repeat('  ', $depth)
+                . '"' . $key . '" : '
+                . $this->formatJsonValue($value, $depth + 1);
         }
 
-        return '{'. implode(",", $data) . '}';
+        return "{\n". implode(",\n", $data) . "\n" . str_repeat('  ', $depth) . '}';
     }
 
 
@@ -133,8 +135,12 @@ class ApiData implements \ArrayAccess {
             $values = $value->getArray();
 
             if (count($values)) {
-                foreach ($values AS $key => &$v) $v = "\"$key\": " . $this->formatJsonValue($v, $depth + 1);
-                return '{' . implode(',', $values) . '}';
+                foreach ($values AS $key => &$v)
+                    $v = str_repeat('  ', $depth)
+                        . "\"$key\": "
+                        . $this->formatJsonValue($v, $depth + 1);
+
+                return "{\n" . implode(",\n", $values) . "\n}";
             }
             else {
                 return '[]';
@@ -166,7 +172,7 @@ class ApiData implements \ArrayAccess {
             // mb_convert_encoding removes non-UTF8 characters, ensuring that json_encode doesn't fail.
             return json_encode(
                 function_exists("mb_convert_encoding") ? mb_convert_encoding($value, "UTF-8", "UTF-8") : $value,
-                JSON_PARTIAL_OUTPUT_ON_ERROR,
+                JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_PRETTY_PRINT,
                 1
             );
 
