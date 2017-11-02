@@ -98,6 +98,34 @@ standard.prototype.login = function(options) {
                 }
             });
 
+            /* Private Room Form */
+            console.log($('#privateRoomForm input[name=userName]'));
+            $('#privateRoomForm input[name=userName]').autocompleteHelper('users');
+
+            $("#privateRoomForm").submit(function() {
+                console.log("form submitted");
+                var userName = $("#privateRoomForm input[name=userName]").val();
+                var userId = $("#privateRoomForm input[name=userName]").attr('data-id');
+
+                whenUserIdAvailable = function(userId) {
+                    window.location.hash = "#room=p" + [window.userId, userId].join(',');
+                };
+
+                if (!userId && userName) {
+                    whenUserIdAvailable(userId);
+                }
+                else if (!userName) {
+                    dia.error('Please enter a username.');
+                }
+                else {
+                    var userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
+                        whenUserIdAvailable(pairs[userName].id);
+                    }));
+                }
+
+                return false; // Don't submit the form.
+            });
+
             /*** A Hack of Sor ts to Open Dialogs onLoad ***/
             if (typeof prepopup === 'function') { prepopup(); prepopup = false; }
 

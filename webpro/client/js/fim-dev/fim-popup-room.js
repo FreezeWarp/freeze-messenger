@@ -175,10 +175,10 @@ popup.prototype.room = {
             'refresh': 15000,
             'timerId': 1,
             'begin': function () {
-                $('#activeUsers').html('<ul></ul>');
+                $('ul#activeUsers').html('');
             },
             'each': function (user) {
-                $('#activeUsers > ul').append($('<li>').append(fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)));
+                $('ul#activeUsers').append($('<li>').attr('class', 'list-group-item').append(fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)));
             }
         });
     },

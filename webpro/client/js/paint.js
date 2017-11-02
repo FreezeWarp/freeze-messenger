@@ -676,34 +676,6 @@ $.when(
         }*/
 
 
-        /* Private Room Form */
-        $('#privateRoomForm input[name=userName]').autocompleteHelper('users');
-
-        $("#privateRoomForm").submit(function() {
-            console.log("form submitted");
-            var userName = $("#privateRoomForm input[name=userName]").val();
-            var userId = $("#privateRoomForm input[name=userName]").attr('data-id');
-
-            whenUserIdAvailable = function(userId) {
-                window.location.hash = "#room=p" + [window.userId, userId].join(',');
-            };
-
-            if (!userId && userName) {
-                whenUserIdAvailable(userId);
-            }
-            else if (!userName) {
-                dia.error('Please enter a username.');
-            }
-            else {
-                var userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
-                    whenUserIdAvailable(pairs[userName].id);
-                }));
-            }
-
-            return false; // Don't submit the form.
-        });
-
-
 
         if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');
         if (settings.disableFx) jQuery.fx.off = true;
