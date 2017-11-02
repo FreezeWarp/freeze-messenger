@@ -189,6 +189,7 @@ class Google_Client
 
     $httpHandler = HttpHandlerFactory::build($this->getHttpClient());
     $creds = $auth->fetchAuthToken($httpHandler);
+    var_dump($creds);
     if ($creds && isset($creds['access_token'])) {
       $creds['created'] = time();
       $this->setAccessToken($creds);
