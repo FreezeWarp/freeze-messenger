@@ -1,5 +1,8 @@
 declare var fimApi: any;
 declare var $: any;
+declare var $l: any;
+declare var jQuery: any;
+declare var fim_messagePreview: any;
 declare var messageIndex: any;
 declare var directory: any;
 declare var dia: any;
@@ -22,15 +25,151 @@ popup.prototype.room = {
         lastMessage : 0
     },
 
+    insertDoc : function() {
+        $('#modal-insertDoc').modal();
+
+
+        var fileName = '',
+            fileSize = 0,
+            fileContent = '',
+            fileParts = [],
+            filePartsLast = '',
+            md5hash = '';
+
+
+        /* File Upload Info */
+        if (!('fileUploads' in window.serverSettings)) {
+            $('#insertDocUpload').html('Disabled.');
+        }
+        else {
+            window.serverSettings.fileUploads.extensionChangesReverse = {};
+
+            jQuery.each(window.serverSettings.fileUploads.extensionChanges, function(index, extension) {
+                if (!(extension in window.serverSettings.fileUploads.extensionChangesReverse))
+                    window.serverSettings.fileUploads.extensionChangesReverse[extension] = [extension];
+
+                window.serverSettings.fileUploads.extensionChangesReverse[extension].push(extension);
+            });
+
+            jQuery.each(window.serverSettings.fileUploads.allowedExtensions, function(index, extension) {
+                var maxFileSize = window.serverSettings.fileUploads.sizeLimits[extension],
+                    fileContainer = window.serverSettings.fileUploads.fileContainers[extension],
+                    fileExtensions = window.serverSettings.fileUploads.extensionChangesReverse[extension];
+
+                $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : extension) + '</td><td>' + $l('fileContainers.' + fileContainer) + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
+            });
+
+
+            /* File Upload Form */
+            if (typeof FileReader !== 'function') {
+                $('#uploadFileForm').html($l('uploadErrors.notSupported'));
+            }
+            else {
+                $('#uploadFileForm').submit(() => {
+                    let filesList = $('input#fileUpload[type="file"]').prop('files');
+
+                    if (filesList.length == 0) {
+                        dia.error('Please select a file to upload.');
+                        return false;
+                    }
+                    else {
+                        $('#chatContainer').fileupload('add', {
+                            files: filesList,
+                        });
+
+                        $('#modal-insertDoc').modal('hide');
+
+                        return false;
+                    }
+                });
+
+                /* Previewer for Files */
+                $('#fileUpload').bind('change', function() {
+                    var reader = new FileReader(),
+                        reader2 = new FileReader();
+
+                    console.log('FileReader triggered.');
+                    $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Redisable the submit button if it has been enabled prior.
+
+                    if (this.files.length === 0) dia.error('No files selected!');
+                    else if (this.files.length > 1) dia.error('Too many files selected!');
+                    else {
+                        console.log('FileReader started.');
+
+                        // File Information
+                        fileName = this.files[0].name,
+                            fileSize = this.files[0].size,
+                            fileContent = '',
+                            fileParts = fileName.split('.'),
+                            filePartsLast = fileParts[fileParts.length - 1];
+
+                        // If there are two identical file extensions (e.g. jpg and jpeg), we only process the primary one. This converts a secondary extension to a primary.
+                        if (filePartsLast in window.serverSettings.fileUploads.extensionChanges) {
+                            filePartsLast = window.serverSettings.fileUploads.extensionChanges[filePartsLast];
+                        }
+
+                        if ($.inArray(filePartsLast, $.toArray(window.serverSettings.fileUploads.allowedExtensions)) === -1) {
+                            $('#uploadFileFormPreview').html($l('uploadErrors.badExtPersonal'));
+                        }
+                        else if ((fileSize) > window.serverSettings.fileUploads.sizeLimits[filePartsLast]) {
+                            $('#uploadFileFormPreview').html($l('uploadErrors.tooLargePersonal', {
+                                'fileSize' : window.serverSettings.fileUploads.sizeLimits[filePartsLast]
+                            }));
+                        }
+                        else {
+                            $('#uploadFileFormPreview').html('Loading Preview...');
+
+                            reader.readAsBinaryString(this.files[0]);
+                            reader.onloadend = function() {
+                                fileContent = window.btoa(reader.result);
+                            };
+
+                            reader2.readAsDataURL(this.files[0]);
+                            reader2.onloadend = function() {
+                                $('#uploadFileFormPreview').html(fim_messagePreview(window.serverSettings.fileUploads.fileContainers[filePartsLast], this.result));
+                            };
+
+                            $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
+                        }
+                    }
+                });
+            }
+        }
+
+        return false;
+    },
+    
+
     init : function(options) {
         for (var i in options)
             this.options[i] = options[i];
 
-        var intervalPing;
+        let intervalPing;
 
+        $('#chatContainer').fileupload({
+            dropZone : $('body'),
+            pasteZone : $('textarea#messageInput'),
+            url: window.serverSettings.installUrl + 'api/editFile.php?' + $.param({
+                "_action" : "create",
+                "uploadMethod" : "put",
+                "dataEncode" : "binary",
+                "fileName" : "pasteupload.png",
+                "access_token" : window.sessionHash
+            }),
+            type: 'PUT',
+            multipart: false,
+            send: (e, data) => {
+                data.url += ('&roomId=' + this.options.roomId);
+                return true;
+            }
+        });
+
+        $(document).bind('drop dragover', function (e) {
+            e.preventDefault();
+        });
 
         $('#sendForm').bind('submit', (() => {
-            var message = $('textarea#messageInput').val();
+            let message = $('textarea#messageInput').val();
 
             if (message.length === 0) { dia.error('Please enter your message.'); }
             else {

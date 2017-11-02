@@ -502,16 +502,18 @@ $.when(
                 click : {
                     name : 'URL',
                     callback : function() {
+                        var url = $(this).attr('src').replace(/&thumbnailWidth=[^\&]*/, '')
+                                                     .replace(/&thumbnailHeight=[^\&]*/, '');
                         dia.full({
                             title : 'Copy Image URL',
                             content : $('<div>').append(
                                 $('<img>').attr({
-                                    src : $(this).attr('src'),
-                                    style : 'max-width: 550px; max-height: 550px; margin-left: auto; margin-right: auto; display: block;'
+                                    src : url,
+                                    style : 'width: 100%;'
                                 }), $('<br>'), $('<br>'), $('<input>').attr({
                                     type : 'text',
                                     name : 'url',
-                                    value : $(this).attr('src'),
+                                    value : url.replace(/&parentalAge=[^\&]*/, '').replace(/&parentalFlag[]=[^\&]*/, ''),
                                     style : 'width: 100%'
                                 })).prop('outerHTML'),
                             width : 800,

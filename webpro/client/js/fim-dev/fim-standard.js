@@ -28,7 +28,7 @@ standard.prototype.initialLogin = function(options) {
     };
 
     standard.login(options);
-}
+};
 
 
 /* Trigger a login using provided data. This will open a login form if necessary. */

@@ -155,10 +155,10 @@ function fim_youtubeParse($1) {
 function fim_formatAsImage(imageUrl) {
     return $('<a target="_BLANK" class="imglink">').attr('href', imageUrl).append(
         settings.disableImage ? $('<span>').text('[IMAGE]')
-            : $('<img style="max-width: 250px; max-height: 250px;" />').attr('src', imageUrl/* + "&" + $.param({
+            : $('<img style="max-width: 250px; max-height: 250px;" />').attr('src', imageUrl + (imageUrl.slice(0, window.serverSettings.installUrl.length) === window.serverSettings.installUrl ? "&" + $.param({
                     'thumbnailWidth' : 250,
                     'thumbnailHeight' : 250,
-                })*/) // todo: only for files on installI
+                }) : '')) // todo: only for files on install
     );
 }
 
