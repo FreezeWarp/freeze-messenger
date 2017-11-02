@@ -126,7 +126,8 @@ popup.prototype.room = {
             }
             return false;
         }));
-        $('#messageInput').onEnter(function () {
+        $('textarea#messageInput').mouseup(windowDraw);
+        $('textarea#messageInput').onEnter(function () {
             $('#sendForm').submit();
             return false;
         });

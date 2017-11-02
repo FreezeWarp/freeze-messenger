@@ -744,7 +744,15 @@ function windowResize() {
         - ($('#messageListCard').height() - $('#messageListContainer').height())
         - $('#textentryBoxMessage').height()
         - $('#navbar').height()
-        - 50));
+        - 40)
+    );
+
+    $('#activeUsers').css('height', Math.floor(
+        windowHeight
+        - $('#activeUsersCardHeader').height()
+        - $('#navbar').height()
+        - 64)
+    );
 
     //$('#menuParent').css('height', windowHeight - 30); // Set the message list height to fill as much of the screen that remains after the textarea is placed.
 

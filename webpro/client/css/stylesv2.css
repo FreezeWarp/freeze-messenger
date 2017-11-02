@@ -143,13 +143,14 @@ table#fileUploadInfo td {
   word-wrap: break-word;
   white-space: nowrap;
 }
-.userNameAvatar {
-  padding-right: 3px;
+.userName > span {
+    vertical-align: middle;
 }
 .userNameAvatar > img {
   min-width: 12px;
   max-width: 24px;
   max-height: 24px;
+  margin-right: 4px;
 }
 .input-group .userNameAvatar > img {
     max-width: 16px;

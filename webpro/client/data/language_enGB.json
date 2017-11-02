@@ -418,5 +418,87 @@
     "onDate" : "On",
     "untilDate" : "Until",
     "actions" : "Actions"
+  },
+  "generalDialogues" : {
+    "info" : {
+      "title" : "Info"
+    },
+    "error" : {
+      "title" : "Error"
+    },
+    "exception" : {
+      "title" : "Exception"
+    },
+    "danger" : {
+      "title" : "Are you sure?",
+      "buttons" : {
+        "confirm" : "Confirm",
+        "cancel" : "Cancel"
+      }
+    }
+  },
+  "login" : {
+    "title" : "Login",
+    "sections" : {
+      "withPassword" : "Login with Password",
+      "register" : "Register for an Account",
+      "oauth" : "Login with Social Media"
+    },
+    "methods" : {
+      "google" : "Sign in with Google",
+      "facebook" : "Sign in with Facebook",
+      "twitter" : "Sign in with Twitter",
+      "microsoft" : "Sign in with Microsoft",
+      "steam" : "Sign in with Steam",
+      "reddit" : "Sign in with Reddit"
+    }
+  },
+  "stats" : {
+    "title" : "Room Stats"
+  },
+  "online" : {
+    "title" : "Online Users",
+    "table" : {
+      "headers" : {
+        "user" : "User",
+        "rooms" : "Rooms"
+      },
+      "loading" : "Loading..."
+    }
+  },
+  "mainMenu" : {
+    "home" : "Home",
+    "rooms" : {
+      "title" : "Rooms",
+      "fav" : "Favourite Rooms",
+      "watched" : "Watched Rooms",
+      "promoted" : "Promoted Rooms",
+      "all" : "All Rooms",
+      "create" : "Create a Room"
+    },
+    "settings" : "Settings",
+    "more" : {
+      "title" : "More",
+      "online" : "View Active Users",
+      "uploads" : "View My Uploads"
+    },
+    "private" : {
+      "label" : "Enter Private Message",
+      "submit" : "Go"
+    }
+  },
+  "room" : {
+    "buttons" : {
+      "edit" : "Edit Room",
+      "top" : "Top Posters",
+      "archive" : "Archive"
+    },
+    "messageBox" : {
+      "buttons" : {
+        "upload" : "Upload File",
+        "send" : "Send"
+      },
+      "placeholder" : "Enter your text."
+    }
   }
 }

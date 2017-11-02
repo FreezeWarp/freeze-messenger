@@ -129,7 +129,7 @@ header("Cache-Control: public, max-age=365000000, immutable");
 
 $parentalBlock = false;
 if (fimConfig::$parentalEnabled) {
-    if ($file['parentalAge'] > $request['parentalAge']) $parentalBlock = true;
+    if ($file['parentalAge'] && $file['parentalAge'] > $request['parentalAge']) $parentalBlock = true;
     elseif (fim_inArray($request['parentalFlags'], explode(',', $file['parentalFlags']))) $parentalBlock = true;
 }
 
