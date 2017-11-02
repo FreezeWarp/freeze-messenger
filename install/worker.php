@@ -350,7 +350,7 @@ switch ($_REQUEST['phase']) {
         foreach ($_GET['oauthMethods'] AS $methodName => $methodData) {
             if ($methodData['clientId']) {
                 $find[] = "/*\$loginConfig['extraMethods']['$methodName'] = [\n    'clientId' => '',\n    'clientSecret' => ''\n];*/";
-                $replace[] = "\$loginConfig['extraMethods']['$methodName'] = [\n    'clientId' => '{$methodData['clientId']}',\n    'clientSecret' => '{" . ($methodData['clientSecret'] ?? '') . "}'\n];";
+                $replace[] = "\$loginConfig['extraMethods']['$methodName'] = [\n    'clientId' => '{$methodData['clientId']}',\n    'clientSecret' => '" . ($methodData['clientSecret'] ?? '') . "'\n];";
             }
         }
 
