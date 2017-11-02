@@ -1,0 +1,18 @@
+{
+  "name": "@freezewarp/flexchat-stresser",
+  "version": "0.1.0",
+  "description": "",
+  "main": "stress.js",
+  "scripts": {
+    "start": "node stress.js"
+  },
+  "dependencies": {
+    "http" : "latest",
+    "socket.io" : "latest",
+    "eventsource" : "latest",
+    "jsdom" : "latest",
+    "jquery" : "latest"
+
+  },
+  "author": "Joseph T. Parsons"
+}

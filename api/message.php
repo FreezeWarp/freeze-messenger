@@ -72,7 +72,7 @@
  */
 
 $apiRequest = true;
-require('../global.php');
+require(__DIR__ . '/../global.php');
 define('API_INMESSAGE', true);
 
 

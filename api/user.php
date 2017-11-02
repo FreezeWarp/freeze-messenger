@@ -27,7 +27,7 @@
 
 
 /* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
-require('../functions/fim_general.php');
+require(__DIR__ . '/../functions/fim_general.php');
 $requestHead = fim_sanitizeGPC('g', [
     'id'      => ['cast' => 'int'],
     '_action' => [],
@@ -41,7 +41,7 @@ if ($requestHead['_action'] == 'create')
 
 /* Normal API Setup */
 $apiRequest = true;
-require('../global.php');
+require(__DIR__ . '/../global.php');
 define('API_INUSER', true);
 
 
