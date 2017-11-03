@@ -169,6 +169,7 @@ public class GUIDisplay extends Application {
 
                 @Override
                 public void handle(ActionEvent e) {
+                    System.setProperty("sun.net.http.allowRestrictedHeaders", "true"); // required for Google logins to work
                     URL.setURLStreamHandlerFactory(urlInterceptorFactory);
 
                     // Watch for redirects.

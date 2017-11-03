@@ -18,7 +18,7 @@ public class URLInterceptorFactory implements URLStreamHandlerFactory {
     /**
      * The handler registered for HTTPS connections.
      */
-    URLStreamHandler httpsHandler;
+    URLInterceptorHttps httpsHandler = new URLInterceptorHttps(null);
 
     public URLInterceptorFactory(URLCallback callback) {
         this.callback = callback;
@@ -27,6 +27,7 @@ public class URLInterceptorFactory implements URLStreamHandlerFactory {
     public void setCallback(URLCallback callback) {
         this.callback = callback;
         httpHandler.setCallback(callback);
+        httpsHandler.setCallback(callback);
     }
 
     public URLStreamHandler createURLStreamHandler(String protocol)
@@ -34,7 +35,7 @@ public class URLInterceptorFactory implements URLStreamHandlerFactory {
         if(protocol.equals("http")) {
             return httpHandler;
         } else if(protocol.equals("https")) {
-            return new sun.net.www.protocol.https.Handler();
+            return httpsHandler;
         }
         return null;
     }
