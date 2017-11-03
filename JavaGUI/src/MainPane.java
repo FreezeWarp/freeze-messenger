@@ -29,6 +29,7 @@ import javafx.util.Callback;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+
 import static javafx.scene.text.TextAlignment.LEFT;
 import static javafx.scene.text.TextAlignment.RIGHT;
 
@@ -58,10 +59,17 @@ public class MainPane {
     public TableColumn roomName = new TableColumn<Room, String>("Room Name");
 
     @FXML
-    public Button helpButton;
+    public MenuButton helpButton;
+
+    @FXML
+    public MenuItem helpFAQ;
+
+    @FXML
+    public MenuItem helpTips;
 
     @FXML
     public Button settingsButton;
+
 
     /**
      * A list of users currently considered active. userList monitors this for changes, and updates accordingly.
@@ -197,7 +205,21 @@ public class MainPane {
             }
         });
 
-        helpButton.setOnAction(new EventHandler<ActionEvent>() { @Override public void handle(ActionEvent e) {
+        helpFAQ.setOnAction(new EventHandler<ActionEvent>() { @Override public void handle(ActionEvent e) {
+            try {
+                System.out.println(getClass().getClassLoader().getResource("HelpPane.fxml"));
+                Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("HelpPane.fxml"));
+                Stage stage = new Stage();
+                stage.setTitle("Help");
+                stage.setScene(new Scene(root, 450, 450));
+                stage.show();
+            } catch (Exception ex) {
+                System.out.println("Exception: " + ex);
+                ex.printStackTrace();
+            }
+        } });
+
+        helpTips.setOnAction(new EventHandler<ActionEvent>() { @Override public void handle(ActionEvent e) {
             try {
                 System.out.println(getClass().getClassLoader().getResource("HelpPane.fxml"));
                 Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("HelpPane.fxml"));

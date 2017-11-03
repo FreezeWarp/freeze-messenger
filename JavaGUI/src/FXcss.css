@@ -20,10 +20,15 @@
     -fx-alignment: center;
 }
 
-.tab *.tab-label {
-    -fx-rotate: 90;
+.menu-button > .arrow-button {
+    -fx-padding: 0;
 }
 
-.tab {
-    -fx-padding: 3em 0.5em 3em 0.5em;
+.menu-button > .arrow-button > .arrow {
+    -fx-padding: 0;
+}
+
+.menu-item {
+/*    -fx-pref-width: ;
+    -fx-background-color: ;  */
 }
