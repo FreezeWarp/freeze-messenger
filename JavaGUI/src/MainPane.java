@@ -196,12 +196,18 @@ public class MainPane {
         // todo: shift+enter
         newMessageText.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
-                String text = newMessageText.getText();
-                GUIDisplay.api.sendMessage(currentRoom.getId(), text);
+                if (event.isShiftDown()) {
+                    newMessageText.setText(newMessageText.getText() + System.getProperty("line.separator")); // Append new line.
+                    newMessageText.end(); // Set cursor to end.
+                }
+                else {
+                    String text = newMessageText.getText();
+                    GUIDisplay.api.sendMessage(currentRoom.getId(), text);
 
-                newMessageText.setText("");
+                    newMessageText.setText("");
 
-                event.consume(); // don't show enter key
+                    event.consume(); // don't show enter key
+                }
             }
         });
 
