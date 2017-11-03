@@ -364,7 +364,7 @@ public class MainPane {
                                 t2 = new TextFlow(user.getAvatarImageView(), userName, new Text(": "), messageText);
                                 t.setTextAlignment(LEFT);
                             }
-                            t2.setMaxWidth(messageList.getWidth() * .6);
+                            t2.maxWidthProperty().bind(messageList.widthProperty().multiply(.6));
                             t.getChildren().add(t2);
                             messageList.getChildren().add(t);
                             messageListScroll.setVvalue(1.0);
