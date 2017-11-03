@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -23,6 +24,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -212,6 +214,7 @@ public class MainPane {
                 Stage stage = new Stage();
                 stage.setTitle("Help");
                 stage.setScene(new Scene(root, 450, 450));
+                stage.initModality(Modality.APPLICATION_MODAL);
                 stage.show();
             } catch (Exception ex) {
                 System.out.println("Exception: " + ex);
@@ -226,6 +229,7 @@ public class MainPane {
                 Stage stage = new Stage();
                 stage.setTitle("Help");
                 stage.setScene(new Scene(root, 450, 450));
+                stage.initModality(Modality.APPLICATION_MODAL);
                 stage.show();
             } catch (Exception ex) {
                 System.out.println("Exception: " + ex);
@@ -240,6 +244,7 @@ public class MainPane {
                 Stage stage = new Stage();
                 stage.setTitle("Settings");
                 stage.setScene(new Scene(root, 450, 450));
+                stage.initModality(Modality.APPLICATION_MODAL);
                 stage.show();
             } catch (Exception ex) {
                 System.out.println("Exception: " + ex);
