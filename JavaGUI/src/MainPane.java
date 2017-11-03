@@ -125,6 +125,19 @@ public class MainPane {
 
     public void initialize() {
 
+        /* Fix help button menu width to help buttin's width. */
+        // This is such a stupidly hacky solution.
+        helpButton.showingProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if(newValue) {
+                    helpTips.getParentPopup().styleProperty().setValue("-fx-min-width: " + helpButton.widthProperty().get() + "px");
+                }
+            }
+        });
+
+
+        /* Scroll The message list when its height changes (typically because of a new message) */
         messageList.heightProperty().addListener(new ChangeListener() {
             @Override
             public void changed(ObservableValue observable, Object oldvalue, Object newValue) {
