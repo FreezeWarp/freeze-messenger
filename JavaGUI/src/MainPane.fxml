@@ -2,8 +2,6 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.geometry.Rectangle2D?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
@@ -131,9 +129,16 @@
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="97.0" GridPane.columnIndex="1">
                            <children>
-                              <Button id="settingsButton" fx:id="settingsButton" accessibleText="Settings" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                              <MenuButton id="settingsButton" fx:id="settingsButton" accessibleRole="MENU_ITEM" accessibleText="Settings" alignment="CENTER" cache="true" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" stylesheets="@FXcss.css" textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <items>
+                                    <MenuItem id="settingsList" fx:id="settingsList" mnemonicParsing="false" text="Settings" />
+                                    <MenuItem id="settingsLogout" fx:id="settingsLogout" mnemonicParsing="false" text="Logout" />
+                                 </items>
                                  <graphic>
-                                    <ImageView id="settings_img" fx:id="settings_img" accessibleRole="BUTTON" fitHeight="50.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" scaleX="0.85" scaleY="0.85" GridPane.rowIndex="1">
+                                    <ImageView id="settings_img" fx:id="settings_img" accessibleRole="BUTTON" fitHeight="50.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
                                           <Image url="@Images/setttings_img.png" />
                                        </image>
@@ -142,7 +147,7 @@
                                        </viewport>
                                     </ImageView>
                                  </graphic>
-                              </Button>
+                              </MenuButton>
                            </children>
                            <GridPane.margin>
                               <Insets />

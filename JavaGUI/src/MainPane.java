@@ -59,7 +59,7 @@ public class MainPane {
 
     @FXML
     public TableColumn roomName = new TableColumn<Room, String>("Room Name");
-
+/*   Help */
     @FXML
     public MenuButton helpButton;
 
@@ -68,9 +68,16 @@ public class MainPane {
 
     @FXML
     public MenuItem helpTips;
+/*   Settings  */
+    @FXML
+    public MenuButton settingsButton;
 
     @FXML
-    public Button settingsButton;
+    public MenuItem settingsList;
+
+    @FXML
+    public MenuItem settingsLogout;
+
 
 
     /**
@@ -127,13 +134,22 @@ public class MainPane {
 
     public void initialize() {
 
-        /* Fix help button menu width to help buttin's width. */
+        /* Fix help button menu width to help button's width. */
         // This is such a stupidly hacky solution.
         helpButton.showingProperty().addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if(newValue) {
+                if (newValue) {
                     helpTips.getParentPopup().styleProperty().setValue("-fx-min-width: " + helpButton.widthProperty().get() + "px");
+                }
+            }
+        });
+
+        settingsButton.showingProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue) {
+                    settingsList.getParentPopup().styleProperty().setValue("-fx-min-width: " + settingsButton.widthProperty().get() + "px");
                 }
             }
         });
@@ -143,7 +159,8 @@ public class MainPane {
         messageList.heightProperty().addListener(new ChangeListener() {
             @Override
             public void changed(ObservableValue observable, Object oldvalue, Object newValue) {
-                messageListScroll.setVvalue(1.0);;
+                messageListScroll.setVvalue(1.0);
+                ;
             }
         });
         /* UserList SetUp */
@@ -166,10 +183,10 @@ public class MainPane {
         // Bind the table's data to the rooms list.
         roomList.setItems(rooms);
 
-        roomList.setRowFactory( tv -> {
+        roomList.setRowFactory(tv -> {
             TableRow<Room> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && (!row.isEmpty()) ) {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
                     Room room = row.getItem();
                     currentRoom = room;
                     currentRoom.resetLastMessageId();
@@ -181,7 +198,7 @@ public class MainPane {
                     (new RefreshMessages()).run();
                 }
             });
-            return row ;
+            return row;
         });
 
         // Bind the username column to the "name" property from a User object.
@@ -214,8 +231,7 @@ public class MainPane {
                 if (event.isShiftDown()) {
                     newMessageText.setText(newMessageText.getText() + System.getProperty("line.separator")); // Append new line.
                     newMessageText.end(); // Set cursor to end.
-                }
-                else {
+                } else {
                     String text = newMessageText.getText();
                     GUIDisplay.api.sendMessage(currentRoom.getId(), text);
 
@@ -225,11 +241,66 @@ public class MainPane {
                 }
             }
         });
+/* Help List Items */
+        helpFAQ.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                try {
+                    System.out.println(getClass().getClassLoader().getResource("HelpFAQPane.fxml"));
+                    Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("HelpFAQPane.fxml"));
+                    Stage stage = new Stage();
+                    stage.setTitle("Help: F.A.Q.");
+                    stage.setScene(new Scene(root, 450, 450));
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.show();
+                } catch (Exception ex) {
+                    System.out.println("Exception: " + ex);
+                    ex.printStackTrace();
+                }
+            }
+        });
 
-        helpFAQ.setOnAction(new EventHandler<ActionEvent>() { @Override public void handle(ActionEvent e) {
+        helpTips.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                try {
+                    System.out.println(getClass().getClassLoader().getResource("HelpTipsPane.fxml"));
+                    Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("HelpTipsPane.fxml"));
+                    Stage stage = new Stage();
+                    stage.setTitle("Help: Tips");
+                    stage.setScene(new Scene(root, 450, 450));
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.show();
+                } catch (Exception ex) {
+                    System.out.println("Exception: " + ex);
+                    ex.printStackTrace();
+                }
+            }
+        });
+/* Settings List Items */
+        settingsList.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                try {
+                    System.out.println(getClass().getClassLoader().getResource("SettingsListPane.fxml"));
+                    Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("SettingsListPane.fxml"));
+                    Stage stage = new Stage();
+                    stage.setTitle("Settings");
+                    stage.setScene(new Scene(root, 450, 450));
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.show();
+                } catch (Exception ex) {
+                    System.out.println("Exception: " + ex);
+                    ex.printStackTrace();
+                }
+            }
+        });
+/*
+        settingsLogout.setOnAction(new EventHandler<ActionEvent>() { @Override public void handle(ActionEvent e) {
             try {
-                System.out.println(getClass().getClassLoader().getResource("HelpPane.fxml"));
-                Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("HelpPane.fxml"));
+
+                System.out.println(getClass().getClassLoader().getResource("LoginGUI.fxml"));
+                Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("LoginGUI.fxml"));
                 Stage stage = new Stage();
                 stage.setTitle("Help");
                 stage.setScene(new Scene(root, 450, 450));
@@ -240,38 +311,8 @@ public class MainPane {
                 ex.printStackTrace();
             }
         } });
-
-        helpTips.setOnAction(new EventHandler<ActionEvent>() { @Override public void handle(ActionEvent e) {
-            try {
-                System.out.println(getClass().getClassLoader().getResource("HelpPane.fxml"));
-                Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("HelpPane.fxml"));
-                Stage stage = new Stage();
-                stage.setTitle("Help");
-                stage.setScene(new Scene(root, 450, 450));
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.show();
-            } catch (Exception ex) {
-                System.out.println("Exception: " + ex);
-                ex.printStackTrace();
-            }
-        } });
-
-        settingsButton.setOnAction(new EventHandler<ActionEvent>() { @Override public void handle(ActionEvent e) {
-            try {
-                System.out.println(getClass().getClassLoader().getResource("SettingsPane.fxml"));
-                Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("SettingsPane.fxml"));
-                Stage stage = new Stage();
-                stage.setTitle("Settings");
-                stage.setScene(new Scene(root, 450, 450));
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.show();
-            } catch (Exception ex) {
-                System.out.println("Exception: " + ex);
-                ex.printStackTrace();
-            }
-        } });
+*/
     }
-
     /**
      * Runner to check for new messages.
      */
