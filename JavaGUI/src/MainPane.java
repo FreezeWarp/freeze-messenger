@@ -196,6 +196,7 @@ public class MainPane {
                     // todo: refactor
                     messageList.getChildren().clear();
                     (new RefreshMessages()).run();
+                    (new RefreshUsers()).run();
                 }
             });
             return row;
@@ -383,14 +384,25 @@ public class MainPane {
      */
     class RefreshUsers extends TimerTask {
         public void run() {
-            JsonNode users = GUIDisplay.api.getActiveUsers();
+            JsonNode usersLocal = GUIDisplay.api.getActiveUsers(MainPane.this.currentRoom.getId());
+            JsonNode usersAll = GUIDisplay.api.getActiveUsers();
+
             System.out.println(users);
             activeUsers.clear();
 
-            if (users.isObject()) {
-                for (final JsonNode user : users) {
-                    System.out.println(user);
+            if (usersLocal.isObject()) {
+                for (final JsonNode user : usersLocal) {
                     activeUsers.add(getUser(user.get("userData").get("id").asInt()));
+                }
+            }
+
+            if (usersAll.isObject()) {
+                for (final JsonNode user : usersAll) {
+                    User userObj = getUser(user.get("userData").get("id").asInt());
+
+                    if (!activeUsers.contains(userObj)) {
+                        activeUsers.add(userObj);
+                    }
                 }
             }
         }

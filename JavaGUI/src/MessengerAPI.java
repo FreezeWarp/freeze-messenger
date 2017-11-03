@@ -257,9 +257,10 @@ public class MessengerAPI {
     /**
      * Get a all user's currently online. Returns the JSON data.
      */
-    public JsonNode getActiveUsers() {
+    public JsonNode getActiveUsers(int roomId) {
         try {
-            JsonNode json = httpGET("api/userStatus.php?access_token=" + sessionToken).get("users");
+            JsonNode json = httpGET("api/userS" +
+                    "tatus.php?access_token=" + sessionToken + (roomId > 0 ? "&roomIds[]=" + roomId : "")).get("users");
 
             return json;
         } catch (Exception ex) {
@@ -268,6 +269,10 @@ public class MessengerAPI {
         }
 
         return null;
+    }
+
+    public JsonNode getActiveUsers() {
+        return this.getActiveUsers(0);
     }
 
 
