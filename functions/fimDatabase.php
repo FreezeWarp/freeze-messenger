@@ -2554,7 +2554,7 @@ class fimDatabase extends DatabaseSQL
                     'ip'      => $_SERVER['REMOTE_ADDR'],
                     'period'  => $this->ts($minute),
                 ], [
-                    'userId' => $notLoggedIn ? 0 : $this->user->id,
+                    'userId' => $notLoggedIn ? null : $this->user->id,
                     'count'  => $this->equation('$count + 1'),
                     'expires' => $this->ts($minute + 60),
                 ], [
@@ -2565,7 +2565,7 @@ class fimDatabase extends DatabaseSQL
 
         if (fimConfig::$accessLogEnabled) {
             if ($this->insert($this->sqlPrefix . "accessLog", array(
-                'userId' => $notLoggedIn ? 0 : $this->user->id,
+                'userId' => $notLoggedIn ? null : $this->user->id,
                 'sessionHash' => $notLoggedIn ? '' : $this->user->sessionHash,
                 'action' => $action,
                 'data' => json_encode($data),
