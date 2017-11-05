@@ -1289,9 +1289,14 @@ class fimDatabase extends DatabaseSQL
 
     public function getRoom($roomId) : fimRoom
     {
-        return $this->getRooms(array(
-            'roomIds' => array($roomId)
-        ))->getAsRoom();
+        if (fimRoom::isPrivateRoomId($roomId)) {
+            return new fimRoom($roomId);
+        }
+        else {
+            return $this->getRooms(array(
+                'roomIds' => array($roomId)
+            ))->getAsRoom();
+        }
     }
 
 
