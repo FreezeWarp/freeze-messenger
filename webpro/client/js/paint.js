@@ -86,19 +86,33 @@ function fim_getHandlebarsPhrases(extra) {
     return Object.assign({}, window.phrases, {serverSettings : window.serverSettings, activeLogin : window.activeLogin}, extra);
 }
 
+var openObjectInstance;
 function fim_openView(viewName, options) {
+    var objectInstance = (openObjectInstance ? openObjectInstance : {});
+
+
+    if (typeof popup[viewName] === "function") {
+        objectInstance = new popup[viewName]();
+    }
+    else if (typeof popup[viewName] === "object") {
+        objectInstance = popup[viewName];
+    }
+    else {
+        throw "View is invalid type.";
+    }
+
+
     if ($('.fim-activeView').attr('id') == 'active-view-' + viewName) {
         jQuery.each(options, function(name, value) {
             var setterName = "set" + name.charAt(0).toUpperCase() + name.slice(1);
 
-            if (typeof popup[viewName] != "undefined"
-                && typeof popup[viewName][setterName] != "undefined") {
-                popup[viewName][setterName](value);
+            if (typeof objectInstance[setterName] != "undefined") {
+                openObjectInstance[setterName](value);
             }
         });
 
         if (typeof popup[viewName].retrieve != "undefined")
-            popup[viewName].retrieve();
+            openObjectInstance.retrieve();
     }
 
     else {
@@ -110,37 +124,33 @@ function fim_openView(viewName, options) {
 
             $('#active-view-' + viewName).addClass('fim-activeView');
 
-            if (typeof popup[viewName] != "undefined") {
-                popup[viewName].init(options); // transitional; TODO: remove
+            objectInstance.init(options); // transitional; TODO: remove
 
-                jQuery.each(options, function(name, value) {
-                    var setterName = "set" + name.charAt(0).toUpperCase() + name.slice(1);
+            jQuery.each(options, function(name, value) {
+                var setterName = "set" + name.charAt(0).toUpperCase() + name.slice(1);
 
-                    if (typeof popup[viewName] != "undefined"
-                        && typeof popup[viewName][setterName] != "undefined") {
-                        popup[viewName][setterName](value);
-                    }
-                });
+                if (typeof objectInstance[setterName] != "undefined") {
+                    objectInstance[setterName](value);
+                }
+            });
 
-                if (typeof popup[viewName].retrieve != "undefined")
-                    popup[viewName].retrieve();
-            }
+            if (typeof objectInstance.retrieve != "undefined")
+                objectInstance.retrieve();
         }
         else {
             throw "Unknown view.";
         }
     }
+
+    openObjectInstance = objectInstance;
 }
 
 function fim_closeView() {
+    if (openObjectInstance && typeof openObjectInstance.close != "undefined") {
+        openObjectInstance.close();
+    }
+
     $('.fim-activeView').each(function() {
-        var viewName = $(this).attr('id').slice(12);
-
-        if (typeof popup[viewName] != "undefined"
-            && typeof popup[viewName].close != "undefined") {
-            popup[viewName].close(options);
-        }
-
         $(this).remove();
     });
 }
@@ -346,41 +356,6 @@ function fim_formatAsUrl(url) {
         return $('<a target="_BLANK">').attr('href', url).text(url);
     else
         return $('<span>').text('[Broken Link: ' + url + ']');
-}
-
-function fim_showMissedMessage(message) {
-    // todo
-
-    if (message.roomId == window.roomId) {
-        // we'll eventually probably want to do something fancy here, like offering to scroll to the last-viewed message.
-    }
-    else if ($("#missedMessage" + message.roomId + "_" + message.messageId).length) { // We already have a box for this shown
-        // Do nothing
-    }
-    else {
-        $('.missedMessage').find('[data-roomId="' + message.roomId + '"]').find('.jGrowl-close').click(); // Close missed messages that are from the same room.
-
-        $.jGrowl($('<span>').attr({
-                'class': 'missedMessage',
-                'id': "missedMessage" + message.roomId + "_" + message.messageId,
-                'data-roomId': message.roomId
-            }).text('New message from ')
-                .append(
-                    $('<strong>').attr('style', message.senderNameFormat).text(message.senderName)
-                )
-                .append(' has been made in ')
-                .append(
-                    $('<a style="font-weight: bold">').attr('href', '#room=' + message.roomId).text(message.roomName).click(function () {
-                        // admittedly, I really should change plugins, but it's worked for me so far, and this _does_ work
-                        $(this).parent().parent().parent().parent().find('.jGrowl-close').click()
-                    })
-                )
-                .append((message.missedMessages ? $('<span>').text('(Total unread messages: ' + message.missedMessages + ')') : '')),
-            {
-                sticky : true,
-                close : function() { fimApi.markMessageRead(message.roomId) }
-            });
-    }
 }
 
 
@@ -601,8 +576,8 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
 }
 
 function fim_buildRoomNameTag(tag, roomId, deferred) {
-    $.when(deferred).then(function(pairs) { console.log("pairs: ", roomId, pairs);
-        var roomName = pairs[roomId].name;
+    $.when(deferred).then(function(pairs) {
+        var roomName = pairs[String(roomId)].name;
 
         tag.attr({
             'class': 'roomName',
@@ -628,7 +603,7 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
         'tabindex': 1000
     }).append(text);
 
-    if (window.userId == userId && window.permissions.editOwnPosts) {
+    if (window.userId == userId && window.activeLogin.userData.permissions.editOwnPosts) {
         tag.on('dblclick', function() {
             var textarea = $('<textarea>').text($(this).text()).onEnter(function() {
                 fimApi.editMessage(roomId, messageId, {
@@ -714,7 +689,6 @@ var userId, // The user ID who is logged in.
     roomId, // The ID of the room we are in.
     sessionHash, // The session hash of the active user.
     anonId, // ID used to represent anonymous posters.
-    prepopup,
     serverSettings;
 
 

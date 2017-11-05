@@ -37,7 +37,6 @@ else {
     /* Get Request Data */
     $request = fim_sanitizeGPC('g', array(
         'queryId' => array(
-            'require' => true,
             'cast' => 'roomId',
             'evaltrue' => true,
         ),
@@ -64,6 +63,14 @@ else {
             new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
         $database->markMessageRead($request['queryId'], $user->id);
+    }
+    elseif ($request['streamType'] === 'user') {
+        $request['queryId'] = $user->id;
+    }
+
+
+    if (!$request['queryId']) {
+        new fimError('queryIdRequired', 'You must specify a query ID.');
     }
 
 

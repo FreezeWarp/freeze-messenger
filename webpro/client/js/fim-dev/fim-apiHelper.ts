@@ -14,7 +14,7 @@ class Resolver {
     static waitinguserProperties: Array<any> = [];
 
 
-    static cachedroomIds: Array<number> = [];
+    static cachedroomIds: Array<any> = [];
     static cachedroomNames: Array<string> = [];
     static cachedroomProperties: Array<any> = [];
     
@@ -36,7 +36,7 @@ class Resolver {
         //console.log(["resolveAddedToCache", type, entry]);
 
         if (Resolver["cached" + type + "Ids"].indexOf(entry.id) === -1) {
-            Resolver["cached" + type + "Ids"].push(Number(entry.id));
+            Resolver["cached" + type + "Ids"].push(String(entry.id));
             Resolver["cached" + type + "Names"].push(String(entry.name));
             Resolver["cached" + type + "Properties"].push(entry);
         }
@@ -55,12 +55,15 @@ class Resolver {
 
         if (property == "id") {
             for (let i = 0; i < items.length; i++) {
-                items[i] = Number(items[i]);
+                items[i] = String(items[i]);
             }
         }
 
         // Process Each Item
         for (let item of items) {
+            if (property === "id" || property === "name") {
+                item = String(item);
+            }
 
             // If we already have a cached entry, return it.
             if (Resolver["cached" + typeProperty].indexOf(item) !== -1) {
@@ -76,7 +79,7 @@ class Resolver {
 
                     if (Resolver["cached" + typeProperty].indexOf(item) !== -1) {
                         clearInterval(retry);
-                        console.log(["resolveFoundInCacheAfterWait", typeProperty, item, returnData[item]]);
+                        //console.log(["resolveFoundInCacheAfterWait", typeProperty, item, returnData[item]]);
                         returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + typeProperty].indexOf(item)];
                         unresolvedItemsWaiting.splice($.inArray(item, unresolvedItemsWaiting),1);
                     }
@@ -111,10 +114,10 @@ class Resolver {
         // Wait for all unresolved items that are waiting for entries to appear in cache to be processed.
         if (unresolvedItemsWaiting.length > 0 || unresolvedItems.length > 0) {
             let retry2 = setInterval(function() {
-                console.log("unresolvedItemsWait");
+                //console.log("unresolvedItemsWait");
 
                 if (unresolvedItemsWaiting.length == 0 && unresolvedItems.length == 0) {
-                    console.log("unresolvedItemsComplete");
+                    //console.log("unresolvedItemsComplete");
                     clearInterval(retry2);
                     deferred.resolve(returnData);
                 }
@@ -135,7 +138,7 @@ class Resolver {
         return Resolver.resolve("user", "name", names);
     }
 
-    public static resolveRoomsFromIds(ids: Array<number>) {
+    public static resolveRoomsFromIds(ids: Array<any>) {
         return Resolver.resolve("room", "id", ids);
     }
 

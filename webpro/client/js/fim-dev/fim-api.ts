@@ -783,7 +783,11 @@ fimApi.prototype.editUserStatus = function(roomId, params, requestSettings) {
 
 
 fimApi.prototype.ping = function(roomId, requestSettings) {
-    this.editUserStatus(roomId, {"status" : "avaiable"}, requestSettings);
+    this.editUserStatus(roomId, {"status" : ""}, requestSettings);
+};
+
+fimApi.prototype.exitRoom = function(roomId, requestSettings) {
+    this.editUserStatus(roomId, {"status" : "offline"}, requestSettings);
 };
 
 fimApi.prototype.startedTyping = function(roomId, requestSettings) {

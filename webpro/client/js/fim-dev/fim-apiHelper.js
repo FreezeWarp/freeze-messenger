@@ -4,7 +4,7 @@ var Resolver = (function () {
     Resolver.cacheEntry = function (type, entry) {
         //console.log(["resolveAddedToCache", type, entry]);
         if (Resolver["cached" + type + "Ids"].indexOf(entry.id) === -1) {
-            Resolver["cached" + type + "Ids"].push(Number(entry.id));
+            Resolver["cached" + type + "Ids"].push(String(entry.id));
             Resolver["cached" + type + "Names"].push(String(entry.name));
             Resolver["cached" + type + "Properties"].push(entry);
         }
@@ -19,10 +19,13 @@ var Resolver = (function () {
         var typeProperty = type + propertyPlural;
         if (property == "id") {
             for (var i = 0; i < items.length; i++) {
-                items[i] = Number(items[i]);
+                items[i] = String(items[i]);
             }
         }
         var _loop_1 = function (item) {
+            if (property === "id" || property === "name") {
+                item = String(item);
+            }
             // If we already have a cached entry, return it.
             if (Resolver["cached" + typeProperty].indexOf(item) !== -1) {
                 returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + typeProperty].indexOf(item)];
@@ -33,7 +36,7 @@ var Resolver = (function () {
                     console.log(["resolveWaitRetry", typeProperty, item, Resolver["cached" + typeProperty]]);
                     if (Resolver["cached" + typeProperty].indexOf(item) !== -1) {
                         clearInterval(retry_1);
-                        console.log(["resolveFoundInCacheAfterWait", typeProperty, item, returnData[item]]);
+                        //console.log(["resolveFoundInCacheAfterWait", typeProperty, item, returnData[item]]);
                         returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + typeProperty].indexOf(item)];
                         unresolvedItemsWaiting.splice($.inArray(item, unresolvedItemsWaiting), 1);
                     }
@@ -67,9 +70,9 @@ var Resolver = (function () {
         // Wait for all unresolved items that are waiting for entries to appear in cache to be processed.
         if (unresolvedItemsWaiting.length > 0 || unresolvedItems.length > 0) {
             var retry2_1 = setInterval(function () {
-                console.log("unresolvedItemsWait");
+                //console.log("unresolvedItemsWait");
                 if (unresolvedItemsWaiting.length == 0 && unresolvedItems.length == 0) {
-                    console.log("unresolvedItemsComplete");
+                    //console.log("unresolvedItemsComplete");
                     clearInterval(retry2_1);
                     deferred.resolve(returnData);
                 }
