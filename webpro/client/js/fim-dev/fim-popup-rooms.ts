@@ -10,90 +10,88 @@ declare var fim_getHandlebarsPhrases : any;
 declare var windowDraw : any;
 declare var Handlebars : any;
 
-interface popup {
-    rooms : Object
-};
-
-popup.prototype.rooms = {
-    options : {
+popup.prototype.rooms = function() {
+    this.options = {
         roomNameSearch : null,
         page : null,
         permFilter : null
-    },
+    };
 
-    entryTemplate : Handlebars.compile($('#view-rooms-row').html()),
+    this.entryTemplate = Handlebars.compile($('#view-rooms-row').html());
 
-    init : function(options) {
-        // Defaults
-        this.setPage(0);
-        this.setPermFilter('view');
-        this.setRoomNameSearch('');
+    return;
+}
 
-        $('form#roomSearch [name=roomNameSearch], form#roomSearch [name=permFilter]').unbind('change').bind('change', function() {
-            fim_setHashParameter($(this).attr('name'), $(this).val());
-        });
+popup.prototype.rooms.prototype.init = function(options) {
+    // Defaults
+    this.setPage(0);
+    this.setPermFilter('view');
+    this.setRoomNameSearch('');
 
-        $('#active-view-rooms button[name=roomListNext]').unbind('click').bind('click', (() => {
-            fim_setHashParameter('page', (Number(this.options.page)) + 1)
-        }));
+    $('form#roomSearch [name=roomNameSearch], form#roomSearch [name=permFilter]').unbind('change').bind('change', function() {
+        fim_setHashParameter($(this).attr('name'), $(this).val());
+    });
 
-        $('#active-view-rooms button[name=roomListPrev]').unbind('click').bind('click', (() => {
-            fim_setHashParameter('page', this.options.page - 1)
-        }));
-    },
+    $('#active-view-rooms button[name=roomListNext]').unbind('click').bind('click', (() => {
+        fim_setHashParameter('page', (Number(this.options.page)) + 1)
+    }));
 
-    setPermFilter : function(permFilter) {
-        if (this.options.permFilter !== permFilter) {
-            this.options.permFilter = permFilter;
-            $('form#roomSearch [name=permFilter]').val(permFilter);
+    $('#active-view-rooms button[name=roomListPrev]').unbind('click').bind('click', (() => {
+        fim_setHashParameter('page', this.options.page - 1)
+    }));
+};
+
+popup.prototype.rooms.prototype.setPermFilter = function(permFilter) {
+    if (this.options.permFilter !== permFilter) {
+        this.options.permFilter = permFilter;
+        $('form#roomSearch [name=permFilter]').val(permFilter);
+    }
+};
+
+popup.prototype.rooms.prototype.setRoomNameSearch = function(roomNameSearch) {
+    if (this.options.roomNameSearch !== roomNameSearch) {
+        this.options.roomNameSearch = roomNameSearch;
+        $('form#roomSearch [name=roomNameSearch]').val(roomNameSearch);
+    }
+};
+
+popup.prototype.rooms.prototype.setPage = function(page) {
+    if (this.options.page !== page) {
+        this.options.page = page;
+
+        if (this.options.page <= 0) {
+            this.options.page = 0;
+            $('#active-view-rooms button[name=roomListPrev]').attr('disabled', true);
         }
-    },
-
-    setRoomNameSearch : function(roomNameSearch) {
-        if (this.options.roomNameSearch !== roomNameSearch) {
-            this.options.roomNameSearch = roomNameSearch;
-            $('form#roomSearch [name=roomNameSearch]').val(roomNameSearch);
+        else {
+            $('#active-view-rooms button[name=roomListPrev]').removeAttr('disabled');
         }
-    },
+    }
+};
 
-    setPage : function(page) {
-        if (this.options.page !== page) {
-            this.options.page = page;
+popup.prototype.rooms.prototype.retrieve = function() {
+    $('#roomTableHtml').html('');
 
-            if (this.options.page <= 0) {
-                this.options.page = 0;
-                $('#active-view-rooms button[name=roomListPrev]').attr('disabled', true);
+    fimApi.getRooms(this.options, {
+        'each' : ((roomData) => {
+            $('#roomTableHtml').append(this.entryTemplate(fim_getHandlebarsPhrases(roomData)))
+        }),
+        'end' : ((rooms, metadata) => {
+            if (Object.keys(rooms).length == 0) {
+                $('#active-view-rooms button[name=roomListNext]').attr('disabled', true);
+
+                $('#roomTableHtml').append('<tr><td colspan="3">No Results Found</td></tr>');
             }
             else {
-                $('#active-view-rooms button[name=roomListPrev]').removeAttr('disabled');
+                $('#active-view-rooms button[name=roomListNext]').removeAttr('disabled');
+                $('#active-view-rooms button[name=roomListNext]').unbind('click').bind('click', (() => {
+                    fim_setHashParameter('page', (Number(metadata.nextPage)));
+                }));
             }
-        }
-    },
+        })
+    });
+};
 
-    retrieve : function() {
-        $('#roomTableHtml').html('');
-
-        fimApi.getRooms(this.options, {
-            'each' : ((roomData) => {
-                $('#roomTableHtml').append(this.entryTemplate(fim_getHandlebarsPhrases(roomData)))
-            }),
-            'end' : ((rooms, metadata) => {
-                if (Object.keys(rooms).length == 0) {
-                    $('#active-view-rooms button[name=roomListNext]').attr('disabled', true);
-
-                    $('#roomTableHtml').append('<tr><td colspan="3">No Results Found</td></tr>');
-                }
-                else {
-                    $('#active-view-rooms button[name=roomListNext]').removeAttr('disabled');
-                    $('#active-view-rooms button[name=roomListNext]').unbind('click').bind('click', (() => {
-                        fim_setHashParameter('page', (Number(metadata.nextPage)));
-                    }));
-                }
-            })
-        });
-    },
-
-    update : function (option, value) {
-        this.options[option] = value;
-    }
+popup.prototype.rooms.prototype.update = function (option, value) {
+    this.options[option] = value;
 };

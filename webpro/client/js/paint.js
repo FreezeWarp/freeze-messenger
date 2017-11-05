@@ -111,7 +111,7 @@ function fim_openView(viewName, options) {
             }
         });
 
-        if (typeof popup[viewName].retrieve != "undefined")
+        if (typeof objectInstance.retrieve != "undefined")
             openObjectInstance.retrieve();
     }
 
