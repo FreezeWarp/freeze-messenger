@@ -429,7 +429,7 @@
     "exception" : {
       "title" : "Exception"
     },
-    "danger" : {
+    "confirm" : {
       "title" : "Are you sure?",
       "buttons" : {
         "confirm" : "Confirm",
