@@ -143,7 +143,7 @@ table#fileUploadInfo td {
   word-wrap: break-word;
   white-space: nowrap;
 }
-.userName > span {
+.userName.userNameAvatar > span {
     vertical-align: middle;
 }
 .userNameAvatar > img {
