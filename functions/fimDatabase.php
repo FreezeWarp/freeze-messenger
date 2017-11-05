@@ -2034,6 +2034,12 @@ class fimDatabase extends DatabaseSQL
             $this->delete($this->sqlPrefix . 'ping', $conditions);
         else
             $this->upsert($this->sqlPrefix . 'ping', $conditions, $data);
+
+        \Stream\StreamFactory::publish('room_' . $roomId, 'userStatusChange', [
+            'userId' => $this->user->id,
+            'typing' => $data['typing'] ?? false,
+            'status' => $data['status'] ?? '',
+        ]);
     }
 
 
@@ -2281,29 +2287,23 @@ class fimDatabase extends DatabaseSQL
 
     public function createUnreadMessage($sendToUserId, fimMessage $message) {
         if (fimConfig::$enableUnreadMessages) {
-            // If watched rooms created events, it would cause almost excessive writes. That said, should be an enableable feature; TODO.
-            if ($message->room->isPrivateRoom())
-                \Stream\StreamFactory::publish('user_' . $sendToUserId, 'missedMessage', [
-                    'id' => $message->id,
-                    'senderId' => $message->user->id,
-                    'roomId' => $message->room->id,
-                ]);
+            \Stream\StreamFactory::publish('user_' . $sendToUserId, 'missedMessage', [
+                'id' => $message->id,
+                'senderId' => $message->user->id,
+                'roomId' => $message->room->id,
+            ]);
 
 
-            // TODO: remove extra columns
             $this->upsert($this->sqlPrefix . "unreadMessages", array(
                 'userId'            => $sendToUserId,
                 'roomId'            => $message->room->id
             ), array(
-                'senderId'          => $message->user->id,
-                'senderName'        => $message->user->name,
-                'senderNameFormat'  => $message->user->nameFormat,
-                'roomName'          => $message->room->name,
-                'messageId'         => $message->id,
-                'otherMessages'     => 0,
+                'otherMessages'     => $this->equation('$otherMessages + 1'),
             ), array(
                 'time'              => $this->now(),
-                'otherMessages'     => $this->equation('$otherMessages + 1'),
+                'senderId'          => $message->user->id,
+                'messageId'         => $message->id,
+                'otherMessages'     => 0,
             ));
         }
     }
