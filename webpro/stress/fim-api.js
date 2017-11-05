@@ -664,6 +664,12 @@ fimApi.prototype.editUserStatus = function (roomId, params, requestSettings) {
 fimApi.prototype.ping = function (roomId, requestSettings) {
     this.editUserStatus(roomId, {}, requestSettings);
 };
+fimApi.prototype.startedTyping = function (roomId, requestSettings) {
+    this.editUserStatus(roomId, { "typing": true }, requestSettings);
+};
+fimApi.prototype.stoppedTyping = function (roomId, requestSettings) {
+    this.editUserStatus(roomId, { "typing": false }, requestSettings);
+};
 fimApi.prototype.changeAvatar = function (avatarHash, requestSettings) {
     this.editUserOptions({
         'avatarHash': avatarHash

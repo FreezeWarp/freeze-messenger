@@ -6,6 +6,10 @@ popup.prototype.room = {
         lastEvent: 0,
         lastMessage: 0
     },
+    faviconFlashTimer: false,
+    windowBlurred: false,
+    messageIndex: [],
+    isTyping: false,
     insertDoc: function () {
         $('#modal-insertDoc').modal();
         var fileName = '', fileSize = 0, fileContent = '', fileParts = [], filePartsLast = '', md5hash = '';
@@ -90,11 +94,158 @@ popup.prototype.room = {
         }
         return false;
     },
+    newMessage: function (roomId, messageId, messageText) {
+        if ($.inArray(messageId, this.messageIndex) > -1) {
+            return;
+        } // Double post hack
+        if ($('#message' + messageId).length > 0) {
+            $('#message' + messageId).replaceWith(messageText);
+        }
+        else {
+            var foundMatch = false;
+            $('#messageList .messageLine').each(function () {
+                if (window.settings.reversePostOrder) {
+                    if ($('.messageText', this).attr('data-messageId') < messageId) {
+                        $(messageText).insertBefore(this);
+                        foundMatch = true;
+                        return false; // break each
+                    }
+                }
+                else {
+                    if ($('.messageText', this).attr('data-messageId') > messageId) {
+                        $(messageText).insertBefore(this);
+                        foundMatch = true;
+                        return false;
+                    }
+                }
+            });
+            if (!foundMatch) {
+                if (window.settings.reversePostOrder) {
+                    $('#messageList').prepend(messageText);
+                }
+                else {
+                    $('#messageList').append(messageText);
+                }
+            }
+        }
+        // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
+        this.messageIndex.push(messageId); // Update the internal messageIndex array.
+        if (this.messageIndex.length >= 100) {
+            $('#message' + this.messageIndex[0]).remove();
+            this.messageIndex = this.messageIndex.slice(1, 99);
+        }
+        // Scroll Down
+        if (!window.settings.reversePostOrder)
+            this.toBottom();
+        // Blur Events
+        if (this.windowBlurred) {
+            // Play Sound
+            if (window.settings.audioDing)
+                window.snd.play();
+            // Flash Favicon
+            this.faviconFlashStart();
+            // Windows Flash Icon
+            if (typeof window.external === 'object') {
+                if (typeof window.external.msIsSiteMode !== 'undefined' && typeof window.external.msSiteModeActivate !== 'undefined') {
+                    try {
+                        if (window.external.msIsSiteMode()) {
+                            window.external.msSiteModeActivate();
+                        } // Task Bar Flashes
+                    }
+                    catch (ex) { } // Ya know, its very weird IE insists on this when the "in" statement works just as well...
+                }
+            }
+            // HTML5 Notification
+            if (window.notify.webkitNotifySupported() && window.settings.webkitNotifications) {
+                window.notify.webkitNotify("images/favicon.ico", "New Message", $(messageText).text());
+            }
+        }
+        /* Allow Keyboard Scrolling through Messages
+         * (kinda broken atm) */
+        $('.messageLine .messageText, .messageLine .userName, body').unbind('keydown');
+        $('.messageLine .messageText').bind('keydown', function (e) {
+            if (window.restrictFocus === 'contextMenu')
+                return true;
+            if (e.which === 38) {
+                $(this).parent().prev('.messageLine').children('.messageText').focus();
+                return false;
+            } // Left
+            else if (e.which === 37 || e.which === 39) {
+                $(this).parent().children('.userName').focus();
+                return false;
+            } // Right+Left
+            else if (e.which === 40) {
+                $(this).parent().next('.messageLine').children('.messageText').focus();
+                return false;
+            } // Down
+        });
+        $('.messageLine .userName').bind('keydown', function (e) {
+            if (window.restrictFocus === 'contextMenu')
+                return true;
+            if (e.which === 38) {
+                $(this).parent().prev('.messageLine').children('.userName').focus();
+                return false;
+            } // Up
+            else if (e.which === 39 || e.which === 37) {
+                $(this).parent().children('.messageText').focus();
+                return false;
+            } // Left+Right
+            else if (e.which === 40) {
+                $(this).parent().next('.messageLine').children('.userName').focus();
+                return false;
+            } // Down
+        });
+    },
+    toBottom: function () {
+        $('#messageListContainer').scrollTop($('#messageListContainer')[0].scrollHeight);
+    },
+    faviconFlashStart: function () {
+        this.faviconFlashTimer = window.setInterval(fim_faviconFlash, 1000);
+    },
+    faviconFlashStop: function () {
+        if (this.faviconFlashTimer) {
+            window.clearInterval(this.faviconFlashTimer);
+            this.faviconFlashTimer = false;
+        }
+    },
+    faviconFlashOnce: function () {
+        if ($('#favicon').attr('href') === 'images/favicon.ico')
+            $('#favicon').attr('href', 'images/favicon2.ico');
+        else
+            $('#favicon').attr('href', 'images/favicon.ico');
+    },
+    onWindowResize: function () {
+        var windowWidth = $(window).width(), // Get the browser window "viewport" width, excluding scrollbars.
+        windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
+        // Set the message list height to fill as much of the screen that remains after the textarea is placed.
+        $('#messageListContainer').css('height', Math.floor(windowHeight
+            - ($('#messageListCardHeader').height())
+            - $('#textentryBoxMessage').height()
+            - $('#navbar').height()
+            - 65));
+        $('#activeUsers').css('height', Math.floor(windowHeight
+            - $('#activeUsersCardHeader').height()
+            - $('#navbar').height()
+            - 65));
+    },
     init: function (options) {
         var _this = this;
         for (var i in options)
             this.options[i] = options[i];
         var intervalPing;
+        /* Setup */
+        // Monitor the window visibility for running favicon flash and notifications.
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState == 'hidden') {
+                _this.windowBlurred = true;
+            }
+            else {
+                _this.windowBlurred = false;
+                _this.faviconFlashStop();
+            }
+        });
+        $(window).bind('resize', this.onWindowResize);
+        // Set up file upload handler, used for drag/drop, pasting, and insertDoc method.
         $('#chatContainer').fileupload({
             dropZone: $('body'),
             pasteZone: $('textarea#messageInput'),
@@ -112,9 +263,11 @@ popup.prototype.room = {
                 return true;
             }
         });
+        // Prevent default drag/drop handler, in conjunction with above.
         $(document).bind('drop dragover', function (e) {
             e.preventDefault();
         });
+        // Send messages on form submit.
         $('#sendForm').bind('submit', (function () {
             var message = $('textarea#messageInput').val();
             if (message.length === 0) {
@@ -126,11 +279,24 @@ popup.prototype.room = {
             }
             return false;
         }));
-        $('textarea#messageInput').mouseup(windowDraw);
+        // Submit form on enter press.
         $('textarea#messageInput').onEnter(function () {
             $('#sendForm').submit();
             return false;
         });
+        // Detect form typing
+        $('textarea#messageInput').on('keyup', fim_debounce(function () {
+            fimApi.stoppedTyping(_this.options.roomId);
+            _this.isTyping = false;
+        }, 2000)).on('keydown', function () {
+            if (!_this.isTyping) {
+                _this.isTyping = true;
+                fimApi.startedTyping(_this.options.roomId);
+            }
+        });
+        // Try to allow resizes of the messageInput. (Currently kinda broken.)
+        $('textarea#messageInput').mouseup(this.onWindowResize);
+        /* Get our current room info and messages. */
         fimApi.getRooms({
             'id': this.options.roomId
         }, {
@@ -179,7 +345,12 @@ popup.prototype.room = {
                 $('ul#activeUsers').html('');
             },
             'each': function (user) {
-                $('ul#activeUsers').append($('<li>').attr('class', 'list-group-item').append(fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)));
+                jQuery.each(user.rooms, function (index, status) {
+                    $('ul#activeUsers')
+                        .append($('<li>').attr('class', 'list-group-item')
+                        .append(fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true))
+                        .append(status.typing ? $('<i class="fa fa-keyboard-o"></i>') : $('')));
+                });
             }
         });
     },
@@ -206,7 +377,7 @@ popup.prototype.room = {
     },
     newMessageHandler: function (active) {
         this.options.lastMessage = Math.max(this.options.lastMessage, active.id);
-        fim_newMessage(this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
+        this.newMessage(this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
     },
     deletedMessageHandler: function (active) {
         $('#message' + active.id).fadeOut();
@@ -219,7 +390,7 @@ popup.prototype.room = {
         if ($('#message' + active.id).length > 0) {
             active.userId = $('#message' + active.id + ' .userName').attr('data-userid');
             active.time = $('#message' + active.id + ' .messageText').attr('data-time');
-            fim_newMessage(this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
+            this.newMessage(this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
         }
     },
     getMessagesFromFallback: function () {
@@ -264,14 +435,14 @@ popup.prototype.room = {
                 lastMessage: null,
                 firstRequest: true
             };
-            messageIndex[_this.options.roomId] = [];
+            _this.messageIndex[_this.options.roomId] = [];
             // Get New Messages
             if (_this.options.roomId) {
                 fimApi.getMessages({
                     'roomId': _this.options.roomId
                 }, {
                     each: (function (messageData) {
-                        fim_newMessage(Number(_this.options.roomId), Number(messageData.id), fim_messageFormat(messageData, 'list'));
+                        _this.newMessage(Number(_this.options.roomId), Number(messageData.id), fim_messageFormat(messageData, 'list'));
                     }),
                     end: (function () {
                         if (window.requestSettings.serverSentEvents) {
@@ -292,8 +463,7 @@ popup.prototype.room = {
             _this.options.intervalPing = window.setInterval((function () {
                 fimApi.ping(_this.options.roomId);
             }), 5 * 60 * 1000);
-            windowDraw();
-            //windowDynaLinks();
+            _this.onWindowResize();
         }));
     },
     sendMessage: function (message, ignoreBlock, flag) {

@@ -103,9 +103,6 @@ popup.prototype.viewStats = function() {
                 i++;
             });
         },
-        end : function() {
-            windowDraw();
-        }
     });
 };
 
@@ -331,8 +328,6 @@ popup.prototype.settings = {
             $.cookie('webpro_fontsize', this.value, { expires : 14 });
             window.webproDisplay.fontSize = this.value;
 
-            windowResize();
-
             return false;
         });
 
@@ -533,9 +528,6 @@ popup.prototype.uploads = {
                     )
                 );
             },
-            'end' : function() {
-                $("#viewUploadsBody img").load(windowDraw);
-            }
         });
     }
 }

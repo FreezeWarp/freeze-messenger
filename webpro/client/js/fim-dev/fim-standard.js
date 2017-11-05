@@ -79,6 +79,7 @@ standard.prototype.login = function(options) {
             }, {
                 begin : function() {
                     $('#navbar div[name=favRoomsList]').html('');
+                    $('#navbar div[name=officialRoomsList]').html('');
                     $('#navbar div[name=watchRoomsList]').html('');
                 },
                 each : function(roomData) {
@@ -99,11 +100,9 @@ standard.prototype.login = function(options) {
             });
 
             /* Private Room Form */
-            console.log($('#privateRoomForm input[name=userName]'));
             $('#privateRoomForm input[name=userName]').autocompleteHelper('users');
 
             $("#privateRoomForm").submit(function() {
-                console.log("form submitted");
                 var userName = $("#privateRoomForm input[name=userName]").val();
                 var userId = $("#privateRoomForm input[name=userName]").attr('data-id');
 

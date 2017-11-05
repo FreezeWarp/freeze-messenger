@@ -495,7 +495,7 @@
     <div class="col-md-9 no-gutters p-0">
         <div id="chatContainer" class="card border-secondary">
             <div id="messageListCard">
-                <div id="title" class="card-header">
+                <div id="messageListCardHeader" class="card-header">
                     <div class="row align-items-center">
                         <div class="col text-center text-lg-left mb-2 mb-lg-0">
                             <h4 id="roomName" class="card-title m-0"></h4>
@@ -570,12 +570,12 @@
     </div>
 
     <div class="col-md-3 no-gutters py-0 pl-2 pl-lg-3 pr-0 d-none d-md-block">
-        <div class="card border-secondary" style="overflow: auto" id="activeUsersCard">
+        <div class="card border-secondary" id="activeUsersCard">
             <div class="card-header" role="tab" id="activeUsersCardHeader">
                 <h5 class="mb-0">{{template.activeUsersCat}}</h5>
             </div>
 
-             <div class="card-body p-0">
+             <div class="card-body p-0" style="overflow-y: auto; overflow-x: hidden;">
                 <ul id="activeUsers" class="list-group"></ul>
             </div>
         </div>
