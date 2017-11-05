@@ -129,10 +129,10 @@ switch ($requestHead['_action']) {
     case 'edit':
     case 'delete':
     case 'undelete':
-        require('room/editRoom.php');
+        require(__DIR__ . '/room/editRoom.php');
     break;
 
     case 'get':
-        require('room/getRooms.php');
+        require(__DIR__ . '/room/getRooms.php');
     break;
 }

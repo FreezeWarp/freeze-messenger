@@ -61,10 +61,10 @@ if (isset($requestHead['id'])) {
 /* Load the correct file to perform the action */
 switch ($requestHead['_action']) {
     case 'create':
-        require('user/sendUser.php');
+        require(__DIR__ . '/user/sendUser.php');
     break;
 
     case 'get':
-        require('user/getUsers.php');
+        require(__DIR__ . '/user/getUsers.php');
     break;
 }

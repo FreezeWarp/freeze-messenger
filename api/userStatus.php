@@ -55,11 +55,11 @@ if ($requestHead['_action'] === 'edit') {
 /* Load the correct file to perform the action */
 switch ($requestHead['_action']) {
     case 'edit':
-        require('userStatus/editUserStatus.php');
+        require(__DIR__ . '/userStatus/editUserStatus.php');
     break;
 
     case 'get':
-        require('userStatus/getActiveUsers.php');
+        require(__DIR__ . '/userStatus/getActiveUsers.php');
     break;
 }
 
