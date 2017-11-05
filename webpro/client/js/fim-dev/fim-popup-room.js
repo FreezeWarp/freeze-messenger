@@ -407,6 +407,8 @@ popup.prototype.room.prototype.eventListener = function () {
     var _this = this;
     this.roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
     this.roomSource.onerror = function () {
+        console.log("event source error");
+        _this.roomSource.close();
         _this.roomSource = false;
         _this.getMessagesFromFallback();
     };

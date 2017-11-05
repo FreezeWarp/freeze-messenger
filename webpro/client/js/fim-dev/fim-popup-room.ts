@@ -501,6 +501,8 @@ popup.prototype.room.prototype.beforeUnload = function(roomId) {
 popup.prototype.room.prototype.eventListener = function() {
     this.roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
     this.roomSource.onerror = () => {
+        console.log("event source error");
+        this.roomSource.close();
         this.roomSource = false;
         this.getMessagesFromFallback();
     };
