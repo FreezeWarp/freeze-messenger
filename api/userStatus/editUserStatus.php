@@ -34,7 +34,7 @@ if (!defined('API_INUSERSTATUS'))
 $request = fim_sanitizeGPC('p', array(
     'status' => array(
         'default' => 'available',
-        'valid' => array('away', 'busy', 'available', 'invisible', 'offline')
+        'valid' => array('', 'away', 'busy', 'available', 'invisible', 'offline')
     ),
 
     'typing' => array(
