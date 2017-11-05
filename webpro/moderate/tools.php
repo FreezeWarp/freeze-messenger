@@ -128,6 +128,7 @@ else {
                             fim_flush();
                             echo 'Delete Foreign Keys : ' . $tableName . ': ' . $database->deleteForeignKeyConstraints($tableName) . '<br />';
                             fim_flush();
+                            $database->createTableIndexes($tableName, $tableIndexes);
 
                             foreach ($tableColumns AS $name => $column) {
                                 if (in_array(strtolower($name), $showColumns[strtolower($tableName)])) {
