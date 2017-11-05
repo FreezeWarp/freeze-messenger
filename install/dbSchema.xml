@@ -114,7 +114,7 @@
             <column name="fileSize" type="int" maxlen="12" comment="The file's size." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who uploaded the file." />
             <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
-            <column name="roomIdLink" fkey="rooms.idEncoded" type="blob" maxlen="23" comment="If provided, the upload is linked to a particular room, which means that is may only be viewed by those who can view that room. The file will always be viewable by its poster. Additionally, FreezeMessenger may be configured to require that all images are posted to specific rooms -- this is, in-fact, the default." />
+            <column name="roomIdLink" type="blob" maxlen="23" comment="If provided, the upload is linked to a particular room, which means that is may only be viewed by those who can view that room. The file will always be viewable by its poster. Additionally, FreezeMessenger may be configured to require that all images are posted to specific rooms -- this is, in-fact, the default." />
             <column name="fileParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
             <column name="fileParentalAge" type="int" maxlen="2" comment="The file's parental content age rating." />
             <column name="options" type="bitfield" bits="16" comment="File options." />
@@ -267,9 +267,9 @@
         <!-- I'm pretty sure after I made that comment, I added my own manual partitioning to the DBA. Which, uh... that's one solution, isn't it? -->
         <table name="messages" hardPartitions="10" type="general" comment="User-created messages.">
             <column name="id" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who made the message." />
             <column name="anonId" type="int" maxlen="6" comment="The anonymous ID of the user who made the message, if applicable." />
-            <column name="roomId" fkey="rooms.idEncoded" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="text" type="blob" maxlen="5000" comment="The text of the message." />
             <column name="textSha1" type="string" maxlen="40" comment="A SHA1 hash of the text of the message." />
             <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
@@ -291,7 +291,7 @@
         <table name="messageEditHistory" type="general" comment="A history of editted messages.">
             <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user who editted the message." />
-            <column name="roomId" fkey="rooms.idEncoded" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="oldText" type="blob" maxlen="5000" comment="The old raw text of the message." />
             <column name="newText" type="blob" maxlen="5000" comment="The new raw text of the message." />
             <column name="time" type="time" default="__TIME__" comment="The time of the change." />
@@ -307,7 +307,7 @@
 
         <table name="messageFlood" type="memory" comment="A counter for the messages submitted by a user in individual rooms and sitewide for every minute.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
-            <column name="roomId" fkey="rooms.idEncoded" type="blob" maxlen="23" comment="The room ID, or 0 if side-wide." />
+            <column name="roomId" type="blob" maxlen="23" comment="The room ID, or 0 if side-wide." />
             <column name="time" type="time" comment="The time the action was performed on." />
             <column name="messages" type="int" maxlen="4" comment="The number of messages submitted" />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user during their first message." />
@@ -336,7 +336,7 @@
 
         <table name="ping" type="memory" comment="User online statuses.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />
-            <column name="roomId" fkey="rooms.idEncoded" type="blob" maxlen="23" comment="The ID of the room." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room." />
             <column name="time" type="time" default="__TIME__" comment="The time of the ping." />
             <column name="status" type="enum" restrict="away,busy,available,invisible,offline," default="available" comment="The user's status." />
             <column name="typing" type="bool" default="0" comment="Whether or not the user is typing." />
@@ -436,7 +436,7 @@
 
         <table name="roomStats" type="general" comment="A cache for the number of posts made by different users in rooms.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />
-            <column name="roomId" fkey="rooms.idEncoded" type="blob" maxlen="23" comment="The ID of the room." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room." />
             <column name="messages" type="int" default="0" maxlen="8" comment="The number of messages made by the user in the room." />
 
             <key name="userId,roomId" type="primary" />
@@ -527,7 +527,7 @@
             <column name="senderId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who sent the message." />
             <column name="senderName" type="string" maxlen="50" comment="The name of the user who sent the message." />
             <column name="senderNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the sender's name." />
-            <column name="roomId" fkey="rooms.idEncoded" type="blob" maxlen="23" comment="The ID of the room in question." />
+            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room in question." />
             <column name="roomName" type="string" maxlen="500" comment="The name of the room in question." />
             <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
             <column name="time" type="time" default="__TIME__" comment="The time the message was made." />
@@ -576,7 +576,7 @@
             <column name="nameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the user's name for its display." />
 
             <!-- Prefs -->
-            <column name="defaultRoomId" fkey="rooms.idEncoded" type="blob" maxlen="23" default="1" comment="The user's default room." />
+            <column name="defaultRoomId" type="blob" maxlen="23" default="1" comment="The user's default room." />
 
             <!-- Status -->
             <column name="status" type="int" maxlen="3" comment="The user's activity status." />
@@ -623,7 +623,7 @@
 
         <table name="userFavRooms" type="general" comment="A list of starred rooms. Unlike most other lists, this list generally doesn't have any backend effects, but we thought it was too useful not to include. Clients are still encouraged to implement more powerful tagging and lists themselves.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
-            <column name="roomId" fkey="rooms.idEncoded" type="blob" maxlen="23" comment="The room ID." />
+            <column name="roomId" type="blob" maxlen="23" comment="The room ID." />
 
             <key name="userId,roomId" type="primary" />
         </table>

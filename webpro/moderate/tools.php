@@ -126,6 +126,8 @@ else {
                         if (in_array(strtolower($tableName), $showTables)) {
                             echo 'Update: ' . $tableName . ': ' . $database->alterTable($tableName, $tableComment, $tableType) . '<br />';
                             fim_flush();
+                            echo 'Delete Foreign Keys : ' . $tableName . ': ' . $database->deleteForeignKeyConstraints($tableName) . '<br />';
+                            fim_flush();
 
                             foreach ($tableColumns AS $name => $column) {
                                 if (in_array(strtolower($name), $showColumns[strtolower($tableName)])) {

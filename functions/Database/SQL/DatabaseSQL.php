@@ -708,8 +708,11 @@ class DatabaseSQL extends Database
      */
     public function rawQuery($query)
     {
-        if ($this->returnQueryString)
+        if ($this->returnQueryString) {
+            $this->returnQueryString = false;
+
             return $query;
+        }
 
         else {
             $start = microtime(true);
@@ -739,27 +742,38 @@ class DatabaseSQL extends Database
      */
     public function rawQueryReturningResult($query, $reverseAlias = false, int $paginate = 0) {
 
-        if ($this->returnQueryString)
-            return $query;
+        $start = microtime(true);
+
+        // todo: probably rewrite this, iunno
+        $queryData = $this->sqlInterface->queryReturningResult($query);
+        if ($queryData->source) {
+            $this->newQuery($query, microtime(true) - $start);
+
+            return $this->databaseResultPipe($queryData, $reverseAlias, $query, $this, $paginate);
+        }
 
         else {
-            $start = microtime(true);
+            $this->newQuery($query);
+            $this->triggerError($this->sqlInterface->getLastError(), $query);
 
-            // todo: probably rewrite this, iunno
-            $queryData = $this->sqlInterface->queryReturningResult($query);
-            if ($queryData->source) {
-                $this->newQuery($query, microtime(true) - $start);
-
-                return $this->databaseResultPipe($queryData, $reverseAlias, $query, $this, $paginate);
-            }
-
-            else {
-                $this->newQuery($query);
-                $this->triggerError($this->sqlInterface->getLastError(), $query);
-
-                return false;
-            }
+            return false;
         }
+
+    }
+
+
+    /**
+     * Configures the Database abstraction layer to return the query string instead of executing it for the next query.
+     * It will be automatically turned off as soon as a query is executed.
+     * Can be chained.
+     * Obviously, this should not be used in conjunction with functions that execute multiple queries simultaneously (though these are rare).
+     *
+     * @return $this
+     */
+    public function returnQueryString() {
+        $this->returnQueryString = true;
+
+        return $this;
     }
 
 
@@ -1213,11 +1227,14 @@ class DatabaseSQL extends Database
 
 
             /* Generate COMMENT ON Statements, If Needed */
-            if ($this->sqlInterface->commentMode === 'useCommentOn') {
-                $triggers[] = 'COMMENT ON COLUMN '
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, '{TABLENAME}', $columnName)
-                    . ' IS '
-                    . $this->formatValue(DatabaseTypeType::string, $column['comment']);
+            switch ($this->sqlInterface->commentMode) {
+                case 'useCommentOn':
+                    $triggers[] = $this->returnQueryString()->createTableColumnComment($tableName, $columnName, $column['comment']);
+                    break;
+
+                case 'useAttributes':
+                    $typePiece .= ' COMMENT ' . $this->formatValue(DatabaseTypeType::string, $column['comment']);
+                    break;
             }
 
 
@@ -1226,25 +1243,11 @@ class DatabaseSQL extends Database
                 if ($column['restrict']->type === DatabaseTypeType::tableColumn) {
                     switch ($this->sqlInterface->foreignKeyMode) {
                         case 'useAlterTableAddForeignKey':
-                            $indexName = 'fk_' . $tableName . '_' . $columnName;
-
-                            $tableConstraints = $this->getTableConstraintsAsArray();
-                            if (isset($tableConstraints[strtolower($tableName)])) {
-                                if (in_array(strtolower($indexName), $tableConstraints[strtolower($tableName)])) {
-                                    $triggers[] = 'ALTER TABLE '
-                                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-                                        . ' DROP FOREIGN KEY '
-                                        . $this->formatValue(DatabaseTypeType::column, $indexName);
-                                }
+                            if ($returnedQuery = $this->returnQueryString()->deleteForeignKeyConstraintFromColumnName($tableName, $columnName)) {
+                                $triggers[] = $returnedQuery;
                             }
 
-                            $triggers[] = 'ALTER TABLE '
-                                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-                                . ' ADD CONSTRAINT ' . $this->formatValue(DatabaseTypeType::column, $indexName) . ' FOREIGN KEY ('
-                                    . $this->formatValue(DatabaseTypeType::column, $columnName)
-                                . ') REFERENCES ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $column['restrict']->value[0]) . '('
-                                    . $this->formatValue(DatabaseTypeType::column, $column['restrict']->value[1])
-                                . ')';
+                            $triggers[] = $this->returnQueryString()->createForeignKeyConstraint($tableName, $columnName, $column['restrict']->value[0], $column['restrict']->value[1]);
                             break;
 
 
@@ -1256,13 +1259,15 @@ class DatabaseSQL extends Database
                             break;
                     }
                 }
+                else {
+                    throw new Exception('$column[\'restrict\'] must be an instance of DatabaseType(DatabaseTypeType::tableColumn).');
+                }
             }
 
 
             /* Put it All Together As an SQL Statement Piece */
             $columns[] = $this->formatValue(DatabaseTypeType::column, $columnName)
-                . ' ' . $typePiece
-                . ($this->sqlInterface->commentMode === 'useAttributes' ? ' COMMENT ' . $this->formatValue(DatabaseTypeType::string, $column['comment']) : '');
+                . ' ' . $typePiece;
         }
 
         return [$columns, $triggers, $tableIndexes, $tableProperties];
@@ -1327,6 +1332,21 @@ class DatabaseSQL extends Database
     }
 
 
+    /**
+     * Creates a new table with given properties.
+     *
+     * @param $tableName       string The table to alter.
+     * @param $tableComment    string A new comment for the table.
+     * @param $engine          string A new engine for the table.
+     * @param $tableColumns    array The table's columns. See {@link DatabaseSQL::parseTableColumns}} for formatting.
+     * @param $tableIndexes    array A new engine for the table. See {@link DatabaseSQL::createTableIndexes}} for formatting.
+     * @param $partitionColumn string|bool A new partition column for the table.
+     * @param hardPartitionCount int The number of manual table instances that should be created, using the DBAL's hard partitioning scheme.
+     * @param $renameOrDeleteExisting bool If true, any existing table with this table name will be renamed or (if rename fails) deleted.
+     *
+     * @return bool True on success, false on failure.
+     * @throws Exception
+     */
     public function createTable($tableName,
                                 $tableComment,
                                 $engine,
@@ -1418,6 +1438,67 @@ class DatabaseSQL extends Database
     }
 
 
+    /**
+     * Changes the name of a table, and deletes all foreign key constraints attached to it.
+     *
+     * @param $oldName string The current table name, to be changed.
+     * @param $newName string The new table name.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function renameTable($oldName, $newName)
+    {
+        switch ($this->sqlInterface->tableRenameMode) {
+            case 'renameTable':
+                return $this->deleteForeignKeyConstraints($oldName) &&
+                    $this->rawQuery('RENAME TABLE '
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
+                        . ' TO '
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $newName)
+                    );
+                break;
+
+            case 'alterTable':
+                return $this->deleteForeignKeyConstraints($oldName) &&
+                    $this->rawQuery('ALTER TABLE '
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
+                        . ' RENAME TO '
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $newName)
+                    );
+                break;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Changes the table comment, engine, or partition column of a table.
+     *
+     * @param $tableName string The table to alter.
+     * @param $tableComment string A new comment for the table.
+     * @param $engine string A new engine for the table.
+     * @param $partitionColumn string|false A new partition column for the table.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function alterTable($tableName, $tableComment, $engine, $partitionColumn = false) {
+        $engine = $this->parseEngine($engine);
+
+        return $this->rawQuery('ALTER TABLE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+            . (!is_null($engine) && $this->sqlInterface->getLanguage() === 'mysql' ? ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]) : '')
+            . (!is_null($tableComment) ? ' COMMENT=' . $this->formatValue(DatabaseTypeType::string, $tableComment) : '')
+            . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100' : ''));
+    }
+
+
+    /**
+     * Deletes a table.
+     *
+     * @param $tableName string The table to delete.
+     *
+     * @return bool True on success, false on failure.
+     */
     public function deleteTable($tableName)
     {
         return $this->rawQuery('DROP TABLE IF EXISTS '
@@ -1426,42 +1507,16 @@ class DatabaseSQL extends Database
     }
 
 
-    public function renameTable($oldName, $newName)
-    {
-        if ($this->sqlInterface->tableRenameMode === 'renameTable'
-            || $this->sqlInterface->tableRenameMode === 'alterTable') {
-            // Delete table constraints first, to prevent name conflicts
-            $tableConstraints = $this->getTableConstraintsAsArray();
-            if (isset($tableConstraints[strtolower($oldName)])) {
-                foreach ($tableConstraints[strtolower($oldName)] AS $indexName) {
-                    $this->rawQuery('ALTER TABLE '
-                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
-                        . ' DROP FOREIGN KEY '
-                        . $this->formatValue(DatabaseTypeType::column, $indexName));
-                }
-            }
-
-            if ($this->sqlInterface->tableRenameMode === 'renameTable') {
-                return $this->rawQuery('RENAME TABLE '
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
-                    . ' TO '
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $newName)
-                );
-            }
-            else if ($this->sqlInterface->tableRenameMode === 'alterTable') {
-                return $this->rawQuery('ALTER TABLE '
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $oldName)
-                    . ' RENAME TO '
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $newName)
-                );
-            }
-        }
-
-        return false;
-    }
-
-
-    public function createTableColumns($tableName, $tableColumns, $engine = DatabasEengine::general) {
+    /**
+     * Adds columns to a table.
+     *
+     * @param $tableName string The table to create columns on.
+     * @param $tableColumns array The columns to create. See {@link DatabaseSQL::parseTableColumns} for the format to use.
+     * @param $engine string The engine of the table the columns will be created in.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function createTableColumns($tableName, $tableColumns, $engine = DatabaseEngine::general) {
         list ($columns, $triggers, $tableIndexes) = $this->parseTableColumns($tableName, $tableColumns, null, $engine);
 
         array_walk($columns, function(&$column) { $column = 'ADD ' . $column; });
@@ -1475,6 +1530,15 @@ class DatabaseSQL extends Database
     }
 
 
+    /**
+     * Modifies columns in a table to have new properties.
+     *
+     * @param $tableName string The table containing the columns.
+     * @param $tableColumns array The columns to update. See {@link DatabaseSQL::parseTableColumns} for the format to use.
+     * @param $engine string The engine of the table.
+     *
+     * @return bool True on success, false on failure.
+     */
     public function alterTableColumns($tableName, $tableColumns, $engine = DatabaseEngine::general) {
         list ($columns, $triggers, $tableIndexes) = $this->parseTableColumns($tableName, $tableColumns, null, $engine);
 
@@ -1490,36 +1554,18 @@ class DatabaseSQL extends Database
 
 
     /**
-     * Run a series of SQL statements in sequence, returning true if all run successfully.
-     * {TABLENAME} will be converted to $tableName, if present in any trigger.
-     * If {@link holdTriggers} is enabled, the trigger statements will instead by placed in {@link triggerQueue}
+     * Creates new indexes in a table.
      *
-     * @param $tableName string The SQL tablename.
-     * @param $triggers array List of SQL statements.
+     * @param string $tableName
+     * @param array  $tableIndexes {
+     *     An array of table column properties indexed by a comma-seperated list of columns the table index indexes. Valid parameters:
      *
-     * @return bool true if all queries successful, false if any fails
-     */
-    public function executeTriggers($tableName, $triggers) {
-        $return = true;
-
-        foreach ((array) $triggers AS $trigger) {
-            $triggerText = str_replace('{TABLENAME}', $tableName, $trigger);
-
-            if ($this->holdTriggers) {
-                $this->triggerQueue[] = $triggerText;
-            }
-            else {
-                $return = $return
-                    && $this->rawQuery($triggerText); // Make $return false if any query return false.
-            }
-        }
-
-        return $return;
-    }
-
-
-    /**
-     * @param bool   $duringTableCreation If during table creation, this will return an array of (1.) an array containing index SQL identifiers to use with a CREATE TABLE statement and (2.) an array of SQL statements to run after a table creation is complete.
+     *     'type'          string           The type of the index, some value from DatabaseIndexType.
+     * }
+     * @param bool   $duringTableCreation When true, this will return index statements to be used with table created.
+     *
+     * @return bool|array When $duringTableCreation is false, this returns true on success, false on failure. When $duringTableCreation is true, this returns a list of index components to use with the table creation and a list of triggers to run after the table is created.
+     * @throws Exception when an index has an invalid index mode.
      */
     public function createTableIndexes($tableName, $tableIndexes, $duringTableCreation = false) {
         $triggers = [];
@@ -1553,19 +1599,18 @@ class DatabaseSQL extends Database
 
 
             /* Generate CREATE INDEX Statements, If Needed */
-            if ((!$duringTableCreation || $this->sqlInterface->indexMode === 'useCreateIndex') && $index['type'] !== 'primary') {
+            if ((!$duringTableCreation || $this->sqlInterface->indexMode === 'useCreateIndex')
+                && $index['type'] !== DatabaseIndexType::primary) {
                 $triggers[] = "CREATE {$typePiece} INDEX "
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $indexName)
                     . " ON "
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
                     . ' '
                     . $this->formatValue(DatabaseTypeType::arraylist, $indexCols);
 
                 if ($index['type'] === DatabaseIndexType::unique && $this->sqlInterface->getLanguage() === 'sqlsrv') {
                     $indexColsConditions = [];
                     foreach ($indexCols AS $col) {
-                        //  var_dump($col);
-
                         $indexColsConditions["!{$col->value}"] = $this->type(DatabaseTypeType::null);
                     }
 
@@ -1592,13 +1637,146 @@ class DatabaseSQL extends Database
     }
 
 
-    public function alterTable($tableName, $tableComment, $engine, $partitionColumn = false) {
-        $engine = $this->parseEngine($engine);
+    /**
+     * Creates a foreign key constraint on a table.
+     *
+     * @param $tableName string The table to have a foreign key constraint on.
+     * @param $tableName string The column to have a foreign key constraint on.
+     * @param $foreignTableName string The foreign table to be referenced.
+     * @param $foreignColumnName string The foreign column to be referenced.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function createForeignKeyConstraint($tableName, $columnName, $foreignTableName, $foreignColumnName) {
+        $constraintName = 'fk_' . $tableName . '_' . $columnName;
 
-        return $this->rawQuery('ALTER TABLE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-            . (!is_null($engine) && $this->sqlInterface->getLanguage() === 'mysql' ? ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]) : '')
-            . (!is_null($tableComment) ? ' COMMENT=' . $this->formatValue(DatabaseTypeType::string, $tableComment) : '')
-            . ($partitionColumn ? ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100' : ''));
+        return $this->rawQuery('ALTER TABLE '
+            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+            . ' ADD CONSTRAINT ' . $this->formatValue(DatabaseTypeType::column, $constraintName) . ' FOREIGN KEY ('
+            . $this->formatValue(DatabaseTypeType::column, $columnName)
+            . ') REFERENCES ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $foreignTableName) . '('
+            . $this->formatValue(DatabaseTypeType::column, $foreignColumnName)
+            . ')'
+        );
+    }
+
+
+    /**
+     * Deletes all existing foreign key constraints on a single table.
+     *
+     * @param $tableName string The table whose foreign key constraints will be dropped.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function deleteForeignKeyConstraints($tableName) {
+        $return = true;
+        $tableConstraints = $this->getTableConstraintsAsArray();
+
+        if (isset($tableConstraints[strtolower($tableName)])) {
+            foreach ($tableConstraints[strtolower($tableName)] AS $constraintName) {
+                $return = $this->deleteForeignKeyConstraint($tableName, $constraintName)
+                    && $return;
+            }
+        }
+
+        return $return;
+    }
+
+
+    /**
+     * Deletes an existing foreign key constraint. Will do nothing if the constraint does not exist.
+     *
+     * @param $tableName string The table with a foreign key constraint.
+     * @param $constraintName string The foreign key constraint's name.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function deleteForeignKeyConstraint($tableName, $constraintName) {
+        $tableConstraints = $this->getTableConstraintsAsArray();
+
+        if (isset($tableConstraints[strtolower($tableName)]) && in_array($constraintName, $tableConstraints[strtolower($tableName)])) {
+            return $this->rawQuery('ALTER TABLE '
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                . ' DROP FOREIGN KEY '
+                . $this->formatValue(DatabaseTypeType::column, $constraintName));
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Deletes an existing foreign key constraint named based on table and column name. Will do nothing if the constraint does not exist.
+     *
+     * @param $tableName string The table with a foreign key constraint.
+     * @param $columnName string The column with a foreign key constraint.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function deleteForeignKeyConstraintFromColumnName($tableName, $columnName) {
+        return $this->deleteForeignKeyConstraint($tableName, 'fk_' . $tableName . '_' . $columnName);
+    }
+
+
+    /**
+     * Adds a comment to a table column.
+     *
+     * @param $tableName string The table containing the column.
+     * @param $columnName string The column to add a comment to.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function createTableColumnComment($tableName, $columnName, $comment) {
+        return $this->rawQuery('COMMENT ON COLUMN '
+            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $tableName, $columnName)
+            . ' IS '
+            . $this->formatValue(DatabaseTypeType::string, $comment)
+        );
+    }
+
+
+    /**
+     * Adds a comment to a table.
+     *
+     * @param $tableName string The table to add a comment to.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function createTableComment($tableName, $comment) {
+        return $this->rawQuery('COMMENT ON TABLE '
+            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+            . ' IS '
+            . $this->formatValue(DatabaseTypeType::string, $comment)
+        );
+    }
+
+
+    /**
+     * Run a series of SQL statements in sequence, returning true if all run successfully.
+     * {TABLENAME} will be converted to $tableName, if present in any trigger.
+     * If {@link holdTriggers} is enabled, the trigger statements will instead by placed in {@link triggerQueue}
+     *
+     * @param $tableName string The SQL tablename.
+     * @param $triggers array List of SQL statements.
+     *
+     * @return bool true if all queries successful, false if any fails
+     */
+    public function executeTriggers($tableName, $triggers) {
+        $return = true;
+
+        foreach ((array) $triggers AS $trigger) {
+            $triggerText = str_replace('{TABLENAME}', $tableName, $trigger);
+
+            if ($this->holdTriggers) {
+                $this->triggerQueue[] = $triggerText;
+            }
+            else {
+                $return = $return
+                    && $this->rawQuery($triggerText); // Make $return false if any query return false.
+            }
+        }
+
+        return $return;
     }
 
 
@@ -1934,21 +2112,20 @@ class DatabaseSQL extends Database
      */
     public function subSelect($columns, $conditionArray = false, $sort = false, $limit = false)
     {
-        $this->returnQueryString = true;
-        $return = $this->select($columns, $conditionArray, $sort, $limit, true);
-        $this->returnQueryString = false;
-        return $return;
+        return $this->returnQueryString()->select($columns, $conditionArray, $sort, $limit, true);
     }
+/*
     public function subJoin($columns, $conditionArray = false)
     {
         return $this->formatValue();
     }
+*/
 
 
     /**
      * Recurses over a specified "where" array, returning a valid where clause.
      *
-     * @param array $conditionArray - The conditions to transform into proper SQL.
+     * @param array|mixed $conditionArray - The conditions to transform into proper SQL.
      * @param array $reverseAlias - An array corrosponding to column aliases and their database counterparts.
      *
      * @return string
@@ -2123,7 +2300,7 @@ class DatabaseSQL extends Database
     {
         /* Query Queueing */
         if ($this->autoQueue) {
-            return $this->queueInsert($this->getTableNameTransformation($tableName, $dataArray), $dataArray);
+            $this->queueInsert($this->getTableNameTransformation($tableName, $dataArray), $dataArray);
         }
 
         else {
