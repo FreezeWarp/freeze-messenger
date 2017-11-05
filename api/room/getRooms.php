@@ -39,7 +39,7 @@ $request = fim_sanitizeGPC('g', [
     'roomIds' => [
         'default'  => [],
         'cast'     => 'list',
-        'filter'   => 'int',
+        'filter'   => 'roomId',
         'evaltrue' => true,
     ],
 
@@ -94,19 +94,38 @@ $xmlData = [
 
 
 do {
+
     if (isset($room)) // from api/room
         $rooms = [$room];
 
     else {
-        $roomsQuery = $database->getRooms(array_merge(
-            fim_arrayFilterKeys($request, ['roomIds', 'roomNames', 'showDeleted', 'showHidden', 'roomNameSearch']),
-            ['ownerIds' => ($request['permFilter'] === 'own' ? [$user->id] : [])]
-        ), [
-            'id 1' => $database->in($user->favRooms),
-            $request['sort'] => 'asc'
-        ], fimConfig::$defaultRoomLimit, $request['page']);
+        $privateRoomIds = [];
+        if (isset($request['roomIds'])) {
+            foreach ($request['roomIds'] AS $index => $roomId) {
+                if (fimRoom::isPrivateRoomId($roomId)) {
+                    unset($request['roomIds'][$index]);
+                    $privateRoomIds[] = $roomId;
+                }
+            }
+        }
 
-        $rooms = $roomsQuery->getAsRooms();
+        if (!(count($privateRoomIds) > 0 && count($request['roomIds']) == 0)) {
+            $roomsQuery = $database->getRooms(array_merge(
+                fim_arrayFilterKeys($request, ['roomIds', 'roomNames', 'showDeleted', 'showHidden', 'roomNameSearch']),
+                ['ownerIds' => ($request['permFilter'] === 'own' ? [$user->id] : [])]
+            ), [
+                'id 1' => $database->in($user->favRooms),
+                $request['sort'] => 'asc'
+            ], fimConfig::$defaultRoomLimit, $request['page']);
+
+            $rooms = $roomsQuery->getAsRooms();
+        }
+        else {
+            $rooms = [];
+        }
+
+        foreach ($privateRoomIds AS $privateRoomId)
+            $rooms[] = new fimRoom($privateRoomId);
     }
 
     foreach ($rooms AS $number => &$roomLocal) {
@@ -141,7 +160,7 @@ do {
 
     $request['page']++;
     $database->accessLog('editRoom', $request); // We relog so that the next query counts as part of the flood detection. The only big drawback is that we will throw an exception eventually, without properly informing the user of where to resume searching from. (TODO)
-} while (!isset($room) && $roomsQuery->paginated && count($xmlData['rooms']) == 0);
+} while (isset($roomsQuery) && $roomsQuery->paginated && count($xmlData['rooms']) == 0);
 
 
 $xmlData['metadata']['nextPage'] = $request['page'];
