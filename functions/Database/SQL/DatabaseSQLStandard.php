@@ -227,6 +227,7 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
      * @var array The phrases that identify the three supported key types, 'primary', 'unique', and 'index'
      */
     public $keyTypeConstants = array(
+        DatabaseIndexType::fulltext => 'FULLTEXT',
         DatabaseIndexType::primary => 'PRIMARY',
         DatabaseIndexType::unique => 'UNIQUE',
         DatabaseIndexType::index => '',

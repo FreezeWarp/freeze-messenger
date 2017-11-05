@@ -71,28 +71,24 @@ $dbConfig['integration']['tablePrefix'] = '';
 
 
 ////* Cache Servers *////
-/* $cacheConnectMethods['apc']
- * If specified, this will enable APC caching, where applicable. */
-$cacheConnectMethods['apc'] = [
-
-];
-
-/* $cacheConnectMethods['apc']
+/* $cacheConnectMethods['disk']
  * If specified, this will enable disk caching, where applicable. */
 $cacheConnectMethods['disk'] = [
     //'directory' => '', // If omitted, defaults to $tmpDir from below.
 ];
 
+/* $cacheConnectMethods['apc']
+ * If specified, this will enable APC caching, where applicable. */
+/*$cacheConnectMethods['apc'] = [];*/
 
 /* $streamMethods['pgsql']
  * If specified, this will enable PostGreSQL pub/sub. */
 /*$streamMethods['pgsql'] = [
-    'host' => 'localhost',
+    'host' => '',
     'port' => 5432,
-    'username' => 'postgres',
-    'password' => 'R@1nD0wn',
+    'username' => '',
+    'password' => '',
 ];*/
-
 
 /* $cacheConnectMethods['redis']
  * If specified, this will enable Redis caching. */
@@ -200,25 +196,6 @@ $blowFish = false;
  * Post-installation, this number can be increased as long as administrators update the database first.
  */
 $sha256Rounds = 5000;
-
-/* $salts
- * An array of salts.
- * You can add values to this any time you want, but never remove them.
- * By adding values often, you will increase the general security of the system as long as no one is able to read this file. However, it is by no means required.
- * You are __STRONGLY__ encouraged to set at least one value (which defaults to "xxx" shown below) for generation of things like passwords and session hashes even if you don't want to encrypt anything else.. */
-$salts = array(
-  101 => 'xxx',
-);
-
-/* $encrypt
- * Set to false to disable message encrpytion.
- * You are free to change this at any time, as long as no values are removed in the $salts entry above. */
-$encrypt = true;
-
-/* $encryptUploads
- * Whether or not uploaded files should be encrypted.
- * Doing so is encouraged, but not required. It does mean greater CPU stress. */
-$encryptUploads = true;
 
 
 

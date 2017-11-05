@@ -97,7 +97,6 @@ class fimDatabase extends DatabaseSQL
         }
     }
 
-
     /**
      * Reverses the {@link fimDatabase::packList} procedure, converting a binary string into an array of integers.
      *
@@ -689,7 +688,7 @@ class fimDatabase extends DatabaseSQL
             $this->sqlPrefix . "fileVersions" => 'fileId versionId, sha256hash, size',
         );
 
-        if ($options['includeContent']) $columns[$this->sqlPrefix . 'fileVersions'] .= ', salt, iv, contents';
+        if ($options['includeContent']) $columns[$this->sqlPrefix . 'fileVersions'] .= ', contents';
 
 
         // This is a method of optimisation I'm trying. Basically, if a very small sample is requested, then we can optimise by doing those first. Otherwise, the other filters are usually better performed first.
@@ -887,118 +886,6 @@ class fimDatabase extends DatabaseSQL
      ************************ START **************************
      ****************** Message Retrieval ********************
      *********************************************************/
-//TODO: matches any phrase, not all phrases
-    public function getMessagesFromPhrases($options, $sort = array('messageId' => 'asc')) {
-        $options = $this->argumentMerge(array(
-            'roomIds'           => array(),
-            'userIds'           => array(),
-            'messageTextSearch' => '',
-        ), $options);
-
-
-        $searchArray = [];
-        $searchResults = [];
-        if ($options['messageTextSearch']) {
-            foreach (explode(' ', $this->makeSearchable($options['messageTextSearch'])) AS $searchPhrase) {
-
-                $searchArray[] = $searchPhrase;
-            }
-        }
-
-
-        $columns = array(
-            $this->sqlPrefix . "searchPhrases"  => 'phraseName, phraseId pphraseId',
-            $this->sqlPrefix . "searchMessages" => 'phraseId mphraseId, messageId, userId, roomId'
-        );
-
-        $conditions['both']['mphraseId'] = $this->col('pphraseId');
-
-
-        /* Apply User and Room Filters */
-        if (count($options['rooms']) > 1) $conditions['both']['roomId'] = $this->in((array) $options['rooms']);
-        if (count($options['users']) > 1) $conditions['both']['userId'] = $this->in((array) $options['users']);
-
-
-        if (count($searchArray)) {
-            /* Determine Whether to Use the Fast or Slow Algorithms */
-            if (fimConfig::$fullTextArchive) // Slower Algorithm, uses subphrase searching (e.g. the sentence "a quick brown fox jumped over the lazy dog" will match every single individual letter, as well as, among others, "qu", "qui", "quic", "quick", "br", and so-on.)
-                foreach ($searchArray AS $phrase) $conditions['both']['either'][]['phraseName'] = $this->type('string', $phrase, 'search');
-
-            else // Original, Fastest Algorithm (only matches whole-words)
-                $conditions['both']['phraseName'] = $this->in((array)$searchArray);
-        }
-
-
-        /* Run the Query */
-        $matchedMessages = $this->select($columns, $conditions, $sort)->getAsArray('phraseId', true);
-        foreach ($matchedMessages AS $phraseId => $message) {
-
-        }
-    }
-
-
-
-    /**
-     * Run a query to obtain messages based on query parameters.
-     *
-     * @param array $options {
-     *      An array of options to filter by.
-     *
-     *      @param fimRoom ['room']            The room to filter by. Required.
-     *      @param array ['messageIds']        An array of messageIds to filter by. Overrides other message ID filter parameters.
-     *      @param array ['userIds']           An array of sender userIds to filter the messages by.
-     *      @param array ['messageTextSearch'] Filter results by searching for this string in messageText.
-     *      @param bool  ['showDeleted']       Whether to include deleted messages. Default false.
-     *      @param bool  ['archive']           Whether to query the message archive instead of the main table. Default false. (On average, the main table only includes around 100 messages, so this must be true for archive viewing.)
-     *
-     *      The following are still being revised:
-     *      @param array ['messagesSince']
-     *      @param array ['messageIdStart']
-     *      @param array ['messageIdEnd']
-     *      @param array ['messageDateMax']
-     *      @param array ['messageDateMin']
-     * }
-     * @param array $sort        Sort columns (see standard definition).
-     * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
-     * @param int   $page        The page of the resultset to return.
-     *
-     * @return DatabaseResult
-     */
-    public function getMessageIdsFromSearchCache($options, $limit, $page) {
-        $options = $this->argumentMerge(array(
-            'roomId'           => 0,
-            'userId'           => 0,
-            'phrases'          => array(),
-        ), $options);
-
-
-        $columns = array(
-            $this->sqlPrefix . "searchCache"  => 'phraseName, userId, roomId, resultPage, resultLimit, messageIds, expires',
-        );
-
-        $conditions['both']['phraseName'] = $options['phraseNames'];
-        $conditions['both']['resultPage'] = $page;
-        $conditions['both']['resultLimit'] = $limit;
-
-
-        /* Apply User and Room Filters */
-        if (count($options['roomIds']) > 1)
-            $conditions['both']['roomId'] = $this->in((array) $options['roomIds']);
-        else
-            $conditions['both']['roomId'] = $this->int(0);
-
-        if (count($options['userIds']) > 1) $conditions['both']['userId'] = $this->in((array) $options['userIds']);
-
-
-        /* Run the Query */
-        $cacheRow = $this->select($columns, $conditions)->getAsArray(false);
-        if (count($cacheRow) && $cacheRow['expires'] > time()) {
-            return explode(',', $cacheRow['messageIds']);
-        }
-    }
-
-
-
 
     /**
      * Run a query to obtain messages.
@@ -1044,33 +931,9 @@ class fimDatabase extends DatabaseSQL
             throw new Exception('fim_database->getMessages requires the \'room\' option to be an instance of fimRoom.');
 
 
-        /* Create a $messages list based on search parameter. */
-        if (strlen($options['messageTextSearch']) > 0) {
-            /* Run the Query */
-            $searchMessageIds = $this->getMessagesFromPhrases(array(
-                'roomIds' => [$options['room']->id],
-                'userIds' => $options['userIds'],
-                'messageTextSearch' => $options['messageTextSearch'],
-            ), null, $limit, $page)->getAsArray('messageId');
-
-            $searchMessageIds = $this->getMessagesFromPhrases(array(
-                'roomIds' => [$options['room']->id],
-                'userIds' => $options['userIds'],
-                'messageTextSearch' => $options['messageTextSearch'],
-            ), null, $limit, $page)->getAsArray('messageId');
-
-            $searchMessages = array_keys($searchMessageIds);
-
-
-            /* Modify the Request Filter for Messages */
-            if ($searchMessages) $options['messageIds'] = fim_arrayValidate($searchMessages, 'int', true);
-            else                 $options['messageIds'] = array(0); // This is a fairly dirty approach, but it does work for now. TODO
-        }
-
-
         /* Query via the Archive */
         $columns = array(
-            $this->sqlPrefix . "messages" => 'id, time, iv, salt, roomId, userId, anonId, deleted, flag, text',
+            $this->sqlPrefix . "messages" => 'id, time, roomId, userId, anonId, deleted, flag, text',
         );
 
 
@@ -1104,6 +967,10 @@ class fimDatabase extends DatabaseSQL
 
         if (count($options['userIds']) > 0)
             $conditions['userId'] = $this->in($options['userIds']);
+
+        if ($options['messageTextSearch']) {
+            $conditions['text'] = $this->fulltextSearch($options['messageTextSearch']);
+        }
 
 
 
@@ -1267,7 +1134,7 @@ class fimDatabase extends DatabaseSQL
 
         if (count($options['roomIds']) > 0) $conditions['both']['either']['id'] = $this->in($options['roomIds']);
         if (count($options['roomNames']) > 0) $conditions['both']['either']['name'] = $this->in($options['roomNames']);
-        if ($options['roomNameSearch']) $conditions['both']['either']['name'] = $this->type('string', $options['roomNameSearch'], 'search');
+        if ($options['roomNameSearch']) $conditions['both']['either']['name'] = $this->fulltextSearch($options['roomNameSearch']);
 
         if (count($options['ownerIds']) > 0) $conditions['both']['either']['ownerId'] = $this->in($options['ownerIds']);
 
@@ -1462,7 +1329,7 @@ class fimDatabase extends DatabaseSQL
                 $returnBitfield = 65535;
 
             // A user blocked by parental controls has no permissions. This cannot apply to the room owner.
-            elseif ($room->parentalAge > $user->parentalAge) //|| fim_inArray($user->parentalFlags, $room->parentalFlags) TODO!
+            elseif (($user->parentalAge && $room->parentalAge && $room->parentalAge > $user->parentalAge) || fim_inArray($user->parentalFlags, $room->parentalFlags))
                 $returnBitfield = 0;
 
             else {
@@ -1502,7 +1369,6 @@ class fimDatabase extends DatabaseSQL
 
                 $returnBitfield &= ~(fimRoom::ROOM_PERMISSION_POST | fimRoom::ROOM_PERMISSION_TOPIC); // And no one can post in them - a rare case where even admins are denied certain abilities.
             }
-
 
             /* Update cache and return. */
             $this->updatePermissionsCache($room->id, $user->id, $returnBitfield, (isset($kicks) && $kicks > 0 ? true : false));
@@ -2095,10 +1961,8 @@ class fimDatabase extends DatabaseSQL
                 'roomId'   => $message->room->id,
                 'userId'   => $message->user->id,
                 'anonId'   => $message->user->anonId,
-                'text'     => $this->blob($message->textEncrypted),
+                'text'     => $this->blob($message->text),
                 'textSha1' => sha1($message->text),
-                'salt'     => $message->salt,
-                'iv'       => $this->blob($message->iv),
                 'ip'       => $_SERVER['REMOTE_ADDR'],
                 'flag'     => $message->flag,
                 'time'     => $now,
@@ -2117,13 +1981,6 @@ class fimDatabase extends DatabaseSQL
             'userId' => $message->user->id,
             'roomId' => $message->room->id,
         ]);
-
-
-        // Generate (and Insert) Key Words, Unless an Off-the-Record Room
-        if ($message->room->type !== 'otr') {
-            $keyWords = $this->getKeyWordsFromText($message->text);
-            $this->storeKeyWords($keyWords, $message->id, $message->user->id, $message->room->id);
-        }
 
 
 
@@ -2230,19 +2087,10 @@ class fimDatabase extends DatabaseSQL
                 'messageId' => $message->id,
                 'roomId' => $message->room->id,
                 'userId' => $message->user->id,
-                'oldText' => $oldMessage->textEncrypted,
-                'newText' => $message->textEncrypted,
-                'iv1' => $oldMessage->iv,
-                'iv2' => $message->iv,
-                'salt1' => $oldMessage->salt,
-                'salt2' => $message->salt,
+                'oldText' => $oldMessage->text,
+                'newText' => $message->text,
                 'ip' => $_SERVER['REMOTE_ADDR'],
             ));
-
-            // Update keywords for searching
-            $this->dropKeyWords($message->id);
-            $keyWords = $this->getKeyWordsFromText($message->text);
-            $this->storeKeyWords($keyWords, $message->id, $this->user->id, $message->room->id);
 
             // Create event to prompt update in existing message displays.
             \Stream\StreamFactory::publish('room_' . $message->room->id, 'editedMessage', [
@@ -2256,9 +2104,7 @@ class fimDatabase extends DatabaseSQL
 
         // Update message entry itself
         $this->update($this->sqlPrefix . "messages", [
-            'text' => $message->textEncrypted,
-            'iv' => $message->iv,
-            'salt' => $message->salt,
+            'text' => $message->text,
             'flag' => $message->flag,
             'deleted' => $this->bool($message->deleted)
         ], array(
@@ -2310,8 +2156,6 @@ class fimDatabase extends DatabaseSQL
 
 
     public function storeFile(fimFile $file, fimUser $user, fimRoom $room) {
-        list($contentsEncrypted, $saltNum, $iv) = fim_encrypt($file->contents, FIM_ENCRYPT_FILECONTENT);
-
         $this->startTransaction();
 
         $this->insert($this->sqlPrefix . "files", array(
@@ -2329,10 +2173,8 @@ class fimDatabase extends DatabaseSQL
         $this->insert($this->sqlPrefix . "fileVersions", array(
             'fileId' => $fileId,
             'sha256hash' => $file->sha256hash,
-            'salt' => $this->int($saltNum),
-            'iv' => $this->blob($iv),
             'size' => $file->size,
-            'contents' => $this->blob($contentsEncrypted),
+            'contents' => $this->blob($file->contents),
             'time' => time(),
         ));
         $versionId = $this->getLastInsertId();
@@ -2381,16 +2223,12 @@ class fimDatabase extends DatabaseSQL
                     imagejpeg($imageThumb);
                     $thumbnail = ob_get_clean();
 
-                    list($thumbnailEncrypted, $keyNum, $iv) = fim_encrypt($thumbnail, FIM_ENCRYPT_FILECONTENT);
-
                     $this->insert($this->sqlPrefix . "fileVersionThumbnails", array(
                         'versionId' => $fileId,
                         'scaleFactor' => $this->float($resizeFactor),
                         'width' => $newWidth,
                         'height' => $newHeight,
-                        'salt' => $keyNum,
-                        'iv' => $iv,
-                        'contents' => $thumbnailEncrypted
+                        'contents' => $thumbnail
                     ));
                 }
             }
@@ -2416,49 +2254,6 @@ class fimDatabase extends DatabaseSQL
         } else {
             return false;
         }
-    }
-
-
-    /**
-     * @param $words
-     * @param $messageId
-     * @param $userId
-     * @param $roomId
-     */
-    public function storeKeyWords($words, $messageId, $userId, $roomId)
-    {
-        $phraseData = $this->select(
-            array(
-                $this->sqlPrefix . 'searchPhrases' => 'phraseName, phraseId'
-            )
-        )->getAsArray('phraseName'); // TODO: what the hell were you thinking, exactly?
-
-
-        foreach (array_unique($words) AS $piece) {
-            if (!isset($phraseData[$piece])) {
-                $this->insert($this->sqlPrefix . "searchPhrases", array(
-                    'phraseName' => $piece,
-                ));
-                $phraseId = $this->getLastInsertId();
-            } else {
-                $phraseId = $phraseData[$piece]['phraseId'];
-            }
-
-            $this->insert($this->sqlPrefix . "searchMessages", array(
-                'phraseId'  => (int) $phraseId,
-                'messageId' => (int) $messageId,
-                'userId'    => (int) $userId,
-                'roomId'    => (int) $roomId,
-            ));
-
-        }
-    }
-
-
-    public function dropKeyWords($messageId) {
-        $this->delete($this->sqlPrefix . "searchMessages", array(
-            'messageId' => (int) $messageId,
-        ));
     }
 
 
@@ -2589,15 +2384,6 @@ class fimDatabase extends DatabaseSQL
 
         return false;
     }
-
-
-
-    /* Originally from fim_general.php TODO */
-//  protected function explodeEscaped($delimiter, $string, $escapeChar = '\\') {
-//    $string = str_replace($escapeChar . $escapeChar, fim_encodeEntities($escapeChar), $string);
-//    $string = str_replace($escapeChar . $delimiter, fim_encodeEntities($delimiter), $string);
-//    return array_map('fim_decodeEntities', explode($delimiter, $string));
-//  }
 
 
 

@@ -32,24 +32,9 @@ class fimMessage
     public $user;
 
     /**
-     * @var string The message's text, unencrypted.
+     * @var string The message's text.
      */
     public $text;
-
-    /**
-     * @var string The message's text, encrypted.
-     */
-    public $textEncrypted;
-
-    /**
-     * @var string The iv used to encrypt the message.
-     */
-    public $iv;
-
-    /**
-     * @var int The salt # used to encrypt the message.
-     */
-    public $salt;
 
     /**
      * @var bool Whether the message is currently marked as deleted.
@@ -98,21 +83,7 @@ class fimMessage
             $this->id = (int) $messageData['id'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have id column.');
             $this->user = fimUserFactory::getFromId((int)($messageData['userId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have userId column.')));
             $this->room = new fimRoom((int)($messageData['roomId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have roomId column.')));
-
-            if (isset($messageData['salt'], $messageData['iv'])) { // Typically when in permanent store.
-                $this->textEncrypted = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have text column.');
-                $this->salt = $messageData['salt'] ?? '';
-                $this->iv = $messageData['iv'] ?? '';
-                $this->text = fim_decrypt(
-                    $this->textEncrypted,
-                    $this->salt,
-                    $this->iv
-                );
-            } else { // Typically when in caches.
-                $this->text = $messageData['text'];
-                list($this->textEncrypted, $this->salt, $this->iv) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
-            }
-
+            $this->text = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have text column.');
             $this->flag = $messageData['flag'] ?? '';
             $this->time = $messageData['time'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');
         }
@@ -169,8 +140,6 @@ class fimMessage
         else {
             $this->text = $text;
         }
-
-        list($this->textEncrypted, $this->salt, $this->iv) = fim_encrypt($this->text, FIM_ENCRYPT_MESSAGETEXT);
     }
 
     /**

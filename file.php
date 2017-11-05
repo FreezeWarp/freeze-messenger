@@ -96,13 +96,10 @@ if ($includeThumbnails) {
             $file = $file[array_values($filesIndexed)[0]];
         }
 
-        $thumbnail = $database->select([$database->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents, iv, salt"], ["versionId" => $file['versionId'], "scaleFactor" => $file['scaleFactor']])->getAsArray(false);
-        $file['contents'] = fim_decrypt($thumbnail['contents'], $thumbnail['salt'], $thumbnail['iv']);
+        $thumbnail = $database->select([$database->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents"], ["versionId" => $file['versionId'], "scaleFactor" => $file['scaleFactor']])->getAsArray(false);
+        $file['contents'] = $thumbnail['contents'];
         $file['fileType'] = 'image/jpeg';
     }
-}
-else {
-    $file['contents'] = fim_decrypt($file['contents'], $file['salt'], $file['iv']);
 }
 
 

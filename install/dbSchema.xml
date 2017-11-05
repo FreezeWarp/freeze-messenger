@@ -131,8 +131,6 @@
             <column name="time" type="time" default="__TIME__" comment="The time the revision of the file was uploaded." />
             <column name="size" type="int" maxlen="10" comment="The file size of the revision." />
             <column name="sha256hash" type="string" maxlen="64" comment="The SHA256 hash of the file's binary data." />
-            <column name="salt" type="int" maxlen="6" comment="The salt number (stored in the product configuration) used for encryption." />
-            <column name="iv" type="blob" maxlen="255" comment="The IV used for encryption." />
             <column name="contents" type="blob" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
 
             <key name="versionId" type="primary" />
@@ -145,8 +143,6 @@
             <column name="scaleFactor" type="float" comment="The size of this thumbnail relative to the full image (e.g. a scale factor of .5 results in an image of half height and width.)" />
             <column name="width" type="int" maxlen="6" comment="The width of the thumbnail." />
             <column name="height" type="int" maxlen="6" comment="The height of the thumbnail." />
-            <column name="salt" type="int" maxlen="6" comment="The salt number (stored in the product configuration) used for encryption." />
-            <column name="iv" type="blob" maxlen="255" comment="The IV used for encryption." />
             <column name="contents" type="blob" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
 
             <key name="versionId,scaleFactor" type="primary" />
@@ -270,10 +266,8 @@
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who made the message." />
             <column name="anonId" type="int" maxlen="6" comment="The anonymous ID of the user who made the message, if applicable." />
-            <column name="text" type="blob" maxlen="5000" comment="The text of the message." />
+            <column name="text" type="string" maxlen="5000" comment="The text of the message." />
             <column name="textSha1" type="string" maxlen="40" comment="A SHA1 hash of the text of the message." />
-            <column name="salt" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
-            <column name="iv" type="blob" maxlen="255" comment="The base64-encoded IV used for encryption." />
             <column name="messageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
             <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />
             <column name="time" type="time" default="__TIME__" comment="The time the message was made on." />
@@ -281,6 +275,7 @@
             <column name="flag" type="string" maxlen="10" comment="The content-type flag of the message (e.g. video, image, text, archive, html, url, email)." />
 
             <key name="id,roomId" type="primary" />
+            <key name="text" type="fulltext" />
             <key name="deleted" type="index" />
             <key name="time" type="index" />
             <key name="roomId" type="index" />
@@ -292,14 +287,10 @@
             <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user who editted the message." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
-            <column name="oldText" type="blob" maxlen="5000" comment="The old raw text of the message." />
-            <column name="newText" type="blob" maxlen="5000" comment="The new raw text of the message." />
+            <column name="oldText" type="string" maxlen="5000" comment="The old raw text of the message." />
+            <column name="newText" type="string" maxlen="5000" comment="The new raw text of the message." />
             <column name="time" type="time" default="__TIME__" comment="The time of the change." />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user during the change." />
-            <column name="salt1" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
-            <column name="salt2" type="int" maxlen="6" comment="The ID of the salt used for encryption (with the corrosponding value found in the product's configuration file)." />
-            <column name="iv1" type="blob" maxlen="255" comment="The base64-encoded IV used for encryption." />
-            <column name="iv2" type="blob" maxlen="255" comment="The base64-encoded IV used for encryption." />
 
             <key name="messageId,roomId,time" type="primary" />
         </table>
@@ -353,7 +344,6 @@
             <column name="id" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
             <column name="idEncoded" type="blob" maxlen="23" comment="The unique ID for the room, encoded as appropriate." />
             <column name="name" type="string" maxlen="50" comment="The name of the room." />
-            <column name="nameSearchable" type="string" maxlen="50" comment="The name of the room, formatted for searching." />
             <column name="topic" type="string" maxlen="200" comment="The current topic of the room." />
             <column name="options" type="bitfield" bits="8" default="0" comment="A bitfield corrosponding to certain room options." />
 
@@ -378,7 +368,7 @@
 
             <key name="id" type="primary" />
             <key name="idEncoded" type="unique" />
-            <key name="nameSearchable" type="index" />
+            <key name="name" type="fulltext" />
             <key name="options" type="index" />
             <key name="ownerId" type="index" />
             <key name="lastMessageId" type="index" />
@@ -442,42 +432,6 @@
             <key name="userId,roomId" type="primary" />
             <key name="roomId" type="index" />
         </table>
-
-
-        <!-- TODO: probably remove. -->
-        <table name="searchMessages" type="general" comment="A cache of messages containing search phrases.">
-            <column name="phraseId"  type="int" maxlen="8" comment="The ID of the phrase found in the message." />
-            <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
-            <column name="userId" type="int" maxlen="8" comment="The user who made the above post." />
-            <column name="roomId" type="blob" maxlen="23" comment="The room the above post is contained in." />
-
-            <key name="messageId,roomId,phraseId" type="primary" />
-            <key name="roomId" type="index" />
-            <key name="userId" type="index" />
-        </table>
-
-
-        <table name="searchPhrases" type="general" note="As of FIMv3B3 this is not as scalable as one might have hoped, though changes may be made further into the future, or at the latest in FIMv4" comment="A cache of search phrases to ease message searching in a scalable way.">
-            <column name="phraseId" type="int" maxlen="8" autoincrement="1" comment="A unique ID corrosponding to the phrase name/text." />
-            <column name="phraseName" type="string" maxlen="50" comment="The name/text of the phrase." />
-
-            <key name="phraseId" type="primary" />
-            <key name="phraseName" type="unique" />
-        </table>
-
-
-        <table name="searchCache" type="general" comment="A cache of message searches. Note that this cache is most efficient when fulltext searching is enabled (which is otherwise quite slow), but that it will still have minor benefits when using searchPhrases instead.">
-            <column name="phraseName" type="string" maxlen="50" comment="The phrase to search." />
-            <column name="userId"  type="int" maxlen="8" comment="Limits the search results to this userId." />
-            <column name="roomId" type="blob" maxlen="23" comment="Limits the search results to this roomId." />
-            <column name="resultPage" type="int" maxlen="6" comment="The result page this set corresponds with." />
-            <column name="resultLimit" type="int" maxlen="6" comment="The result limit this set corresponds with." />
-            <column name="messageIds" type="string" maxlen="50000" comment="The message IDs that result when searching phraseName, userId, and roomId (CSV)." />
-            <column name="expires" type="time" comment="When the cache is no longer considered valid." />
-
-            <key name="phraseName,userId,roomId,resultPage,resultLimit" type="primary" />
-        </table>
-        <!-- /TODO: probably remove. -->
 
 
         <table name="sessionLockout" type="memory" comment="Keeps track of failed login attempts, eventually blocking IP addresses from attempting additional logins.">

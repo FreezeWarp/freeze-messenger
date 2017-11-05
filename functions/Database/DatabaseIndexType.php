@@ -8,4 +8,5 @@ class DatabaseIndexType {
     const index = 'index';
     const primary = 'primary';
     const unique = 'unique';
+    const fulltext = 'fulltext';
 }

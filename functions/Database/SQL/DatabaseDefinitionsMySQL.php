@@ -104,14 +104,21 @@ abstract class DatabaseDefinitionsMySQL extends DatabaseSQLStandard {
         )->getColumnValues(['TABLE_NAME', 'COLUMN_NAME']);
     }
 
-    private $cachedTableConstraints = [];
     public function getTableConstraintsAsArray(DatabaseSQL $database) {
-        return $this->cachedTableConstraints[$database->activeDatabase] = $database->rawQueryReturningResult('SELECT * FROM '
+        return $database->rawQueryReturningResult('SELECT * FROM '
             . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'KEY_COLUMN_USAGE')
             . ' WHERE TABLE_SCHEMA = '
             . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
             . ' AND REFERENCED_TABLE_NAME IS NOT NULL'
         )->getColumnValues(['TABLE_NAME', 'CONSTRAINT_NAME']);
+    }
+
+    public function getTableIndexesAsArray(DatabaseSQL $database) {
+        return $database->rawQueryReturningResult('SELECT * FROM '
+            . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'STATISTICS')
+            . ' WHERE TABLE_SCHEMA = '
+            . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
+        )->getColumnValues(['TABLE_NAME', 'INDEX_NAME']);
     }
 
     public function getLanguage() {

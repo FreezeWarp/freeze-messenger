@@ -12,6 +12,7 @@ class DatabaseTypeComparison {
     const greaterThan = 'gt';
     const greaterThanEquals = 'gte';
     const search = 'search';
+    const fulltextSearch = 'fulltextSearch';
     const in = 'in';
     const binaryAnd = 'bAnd';
 

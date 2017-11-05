@@ -241,9 +241,6 @@ switch ($_REQUEST['phase']) {
         $forumUrl = urldecode($_GET['forum_url']);
         $forumTablePrefix = urldecode($_GET['forum_tableprefix']);
 
-        $encryptSalt = urldecode($_GET['encrypt_salt']);
-        $enableEncrypt = (int) $_GET['enable_encrypt'];
-
         $recaptchaKey = urldecode($_GET['recaptcha_key'] ?? '');
 
         $adminUsername = urldecode($_GET['admin_userName']);
@@ -300,11 +297,6 @@ switch ($_REQUEST['phase']) {
             '$loginConfig[\'url\'] = \'http://example.com/forums/\';',
             '$loginConfig[\'superUsers\'] = array();',
             '$installUrl = \'\';',
-            '$salts = array(
-  101 => \'xxx\',
-);',
-            '$encrypt = true;',
-            '$encryptUploads = true;',
             '$tmpDir = \'\';',
             '$loginConfig[\'adminGroups\'] = array()',
             '$loginConfig[\'bannedGroups\'] = array()'
@@ -336,11 +328,6 @@ switch ($_REQUEST['phase']) {
             '$loginConfig[\'url\'] = \'' . addslashes($forumUrl) . '\';',
             '$loginConfig[\'superUsers\'] = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
             '$installUrl = \'' . str_replace(array('install/index.php', 'install/'), array('', ''), $_SERVER['HTTP_REFERER']) . '\';',
-            '$salts = array(
-  101 => \'' . $encryptSalt . '\',
-);',
-            '$encrypt = ' . ($enableEncrypt & 1 ? 'true' : 'false') . ';',
-            '$encryptUploads = ' . ($enableEncrypt & 2 ? 'true' : 'false') . ';',
             '$tmpDir = \'' . $tmpDir . '\';',
             '$loginConfig[\'adminGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin4') ? '6' : '') . ')',
             '$loginConfig[\'bannedGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin4') ? '4, 8' : '') . ')',

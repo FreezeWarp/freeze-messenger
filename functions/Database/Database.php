@@ -1036,25 +1036,6 @@ abstract class Database
      */
     public function type($type, $value = '', $comp = DatabaseTypeComparison::equals)
     {
-        // TODO: get rid of all that.
-        switch ($comp) {
-            case DatabaseTypeComparison::equals:
-            case DatabaseTypeComparison::lessThan:
-            case DatabaseTypeComparison::lessThanEquals:
-            case DatabaseTypeComparison::greaterThan:
-            case DatabaseTypeComparison::greaterThanEquals:
-            case DatabaseTypeComparison::search:
-            case DatabaseTypeComparison::in:
-            case DatabaseTypeComparison::notin:
-            case DatabaseTypeComparison::binaryAnd:
-                break;
-
-            default:
-                throw new Exception("Invalid comparison '$comp'");
-                break;
-        }
-
-
         // TODO: get rid of all this.
         switch ($type) {
             case 'integer': case DatabaseTypeType::integer:
@@ -1141,6 +1122,17 @@ abstract class Database
     public function search($value)
     {
         return $this->type(DatabaseTypeType::string, $value, DatabaseTypeComparison::search);
+    }
+
+    /**
+     * A search (fulltext) operation. Shorthand for type('string', $value, 'fulltextSearch')
+     *
+     * @param mixed $value
+     * @return DatabaseType
+     */
+    public function fulltextSearch($value)
+    {
+        return $this->type(DatabaseTypeType::string, $value, DatabaseTypeComparison::fulltextSearch);
     }
 
     /**

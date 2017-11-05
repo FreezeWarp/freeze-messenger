@@ -204,6 +204,12 @@ class DatabaseSQL extends Database
      */
     const FORMAT_VALUE_DETECT = 'detect';
 
+
+    /**
+     * Format for fuzzy searching.
+     */
+    const FORMAT_VALUE_SEARCH = 'detect';
+
     /**
      * Format as a column alias.
      * When used, the first variable argument is the column name and the second variable argument is the alias name.
@@ -307,10 +313,10 @@ class DatabaseSQL extends Database
                 return 'NULL';
                 break;
 
-            case DatabaseTypeType::search:
+            case DatabaseSQL::FORMAT_VALUE_SEARCH:
                 return $this->sqlInterface->stringQuoteStart
                     . $this->sqlInterface->stringFuzzy
-                    . $this->escape($values[1], $type)
+                    . $this->escape(addcslashes($values[1], '%_\\'), $type) // TODO?
                     . $this->sqlInterface->stringFuzzy
                     . $this->sqlInterface->stringQuoteEnd;
                 break;
@@ -691,10 +697,6 @@ class DatabaseSQL extends Database
 
     protected function escape($string, $context = DatabaseTypeType::string)
     {
-        if ($context === DatabaseTypeType::search) {
-            $string = addcslashes($string, '%_\\'); // TODO: Verify
-        }
-
         return $this->sqlInterface->escape($string, $context); // Return the escaped string.
     }
 
@@ -1601,21 +1603,23 @@ class DatabaseSQL extends Database
             /* Generate CREATE INDEX Statements, If Needed */
             if ((!$duringTableCreation || $this->sqlInterface->indexMode === 'useCreateIndex')
                 && $index['type'] !== DatabaseIndexType::primary) {
-                $triggers[] = "CREATE {$typePiece} INDEX "
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $indexName)
-                    . " ON "
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-                    . ' '
-                    . $this->formatValue(DatabaseTypeType::arraylist, $indexCols);
+                if (!in_array(strtolower($indexName), $this->getTableIndexesAsArray()[strtolower($tableName)])) {
+                    $triggers[] = "CREATE {$typePiece} INDEX "
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $indexName)
+                        . " ON "
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                        . ' '
+                        . $this->formatValue(DatabaseTypeType::arraylist, $indexCols);
 
-                if ($index['type'] === DatabaseIndexType::unique && $this->sqlInterface->getLanguage() === 'sqlsrv') {
-                    $indexColsConditions = [];
-                    foreach ($indexCols AS $col) {
-                        $indexColsConditions["!{$col->value}"] = $this->type(DatabaseTypeType::null);
+                    if ($index['type'] === DatabaseIndexType::unique && $this->sqlInterface->getLanguage() === 'sqlsrv') {
+                        $indexColsConditions = [];
+                        foreach ($indexCols AS $col) {
+                            $indexColsConditions["!{$col->value}"] = $this->type(DatabaseTypeType::null);
+                        }
+
+                        end($triggers);
+                        $triggers[key($triggers)] .= ' WHERE ' . $this->recurseBothEither($indexColsConditions, $this->reverseAliasFromConditionArray($tableName, $indexColsConditions), 'both');
                     }
-
-                    end($triggers);
-                    $triggers[key($triggers)] .= ' WHERE ' . $this->recurseBothEither($indexColsConditions, $this->reverseAliasFromConditionArray($tableName, $indexColsConditions), 'both');
                 }
             }
 
@@ -1632,7 +1636,7 @@ class DatabaseSQL extends Database
             return [$indexes, $triggers];
         }
         else {
-            $this->executeTriggers($tableName, $triggers);
+            return $this->executeTriggers($tableName, $triggers);
         }
     }
 
@@ -1808,6 +1812,19 @@ class DatabaseSQL extends Database
         });
 
         return $tableConstraints;
+    }
+
+
+    public function getTableIndexesAsArray(): array {
+        $tableIndexes = array_change_key_case(
+            $this->sqlInterface->getTableIndexesAsArray($this), CASE_LOWER
+        );
+
+        array_walk($tableIndexes, function(&$val) {
+            $val = array_map('strtolower', $val);
+        });
+
+        return $tableIndexes;
     }
 
     /*********************************************************
@@ -2164,7 +2181,6 @@ class DatabaseSQL extends Database
                 $sideTextFull[$i] = '';
                 if (!$this->isTypeObject($value)) $value = $this->str($value);  // If value is not a DatabaseType, treat it as a string.
 
-
                 // lvalue
                 $column = ($this->startsWith($key, '!') ? substr($key, 1) : $key);
 
@@ -2172,66 +2188,79 @@ class DatabaseSQL extends Database
                 if (!isset($reverseAlias[$column]))
                     throw new Exception("Column '$column' cannot be queried; was it in the select fields?");
 
-                $sideText['left'] = ($reverseAlias ? $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$column][0], $reverseAlias[$column][1]) : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
 
-
-                // comparison operator
-                $symbol = $this->sqlInterface->comparisonTypes[$value->comparison];
-
-
-                // rvalue
-                if ($value->type === DatabaseTypeType::column)
-                    $sideText['right'] = ($reverseAlias ? $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$value->value][0], $reverseAlias[$value->value][1]) : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
-
-                elseif ($value->type === DatabaseTypeType::arraylist && count($value->value) === 0) {
-                    $this->triggerError('Array nullified', false, 'validationFallback');
-                    $sideTextFull[$i] = "{$this->sqlInterface->boolValues[false]} = {$this->sqlInterface->boolValues[true]}"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Simply specifying "false" works on most DBMS, but not SqlServer.
-                    continue;
+                /* Full Text Searching */
+                if ($value->comparison === DatabaseTypeComparison::fulltextSearch
+                    && $this->sqlInterface->getLanguage() === 'mysql') { // TODO: other languages
+                    $sideTextFull[$i] = 'MATCH (' . $this->formatValue(DatabaseTypeType::column, $column) . ') AGAINST (' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value) . ' IN NATURAL LANGUAGE MODE)';
                 }
 
+                /* Normal Boolean Logic */
                 else {
-                    // Apply transform function, if set
+                    $sideText['left'] = ($reverseAlias ? $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$column][0], $reverseAlias[$column][1]) : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
 
-                    if (isset($reverseAlias[$column])) { // If we have reverse alias data for the column...
-                        $transformColumnName = $reverseAlias[$column][1] ?? $column;
-                        $transformTableName = $reverseAlias[$column][2] ?? $reverseAlias[$column][0]; // If the second index is set, it is storing the "original" table name, in case of a partition. Otherwise, the 0th index, containing the regular table name, is used.
 
-                        if (isset($this->encode[$transformTableName][$transformColumnName])) { // Do we have conversion data available?
-                            list($function, $typeOverride) = $this->encode[$transformTableName][$transformColumnName]; // Fetch the function used for transformation, and the type override if available.
+                    // comparison operator
+                    $symbol = $this->sqlInterface->comparisonTypes[$value->comparison];
 
-                            $value = $this->applyTransformFunction($function, $value, $typeOverride); // Apply the transformation to the value for usage in our query.
-                        }
+
+                    // rvalue
+                    if ($value->type === DatabaseTypeType::column)
+                        $sideText['right'] = ($reverseAlias ? $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$value->value][0], $reverseAlias[$value->value][1]) : $value->value); // The value is a column, and should be returned as a reverseAlias. (Note that reverseAlias should have already called formatValue)
+
+                    elseif ($value->type === DatabaseTypeType::arraylist && count($value->value) === 0) {
+                        $this->triggerError('Array nullified', false, 'validationFallback');
+                        $sideTextFull[$i] = "{$this->sqlInterface->boolValues[false]} = {$this->sqlInterface->boolValues[true]}"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Simply specifying "false" works on most DBMS, but not SqlServer.
+                        continue;
                     }
 
-                    // Build rvalue
-                    $sideText['right'] = $this->formatValue(($value->comparison === DatabaseTypeComparison::search ? DatabaseTypeType::search : $value->type), $value->value); // The value is a data type, and should be processed as such.
-                }
+                    else {
+                        // Apply transform function, if set
+
+                        if (isset($reverseAlias[$column])) { // If we have reverse alias data for the column...
+                            $transformColumnName = $reverseAlias[$column][1] ?? $column;
+                            $transformTableName = $reverseAlias[$column][2] ?? $reverseAlias[$column][0]; // If the second index is set, it is storing the "original" table name, in case of a partition. Otherwise, the 0th index, containing the regular table name, is used.
+
+                            if (isset($this->encode[$transformTableName][$transformColumnName])) { // Do we have conversion data available?
+                                list($function, $typeOverride) = $this->encode[$transformTableName][$transformColumnName]; // Fetch the function used for transformation, and the type override if available.
+
+                                $value = $this->applyTransformFunction($function, $value, $typeOverride); // Apply the transformation to the value for usage in our query.
+                            }
+                        }
+
+                        // Build rvalue
+                        $sideText['right'] = $this->formatValue(
+                            ($value->comparison === DatabaseTypeComparison::search ? DatabaseSQL::FORMAT_VALUE_SEARCH : $value->type),  // The value is a data type, and should be processed as such.
+                            $value->value
+                        );
+                    }
 
 
-                // Combine l and rvalues
-                // TODO: $this->null(NOT EQUALS)
-                if ($value->type === DatabaseTypeType::null) {
-                    $sideTextFull[$i] = "{$sideText['left']} IS " . ($this->startsWith($key, '!') ? "NOT " : "") . "NULL";
-                }
+                    // Combine l and rvalues
+                    // TODO: $this->null(NOT EQUALS)
+                    if ($value->type === DatabaseTypeType::null) {
+                        $sideTextFull[$i] = "{$sideText['left']} IS " . ($this->startsWith($key, '!') ? "NOT " : "") . "NULL";
+                    }
 
-                elseif ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
-                    $sideTextFull[$i] =
-                        ($this->startsWith($key, '!')
-                            ? $this->sqlInterface->concatTypes['not']
-                            : ''
-                        )
-                        . "({$sideText['left']} {$symbol} {$sideText['right']}"
-                        . ($value->comparison === DatabaseTypeComparison::binaryAnd
-                            ? ' = ' . $this->formatValue(DatabaseTypeType::integer, $value->value)
-                            : ''
-                        ) // Special case: postgres binaryAnd
-                        . ")";
-                }
+                    elseif ((strlen($sideText['left']) > 0) && (strlen($sideText['right']) > 0)) {
+                        $sideTextFull[$i] =
+                            ($this->startsWith($key, '!')
+                                ? $this->sqlInterface->concatTypes['not']
+                                : ''
+                            )
+                            . "({$sideText['left']} {$symbol} {$sideText['right']}"
+                            . ($value->comparison === DatabaseTypeComparison::binaryAnd
+                                ? ' = ' . $this->formatValue(DatabaseTypeType::integer, $value->value)
+                                : ''
+                            ) // Special case: postgres binaryAnd
+                            . ")";
+                    }
 
-                else {
-                    $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
+                    else {
+                        $sideTextFull[$i] = "FALSE"; // Instead of throwing an exception, which should be handled above, instead simply cancel the query in the cleanest way possible. Here, it's specifying "FALSE" in the where clause to prevent any results from being returned.
 
-                    $this->triggerError('Query Nullified', array('Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validationFallback');
+                        $this->triggerError('Query Nullified', array('Key' => $key, 'Value' => $value, 'Side Text' => $sideText, 'Reverse Alias' => $reverseAlias), 'validationFallback');
+                    }
                 }
             }
         }

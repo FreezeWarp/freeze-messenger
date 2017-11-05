@@ -79,9 +79,6 @@ if (!extension_loaded('json'))
 
 
 // Optional Plugins
-if (!function_exists('openssl_encrypt')
-    || !in_array('AES-256-CTR', openssl_get_cipher_methods()))
-    $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_OPENSSL;
 if (!class_exists('Transliterator'))
     $optionalInstallFlags += OPTIONAL_INSTALL_ISSUE_TRANSLITERATOR;
 if (!extension_loaded('mbstring'))
@@ -330,14 +327,6 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                 <td><abbr title="Without cURL, WebLite may not function. If it does function, it will be slower.">WebLite</abbr></td>
                 <td>On Ubuntu: <pre>sudo apt-get install curl libcurl3 libcurl3-dev php-curl</pre><br />
                     On Windows: Compile APC, or find the plugin matching your version of PHP at <a href="http://dev.freshsite.pl/php-accelerators/apc.html">http://dev.freshsite.pl/php-accelerators/apc.html</a>.</td>
-            </tr>
-            <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_OPENSSL ? 'uninstalledFlag' : 'installedFlag'); ?>">
-                <td>OpenSSL (and AES-256-CTR cipher)</td>
-                <td>n/a</td>
-                <td><?php echo phpversion('openssl'); ?></td>
-                <td><abbr title="Without OpenSSL, message encryption will be disabled.">Message Encryption</abbr></td>
-                <td>On Ubuntu: <pre>sudo apt-get install php-openssl</pre><br />
-                    On Windows: Install PHP, or see <a href="http://php.net/manual/en/openssl.requirements.php">http://php.net/manual/en/openssl.requirements.php</a></td>
             </tr>
             <tr class="<?php echo ($optionalInstallFlags & OPTIONAL_INSTALL_ISSUE_MBSTRING ? 'uninstalledFlag' : 'installedFlag'); ?>">
                 <td>MB String</td>
@@ -820,26 +809,6 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                 </tr>
                 </thead>
                 <tbody>
-                <!-- Todo: all/nothing -->
-                <tr>
-                    <td><strong>Enable Encryption?</strong></td>
-                    <td>
-                        <select class="form-control" name="enable_encrypt">
-                            <option value="3">For Everything</option>
-                            <option value="2">For Uploads Only</option>
-                            <option value="1">For Messages Only</option>
-                            <option value="0">For Nothing</option>
-                        </select>
-                        <small class="form-text text-muted">Encrypting messages and files at-rest serves little purpose unless you are sharing the database with another software (such as a forum), whose database exploits could expose FlexChat data. If you are installing FlexChat by itself, you likely would not benefit from encryption.</small>
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>Encryption Phrase</strong></td>
-                    <td>
-                        <input type="text" class="form-control" name="encrypt_salt" />
-                        <small class="form-text text-muted">This is a phrase used to encrypt the data. You can change this later as long as you don't remove referrences to this one.
-                    </td>
-                </tr>
                 <tr>
                     <td><strong>Cache Method</strong></td>
                     <td>
