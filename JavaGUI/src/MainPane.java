@@ -322,7 +322,7 @@ public class MainPane {
 
 
         public void run() {
-            JsonNode messages = GUIDisplay.api.getMessages(currentRoom.getId(), currentRoom.getLastMessageId(), !currentRoom.isArchiveFetched());
+            JsonNode messages = GUIDisplay.api.getMessages(currentRoom.getId(), currentRoom.getLastMessageId()); // currentRoom.isArchiveFetched
 
             // Indicate that we shouldn't refetch the archive in the future.
             currentRoom.setArchiveFetched(true);
@@ -392,13 +392,13 @@ public class MainPane {
 
             if (usersLocal.isObject()) {
                 for (final JsonNode user : usersLocal) {
-                    activeUsers.add(getUser(user.get("userData").get("id").asInt()));
+                    activeUsers.add(getUser(user.get("id").asInt()));
                 }
             }
 
             if (usersAll.isObject()) {
                 for (final JsonNode user : usersAll) {
-                    User userObj = getUser(user.get("userData").get("id").asInt());
+                    User userObj = getUser(user.get("id").asInt());
 
                     if (!activeUsers.contains(userObj)) {
                         activeUsers.add(userObj);
