@@ -11,11 +11,6 @@
 
 }
 
-.settings_gear {
-    -fx-graphic: url("Images/settings_gear.png");
-    -fx-graphic-text-gap : 10;
-}
-
 #avatar {
     -fx-alignment: center;
 }
@@ -31,4 +26,8 @@
 .menu-item {
 /*    -fx-pref-width: ;
     -fx-background-color: ;  */
+}
+
+.text {
+    -fx-margin: 10px
 }
