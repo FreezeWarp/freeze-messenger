@@ -78,8 +78,8 @@ public class CustomToggleButton extends Application {
             switchedOn.addListener((obs, oldState, newState) -> {
                 boolean isOn = newState.booleanValue();
                 translateAnimation.setToX(isOn ? 100 - 50 : 0);
-                fillAnimation.setFromValue(isOn ? Color.WHITE : Color.LIGHTGREEN);
-                fillAnimation.setToValue(isOn ? Color.LIGHTGREEN : Color.WHITE);
+                fillAnimation.setFromValue(isOn ? Color.WHITE : Color.BLUE);
+                fillAnimation.setToValue(isOn ? Color.BLUE : Color.WHITE);
 
                 animation.play();
             });
