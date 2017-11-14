@@ -186,9 +186,22 @@ public class MessengerAPI {
      * @param lastMessageId The ID of the last message that was received.
      * @throws IOException
      */
-    public JsonNode getMessages(int roomId, int lastMessageId, boolean useArchive) {
+    public JsonNode getMessages(int roomId, int lastMessageId) {
         try {
-            JsonNode json = httpGET("api/message.php?access_token=" + sessionToken + "&roomId=" + roomId + "&archive=" + (useArchive ? 1 : 0) + "&messageIdStart=" + (lastMessageId + 1)).get("messages");
+            JsonNode json = httpGET("api/message.php?access_token=" + sessionToken + "&roomId=" + roomId + "&messageIdStart=" + (lastMessageId + 1)).get("messages");
+
+            return json;
+        } catch (Exception ex) {
+            System.err.println("Exception: " + ex);
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public JsonNode getEvents(int roomId, int lastEventId) {
+        try {
+            JsonNode json = httpGET("events.php?access_token=" + sessionToken + "&fallback=true&stream=room&queryId=" + roomId + "&lastEvent=" + lastEventId).get("messages");
 
             return json;
         } catch (Exception ex) {

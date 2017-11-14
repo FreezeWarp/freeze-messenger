@@ -15,11 +15,16 @@ public class UserPermissions {
     public boolean modRooms;
     public boolean modUsers;
     public boolean post;
-    public boolean postCounts;
     public boolean privateRoomsAll;
     public boolean privateRoomsFriends;
     public boolean roomsOnline;
     public boolean view;
+    public boolean selfChangeAvatar;
+    public boolean selfChangeFriends;
+    public boolean selfChangeIgnore;
+    public boolean selfChangeParentalAge;
+    public boolean selfChangeParentalFlags;
+    public boolean selfChangeProfile;
 
     @JsonProperty("protected")
     boolean protectedUser;
