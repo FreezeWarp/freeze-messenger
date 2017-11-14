@@ -993,7 +993,6 @@ class fimDatabase extends DatabaseSQL
         return $this->getMessages(array(
             'room' => $room,
             'messageIds' => array($messageId),
-            'archive' => true,
             'showDeleted' => true,
         ))->getAsMessage();
     }
