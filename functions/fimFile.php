@@ -30,10 +30,6 @@ class fimFile {
     private $mime;
     private $container;
 
-    // other
-    private $parentalAge = 0;
-    private $parentalFlags = [];
-
     private $resolved = array();
 
     public function __construct($filename, $contents) {
@@ -112,7 +108,7 @@ class fimFile {
 
 
     public function __set($property, $value) {
-        if (property_exists($this, $property) && in_array($property, ["name", "parentalAge", "parentalFlags"])) {
+        if (property_exists($this, $property) && in_array($property, ["name"])) {
             $this->{$property} = $value;
 
             if (!in_array($property, $this->resolved))

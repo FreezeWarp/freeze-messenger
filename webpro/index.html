@@ -52,86 +52,6 @@
 <body class="bg-light" style="max-width: 1600px; margin-left: auto; margin-right: auto;">
 
 <!-- Todo: make all modals templates -->
-<div id="modal-dynamicFull" class="modal" tabindex="-2" style="z-index: 1250">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="modal-dynamicConfirm" class="modal" tabindex="-3" style="z-index: 1500">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-danger">
-                <h5 class="modal-title">{{generalDialogues.confirm.title}}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" name="confirm">{{generalDialogues.confirm.buttons.confirm}}</button>
-                <button type="button" class="btn btn-secondary" name="cancel">{{generalDialogues.confirm.buttons.cancel}}</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="modal-dynamicInfo" class="modal" tabindex="-4" style="z-index: 2000">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-primary">
-                <h5 class="modal-title">{{generalDialogues.info.title}}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="modal-dynamicError" class="modal" tabindex="-5" style="z-index: 2000">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-warning">
-                <h5 class="modal-title">{{generalDialogues.error.title}}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="modal-dynamicException" class="modal" tabindex="-6" style="z-index: 2000">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-warning">
-                <h5 class="modal-title">{{generalDialogues.exception.title}}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-            </div>
-        </div>
-    </div>
-</div>
 
 <script id="modals-login" type="text/x-handlebars-template">
     <div id="modal-login" class="modal">
@@ -215,6 +135,87 @@
 </script>
 
 <script id="entry-template" type="text/x-handlebars-template">
+    <div id="modal-dynamicFull" class="modal" tabindex="-2" style="z-index: 1250">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-dynamicConfirm" class="modal" tabindex="-3" style="z-index: 1500">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title">{{generalDialogues.confirm.title}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" name="confirm">{{generalDialogues.confirm.buttons.confirm}}</button>
+                    <button type="button" class="btn btn-secondary" name="cancel">{{generalDialogues.confirm.buttons.cancel}}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-dynamicInfo" class="modal" tabindex="-4" style="z-index: 2000">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title">{{generalDialogues.info.title}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-dynamicError" class="modal" tabindex="-5" style="z-index: 2000">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">{{generalDialogues.error.title}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-dynamicException" class="modal" tabindex="-6" style="z-index: 2000">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">{{generalDialogues.exception.title}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-kick" class="modal">
         <form action="#" id="kickUserForm" method="post">
             <label for="userName">User</label>: <input type="text" name="userName" id="userName" required/><br/>
@@ -299,31 +300,8 @@
                                 <small class="form-text text-muted">{{fileUploadFileBlurb}}</small><br/>
                             </div>
 
-                            {{#if serverSettings.parentalControls.parentalEnabled}}
-                                <div>
-                                    <div class="input-group">
-                                        <span class="input-group-addon">{{fileUploadAgeLabel}}</span>
-                                        <select class="form-control" name="parentalAge">
-                                            {{#each serverSettings.parentalControls.parentalAges}}
-                                                <option value="{{this}}">{{lookup ../parentalAges this}}</option>
-                                            {{/each}}
-                                        </select>
-                                    </div>
-                                    <small class="form-text text-muted">{{fileUploadAgeBlurb}}</small><br />
-                                </div>
-
-                                <div>
-                                    <div name="parentalFlagsList">
-                                        {{#each serverSettings.parentalControls.parentalFlags}}
-                                        <label class="btn btn-secondary m-1">
-                                            <input type="checkbox" name="parentalFlags" value="{{this}}" />
-                                            {{lookup ../parentalFlags this}}
-                                        </label>
-                                        {{/each}}
-                                    </div>
-                                    <small class="form-text text-muted">{{fileUploadFlagsBlurb}}</small><br/>
-                                </div>
-                            {{/if}}
+                            <h3>{{fileUploadPreviewLegend}}</h3>
+                            <div id="uploadFileFormPreview"></div>
                         </div>
 
                         <div class="col-sm-auto">
@@ -338,9 +316,6 @@
                                 </thead>
                                 <tbody></tbody>
                             </table><br />
-
-                            <h3>{{fileUploadPreviewLegend}}</h3>
-                            <div id="uploadFileFormPreview"></div>
                         </div>
                     </div>
 
@@ -546,7 +521,7 @@
                                         class="btn btn-primary"
                                         id="icon_url"
                                         title="Upload File"
-                                        onclick="popup.room.insertDoc();"
+                                        onclick="window.openObjectInstance.insertDoc();"
                                         accesskey="u">
                                     <i class="fa fa-upload" aria-hidden="true"></i> {{room.messageBox.buttons.upload}}
                                 </button>
@@ -624,20 +599,63 @@ Pending Update
 </script>
 
 
+<script id="view-uploads-row" type="text/x-handlebars-template">
+    <div class="card">
+        <img class="card-img-top" src="{{serverSettings.installUrl}}file.php?sha256hash={{fileData.sha256hash}}&thumbnailWidth=200&thumbnailHeight=200" />
+        <div class="card-body">
+            <h4 class="card-title">{{fileData.fileName}}</h4>
+            <h6 class="card-subtitle mb-2 text-muted">{{fileData.fileSizeFormatted}}</h6>
+            <a href="#" class="card-link" onclick="fimApi.editUserOptions('edit', {
+                'avatar': window.serverSettings.installUrl + 'file.php?sha256hash={{fileData.sha256hash}}&thumbnailWidth=200&thumbnailHeight=200',
+            }, {
+                'end' : function(response) {
+                    if ('avatar' in response) {
+                        dia.error(response.avatar.string);
+                    }
+                    else {
+                        dia.info('{{uploads.actions.setAsAvatar.success}}');
+                    }
+                }
+            });">{{uploads.buttons.setAsAvatar}}</a>
+        </div>
+    </div>
+</script>
+
+<script id="view-uploads-emptyResultSet" type="text/x-handlebars-template">
+    <div class="card border-info">
+        <div class="card-body">
+            <h4 class="card-title">{{uploads.noResults.title}}</h4>
+            <p class="card-text">{{uploads.noResults.message}}</p>
+        </div>
+    </div>
+</script>
+
 <script id="view-uploads" type="text/x-handlebars-template">
 <div class="card mx-auto" style="max-width: 1200px;">
-    <table class="table table-striped center card-body">
-        <thead class="thead-default">
-        <tr>
-            <th>File</th>
-            <th>Size</th>
-            <th>Parental Info</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
+    <div class="card-header" align="center">
+        <div class="row">
+            <div class="col">
+                <button name="prevPage" class="btn btn-primary">{{uploads.buttons.previous}}</button>
+            </div>
+            <div class="col">
+                <button name="nextPage" class="btn btn-primary">{{uploads.buttons.next}}</button>
+            </div>
+        </div>
+    </div>
 
-        <tbody id="viewUploadsBody"></tbody>
-    </table>
+    <div class="card-body card-columns" id="uploadsTableBody">
+    </div>
+
+    <div class="card-header" align="center">
+        <div class="row">
+            <div class="col">
+                <button name="prevPage" class="btn btn-primary">{{uploads.buttons.previous}}</button>
+            </div>
+            <div class="col">
+                <button name="nextPage" class="btn btn-primary">{{uploads.buttons.next}}</button>
+            </div>
+        </div>
+    </div>
 </div>
 </script>
 

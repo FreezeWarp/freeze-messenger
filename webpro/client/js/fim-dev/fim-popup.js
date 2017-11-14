@@ -478,67 +478,6 @@ popup.prototype.settings = {
 
 
 
-
-/*** START View My Uploads ***/
-
-popup.prototype.uploads = {
-    init : function() {
-        fimApi.getFiles({
-            'userIds' : [window.userId]
-        }, {
-            'each': function(active) {
-                var parentalFlagsFormatted = [];
-
-                for (var i = 0; i < active.parentalFlags.length; i++) {
-                    if (active.parentalFlags[i]) parentalFlagsFormatted.push($l('parentalFlags.' + active.parentalFlags[i])); // Yes, this is a very weird line.
-                }
-
-                $('#viewUploadsBody').append(
-                    $('<tr>').append(
-                        $('<td align="center">').append(
-                            $('<img style="max-width: 200px; max-height: 200px;" />').attr('src', directory + 'file.php?' + $.param({
-                                'sha256hash': active.sha256hash,
-                                'thumbnailWidth': 200,
-                                'thumbnailHeight': 200
-                            }))
-                        ).append('<br />').append($('<span>').text(active.fileName))
-                    ).append(
-                        $('<td align="center">').text(active.fileSizeFormatted)
-                    ).append(
-                        $('<td align="center">').text($l('parentalAges.' + active.parentalAge))
-                            .append('<br />')
-                            .append(parentalFlagsFormatted.join(', '))
-                    ).append(
-                        $('<td align="center">').append(
-                            $('<button>').attr('class', 'btn btn-primary').click(function() {
-                                fimApi.editUserOptions('edit', {
-                                    'avatar': serverSettings.installUrl + "file.php?sha256hash=" + active.sha256hash + '&thumbnailWidth=200&thumbnailHeight=200',
-                                }, {
-                                    'end' : function(response) {
-                                        if ("avatar" in response) {
-                                            dia.error(response.avatar.string);
-                                        }
-                                        else {
-                                            dia.info('Your avatar has been updated. It will not appear in your old messages.');
-                                        }
-                                    }
-                                });
-                            }).text($l("uploads.setToAvatar")).prepend($('<i class="fa fa-picture-o" aria-hidden="true"></i> '))
-                        )
-                    )
-                );
-            },
-        });
-    }
-}
-
-/*** END View My Uploads ***/
-
-
-
-
-
-
 /*** START Create Room ***/
 
 popup.prototype.editRoom = {
@@ -981,7 +920,6 @@ popup.prototype.archive = {
             'messageTextSearch' : _this.options.searchText,
             'messageIdStart' : _this.options.firstMessage,
             'messageIdEnd' : _this.options.lastMessage,
-            'archive' : 1,
             'page' : _this.options.page
         }, {
             'reverseEach' : (_this.options.firstMessage ? true : false),

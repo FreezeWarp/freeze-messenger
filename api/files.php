@@ -38,6 +38,10 @@ $request = fim_sanitizeGPC('g', array(
         'filter' => 'int',
         'evaltrue' => true,
     ),
+
+    'page' => [
+        'cast' => 'int'
+    ]
 ));
 $database->accessLog('getFiles', $request);
 
@@ -51,7 +55,7 @@ $xmlData['files'] = array();
 /* Get Uploads from Database */
 $files = $database->getFiles(array(
     'userIds' => $request['users']
-))->getAsArray('fileId');
+), ['fileId' => 'asc'], 10, $request['page'])->getAsArray('fileId');
 
 
 

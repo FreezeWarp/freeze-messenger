@@ -74,30 +74,30 @@ popup.prototype.room.prototype.insertDoc = function() {
             $('#uploadFileForm').html($l('uploadErrors.notSupported'));
         }
         else {
-            $('#uploadFileForm').submit(() => {
+            $('#uploadFileForm').unbind('submit').bind('submit', () => {
                 let filesList = $('input#fileUpload[type="file"]').prop('files');
 
                 if (filesList.length == 0) {
                     dia.error('Please select a file to upload.');
-                    return false;
                 }
                 else {
                     $('#chatContainer').fileupload('add', {
                         files: filesList,
+                        formData : {
+                            fileName : filesList[0].name,
+                        }
                     });
 
                     $('#modal-insertDoc').modal('hide');
-
-                    return false;
                 }
+
+                return false;
             });
 
             /* Previewer for Files */
-            $('#fileUpload').bind('change', function() {
-                var reader = new FileReader(),
-                    reader2 = new FileReader();
+            $('#fileUpload').unbind('change').bind('change', function() {
+                let reader = new FileReader();
 
-                console.log('FileReader triggered.');
                 $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Redisable the submit button if it has been enabled prior.
 
                 if (this.files.length === 0) dia.error('No files selected!');
@@ -128,13 +128,8 @@ popup.prototype.room.prototype.insertDoc = function() {
                     else {
                         $('#uploadFileFormPreview').html('Loading Preview...');
 
-                        reader.readAsBinaryString(this.files[0]);
+                        reader.readAsDataURL(this.files[0]);
                         reader.onloadend = function() {
-                            fileContent = window.btoa(reader.result);
-                        };
-
-                        reader2.readAsDataURL(this.files[0]);
-                        reader2.onloadend = function() {
                             $('#uploadFileFormPreview').html(fim_messagePreview(window.serverSettings.fileUploads.fileContainers[filePartsLast], this.result));
                         };
 
@@ -150,13 +145,14 @@ popup.prototype.room.prototype.insertDoc = function() {
 
 
 popup.prototype.room.prototype.newMessage = function(roomId, messageId, messageText) {
-    if ($.inArray(messageId, this.messageIndex) > -1) { return; } // Double post hack
+    console.log("new message", roomId, messageId, messageText);
 
     if ($('#message' + messageId).length > 0) {
+        console.log("existing");
         $('#message' + messageId).replaceWith(messageText);
     }
     else {
-        var foundMatch = false;
+        let foundMatch = false;
         $('#messageList .messageLine').each(function() {
             if (window.settings.reversePostOrder) {
                 if ($('.messageText', this).attr('data-messageId') < messageId) {
@@ -182,19 +178,20 @@ popup.prototype.room.prototype.newMessage = function(roomId, messageId, messageT
                 $('#messageList').append(messageText);
             }
         }
+
+        // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
+        this.messageIndex.push(messageId); // Update the internal messageIndex array.
+        if (this.messageIndex.length >= 100) {
+            $('#message' + this.messageIndex[0]).remove();
+            this.messageIndex = this.messageIndex.slice(1,99);
+        }
     }
 
-
-    // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
-    this.messageIndex.push(messageId); // Update the internal messageIndex array.
-    if (this.messageIndex.length >= 100) {
-        $('#message' + this.messageIndex[0]).remove();
-        this.messageIndex = this.messageIndex.slice(1,99);
-    }
 
     // Scroll Down
     if (!window.settings.reversePostOrder)
         this.toBottom();
+
 
     // Blur Events
     if (this.windowBlurred) {
@@ -313,15 +310,17 @@ popup.prototype.room.prototype.init = function(options) {
         pasteZone : $('textarea#messageInput'),
         url: window.serverSettings.installUrl + 'api/editFile.php?' + $.param({
             "_action" : "create",
-            "uploadMethod" : "put",
-            "dataEncode" : "binary",
-            "fileName" : "pasteupload.png",
             "access_token" : window.sessionHash
         }),
-        type: 'PUT',
-        multipart: false,
-        send: (e, data) => {
-            data.url += ('&roomId=' + this.options.roomId);
+        paramName : 'file',
+        submit: (e, data) => {
+            console.log("send", data);
+            data.formData.roomId = this.options.roomId;
+
+            if (!("fileName" in data.formData)) {
+                data.formData.fileName = "pasteupload.png";
+            }
+
             return true;
         }
     });
@@ -333,10 +332,12 @@ popup.prototype.room.prototype.init = function(options) {
 
 
     // Send messages on form submit.
-    $('#sendForm').bind('submit', (() => {
+    $('#sendForm').on('submit', (() => {
         let message = $('textarea#messageInput').val();
 
-        if (message.length === 0) { dia.error('Please enter your message.'); }
+        if (message.length === 0) {
+            dia.error('Please enter your message.');
+        }
         else {
             this.sendMessage(message); // Send the messaage
             $('textarea#messageInput').val(''); // Clear the textbox
@@ -344,13 +345,6 @@ popup.prototype.room.prototype.init = function(options) {
 
         return false;
     }));
-
-    // Submit form on enter press.
-    $('textarea#messageInput').onEnter(function() {
-        $('#sendForm').submit();
-
-        return false;
-    });
 
 
     // Send user status pings
@@ -362,16 +356,22 @@ popup.prototype.room.prototype.init = function(options) {
         });
     }), 5 * 60 * 1000);
 
+
     // Detect form typing
     $('textarea#messageInput').on('keyup', fim_debounce(() => {
         fimApi.stoppedTyping(this.options.roomId);
         this.isTyping = false;
-    }, 2000)).on('keydown', () => {
-        if (!this.isTyping) {
+    }, 2000)).on('keydown', (e) => {
+        if (e.keyCode == 13 && !e.shiftKey) {
+            $('#sendForm').submit();
+            e.preventDefault();
+        }
+        else if (!this.isTyping) {
             this.isTyping = true;
             fimApi.startedTyping(this.options.roomId);
         }
     });
+
 
     // Send logoff event on window close.
     $(window).on('beforeunload', null, () => {
@@ -380,7 +380,7 @@ popup.prototype.room.prototype.init = function(options) {
 
 
     // Try to allow resizes of the messageInput. (Currently kinda broken.)
-    $('textarea#messageInput').mouseup(this.onWindowResize);
+    //$('textarea#messageInput').mouseup(this.onWindowResize);
 
 
     // Close any open notifications for this room
@@ -416,13 +416,37 @@ popup.prototype.room.prototype.init = function(options) {
                 $('#roomName').html(roomData.name); // Update the room name.
                 $('#topic').html(roomData.topic); // Update the room topic.
 
-                /*** Get Messages ***/
-                this.populateMessages();
+                // Clear the message list.
+                $('#messageList').html('');
+
+                window.requestSettings[this.options.roomId] = {
+                    lastMessage : null,
+                    firstRequest : true
+                };
+
+                // Get New Messages
+                fimApi.getMessages({
+                    'roomId': this.options.roomId,
+                }, {
+                    each: ((messageData) => {
+                        this.newMessage(Number(this.options.roomId), Number(messageData.id), fim_messageFormat(messageData, 'list'));
+                    }),
+                    end: (() => {
+                        if (window.requestSettings.serverSentEvents) {
+                            this.eventListener();
+                        }
+                        else {
+                            this.getMessagesFromFallback();
+                        }
+                    })
+                });
             }
 
             if (!(roomData.permissions.properties || roomData.permissions.grant)) {
                 $('#active-view-room #chatContainer button[name=editRoom]').hide();
             }
+
+            this.onWindowResize();
         }),
 
         exception : ((exception) => {
@@ -460,6 +484,7 @@ popup.prototype.room.prototype.init = function(options) {
 };
 
 popup.prototype.room.prototype.close = function() {
+    console.log("close started");
     fimApi.getActiveUsers({}, {
         timerId : 1,
         close : true
@@ -472,10 +497,15 @@ popup.prototype.room.prototype.close = function() {
     if (this.eventTimeout) {
         window.clearTimeout(this.eventTimeout);
     }
-    
+
     if (this.pingInterval) {
         window.clearInterval(this.pingInterval);
     }
+
+    $('#fileupload').fileupload('destroy');
+
+    $('textarea#messageInput').off('keyup').off('keydown');
+    $('#sendForm').off('submit');
 
     $(window).off('beforeunload');
     this.beforeUnload(this.options.roomId);
@@ -485,11 +515,9 @@ popup.prototype.room.prototype.close = function() {
 
 popup.prototype.room.prototype.setRoom = function(roomId) {
     if (this.options.roomId != roomId) {
-        this.beforeUnload(this.options.roomId);
-
-        this.init({
-            'roomId' : roomId
-        });
+        this.close();
+        this.options.roomId = roomId;
+        this.init();
     }
 };
 
@@ -500,12 +528,14 @@ popup.prototype.room.prototype.beforeUnload = function(roomId) {
 
 popup.prototype.room.prototype.eventListener = function() {
     this.roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
-    this.roomSource.onerror = () => {
+    this.roomSource.onerror = (() => {
         console.log("event source error");
-        this.roomSource.close();
-        this.roomSource = false;
+        if (this.roomSource) {
+            this.roomSource.close();
+            this.roomSource = false;
+        }
         this.getMessagesFromFallback();
-    };
+    });
 
     let eventHandler = ((callback) => {
         return ((event) => {
@@ -599,43 +629,6 @@ popup.prototype.room.prototype.getMessagesFromFallback = function() {
     return false;
 };
 
-
-popup.prototype.room.prototype.populateMessages = function() {
-    $(document).ready((() => {
-        // Clear the message list.
-        $('#messageList').html('');
-
-        window.requestSettings[this.options.roomId] = {
-            lastMessage : null,
-            firstRequest : true
-        };
-        this.messageIndex[this.options.roomId] = [];
-
-        // Get New Messages
-        if (this.options.roomId) {
-            fimApi.getMessages({
-                'roomId': this.options.roomId,
-            }, {
-                each: ((messageData) => {
-                    this.newMessage(Number(this.options.roomId), Number(messageData.id), fim_messageFormat(messageData, 'list'));
-                }),
-                end: (() => {
-                    if (window.requestSettings.serverSentEvents) {
-                        this.eventListener();
-                    }
-                    else {
-                        this.getMessagesFromFallback();
-                    }
-                })
-            });
-        }
-        else {
-            console.log('Not requesting messages; room undefined.');
-        }
-
-        this.onWindowResize();
-    }));
-};
 
 popup.prototype.room.prototype.sendMessage = function(message, ignoreBlock, flag) {
     if (!this.options.roomId) {

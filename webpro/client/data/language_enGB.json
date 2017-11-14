@@ -408,9 +408,6 @@
   "uploadNewFilePreview" : "Preview & Submit",
   "uploadNewFileSubmitButton" : "Upload",
   "uploadNewFileTitle" : "Upload New File",
-  "uploads" : {
-    "setToAvatar" : "Set to Avatar"
-  },
   "kicks" : {
     "userName" : "User",
     "kickedBy" : "Kicked By",
@@ -499,6 +496,22 @@
         "send" : "Send"
       },
       "placeholder" : "Enter your text."
+    }
+  },
+  "uploads" : {
+    "buttons" : {
+      "next" : "Next Page",
+      "previous" : "Previous Page",
+      "setAsAvatar" : "Set as avatar"
+    },
+    "actions" : {
+      "setAsAvatar" : {
+        "success" : "Your avatar has been updated."
+      }
+    },
+    "noResults" : {
+      "title" : "No Results Found",
+      "message" : "Have you uploaded any files yet?"
     }
   }
 }

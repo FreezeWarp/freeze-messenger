@@ -37,24 +37,25 @@ popup.prototype.room.prototype.insertDoc = function () {
             $('#uploadFileForm').html($l('uploadErrors.notSupported'));
         }
         else {
-            $('#uploadFileForm').submit(function () {
+            $('#uploadFileForm').unbind('submit').bind('submit', function () {
                 var filesList = $('input#fileUpload[type="file"]').prop('files');
                 if (filesList.length == 0) {
                     dia.error('Please select a file to upload.');
-                    return false;
                 }
                 else {
                     $('#chatContainer').fileupload('add', {
-                        files: filesList
+                        files: filesList,
+                        formData: {
+                            fileName: filesList[0].name
+                        }
                     });
                     $('#modal-insertDoc').modal('hide');
-                    return false;
                 }
+                return false;
             });
             /* Previewer for Files */
-            $('#fileUpload').bind('change', function () {
-                var reader = new FileReader(), reader2 = new FileReader();
-                console.log('FileReader triggered.');
+            $('#fileUpload').unbind('change').bind('change', function () {
+                var reader = new FileReader();
                 $('#imageUploadSubmitButton').attr('disabled', 'disabled').button({ disabled: true }); // Redisable the submit button if it has been enabled prior.
                 if (this.files.length === 0)
                     dia.error('No files selected!');
@@ -82,12 +83,8 @@ popup.prototype.room.prototype.insertDoc = function () {
                     }
                     else {
                         $('#uploadFileFormPreview').html('Loading Preview...');
-                        reader.readAsBinaryString(this.files[0]);
+                        reader.readAsDataURL(this.files[0]);
                         reader.onloadend = function () {
-                            fileContent = window.btoa(reader.result);
-                        };
-                        reader2.readAsDataURL(this.files[0]);
-                        reader2.onloadend = function () {
                             $('#uploadFileFormPreview').html(fim_messagePreview(window.serverSettings.fileUploads.fileContainers[filePartsLast], this.result));
                         };
                         $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
@@ -99,31 +96,30 @@ popup.prototype.room.prototype.insertDoc = function () {
     return false;
 };
 popup.prototype.room.prototype.newMessage = function (roomId, messageId, messageText) {
-    if ($.inArray(messageId, this.messageIndex) > -1) {
-        return;
-    } // Double post hack
+    console.log("new message", roomId, messageId, messageText);
     if ($('#message' + messageId).length > 0) {
+        console.log("existing");
         $('#message' + messageId).replaceWith(messageText);
     }
     else {
-        var foundMatch = false;
+        var foundMatch_1 = false;
         $('#messageList .messageLine').each(function () {
             if (window.settings.reversePostOrder) {
                 if ($('.messageText', this).attr('data-messageId') < messageId) {
                     $(messageText).insertBefore(this);
-                    foundMatch = true;
+                    foundMatch_1 = true;
                     return false; // break each
                 }
             }
             else {
                 if ($('.messageText', this).attr('data-messageId') > messageId) {
                     $(messageText).insertBefore(this);
-                    foundMatch = true;
+                    foundMatch_1 = true;
                     return false;
                 }
             }
         });
-        if (!foundMatch) {
+        if (!foundMatch_1) {
             if (window.settings.reversePostOrder) {
                 $('#messageList').prepend(messageText);
             }
@@ -131,12 +127,12 @@ popup.prototype.room.prototype.newMessage = function (roomId, messageId, message
                 $('#messageList').append(messageText);
             }
         }
-    }
-    // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
-    this.messageIndex.push(messageId); // Update the internal messageIndex array.
-    if (this.messageIndex.length >= 100) {
-        $('#message' + this.messageIndex[0]).remove();
-        this.messageIndex = this.messageIndex.slice(1, 99);
+        // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
+        this.messageIndex.push(messageId); // Update the internal messageIndex array.
+        if (this.messageIndex.length >= 100) {
+            $('#message' + this.messageIndex[0]).remove();
+            this.messageIndex = this.messageIndex.slice(1, 99);
+        }
     }
     // Scroll Down
     if (!window.settings.reversePostOrder)
@@ -255,15 +251,15 @@ popup.prototype.room.prototype.init = function (options) {
         pasteZone: $('textarea#messageInput'),
         url: window.serverSettings.installUrl + 'api/editFile.php?' + $.param({
             "_action": "create",
-            "uploadMethod": "put",
-            "dataEncode": "binary",
-            "fileName": "pasteupload.png",
             "access_token": window.sessionHash
         }),
-        type: 'PUT',
-        multipart: false,
-        send: function (e, data) {
-            data.url += ('&roomId=' + _this.options.roomId);
+        paramName: 'file',
+        submit: function (e, data) {
+            console.log("send", data);
+            data.formData.roomId = _this.options.roomId;
+            if (!("fileName" in data.formData)) {
+                data.formData.fileName = "pasteupload.png";
+            }
             return true;
         }
     });
@@ -272,7 +268,7 @@ popup.prototype.room.prototype.init = function (options) {
         e.preventDefault();
     });
     // Send messages on form submit.
-    $('#sendForm').bind('submit', (function () {
+    $('#sendForm').on('submit', (function () {
         var message = $('textarea#messageInput').val();
         if (message.length === 0) {
             dia.error('Please enter your message.');
@@ -283,11 +279,6 @@ popup.prototype.room.prototype.init = function (options) {
         }
         return false;
     }));
-    // Submit form on enter press.
-    $('textarea#messageInput').onEnter(function () {
-        $('#sendForm').submit();
-        return false;
-    });
     // Send user status pings
     fimApi.ping(this.options.roomId);
     this.pingInterval = window.setInterval((function () {
@@ -300,8 +291,12 @@ popup.prototype.room.prototype.init = function (options) {
     $('textarea#messageInput').on('keyup', fim_debounce(function () {
         fimApi.stoppedTyping(_this.options.roomId);
         _this.isTyping = false;
-    }, 2000)).on('keydown', function () {
-        if (!_this.isTyping) {
+    }, 2000)).on('keydown', function (e) {
+        if (e.keyCode == 13 && !e.shiftKey) {
+            $('#sendForm').submit();
+            e.preventDefault();
+        }
+        else if (!_this.isTyping) {
             _this.isTyping = true;
             fimApi.startedTyping(_this.options.roomId);
         }
@@ -311,7 +306,7 @@ popup.prototype.room.prototype.init = function (options) {
         _this.beforeUnload(_this.options.roomId);
     });
     // Try to allow resizes of the messageInput. (Currently kinda broken.)
-    $('textarea#messageInput').mouseup(this.onWindowResize);
+    //$('textarea#messageInput').mouseup(this.onWindowResize);
     // Close any open notifications for this room
     if (window.standard.notifications["room" + this.options.roomId])
         window.standard.notifications["room" + this.options.roomId].close();
@@ -336,12 +331,33 @@ popup.prototype.room.prototype.init = function (options) {
                 window.roomId = roomData.id;
                 $('#roomName').html(roomData.name); // Update the room name.
                 $('#topic').html(roomData.topic); // Update the room topic.
-                /*** Get Messages ***/
-                _this.populateMessages();
+                // Clear the message list.
+                $('#messageList').html('');
+                window.requestSettings[_this.options.roomId] = {
+                    lastMessage: null,
+                    firstRequest: true
+                };
+                // Get New Messages
+                fimApi.getMessages({
+                    'roomId': _this.options.roomId
+                }, {
+                    each: (function (messageData) {
+                        _this.newMessage(Number(_this.options.roomId), Number(messageData.id), fim_messageFormat(messageData, 'list'));
+                    }),
+                    end: (function () {
+                        if (window.requestSettings.serverSentEvents) {
+                            _this.eventListener();
+                        }
+                        else {
+                            _this.getMessagesFromFallback();
+                        }
+                    })
+                });
             }
             if (!(roomData.permissions.properties || roomData.permissions.grant)) {
                 $('#active-view-room #chatContainer button[name=editRoom]').hide();
             }
+            _this.onWindowResize();
         }),
         exception: (function (exception) {
             if (exception.string === 'idNoExist') {
@@ -375,6 +391,7 @@ popup.prototype.room.prototype.init = function (options) {
     });
 };
 popup.prototype.room.prototype.close = function () {
+    console.log("close started");
     fimApi.getActiveUsers({}, {
         timerId: 1,
         close: true
@@ -388,16 +405,18 @@ popup.prototype.room.prototype.close = function () {
     if (this.pingInterval) {
         window.clearInterval(this.pingInterval);
     }
+    $('#fileupload').fileupload('destroy');
+    $('textarea#messageInput').off('keyup').off('keydown');
+    $('#sendForm').off('submit');
     $(window).off('beforeunload');
     this.beforeUnload(this.options.roomId);
     $(window).off('resize', null, this.onWindowResize);
 };
 popup.prototype.room.prototype.setRoom = function (roomId) {
     if (this.options.roomId != roomId) {
-        this.beforeUnload(this.options.roomId);
-        this.init({
-            'roomId': roomId
-        });
+        this.close();
+        this.options.roomId = roomId;
+        this.init();
     }
 };
 popup.prototype.room.prototype.beforeUnload = function (roomId) {
@@ -406,12 +425,14 @@ popup.prototype.room.prototype.beforeUnload = function (roomId) {
 popup.prototype.room.prototype.eventListener = function () {
     var _this = this;
     this.roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
-    this.roomSource.onerror = function () {
+    this.roomSource.onerror = (function () {
         console.log("event source error");
-        _this.roomSource.close();
-        _this.roomSource = false;
+        if (_this.roomSource) {
+            _this.roomSource.close();
+            _this.roomSource = false;
+        }
         _this.getMessagesFromFallback();
-    };
+    });
     var eventHandler = (function (callback) {
         return (function (event) {
             _this.options.lastEvent = Math.max(Number(_this.options.lastEvent), Number(event.id));
@@ -488,40 +509,6 @@ popup.prototype.room.prototype.getMessagesFromFallback = function () {
         console.log('Not requesting messages; room undefined.');
     }
     return false;
-};
-popup.prototype.room.prototype.populateMessages = function () {
-    var _this = this;
-    $(document).ready((function () {
-        // Clear the message list.
-        $('#messageList').html('');
-        window.requestSettings[_this.options.roomId] = {
-            lastMessage: null,
-            firstRequest: true
-        };
-        _this.messageIndex[_this.options.roomId] = [];
-        // Get New Messages
-        if (_this.options.roomId) {
-            fimApi.getMessages({
-                'roomId': _this.options.roomId
-            }, {
-                each: (function (messageData) {
-                    _this.newMessage(Number(_this.options.roomId), Number(messageData.id), fim_messageFormat(messageData, 'list'));
-                }),
-                end: (function () {
-                    if (window.requestSettings.serverSentEvents) {
-                        _this.eventListener();
-                    }
-                    else {
-                        _this.getMessagesFromFallback();
-                    }
-                })
-            });
-        }
-        else {
-            console.log('Not requesting messages; room undefined.');
-        }
-        _this.onWindowResize();
-    }));
 };
 popup.prototype.room.prototype.sendMessage = function (message, ignoreBlock, flag) {
     if (!this.options.roomId) {

@@ -37,11 +37,6 @@
  * @param string fileMd5Hash - The MD5 hash of the file, used for checks.
  * @param string fileSha256Hash - The SHA256 hash of the file, used for checks.
  * @param int roomId - If the image is to be directly posted to a room, specify the room ID here. This may be required, depending on server settings.
- * @param string dataEncode - How the data is encoded, either:
- ** 'base64' - Data is encoded as Base64.
- ** 'binary' - Data is not encoded. [[Unstable.]]
- * @param string parentalAge - The parental age corresponding to the file. If the age is not recognised, a server-defined default will be used.
- * @param csv parentalFlags - A comma-separated list of parental flags that apply to the file. If a flag is not recognised, it will be dropped. If omitted, a server-defined default will be used.
  * @param int fileId - If editing, deleting, or undeleting the file, this is the ID of the file.
  *
  * =Errors=
@@ -89,12 +84,6 @@ $requestHead = fim_sanitizeGPC('g', array(
             'raw', 'put',
         ),
     ),
-    'dataEncode' => array(
-        'require' => true,
-        'valid' => array(
-            'base64', 'binary',
-        ),
-    ),
 ));
 
 /* If the upload method is put, we read directly from php://input */
@@ -104,10 +93,6 @@ $request = fim_sanitizeGPC(
         'fileName' => array(
             'require' => true,
             'trim' => true,
-        ),
-    
-        'fileData' => array(
-            'default' => '',
         ),
     
         'fileSize' => array(
@@ -121,20 +106,8 @@ $request = fim_sanitizeGPC(
         'crc32bhash' => array(),
     
         'roomId' => array(
-            'default' => false,
+            'require' => !fimConfig::$allowOrphanFiles,
             'cast' => 'roomId',
-        ),
-    
-        'parentalAge' => array(
-            'cast' => 'int',
-            'valid' => fimConfig::$parentalAges,
-            'default' => fimConfig::$parentalAgeDefault,
-        ),
-    
-        'parentalFlags' => array(
-            'default' => fimConfig::$parentalFlagsDefault,
-            'cast' => 'list',
-            'valid' => fimConfig::$parentalFlags,
         ),
     
         'fileId' => array(
@@ -161,8 +134,6 @@ $database->startTransaction();
 /* Start Processing */
 switch ($requestHead['_action']) {
 case 'edit': case 'create':
-    $parentalFileId = 0;
-
     if ($requestHead['_action'] === 'create') {
         /* Get Room Data, if Applicable */
         if ($request['roomId']) $roomData = fimRoomFactory::getFromId($request['roomId']);
@@ -183,38 +154,31 @@ case 'edit': case 'create':
             throw new fimError('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
 
 
-        /* PUT Support (TODO) */
+        /* PUT Support */
         if ($requestHead['uploadMethod'] === 'put') {
             $putResource = fopen("php://input", "r"); // file data is from stdin
-            $request['fileData'] = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
+            $fileData = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
 
             while ($fileContents = fread($putResource, fimConfig::$fileUploadChunkSize)) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
-                $request['fileData'] .= $fileContents;
+                $fileData .= $fileContents;
             }
 
             fclose($putResource);
         }
-
-
-        /* Verify the Data, Preprocess */
-        switch($requestHead['dataEncode']) {
-            case 'base64': $rawData = base64_decode($request['fileData']); break;
-            case 'binary': $rawData = $request['fileData'];                break; // Binary is unlikely to work unless using the PUT method.
-            default:      throw new Exception('badEncoding');      break;
+        else {
+            $fileData = file_get_contents($_FILES['file']['tmp_name']);
         }
 
 
         /* Verify Against Empty Data */
         if (!strlen($request['fileName']))
             throw new fimError('badName', 'The filename is not valid.'); // This error may be expanded in the future.
-        if (!strlen($request['fileData']))
+        if (!strlen($fileData))
             throw new fimError('emptyData', 'No file contents were received.');
 
 
         /* Create the File Object */
-        $file = new fimFile($request['fileName'], $rawData);
-        $file->parentalAge = $request['parentalAge'];
-        $file->parentalFlags = $request['parentalFlags'];
+        $file = new fimFile($request['fileName'], $fileData);
 
 
         /* Verify Basic File Object Parameters */

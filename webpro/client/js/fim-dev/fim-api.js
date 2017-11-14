@@ -34,7 +34,7 @@ var fimApi = function (directory) {
                 requestSettings.end(firstElement, json.metadata);
             }
             catch (e) {
-                console.log("Failed to parse information: " + json);
+                console.log("Failed to parse information: ", json, e);
             }
         };
     };
@@ -256,8 +256,7 @@ fimApi.prototype.getMessages = function (params, requestSettings) {
                 'messageIdEnd': null,
                 'messageIdStart': null,
                 'page': null,
-                'messageTextSearch': null,
-                'archive': false
+                'messageTextSearch': null
             }),
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
@@ -358,9 +357,10 @@ fimApi.prototype.getUnreadMessages = function (params, requestSettings) {
 fimApi.prototype.getFiles = function (params, requestSettings) {
     var _this = this;
     params = this.mergeDefaults(params, {
-        'access_token': this.lastSessionHash,
-        'userIds': '',
-        'fileIds': ''
+        access_token: this.lastSessionHash,
+        userIds: [],
+        fileIds: [],
+        page: 0
     });
     requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
@@ -530,7 +530,7 @@ fimApi.prototype.unkickUser = function (userId, roomId, requestSettings) {
 };
 fimApi.prototype.markMessageRead = function (roomId, requestSettings) {
     var _this = this;
-    params = {
+    var params = {
         'access_token': this.lastSessionHash,
         'roomId': roomId
     };

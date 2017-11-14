@@ -662,7 +662,7 @@ class fimDatabase extends DatabaseSQL
      *
      * @TODO: Test filters for other file properties.
      */
-    public function getFiles($options = array(), $sort = array('fileId' => 'asc'), $limit = false, $page = false)
+    public function getFiles($options = array(), $sort = array('fileId' => 'asc'), $limit = 10, $page = 0)
     {
         $options = $this->argumentMerge(array(
             'userIds'         => array(),

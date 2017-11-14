@@ -9,6 +9,7 @@ declare var fim_setHashParameter : any;
 declare var fim_getHandlebarsPhrases : any;
 declare var windowDraw : any;
 declare var Handlebars : any;
+declare var popup : any;
 
 popup.prototype.rooms = function() {
     this.options = {

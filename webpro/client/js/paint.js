@@ -88,34 +88,30 @@ function fim_getHandlebarsPhrases(extra) {
 
 var openObjectInstance;
 function fim_openView(viewName, options) {
-    var objectInstance = (openObjectInstance ? openObjectInstance : {});
-
-
-    if (typeof popup[viewName] === "function") {
-        objectInstance = new popup[viewName]();
-    }
-    else if (typeof popup[viewName] === "object") {
-        objectInstance = popup[viewName];
-    }
-    else {
-        throw "View is invalid type.";
-    }
-
-
     if ($('.fim-activeView').attr('id') == 'active-view-' + viewName) {
         jQuery.each(options, function(name, value) {
             var setterName = "set" + name.charAt(0).toUpperCase() + name.slice(1);
 
-            if (typeof objectInstance[setterName] != "undefined") {
+            if (typeof openObjectInstance[setterName] != "undefined") {
                 openObjectInstance[setterName](value);
             }
         });
 
-        if (typeof objectInstance.retrieve != "undefined")
+        if (typeof openObjectInstance.retrieve != "undefined")
             openObjectInstance.retrieve();
     }
 
     else {
+        if (typeof popup[viewName] === "function") {
+            openObjectInstance = new popup[viewName]();
+        }
+        else if (typeof popup[viewName] === "object") {
+            openObjectInstance = popup[viewName];
+        }
+        else {
+            throw "View is invalid type.";
+        }
+
         tag = $('#view-' + viewName);
 
         if (tag.length > 0) {
@@ -124,25 +120,23 @@ function fim_openView(viewName, options) {
 
             $('#active-view-' + viewName).addClass('fim-activeView');
 
-            objectInstance.init(options); // transitional; TODO: remove
+            openObjectInstance.init(options); // transitional; TODO: remove
 
             jQuery.each(options, function(name, value) {
                 var setterName = "set" + name.charAt(0).toUpperCase() + name.slice(1);
 
-                if (typeof objectInstance[setterName] != "undefined") {
-                    objectInstance[setterName](value);
+                if (typeof openObjectInstance[setterName] != "undefined") {
+                    openObjectInstance[setterName](value);
                 }
             });
 
-            if (typeof objectInstance.retrieve != "undefined")
-                objectInstance.retrieve();
+            if (typeof openObjectInstance.retrieve != "undefined")
+                openObjectInstance.retrieve();
         }
         else {
             throw "Unknown view.";
         }
     }
-
-    openObjectInstance = objectInstance;
 }
 
 function fim_closeView() {
@@ -252,7 +246,7 @@ function fim_hideLoader() {
 
 function fim_messagePreview(container, content) {
     switch (container) {
-        case 'image': return '<img src="' + content + '" style="max-height: 200px; max-width: 200px;" />'; break;
+        case 'image': return '<img src="' + content + '" class="img-fluid"/>'; break;
         case 'video': return '<video src="' + content + '" style="max-height: 200px; max-width: 200px;">Video Preview Not Supported</video>'; break;
         case 'audio': return '<audio src="' + content + '" style="max-height: 200px; max-width: 200px;">Audio Preview Not Supported</video>'; break;
         case 'text': return 'No Preview Available'; break;
@@ -369,6 +363,8 @@ function fim_formatAsUrl(url) {
  * @copyright Joseph T. Parsons 2017
  */
 function fim_messageFormat(json, format) {
+
+
     var data,
         text = json.text,
         messageTime = json.time,
@@ -380,20 +376,11 @@ function fim_messageFormat(json, format) {
 
 
     text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
-    text = text.replace(/(file\.php\?sha256hash\=[a-f0-9]{64})/, function ($1) {
-        // The usage of mergeDefaults here is a somewhat lazy way of unsetting the attributes if they are null (thus, not sending them at all, as opposed to sending them empty).
-        return ($1 + "&" + $.param(fimApi.mergeDefaults({},
-            {
-                'parentalAge' : window.activeLogin.userData.parentalAge ? window.activeLogin.userData.parentalAge : null,
-                'parentalFlags' : window.activeLogin.userData.parentalFlags ? window.activeLogin.userData.parentalFlags : null,
-            }
-        )));
-    });
 
 
     switch (flag) {
         case 'source': text = fim_youtubeParse(text); break; // Youtube, etc.
-        case 'image': text = fim_formatAsImage(text); break; // // Image; We append the parentalAge flags regardless of an images source. It will potentially allow for other sites to use the same format (as far as I know, I am the first to implement the technology, and there are no related standards.)
+        case 'image': text = fim_formatAsImage(text); break; // // Image
         case 'video': text = fim_formatAsVideo(text) ; break; // Video
         case 'audio': text = fim_formatAsAudio(text); break; // Audio
         case 'email': text = fim_formatAsEmail(text); break; // Email Link
@@ -916,7 +903,17 @@ $.when(
             dia.confirm({
                 text : 'Are you sure you want to delete this message?',
                 'true' : function() {
-                    standard.deleteMessage(roomId, messageId);
+                    fimApi.deleteMessage(roomId, messageId, {
+                        'end' : function() {
+                            $.notify({"message" : "The message was deleted."}, {
+                                type: "success",
+                                placement: {
+                                    from: 'top',
+                                    align: 'middle'
+                                },
+                            });
+                        }
+                    });
                 }
             });
         };
@@ -941,14 +938,14 @@ $.when(
                 delete : {
                     name : 'Delete',
                     callback: function() {
-                        contextAction_msgDelete($(this).attr('data-roomid'), $(this).attr('data-messageid'))
+                        contextAction_msgDelete($(this).attr('data-roomId'), $(this).attr('data-messageid'))
                     }
                 },
 
                 link : {
                     name : 'Link',
                     callback: function() {
-                        contextAction_msgLink($(this).attr('data-roomid'), $(this).attr('data-messageid'))
+                        contextAction_msgLink($(this).attr('data-roomId'), $(this).attr('data-messageid'))
                     }
                 },
 
@@ -971,14 +968,14 @@ $.when(
                 delete : {
                     name : 'Delete',
                     callback: function() {
-                        contextAction_msgDelete($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                        contextAction_msgDelete($(this).closest('.messageText').attr('data-roomId'), $(this).closest('.messageText').attr('data-messageid'))
                     }
                 },
 
                 link : {
                     name : 'Link',
                     callback: function() {
-                        contextAction_msgLink($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                        contextAction_msgLink($(this).closest('.messageText').attr('data-roomId'), $(this).closest('.messageText').attr('data-messageid'))
                     }
                 },
 
@@ -1006,7 +1003,7 @@ $.when(
                                 }), $('<br>'), $('<br>'), $('<input>').attr({
                                     type : 'text',
                                     name : 'url',
-                                    value : url.replace(/&parentalAge=[^\&]*/, '').replace(/&parentalFlag[]=[^\&]*/, ''),
+                                    value : url,
                                     style : 'width: 100%'
                                 })).prop('outerHTML'),
                             width : 800,
@@ -1027,15 +1024,15 @@ $.when(
                 delete : {
                     name : 'Delete',
                     callback: function() {
-                        contextAction_msgDelete($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                        contextAction_msgDelete($(this).closest('.messageText').attr('data-roomId'), $(this).closest('.messageText').attr('data-messageid'))
                     }
                 },
 
                 link : {
                     name : 'Link',
                     callback: function() {
-                        console.log($(this), $(this).closest('.messageText'), $(this).closest('.messageText').attr('data-roomid'))
-                        contextAction_msgLink($(this).closest('.messageText').attr('data-roomid'), $(this).closest('.messageText').attr('data-messageid'))
+                        console.log($(this), $(this).closest('.messageText'), $(this).closest('.messageText').attr('data-roomId'))
+                        contextAction_msgLink($(this).closest('.messageText').attr('data-roomId'), $(this).closest('.messageText').attr('data-messageid'))
                     }
                 },
 
