@@ -16,10 +16,6 @@
 $apiRequest = true;
 require('global.php');
 
-if (!fimConfig::$serverSentEvents) {
-    die('Not Supported');
-}
-else {
     /* Possibly Helpful:
 	ini_set('output_buffering', 'off');
 	ini_set('zlib.output_compression', false);
@@ -57,6 +53,10 @@ else {
             'cast' => 'bool'
         )
     ));
+
+    if (!fimConfig::$serverSentEvents && !$request['fallback']) {
+        new fimError('fallbackMandatory', 'Fallback mode is required on this server.');
+    }
 
     if ($request['streamType'] === 'room') {
         if (!($database->hasPermission($user, new fimRoom($request['queryId'])) & fimRoom::ROOM_PERMISSION_VIEW))
@@ -96,7 +96,6 @@ else {
             fim_flush();
         });
     }
-}
 
 if (!$request['fallback']) {
     echo "retry: 0\n";
