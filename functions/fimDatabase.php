@@ -1763,7 +1763,7 @@ class fimDatabase extends DatabaseSQL
      *
      * @return bool|void
      */
-    public function createSocialGroup($groupName, $groupAvatar) {
+    public function createSocialGroup($groupName, $groupAvatar = '') {
         return $this->upsert($this->sqlPrefix . 'socialGroups', [
             'name' => $groupName
         ], [
