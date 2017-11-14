@@ -257,7 +257,7 @@ class fimRoom extends fimDynamicObject {
         if (is_int($roomData))
             $this->set('id', $roomData);
 
-        elseif (is_string($roomData) && $this->isPrivateRoomId($roomData))
+        elseif (is_string($roomData) && ($this->isPrivateRoomId($roomData) || ctype_digit($roomData)))
             $this->set('id', $roomData);
 
         elseif (is_array($roomData))
