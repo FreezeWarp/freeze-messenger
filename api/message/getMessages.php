@@ -44,11 +44,6 @@ $request = fim_sanitizeGPC('g', [
         'cast'    => 'bool',
     ],
 
-    'archive' => [
-        'default' => false,
-        'cast'    => 'bool',
-    ],
-
     'noping' => [
         'default' => false,
         'cast'    => 'bool',
@@ -110,9 +105,6 @@ else {
     /* Process Ping */
     if (!$request['noping'])
         $database->setUserStatus($room->id);
-
-    //if (!$request['archive'])
-    //    $database->markMessageRead($room->id, $user->id);
 
 
     /* Get Messages from Database */
