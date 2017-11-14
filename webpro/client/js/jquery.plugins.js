@@ -18715,24 +18715,6 @@
 
 
 
-
-
-(function($) {
-    $.fn.onEnter = function(func) {
-        this.bind('keypress', function(e) {
-            if (e.keyCode == 13 && !e.shiftKey) {
-                func.apply(this, [e]);
-                e.preventDefault();
-            }
-        });
-        return this;
-    };
-})(jQuery);
-
-
-
-
-
 // ######################################################################################################### //
 /* Start jQuery Cookie Extension */
 /**
