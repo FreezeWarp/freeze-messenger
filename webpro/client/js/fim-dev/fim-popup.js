@@ -95,7 +95,7 @@ popup.prototype.viewStats = function() {
             jQuery.each(room.users, function(userId, user) {
                 $('table#viewStats > tbody > tr').eq(i).append(
                     $('<td>').append(
-                        fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true),
+                        fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id)),
                         $('<span>').text('(' + user.messageCount + ')')
                     )
                 );

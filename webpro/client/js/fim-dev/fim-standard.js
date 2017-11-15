@@ -194,7 +194,7 @@ standard.prototype.missedMessageHandler = function (message) {
             });
         }
         $('#missedMessage' + message.roomId.replace(',', '\\,')).replaceWith($('<span>').text('New message from ')
-            .append(fim_buildUsernameTag($('<strong>'), message.senderId, fim_getUsernameDeferred(message.senderId), true))
+            .append(fim_buildUsernameTag($('<strong>'), message.senderId, fim_getUsernameDeferred(message.senderId)))
             .append(' has been made in ')
             .append(fim_buildRoomNameTag($('<strong>'), message.roomId, fim_getRoomNameDeferred(message.roomId)))
             .append(message.missedMessages ? $('<span>').text('(Total unread messages: ' + message.missedMessages + ')') : ''));

@@ -453,7 +453,7 @@ function fim_messageFormat(json, format) {
                 'id': "archiveMessage' + messageId + '"
             }).append(
                 $('<td>').append(
-                    fim_buildUsernameTag($('<span class="userName userNameTable">'), userId, userNameDeferred, true)
+                    fim_buildUsernameTag($('<span class="userName userNameTable">'), userId, userNameDeferred)
                 )
             ).append(
                 $('<td>').text(fim_dateFormat(messageTime))
@@ -482,7 +482,7 @@ function fim_messageFormat(json, format) {
                 'class': 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
             }).append(
                 $('<span class="usernameDate">').append(
-                    fim_buildUsernameTag($('<span>'), userId, userNameDeferred)
+                    fim_buildUsernameTag($('<span>'), userId, userNameDeferred, settings.showAvatars, !settings.showAvatars)
                 ).append(
                     !settings.showAvatars ?
                         $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(fim_dateFormat(messageTime)))
@@ -497,7 +497,13 @@ function fim_messageFormat(json, format) {
     return data;
 }
 
-function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
+function fim_buildUsernameTag(tag, userId, deferred, includeAvatar, includeUsername) {
+    if (includeAvatar == undefined)
+        includeAvatar = true;
+    if (includeUsername == undefined)
+        includeUsername = true;
+
+
     $.when(deferred).then(function(pairs) {
         var userName = pairs[userId].name,
             userNameFormat = pairs[userId].nameFormat,
@@ -505,21 +511,23 @@ function fim_buildUsernameTag(tag, userId, deferred, bothNameAvatar) {
             style = settings.disableFormatting ? '' : pairs[userId].messageFormatting;
 
         tag.attr({
-            'class': 'userName' + (settings.showAvatars || bothNameAvatar ? ' userNameAvatar' : ''),
-            'style': (!settings.showAvatars ? userNameFormat : ''),
+            'class': 'userName' + (includeAvatar ? ' userNameAvatar' : ''),
+            'style': (includeUsername ? userNameFormat : ''),
             'data-userId': userId,
             'data-userName': userName,
             'data-avatar': avatar,
             'tabindex': 1000
         }).append(
-            settings.showAvatars || bothNameAvatar ?
-                $('<img>').attr({
+            includeAvatar
+                ? $('<img>').attr({
                     'alt': userName,
                     'src': avatar ? avatar : 'client/images/blankperson.png'
-                }) : ''
+                })
+                : ''
         ).append(
-            !settings.showAvatars || bothNameAvatar ?
-                $('<span>').text(userName) : ''
+            includeUsername
+                ? $('<span>').text(userName)
+                : ''
         );
 
         tag.popover({

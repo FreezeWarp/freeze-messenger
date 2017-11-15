@@ -152,9 +152,29 @@ table#fileUploadInfo td {
   max-height: 24px;
   margin-right: 4px;
 }
-.input-group .userNameAvatar > img {
-    max-width: 16px;
-    max-height: 16px;
+
+.form-control-sm, .input-group-sm>.form-control, .input-group-sm>.input-group-addon, .input-group-sm>.input-group-btn>.btn {
+    line-height: 1.5rem;
+}
+.input-group-addon.input-group-addon-img {
+    border: 0;
+    height: auto;
+    vertical-align: top;
+    padding: 0;
+}
+.input-group-addon > .userNameAvatar > img {
+    border-radius: .125rem;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+
+    min-width: initial;
+    max-width: initial;
+    max-height: initial;
+
+    height: 0; /* If the below doesn't work, don't display the image at all. */
+    height: calc(2rem + 2px);
+
+    margin-right: 0;
 }
 
 .embedImage {

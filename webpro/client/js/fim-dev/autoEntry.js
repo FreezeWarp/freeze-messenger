@@ -79,14 +79,19 @@ autoEntry.prototype = {
                 $("#" + _this.options.name + "Bridge").val('');
             }
             else {
-                var nameTag = $('<span>');
-
                 // this whole thing is TODO; I just wanna get a proof-of-concept
-                if (_this.options.name == "allowedUsers" || _this.options.name == "moderators") {
-                    nameTag = fim_buildUsernameTag(nameTag, id, fim_getUsernameDeferred(id), true);
+                var nameTag = $('<span>');
+                if (_this.options.list === "users") {
+                    nameTag = fim_buildUsernameTag(nameTag, id, fim_getUsernameDeferred(id), false, true);
                 }
                 else {
                     nameTag.text(name);
+                }
+
+                var avatarTag = false;
+                if (_this.options.list === "users") {
+                    avatarTag = $('<span>');
+                    avatarTag = fim_buildUsernameTag(avatarTag, id, fim_getUsernameDeferred(id), true, false);
                 }
 
                 $("#" + _this.options.name).val($("#" + _this.options.name).val() + "," + id);
@@ -112,7 +117,15 @@ autoEntry.prototype = {
                         $('<span>').attr({
                             'class' : 'input-group-addon',
                             'style' : 'display: inline-block'
-                        }).append(nameTag)
+                        }).append(nameTag),
+
+                        (avatarTag
+                            ? $('<span>').attr({
+                                'class' : 'input-group-addon input-group-addon-img',
+                                'style' : 'display: inline-block'
+                            }).append(avatarTag)
+                            : ''
+                        )
                     )
                 );
 
