@@ -328,7 +328,7 @@ class fimConfig {
     public static $imageTypesAvatar = array(IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG);
 
     /** @var array Thumbnail of these ratios will be created when an image is uploaded. */
-    public static $imageThumbnails = array(.1, .25, .5);
+    public static $imageThumbnails = array(.5, .25, .1);
 
     /** @var int Images larger than this height will not have thumbnails generated. */
     public static $imageResizeMaxHeight = 10000;

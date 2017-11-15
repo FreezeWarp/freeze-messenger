@@ -2216,6 +2216,10 @@ class fimDatabase extends DatabaseSQL
                     $newHeight = $resizeFactor * $height;
 
                     $imageThumb = imagecreatetruecolor($newWidth, $newHeight);
+                    //imagealphablending($imageThumb,false);
+                    //imagesavealpha($imageThumb,true);
+                    $transparent = imagecolorallocatealpha($imageThumb, 255, 255, 255, 0);
+                    imagefilledrectangle($imageThumb, 0, 0, $newWidth, $newHeight, $transparent);
                     imagecopyresampled($imageThumb, $imageOriginal, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
 
                     ob_start();

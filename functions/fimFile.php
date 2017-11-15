@@ -76,7 +76,7 @@ class fimFile {
 
             switch ($property) {
                 case 'extension':
-                    $extension = pathinfo($this->name, PATHINFO_EXTENSION);
+                    $extension = strtolower(pathinfo($this->name, PATHINFO_EXTENSION));
 
                     $this->extension = fimConfig::$extensionChanges[$this->__get('extension')] ?? $extension;
                 break;

@@ -60,6 +60,7 @@ popup.prototype.room.prototype.insertDoc = function() {
             window.serverSettings.fileUploads.extensionChangesReverse[extension].push(extension);
         });
 
+        $('table#fileUploadInfo tbody').html('');
         jQuery.each(window.serverSettings.fileUploads.allowedExtensions, function(index, extension) {
             var maxFileSize = window.serverSettings.fileUploads.sizeLimits[extension],
                 fileContainer = window.serverSettings.fileUploads.fileContainers[extension],
@@ -106,11 +107,11 @@ popup.prototype.room.prototype.insertDoc = function() {
                     console.log('FileReader started.');
 
                     // File Information
-                    fileName = this.files[0].name,
+                    var fileName = this.files[0].name,
                         fileSize = this.files[0].size,
                         fileContent = '',
                         fileParts = fileName.split('.'),
-                        filePartsLast = fileParts[fileParts.length - 1];
+                        filePartsLast = fileParts[fileParts.length - 1].toLowerCase();
 
                     // If there are two identical file extensions (e.g. jpg and jpeg), we only process the primary one. This converts a secondary extension to a primary.
                     if (filePartsLast in window.serverSettings.fileUploads.extensionChanges) {
@@ -528,8 +529,8 @@ popup.prototype.room.prototype.beforeUnload = function(roomId) {
 
 popup.prototype.room.prototype.eventListener = function() {
     this.roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
-    this.roomSource.onerror = (() => {
-        console.log("event source error");
+    this.roomSource.onerror = ((e) => {
+        console.log("event source error", e);
         if (this.roomSource) {
             this.roomSource.close();
             this.roomSource = false;

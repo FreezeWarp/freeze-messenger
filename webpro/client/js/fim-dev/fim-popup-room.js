@@ -28,6 +28,7 @@ popup.prototype.room.prototype.insertDoc = function () {
                 window.serverSettings.fileUploads.extensionChangesReverse[extension] = [extension];
             window.serverSettings.fileUploads.extensionChangesReverse[extension].push(extension);
         });
+        $('table#fileUploadInfo tbody').html('');
         jQuery.each(window.serverSettings.fileUploads.allowedExtensions, function (index, extension) {
             var maxFileSize = window.serverSettings.fileUploads.sizeLimits[extension], fileContainer = window.serverSettings.fileUploads.fileContainers[extension], fileExtensions = window.serverSettings.fileUploads.extensionChangesReverse[extension];
             $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : extension) + '</td><td>' + $l('fileContainers.' + fileContainer) + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
@@ -64,11 +65,7 @@ popup.prototype.room.prototype.insertDoc = function () {
                 else {
                     console.log('FileReader started.');
                     // File Information
-                    fileName = this.files[0].name,
-                        fileSize = this.files[0].size,
-                        fileContent = '',
-                        fileParts = fileName.split('.'),
-                        filePartsLast = fileParts[fileParts.length - 1];
+                    var fileName = this.files[0].name, fileSize = this.files[0].size, fileContent = '', fileParts = fileName.split('.'), filePartsLast = fileParts[fileParts.length - 1].toLowerCase();
                     // If there are two identical file extensions (e.g. jpg and jpeg), we only process the primary one. This converts a secondary extension to a primary.
                     if (filePartsLast in window.serverSettings.fileUploads.extensionChanges) {
                         filePartsLast = window.serverSettings.fileUploads.extensionChanges[filePartsLast];
@@ -425,8 +422,8 @@ popup.prototype.room.prototype.beforeUnload = function (roomId) {
 popup.prototype.room.prototype.eventListener = function () {
     var _this = this;
     this.roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
-    this.roomSource.onerror = (function () {
-        console.log("event source error");
+    this.roomSource.onerror = (function (e) {
+        console.log("event source error", e);
         if (_this.roomSource) {
             _this.roomSource.close();
             _this.roomSource = false;

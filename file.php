@@ -97,6 +97,7 @@ if ($includeThumbnails) {
         }
 
         $thumbnail = $database->select([$database->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents"], ["versionId" => $file['versionId'], "scaleFactor" => $file['scaleFactor']])->getAsArray(false);
+
         $file['contents'] = $thumbnail['contents'];
         $file['fileType'] = 'image/jpeg';
     }
