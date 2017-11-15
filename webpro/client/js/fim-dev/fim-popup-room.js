@@ -435,7 +435,7 @@ popup.prototype.room.prototype.eventListener = function () {
     });
     var eventHandler = (function (callback) {
         return (function (event) {
-            _this.options.lastEvent = Math.max(Number(_this.options.lastEvent), Number(event.id));
+            _this.options.lastEvent = Math.max(Number(_this.options.lastEvent), Number(event.lastEventId));
             callback.call(_this, JSON.parse(event.data));
         });
     });

@@ -44,19 +44,19 @@ switch ($request['list']) {
     case 'users':
         $entries = new Http\ApiOutputDict($slaveDatabase->getUsers([
             'userNameSearch' => $request['search'],
-        ], null, 10)->getColumnValues('name', 'id'));
+        ], null, 10)->getAsSlicedArray(['name', 'avatar'], 'id'));
         break;
 
     case 'rooms':
         $entries = new Http\ApiOutputDict($slaveDatabase->getRooms([
             'roomNameSearch' => $request['search'],
-        ], null, 10)->getColumnValues('name', 'id'));
+        ], null, 10)->getAsSlicedArray(['name'], 'id'));
         break;
 
     case 'groups':
         $entries = new Http\ApiOutputDict($slaveDatabase->getGroups([
             'groupNameSearch' => $request['search'],
-        ], null, 10)->getColumnValues('name', 'id'));
+        ], null, 10)->getAsSlicedArray(['name', 'avatar'], 'id'));
         break;
 
 }

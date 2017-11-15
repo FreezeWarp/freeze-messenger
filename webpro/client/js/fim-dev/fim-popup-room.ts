@@ -539,7 +539,7 @@ popup.prototype.room.prototype.eventListener = function() {
 
     let eventHandler = ((callback) => {
         return ((event) => {
-            this.options.lastEvent = Math.max(Number(this.options.lastEvent), Number(event.id));
+            this.options.lastEvent = Math.max(Number(this.options.lastEvent), Number(event.lastEventId));
 
             callback.call(this, JSON.parse(event.data));
         });

@@ -7,6 +7,8 @@
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  */
+
+
 var autoEntry = function(target, options) {
     this.options = options;
     var _this = this;

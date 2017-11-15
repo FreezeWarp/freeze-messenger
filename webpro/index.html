@@ -907,30 +907,30 @@ Pending Update
 
                     <div class="pb-3">
                         <label>
-                                    <span class="btn btn-primary">
-                                        <input type="checkbox" name="showAvatars" id="showAvatars" />
-                                        <strong>{{settingsShowAvatarsLabel}}</strong>
-                                    </span><br />
+                            <span class="btn btn-primary">
+                                <input type="checkbox" name="showAvatars" />
+                                <strong>{{settingsShowAvatarsLabel}}</strong>
+                            </span><br />
                             <small class="form-text text-muted">{{settingsShowAvatarsBlurb}}</small>
                         </label>
                     </div>
 
                     <div class="pb-3">
                         <label>
-                                    <span class="btn btn-primary">
-                                        <input type="checkbox" name="reversePostOrder" id="reversePostOrder" />
-                                        <strong>{{settingsReversePostOrderLabel}}</strong>
-                                    </span><br />
+                            <span class="btn btn-primary">
+                                <input type="checkbox" name="reversePostOrder" />
+                                <strong>{{settingsReversePostOrderLabel}}</strong>
+                            </span><br />
                             <small class="form-text text-muted">{{settingsReversePostOrderBlurb}}</small>
                         </label>
                     </div>
 
                     <div class="pb-2">
                         <label>
-                                    <span class="btn btn-primary">
-                                        <input type="checkbox" name="audioDing" id="audioDing" />
-                                        <strong>{{settingsAudioDingLabel}}</strong>
-                                    </span><br />
+                            <span class="btn btn-primary">
+                                <input type="checkbox" name="audioDing" />
+                                <strong>{{settingsAudioDingLabel}}</strong>
+                            </span><br />
                             <small class="form-text text-muted">{{settingsAudioDingBlurb}}</small>
                         </label>
                     </div>
@@ -938,17 +938,17 @@ Pending Update
                     <div class="pb-4">
                         <div class="input-group">
                             <span class="input-group-addon">{{settingsAudioVolumeLabel}}</span>
-                            <input type="range" min="0" max="1" name="audioVolume" id="audioVolume" value=".5" step=".01"/>
+                            <input type="range" min="0" max="1" name="audioVolume" value=".5" step=".01"/>
                         </div>
                         <small class="form-text text-muted">{{settingsAudioVolumeBlurb}}</small>
                     </div>
 
                     <div>
                         <label>
-                                    <span class="btn btn-primary">
-                                        <input type="checkbox" name="webkitNotifications" id="webkitNotifications" />
-                                        <strong>{{settingsWebkitNotificationsLabel}}</strong>
-                                    </span><br />
+                            <span class="btn btn-primary">
+                                <input type="checkbox" name="webkitNotifications" />
+                                <strong>{{settingsWebkitNotificationsLabel}}</strong>
+                            </span><br />
                             <small class="form-text text-muted">{{settingsWebkitNotificationsBlurb}}</small>
                         </label><br /><br />
                     </div>
@@ -984,25 +984,24 @@ Pending Update
                     {{/unless}}
 
                     {{#unless activeLogin.userData.anonId}}
+                    <h4>Control Who Can Contact You</h4>
                     <div id="settings6privacyLevel">
-                        <fieldset>
-                            <legend>{{settingsPrivacyLegend}}</legend>
-                            <label>
+                        <div class="list-group">
+                            <label class="list-group-item list-group-item-action">
                                 <input type="radio" name="privacyLevel" value="allow">{{settingsPrivacyAllowAll}}<br/>
                                 <small class="form-text text-muted">{{settingsPrivacyAllowAllBlurb}}</small>
-                            </label><br/>
+                            </label>
 
-                            <label>
+                            <label class="list-group-item list-group-item-action">
                                 <input type="radio" name="privacyLevel" value="friends">{{settingsPrivacyAllowFriends}}<br/>
                                 <small class="form-text text-muted">{{settingsPrivacyAllowFriendsBlurb}}</small>
-                            </label><br />
+                            </label>
 
-                            <label>
+                            <label class="list-group-item list-group-item-action">
                                 <input type="radio" name="privacyLevel" value="block">{{settingsPrivacyAllowNone}}<br/>
                                 <small class="form-text text-muted">{{settingsPrivacyAllowNoneBlurb}}</small>
                             </label>
-                        </fieldset>
-                        <br/><br/>
+                        </div>
                     </div>
                     {{/unless}}
                     <input type="hidden" name="ignoreList" id="ignoreList"/>
@@ -1049,37 +1048,35 @@ Pending Update
                         </small><br/><br/>
                     </div>
 
-                    <div id="settings4disableFormatting">
-                        <label>
-                            <input type="checkbox" name="settingsOfficialAjax_disableFormatting" id="disableFormatting" value="true"/>
-                            {{settingsDisableFormattingLabel}}
-                        </label><br/>
 
-                        <small>
-                            <span style="margin-left: 10px;">{{settingsDisableFormattingBlurb}}</span>
-                        </small><br/><br/>
+                    <div class="pb-3">
+                        <label>
+                                    <span class="btn btn-primary">
+                                        <input type="checkbox" name="disableFormatting" />
+                                        <strong>{{settingsDisableFormattingLabel}}</strong>
+                                    </span><br />
+                            <small class="form-text text-muted">{{settingsDisableFormattingBlurb}}</small>
+                        </label>
                     </div>
 
-                    <div id="settings4disableVideo">
+                    <div class="pb-3">
                         <label>
-                            <input type="checkbox" name="settingsOfficialAjax_disableVideo" id="disableVideo" value="true"/>
-                            {{settingsDisableVideoLabel}}
-                        </label><br/>
-
-                        <small>
-                            <span style="margin-left: 10px;">{{settingsDisableVideoBlurb}}</span>
-                        </small><br/><br/>
+                                    <span class="btn btn-primary">
+                                        <input type="checkbox" name="disableVideo" />
+                                        <strong>{{settingsDisableVideoLabel}}</strong>
+                                    </span><br />
+                            <small class="form-text text-muted">{{settingsDisableVideoBlurb}}</small>
+                        </label>
                     </div>
 
-                    <div id="settings4disableImage">
+                    <div class="pb-3">
                         <label>
-                            <input type="checkbox" name="settingsOfficialAjax_disableImage" id="disableImage" value="true"/>
-                            {{settingsDisableImageLabel}}
-                        </label><br/>
-
-                        <small>
-                            <span style="margin-left: 10px;">{{settingsDisableImageBlurb}}</span>
-                        </small><br/><br/>
+                                    <span class="btn btn-primary">
+                                        <input type="checkbox" name="disableImage" />
+                                        <strong>{{settingsDisableImageLabel}}</strong>
+                                    </span><br />
+                            <small class="form-text text-muted">{{settingsDisableImageBlurb}}</small>
+                        </label>
                     </div>
                 </div>
 

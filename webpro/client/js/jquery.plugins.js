@@ -21353,18 +21353,32 @@ jQuery.formatFileSize = function(fileSize, suffixes) {
 
 
 
+
+$.widget( "custom.imageAutocomplete", $.ui.autocomplete, {
+    _renderItem: function(ul, item) {
+        console.log("render called", item);
+        return $("<li>")
+            .append($("<div>")
+                .append("avatar" in item.label && item.label.avatar ? $('<span class="userNameAvatar">').append($("<img>").attr('src', item.label.avatar)) : '')
+                .append($('<span>').text(item.label.name))
+            )
+            .appendTo(ul);
+    }
+});
+
+
 jQuery.fn.extend({autocompleteHelper : function(resourceName) {
     var lastValue;
 
-    this.autocomplete({
+    this.imageAutocomplete({
         source: fimApi.acHelper(resourceName),
         classes: {
             'ui-autocomplete' : 'bg-light'
         },
         select: function (event, ui) {
-            $(event.target).val(ui.item.label);
+            $(event.target).val(ui.item.label.name);
             $(event.target).attr('data-id', ui.item.value);
-            $(event.target).attr('data-value', ui.item.label);
+            $(event.target).attr('data-value', ui.item.label.name);
 
             return false;
         },

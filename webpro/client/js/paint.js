@@ -723,6 +723,7 @@ var regexs = {
         "([^\\ ]*?)" + // Anything except spaces
         "(\\?|\\&)" + // ? or &
         "(w|v)=([a-zA-Z0-9\-\_]+)" + // The video ID
+        "(&t=([a-zA-Z0-9]+))*" + // Time code
         ")$", "i"),
 
     youtubeShort : new RegExp("^(" +

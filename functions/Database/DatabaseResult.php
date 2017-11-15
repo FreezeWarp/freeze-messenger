@@ -156,7 +156,7 @@ class DatabaseResult
     }
 
 
-    public function getColumnValues($columns, $columnKey = false)
+    public function getColumnValues($columns)
     {
         $columnValues = array();
         $columns = (array) $columns;
@@ -167,17 +167,48 @@ class DatabaseResult
                 $ref =& $ref[$row[$columns[$i - 1]]];
             }
 
-            if ($columnKey)
-                $ref[$this->applyColumnTransformation($columnKey, $row[$columnKey])] = $this->applyColumnTransformation(end($columns), $row[end($columns)]);
+            $ref[] = $this->applyColumnTransformation(end($columns), $row[end($columns)]);
+        }
+
+        return $columnValues;
+    }
+
+    /**
+     * Get only specific columns from the current resultset, as a three dimensional array.
+     *
+     * @param $columns array An array of columns to include in the response.
+     * @param $index string Optionally, a column to use for array indexing. If omitted, the outer array will be indexed sequentially.
+     *
+     * @return mixed
+     */
+    public function getAsSlicedArray($columns, $index = false) {
+        $columnValues = array();
+        $columns = (array) $columns;
+
+        while ($row = $this->fetchAsArray()) {
+            $rowColumnValues = [];
+            foreach ($columns AS $column) {
+                $rowColumnValues[$column] = $this->applyColumnTransformation($column, $row[$column]);
+            }
+
+            if ($index)
+                $columnValues[$this->applyColumnTransformation($index, $row[$index])] = $rowColumnValues;
 
             else
-                $ref[] = $this->applyColumnTransformation(end($columns), $row[end($columns)]);
+                $columnValues[] = $rowColumnValues;
         }
 
         return $columnValues;
     }
 
 
+    /**
+     * Get a single value from the current resultset.
+     *
+     * @param $column string The column's value to get.
+     *
+     * @return mixed
+     */
     public function getColumnValue($column)
     {
         $row = $this->fetchAsArray();

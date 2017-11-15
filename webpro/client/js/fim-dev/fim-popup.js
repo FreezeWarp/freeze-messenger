@@ -347,15 +347,15 @@ popup.prototype.settings = {
 
         /* Various Settings -- Update onChange, Refresh Posts */
         // Defaults
-        if (settings.showAvatars) $('#showAvatars').attr('checked', 'checked');
-        if (settings.reversePostOrder) $('#reversePostOrder').attr('checked', 'checked');
-        if (settings.disableFormatting) $('#disableFormatting').attr('checked', 'checked');
-        if (settings.disableVideo) $('#disableVideo').attr('checked', 'checked');
-        if (settings.disableImage) $('#disableImage').attr('checked', 'checked');
+        if (settings.showAvatars) $('input[name=showAvatars]').attr('checked', 'checked');
+        if (settings.reversePostOrder) $('input[name=reversePostOrder]').attr('checked', 'checked');
+        if (settings.disableFormatting) $('input[name=disableFormatting]').attr('checked', 'checked');
+        if (settings.disableVideo) $('input[name=disableVideo]').attr('checked', 'checked');
+        if (settings.disableImage) $('input[name=disableImage]').attr('checked', 'checked');
 
         // onChange -- refresh messages when needed
-        $('#showAvatars, #reversePostOrder, #disableFormatting, #disableVideo, #disableImage').change(function() {
-            var localId = $(this).attr('id');
+        $('input[name=showAvatars], input[name=reversePostOrder], input[name=disableFormatting], input[name=disableVideo], input[name=disableImage]').change(function() {
+            var localId = $(this).attr('name');
 
             if ($(this).is(':checked') && !settings[localId]) {
                 settings[localId] = true;
@@ -375,23 +375,16 @@ popup.prototype.settings = {
 
         /* Various Settings */
         // Defaults
-        if (settings.audioDing) $('#audioDing').attr('checked', 'checked');
-        if (settings.disableFx) $('#disableFx').attr('checked', 'checked');
-        if (settings.disableRightClick) $('#disableRightClick').attr('checked', 'checked');
-        if (settings.webkitNotifications) $('#webkitNotifications').attr('checked', 'checked');
+        if (settings.audioDing) $('input[name=audioDing]').attr('checked', 'checked');
+        if (settings.webkitNotifications) $('input[name=webkitNotifications]').attr('checked', 'checked');
 
         // onChange
-        $('#audioDing, #disableFx, #webkitNotifications, #disableRightClick').change(function() {
+        $('input[name=audioDing], input[name=webkitNotifications]').change(function() {
             var localId = $(this).attr('id');
 
             if ($(this).is(':checked') && !settings[localId]) {
                 settings[localId] = true;
                 $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
-
-                // Disable jQuery Effects
-                if (localId === 'disableFx') {
-                    jQuery.fx.off = true;
-                }
 
                 // Notifications
                 if (localId === 'webkitNotifications') {
@@ -407,11 +400,6 @@ popup.prototype.settings = {
             else if (!$(this).is(':checked') && settings[localId]) {
                 settings[localId] = false;
                 $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
-
-                // Reenable jQuery Effects
-                if (localId === 'disableFx') {
-                    jQuery.fx.off = false;
-                }
             }
         });
 
