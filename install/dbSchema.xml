@@ -2,7 +2,7 @@
 
 <dbSchema version="3.0">
     <database name="__CORE__" charset="utf8">
-        <table name="accessLog" type="general" comment="Log of all API calls, meant mostly for analytics purposes.">
+        <table name="accessLog" partitionBy="time" type="general" comment="Log of all API calls, meant mostly for analytics purposes.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />
             <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session." />
@@ -22,7 +22,7 @@
         </table>
 
 
-        <table name="accessFlood" type="memory" comment="Counter of all API calls, meant for flood detection.">
+        <table name="accessFlood" partitionBy="userId" type="memory" comment="Counter of all API calls, meant for flood detection.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />
             <column name="action" type="string" maxlen="20" comment="The action performed." />
             <column name="period" type="time" comment="The time of accesses modulated as a period." />
@@ -125,7 +125,7 @@
         </table>
 
 
-        <table name="fileVersions" type="general" comment="User-created file contents and revisions. TODO: remove, probably">
+        <table name="fileVersions" type="general" comment="User-created file contents and revisions.">
             <column name="versionId" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for all file versions, regardless of each file." />
             <column name="fileId" fkey="files.fileId" type="int" maxlen="6" comment="The ID of the parent file." />
             <column name="time" type="time" default="__TIME__" comment="The time the revision of the file was uploaded." />
@@ -149,7 +149,7 @@
         </table>
 
 
-        <table name="fullLog" type="general" comment="A log of moderator actions that document all update(), insert(), and delete() calls.">
+        <table name="fullLog" partitionBy="time" type="general" comment="A log of moderator actions that document all update(), insert(), and delete() calls.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session." />
@@ -259,9 +259,7 @@
             <column name="encryption_algorithm" type="string" maxlen="100" default="RS256" />
         </table>
 
-        <!-- partitionBy=roomId would be nice here, but doesn't work with strings. -->
-        <!-- I'm pretty sure after I made that comment, I added my own manual partitioning to the DBA. Which, uh... that's one solution, isn't it? -->
-        <table name="messages" hardPartitions="10" type="general" comment="User-created messages.">
+        <table name="messages" hardPartitions="10" partitionBy="roomId" type="general" comment="User-created messages.">
             <column name="id" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who made the message." />
@@ -283,7 +281,7 @@
         </table>
 
 
-        <table name="messageEditHistory" type="general" comment="A history of editted messages.">
+        <table name="messageEditHistory" partitionBy="messageId" type="general" comment="A history of edited messages.">
             <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user who editted the message." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
@@ -296,7 +294,7 @@
         </table>
 
 
-        <table name="messageFlood" type="memory" comment="A counter for the messages submitted by a user in individual rooms and sitewide for every minute.">
+        <table name="messageFlood" partitionBy="userId" type="memory" comment="A counter for the messages submitted by a user in individual rooms and sitewide for every minute.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="roomId" type="blob" maxlen="23" comment="The room ID, or 0 if side-wide." />
             <column name="time" type="time" comment="The time the action was performed on." />
@@ -307,7 +305,7 @@
         </table>
 
 
-        <table name="modLog" type="general" comment="A log of moderator actions.">
+        <table name="modLog" partitionBy="time" type="general" comment="A log of moderator actions.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID who performed the action." />
             <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session." />
@@ -339,7 +337,7 @@
         </table>
 
 
-        <table name="rooms" type="general" comment="User-created rooms. Does not include private rooms.">
+        <table name="rooms" partitionBy="id" type="general" comment="User-created rooms. Does not include private rooms.">
             <!-- General -->
             <column name="id" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
             <column name="idEncoded" type="blob" maxlen="23" comment="The unique ID for the room, encoded as appropriate." />
@@ -401,7 +399,7 @@
         </table>
 
 
-        <table name="roomPermissions" type="general" content="Groups and users who are granted access to rooms. It does not include private rooms.">
+        <table name="roomPermissions" partitionBy="roomId" type="general" content="Groups and users who are granted access to rooms. It does not include private rooms.">
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID." />
             <column name="attribute" type="enum" restrict="user,group" comment="Whether the param column corresponds to a user or group." />
             <column name="param" type="int" maxlen="8" comment="The user ID or group ID being affected." />
@@ -411,7 +409,7 @@
         </table>
 
 
-        <table name="roomPermissionsCache" type="memory" content="A simplified cache of room permissions. This table should be used to determine if a user is known to be allowed access to a room. When a row doesn't exist, it should be tested fully and then inserted here. It does not index private rooms.">
+        <table name="roomPermissionsCache" partitionBy="roomId" type="memory" content="A simplified cache of room permissions. This table should be used to determine if a user is known to be allowed access to a room. When a row doesn't exist, it should be tested fully and then inserted here. It does not index private rooms.">
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="permissions" type="bitfield" bits="24" comment="The user's permissions." />
@@ -424,7 +422,7 @@
         </table>
 
 
-        <table name="roomStats" type="general" comment="A cache for the number of posts made by different users in rooms.">
+        <table name="roomStats" partitionBy="roomId" type="general" comment="A cache for the number of posts made by different users in rooms.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room." />
             <column name="messages" type="int" default="0" maxlen="8" comment="The number of messages made by the user in the room." />
@@ -434,7 +432,7 @@
         </table>
 
 
-        <table name="sessionLockout" type="memory" comment="Keeps track of failed login attempts, eventually blocking IP addresses from attempting additional logins.">
+        <table name="sessionLockout" partitionBy="ip" type="memory" comment="Keeps track of failed login attempts, eventually blocking IP addresses from attempting additional logins.">
             <column name="ip" type="string" maxlen="128" comment="The user's IP address." />
             <column name="attempts" type="int" maxlen="2" comment="Failed login attempts." />
             <column name="expires" type="time" comment="When the entry is considered expired." />
@@ -443,7 +441,7 @@
         </table>
 
 
-        <table name="socialGroups" type="general" comment="User groups.">
+        <table name="socialGroups" partitionBy="id" type="general" comment="User groups.">
             <column name="id" autoincrement="1" type="int" maxlen="6" comment="The group ID." />
             <column name="name" type="string" maxlen="50" comment="The group name." />
             <column name="avatar" type="string" maxlen="200" comment="The absolute URI of the group's avatar." />
@@ -467,7 +465,7 @@
         </table>
 
 
-        <table name="streams" type="general" comment="An index tracking all of our streams. In most cases, this table will be unused, but with some stream implementations (for instance, when creating tables for event streams), this will be used to determine old tables in need of dropping.">
+        <table name="streams" partitionBy="streamName" type="general" comment="An index tracking all of our streams. In most cases, this table will be unused, but with some stream implementations (for instance, when creating tables for event streams), this will be used to determine old tables in need of dropping.">
             <column name="streamName" type="string" maxlen="100" comment="The ID of the phrase found in the message." />
             <column name="lastEvent" type="time" default="__TIME__" comment="The ID of the message." />
 
@@ -476,13 +474,10 @@
         </table>
 
 
-        <table name="unreadMessages" type="general" comment="Unread private messages and messages made to watched rooms. Only the least recent message should be included.">
+        <table name="unreadMessages" partitionBy="userId" type="general" comment="Unread private messages and messages made to watched rooms. Only the least recent message should be included.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who has yet to read the message." />
             <column name="senderId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who sent the message." />
-            <column name="senderName" type="string" maxlen="50" comment="The name of the user who sent the message." />
-            <column name="senderNameFormat" type="string" maxlen="300" comment="CSS-formatting to be applied to the sender's name." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room in question." />
-            <column name="roomName" type="string" maxlen="500" comment="The name of the room in question." />
             <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
             <column name="time" type="time" default="__TIME__" comment="The time the message was made." />
             <column name="otherMessages" type="int" comment="The number of other messages that have been sent since this one." />
@@ -492,7 +487,7 @@
         </table>
 
 
-        <table name="users" type="general" comment="The users.">
+        <table name="users" partitionBy="id" type="general" comment="The users.">
             <!-- General -->
             <column name="id" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
 
@@ -575,7 +570,7 @@
         </table>
 
 
-        <table name="userFavRooms" type="general" comment="A list of starred rooms. Unlike most other lists, this list generally doesn't have any backend effects, but we thought it was too useful not to include. Clients are still encouraged to implement more powerful tagging and lists themselves.">
+        <table name="userFavRooms" partitionBy="userId" type="general" comment="A list of starred rooms. Unlike most other lists, this list generally doesn't have any backend effects, but we thought it was too useful not to include. Clients are still encouraged to implement more powerful tagging and lists themselves.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="roomId" type="blob" maxlen="23" comment="The room ID." />
 
@@ -583,7 +578,7 @@
         </table>
 
 
-        <table name="userFriendsList" type="general" comment="A list of user friends, with whom private contact may be restricted in some cases. Clients are encouraged to enable more advanced tagging and lists.">
+        <table name="userFriendsList" partitionBy="userId" type="general" comment="A list of user friends, with whom private contact may be restricted in some cases. Clients are encouraged to enable more advanced tagging and lists.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="subjectId" fkey="users.id" type="int" maxlen="8" comment="The user ID friended." />
             <column name="status" type="enum" restrict="friend,request,deny" default="request" comment="Whether the relationship is a friend connection, merely a request, or if the request has been denied permanently." />
@@ -592,7 +587,7 @@
         </table>
 
 
-        <table name="userIgnoreList" type="general" comment="A list of user's a user wishes to ignore. Ignoring prevents private contact, but few other changes are made -- clients may, at their descretion, let users hide posts by other users, etc.">
+        <table name="userIgnoreList" partitionBy="userId" type="general" comment="A list of user's a user wishes to ignore. Ignoring prevents private contact, but few other changes are made -- clients may, at their descretion, let users hide posts by other users, etc.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="subjectId" fkey="users.id" type="int" maxlen="8" comment="The user ID ignored." />
 
@@ -635,9 +630,11 @@
         </table>
 
 
-        <table name="watchRooms" type="general" comment="A table of rooms being watched by different users. Doesn't include private rooms, since those are basically already watched.">
+        <table name="watchRooms" partitionBy="userId " type="general" comment="A table of rooms being watched by different users. Doesn't include private rooms, since those are basically already watched.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID to be watched." />
+
+            <key name="userId,roomId" type="primary" />
         </table>
     </database>
 

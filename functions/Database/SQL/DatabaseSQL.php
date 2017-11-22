@@ -208,7 +208,7 @@ class DatabaseSQL extends Database
     /**
      * Format for fuzzy searching.
      */
-    const FORMAT_VALUE_SEARCH = 'detect';
+    const FORMAT_VALUE_SEARCH = 'search';
 
     /**
      * Format as a column alias.
@@ -1124,7 +1124,7 @@ class DatabaseSQL extends Database
                         case 'useCreateType':
                             $typePiece = $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $tableName . '_' . $columnName);
                             $this->rawQuery('DROP TYPE IF EXISTS ' . $typePiece . ' CASCADE');
-                            $this->rawQuery('CREATE TYPE ' . $typePiece . ' AS ENUM' . $this->formatValue(DatabaseTypeType::arraylist, $column['restrict']));
+                            $this->rawQuery('CREATE TYPE ' . $typePiece . ' AS ENUM' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_ENUM_ARRAY, $column['restrict']));
                         break;
 
                         // Here, we use the built-in SQL ENUM. MySQL does this.
@@ -1166,7 +1166,8 @@ class DatabaseSQL extends Database
                 // We use triggers here when the SQL implementation is otherwise stubborn, but FreezeMessenger is designed to only do this when it would otherwise be tedious. Manual setting of values is preferred in most cases. Right now, only __TIME__ supports them.
                 // TODO: language trigger support check
                 if ($column['default'] === '__TIME__') {
-                    $triggerName = $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, "{TABLENAME}_{$columnName}__TIME__");
+                    $triggerString = "{TABLENAME}_{$columnName}__TIME__";
+                    $triggerName = $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $triggerString);
 
                     switch ($this->sqlInterface->getLanguage()) {
                         case 'sqlsrv':
@@ -1183,7 +1184,7 @@ class DatabaseSQL extends Database
 
                         case 'pgsql':
                             $triggers[] = "DROP TRIGGER IF EXISTS {$triggerName} ON " . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}');
-                            $triggers[] = "CREATE OR REPLACE FUNCTION {$triggerName}_function()
+                            $triggers[] = "CREATE OR REPLACE FUNCTION {$triggerString}_function()
                             RETURNS TRIGGER AS $$
                             BEGIN
                                 IF NEW.\"{$columnName}\" IS NULL THEN
@@ -1195,7 +1196,7 @@ class DatabaseSQL extends Database
 
                             $triggers[] = "CREATE TRIGGER {$triggerName} BEFORE INSERT ON "
                                 . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, '{TABLENAME}')
-                                . " FOR EACH ROW EXECUTE PROCEDURE {$triggerName}_function()";
+                                . " FOR EACH ROW EXECUTE PROCEDURE {$triggerString}_function()";
                             break;
                     }
                 }
@@ -1243,23 +1244,11 @@ class DatabaseSQL extends Database
             /* Generate Foreign Key Restrictions */
             if ($this->isTypeObject($column['restrict'])) {
                 if ($column['restrict']->type === DatabaseTypeType::tableColumn) {
-                    switch ($this->sqlInterface->foreignKeyMode) {
-                        case 'useAlterTableAddForeignKey':
-                            if ($returnedQuery = $this->returnQueryString()->deleteForeignKeyConstraintFromColumnName($tableName, $columnName)) {
-                                $triggers[] = $returnedQuery;
-                            }
-
-                            $triggers[] = $this->returnQueryString()->createForeignKeyConstraint($tableName, $columnName, $column['restrict']->value[0], $column['restrict']->value[1]);
-                            break;
-
-
-                        // Warning: will usually only work if the table already exists. So FIM can't really use this.
-                        case 'useColumnReferences':
-                            $typePiece .= " REFERENCES " . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $column['restrict']->value[0]) . '('
-                                . $this->formatValue(DatabaseTypeType::column, $column['restrict']->value[1])
-                                . ')';
-                            break;
+                    if ($returnedQuery = $this->returnQueryString()->deleteForeignKeyConstraintFromColumnName($tableName, $columnName)) {
+                        $triggers[] = $returnedQuery;
                     }
+
+                    $triggers[] = $this->returnQueryString()->createForeignKeyConstraint($tableName, $columnName, $column['restrict']->value[0], $column['restrict']->value[1]);
                 }
                 else {
                     throw new Exception('$column[\'restrict\'] must be an instance of DatabaseType(DatabaseTypeType::tableColumn).');
@@ -1390,26 +1379,30 @@ class DatabaseSQL extends Database
             }
 
 
-            /* Table Engine */
+            /* Table Engine
+             * Currently, only MySQL supports different engines. */
             if ($this->sqlInterface->getLanguage() === 'mysql') {
-                $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]);
+                $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, ($engine === DatabaseEngine::memory ? "MEMORY" : "InnoDB"));
             }
 
 
-            /* Table Charset */
-            // todo: postgres
+            /* Table Charset
+             * PgSQL specifies charset when DB is created, so that's up to the enduser. */
             if ($this->sqlInterface->getLanguage() === 'mysql') {
                 $tableProperties .= ' DEFAULT CHARSET=' . $this->formatValue(DatabaseTypeType::string, 'utf8');
             }
 
 
-            /* Table Partioning */
-            if ($partitionColumn) {
+            /* Table partitioning */
+            if ($partitionColumn
+                && $this->sqlInterface->usePartition) {
                 $tableProperties .= ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100';
             }
 
 
-            if ($renameOrDeleteExisting && in_array(strtolower($tableNameI), $this->getTablesAsArray())) { // We are overwriting, so rename the old table to a backup. Someone else can clean it up later, but its for the best.
+            /* Rename/Delete Existing
+             * If we are overwriting an existing table, try renaming, then deleting it. */
+            if ($renameOrDeleteExisting && in_array(strtolower($tableNameI), $this->getTablesAsArray())) {
                 if (!$this->renameTable($tableNameI, $tableNameI . '~' . time())) {
                     if (!$this->deleteTable($tableNameI)) {
                         throw new Exception("Could Not Rename or Delete Table '$tableNameI'");
@@ -1423,12 +1416,23 @@ class DatabaseSQL extends Database
 
 
             $return = $this->rawQuery(
-                'CREATE TABLE '
-                . ($this->sqlInterface->useCreateIfNotExist ? 'IF NOT EXISTS ' : '')
-                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableNameI) . ' (
-    ' . implode(",\n  ", $columns) . (count($indexes) > 0 ? ',
-    ' . implode(",\n  ", $indexes) : '') . '
-    )' . $tableProperties);
+                'CREATE '
+                . ($this->sqlInterface->getLanguage() === 'pgsql' && $engine === DatabaseEngine::memory
+                    ? 'UNLOGGED '
+                    : '')
+                . 'TABLE '
+                . ($this->sqlInterface->useCreateIfNotExist
+                    ? 'IF NOT EXISTS '
+                    : '')
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableNameI)
+                . ' ('
+                . implode(", ", $columns)
+                . (count($indexes) > 0
+                    ? ',' . implode(", ", $indexes)
+                    : '')
+                . ')'
+                . $tableProperties
+            );
 
             $return = $return &&
                 $this->executeTriggers($tableNameI, $triggers);
@@ -1556,7 +1560,9 @@ class DatabaseSQL extends Database
 
 
     /**
-     * Creates new indexes in a table.
+     * Creates new indexes in a table. This has the following known limitations:
+     * * On PgSQL, fulltext indexes must not reference more than one column.
+     * * On SQLServer, the primary key must come before any fulltext indexes, and a primary key MUST be specified.
      *
      * @param string $tableName
      * @param array  $tableIndexes {
@@ -1570,10 +1576,22 @@ class DatabaseSQL extends Database
      * @throws Exception when an index has an invalid index mode.
      */
     public function createTableIndexes($tableName, $tableIndexes, $duringTableCreation = false) {
+
         $triggers = [];
         $indexes = [];
 
+
+        // Identify primary key, for use with SqlServer
+        $primaryKey = false;
+        foreach ($tableIndexes AS $indexName2 => $index2) {
+            if ($index2['type'] === DatabaseIndexType::primary)
+                $primaryKey = $this->getIndexName($tableName, $indexName2);
+        }
+
+
+        // Create each index
         foreach ($tableIndexes AS $indexName => $index) {
+            /* Default to normal index if type is invalid. */
             if (!isset($this->sqlInterface->keyTypeConstants[$index['type']])) {
                 $this->triggerError("Unrecognised Index Type", array(
                     'tableName' => $tableName,
@@ -1582,63 +1600,152 @@ class DatabaseSQL extends Database
                 ), 'validationFallback');
                 $index['type'] = 'index';
             }
-            $typePiece = $this->sqlInterface->keyTypeConstants[$index['type']];
-
-
-            if (strpos($indexName, ',') !== false) {
-                $indexCols2 = explode(',', $indexName);
-
-                $indexName = implode(',', $indexCols2);
-
-                $indexCols = [];
-                foreach ($indexCols2 AS $indexCol) {
-                    $indexCols[] = $this->col($indexCol);
-                }
-            }
-            else {
-                $indexCols = [$this->col($indexName)];
-            }
-
 
             /* Generate CREATE INDEX Statements, If Needed */
             if ((!$duringTableCreation || $this->sqlInterface->indexMode === 'useCreateIndex')
                 && $index['type'] !== DatabaseIndexType::primary) {
-                if (!in_array(strtolower($indexName), $this->getTableIndexesAsArray()[strtolower($tableName)])) {
-                    $triggers[] = "CREATE {$typePiece} INDEX "
-                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $indexName)
-                        . " ON "
-                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-                        . ' '
-                        . $this->formatValue(DatabaseTypeType::arraylist, $indexCols);
 
-                    if ($index['type'] === DatabaseIndexType::unique && $this->sqlInterface->getLanguage() === 'sqlsrv') {
-                        $indexColsConditions = [];
-                        foreach ($indexCols AS $col) {
-                            $indexColsConditions["!{$col->value}"] = $this->type(DatabaseTypeType::null);
-                        }
+                // Delete any old index with the given name
+                $this->deleteIndex($tableName, $indexName);
 
-                        end($triggers);
-                        $triggers[key($triggers)] .= ' WHERE ' . $this->recurseBothEither($indexColsConditions, $this->reverseAliasFromConditionArray($tableName, $indexColsConditions), 'both');
-                    }
-                }
+                // Add the CREATE INDEX statement to the triggers.
+                $triggers[] = $this->returnQueryString()->createIndex($tableName, $indexName, $index['type'], $primaryKey);
             }
 
             // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
             elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
-                $indexes[] = "{$typePiece} KEY " . $this->formatValue(DatabaseTypeType::arraylist, $indexCols);
+                $indexes[] = "PRIMARY KEY " . $this->formatValue(DatabaseTypeType::arraylist, $this->getIndexColsFromIndexName($indexName));
 
             // Throw an exception if the index mode is unrecognised.
             else
                 throw new Exception("Invalid index mode: {$this->sqlInterface->indexMode}");
         }
 
-        if ($duringTableCreation) {
+
+        if ($duringTableCreation)
             return [$indexes, $triggers];
+        else
+            return $this->executeTriggers($tableName, $triggers);
+
+    }
+
+
+    /**
+     * Deletes an existing table index. Will do nothing if the index does not exist.
+     *
+     * @param $tableName string The table with a foreign key constraint.
+     * @param $constraintName string The foreign key constraint's name.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function createIndex($tableName, $indexName, $indexType, $primaryKey = false) {
+
+        // Transfrom the index name into one that is unique to the database.
+        $alteredIndexName = $this->getIndexName($tableName, $indexName);
+
+        // Get the columns referenced by an index name.
+        $indexCols = $this->getIndexColsFromIndexName($indexName);
+
+
+        /* CREATE x INDEX ON table */
+        $trigger = "CREATE " . $this->sqlInterface->keyTypeConstants[$indexType] . " INDEX "
+            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName)
+            . " ON "
+            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName);
+
+
+        /* PgSQL: GIN indexes for fulltext */
+        if ($indexType === DatabaseIndexType::fulltext
+            && $this->sqlInterface->getLanguage() === 'pgsql') {
+            // TODO: this doesn't support multi-column fulltext indexes.
+            $trigger .= ' USING GIN (to_tsvector(\'english\'), ' . $this->formatValue(DatabaseTypeType::column, $indexName) . ')';
+        }
+
+
+        /* (columns) */
+        $trigger .= ' '
+            . $this->formatValue(DatabaseTypeType::arraylist, $indexCols);
+
+
+        /* SqlSrv: WHERE NOT NULL (allow multiple nulls in SqlSrv unique indexes) */
+        if ($indexType === DatabaseIndexType::unique
+            && $this->sqlInterface->getLanguage() === 'sqlsrv') {
+            $indexColsConditions = [];
+            foreach ($indexCols AS $col) {
+                $indexColsConditions["!{$col->value}"] = $this->type(DatabaseTypeType::null);
+            }
+
+            end($triggers);
+            $trigger .= ' WHERE ' . $this->recurseBothEither($indexColsConditions, $this->reverseAliasFromConditionArray($tableName, $indexColsConditions), 'both');
+        }
+
+
+        /* SqlSrv: KEY INDEX for full text indexes */
+        if ($indexType === DatabaseIndexType::fulltext
+            && $this->sqlInterface->getLanguage() === 'sqlsrv') {
+            $trigger .= ' KEY INDEX ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $primaryKey);
+        }
+
+        return $this->rawQuery($trigger);
+
+    }
+
+    /**
+     * Deletes an existing table index. Will do nothing if the index does not exist.
+     *
+     * @param $tableName string The table with a foreign key constraint.
+     * @param $constraintName string The foreign key constraint's name.
+     *
+     * @return bool True on success, false on failure.
+     */
+    public function deleteIndex($tableName, $indexName) : bool {
+
+        $alteredIndexName = $this->getIndexName($tableName, $indexName);
+
+        if ($this->sqlInterface->useDropIndexIfExists) {
+            return $this->rawQuery('DROP INDEX IF EXISTS '
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName));
         }
         else {
-            return $this->executeTriggers($tableName, $triggers);
+            $tableIndexes = $this->getTableIndexesAsArray();
+
+            if (isset($tableIndexes[strtolower($tableName)]) && in_array($alteredIndexName, $tableIndexes[strtolower($tableName)])) {
+                return $this->rawQuery('DROP INDEX '
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName));
+            }
+
+            return false;
         }
+
     }
+
+    private function getIndexName($tableName, $indexName) : string {
+        return "i_{$tableName}_{$indexName}";
+    }
+
+
+    /**
+     * Pull out columns from index name.
+     * If an index name is comma-seperated, it is using multiple columns.
+     */
+    private function getIndexColsFromIndexName($indexName) : array {
+
+        if (strpos($indexName, ',') !== false) {
+            $indexCols = explode(',', $indexName);
+
+            foreach ($indexCols AS &$indexCol) {
+                $indexCol = $this->col($indexCol);
+            }
+
+            return $indexCols;
+        }
+
+        else {
+            return [$this->col($indexName)];
+        }
+
+    }
+
 
 
     /**
@@ -1699,10 +1806,21 @@ class DatabaseSQL extends Database
         $tableConstraints = $this->getTableConstraintsAsArray();
 
         if (isset($tableConstraints[strtolower($tableName)]) && in_array($constraintName, $tableConstraints[strtolower($tableName)])) {
-            return $this->rawQuery('ALTER TABLE '
-                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-                . ' DROP FOREIGN KEY '
-                . $this->formatValue(DatabaseTypeType::column, $constraintName));
+            var_dump($constraintName, $tableConstraints[strtolower($tableName)]);
+            switch ($this->sqlInterface->foreignKeyMode) {
+                case 'useAlterTableForeignKey':
+                    return $this->rawQuery('ALTER TABLE '
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                        . ' DROP FOREIGN KEY '
+                        . $this->formatValue(DatabaseTypeType::column, $constraintName));
+
+                case 'useAlterTableConstraint':
+                    return $this->rawQuery('ALTER TABLE '
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                        . ' DROP CONSTRAINT '
+                        . $this->formatValue(DatabaseTypeType::column, $constraintName));
+                    break;
+            }
         }
 
         return false;
@@ -1936,7 +2054,7 @@ class DatabaseSQL extends Database
                     elseif (isset($conditionArray['both'][$column]))
                         $found = $conditionArray['both'][$column];
                     else
-                        $this->triggerError("Selecting from a hard partioned table, " . $tableName . ", without the partition column, " . $column . " at the top level is unsupported. It likely won't ever be supported, since any boolean logic is likely to require cross-partition selection, which is far too complicated a feature for this DAL. Use native RDBMS partioning for that if you can.");
+                        $this->triggerError("Selecting from a hard partitioned table, " . $tableName . ", without the partition column, " . $column . " at the top level is unsupported. It likely won't ever be supported, since any boolean logic is likely to require cross-partition selection, which is far too complicated a feature for this DAL. Use native RDBMS partitioning for that if you can.");
 
                     // I'm not a fan of this hack at all, but I'd really have to rewrite to
                     $finalQuery['tables'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_NAME_ALIAS, $tableName . "__part" . $found % $partitionCount, $tableName);
@@ -2299,7 +2417,7 @@ class DatabaseSQL extends Database
             }
             $reverseAlias[$column] = [$tableName, $column];
 
-            // We also keep track of the original table name if it's been renamed through hard partioning, and will use it to determine triggers.
+            // We also keep track of the original table name if it's been renamed through hard partitioning, and will use it to determine triggers.
             if ($originalTableName)
                 $reverseAlias[$column][] = $originalTableName;
         }
@@ -2308,7 +2426,7 @@ class DatabaseSQL extends Database
 
 
     /**
-     * Gets a transformed table name if hard partioning is enabled.
+     * Gets a transformed table name if hard partitioning is enabled.
      *
      * @param $tableName string The source tablename.
      * @param $dataArray array The data array that contains the partition column. Currently, advanced data arrays are not supported; the partition column must be identified by string as a top-level index on the array.
@@ -2402,7 +2520,7 @@ class DatabaseSQL extends Database
             $partitionAt = array_merge($this->partitionAt, $conditionArray);
 
             if (!isset($partitionAt[$this->hardPartitions[$tableName][0]])) {
-                $this->triggerError("The table $tableName is partitoned. To delete from it, you _must_ specify the column " . $this->hardPartitions[$tableName][0] . ". Note that you may instead use partitionAt() if you know _any_ column that would apply to the partition (for instance, if you wish to delete the last row from a table before inserting a new one, you can specify the relevant condition using partitionAt().)" . print_r($partitionAt, true));
+                $this->triggerError("The table $tableName is partitioned. To delete from it, you _must_ specify the column " . $this->hardPartitions[$tableName][0] . ". Note that you may instead use partitionAt() if you know _any_ column that would apply to the partition (for instance, if you wish to delete the last row from a table before inserting a new one, you can specify the relevant condition using partitionAt().)" . print_r($partitionAt, true));
             }
 
             $tableName .= "__part" . $partitionAt[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
@@ -2460,10 +2578,10 @@ class DatabaseSQL extends Database
 
         if (isset($this->hardPartitions[$tableName])) {
             if (!isset($conditionArray[$this->hardPartitions[$tableName][0]])) {
-                $this->triggerError("The table $tableName is partitoned. To update it, you _must_ specify the column " . $this->hardPartitions[$tableName][0] . ' ' . print_r($conditionArray, true));
+                $this->triggerError("The table $tableName is partitioned. To update it, you _must_ specify the column " . $this->hardPartitions[$tableName][0] . ' ' . print_r($conditionArray, true));
             }
             elseif (isset($dataArray[$this->hardPartitions[$tableName][0]])) {
-                $this->triggerError("The table $tableName is partitoned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
+                $this->triggerError("The table $tableName is partitioned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
             }
 
             $tableName .= "__part" . $conditionArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
@@ -2506,10 +2624,10 @@ class DatabaseSQL extends Database
     {
         if (isset($this->hardPartitions[$tableName])) {
             if (!isset($conditionArray[$this->hardPartitions[$tableName][0]])) {
-                $this->triggerError("The table $tableName is partitoned. To update it, you _must_ specify the column " . $this->hardPartitions[$tableName][0]);
+                $this->triggerError("The table $tableName is partitioned. To update it, you _must_ specify the column " . $this->hardPartitions[$tableName][0]);
             }
             elseif (isset($dataArray[$this->hardPartitions[$tableName][0]])) {
-                $this->triggerError("The table $tableName is partitoned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
+                $this->triggerError("The table $tableName is partitioned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
             }
 
             $tableName .= "__part" . $conditionArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];

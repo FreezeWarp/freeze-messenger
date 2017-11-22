@@ -168,6 +168,7 @@ switch ($_REQUEST['phase']) {
 
                         if (isset($column['@fkey'])) {
                             $values = explode('.', $column['@fkey']);
+                            $values[0] = $prefix . $values[0];
                             $tableColumns[$column['@name']]['restrict'] = new \Database\DatabaseType(\Database\DatabaseTypeType::tableColumn, $values);
                         }
                     }

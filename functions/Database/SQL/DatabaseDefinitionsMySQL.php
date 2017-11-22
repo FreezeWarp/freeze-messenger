@@ -75,13 +75,40 @@ abstract class DatabaseDefinitionsMySQL extends DatabaseSQLStandard {
         DatabaseTypeType::blob => 'BLOB',
     );
 
+    /**
+     * @var bool MySQL does support a native bit() type that acts as we expect it to.
+     */
     public $nativeBitfield = true;
+
+    /**
+     * @var string We enable MySQL's unique ON DUPLICATE KEY functionality. (This notably means that upserts are not entirely portable between MySQL and other DBs, though well-written ones that correctly specify the key constraints will work across DBMSs.)
+     */
     public $upsertMode = 'onDuplicateKey';
+
+    /**
+     * @var string We enable MySQL's bog-standard ENUM() type.
+     */
     public $enumMode = 'useEnum';
+
+    /**
+     * @var string We enable MySQL's COMMENT= tag on tables.
+     */
     public $commentMode = 'useAttributes';
+
+    /**
+     * @var string We enable MySQL's INDEX tag on columns.
+     */
     public $indexMode = 'useTableAttribute';
-    public $foreignKeyMode = 'useAlterTableAddForeignKey';
-    public $useCreateIfNotExist = true;
+
+    /**
+     * @var bool MySQL (well, InnoDB, at least) only supports either foreign keys or partioning. For performance, we use partioning.
+     */
+    public $foreignKeyMode = false;
+
+    /**
+     * @var bool We enable MySQL's PARTITION table attribute.
+     */
+    public $usePartition = true;
 
     public $tableTypes = array(
         DatabaseEngine::general => 'InnoDB',

@@ -4,6 +4,7 @@ namespace Database\SQL;
 use Database\DatabaseResultInterface;
 use Database\DatabaseEngine;
 use Database\DatabaseTypeType;
+use Database\DatabaseIndexType;
 
 class DatabaseSQLPgsql extends DatabaseSQLStandard {
     use DatabaseReconnectOnSelectDatabaseTrait;
@@ -51,17 +52,39 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
         'both' => ' AND ', 'either' => ' OR ', 'not' => ' NOT '
     );
 
-    /**
-     * @var bool While Postgres supports a native bitfield type, it has very strange cast rules for it. Thus, it does not exhibit the expected behaviour.
-     */
-    public $nativeBitfield = false;
-    public $upsertMode = 'onConflictDoUpdate';
+    public $keyTypeConstants = array(
+        DatabaseIndexType::fulltext => '',
+        DatabaseIndexType::primary => 'PRIMARY',
+        DatabaseIndexType::unique => 'UNIQUE',
+        DatabaseIndexType::index => '',
+    );
+
     public $enumMode = 'useCreateType';
     public $commentMode = 'useCommentOn';
     public $indexMode = 'useCreateIndex';
-    // TODO (currently broken)
-    // public $foreignKeyMode = 'useAlterTableAddForeignKey';
-    public $useCreateIfNotExist = false;
+    public $foreignKeyMode = 'useAlterTableConstraint';
+    public $tableRenameMode = 'alterTable';
+
+    /**
+     * @var bool While Postgres supports a native bitfield type, it has very strange cast rules for it. Thus, it does not exhibit the expected behaviour, and we disable native bitfields.
+     */
+    public $nativeBitfield = false;
+
+    /**
+     * @var bool Enable PgSQL's CREATE TABLE IF NOT EXISTS support.
+     */
+    public $useCreateIfNotExist = true;
+
+    /**
+     * @var bool Enable DROP INDEX IF NOT EXISTS support on PgSQL.
+     */
+    public $useDropIndexIfExists = true;
+
+    /**
+     * @var bool Enable PgSQL's ON CONFLICT DO UPDATE upsert syntax. It will switch to 'selectThenInsertOrUpdate' once connected to the PgSQL server if the detected version is <9.5
+     */
+    public $upsertMode = 'onConflictDoUpdate';
+
 
     public function connect($host, $port, $username, $password, $database = false) {
         // keep the user and password in memory to allow for reconnects with selectdb
@@ -197,18 +220,34 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
     }
 
     public function getTablesAsArray(DatabaseSQL $database) {
-        return $database->rawQueryReturningResult('SELECT * FROM information_schema.tables WHERE TABLE_CATALOG = '
+        return $database->rawQueryReturningResult('SELECT * FROM information_schema.tables WHERE table_catalog = '
             . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
             . ' AND table_type = \'BASE TABLE\' AND table_schema NOT IN (\'pg_catalog\', \'information_schema\')'
         )->getColumnValues('table_name');
     }
 
     public function getTableColumnsAsArray(DatabaseSQL $database) {
-        throw new \Exception('Unimplemented.');
+        return $database->rawQueryReturningResult('SELECT * FROM information_schema.columns WHERE table_catalog = '
+            . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
+            . ' AND table_schema NOT IN (\'pg_catalog\', \'information_schema\')'
+        )->getColumnValues(['table_name', 'column_name']);
     }
 
     public function getTableConstraintsAsArray(DatabaseSQL $database) {
-        throw new \Exception('Unimplemented.');
+        return $database->rawQueryReturningResult('SELECT * FROM information_schema.table_constraints WHERE table_catalog = '
+            . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
+            . ' AND table_schema NOT IN (\'pg_catalog\', \'information_schema\')'
+            . ' AND constraint_type = \'FOREIGN KEY\''
+        )->getColumnValues(['table_name', 'constraint_name']);
+    }
+
+    /**
+     * It is not possible to get the indexes of tables in PgSQL.
+     *
+     * @return array an empty array
+     */
+    public function getTableIndexesAsArray(DatabaseSQL $database) {
+        return [];
     }
 
     public function getLanguage() {

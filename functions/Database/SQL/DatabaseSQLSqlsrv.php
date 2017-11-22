@@ -73,8 +73,8 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
     public $enumMode = 'useCheck';
     public $indexMode = 'useCreateIndex';
     public $serialMode = 'identity';
-    // TODO (currently broken)
-    // public $foreignKeyMode = 'useAlterTableAddForeignKey';
+    public $foreignKeyMode = 'useAlterTableConstraint';
+    public $useDropIndexIfExists = true;
 
     public function connect($host, $port, $username, $password, $database = false) {
         return $this->connection = sqlsrv_connect($host, [
@@ -182,10 +182,22 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
     }
 
     public function getTableColumnsAsArray(DatabaseSQL $database) {
-        throw new \Exception('Unimplemented.');
+        return $database->rawQueryReturningResult('SELECT * FROM '
+            . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'COLUMNS')
+            . ' WHERE TABLE_SCHEMA = '
+            . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
+        )->getColumnValues(['TABLE_NAME', 'COLUMN_NAME']);
     }
 
     public function getTableConstraintsAsArray(DatabaseSQL $database) {
+        return $database->rawQueryReturningResult('SELECT * FROM '
+            . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'TABLE_CONSTRAINTS')
+            . ' WHERE TABLE_SCHEMA = '
+            . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
+        )->getColumnValues(['TABLE_NAME', 'CONSTRAINT_NAME']);
+    }
+
+    public function getTableIndexesAsArray(DatabaseSQL $database) {
         return [];
     }
 

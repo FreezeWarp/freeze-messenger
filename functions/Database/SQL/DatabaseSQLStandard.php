@@ -279,9 +279,19 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
     public $nativeBitfield = false;
 
     /**
-     * @var bool Whether or not IF NOT EXISTS is supported in CREATE statements.
+     * @var bool Whether or not IF NOT EXISTS is supported in CREATE DATABASE/TABLE statements.
      */
     public $useCreateIfNotExist = false;
+
+    /**
+     * @var bool Whether or not IF EXISTS is supported in DROP INDEX statements.
+     */
+    public $useDropIndexIfExists = false;
+
+    /**
+     * @var bool Whether or not PARTITION is supported in table definitions.
+     */
+    public $usePartition = false;
 
     /**
      * @var string {
@@ -327,8 +337,8 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
      * @var string {
      *     Mode used to support foreign keys. Options:
      *
-     *    'useAlterTableAddForeignKey' - Use MySQL's alter table syntax.
-     *    'useColumnReferences' - Use column REFERENCES clause.
+     *    'useAlterTableForeignKey' - Use ALTER TABLE DROP FOREIGN KEY.
+     *    'useAlterTableConstraint' - Use ALTER TABLE DROP CONSTRAINT.
      */
     public $foreignKeyMode = false;
 
