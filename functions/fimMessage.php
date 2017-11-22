@@ -82,7 +82,7 @@ class fimMessage
 
             $this->id = (int) $messageData['id'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have id column.');
             $this->user = fimUserFactory::getFromId((int)($messageData['userId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have userId column.')));
-            $this->room = new fimRoom((int)($messageData['roomId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have roomId column.')));
+            $this->room = new fimRoom(($messageData['roomId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have roomId column.')));
             $this->text = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have text column.');
             $this->flag = $messageData['flag'] ?? '';
             $this->time = $messageData['time'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');
