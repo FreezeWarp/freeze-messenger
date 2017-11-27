@@ -1033,7 +1033,7 @@ class fimDatabase extends DatabaseSQL
 
 
     function getUnreadMessages() {
-        $columns = [$this->sqlPrefix . 'unreadMessages' => 'userId, senderId, senderName, senderNameFormat, roomId, roomName, messageId, time, otherMessages'];
+        $columns = [$this->sqlPrefix . 'unreadMessages' => 'userId, senderId, roomId, messageId, time, otherMessages'];
 
         $conditions = [
             'userId' => $this->user->id,
@@ -1300,6 +1300,11 @@ class fimDatabase extends DatabaseSQL
             $permissionsCached = $this->getPermissionCache($room->id, $user->id);
             if ($permissionsCached > -1) // -1 equals an outdated permission.
                 return $permissionsCached;
+
+
+            /* If the room doesn't exist, return 0. */
+            if (!$room->exists())
+                return 0;
 
 
             global $loginConfig;
