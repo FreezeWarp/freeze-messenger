@@ -64,6 +64,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
     public $indexMode = 'useCreateIndex';
     public $foreignKeyMode = 'useAlterTableConstraint';
     public $tableRenameMode = 'alterTable';
+    public $perTableIndexes = false;
 
     /**
      * @var bool While Postgres supports a native bitfield type, it has very strange cast rules for it. Thus, it does not exhibit the expected behaviour, and we disable native bitfields.

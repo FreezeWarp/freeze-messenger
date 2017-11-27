@@ -1244,11 +1244,12 @@ class DatabaseSQL extends Database
             /* Generate Foreign Key Restrictions */
             if ($this->isTypeObject($column['restrict'])) {
                 if ($column['restrict']->type === DatabaseTypeType::tableColumn) {
-                    if ($returnedQuery = $this->returnQueryString()->deleteForeignKeyConstraintFromColumnName($tableName, $columnName)) {
-                        $triggers[] = $returnedQuery;
-                    }
+                    if ($this->sqlInterface->foreignKeyMode) {
+                        if ($returnedQuery = $this->returnQueryString()->deleteForeignKeyConstraintFromColumnName($tableName, $columnName))
+                            $triggers[] = $returnedQuery;
 
-                    $triggers[] = $this->returnQueryString()->createForeignKeyConstraint($tableName, $columnName, $column['restrict']->value[0], $column['restrict']->value[1]);
+                        $triggers[] = $this->returnQueryString()->createForeignKeyConstraint($tableName, $columnName, $column['restrict']->value[0], $column['restrict']->value[1]);
+                    }
                 }
                 else {
                     throw new Exception('$column[\'restrict\'] must be an instance of DatabaseType(DatabaseTypeType::tableColumn).');
@@ -1511,9 +1512,10 @@ class DatabaseSQL extends Database
      */
     public function deleteTable($tableName)
     {
-        return $this->rawQuery('DROP TABLE IF EXISTS '
-            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-        );
+        return $this->deleteForeignKeyConstraints($tableName)
+            && $this->rawQuery('DROP TABLE IF EXISTS '
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+            );
     }
 
 
@@ -1618,7 +1620,10 @@ class DatabaseSQL extends Database
 
             // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
             elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
-                $indexes[] = "PRIMARY KEY " . $this->formatValue(DatabaseTypeType::arraylist, $this->getIndexColsFromIndexName($indexName));
+                $indexes[] = "CONSTRAINT "
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $this->getIndexName($tableName, $indexName))
+                    . " PRIMARY KEY "
+                    . $this->formatValue(DatabaseTypeType::arraylist, $this->getIndexColsFromIndexName($indexName));
 
             // Throw an exception if the index mode is unrecognised.
             else
@@ -1652,11 +1657,16 @@ class DatabaseSQL extends Database
 
 
         /* CREATE x INDEX ON table */
-        $trigger = "CREATE " . $this->sqlInterface->keyTypeConstants[$indexType] . " INDEX "
-            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName)
-            . " ON "
-            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName);
+        $trigger = "CREATE " . $this->sqlInterface->keyTypeConstants[$indexType] . " INDEX";
 
+        if (!($indexType === DatabaseIndexType::fulltext
+            && $this->sqlInterface->getLanguage() === 'sqlsrv')) {
+            $trigger .= ' '
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName);
+        }
+
+        $trigger .= " ON "
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName);
 
         /* PgSQL: GIN indexes for fulltext
          * TODO: this doesn't support multi-column fulltext indexes. */
@@ -1680,7 +1690,6 @@ class DatabaseSQL extends Database
                 $indexColsConditions["!{$col->value}"] = $this->type(DatabaseTypeType::null);
             }
 
-            end($triggers);
             $trigger .= ' WHERE ' . $this->recurseBothEither($indexColsConditions, $this->reverseAliasFromConditionArray($tableName, $indexColsConditions), 'both');
         }
 
@@ -1709,14 +1718,25 @@ class DatabaseSQL extends Database
 
         if ($this->sqlInterface->useDropIndexIfExists) {
             return $this->rawQuery('DROP INDEX IF EXISTS '
-                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName));
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName)
+                . ($this->sqlInterface->perTableIndexes ?
+                    ' ON '
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                    : ''
+                )
+            );
         }
         else {
             $tableIndexes = $this->getTableIndexesAsArray();
 
             if (isset($tableIndexes[strtolower($tableName)]) && in_array($alteredIndexName, $tableIndexes[strtolower($tableName)])) {
                 return $this->rawQuery('DROP INDEX '
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName));
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName)
+                    . ($this->sqlInterface->perTableIndexes ?
+                        ' ON '
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                        : ''
+                ));
             }
 
             return false;
@@ -1766,14 +1786,16 @@ class DatabaseSQL extends Database
     public function createForeignKeyConstraint($tableName, $columnName, $foreignTableName, $foreignColumnName) {
         $constraintName = 'fk_' . $tableName . '_' . $columnName;
 
-        return $this->rawQuery('ALTER TABLE '
-            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-            . ' ADD CONSTRAINT ' . $this->formatValue(DatabaseTypeType::column, $constraintName) . ' FOREIGN KEY ('
-            . $this->formatValue(DatabaseTypeType::column, $columnName)
-            . ') REFERENCES ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $foreignTableName) . '('
-            . $this->formatValue(DatabaseTypeType::column, $foreignColumnName)
-            . ')'
-        );
+        if ($this->sqlInterface->foreignKeyMode) {
+            return $this->rawQuery('ALTER TABLE '
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                . ' ADD CONSTRAINT ' . $this->formatValue(DatabaseTypeType::column, $constraintName) . ' FOREIGN KEY ('
+                . $this->formatValue(DatabaseTypeType::column, $columnName)
+                . ') REFERENCES ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $foreignTableName) . '('
+                . $this->formatValue(DatabaseTypeType::column, $foreignColumnName)
+                . ')'
+            );
+        }
     }
 
 
@@ -1810,8 +1832,11 @@ class DatabaseSQL extends Database
     public function deleteForeignKeyConstraint($tableName, $constraintName) {
         $tableConstraints = $this->getTableConstraintsAsArray();
 
+        if (!$this->sqlInterface->foreignKeyMode) {
+            return true;
+        }
+
         if (isset($tableConstraints[strtolower($tableName)]) && in_array($constraintName, $tableConstraints[strtolower($tableName)])) {
-            //var_dump($constraintName, $tableConstraints[strtolower($tableName)]);
             switch ($this->sqlInterface->foreignKeyMode) {
                 case 'useAlterTableForeignKey':
                     return $this->rawQuery('ALTER TABLE '
@@ -1904,6 +1929,10 @@ class DatabaseSQL extends Database
         }
 
         return $return;
+    }
+
+    public function getTriggerQueue() {
+        return $this->triggerQueue;
     }
 
 
@@ -2488,6 +2517,16 @@ class DatabaseSQL extends Database
         $columns = array_keys($dataArray);
         $values = array_values($dataArray);
 
+
+        $serialDisabled = false;
+        if ($this->sqlInterface->getLanguage() === 'sqlsrv'
+            && isset($this->insertIdColumns[$tableName])
+            && in_array($this->insertIdColumns[$tableName], $columns)) {
+            $serialDisabled = true;
+            $this->rawQuery('SET IDENTITY_INSERT ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName) . ' ON');
+        }
+
+
         $query = 'INSERT INTO '
             . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $this->getTableNameTransformation($tableName, $dataArray))
             . ' '
@@ -2495,6 +2534,9 @@ class DatabaseSQL extends Database
 
         if ($queryData = $this->rawQuery($query)) {
             $this->insertIdCallback($tableName);
+
+            if ($serialDisabled)
+                $this->rawQuery('SET IDENTITY_INSERT ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName) . ' OFF');
 
             return $queryData;
         }

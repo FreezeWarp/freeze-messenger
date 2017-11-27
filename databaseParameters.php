@@ -31,6 +31,7 @@ $database->setTransformationParameters([
         'id' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'idEncoded'],
     ],
 ], [
+    $database->sqlPrefix . 'users' => 'id',
     $database->sqlPrefix . 'rooms' => 'id',
 ]);
 

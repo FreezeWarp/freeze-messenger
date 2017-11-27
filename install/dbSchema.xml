@@ -272,8 +272,10 @@
             <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
             <column name="flag" type="string" maxlen="10" comment="The content-type flag of the message (e.g. video, image, text, archive, html, url, email)." />
 
-            <key name="id,roomId" type="primary" />
+            <key name="id" type="primary" />
+            <key name="id,roomId" type="unique" />
             <key name="text" type="fulltext" />
+            <key name="roomId" type="index" />
             <key name="deleted" type="index" />
             <key name="time" type="index" />
             <key name="roomId" type="index" />
