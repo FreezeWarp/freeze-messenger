@@ -1357,6 +1357,25 @@ class DatabaseSQL extends Database
         for ($i = 0; $i < $hardPartitionCount; $i++) {
             $tableNameI = $tableName . ($hardPartitionCount > 1 ? "__part$i" : '');
 
+
+            /* Rename/Delete Existing
+             * If we are overwriting an existing table, try renaming, then deleting it. */
+            if ($renameOrDeleteExisting && in_array(strtolower($tableNameI), $this->getTablesAsArray())) {
+                if (!$this->renameTable($tableNameI, $tableNameI . '~' . time())) {
+                    if (!$this->deleteTable($tableNameI)) {
+                        throw new Exception("Could Not Rename or Delete Table '$tableNameI'");
+                    }
+                }
+            }
+
+            /* If we don't want to overwrite an existing table, and we can't rely on IF NOT EXISTS in the CREATE TABLE statement.
+             * then check to see if an existing table exists and skip if it does. */
+            else if (!$this->sqlInterface->useCreateIfNotExist && in_array(strtolower($tableName), $this->getTablesAsArray())) {
+                continue;
+            }
+
+
+            /* Parse Columns and Indexes */
             list($columns, $triggers, $tableIndexes, $tableProperties) = $this->parseTableColumns($tableNameI, $tableColumns, $tableIndexes, $engine);
             list($indexes, $indexTriggers) = $this->createTableIndexes($tableNameI, $tableIndexes, true);
 
@@ -1397,21 +1416,6 @@ class DatabaseSQL extends Database
             if ($partitionColumn
                 && $this->sqlInterface->usePartition) {
                 $tableProperties .= ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100';
-            }
-
-
-            /* Rename/Delete Existing
-             * If we are overwriting an existing table, try renaming, then deleting it. */
-            if ($renameOrDeleteExisting && in_array(strtolower($tableNameI), $this->getTablesAsArray())) {
-                if (!$this->renameTable($tableNameI, $tableNameI . '~' . time())) {
-                    if (!$this->deleteTable($tableNameI)) {
-                        throw new Exception("Could Not Rename or Delete Table '$tableNameI'");
-                    }
-                }
-            }
-            else if (!$this->sqlInterface->useCreateIfNotExist && in_array(strtolower($tableName), $this->getTablesAsArray())) {
-                $this->endTransaction();
-                return true;
             }
 
 
@@ -1654,17 +1658,18 @@ class DatabaseSQL extends Database
             . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName);
 
 
-        /* PgSQL: GIN indexes for fulltext */
+        /* PgSQL: GIN indexes for fulltext
+         * TODO: this doesn't support multi-column fulltext indexes. */
         if ($indexType === DatabaseIndexType::fulltext
             && $this->sqlInterface->getLanguage() === 'pgsql') {
-            // TODO: this doesn't support multi-column fulltext indexes.
-            $trigger .= ' USING GIN (to_tsvector(\'english\'), ' . $this->formatValue(DatabaseTypeType::column, $indexName) . ')';
+            $trigger .= ' USING GIN (to_tsvector(\'english\', ' . $this->formatValue(DatabaseTypeType::column, $indexName) . '))';
         }
 
-
         /* (columns) */
-        $trigger .= ' '
-            . $this->formatValue(DatabaseTypeType::arraylist, $indexCols);
+        else {
+            $trigger .= ' '
+                . $this->formatValue(DatabaseTypeType::arraylist, $indexCols);
+        }
 
 
         /* SqlSrv: WHERE NOT NULL (allow multiple nulls in SqlSrv unique indexes) */
@@ -1806,7 +1811,7 @@ class DatabaseSQL extends Database
         $tableConstraints = $this->getTableConstraintsAsArray();
 
         if (isset($tableConstraints[strtolower($tableName)]) && in_array($constraintName, $tableConstraints[strtolower($tableName)])) {
-            var_dump($constraintName, $tableConstraints[strtolower($tableName)]);
+            //var_dump($constraintName, $tableConstraints[strtolower($tableName)]);
             switch ($this->sqlInterface->foreignKeyMode) {
                 case 'useAlterTableForeignKey':
                     return $this->rawQuery('ALTER TABLE '
@@ -1908,41 +1913,23 @@ class DatabaseSQL extends Database
 
 
     public function getTableColumnsAsArray(): array {
-        $tableColumns = array_change_key_case(
+        return array_change_key_case(
             $this->sqlInterface->getTableColumnsAsArray($this), CASE_LOWER
         );
-
-        array_walk($tableColumns, function(&$val) {
-            $val = array_map('strtolower', $val);
-        });
-
-        return $tableColumns;
     }
 
 
     public function getTableConstraintsAsArray(): array {
-        $tableConstraints = array_change_key_case(
+        return array_change_key_case(
             $this->sqlInterface->getTableConstraintsAsArray($this), CASE_LOWER
         );
-
-        array_walk($tableConstraints, function(&$val) {
-            $val = array_map('strtolower', $val);
-        });
-
-        return $tableConstraints;
     }
 
 
     public function getTableIndexesAsArray(): array {
-        $tableIndexes = array_change_key_case(
+        return array_change_key_case(
             $this->sqlInterface->getTableIndexesAsArray($this), CASE_LOWER
         );
-
-        array_walk($tableIndexes, function(&$val) {
-            $val = array_map('strtolower', $val);
-        });
-
-        return $tableIndexes;
     }
 
     /*********************************************************
