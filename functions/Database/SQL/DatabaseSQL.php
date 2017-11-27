@@ -2296,8 +2296,13 @@ class DatabaseSQL extends Database
 
                 /* Full Text Searching */
                 if ($value->comparison === DatabaseTypeComparison::fulltextSearch
-                    && $this->sqlInterface->getLanguage() === 'mysql') { // TODO: other languages
+                    && $this->sqlInterface->getLanguage() === 'mysql') {
                     $sideTextFull[$i] = 'MATCH (' . $this->formatValue(DatabaseTypeType::column, $column) . ') AGAINST (' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value) . ' IN NATURAL LANGUAGE MODE)';
+                }
+
+                elseif ($value->comparison === DatabaseTypeComparison::fulltextSearch
+                    && $this->sqlInterface->getLanguage() === 'pgsql') {
+                    $sideTextFull[$i] = 'to_tsvector (\'english\', ' . $this->formatValue(DatabaseTypeType::column, $column) . ') @@ to_tsquery(\'english\', ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value) . ')';
                 }
 
                 /* Normal Boolean Logic */

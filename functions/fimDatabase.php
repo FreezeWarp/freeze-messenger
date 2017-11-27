@@ -1965,7 +1965,7 @@ class fimDatabase extends DatabaseSQL
                 'roomId'   => $message->room->id,
                 'userId'   => $message->user->id,
                 'anonId'   => $message->user->anonId,
-                'text'     => $this->blob($message->text),
+                'text'     => $message->text,
                 'textSha1' => sha1($message->text),
                 'ip'       => $_SERVER['REMOTE_ADDR'],
                 'flag'     => $message->flag,
