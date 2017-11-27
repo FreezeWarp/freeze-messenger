@@ -458,7 +458,7 @@ popup.prototype.room.prototype.topicChangeHandler = function (active) {
 };
 popup.prototype.room.prototype.editedMessageHandler = function (active) {
     if ($('#message' + active.id).length > 0) {
-        active.userId = $('#message' + active.id + ' .userName').attr('data-userid');
+        active.userId = active.senderId;
         active.time = $('#message' + active.id + ' .messageText').attr('data-time');
         this.newMessage(this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
     }
@@ -489,9 +489,7 @@ popup.prototype.room.prototype.getMessagesFromFallback = function () {
         }, {
             each: (function (event) {
                 _this.options.lastEvent = Math.max(Number(_this.options.lastEvent), Number(event.id));
-                if (event.eventName == "newMessage") {
-                    _this.newMessageHandler(event.data);
-                }
+                _this[event.eventName + "Handler"](event.data);
             }),
             end: (function () {
                 if (window.requestSettings.serverSentEvents) {

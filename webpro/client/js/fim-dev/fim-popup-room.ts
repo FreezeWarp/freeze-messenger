@@ -576,7 +576,7 @@ popup.prototype.room.prototype.topicChangeHandler = function(active) {
 
 popup.prototype.room.prototype.editedMessageHandler = function(active) {
     if ($('#message' + active.id).length > 0) {
-        active.userId = $('#message' + active.id + ' .userName').attr('data-userid');
+        active.userId = active.senderId;
         active.time = $('#message' + active.id + ' .messageText').attr('data-time');
 
         this.newMessage(this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
@@ -611,10 +611,7 @@ popup.prototype.room.prototype.getMessagesFromFallback = function() {
         }, {
             each: ((event) => {
                 this.options.lastEvent = Math.max(Number(this.options.lastEvent), Number(event.id));
-
-                if (event.eventName == "newMessage") {
-                    this.newMessageHandler(event.data);
-                }
+                this[event.eventName + "Handler"](event.data);
             }),
             end: (() => {
                 if (window.requestSettings.serverSentEvents) {
