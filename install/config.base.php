@@ -70,25 +70,20 @@ $dbConfig['integration']['tablePrefix'] = '';
 
 
 
-////* Cache Servers *////
+////* Cache and Stream Servers *////
 /* $cacheConnectMethods['disk']
  * If specified, this will enable disk caching, where applicable. */
 $cacheConnectMethods['disk'] = [
-    //'directory' => '', // If omitted, defaults to $tmpDir from below.
+    //'directory' => '', // If omitted, defaults to sys_get_temp_dir().
 ];
 
 /* $cacheConnectMethods['apc']
  * If specified, this will enable APC caching, where applicable. */
 /*$cacheConnectMethods['apc'] = [];*/
 
-/* $streamMethods['pgsql']
- * If specified, this will enable PostGreSQL pub/sub. */
-/*$streamMethods['pgsql'] = [
-    'host' => '',
-    'port' => 5432,
-    'username' => '',
-    'password' => '',
-];*/
+/* $cacheConnectMethods['apcu']
+ * If specified, this will enable APCu caching, where applicable. */
+/*$cacheConnectMethods['apcu'] = [];*/
 
 /* $cacheConnectMethods['redis']
  * If specified, this will enable Redis caching. */
@@ -113,6 +108,14 @@ $streamMethods['redis'] = $cacheConnectionMethods['redis'];*/
     ),
 ); */
 
+/* $streamMethods['pgsql']
+ * If specified, this will enable PostGreSQL pub/sub. */
+/*$streamMethods['pgsql'] = [
+    'host' => '',
+    'port' => 5432,
+    'username' => '',
+    'password' => '',
+];*/
 
 
 ////* Forum Integration *////
@@ -180,36 +183,10 @@ $loginConfig['bannedGroups'] = array();
 
 
 
-////* Encryption *////
-
-/*
- * $blowFish
- * When set to true, FreezeMessenger will attempt to use BlowFish for all password encrpytions. Note that doing so is the best for user security.
- * However, blowFish is not widely supported, and once passwords are encoded using blowFish, FreezeMessenger can not be moved to systems that do not support it.
- * DO NOT CHANGE THIS AT ANY TIME POST-INSTALLATION!
- */
-$blowFish = false;
-
-/*
- * $sha256Rounds
- * If $blowFish is false, FreezeMessenger will fallback to sha256. For small installations, a low number of sha256 rounds is ideal.
- * Post-installation, this number can be increased as long as administrators update the database first.
- */
-$sha256Rounds = 5000;
-
-
-
-
 ////* General *////
 
 /* $installUrl */
 $installUrl = '';
-
-
-
-/* $tmpDir */
-$tmpDir = '';
-
 
 
 
@@ -221,6 +198,4 @@ $tmpDir = '';
  * Use this if a configuration change makes it impossible to revert said change. */
 $disableConfig = false;
 
-// Unlisted variables: $installUrl, $installLoc, $sessionExpire
-// Learn about them in the documentation.
 ?>

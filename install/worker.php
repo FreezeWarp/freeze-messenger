@@ -247,10 +247,6 @@ switch ($_REQUEST['phase']) {
         $adminUsername = urldecode($_GET['admin_userName']);
         $adminPassword = urldecode($_GET['admin_password']);
 
-        $cacheMethod = urldecode($_GET['cache_method']);
-
-        $tmpDir = urldecode($_GET['tmp_dir']);
-
         $base = file_get_contents('config.base.php');
 
         if ($forum == 'vanilla') {
@@ -293,14 +289,13 @@ switch ($_REQUEST['phase']) {
 \$dbConnect['integration']['database'] = '';",
             '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'\';',
             '$dbConfig[\'integration\'][\'tablePrefix\'] = \'\';',
-            '$cacheConnect[\'driver\'] = \'\';',
             '$loginConfig[\'method\'] = \'vanilla\';',
             '$loginConfig[\'url\'] = \'http://example.com/forums/\';',
             '$loginConfig[\'superUsers\'] = array();',
             '$installUrl = \'\';',
-            '$tmpDir = \'\';',
             '$loginConfig[\'adminGroups\'] = array()',
-            '$loginConfig[\'bannedGroups\'] = array()'
+            '$loginConfig[\'bannedGroups\'] = array()',
+
         );
 
         $replace = array(
@@ -324,12 +319,10 @@ switch ($_REQUEST['phase']) {
 \$dbConnect['integration']['database'] = '" . addslashes($databaseName) . "';",
             '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'' . addslashes($prefix) . '\';',
             '$dbConfig[\'integration\'][\'tablePrefix\'] = \'' . addslashes($forumTablePrefix) . '\';',
-            '$cacheConnect[\'driver\'] = \'' . addslashes($cacheMethod) . '\';',
             '$loginConfig[\'method\'] = \'' . addslashes($forum) . '\';',
             '$loginConfig[\'url\'] = \'' . addslashes($forumUrl) . '\';',
             '$loginConfig[\'superUsers\'] = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
             '$installUrl = \'' . str_replace(array('install/index.php', 'install/'), array('', ''), $_SERVER['HTTP_REFERER']) . '\';',
-            '$tmpDir = \'' . $tmpDir . '\';',
             '$loginConfig[\'adminGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin4') ? '6' : '') . ')',
             '$loginConfig[\'bannedGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin4') ? '4, 8' : '') . ')',
         );
@@ -342,6 +335,18 @@ switch ($_REQUEST['phase']) {
             }
         }
 
+
+        /* Automatically enable APCu if it is available. */
+        if (extension_loaded('apcu')) {
+            $find[] = '/*$cacheConnectMethods[\'apcu\'] = [];*/';
+            $replace[] = '$cacheConnectMethods[\'apcu\'] = [];';
+        }
+
+        /* Automatically enable APC if it is available. */
+        elseif (extension_loaded('apc')) {
+            $find[] = '/*$cacheConnectMethods[\'apc\'] = [];*/';
+            $replace[] = '$cacheConnectMethods[\'apc\'] = [];';
+        }
 
 
         $baseNew = str_replace($find, $replace, $base);

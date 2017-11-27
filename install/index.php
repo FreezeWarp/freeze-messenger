@@ -623,7 +623,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
     <div id="part3" class="card">
         <h1 class="card-header">FlexChat Installation: Generate Configuration File</h1>
         <div class="card-body">
-            <p>Now that the database has been successfully installed, we must generate the configuration file. You can do this in a couple of ways: we would recommend simply entering the data below and you'll be on your way, though you can also do it manually by getting config.base.php from the install/ directory and saving it as config.php in the main directory.</p>
+            <p>Now that the database has been successfully installed, we must generate the configuration file. After you have generated your configuration file, you may wish to edit it (located in the main FreezeMessenger directory as <strong>config.php</strong>) to enable advanced cache methods.</p>
             <table class="table">
                 <thead class="thead-dark">
                 <tr>
@@ -803,31 +803,6 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                     </td>
                 </tr>
                 </tbody>
-                <thead>
-                <tr class="thead-dark">
-                    <th colspan="2">Other Settings</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td><strong>Cache Method</strong></td>
-                    <td>
-                        <select class="form-control" name="cache_method">
-                            <option value="disk">Disk Cache</option>
-                            <?php echo (extension_loaded('apc') ? '<option value="apc" selected="selected">APC</option>' : '') .
-                                (extension_loaded('apcu') ? '<option value="apcu" selected="selected">APCu</option>' : '') .
-                                (extension_loaded('memcached') ? '<option value="memcached">Memcached</option>' : '') ?>
-                        </select>
-                        <small class="form-text text-muted">The primary cache to use. Only available caches are listed. We strongly recommend APC if you are able to use it.
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>Temporary Directory</strong></td>
-                    <td>
-                        <input class="form-control" type="text" name="tmp_dir" value="<?php echo addcslashes(realpath(sys_get_temp_dir()), '"'); ?>" />
-                        <small class="form-text text-muted">The temporary directory of the system. This should not be web-accessible and must be writable by FlexChat.</small>
-                    </td>
-                </tr>
                 <!--
                 <tr>
                     <td><strong>reCAPTCHA Public Key</strong></td>
