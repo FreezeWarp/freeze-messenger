@@ -1184,10 +1184,6 @@ $.when(
         $(window).bind('hashchange', fim_hashParse);
 
 
-        /*** Image Buttons! ***/
-        // todo: move to upload popup
-        //$("#imageUploadSubmitButton").button("option", "disabled", true);
-
         showLogin = function() {
             /*** Initial Login ***/
             if (window.location.hash.match(/\#sessionHash=/)) {
@@ -1220,7 +1216,7 @@ $.when(
             else {
                 popup.login();
             }
-        }
+        };
         showLogin();
 
         return false;

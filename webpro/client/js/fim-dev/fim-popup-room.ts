@@ -316,6 +316,11 @@ popup.prototype.room.prototype.init = function(options) {
         paramName : 'file',
         submit: (e, data) => {
             console.log("send", data);
+
+            if (!("formData" in data)) {
+                data.formData = {};
+            }
+
             data.formData.roomId = this.options.roomId;
 
             if (!("fileName" in data.formData)) {
