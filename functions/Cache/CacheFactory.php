@@ -33,8 +33,6 @@ class CacheFactory {
 
 
     public function addMethod($method, $servers) {
-        global $tmpDir;
-
         $className = 'Cache' . ucfirst($method);
         $classNameSpaced = "\\Cache\\$className";
         $includePath = __DIR__ . "/{$className}.php";

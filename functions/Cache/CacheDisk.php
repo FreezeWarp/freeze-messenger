@@ -24,16 +24,15 @@ class CacheDisk implements CacheInterface {
 
 
     public function __construct($servers) {
-        global $tmpDir;
         require_once(__DIR__ . '/FileCache.php');
 
-        $directory = (isset($servers['directory']) ? $servers['directory'] : $tmpDir);
+        $directory = (isset($servers['directory']) ? $servers['directory'] : realpath(sys_get_temp_dir()));
 
-        if (is_writable($tmpDir)) {
+        if (is_writable($directory)) {
             $this->instance = new FileCache($directory . '/');
         }
         else {
-            throw new \Exception('Could not create disk cache. Please ensure that PHP temp directory is set and writable (current value: ' . $tmpDir . ').');
+            throw new \Exception('Could not create disk cache. Please ensure that PHP temp directory is set and writable (current value: ' . $directory . ').');
         }
     }
 
