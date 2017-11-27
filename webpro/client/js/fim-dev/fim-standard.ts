@@ -170,11 +170,11 @@ standard.prototype.getEventsFromFallback = function() {
         }),
         end: (() => {
             if (window.requestSettings.serverSentEvents) {
-                this.eventListener();
+                this.getEventsFromStream();
             }
             else {
                 window.setTimeout((() => {
-                    this.getMessagesFromFallback()
+                    this.getEventsFromFallback()
                 }), 3000);
             }
         })

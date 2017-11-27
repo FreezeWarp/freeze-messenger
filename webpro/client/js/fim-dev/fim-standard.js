@@ -134,11 +134,11 @@ standard.prototype.getEventsFromFallback = function () {
         }),
         end: (function () {
             if (window.requestSettings.serverSentEvents) {
-                _this.eventListener();
+                _this.getEventsFromStream();
             }
             else {
                 window.setTimeout((function () {
-                    _this.getMessagesFromFallback();
+                    _this.getEventsFromFallback();
                 }), 3000);
             }
         })
