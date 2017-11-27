@@ -600,12 +600,15 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
 
     if (window.userId == userId && window.activeLogin.userData.permissions.editOwnPosts) {
         tag.on('dblclick', function() {
-            var textarea = $('<textarea>').text($(this).text()).onEnter(function() {
-                fimApi.editMessage(roomId, messageId, {
-                    'message' : textarea.val()
-                });
+            var textarea = $('<textarea>').text($(this).text()).on('keydown', function(e) {
+                if (e.keyCode == 13 && !e.shiftKey) {
+                    fimApi.editMessage(roomId, messageId, {
+                        'message' : textarea.val()
+                    });
 
-                $(this).replaceWith(fim_buildMessageLine(textarea.val(), messageId, userId, roomId, messageTime, userNameDeferred));
+                    $(this).replaceWith(fim_buildMessageLine(textarea.val(), messageId, userId, roomId, messageTime, userNameDeferred))
+                    e.preventDefault();
+                }
             });
 
             $.each(this.attributes, function() {
