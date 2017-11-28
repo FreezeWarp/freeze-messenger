@@ -46,8 +46,8 @@ public class MainPane {
     public ScrollPane messageListScroll;
 
     @FXML
-    public TableView userList;
 
+    public TableView userList;
     @FXML
     public TableColumn avatar = new TableColumn<User, String>("Avatar");
 
