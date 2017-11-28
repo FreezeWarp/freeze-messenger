@@ -154,7 +154,7 @@ popup.prototype.room.prototype.newMessage = function (roomId, messageId, message
         }
         // HTML5 Notification
         if (window.notify.webkitNotifySupported() && window.settings.webkitNotifications) {
-            window.notify.webkitNotify("images/favicon.ico", "New Message", $(messageText).text());
+            window.notify.webkitNotify("images/favicon.ico", "New Message [" + $('#roomName').text() + "]", $(messageText).text());
         }
     }
     /* Allow Keyboard Scrolling through Messages
@@ -232,15 +232,18 @@ popup.prototype.room.prototype.init = function (options) {
     var pingInterval;
     /* Setup */
     // Monitor the window visibility for running favicon flash and notifications.
-    document.addEventListener('visibilitychange', function () {
-        if (document.visibilityState == 'hidden') {
+    var visiblityChangeHandler = function (blurred) {
+        if (document.visibilityState == 'hidden' || blurred) {
             _this.windowBlurred = true;
         }
         else {
             _this.windowBlurred = false;
             _this.faviconFlashStop();
         }
-    });
+    };
+    document.addEventListener('visibilitychange', visiblityChangeHandler);
+    window.addEventListener('blur', function () { visiblityChangeHandler(true); });
+    window.addEventListener('focus', visiblityChangeHandler);
     $(window).on('resize', null, this.onWindowResize);
     // Set up file upload handler, used for drag/drop, pasting, and insertDoc method.
     $('#chatContainer').fileupload({

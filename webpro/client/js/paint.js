@@ -671,6 +671,13 @@ Array.prototype.remove = function(item) {
     return this.splice(this.indexOf(item), 1);
 };
 
+String.prototype.toNumber = function() {
+    if (isNaN(Number(this)))
+        return 0;
+    else
+        return Number(this);
+};
+
 // console.log
 if (typeof console !== 'object' || typeof console.log !== 'function') {
     var console = {

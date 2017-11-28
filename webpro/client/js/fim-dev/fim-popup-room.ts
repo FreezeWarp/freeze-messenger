@@ -215,7 +215,7 @@ popup.prototype.room.prototype.newMessage = function(roomId, messageId, messageT
 
         // HTML5 Notification
         if (window.notify.webkitNotifySupported() && window.settings.webkitNotifications) {
-            window.notify.webkitNotify("images/favicon.ico", "New Message", $(messageText).text());
+            window.notify.webkitNotify("images/favicon.ico", "New Message [" + $('#roomName').text() + "]", $(messageText).text());
         }
     }
 
@@ -292,15 +292,18 @@ popup.prototype.room.prototype.init = function(options) {
     /* Setup */
 
     // Monitor the window visibility for running favicon flash and notifications.
-    document.addEventListener('visibilitychange', () => {
-        if(document.visibilityState == 'hidden') {
+    var visiblityChangeHandler = (blurred) => {
+        if(document.visibilityState == 'hidden' || blurred) {
             this.windowBlurred = true;
         }
         else {
             this.windowBlurred = false;
             this.faviconFlashStop();
         }
-    });
+    };
+    document.addEventListener('visibilitychange', visiblityChangeHandler);
+    window.addEventListener('blur', function() { visiblityChangeHandler(true) });
+    window.addEventListener('focus', visiblityChangeHandler);
 
     $(window).on('resize', null, this.onWindowResize);
 

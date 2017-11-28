@@ -21420,7 +21420,8 @@ var notify = {
         else {
             new window.Notification(title, {
                 body : notifyData,
-                icon : icon
+                icon : icon,
+                tag : "fm-notify"
             });
         }
     }
