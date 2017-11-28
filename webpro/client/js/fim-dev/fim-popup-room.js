@@ -204,6 +204,7 @@ popup.prototype.room.prototype.faviconFlashStop = function () {
         window.clearInterval(this.faviconFlashTimer);
         this.faviconFlashTimer = false;
     }
+    $('#favicon').attr('href', 'images/favicon.ico');
 };
 popup.prototype.room.prototype.faviconFlashOnce = function () {
     if ($('#favicon').attr('href') === 'images/favicon.ico')
@@ -232,18 +233,21 @@ popup.prototype.room.prototype.init = function (options) {
     var pingInterval;
     /* Setup */
     // Monitor the window visibility for running favicon flash and notifications.
-    var visiblityChangeHandler = function (blurred) {
+    var visibilityChangeHandler = function (blurred) {
         if (document.visibilityState == 'hidden' || blurred) {
+            console.log("now blurred");
             _this.windowBlurred = true;
         }
         else {
+            console.log("not blurred");
             _this.windowBlurred = false;
             _this.faviconFlashStop();
         }
     };
-    document.addEventListener('visibilitychange', visiblityChangeHandler);
-    window.addEventListener('blur', function () { visiblityChangeHandler(true); });
-    window.addEventListener('focus', visiblityChangeHandler);
+    document.addEventListener('visibilitychange', function () { visibilityChangeHandler(false); });
+    window.addEventListener('blur', function () { visibilityChangeHandler(true); });
+    window.addEventListener('focus', function () { visibilityChangeHandler(false); });
+    visibilityChangeHandler(false);
     $(window).on('resize', null, this.onWindowResize);
     // Set up file upload handler, used for drag/drop, pasting, and insertDoc method.
     $('#chatContainer').fileupload({

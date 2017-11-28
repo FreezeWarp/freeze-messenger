@@ -254,6 +254,8 @@ popup.prototype.room.prototype.faviconFlashStop = function() {
         window.clearInterval(this.faviconFlashTimer);
         this.faviconFlashTimer = false;
     }
+
+    $('#favicon').attr('href', 'images/favicon.ico');
 };
 
 popup.prototype.room.prototype.faviconFlashOnce = function() { // Changes the state of the favicon from opaque to transparent or similar.
@@ -292,18 +294,21 @@ popup.prototype.room.prototype.init = function(options) {
     /* Setup */
 
     // Monitor the window visibility for running favicon flash and notifications.
-    var visiblityChangeHandler = (blurred) => {
+    var visibilityChangeHandler = (blurred) => {
         if(document.visibilityState == 'hidden' || blurred) {
+            console.log("now blurred");
             this.windowBlurred = true;
         }
         else {
+            console.log("not blurred");
             this.windowBlurred = false;
             this.faviconFlashStop();
         }
     };
-    document.addEventListener('visibilitychange', visiblityChangeHandler);
-    window.addEventListener('blur', function() { visiblityChangeHandler(true) });
-    window.addEventListener('focus', visiblityChangeHandler);
+    document.addEventListener('visibilitychange', function() { visibilityChangeHandler(false) });
+    window.addEventListener('blur', function() { visibilityChangeHandler(true) });
+    window.addEventListener('focus',  function() { visibilityChangeHandler(false) });
+    visibilityChangeHandler(false);
 
     $(window).on('resize', null, this.onWindowResize);
 
