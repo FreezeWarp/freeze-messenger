@@ -2334,6 +2334,11 @@ class DatabaseSQL extends Database
                     $sideTextFull[$i] = 'to_tsvector (\'english\', ' . $this->formatValue(DatabaseTypeType::column, $column) . ') @@ to_tsquery(\'english\', ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value) . ')';
                 }
 
+                elseif ($value->comparison === DatabaseTypeComparison::fulltextSearch
+                    && $this->sqlInterface->getLanguage() === 'sqlsrv') {
+                    $sideTextFull[$i] = 'CONTAINS(' . $this->formatValue(DatabaseTypeType::column, $column) . ', ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value) . ')';
+                }
+
                 /* Normal Boolean Logic */
                 else {
                     $sideText['left'] = ($reverseAlias ? $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$column][0], $reverseAlias[$column][1]) : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
