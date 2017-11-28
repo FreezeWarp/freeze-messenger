@@ -11,6 +11,10 @@
 
 }
 
+.border {
+    -fx-background-color: #00e3ff;
+}
+
 #avatar {
     -fx-alignment: center;
 }
@@ -23,9 +27,8 @@
     -fx-padding: 0;
 }
 
-.menu-item {
-/*    -fx-pref-width: ;
-    -fx-background-color: ;  */
+.font1 {
+    -fx-font: 16pt "Arial";
 }
 
 .text {

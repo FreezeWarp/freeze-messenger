@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.geometry.Rectangle2D?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
@@ -14,6 +15,7 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane minHeight="300.0" minWidth="400.0" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainPane">
@@ -29,25 +31,31 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
         <children>
+            <StackPane prefHeight="150.0" prefWidth="200.0" styleClass="border" stylesheets="@FXcss.css" GridPane.columnSpan="3" />
             <GridPane>
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
               </columnConstraints>
               <rowConstraints>
+                  <RowConstraints maxHeight="25.0" minHeight="25.0" prefHeight="25.0" vgrow="SOMETIMES" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
 
                 <!-- Start tableview for roomList (left side) - Mike -->
 
                <children>
-                  <TableView fx:id="roomList" prefHeight="200.0" prefWidth="200.0" styleClass="hide-header" stylesheets="@FXcss.css">
+                  <TableView fx:id="roomList" prefHeight="200.0" prefWidth="200.0" styleClass="hide-header" stylesheets="@FXcss.css" GridPane.rowIndex="1">
                     <columns>
                       <TableColumn fx:id="roomName" prefWidth="195.0" text="Rooms" />
                     </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
+                     <GridPane.margin>
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                     </GridPane.margin>
                   </TableView>
+                  <Label styleClass="font1" stylesheets="@FXcss.css" text="Rooms" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                </children>
             </GridPane>
             <GridPane GridPane.columnIndex="1">
@@ -61,13 +69,16 @@
                <children>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0" GridPane.rowIndex="1">
                         <children>
-                            <TextArea fx:id="newMessageText" prefHeight="62.0" prefWidth="430.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                            <TextArea fx:id="newMessageText" prefHeight="62.0" prefWidth="430.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="2.0" />
                         </children>
                     </AnchorPane>
                     <ScrollPane fx:id="messageListScroll" prefHeight="530.0" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                         <content>
                             <VBox fx:id="messageList" alignment="BOTTOM_CENTER" minHeight="200.0" />
                         </content>
+                     <GridPane.margin>
+                        <Insets top="2.0" />
+                     </GridPane.margin>
                     </ScrollPane>
                </children>
             </GridPane>
@@ -76,22 +87,16 @@
                 <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="100.0" prefWidth="100.0" />
               </columnConstraints>
               <rowConstraints>
-                  <RowConstraints maxHeight="70.0" minHeight="47.0" prefHeight="67.0" valignment="CENTER" vgrow="SOMETIMES" />
-                <RowConstraints vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="55.0" minHeight="55.0" prefHeight="55.0" valignment="CENTER" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="25.0" minHeight="25.0" prefHeight="25.0" vgrow="NEVER" />
+                <RowConstraints maxHeight="400.0" minHeight="160.0" prefHeight="235.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="25.0" minHeight="25.0" prefHeight="25.0" vgrow="NEVER" />
+                  <RowConstraints maxHeight="400.0" minHeight="160.0" prefHeight="235.0" vgrow="SOMETIMES" />
               </rowConstraints>
 
                 <!-- Start tableview userList (right side) - Mike -->
 
                <children>
-                  <TableView fx:id="userList" styleClass="hide-header" stylesheets="@FXcss.css" GridPane.rowIndex="1">
-                    <columns>
-                      <TableColumn id="avatar" fx:id="avatar" maxWidth="35.0" minWidth="35.0" prefWidth="35.0" text="Avatar" />
-                      <TableColumn fx:id="username" prefWidth="137.0" text="Username" />
-                    </columns>
-                     <columnResizePolicy>
-                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                     </columnResizePolicy>
-                  </TableView>
                   <GridPane prefHeight="79.0" prefWidth="200.0">
                     <columnConstraints>
                       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -103,7 +108,7 @@
                      <children>
                         <AnchorPane prefHeight="200.0" prefWidth="200.0">
                            <children>
-                              <MenuButton id="helpButton" fx:id="helpButton" accessibleRole="MENU_ITEM" accessibleText="Help" alignment="CENTER" cache="true" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" stylesheets="@FXcss.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                              <MenuButton id="helpButton" fx:id="helpButton" accessibleRole="MENU_ITEM" accessibleText="Help" alignment="CENTER" cache="true" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" stylesheets="@FXcss.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="2.0">
                                 <items>
                                   <MenuItem id="helpFAQ" fx:id="helpFAQ" mnemonicParsing="false" text="F.A.Q." />
                                   <MenuItem id="helpTips" fx:id="helpTips" mnemonicParsing="false" text="Tips" />
@@ -129,7 +134,7 @@
                         </AnchorPane>
                         <AnchorPane prefHeight="200.0" prefWidth="97.0" GridPane.columnIndex="1">
                            <children>
-                              <MenuButton id="settingsButton" fx:id="settingsButton" accessibleRole="MENU_ITEM" accessibleText="Settings" alignment="CENTER" cache="true" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" stylesheets="@FXcss.css" textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                              <MenuButton id="settingsButton" fx:id="settingsButton" accessibleRole="MENU_ITEM" accessibleText="Settings" alignment="CENTER" cache="true" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" stylesheets="@FXcss.css" textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets>
@@ -155,7 +160,36 @@
                         </AnchorPane>
                      </children>
                   </GridPane>
+                  <Label styleClass="font1" stylesheets="@FXcss.css" text="Users in Room" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                  <TableView fx:id="userList" styleClass="hide-header" stylesheets="@FXcss.css" GridPane.rowIndex="2">
+                    <columns>
+                      <TableColumn id="avatar" fx:id="avatar" maxWidth="35.0" minWidth="35.0" prefWidth="35.0" text="Avatar" />
+                      <TableColumn fx:id="username" prefWidth="137.0" text="Username" />
+                    </columns>
+                     <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                     </columnResizePolicy>
+                     <GridPane.margin>
+                        <Insets left="2.0" right="2.0" />
+                     </GridPane.margin>
+                  </TableView>
+                  <Label styleClass="font1" stylesheets="@FXcss.css" text="Users Online" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER" />
+                  <TableView fx:id="userList1" layoutX="10.0" layoutY="80.0" styleClass="hide-header" stylesheets="@FXcss.css" GridPane.rowIndex="4">
+                     <columns>
+                        <TableColumn id="avatar" fx:id="avatar1" maxWidth="35.0" minWidth="35.0" prefWidth="35.0" text="Avatar" />
+                        <TableColumn fx:id="username1" prefWidth="137.0" text="Username" />
+                     </columns>
+                     <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                     </columnResizePolicy>
+                     <GridPane.margin>
+                        <Insets bottom="2.0" left="2.0" right="2.0" />
+                     </GridPane.margin>
+                  </TableView>
                </children>
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
             </GridPane>
         </children>
     </GridPane>
