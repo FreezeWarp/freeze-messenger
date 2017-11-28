@@ -359,17 +359,12 @@ popup.prototype.settings = {
 
             if ($(this).is(':checked') && !settings[localId]) {
                 settings[localId] = true;
-                $('#messageList').html('');
-                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
+                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() | idMap[localId], { expires : 14 });
             }
             else if (!$(this).is(':checked') && settings[localId]) {
                 settings[localId] = false;
-                $('#messageList').html('');
-                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
+                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() & ~idMap[localId], { expires : 14 });
             }
-
-            // TODO: test
-            standard.changeRoom(window.roomId);
         });
 
 
@@ -380,11 +375,11 @@ popup.prototype.settings = {
 
         // onChange
         $('input[name=audioDing], input[name=webkitNotifications]').change(function() {
-            var localId = $(this).attr('id');
+            var localId = $(this).attr('name');
 
             if ($(this).is(':checked') && !settings[localId]) {
                 settings[localId] = true;
-                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
+                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() | idMap[localId], { expires : 14 });
 
                 // Notifications
                 if (localId === 'webkitNotifications') {
@@ -399,7 +394,7 @@ popup.prototype.settings = {
 
             else if (!$(this).is(':checked') && settings[localId]) {
                 settings[localId] = false;
-                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
+                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) & ~idMap[localId], { expires : 14 });
             }
         });
 

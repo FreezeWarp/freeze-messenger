@@ -573,8 +573,8 @@ popup.prototype.room.prototype.deletedMessageHandler = function(active) {
 };
 
 popup.prototype.room.prototype.topicChangeHandler = function(active) {
-    $('#topic').html(active.param1);
-    console.log('Event (Topic Change): ' + active.param1);
+    $('#topic').text(active.topic);
+    console.log('Event (Topic Change): ' + active.topic);
 };
 
 popup.prototype.room.prototype.editedMessageHandler = function(active) {

@@ -418,7 +418,7 @@ function fim_messageFormat(json, format) {
                 text.text(text.text().replace(/^\/me/,''));
 
                 $.when(userNameDeferred).then(function(pairs) {
-                    text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' ' + text).prop('outerHTML'));
+                    text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' ' + text.text()).prop('outerHTML'));
                 });
             }
 
@@ -426,10 +426,8 @@ function fim_messageFormat(json, format) {
             else if (/^\/topic/.test(text.text())) {
                 text.text(text.text().replace(/^\/topic/,''));
 
-                $('#topic').text(text);
-
                 $.when(userNameDeferred).then(function(pairs) {
-                    text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' changed the topic to "' + text + '".').prop('outerHTML'));
+                    text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' changed the topic to "' + text.text().trim() + '".').prop('outerHTML'));
                 });
             }
 

@@ -800,6 +800,7 @@ class fimRoom extends fimDynamicObject {
         elseif (fimConfig::$disableTopic)
             throw new fimError('topicsDisabled', 'Topics are disabled on this server.');
         else {
+            $this->setDatabase(['topic' => $topic]);
             \Stream\StreamFactory::publish('room_' . $this->id, 'topicChange', [
                 'topic' => $topic,
                 'time' => time(),
