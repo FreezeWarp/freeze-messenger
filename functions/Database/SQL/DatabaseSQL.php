@@ -1071,7 +1071,7 @@ class DatabaseSQL extends Database
 
                 /* The column encodes time information, most often using an integral and unix timestamp. */
                 case DatabaseTypeType::timestamp:
-                    $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::timestamp]; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
+                    $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::timestamp];
                 break;
 
 
@@ -1090,29 +1090,33 @@ class DatabaseSQL extends Database
                 /* The column is a textual string or a binary string. */
                 case DatabaseTypeType::string:
                 case DatabaseTypeType::blob:
-                    // Limits may differ depending on table type and column type. Get the correct array encoding limits.
-                    $stringLimits = $this->sqlInterface->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
+                case DatabaseTypeType::json:
 
-                    // Search through the array encoding limits. This array should be keyed in increasing size.
-                    foreach ($stringLimits AS $length => $type) {
-                        if (!is_int($length)) continue; // allow default key
+                    if ($column['type'] === DatabaseTypeType::json && $this->sqlInterface->dataTypes[DatabaseTypeType::json]) {
+                        $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::json];
+                    }
+                    else {
+                        // Limits may differ depending on table type and column type. Get the correct array encoding limits.
+                        $stringLimits = $this->sqlInterface->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
 
-                        if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
-                            if (in_array($type, $this->sqlInterface->dataTypes['columnNoLength']))
-                                $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
-                            else
-                                $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
+                        // Search through the array encoding limits. This array should be keyed in increasing size.
+                        foreach ($stringLimits AS $length => $type) {
+                            if (!is_int($length)) continue; // allow default key
 
-                            break;
+                            if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
+                                if (in_array($type, $this->sqlInterface->dataTypes['columnNoLength']))
+                                    $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
+                                else
+                                    $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
+
+                                break;
+                            }
+                        }
+
+                        if (!strlen($typePiece)) { // If no type identifier was found...
+                            $typePiece = $stringLimits['default']; // Use the default.
                         }
                     }
-
-                    if (!strlen($typePiece)) { // If no type identifier was found...
-                        $typePiece = $stringLimits['default']; // Use the default.
-                    }
-
-                    // TODO: decide if we want this.
-                    // $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
                 break;
 
 
@@ -1301,30 +1305,6 @@ class DatabaseSQL extends Database
 
 
     /**
-     * Given a table name and DatabaseEngine constant, produces the SQL string representing that engine.
-     *
-     * @param string $tableName The name of the table.
-     * @param string $engine    The engine used for the table.
-     *
-     * @return string The SQL statement component representing the engine.
-     */
-    private function parseEngine($engine) {
-        if (!isset($this->sqlInterface->tableTypes[$engine])) {
-            $this->triggerError("Unrecognised Table Engine", array(
-                'engine' => $engine
-            ), 'validationFallback');
-
-            return DatabaseEngine::general;
-        }
-
-        if (!in_array($engine, $this->sqlInterface->storeTypes))
-            return DatabaseEngine::general;
-
-        return $engine;
-    }
-
-
-    /**
      * Creates a new table with given properties.
      *
      * @param $tableName       string The table to alter.
@@ -1348,9 +1328,6 @@ class DatabaseSQL extends Database
                                 $hardPartitionCount = 1,
                                 $renameOrDeleteExisting = false)
     {
-        $engine = $this->parseEngine($engine);
-
-
         /* Perform CREATEs */
         $this->startTransaction();
 
@@ -1405,6 +1382,12 @@ class DatabaseSQL extends Database
                 $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, ($engine === DatabaseEngine::memory ? "MEMORY" : "InnoDB"));
             }
 
+            /* TODO: a lot more is needed to make this work with SqlServer, but this would be the beginning.
+            elseif ($this->sqlInterface->getLanguage() === 'sqlsrv' && $engine === DatabaseEngine::memory) {
+                $tableProperties .= 'WITH(MEMORY_OPTIMIZED=ON, DURABILITY=SCHEMA_ONLY)';
+            }
+            */
+
 
             /* Table Charset
              * PgSQL specifies charset when DB is created, so that's up to the enduser. */
@@ -1418,7 +1401,6 @@ class DatabaseSQL extends Database
                 && $this->sqlInterface->usePartition) {
                 $tableProperties .= ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100';
             }
-
 
             $return = $this->rawQuery(
                 'CREATE '
@@ -1494,8 +1476,6 @@ class DatabaseSQL extends Database
      * @return bool True on success, false on failure.
      */
     public function alterTable($tableName, $tableComment, $engine, $partitionColumn = false) {
-        $engine = $this->parseEngine($engine);
-
         return $this->rawQuery('ALTER TABLE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
             . (!is_null($engine) && $this->sqlInterface->getLanguage() === 'mysql' ? ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]) : '')
             . (!is_null($tableComment) ? ' COMMENT=' . $this->formatValue(DatabaseTypeType::string, $tableComment) : '')
@@ -1619,11 +1599,12 @@ class DatabaseSQL extends Database
             }
 
             // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
-            elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
+            elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary') {
                 $indexes[] = "CONSTRAINT "
                     . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $this->getIndexName($tableName, $indexName))
                     . " PRIMARY KEY "
-                    . $this->formatValue(DatabaseTypeType::arraylist, $this->getIndexColsFromIndexName($indexName));
+                        . $this->formatValue(DatabaseTypeType::arraylist, $this->getIndexColsFromIndexName($indexName));
+            }
 
             // Throw an exception if the index mode is unrecognised.
             else
@@ -1848,7 +1829,8 @@ class DatabaseSQL extends Database
                     return $this->rawQuery('ALTER TABLE '
                         . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
                         . ' DROP CONSTRAINT '
-                        . $this->formatValue(DatabaseTypeType::column, $constraintName));
+                        . $this->formatValue(DatabaseTypeType::column, $constraintName)
+                        . ' CASCADE ');
                     break;
             }
         }

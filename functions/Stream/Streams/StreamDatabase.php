@@ -55,7 +55,7 @@ class StreamDatabase implements StreamInterface {
                 'maxlen' => 3,
             ],
             'data' => [
-                'type' => 'string', // TODO: json
+                'type' => 'json',
                 'maxlen' => 1000, // TODO: support chunking
             ],
             'eventName' => [
