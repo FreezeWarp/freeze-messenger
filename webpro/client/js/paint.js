@@ -558,7 +558,9 @@ function fim_buildUsernameTag(tag, userId, deferred, includeAvatar, includeUsern
                 return el.prop('outerHTML');
             },
             html : true,
-            trigger : 'hover'
+            trigger : 'hover',
+            placement : 'auto',
+            container: tag
         }).on("show.bs.popover", function(e){
             console.log($(this).data("bs.popover"), $(this).data("bs.popover").tip)
             $($(this).data("bs.popover").tip).css({"max-width": "600px"});
