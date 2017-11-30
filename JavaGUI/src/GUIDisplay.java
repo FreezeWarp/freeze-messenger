@@ -14,6 +14,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -136,6 +138,17 @@ public class GUIDisplay extends Application {
         }
     }
 
+    public void doLogin(LoginGUI loginController) {
+        if (!GUIDisplay.api.login(loginController.username.getText(), loginController.password.getText())) {
+            GUIDisplay.alert("Login failed.");
+        } else {
+            api.getUser().setPassword(loginController.password.getText());
+
+            primaryStage.hide();
+            mainScene(primaryStage);
+        }
+    }
+
     public void loginScene(Stage primaryStage) {
         try {
             /* Load the Login Scene FXML */
@@ -148,13 +161,24 @@ public class GUIDisplay extends Application {
             loginController.loginButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent e) {
-                    if (!GUIDisplay.api.login(loginController.username.getText(), loginController.password.getText())) {
-                        GUIDisplay.alert("Login failed.");
-                    } else {
-                        api.getUser().setPassword(loginController.password.getText());
+                    doLogin(loginController);
+                }
+            });
 
-                        primaryStage.hide();
-                        mainScene(primaryStage);
+            loginController.password.setOnKeyPressed(new EventHandler<KeyEvent>() {
+                @Override
+                public void handle(KeyEvent e) {
+                    if (e.getCode() == KeyCode.ENTER) {
+                        doLogin(loginController);
+                    }
+                }
+            });
+
+            loginController.username.setOnKeyPressed(new EventHandler<KeyEvent>() {
+                @Override
+                public void handle(KeyEvent e) {
+                    if (e.getCode() == KeyCode.ENTER) {
+                        doLogin(loginController);
                     }
                 }
             });
@@ -231,6 +255,7 @@ public class GUIDisplay extends Application {
             ex.printStackTrace();
         }
 
+
         if (api.user.getRefreshToken().length() > 0 && api.loginRefresh(api.user.getRefreshToken())) {
             mainScene(primaryStage);
         }
@@ -256,6 +281,7 @@ public class GUIDisplay extends Application {
         }
 
         MainPane.timer.cancel();
+        System.exit(0);
     }
 
 
