@@ -2362,7 +2362,7 @@ class fimDatabase extends DatabaseSQL
                     'ip'      => $_SERVER['REMOTE_ADDR'],
                     'period'  => $this->ts($minute),
                 ], [
-                    'userId' => $notLoggedIn ? null : $this->user->id,
+                    //'userId' => $notLoggedIn ? null : $this->user->id,
                     'count'  => $this->equation('$count + 1'),
                     'expires' => $this->ts($minute + 60),
                 ], [

@@ -1379,7 +1379,7 @@ class DatabaseSQL extends Database
             /* Table Engine
              * Currently, only MySQL supports different engines. */
             if ($this->sqlInterface->getLanguage() === 'mysql') {
-                $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, ($engine === DatabaseEngine::memory ? "MEMORY" : "InnoDB"));
+                $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]);
             }
 
             /* TODO: a lot more is needed to make this work with SqlServer, but this would be the beginning.
@@ -1600,9 +1600,15 @@ class DatabaseSQL extends Database
 
             // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
             elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary') {
-                $indexes[] = "CONSTRAINT "
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $this->getIndexName($tableName, $indexName))
-                    . " PRIMARY KEY "
+                $indexes[] = ($index['type'] === 'primary'
+                    ?
+                        "CONSTRAINT "
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $this->getIndexName($tableName, $indexName))
+                        . ' '
+                    :
+                        ''
+                    )
+                    . $this->sqlInterface->keyTypeConstants[$index['type']] . " KEY "
                         . $this->formatValue(DatabaseTypeType::arraylist, $this->getIndexColsFromIndexName($indexName));
             }
 
