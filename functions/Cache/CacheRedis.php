@@ -43,6 +43,10 @@ class CacheRedis implements CacheInterface {
         return $this->instance->exists($index);
     }
 
+    public function inc($index, $amt) {
+        return $this->instance->incrBy($index, $amt);
+    }
+
 
     public function setAdd($index, $value) {
         $value = (array) $value;
