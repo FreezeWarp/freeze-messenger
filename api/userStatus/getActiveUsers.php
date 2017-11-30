@@ -37,6 +37,7 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'list',
         'filter' => 'roomId',
         'evaltrue' => true,
+        'max' => 10
     ),
 
     'userIds' => array(
@@ -44,6 +45,7 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
+        'max' => 10
     ),
 ));
 

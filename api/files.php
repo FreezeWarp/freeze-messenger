@@ -37,6 +37,7 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'list',
         'filter' => 'int',
         'evaltrue' => true,
+        'max' => 10,
     ),
 
     'page' => [

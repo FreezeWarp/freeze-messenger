@@ -41,6 +41,7 @@ $request = fim_sanitizeGPC('g', [
         'cast'     => 'list',
         'filter'   => 'roomId',
         'evaltrue' => true,
+        'max'      => 50,
     ],
 
     'roomNames' => [
@@ -48,6 +49,7 @@ $request = fim_sanitizeGPC('g', [
         'cast'     => 'list',
         'filter'   => 'string',
         'evaltrue' => true,
+        'max'      => 50,
     ],
 
     'roomNameSearch' => [

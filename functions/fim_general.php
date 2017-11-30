@@ -292,8 +292,9 @@ function fim_sanitizeGPC($type, $data) {
                     }
                 }
 
-                /* Trim */
-                if ($indexMetaData['trim'] === true) $activeGlobal[$indexName] = trim($activeGlobal[$indexName]); // Trim white space.
+                /* Trim White Space */
+                if ($indexMetaData['trim'] === true)
+                    $activeGlobal[$indexName] = trim($activeGlobal[$indexName]);
             }
 
 
@@ -303,7 +304,7 @@ function fim_sanitizeGPC($type, $data) {
                 if (isset($activeGlobal[$indexName], $indexMetaData['valid'])) {
                     if (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'list') {
                         if (count(array_diff($activeGlobal[$indexName], $indexMetaData['valid'])) > 0)
-                            throw new Exception("Invalid value(s) for '$indexName': " . implode(', ', array_diff($activeGlobal[$indexName], $indexMetaData['valid'])));
+                            new fimError("{$indexName}InvalidValues", "Invalid value(s) for API parameter '$indexName': " . implode(', ', array_diff($activeGlobal[$indexName], $indexMetaData['valid'])));
                     }
 
                     elseif (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'dict')
@@ -314,7 +315,7 @@ function fim_sanitizeGPC($type, $data) {
                             $activeGlobal[$indexName] = $indexMetaData['default'];
 
                         else
-                            throw new Exception("Invalid value for '$indexName': {$activeGlobal[$indexName]}");
+                            new fimError("{$indexName}InvalidValue", "'{$activeGlobal[$indexName]}' is an invalid value for API parameter '$indexName'.");
                     }
                 }
 
@@ -326,8 +327,10 @@ function fim_sanitizeGPC($type, $data) {
 
                 // Finally, if the global is thus-far unprovided...
                 if (!isset($activeGlobal[$indexName])) {
-                    if ($indexMetaData['require']) new fimError($indexName . 'Required', 'Required data not present (index ' . $indexName . ').'); // And required, throw an exception.
-                    else continue; // And not required, just ignore this global and move on to the next one.
+                    if ($indexMetaData['require']) // And required, throw an exception.
+                        new fimError("{$indexName}Required", "API parameter '$indexName' is required but was not provided.");
+                    else // And not required, just ignore this global and move on to the next one.
+                        continue;
                 }
             }
 
@@ -357,9 +360,8 @@ function fim_sanitizeGPC($type, $data) {
                  */
                 case 'dict':
                     // Make sure the passed element is an array -- we don't do any conversion to make it one.
-                    if (!is_array($activeGlobal[$indexName])) {
-                        throw new Exception("Bad API data: '$indexName' must be array.");
-                    }
+                    if (!is_array($activeGlobal[$indexName]))
+                        throw new fimError("{$indexName}NotArray", "API parameter '$indexName' must be an array.");
 
                     $arrayFromGlobal = $activeGlobal[$indexName];
 
@@ -380,9 +382,8 @@ function fim_sanitizeGPC($type, $data) {
                  */
                 case 'list':
                     // Make sure the passed element is an array -- we don't do any conversion to make it an array.
-                    if (!is_array($activeGlobal[$indexName])) {
-                        throw new Exception("Bad API data: '$indexName' must be array.");
-                    }
+                    if (!is_array($activeGlobal[$indexName]))
+                        new fimError("{$indexName}NotArray",  "{$indexName} must be an array.");
 
                     // Remove any array keys.
                     $arrayFromGlobal = array_values(
@@ -402,31 +403,35 @@ function fim_sanitizeGPC($type, $data) {
                         $newData[$indexName] = array_unique($newData[$indexName]);
                     }
 
+                    // Detect maximum length
+                    if (isset($indexMetaData['max']) && count($newData[$indexName]) > $indexMetaData['max'])
+                        new fimError("{$indexName}MaxValues", "You have passed too many values for $indexName; most allowed is {$indexMetaData['max']}.");
+
                     // Transform the list into a single, non-list datatype
                     if (isset($indexMetaData['transform'])) {
                         switch ($indexMetaData['transform']) {
-                        case 'bitfield':
-                            $bitfield = 0;
+                            case 'bitfield':
+                                $bitfield = 0;
 
-                            foreach ($newData[$indexName] AS $name) {
-                                if (!$name)
-                                    continue; // Allow empty values.
-                                elseif (!isset($indexMetaData['bitTable'][$name]))
-                                    throw new Exception("Bad API data: '$name' is not a recognized value for field '$indexName'");
-                                else
-                                    $bitfield |= $indexMetaData['bitTable'][$name];
-                            }
+                                foreach ($newData[$indexName] AS $name) {
+                                    if (!$name)
+                                        continue; // Allow empty values.
+                                    elseif (!isset($indexMetaData['bitTable'][$name]))
+                                        new fimError("{$indexName}UnknownValue", "'$name' is not a recognized value for API parameter '$indexName'");
+                                    else
+                                        $bitfield |= $indexMetaData['bitTable'][$name];
+                                }
 
-                            $newData[$indexName] = $bitfield;
-                        break;
+                                $newData[$indexName] = $bitfield;
+                            break;
 
-                        case 'csv':
-                            $newData[$indexName] = implode(',', $newData[$indexName]);
-                        break;
+                            case 'csv':
+                                $newData[$indexName] = implode(',', $newData[$indexName]);
+                            break;
 
-                        default:
-                            throw new Exception("Bad transform.");
-                        break;
+                            default:
+                                throw new Exception("Unrecognised list transformation in data passed to fim_sanitizeGPC.");
+                            break;
                         }
                     }
                 break;
@@ -528,7 +533,7 @@ function fim_sanitizeGPC($type, $data) {
 
         /* If a required value was previously set, but was then unset by the above casts, we through an error. */
         if (!isset($newData[$indexName]) && $indexMetaData['require'])
-            throw new Exception('Required data not present, unset by cast (index ' . $indexName . ').'); // And required, throw an exception.
+            new fimError("{$indexName}Invalid", "API parameter '{$indexName}' is required, but the passed value is not valid."); // And required, throw an exception.
     }
 
     return $newData;

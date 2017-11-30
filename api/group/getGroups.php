@@ -37,12 +37,14 @@ $request = fim_sanitizeGPC('g', [
         'filter'   => 'int',
         'evaltrue' => true,
         'default'  => [],
+        'max'      => 50,
     ],
 
     'groupNames' => [
         'cast'     => 'list',
         'filter'   => 'string',
         'default'  => [],
+        'max'      => 50,
     ],
 
     'sort' => [

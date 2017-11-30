@@ -38,6 +38,7 @@ $request = fim_sanitizeGPC('g', [
         'filter'   => 'int',
         'evaltrue' => true,
         'default'  => [],
+        'max'      => 50,
     ],
 
     'userNames' => [
@@ -45,6 +46,7 @@ $request = fim_sanitizeGPC('g', [
         'cast'     => 'list',
         'filter'   => 'string',
         'default'  => [],
+        'max'      => 50,
     ],
 
     'showOnly' => [ // TODO
