@@ -140,7 +140,7 @@
                                  </opaqueInsets>
                                  <items>
                                     <MenuItem id="settingsList" fx:id="settingsList" mnemonicParsing="false" text="Settings" />
-                                    <MenuItem id="settingsLogout" fx:id="settingsLogout" mnemonicParsing="false" text="Logout (W.I.P.)" />
+                                    <MenuItem id="settingsLogout" fx:id="settingsLogout" mnemonicParsing="false" text="Logout" />
                                  </items>
                                  <graphic>
                                     <ImageView id="settings_img" fx:id="settings_img" accessibleRole="BUTTON" fitHeight="50.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
