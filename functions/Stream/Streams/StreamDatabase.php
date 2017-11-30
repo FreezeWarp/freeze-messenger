@@ -79,14 +79,12 @@ class StreamDatabase implements StreamInterface {
         $condition = ['lastEvent' => $this->database->now(-60 * 5, DatabaseTypeComparison::lessThan)];
         foreach ($this->database->select([$this->database->sqlPrefix . 'streams' => 'lastEvent, streamName'], $condition)->getColumnValues('streamName') AS $oldStream) {
             $this->database->deleteTable($this->database->sqlPrefix . 'stream_' . $oldStream);
+            $this->database->delete($this->database->sqlPrefix . 'streams', ['streamName' => $oldStream]);
         }
-        $this->database->delete($this->database->sqlPrefix . 'streams', $condition);
     }
 
 
     public function subscribe($stream, $lastId, $callback) {
-        $this->createStreamIfNotExists($stream);
-
         while ($this->retries++ < \fimConfig::$serverSentMaxRetries) {
             foreach ($this->subscribeOnce($stream, $lastId) AS $event) {
                 if ($event['id'] > $lastId) $lastId = $event['id'];
@@ -102,7 +100,7 @@ class StreamDatabase implements StreamInterface {
 
 
     public function subscribeOnce($stream, $lastId) {
-        $this->createStreamIfNotExists($stream); // todo: remove
+        $this->createStreamIfNotExists($stream);
 
         $output = $this->database->select([
             $this->database->sqlPrefix . 'stream_' . $stream => 'id, chunk, data, eventName'
