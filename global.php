@@ -154,7 +154,7 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 // Initiate cache object.
 $generalCache = new fimCache($slaveDatabase);
 foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
-    $generalCache->addMethod($cacheConnectName, $cacheConnectParams);
+    \Cache\CacheFactory::addMethod($cacheConnectName, $cacheConnectParams);
 }
 
 // Get Configuration Data

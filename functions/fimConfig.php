@@ -57,19 +57,17 @@ class fimConfig {
     /*** FIM Features ***/
     /* Posting Restrictions */
     /** @var bool Whether global API-based flood detection is enabled. This relies on a memory table to be efficient, so it should generally be disabled if memory tables are not available. */
-    public static $floodDetectionGlobal = false;
+    public static $floodDetectionGlobal = true;
     /** @var int The maximum number of calls a user can make to api/acHelper per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_acHelper_perMinute = 60;
     /** @var int The maximum number of calls a user can make to api/editFile per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_editFile_perMinute = 5;
     /** @var int The maximum number of calls a user can make to api/editMessage per minute before triggering a flood lockout on that specific API. Note that message sends (which are also tracked by floodRoomLimitPerMinute and floodSiteLimitPerMinute) count against this as well. */
-    public static $floodDetectionGlobal_editMessage_perMinute = 120;
-    /** @var int The maximum number of calls a user can make to api/editMessage per minute before triggering a flood lockout on that specific API. Note that message sends (which are also tracked by floodRoomLimitPerMinute and floodSiteLimitPerMinute) count against this as well. */
     public static $floodDetectionGlobal_editRoom_perMinute = 5;
     /** @var int The maximum number of calls a user can make to api/editUserOptions per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_editUserOptions_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/editUserStatus per minute before triggering a flood lockout on that specific API. */
-    public static $floodDetectionGlobal_editUserStatus_perMinute = 15;
+    public static $floodDetectionGlobal_editUserStatus_perMinute = 60;
     /** @var int The maximum number of calls a user can make to api/getActiveUsers per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getActiveUsers_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/getCensorLists per minute before triggering a flood lockout on that specific API. */
@@ -100,6 +98,7 @@ class fimConfig {
     public static $floodDetectionGlobal_sendMessage_perMinute = 120;
     /** @var int The maximum number of calls a user can make to api/sendUser per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_sendUser_perMinute = 1;
+
 
     /** @var int The maximum number of messages a user may send in any given room before trigger a flood lockout for sending additional messages in that room. */
     public static $floodRoomLimitPerMinute = 30;
@@ -582,8 +581,8 @@ class fimConfig {
     /** @var string The database will write all queries (and the time they took) to this file, if $logQueries is true. */
     public static $logQueriesFile = false;
 
-    /** @var bool When true, ALL API accesses will be logged to a table. This table will quickly become VERY large, so such functionality is generally ill-advised unless your server is optimised for it. (Currently only defaults to true for testing.) */
-    public static $accessLogEnabled = true;
+    /** @var bool When true, ALL API accesses will be logged to a table. This table will quickly become VERY large, so such functionality is generally ill-advised unless your server is optimised for it. */
+    public static $accessLogEnabled = false;
 
     /** @var bool When true, a summary of all mod actions will be logged to a table. Such actions are relatively rare, so this log is generally best kept enabled for auditing purposes. */
     public static $modLogEnabled = true;

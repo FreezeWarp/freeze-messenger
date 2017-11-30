@@ -1606,6 +1606,24 @@ class fimDatabase extends DatabaseSQL
         ));
     }
 
+    /**
+     * Delete old flood counters.
+     */
+    public function cleanAccessFlood() {
+        $this->delete($this->sqlPrefix . 'accessFlood', array(
+            'expires' => $this->now(0, 'lte')
+        ));
+    }
+
+    /**
+     * Delete old message flood counters.
+     */
+    public function cleanMessageFlood() {
+        $this->delete($this->sqlPrefix . 'messageFlood', array(
+            'time' => $this->ts(-60, 'lte')
+        ));
+    }
+
 
     public function lockoutIncrement() {
         if (fimConfig::$dev)
@@ -2341,22 +2359,34 @@ class fimDatabase extends DatabaseSQL
             throw new exception('No user login registered.');
         }
 
+
+        // If Flood Detection is Enabled...
         if (fimConfig::$floodDetectionGlobal) {
             $time = time();
             $minute = $time - ($time % 60);
 
-            $floodCount = $this->select([
-                  $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
-            ], [
-                'action' => $action,
-                'ip' => $_SERVER['REMOTE_ADDR'],
-                'period' => $this->ts($minute),
-            ])->getColumnValue('count');
+            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_$minute")) {
+                // Get Current Flood Weight
+                $floodCountMinute = $this->select([
+                      $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
+                ], [
+                    'action' => $action,
+                    'ip' => $_SERVER['REMOTE_ADDR'],
+                    'period' => $this->ts($minute),
+                ])->getColumnValue('count');
 
-            if ($floodCount > fimConfig::${'floodDetectionGlobal_' . $action . '_perMinute'} && !$this->user->hasPriv('modPrivs')) {
-                new fimError("flood", "Your IP has sent too many $action requests ($floodCount observed).", null, null, "HTTP/1.1 429 Too Many Requests");
+                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_$minute", $floodCountMinute ?: 0, 60);
+            }
+
+
+            // Error if Flood Weight is Too Great
+            if ($floodCountMinute > fimConfig::${'floodDetectionGlobal_' . $action . '_perMinute'} && !$this->user->hasPriv('modPrivs')) {
+                new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
+                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_$minute");
+
+                // Increment the Flood Weight
                 $this->upsert($this->sqlPrefix . "accessFlood", [
                     'action'  => $action,
                     'ip'      => $_SERVER['REMOTE_ADDR'],
@@ -2371,6 +2401,8 @@ class fimDatabase extends DatabaseSQL
             }
         }
 
+
+        // Insert Access Log, If Enabled
         if (fimConfig::$accessLogEnabled) {
             if ($this->insert($this->sqlPrefix . "accessLog", array(
                 'userId' => $notLoggedIn ? null : $this->user->id,
