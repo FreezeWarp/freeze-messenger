@@ -2,7 +2,8 @@
 
 <dbSchema version="3.0">
     <database name="__CORE__" charset="utf8">
-        <table name="accessLog" partitionBy="time" type="general" comment="Log of all API calls, meant mostly for analytics purposes.">
+        <!--partitionBy="time"-->
+        <table name="accessLog" type="general" comment="Log of all API calls, meant mostly for analytics purposes.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />
             <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session." />
@@ -22,8 +23,8 @@
         </table>
 
 
-        <table name="accessFlood" partitionBy="userId" type="memory" comment="Counter of all API calls, meant for flood detection.">
-            <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />
+        <table name="accessFlood" type="memory" comment="Counter of all API calls, meant for flood detection.">
+            <!--<column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />-->
             <column name="action" type="string" maxlen="20" comment="The action performed." />
             <column name="period" type="time" comment="The time of accesses modulated as a period." />
             <column name="expires" type="time" comment="The next period, to allow deletion of all expired entries at once." />
@@ -149,7 +150,8 @@
         </table>
 
 
-        <table name="fullLog" partitionBy="time" type="general" comment="A log of moderator actions that document all update(), insert(), and delete() calls.">
+        <!--partitionBy="time"-->
+        <table name="fullLog" type="general" comment="A log of moderator actions that document all update(), insert(), and delete() calls.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session." />
@@ -259,7 +261,8 @@
             <column name="encryption_algorithm" type="string" maxlen="100" default="RS256" />
         </table>
 
-        <table name="messages" hardPartitions="10" partitionBy="roomId" type="general" comment="User-created messages.">
+        <!-- partitionBy="roomId" -->
+        <table name="messages" hardPartitions="10" type="general" comment="User-created messages.">
             <column name="id" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who made the message." />
@@ -307,7 +310,8 @@
         </table>
 
 
-        <table name="modLog" partitionBy="time" type="general" comment="A log of moderator actions.">
+        <!--partitionBy="time"-->
+        <table name="modLog" type="general" comment="A log of moderator actions.">
             <column name="id" type="int" maxlen="12" autoincrement="1" comment="A unique ID for the log entry." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID who performed the action." />
             <column name="sessionHash" type="string" maxlen="128" comment="The sessionHash corresponding with the active session." />
@@ -339,7 +343,7 @@
         </table>
 
 
-        <table name="rooms" partitionBy="id" type="general" comment="User-created rooms. Does not include private rooms.">
+        <table name="rooms" type="general" comment="User-created rooms. Does not include private rooms.">
             <!-- General -->
             <column name="id" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
             <column name="idEncoded" type="blob" maxlen="23" comment="The unique ID for the room, encoded as appropriate." />
@@ -424,7 +428,7 @@
         </table>
 
 
-        <table name="roomStats" partitionBy="roomId" type="general" comment="A cache for the number of posts made by different users in rooms.">
+        <table name="roomStats" type="general" comment="A cache for the number of posts made by different users in rooms.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room." />
             <column name="messages" type="int" default="0" maxlen="8" comment="The number of messages made by the user in the room." />
@@ -434,7 +438,7 @@
         </table>
 
 
-        <table name="sessionLockout" partitionBy="ip" type="memory" comment="Keeps track of failed login attempts, eventually blocking IP addresses from attempting additional logins.">
+        <table name="sessionLockout" type="memory" comment="Keeps track of failed login attempts, eventually blocking IP addresses from attempting additional logins.">
             <column name="ip" type="string" maxlen="128" comment="The user's IP address." />
             <column name="attempts" type="int" maxlen="2" comment="Failed login attempts." />
             <column name="expires" type="time" comment="When the entry is considered expired." />
@@ -443,7 +447,7 @@
         </table>
 
 
-        <table name="socialGroups" partitionBy="id" type="general" comment="User groups.">
+        <table name="socialGroups" type="general" comment="User groups.">
             <column name="id" autoincrement="1" type="int" maxlen="6" comment="The group ID." />
             <column name="name" type="string" maxlen="50" comment="The group name." />
             <column name="avatar" type="string" maxlen="200" comment="The absolute URI of the group's avatar." />
@@ -467,7 +471,7 @@
         </table>
 
 
-        <table name="streams" partitionBy="streamName" type="general" comment="An index tracking all of our streams. In most cases, this table will be unused, but with some stream implementations (for instance, when creating tables for event streams), this will be used to determine old tables in need of dropping.">
+        <table name="streams" type="general" comment="An index tracking all of our streams. In most cases, this table will be unused, but with some stream implementations (for instance, when creating tables for event streams), this will be used to determine old tables in need of dropping.">
             <column name="streamName" type="string" maxlen="100" comment="The ID of the phrase found in the message." />
             <column name="lastEvent" type="time" default="__TIME__" comment="The ID of the message." />
 
@@ -489,7 +493,7 @@
         </table>
 
 
-        <table name="users" partitionBy="id" type="general" comment="The users.">
+        <table name="users" type="general" comment="The users.">
             <!-- General -->
             <column name="id" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
 
@@ -632,7 +636,7 @@
         </table>
 
 
-        <table name="watchRooms" partitionBy="userId " type="general" comment="A table of rooms being watched by different users. Doesn't include private rooms, since those are basically already watched.">
+        <table name="watchRooms" partitionBy="userId" type="general" comment="A table of rooms being watched by different users. Doesn't include private rooms, since those are basically already watched.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID to be watched." />
 
