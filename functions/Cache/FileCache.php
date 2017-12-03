@@ -137,7 +137,7 @@ class FileCache {
             if ($file_content) {
                 $store = unserialize($file_content);
 
-                if($store['ttl'] < time()) { // If the cache has expired.
+                if(!isset($store['ttl']) || $store['ttl'] < time()) { // If the cache has expired.
                     unlink($key); // remove the file
 
                     return false;
