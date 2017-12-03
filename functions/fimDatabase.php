@@ -2365,7 +2365,7 @@ class fimDatabase extends DatabaseSQL
             $time = time();
             $minute = $time - ($time % 60);
 
-            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_$minute")) {
+            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_{$action}_$minute")) {
                 // Get Current Flood Weight
                 $floodCountMinute = $this->select([
                       $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
@@ -2375,7 +2375,7 @@ class fimDatabase extends DatabaseSQL
                     'period' => $this->ts($minute),
                 ])->getColumnValue('count');
 
-                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_$minute", $floodCountMinute ?: 0, 60);
+                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_{$action}_$minute", $floodCountMinute ?: 0, 60);
             }
 
 
@@ -2384,7 +2384,7 @@ class fimDatabase extends DatabaseSQL
                 new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
-                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_$minute");
+                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute");
 
                 // Increment the Flood Weight
                 $this->upsert($this->sqlPrefix . "accessFlood", [
@@ -2424,42 +2424,6 @@ class fimDatabase extends DatabaseSQL
 
         return false;
     }
-
-
-
-
-    /****** MESSAGE TEXT FUNCTIONS ******/
-
-    /**
-     * Generates keywords to enter into the archive search store.
-     *
-     * @param string $text - The text to generate the big keywords from.
-     * @return array - The keywords found.
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    // TODO: Shouldn't be part of fimDatabase.php.
-    public function getKeyWordsFromText($text) {
-        $string = $this->makeSearchable($text);
-
-        $stringPieces = array_unique(explode(' ', $string));
-        $stringPiecesAdd = array();
-
-        foreach ($stringPieces AS $piece) {
-            if (strlen($piece) >= fimConfig::$searchWordMinimum &&
-                strlen($piece) <= fimConfig::$searchWordMaximum &&
-                !in_array($piece, fimConfig::$searchWordOmissions)) $stringPiecesAdd[] = $piece;
-        }
-
-        if (count($stringPiecesAdd) > 0) {
-            sort($stringPiecesAdd);
-
-            return $stringPiecesAdd;
-        }
-        else {
-            return array();
-        }
-    }
-
 
 
     /****** TRIGGERS ******/
