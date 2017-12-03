@@ -161,7 +161,7 @@ do {
     }
 
     $request['page']++;
-    $database->accessLog('editRoom', $request); // We relog so that the next query counts as part of the flood detection. The only big drawback is that we will throw an exception eventually, without properly informing the user of where to resume searching from. (TODO)
+    $database->accessLog('getRooms', $request); // We relog so that the next query counts as part of the flood detection. The only big drawback is that we will throw an exception eventually, without properly informing the user of where to resume searching from. (TODO)
 } while (isset($roomsQuery) && $roomsQuery->paginated && count($xmlData['rooms']) == 0);
 
 
