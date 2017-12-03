@@ -465,19 +465,21 @@ popup.prototype.settings = {
 
 popup.prototype.editRoom = {
     options : {
-        roomId : 0
+        roomId : null
     },
 
-    setOptions : function(options) {
-        for (i in options)
-            this.options[i] = options[i];
+    setRoomId : function(roomId) {
+        this.options.roomId = roomId ? roomId : null;
     },
 
-    init : function(options) {
+    init : function() {
+
+    },
+
+    retrieve : function() {
         var _this = this;
-        this.setOptions(options);
 
-        if (this.options.roomId != 0)
+        if (this.options.roomId != null)
             var action = 'edit';
         else
             var action = 'create';
@@ -539,7 +541,7 @@ popup.prototype.editRoom = {
 
         /* Censor Lists */
         fimApi.getCensorLists({
-            'roomId' : this.options.roomId != 0 ? this.options.roomId : null,
+            'roomId' : this.options.roomId,
             'includeWords' : 0,
         }, {
             'each' : function(listData) {
@@ -567,7 +569,7 @@ popup.prototype.editRoom = {
         /*
          * Prepopulate Data if Editing a Room
          */
-        if (this.options.roomId != 0) {
+        if (this.options.roomId != null) {
             fimApi.getRooms({
                 'id' : this.options.roomId
             }, {'each' : function(roomData) {
@@ -586,7 +588,7 @@ popup.prototype.editRoom = {
                 moderatorsList.displayEntries(moderatorsArray);
 
                 // Group Permissions
-                var allowedGroupsArray = []
+                var allowedGroupsArray = [];
                 jQuery.each(roomData.groupPermissions, function(userId, privs) {
                     if (privs.post) // Are the 1, 2, and 4 bits all present?
                         allowedGroupsArray.push(userId);
@@ -617,8 +619,6 @@ popup.prototype.editRoom = {
 
         /* Submit */
         $("#editRoomForm").submit(function() {
-            //console.log("allowed users", allowedUsersList, allowedUsersList.getList());
-
             var combinedUserPermissions = {},
                 combinedGroupPermissions = {};
 
