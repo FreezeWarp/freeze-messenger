@@ -186,9 +186,13 @@ class CacheFactory {
      * {@link CacheInterface::clearAll()}
      */
     public static function clearAll() {
+        $return = true;
+
         foreach (self::$methods AS $method) {
-            $method->clearAll();
+            $return = $method->clearAll() && $return;
         }
+
+        return $return;
     }
 
 
