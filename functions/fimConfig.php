@@ -69,7 +69,7 @@ class fimConfig {
     /** @var int The maximum number of calls a user can make to api/editUserStatus per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_editUserStatus_perMinute = 60;
     /** @var int The maximum number of calls a user can make to api/getActiveUsers per minute before triggering a flood lockout on that specific API. */
-    public static $floodDetectionGlobal_getActiveUsers_perMinute = 10;
+    public static $floodDetectionGlobal_getActiveUsers_perMinute = 20;
     /** @var int The maximum number of calls a user can make to api/getCensorLists per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getCensorLists_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/getFiles per minute before triggering a flood lockout on that specific API. */
@@ -79,21 +79,19 @@ class fimConfig {
     /** @var int The maximum number of calls a user can make to api/getKicks per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getKicks_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/getMessages per minute before triggering a flood lockout on that specific API. */
-    public static $floodDetectionGlobal_getMessages_perMinute = 10;
-    /** @var int The maximum number of calls a user can make to api/getPrivateRoom per minute before triggering a flood lockout on that specific API. */
-    public static $floodDetectionGlobal_getPrivateRoom_perMinute = 10;
+    public static $floodDetectionGlobal_getMessages_perMinute = 20;
     /** @var int The maximum number of calls a user can make to api/getRooms per minute before triggering a flood lockout on that specific API. */
-    public static $floodDetectionGlobal_getRooms_perMinute = 10;
+    public static $floodDetectionGlobal_getRooms_perMinute = 20;
     /** @var int The maximum number of calls a user can make to api/getStats per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getStats_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/getUnreadMessages per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getUnreadMessages_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/getUsers per minute before triggering a flood lockout on that specific API. */
-    public static $floodDetectionGlobal_getUsers_perMinute = 10;
+    public static $floodDetectionGlobal_getUsers_perMinute = 20;
     /** @var int The maximum number of calls a user can make to api/markMessageRead per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_markMessageRead_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/moderate per minute before triggering a flood lockout on that specific API. */
-    public static $floodDetectionGlobal_moderate_perMinute = 10;
+    public static $floodDetectionGlobal_moderate_perMinute = 15;
     /** @var int The maximum number of calls a user can make to api/sendMessage per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_sendMessage_perMinute = 120;
     /** @var int The maximum number of calls a user can make to api/sendUser per minute before triggering a flood lockout on that specific API. */
