@@ -1022,8 +1022,8 @@ class fimDatabase extends DatabaseSQL
         if (count($options['actions']) > 0) $conditions['both']['action'] = $this->in($options['actions']);
 
         if ($options['combineUserData']) {
-            $columns[$this->sqlPrefix . "users"] = $this->userColumns;
-            $conditions['both']['id'] = $this->col('luserId');
+            $columns[$this->sqlPrefix . "users"] = 'id userId, name userName, nameFormat userNameFormat, options userOptions, privs userPrivs';
+            $conditions['both']['userId'] = $this->col('luserId');
         }
 
         return $this->select($columns, $conditions, $sort, $limit, $page);

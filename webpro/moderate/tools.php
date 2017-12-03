@@ -38,7 +38,7 @@ else {
                 foreach (array('fim_config') AS $cache) {
                     $formattedCache = '';
 
-                    foreach ((array) $generalCache->get($cache) AS $key => $value) {
+                    foreach ((array) \Cache\CacheFactory::get($cache) AS $key => $value) {
                         if (is_array($value)) {
                             $value = print_r($value, true);
                         }
@@ -50,20 +50,20 @@ else {
                     echo '<br />';
                 }
 
-                foreach ($generalCache->methods AS $method) {
-                    echo container('Cache Dump: ' . get_class($method), '<pre>' . print_r($generalCache->dump($method), true) . '</pre>');
+                foreach (\Cache\CacheFactory::$methods AS $method) {
+                    echo container('Cache Dump: ' . get_class($method), '<pre>' . print_r(\Cache\CacheFactory::dump($method), true) . '</pre>');
                 }
 
                 echo '<br />';
                 echo container('Contents of fimConfig', '<pre>' . print_r((new ReflectionClass('fimConfig'))->getStaticProperties(), true) . '</pre>');
                 echo '<br />';
-                echo container('Contents of roomPermissionsCache Table', '<table><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . $database->select(['roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
+                echo container('Contents of roomPermissionsCache Table', '<table><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . $database->select([$database->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
                 echo '<br />';
-                echo container('Contents of counters Table', '<table><tr><th>Name</th><th>Value</th></tr>' . $database->select(['counters' => 'counterName, counterValue'])->getAsTemplate('<tr><td>$counterName</td><td>$counterValue</td></tr>') . '</table>');
+                echo container('Contents of counters Table', '<table><tr><th>Name</th><th>Value</th></tr>' . $database->select([$database->sqlPrefix . 'counters' => 'counterName, counterValue'])->getAsTemplate('<tr><td>$counterName</td><td>$counterValue</td></tr>') . '</table>');
                 break;
 
             case 'clearCache':
-                if ($generalCache->clearAll())
+                if (\Cache\CacheFactory::clearAll())
                     echo container('Cache Cleared','The cache has been cleared.<br /><br /><form action="moderate.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
 
                 else
@@ -124,14 +124,14 @@ else {
                         //$database->startTransaction();
                         $database->holdTriggers(true);
                         if (in_array(strtolower($tableName), $showTables)) {
-                            echo 'Update: ' . $tableName . ': ' . $database->alterTable($tableName, $tableComment, $tableType) . '<br />';
+                            echo 'Update: ' . $tableName . ': ' . $database->alterTable($tableName, $tableComment, $tableType, $tablePartition  ) . '<br />';
                             fim_flush();
                             echo 'Delete Foreign Keys : ' . $tableName . ': ' . $database->deleteForeignKeyConstraints($tableName) . '<br />';
                             fim_flush();
                             $database->createTableIndexes($tableName, $tableIndexes);
 
                             foreach ($tableColumns AS $name => $column) {
-                                if (in_array(strtolower($name), $showColumns[strtolower($tableName)])) {
+                                if (in_array($name, $showColumns[strtolower($tableName)])) {
                                     echo 'Update: ' . $tableName . ',' . $name . ': ' . $database->alterTableColumns($tableName, [$name => $column], $tableType) . '<br />';
                                     fim_flush();
                                 }
@@ -154,9 +154,11 @@ else {
                     }
                 }
 
-                echo 'Running Triggers for All Tables and Columns...';
+                echo 'Running Triggers for All Tables and Columns...<br />';
                 fim_flush();
                 $database->holdTriggers(false);
+
+                echo '<strong>Complete.</strong>';
                 break;
         }
     }
