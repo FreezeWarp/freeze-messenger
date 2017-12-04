@@ -12,6 +12,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -26,6 +27,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Callback;
 
 import java.text.SimpleDateFormat;
@@ -156,6 +158,14 @@ public class MainPane {
                 if (newValue) {
                     helpTips.getParentPopup().styleProperty().setValue("-fx-min-width: " + helpButton.widthProperty().get() + "px");
                 }
+            }
+        });
+
+        settingsLogout.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                MessengerAPI.user = new LoggedInUser();
+                Platform.exit();
             }
         });
 
