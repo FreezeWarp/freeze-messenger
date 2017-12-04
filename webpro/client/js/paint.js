@@ -60,6 +60,17 @@ Handlebars.registerHelper("contains", function( value, array, options ){
     return (array.indexOf(value) > -1) ? options.fn( this ) : "";
 });
 
+Handlebars.registerHelper("byte", function(fileSize) {
+    var fileSize2 = fileSize;
+
+    for (i in window.phrases.byteUnits) {
+        if (fileSize > i)
+            fileSize2 = (fileSize / i) + window.phrases.byteUnits[i];
+    }
+
+    return fileSize2;
+});
+
 function fim_renderHandlebarsInPlace(tag) {
     var id       = tag.attr('id');
     var source   = tag.html();
@@ -870,6 +881,16 @@ $.when(
         dataType: 'json',
         success: function(json) {
             window.serverSettings = json.serverStatus;
+
+            window.serverSettings.fileUploads.extensionChangesReverse = {};
+
+            jQuery.each(window.serverSettings.fileUploads.extensionChanges, function(index, extension) {
+                if (!(extension in window.serverSettings.fileUploads.extensionChangesReverse))
+                    window.serverSettings.fileUploads.extensionChangesReverse[extension] = [];
+
+                window.serverSettings.fileUploads.extensionChangesReverse[extension].push(index);
+            });
+
         }
     })
 ).then(function() {

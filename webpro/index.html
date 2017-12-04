@@ -281,58 +281,6 @@
         </div>
     </div>
 
-    <div id="modal-insertDoc" class="modal" tabindex="-1">
-        <div class="modal-dialog modal-lg" role="document">
-            <form method="post" enctype="multipart/form-data" id="uploadFileForm">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 class="modal-title">{{fileUploadLegend}}</h3>
-                    </div>
-
-                    <div class="modal-body row">
-                        <div class="col">
-                            <div id="uploadFile">
-                                <div class="input-group">
-                                    <span class="input-group-addon">{{fileUploadFileLabel}}</span>
-                                    <input
-                                            name="fileUpload"
-                                            id="fileUpload"
-                                            type="file"
-                                            class="form-control"/><br/>
-                                </div>
-                                <small class="form-text text-muted">{{fileUploadFileBlurb}}</small><br/>
-                            </div>
-
-                            <h3>{{fileUploadPreviewLegend}}</h3>
-                            <div id="uploadFileFormPreview"></div>
-                        </div>
-
-                        <div class="col-sm-auto">
-                            <h3>{{fileUploadInfoLegend}}</h3>
-                            <table id="fileUploadInfo" class="table table-sm">
-                                <thead>
-                                <tr>
-                                    <th>{{fileUploadInfoExtensions}}</th>
-                                    <th>{{fileUploadInfoContainer}}</th>
-                                    <th>{{fileUploadInfoMaxSize}}</th>
-                                </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table><br />
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button onclick="$('#modal-insertDoc').modal('hide');" type="button" class="btn btn-secondary">
-                            {{fileUploadCancel}}
-                        </button>
-                        <button type="submit" class="btn btn-success">{{fileUploadSend}}</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div id="page" data-role="page" class="mt-1 ml-1 mr-1"><!-- START links -->
         <nav class="navbar sticky-top navbar-expand-md navbar-dark bg-primary mb-2 mx-auto rounded" id="navbar" style="z-index: 100; max-width: 1200px;">
             <a class="navbar-brand" href="#">FlexChat</a>
@@ -469,96 +417,157 @@
 
 
 <script id="view-room" type="text/x-handlebars-template">
-<div id="roomTemplateContainer" class="row mx-0">
-    <div class="col-md-9 no-gutters p-0">
-        <div id="chatContainer" class="card border-secondary">
-            <div id="messageListCard">
-                <div id="messageListCardHeader" class="card-header">
-                    <div class="row align-items-center">
-                        <div class="col text-center text-lg-left mb-2 mb-lg-0">
-                            <h4 id="roomName" class="card-title m-0"></h4>
-                            <em id="topic"></em>
-                        </div>
+    <div id="modal-insertDoc" class="modal" tabindex="-1">
+        <div class="modal-dialog modal-lg" role="document">
+            <form method="post" enctype="multipart/form-data" id="uploadFileForm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">{{fileUploadLegend}}</h3>
+                    </div>
 
-                        <div class="col-lg-auto text-center text-lg-left">
-                            <div class="btn-toolbar text-center d-inline-block" role="toolbar">
-                                <button type="button"
-                                        class="btn btn-primary mx-1"
-                                        title="Edit Room"
-                                        name="editRoom"
-                                        onclick="location.hash='#editRoom#room=' + window.roomId">
-                                    <i class="fa fa-cog" aria-hidden="true"></i> {{room.buttons.edit}}
-                                </button>
-
-                                <button type="button"
-                                        class="btn btn-primary mx-1"
-                                        title="Top Posters"
-                                        name="topPosters"
-                                        onclick="popup.viewStats()">
-                                    <i class="fa fa-list-ol" aria-hidden="true"></i> {{room.buttons.top}}
-                                </button>
-
-                                <button type="button"
-                                        class="btn btn-primary mx-1"
-                                        title="Archive"
-                                        name="archive"
-                                        onclick="location.hash='#archive#room=' + window.roomId">
-                                    <i class="fa fa-history"></i> {{room.buttons.archive}}
-                                </button>
+                    <div class="modal-body row">
+                        <div class="col">
+                            <div id="uploadFile">
+                                <div class="input-group">
+                                    <span class="input-group-addon">{{fileUploadFileLabel}}</span>
+                                    <input
+                                            name="fileUpload"
+                                            id="fileUpload"
+                                            type="file"
+                                            class="form-control"/><br/>
+                                </div>
+                                <small class="form-text text-muted">{{fileUploadFileBlurb}}</small><br/>
                             </div>
+
+                            <h3>{{fileUploadPreviewLegend}}</h3>
+                            <div id="uploadFileFormPreview"></div>
                         </div>
+
+                        <div class="col-sm-auto">
+                            <h3>{{fileUploadInfoLegend}}</h3>
+
+                            <table id="fileUploadInfo" class="table table-sm">
+                                <thead>
+                                <tr>
+                                    <th>{{fileUploadInfoExtensions}}</th>
+                                    <th>{{fileUploadInfoContainer}}</th>
+                                    <th>{{fileUploadInfoMaxSize}}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{#each serverSettings.fileUploads.allowedExtensions}}
+                                <tr>
+                                    <td>{{#each (lookup @root.serverSettings.fileUploads.extensionChangesReverse this)}}{{this}}, {{/each}}{{this}}</td>
+                                    <td>{{lookup @root.serverSettings.fileUploads.fileContainers this}}</td>
+                                    <td>{{byte (lookup @root.serverSettings.fileUploads.sizeLimits this)}}</td>
+                                </tr>
+                                {{/each}}
+                                </tbody>
+                            </table><br />
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button onclick="$('#modal-insertDoc').modal('hide');" type="button" class="btn btn-secondary">
+                            {{fileUploadCancel}}
+                        </button>
+                        <button type="submit" class="btn btn-success">{{fileUploadSend}}</button>
                     </div>
                 </div>
-
-                <div id="messageListContainer">
-                    <div id="messageList"></div>
-                </div>
-            </div>
-
-            <div id="textentryBoxMessage" class="card bg-primary">
-                <form id="sendForm" action="#" method="post">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="col">
-                                <button type="button"
-                                        class="btn btn-primary"
-                                        id="icon_url"
-                                        title="Upload File"
-                                        onclick="window.openObjectInstance.insertDoc();"
-                                        accesskey="u">
-                                    <i class="fa fa-upload" aria-hidden="true"></i> {{room.messageBox.buttons.upload}}
-                                </button>
-                            </div>
-                            <div class="col" style="text-align: right;">
-                                <button type="submit"
-                                        class="btn btn-primary"
-                                        id="icon_submit"
-                                        title="Submit Message">
-                                    <i class="fa fa-paper-plane" aria-hidden="true"></i> {{room.messageBox.buttons.send}}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <textarea id="messageInput" class="form-control" autofocus="autofocus" placeholder="{{room.messageBox.placeholder}}"></textarea>
-                    </div>
-                </form>
-            </div>
+            </form>
         </div>
     </div>
 
-    <div class="col-md-3 no-gutters py-0 pl-2 pl-lg-3 pr-0 d-none d-md-block">
-        <div class="card border-secondary" id="activeUsersCard">
-            <div class="card-header" role="tab" id="activeUsersCardHeader">
-                <h5 class="mb-0">{{template.activeUsersCat}}</h5>
-            </div>
+    <div id="roomTemplateContainer" class="row mx-0">
+        <div class="col-md-9 no-gutters p-0">
+            <div id="chatContainer" class="card border-secondary">
+                <div id="messageListCard">
+                    <div id="messageListCardHeader" class="card-header">
+                        <div class="row align-items-center">
+                            <div class="col text-center text-lg-left mb-2 mb-lg-0">
+                                <h4 id="roomName" class="card-title m-0"></h4>
+                                <em id="topic"></em>
+                            </div>
 
-             <div class="card-body p-0" style="overflow-y: auto; overflow-x: hidden;">
-                <ul id="activeUsers" class="list-group"></ul>
+                            <div class="col-lg-auto text-center text-lg-left">
+                                <div class="btn-toolbar text-center d-inline-block" role="toolbar">
+                                    <button type="button"
+                                            class="btn btn-primary mx-1"
+                                            title="Edit Room"
+                                            name="editRoom"
+                                            onclick="location.hash='#editRoom#room=' + window.roomId">
+                                        <i class="fa fa-cog" aria-hidden="true"></i> {{room.buttons.edit}}
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-primary mx-1"
+                                            title="Top Posters"
+                                            name="topPosters"
+                                            onclick="popup.viewStats()">
+                                        <i class="fa fa-list-ol" aria-hidden="true"></i> {{room.buttons.top}}
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-primary mx-1"
+                                            title="Archive"
+                                            name="archive"
+                                            onclick="location.hash='#archive#room=' + window.roomId">
+                                        <i class="fa fa-history"></i> {{room.buttons.archive}}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="messageListContainer">
+                        <div id="messageList"></div>
+                    </div>
+                </div>
+
+                <div id="textentryBoxMessage" class="card bg-primary">
+                    <form id="sendForm" action="#" method="post">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col">
+                                    <button type="button"
+                                            class="btn btn-primary"
+                                            id="icon_url"
+                                            title="Upload File"
+                                            onclick="window.openObjectInstance.insertDoc();"
+                                            accesskey="u">
+                                        <i class="fa fa-upload" aria-hidden="true"></i> {{room.messageBox.buttons.upload}}
+                                    </button>
+                                </div>
+                                <div class="col" style="text-align: right;">
+                                    <button type="submit"
+                                            class="btn btn-primary"
+                                            id="icon_submit"
+                                            title="Submit Message">
+                                        <i class="fa fa-paper-plane" aria-hidden="true"></i> {{room.messageBox.buttons.send}}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <textarea id="messageInput" class="form-control" autofocus="autofocus" placeholder="{{room.messageBox.placeholder}}"></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 no-gutters py-0 pl-2 pl-lg-3 pr-0 d-none d-md-block">
+            <div class="card border-secondary" id="activeUsersCard">
+                <div class="card-header" role="tab" id="activeUsersCardHeader">
+                    <h5 class="mb-0">{{template.activeUsersCat}}</h5>
+                </div>
+
+                 <div class="card-body p-0" style="overflow-y: auto; overflow-x: hidden;">
+                    <ul id="activeUsers" class="list-group"></ul>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </script>
 
 <script id="view-help" type="text/x-handlebars-template">
