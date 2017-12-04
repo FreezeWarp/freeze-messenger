@@ -48,13 +48,22 @@ public class MainPane {
     public ScrollPane messageListScroll;
 
     @FXML
-
-    public TableView userList;
-    @FXML
-    public TableColumn avatar = new TableColumn<User, String>("Avatar");
+    public TableView userListLocal;
 
     @FXML
-    public TableColumn username = new TableColumn<User, String>("User Name");
+    public TableView userListGlobal;
+
+    @FXML
+    public TableColumn avatarLocal = new TableColumn<User, String>("Avatar");
+
+    @FXML
+    public TableColumn usernameLocal = new TableColumn<User, String>("User Name");
+
+    @FXML
+    public TableColumn avatarGlobal = new TableColumn<User, String>("Avatar");
+
+    @FXML
+    public TableColumn usernameGlobal = new TableColumn<User, String>("User Name");
 
     @FXML
     public TableView roomList;
@@ -83,9 +92,14 @@ public class MainPane {
 
 
     /**
-     * A list of users currently considered active. userList monitors this for changes, and updates accordingly.
+     * A list of users currently considered active in the current room. userListLocal monitors this for changes, and updates accordingly.
      */
-    ObservableList<User> activeUsers =  FXCollections.observableArrayList();
+    ObservableList<User> activeUsersLocal =  FXCollections.observableArrayList();
+
+    /**
+     * A list of users currently considered active in site-wide. userListGlobal monitors this for changes, and updates accordingly.
+     */
+    ObservableList<User> activeUsersGlobal =  FXCollections.observableArrayList();
 
     /**
      * A list of rooms on the site. roomList monitors this for changes, and updates accordingly.
@@ -175,18 +189,31 @@ public class MainPane {
         });
         /* UserList SetUp */
         // Bind the username column to the "name" property from a User object.
-        username.setCellValueFactory(new PropertyValueFactory<User, String>("name"));
+        for (TableColumn c : new TableColumn[]{usernameLocal, usernameGlobal}) {
+            c.setCellValueFactory(new PropertyValueFactory<User, String>("name"));
+        }
+
 
         // Bind the avatar column to the "avatarImageView" property from a User object.
-        avatar.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<User, String>, ObservableValue<ImageView>>() {
-            @Override
-            public ObservableValue<ImageView> call(TableColumn.CellDataFeatures<User, String> user) {
-                return new SimpleObjectProperty<ImageView>(user.getValue().getAvatarImageView());
-            }
-        });
+        for (TableColumn c : new TableColumn[]{avatarLocal, avatarGlobal}) {
+            c.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<User, String>, ObservableValue<ImageView>>() {
+                @Override
+                public ObservableValue<ImageView> call(TableColumn.CellDataFeatures<User, String> user) {
+                    return new SimpleObjectProperty<ImageView>(user.getValue().getAvatarImageView());
+                }
+            });
+        }
+
+        // Size userListLocal to its number of rows
+        /*userListLocal.setFixedCellSize(25);
+        userListLocal.prefHeightProperty().bind(userListLocal.fixedCellSizeProperty().multiply(Bindings.size(userListLocal.getItems()).add(1.01)));
+        userListLocal.minHeightProperty().bind(userListLocal.prefHeightProperty());
+        userListLocal.maxHeightProperty().bind(userListLocal.prefHeightProperty());*/
+
 
         // Bind the table's data to the activeUsers list.
-        userList.setItems(activeUsers);
+        userListLocal.setItems(activeUsersLocal);
+        userListGlobal.setItems(activeUsersGlobal);
 
 
         /* RoomList SetUp */
@@ -328,9 +355,6 @@ public class MainPane {
      * Runner to check for new messages.
      */
     class RefreshMessages extends TimerTask {
-
-
-
         public void run() {
             JsonNode messages = GUIDisplay.api.getMessages(currentRoom.getId(), currentRoom.getLastMessageId()); // currentRoom.isArchiveFetched
 
@@ -397,21 +421,22 @@ public class MainPane {
             JsonNode usersLocal = GUIDisplay.api.getActiveUsers(MainPane.this.currentRoom.getId());
             JsonNode usersAll = GUIDisplay.api.getActiveUsers();
 
-            System.out.println(users);
-            activeUsers.clear();
-
+            activeUsersLocal.clear();
             if (usersLocal.isObject()) {
                 for (final JsonNode user : usersLocal) {
-                    activeUsers.add(getUser(user.get("id").asInt()));
+                    activeUsersLocal.add(getUser(user.get("id").asInt()));
                 }
             }
 
+            activeUsersGlobal.clear();
             if (usersAll.isObject()) {
                 for (final JsonNode user : usersAll) {
                     User userObj = getUser(user.get("id").asInt());
 
-                    if (!activeUsers.contains(userObj)) {
-                        activeUsers.add(userObj);
+                    System.out.println("in global user");
+                    if (!activeUsersLocal.contains(userObj)) {
+                        System.out.println("add global user");
+                        activeUsersGlobal.add(userObj);
                     }
                 }
             }
