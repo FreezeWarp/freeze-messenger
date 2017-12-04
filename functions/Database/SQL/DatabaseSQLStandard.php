@@ -289,6 +289,11 @@ abstract class DatabaseSQLStandard implements DatabaseSQLInterface {
     public $useDropIndexIfExists = false;
 
     /**
+     * @var bool Whether or not indexes should be unique to a table or to a database.
+     */
+    public $perTableIndexes = true;
+
+    /**
      * @var bool Whether or not PARTITION is supported in table definitions.
      */
     public $usePartition = false;

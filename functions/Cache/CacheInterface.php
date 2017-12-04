@@ -69,6 +69,17 @@ interface CacheInterface {
 
 
     /**
+     * Increment a cache entry at $index by $value. Do nothing if $index doesn't exists.
+     *
+     * @param $index
+     * @param $value
+     *
+     * @return mixed
+     */
+    public function inc($index, $value);
+
+
+    /**
      * Add $value to the set at $index.
      *
      * @param $index

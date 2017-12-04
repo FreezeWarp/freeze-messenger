@@ -30,6 +30,10 @@ class CacheApc implements CacheInterface {
         return apc_exists($index);
     }
 
+    public function inc($index, $value) : bool {
+        return apc_inc($index, $value) !== false;
+    }
+
     public function clear($index) {
         return apc_delete($index);
     }

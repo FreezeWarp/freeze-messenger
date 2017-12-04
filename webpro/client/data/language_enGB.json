@@ -124,6 +124,12 @@
       "createMessage" : "Go here to access your new room: "
     }
   },
+
+  "createRoom" : {
+    "buttons" : {
+      "submit" : "Create Room"
+    }
+  },
   
   "errorBadInstall" : "'<strong>WARNING</strong>: Your copy of FreezeMessenger has been incorrectly installed. Errors may occur if this is not fixed. <a href=\"http://code.google.com/p/freeze-messenger/wiki/ChangingDomains\">Please see the online documentation for more information.</a>'",
   "errorBanned" : "You have been banned. You will not be able to do anything.",

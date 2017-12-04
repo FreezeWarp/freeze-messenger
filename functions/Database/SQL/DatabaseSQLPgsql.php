@@ -26,11 +26,17 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
             9 => 'SERIAL',
             'default' => 'BIGSERIAL',
         ),
+        'columnStringTempLimits' => array(
+            'default' => 'VARCHAR',
+        ),
         'columnStringPermLimits' => array(
             'default' => 'VARCHAR',
         ),
         'columnNoLength' => array(
             'TEXT', 'BYTEA'
+        ),
+        'columnBlobTempLimits' => array(
+            'default' => 'BYTEA',
         ),
         'columnBlobPermLimits' => array(
             'default' => 'BYTEA',
@@ -46,6 +52,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
         DatabaseTypeType::bool => 'SMALLINT', // TODO: ENUM(1,2) AS BOOLENUM better.
         DatabaseTypeType::timestamp => 'INTEGER',
         DatabaseTypeType::blob => 'BYTEA',
+        DatabaseTypeType::json => 'JSONB',
     );
 
     public $concatTypes = array(
@@ -64,6 +71,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
     public $indexMode = 'useCreateIndex';
     public $foreignKeyMode = 'useAlterTableConstraint';
     public $tableRenameMode = 'alterTable';
+    public $perTableIndexes = false;
 
     /**
      * @var bool While Postgres supports a native bitfield type, it has very strange cast rules for it. Thus, it does not exhibit the expected behaviour, and we disable native bitfields.
@@ -237,7 +245,7 @@ class DatabaseSQLPgsql extends DatabaseSQLStandard {
         return $database->rawQueryReturningResult('SELECT * FROM information_schema.table_constraints WHERE table_catalog = '
             . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
             . ' AND table_schema NOT IN (\'pg_catalog\', \'information_schema\')'
-            . ' AND constraint_type = \'FOREIGN KEY\''
+            . ' AND (constraint_type = \'FOREIGN KEY\' OR constraint_type = \'PRIMARY KEY\')'
         )->getColumnValues(['table_name', 'constraint_name']);
     }
 

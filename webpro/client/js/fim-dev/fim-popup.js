@@ -359,17 +359,12 @@ popup.prototype.settings = {
 
             if ($(this).is(':checked') && !settings[localId]) {
                 settings[localId] = true;
-                $('#messageList').html('');
-                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
+                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() | idMap[localId], { expires : 14 });
             }
             else if (!$(this).is(':checked') && settings[localId]) {
                 settings[localId] = false;
-                $('#messageList').html('');
-                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
+                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() & ~idMap[localId], { expires : 14 });
             }
-
-            // TODO: test
-            standard.changeRoom(window.roomId);
         });
 
 
@@ -380,11 +375,11 @@ popup.prototype.settings = {
 
         // onChange
         $('input[name=audioDing], input[name=webkitNotifications]').change(function() {
-            var localId = $(this).attr('id');
+            var localId = $(this).attr('name');
 
             if ($(this).is(':checked') && !settings[localId]) {
                 settings[localId] = true;
-                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) + idMap[localId], { expires : 14 });
+                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() | idMap[localId], { expires : 14 });
 
                 // Notifications
                 if (localId === 'webkitNotifications') {
@@ -399,7 +394,7 @@ popup.prototype.settings = {
 
             else if (!$(this).is(':checked') && settings[localId]) {
                 settings[localId] = false;
-                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) - idMap[localId], { expires : 14 });
+                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) & ~idMap[localId], { expires : 14 });
             }
         });
 
@@ -470,19 +465,21 @@ popup.prototype.settings = {
 
 popup.prototype.editRoom = {
     options : {
-        roomId : 0
+        roomId : null
     },
 
-    setOptions : function(options) {
-        for (i in options)
-            this.options[i] = options[i];
+    setRoomId : function(roomId) {
+        this.options.roomId = roomId ? roomId : null;
     },
 
-    init : function(options) {
+    init : function() {
+
+    },
+
+    retrieve : function() {
         var _this = this;
-        this.setOptions(options);
 
-        if (this.options.roomId != 0)
+        if (this.options.roomId != null)
             var action = 'edit';
         else
             var action = 'create';
@@ -544,7 +541,7 @@ popup.prototype.editRoom = {
 
         /* Censor Lists */
         fimApi.getCensorLists({
-            'roomId' : this.options.roomId != 0 ? this.options.roomId : null,
+            'roomId' : this.options.roomId,
             'includeWords' : 0,
         }, {
             'each' : function(listData) {
@@ -572,7 +569,7 @@ popup.prototype.editRoom = {
         /*
          * Prepopulate Data if Editing a Room
          */
-        if (this.options.roomId != 0) {
+        if (this.options.roomId != null) {
             fimApi.getRooms({
                 'id' : this.options.roomId
             }, {'each' : function(roomData) {
@@ -591,7 +588,7 @@ popup.prototype.editRoom = {
                 moderatorsList.displayEntries(moderatorsArray);
 
                 // Group Permissions
-                var allowedGroupsArray = []
+                var allowedGroupsArray = [];
                 jQuery.each(roomData.groupPermissions, function(userId, privs) {
                     if (privs.post) // Are the 1, 2, and 4 bits all present?
                         allowedGroupsArray.push(userId);
@@ -622,8 +619,6 @@ popup.prototype.editRoom = {
 
         /* Submit */
         $("#editRoomForm").submit(function() {
-            //console.log("allowed users", allowedUsersList, allowedUsersList.getList());
-
             var combinedUserPermissions = {},
                 combinedGroupPermissions = {};
 

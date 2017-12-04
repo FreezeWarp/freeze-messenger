@@ -1071,7 +1071,7 @@ class DatabaseSQL extends Database
 
                 /* The column encodes time information, most often using an integral and unix timestamp. */
                 case DatabaseTypeType::timestamp:
-                    $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::timestamp]; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
+                    $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::timestamp];
                 break;
 
 
@@ -1090,29 +1090,33 @@ class DatabaseSQL extends Database
                 /* The column is a textual string or a binary string. */
                 case DatabaseTypeType::string:
                 case DatabaseTypeType::blob:
-                    // Limits may differ depending on table type and column type. Get the correct array encoding limits.
-                    $stringLimits = $this->sqlInterface->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
+                case DatabaseTypeType::json:
 
-                    // Search through the array encoding limits. This array should be keyed in increasing size.
-                    foreach ($stringLimits AS $length => $type) {
-                        if (!is_int($length)) continue; // allow default key
+                    if ($column['type'] === DatabaseTypeType::json && $this->sqlInterface->dataTypes[DatabaseTypeType::json]) {
+                        $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::json];
+                    }
+                    else {
+                        // Limits may differ depending on table type and column type. Get the correct array encoding limits.
+                        $stringLimits = $this->sqlInterface->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
 
-                        if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
-                            if (in_array($type, $this->sqlInterface->dataTypes['columnNoLength']))
-                                $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
-                            else
-                                $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
+                        // Search through the array encoding limits. This array should be keyed in increasing size.
+                        foreach ($stringLimits AS $length => $type) {
+                            if (!is_int($length)) continue; // allow default key
 
-                            break;
+                            if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
+                                if (in_array($type, $this->sqlInterface->dataTypes['columnNoLength']))
+                                    $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
+                                else
+                                    $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
+
+                                break;
+                            }
+                        }
+
+                        if (!strlen($typePiece)) { // If no type identifier was found...
+                            $typePiece = $stringLimits['default']; // Use the default.
                         }
                     }
-
-                    if (!strlen($typePiece)) { // If no type identifier was found...
-                        $typePiece = $stringLimits['default']; // Use the default.
-                    }
-
-                    // TODO: decide if we want this.
-                    // $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
                 break;
 
 
@@ -1244,11 +1248,12 @@ class DatabaseSQL extends Database
             /* Generate Foreign Key Restrictions */
             if ($this->isTypeObject($column['restrict'])) {
                 if ($column['restrict']->type === DatabaseTypeType::tableColumn) {
-                    if ($returnedQuery = $this->returnQueryString()->deleteForeignKeyConstraintFromColumnName($tableName, $columnName)) {
-                        $triggers[] = $returnedQuery;
-                    }
+                    if ($this->sqlInterface->foreignKeyMode) {
+                        if ($returnedQuery = $this->returnQueryString()->deleteForeignKeyConstraintFromColumnName($tableName, $columnName))
+                            $triggers[] = $returnedQuery;
 
-                    $triggers[] = $this->returnQueryString()->createForeignKeyConstraint($tableName, $columnName, $column['restrict']->value[0], $column['restrict']->value[1]);
+                        $triggers[] = $this->returnQueryString()->createForeignKeyConstraint($tableName, $columnName, $column['restrict']->value[0], $column['restrict']->value[1]);
+                    }
                 }
                 else {
                     throw new Exception('$column[\'restrict\'] must be an instance of DatabaseType(DatabaseTypeType::tableColumn).');
@@ -1300,30 +1305,6 @@ class DatabaseSQL extends Database
 
 
     /**
-     * Given a table name and DatabaseEngine constant, produces the SQL string representing that engine.
-     *
-     * @param string $tableName The name of the table.
-     * @param string $engine    The engine used for the table.
-     *
-     * @return string The SQL statement component representing the engine.
-     */
-    private function parseEngine($engine) {
-        if (!isset($this->sqlInterface->tableTypes[$engine])) {
-            $this->triggerError("Unrecognised Table Engine", array(
-                'engine' => $engine
-            ), 'validationFallback');
-
-            return DatabaseEngine::general;
-        }
-
-        if (!in_array($engine, $this->sqlInterface->storeTypes))
-            return DatabaseEngine::general;
-
-        return $engine;
-    }
-
-
-    /**
      * Creates a new table with given properties.
      *
      * @param $tableName       string The table to alter.
@@ -1347,9 +1328,6 @@ class DatabaseSQL extends Database
                                 $hardPartitionCount = 1,
                                 $renameOrDeleteExisting = false)
     {
-        $engine = $this->parseEngine($engine);
-
-
         /* Perform CREATEs */
         $this->startTransaction();
 
@@ -1401,8 +1379,14 @@ class DatabaseSQL extends Database
             /* Table Engine
              * Currently, only MySQL supports different engines. */
             if ($this->sqlInterface->getLanguage() === 'mysql') {
-                $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, ($engine === DatabaseEngine::memory ? "MEMORY" : "InnoDB"));
+                $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]);
             }
+
+            /* TODO: a lot more is needed to make this work with SqlServer, but this would be the beginning.
+            elseif ($this->sqlInterface->getLanguage() === 'sqlsrv' && $engine === DatabaseEngine::memory) {
+                $tableProperties .= 'WITH(MEMORY_OPTIMIZED=ON, DURABILITY=SCHEMA_ONLY)';
+            }
+            */
 
 
             /* Table Charset
@@ -1417,7 +1401,6 @@ class DatabaseSQL extends Database
                 && $this->sqlInterface->usePartition) {
                 $tableProperties .= ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100';
             }
-
 
             $return = $this->rawQuery(
                 'CREATE '
@@ -1493,8 +1476,6 @@ class DatabaseSQL extends Database
      * @return bool True on success, false on failure.
      */
     public function alterTable($tableName, $tableComment, $engine, $partitionColumn = false) {
-        $engine = $this->parseEngine($engine);
-
         return $this->rawQuery('ALTER TABLE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
             . (!is_null($engine) && $this->sqlInterface->getLanguage() === 'mysql' ? ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]) : '')
             . (!is_null($tableComment) ? ' COMMENT=' . $this->formatValue(DatabaseTypeType::string, $tableComment) : '')
@@ -1511,9 +1492,10 @@ class DatabaseSQL extends Database
      */
     public function deleteTable($tableName)
     {
-        return $this->rawQuery('DROP TABLE IF EXISTS '
-            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-        );
+        return $this->deleteForeignKeyConstraints($tableName)
+            && $this->rawQuery('DROP TABLE IF EXISTS '
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+            );
     }
 
 
@@ -1617,8 +1599,18 @@ class DatabaseSQL extends Database
             }
 
             // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
-            elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
-                $indexes[] = "PRIMARY KEY " . $this->formatValue(DatabaseTypeType::arraylist, $this->getIndexColsFromIndexName($indexName));
+            elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary') {
+                $indexes[] = ($index['type'] === 'primary'
+                    ?
+                        "CONSTRAINT "
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $this->getIndexName($tableName, $indexName))
+                        . ' '
+                    :
+                        ''
+                    )
+                    . $this->sqlInterface->keyTypeConstants[$index['type']] . " KEY "
+                        . $this->formatValue(DatabaseTypeType::arraylist, $this->getIndexColsFromIndexName($indexName));
+            }
 
             // Throw an exception if the index mode is unrecognised.
             else
@@ -1652,11 +1644,16 @@ class DatabaseSQL extends Database
 
 
         /* CREATE x INDEX ON table */
-        $trigger = "CREATE " . $this->sqlInterface->keyTypeConstants[$indexType] . " INDEX "
-            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName)
-            . " ON "
-            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName);
+        $trigger = "CREATE " . $this->sqlInterface->keyTypeConstants[$indexType] . " INDEX";
 
+        if (!($indexType === DatabaseIndexType::fulltext
+            && $this->sqlInterface->getLanguage() === 'sqlsrv')) {
+            $trigger .= ' '
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName);
+        }
+
+        $trigger .= " ON "
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName);
 
         /* PgSQL: GIN indexes for fulltext
          * TODO: this doesn't support multi-column fulltext indexes. */
@@ -1680,7 +1677,6 @@ class DatabaseSQL extends Database
                 $indexColsConditions["!{$col->value}"] = $this->type(DatabaseTypeType::null);
             }
 
-            end($triggers);
             $trigger .= ' WHERE ' . $this->recurseBothEither($indexColsConditions, $this->reverseAliasFromConditionArray($tableName, $indexColsConditions), 'both');
         }
 
@@ -1709,14 +1705,25 @@ class DatabaseSQL extends Database
 
         if ($this->sqlInterface->useDropIndexIfExists) {
             return $this->rawQuery('DROP INDEX IF EXISTS '
-                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName));
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName)
+                . ($this->sqlInterface->perTableIndexes ?
+                    ' ON '
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                    : ''
+                )
+            );
         }
         else {
             $tableIndexes = $this->getTableIndexesAsArray();
 
             if (isset($tableIndexes[strtolower($tableName)]) && in_array($alteredIndexName, $tableIndexes[strtolower($tableName)])) {
                 return $this->rawQuery('DROP INDEX '
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName));
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $alteredIndexName)
+                    . ($this->sqlInterface->perTableIndexes ?
+                        ' ON '
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                        : ''
+                ));
             }
 
             return false;
@@ -1766,14 +1773,16 @@ class DatabaseSQL extends Database
     public function createForeignKeyConstraint($tableName, $columnName, $foreignTableName, $foreignColumnName) {
         $constraintName = 'fk_' . $tableName . '_' . $columnName;
 
-        return $this->rawQuery('ALTER TABLE '
-            . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
-            . ' ADD CONSTRAINT ' . $this->formatValue(DatabaseTypeType::column, $constraintName) . ' FOREIGN KEY ('
-            . $this->formatValue(DatabaseTypeType::column, $columnName)
-            . ') REFERENCES ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $foreignTableName) . '('
-            . $this->formatValue(DatabaseTypeType::column, $foreignColumnName)
-            . ')'
-        );
+        if ($this->sqlInterface->foreignKeyMode) {
+            return $this->rawQuery('ALTER TABLE '
+                . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
+                . ' ADD CONSTRAINT ' . $this->formatValue(DatabaseTypeType::column, $constraintName) . ' FOREIGN KEY ('
+                . $this->formatValue(DatabaseTypeType::column, $columnName)
+                . ') REFERENCES ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $foreignTableName) . '('
+                . $this->formatValue(DatabaseTypeType::column, $foreignColumnName)
+                . ')'
+            );
+        }
     }
 
 
@@ -1810,8 +1819,11 @@ class DatabaseSQL extends Database
     public function deleteForeignKeyConstraint($tableName, $constraintName) {
         $tableConstraints = $this->getTableConstraintsAsArray();
 
+        if (!$this->sqlInterface->foreignKeyMode) {
+            return true;
+        }
+
         if (isset($tableConstraints[strtolower($tableName)]) && in_array($constraintName, $tableConstraints[strtolower($tableName)])) {
-            //var_dump($constraintName, $tableConstraints[strtolower($tableName)]);
             switch ($this->sqlInterface->foreignKeyMode) {
                 case 'useAlterTableForeignKey':
                     return $this->rawQuery('ALTER TABLE '
@@ -1823,7 +1835,8 @@ class DatabaseSQL extends Database
                     return $this->rawQuery('ALTER TABLE '
                         . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
                         . ' DROP CONSTRAINT '
-                        . $this->formatValue(DatabaseTypeType::column, $constraintName));
+                        . $this->formatValue(DatabaseTypeType::column, $constraintName)
+                        . ' CASCADE ');
                     break;
             }
         }
@@ -1904,6 +1917,10 @@ class DatabaseSQL extends Database
         }
 
         return $return;
+    }
+
+    public function getTriggerQueue() {
+        return $this->triggerQueue;
     }
 
 
@@ -2305,6 +2322,11 @@ class DatabaseSQL extends Database
                     $sideTextFull[$i] = 'to_tsvector (\'english\', ' . $this->formatValue(DatabaseTypeType::column, $column) . ') @@ to_tsquery(\'english\', ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value) . ')';
                 }
 
+                elseif ($value->comparison === DatabaseTypeComparison::fulltextSearch
+                    && $this->sqlInterface->getLanguage() === 'sqlsrv') {
+                    $sideTextFull[$i] = 'CONTAINS(' . $this->formatValue(DatabaseTypeType::column, $column) . ', ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_DETECT, $value) . ')';
+                }
+
                 /* Normal Boolean Logic */
                 else {
                     $sideText['left'] = ($reverseAlias ? $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_COLUMN, $reverseAlias[$column][0], $reverseAlias[$column][1]) : $column); // Get the column definition that corresponds with the named column. "!column" signifies negation.
@@ -2488,6 +2510,16 @@ class DatabaseSQL extends Database
         $columns = array_keys($dataArray);
         $values = array_values($dataArray);
 
+
+        $serialDisabled = false;
+        if ($this->sqlInterface->getLanguage() === 'sqlsrv'
+            && isset($this->insertIdColumns[$tableName])
+            && in_array($this->insertIdColumns[$tableName], $columns)) {
+            $serialDisabled = true;
+            $this->rawQuery('SET IDENTITY_INSERT ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName) . ' ON');
+        }
+
+
         $query = 'INSERT INTO '
             . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $this->getTableNameTransformation($tableName, $dataArray))
             . ' '
@@ -2495,6 +2527,9 @@ class DatabaseSQL extends Database
 
         if ($queryData = $this->rawQuery($query)) {
             $this->insertIdCallback($tableName);
+
+            if ($serialDisabled)
+                $this->rawQuery('SET IDENTITY_INSERT ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName) . ' OFF');
 
             return $queryData;
         }

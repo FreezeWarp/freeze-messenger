@@ -61,6 +61,7 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
         DatabaseTypeType::bool => 'BIT',
         DatabaseTypeType::timestamp => 'INTEGER',
         DatabaseTypeType::blob => 'VARBINARY(MAX)',
+        DatabaseTypeType::json => false,
     );
 
 
@@ -73,7 +74,8 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
     public $enumMode = 'useCheck';
     public $indexMode = 'useCreateIndex';
     public $serialMode = 'identity';
-    public $foreignKeyMode = 'useAlterTableConstraint';
+    //foreign keys make dropping tables difficult, so they are not enabled by default
+    //public $foreignKeyMode = 'useAlterTableConstraint';
     public $useDropIndexIfExists = true;
 
     public function connect($host, $port, $username, $password, $database = false) {
@@ -184,7 +186,7 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
     public function getTableColumnsAsArray(DatabaseSQL $database) {
         return $database->rawQueryReturningResult('SELECT * FROM '
             . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'COLUMNS')
-            . ' WHERE TABLE_SCHEMA = '
+            . ' WHERE TABLE_CATALOG = '
             . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
         )->getColumnValues(['TABLE_NAME', 'COLUMN_NAME']);
     }
@@ -192,8 +194,9 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
     public function getTableConstraintsAsArray(DatabaseSQL $database) {
         return $database->rawQueryReturningResult('SELECT * FROM '
             . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'TABLE_CONSTRAINTS')
-            . ' WHERE TABLE_SCHEMA = '
+            . ' WHERE TABLE_CATALOG = '
             . $database->formatValue(DatabaseTypeType::string, $database->activeDatabase)
+            . ' AND CONSTRAINT_TYPE = \'FOREIGN KEY\''
         )->getColumnValues(['TABLE_NAME', 'CONSTRAINT_NAME']);
     }
 

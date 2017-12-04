@@ -40,6 +40,8 @@ class DatabaseSQLPdoMysql extends DatabaseDefinitionsMySQL {
             $this->connection = new PDO("mysql:" . ($database ? "dbname=$database" : '') . ";host=$host:$port", $username, $password);
             $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->registerConnection($host, $port, $username, $password);
+
+            $this->versionCheck();
         } catch (PDOException $e) {
             $this->connectionError = $e->getMessage();
             return false;

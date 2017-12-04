@@ -215,7 +215,7 @@ popup.prototype.room.prototype.newMessage = function(roomId, messageId, messageT
 
         // HTML5 Notification
         if (window.notify.webkitNotifySupported() && window.settings.webkitNotifications) {
-            window.notify.webkitNotify("images/favicon.ico", "New Message", $(messageText).text());
+            window.notify.webkitNotify("images/favicon.ico", "New Message [" + $('#roomName').text() + "]", $(messageText).text());
         }
     }
 
@@ -254,6 +254,8 @@ popup.prototype.room.prototype.faviconFlashStop = function() {
         window.clearInterval(this.faviconFlashTimer);
         this.faviconFlashTimer = false;
     }
+
+    $('#favicon').attr('href', 'images/favicon.ico');
 };
 
 popup.prototype.room.prototype.faviconFlashOnce = function() { // Changes the state of the favicon from opaque to transparent or similar.
@@ -292,15 +294,24 @@ popup.prototype.room.prototype.init = function(options) {
     /* Setup */
 
     // Monitor the window visibility for running favicon flash and notifications.
-    document.addEventListener('visibilitychange', () => {
-        if(document.visibilityState == 'hidden') {
+    var visibilityChangeHandler = (blurred) => {
+        if(document.visibilityState == 'hidden' || blurred) {
             this.windowBlurred = true;
+
+            if (this.isTyping) {
+                fimApi.stoppedTyping(this.options.roomId);
+                this.isTyping = false;
+            }
         }
         else {
             this.windowBlurred = false;
             this.faviconFlashStop();
         }
-    });
+    };
+    document.addEventListener('visibilitychange', function() { visibilityChangeHandler(false) });
+    window.addEventListener('blur', function() { visibilityChangeHandler(true) });
+    window.addEventListener('focus',  function() { visibilityChangeHandler(false) });
+    visibilityChangeHandler(false);
 
     $(window).on('resize', null, this.onWindowResize);
 
@@ -570,13 +581,13 @@ popup.prototype.room.prototype.deletedMessageHandler = function(active) {
 };
 
 popup.prototype.room.prototype.topicChangeHandler = function(active) {
-    $('#topic').html(active.param1);
-    console.log('Event (Topic Change): ' + active.param1);
+    $('#topic').text(active.topic);
+    console.log('Event (Topic Change): ' + active.topic);
 };
 
 popup.prototype.room.prototype.editedMessageHandler = function(active) {
     if ($('#message' + active.id).length > 0) {
-        active.userId = $('#message' + active.id + ' .userName').attr('data-userid');
+        active.userId = active.senderId;
         active.time = $('#message' + active.id + ' .messageText').attr('data-time');
 
         this.newMessage(this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
@@ -611,10 +622,7 @@ popup.prototype.room.prototype.getMessagesFromFallback = function() {
         }, {
             each: ((event) => {
                 this.options.lastEvent = Math.max(Number(this.options.lastEvent), Number(event.id));
-
-                if (event.eventName == "newMessage") {
-                    this.newMessageHandler(event.data);
-                }
+                this[event.eventName + "Handler"](event.data);
             }),
             end: (() => {
                 if (window.requestSettings.serverSentEvents) {
@@ -623,7 +631,7 @@ popup.prototype.room.prototype.getMessagesFromFallback = function() {
                 else {
                     this.eventTimeout = window.setTimeout((() => {
                         this.getMessagesFromFallback()
-                    }), 3000);
+                    }), 2000);
                 }
             })
         });

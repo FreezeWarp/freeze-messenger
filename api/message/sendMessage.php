@@ -118,13 +118,15 @@ else {
 
 
                 // if /topic starts the message, the user is trying to change the topic.
-                // todo: this probably shouldn't create a message either, and we should make it possible through editRoom.php
-                if (strpos($message->text, '/topic') === 0 &&
-                    ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_TOPIC)) {
-                    $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $message->text));
+                if (strpos($message->text, '/topic') === 0) {
+                    if ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_TOPIC)
+                        $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $message->text));
+                    else
+                        new fimError('noPerm', 'You do not have permission to change the topic.');
                 }
-
-                $database->storeMessage($message);
+                else {
+                    $database->storeMessage($message);
+                }
             }
         break;
     }

@@ -1022,8 +1022,8 @@ class fimDatabase extends DatabaseSQL
         if (count($options['actions']) > 0) $conditions['both']['action'] = $this->in($options['actions']);
 
         if ($options['combineUserData']) {
-            $columns[$this->sqlPrefix . "users"] = $this->userColumns;
-            $conditions['both']['id'] = $this->col('luserId');
+            $columns[$this->sqlPrefix . "users"] = 'id userId, name userName, nameFormat userNameFormat, options userOptions, privs userPrivs';
+            $conditions['both']['userId'] = $this->col('luserId');
         }
 
         return $this->select($columns, $conditions, $sort, $limit, $page);
@@ -1603,6 +1603,24 @@ class fimDatabase extends DatabaseSQL
     public function cleanLockout() {
         $this->delete($this->sqlPrefix . 'sessionLockout', array(
             'expires' => $this->now(0, 'lte')
+        ));
+    }
+
+    /**
+     * Delete old flood counters.
+     */
+    public function cleanAccessFlood() {
+        $this->delete($this->sqlPrefix . 'accessFlood', array(
+            'expires' => $this->now(0, 'lte')
+        ));
+    }
+
+    /**
+     * Delete old message flood counters.
+     */
+    public function cleanMessageFlood() {
+        $this->delete($this->sqlPrefix . 'messageFlood', array(
+            'time' => $this->ts(-60, 'lte')
         ));
     }
 
@@ -2341,28 +2359,40 @@ class fimDatabase extends DatabaseSQL
             throw new exception('No user login registered.');
         }
 
+
+        // If Flood Detection is Enabled...
         if (fimConfig::$floodDetectionGlobal) {
             $time = time();
             $minute = $time - ($time % 60);
 
-            $floodCount = $this->select([
-                  $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
-            ], [
-                'action' => $action,
-                'ip' => $_SERVER['REMOTE_ADDR'],
-                'period' => $this->ts($minute),
-            ])->getColumnValue('count');
+            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_{$action}_$minute")) {
+                // Get Current Flood Weight
+                $floodCountMinute = $this->select([
+                      $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
+                ], [
+                    'action' => $action,
+                    'ip' => $_SERVER['REMOTE_ADDR'],
+                    'period' => $this->ts($minute),
+                ])->getColumnValue('count');
 
-            if ($floodCount > fimConfig::${'floodDetectionGlobal_' . $action . '_perMinute'} && !$this->user->hasPriv('modPrivs')) {
-                new fimError("flood", "Your IP has sent too many $action requests ($floodCount observed).", null, null, "HTTP/1.1 429 Too Many Requests");
+                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_{$action}_$minute", $floodCountMinute ?: 0, 60);
+            }
+
+
+            // Error if Flood Weight is Too Great
+            if ($floodCountMinute > fimConfig::${'floodDetectionGlobal_' . $action . '_perMinute'} && !$this->user->hasPriv('modPrivs')) {
+                new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
+                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute");
+
+                // Increment the Flood Weight
                 $this->upsert($this->sqlPrefix . "accessFlood", [
                     'action'  => $action,
                     'ip'      => $_SERVER['REMOTE_ADDR'],
                     'period'  => $this->ts($minute),
                 ], [
-                    'userId' => $notLoggedIn ? null : $this->user->id,
+                    //'userId' => $notLoggedIn ? null : $this->user->id,
                     'count'  => $this->equation('$count + 1'),
                     'expires' => $this->ts($minute + 60),
                 ], [
@@ -2371,6 +2401,8 @@ class fimDatabase extends DatabaseSQL
             }
         }
 
+
+        // Insert Access Log, If Enabled
         if (fimConfig::$accessLogEnabled) {
             if ($this->insert($this->sqlPrefix . "accessLog", array(
                 'userId' => $notLoggedIn ? null : $this->user->id,
@@ -2392,42 +2424,6 @@ class fimDatabase extends DatabaseSQL
 
         return false;
     }
-
-
-
-
-    /****** MESSAGE TEXT FUNCTIONS ******/
-
-    /**
-     * Generates keywords to enter into the archive search store.
-     *
-     * @param string $text - The text to generate the big keywords from.
-     * @return array - The keywords found.
-     * @author Joseph Todd Parsons <josephtparsons@gmail.com>
-     */
-    // TODO: Shouldn't be part of fimDatabase.php.
-    public function getKeyWordsFromText($text) {
-        $string = $this->makeSearchable($text);
-
-        $stringPieces = array_unique(explode(' ', $string));
-        $stringPiecesAdd = array();
-
-        foreach ($stringPieces AS $piece) {
-            if (strlen($piece) >= fimConfig::$searchWordMinimum &&
-                strlen($piece) <= fimConfig::$searchWordMaximum &&
-                !in_array($piece, fimConfig::$searchWordOmissions)) $stringPiecesAdd[] = $piece;
-        }
-
-        if (count($stringPiecesAdd) > 0) {
-            sort($stringPiecesAdd);
-
-            return $stringPiecesAdd;
-        }
-        else {
-            return array();
-        }
-    }
-
 
 
     /****** TRIGGERS ******/

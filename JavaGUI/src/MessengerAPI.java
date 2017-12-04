@@ -329,8 +329,8 @@ public class MessengerAPI {
         try {
             String json = Request.Post(serverUrl + path)
                     .bodyString(requestBody, ContentType.APPLICATION_FORM_URLENCODED)
-                    .connectTimeout(1000)
-                    .socketTimeout(1000)
+                    .connectTimeout(5000)
+                    .socketTimeout(5000)
                     .execute().handleResponse(responseHandler);
 
             System.out.println(json);

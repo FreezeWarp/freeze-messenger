@@ -21420,7 +21420,8 @@ var notify = {
         else {
             new window.Notification(title, {
                 body : notifyData,
-                icon : icon
+                icon : icon,
+                tag : "fm-notify"
             });
         }
     }
@@ -21462,9 +21463,16 @@ var dia = {
     },
 
     info: function (message, title) {
-        $('#modal-dynamicInfo .modal-title').text(title);
-        $('#modal-dynamicInfo .modal-body').html(message);
-        $('#modal-dynamicInfo').modal();
+        $.notify({
+            message : message
+        }, {
+            type : "info",
+            placement: {
+                from : 'top',
+                align : 'center',
+            },
+            delay : 3000,
+        });
     },
 
     confirm: function (options, title) {

@@ -6,3 +6,7 @@ querylog
 vendor/google/apiclient-services/src/Google/*
 !vendor/google/apiclient-services/src/Google/Oauth2/*
 !vendor/google/apiclient-services/src/Google/Oauth2.php
+webpro/client/js/fim-dev/*.js
+webpro/client/js/fim-dev/*.js.map
+!webpro/client/js/fim-dev/autoEntry.js
+!webpro/client/js/fim-dev/fim-popup.js

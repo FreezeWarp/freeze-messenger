@@ -46,6 +46,10 @@ class CacheMemcached implements CacheInterface {
         return $this->instance->getResultCode() != Memcached::RES_NOTFOUND;
     }
 
+    public function inc($index, $amt) {
+        return $this->instance->increment($index, $amt);
+    }
+
     public function clear($index) {
         return $this->instance->delete($index);
     }

@@ -70,6 +70,7 @@ else {
             ], array('time' => 'desc'), 100, $request['page']);
             $logs = $logsResult->getAsArray(true);
 
+            $rows = "";
             foreach ($logs AS $log) {
                 $rows .= "<tr>
                     <td><a href=\"./moderate.php?do=log&log={$request['log']}&userIds[]={$log['userId']}\">{$log['userId']} ({$log['userName']})</a></td>

@@ -24,7 +24,7 @@ require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
 require(__DIR__ . '/../functions/Xml2Array.php'); // For reading the db*.xml files
 require(__DIR__ . '/../functions/fimDatabase.php'); // ""
 require(__DIR__ . '/../functions/fimUser.php'); // Creating Users
-require(__DIR__ . '/../functions/fimRoom.php'); // Transformation Parameters
+require(__DIR__ . '/../functions/fimRoom.php');
 require(__DIR__ . '/../functions/fimConfig.php'); // Configuration
 require(__DIR__ . '/../functions/fimCache.php'); // Caching
 
@@ -192,9 +192,6 @@ switch ($_REQUEST['phase']) {
 
 
                 /* Part 3: Insert Predefined Data */
-                if ($database->sqlInterface->getLanguage() === 'sqlsrv')
-                    $database->rawQuery('SET IDENTITY_INSERT users ON');
-
                 foreach ($xmlData2['database'][0]['table'] AS $table) { // Run through each table from the XML
                     if (isset($table['@mode']) && $table['@mode'] === 'dev' && !isset($_GET['db_usedev'])) // Don't insert dev data, unless asked.
                         continue;
@@ -211,10 +208,6 @@ switch ($_REQUEST['phase']) {
                         die("Failed to insert data into {$prefix}{$table['@name']}.\n" . print_r($database->queryLog, true));
                     }
                 }
-
-                if ($database->sqlInterface->getLanguage() === 'sqlsrv')
-                    $database->rawQuery('SET IDENTITY_INSERT users OFF');
-
 
                 $database->endTransaction();
             }
