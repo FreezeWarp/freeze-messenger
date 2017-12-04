@@ -35,15 +35,12 @@ popup.prototype.room = function() {
 
 
 popup.prototype.room.prototype.insertDoc = function() {
+    // Show Modal
     $('#modal-insertDoc').modal();
 
 
-    var fileName = '',
-        fileSize = 0,
-        fileContent = '',
-        fileParts = [],
-        filePartsLast = '',
-        md5hash = '';
+    // Disable Submit Button Initially
+    $('#uploadFileForm [type=submit]').attr('disabled', 'disabled');
 
 
     /* File Upload Info */
@@ -51,25 +48,6 @@ popup.prototype.room.prototype.insertDoc = function() {
         $('#insertDocUpload').html('Disabled.');
     }
     else {
-        window.serverSettings.fileUploads.extensionChangesReverse = {};
-
-        jQuery.each(window.serverSettings.fileUploads.extensionChanges, function(index, extension) {
-            if (!(extension in window.serverSettings.fileUploads.extensionChangesReverse))
-                window.serverSettings.fileUploads.extensionChangesReverse[extension] = [extension];
-
-            window.serverSettings.fileUploads.extensionChangesReverse[extension].push(extension);
-        });
-
-        $('table#fileUploadInfo tbody').html('');
-        jQuery.each(window.serverSettings.fileUploads.allowedExtensions, function(index, extension) {
-            var maxFileSize = window.serverSettings.fileUploads.sizeLimits[extension],
-                fileContainer = window.serverSettings.fileUploads.fileContainers[extension],
-                fileExtensions = window.serverSettings.fileUploads.extensionChangesReverse[extension];
-
-            $('table#fileUploadInfo tbody').append('<tr><td>' + (fileExtensions ? fileExtensions.join(', ') : extension) + '</td><td>' + $l('fileContainers.' + fileContainer) + '</td><td>' + $.formatFileSize(maxFileSize, $l('byteUnits')) + '</td></tr>');
-        });
-
-
         /* File Upload Form */
         if (typeof FileReader !== 'function') {
             $('#uploadFileForm').html($l('uploadErrors.notSupported'));
@@ -109,7 +87,6 @@ popup.prototype.room.prototype.insertDoc = function() {
                     // File Information
                     var fileName = this.files[0].name,
                         fileSize = this.files[0].size,
-                        fileContent = '',
                         fileParts = fileName.split('.'),
                         filePartsLast = fileParts[fileParts.length - 1].toLowerCase();
 
@@ -121,7 +98,7 @@ popup.prototype.room.prototype.insertDoc = function() {
                     if ($.inArray(filePartsLast, $.toArray(window.serverSettings.fileUploads.allowedExtensions)) === -1) {
                         $('#uploadFileFormPreview').html($l('uploadErrors.badExtPersonal'));
                     }
-                    else if ((fileSize) > window.serverSettings.fileUploads.sizeLimits[filePartsLast]) {
+                    else if (fileSize > window.serverSettings.fileUploads.sizeLimits[filePartsLast]) {
                         $('#uploadFileFormPreview').html($l('uploadErrors.tooLargePersonal', {
                             'fileSize' : window.serverSettings.fileUploads.sizeLimits[filePartsLast]
                         }));
@@ -134,7 +111,8 @@ popup.prototype.room.prototype.insertDoc = function() {
                             $('#uploadFileFormPreview').html(fim_messagePreview(window.serverSettings.fileUploads.fileContainers[filePartsLast], this.result));
                         };
 
-                        $('#imageUploadSubmitButton').removeAttr('disabled').button({ disabled: false });
+                        console.log("file good");
+                        $('#uploadFileForm [type=submit]').removeAttr('disabled');
                     }
                 }
             });
