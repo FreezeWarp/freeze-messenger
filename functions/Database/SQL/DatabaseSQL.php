@@ -2450,7 +2450,7 @@ class DatabaseSQL extends Database
     private function getTableNameTransformation($tableName, $dataArray)
     {
         if (isset($this->hardPartitions[$tableName])) {
-            return $tableName . "__part" . $dataArray[$this->hardPartitions[$tableName][0]] % $this->auto($this->hardPartitions[$tableName][1])->value;
+            return $tableName . "__part" . filter_var($this->auto($dataArray[$this->hardPartitions[$tableName][0]])->value, FILTER_SANITIZE_NUMBER_INT) % $this->hardPartitions[$tableName][1];
         }
 
         return $tableName;
@@ -2550,7 +2550,7 @@ class DatabaseSQL extends Database
                 $this->triggerError("The table $tableName is partitioned. To delete from it, you _must_ specify the column " . $this->hardPartitions[$tableName][0] . ". Note that you may instead use partitionAt() if you know _any_ column that would apply to the partition (for instance, if you wish to delete the last row from a table before inserting a new one, you can specify the relevant condition using partitionAt().)" . print_r($partitionAt, true));
             }
 
-            $tableName .= "__part" . $partitionAt[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+            $tableName = $this->getTableNameTransformation($tableName, $partitionAt);
         }
 
         $this->partitionAt = [];
@@ -2611,7 +2611,7 @@ class DatabaseSQL extends Database
                 $this->triggerError("The table $tableName is partitioned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
             }
 
-            $tableName .= "__part" . $conditionArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+            $tableName = $this->getTableNameTransformation($tableName, $conditionArray);
         }
 
 
@@ -2657,7 +2657,7 @@ class DatabaseSQL extends Database
                 $this->triggerError("The table $tableName is partitioned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
             }
 
-            $tableName .= "__part" . $conditionArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+            $tableName = $this->getTableNameTransformation($tableName, $conditionArray);
         }
 
         $allArray = array_merge($dataArray, $dataArrayOnInsert, $conditionArray);

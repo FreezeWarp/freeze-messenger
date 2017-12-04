@@ -1014,7 +1014,7 @@ class fimDatabase extends DatabaseSQL
         ), $options);
 
         $columns = array(
-             $this->sqlPrefix . $options['log'] . 'Log' => 'userId luserId, time, ip, action, data' . ($options['log'] === 'full' ? ', server' : '') . ($options['log'] === 'access' ? ', userAgent, clientCode' : '')
+             $this->sqlPrefix . $options['log'] . 'Log' => 'userId luserId, time, ip, action, data' . ($options['log'] === 'full' ? ', server' : '') . ($options['log'] === 'access' ? ', userAgent, clientCode, executionTime' : '')
         );
 
         if (count($options['userIds']) > 0) $conditions['both']['luserId'] = $this->in($options['userIds']);
@@ -1610,7 +1610,7 @@ class fimDatabase extends DatabaseSQL
      * Delete old flood counters.
      */
     public function cleanAccessFlood() {
-        $this->delete($this->sqlPrefix . 'accessFlood', array(
+        $this->partitionAt(['ip' => $_SERVER['REMOTE_ADDR']])->delete($this->sqlPrefix . 'accessFlood', array(
             'expires' => $this->now(0, 'lte')
         ));
     }

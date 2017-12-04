@@ -36,9 +36,10 @@ $database->setTransformationParameters([
 ]);
 
 
-/* These manipulate how data is partioned in a database. */
+/* These manipulate how data is partitioned in a database. */
 $database->setHardPartitions([
     $database->sqlPrefix . 'messages' => ['roomId', 10],
+    $database->sqlPrefix . 'accessFlood' => ['ip', 10],
 ]);
 
 

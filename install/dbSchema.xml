@@ -23,7 +23,7 @@
         </table>
 
 
-        <table name="accessFlood" type="memory" comment="Counter of all API calls, meant for flood detection.">
+        <table name="accessFlood" hardPartitions="10" type="memory" comment="Counter of all API calls, meant for flood detection.">
             <!--<column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />-->
             <column name="action" type="string" maxlen="20" comment="The action performed." />
             <column name="period" type="time" comment="The time of accesses modulated as a period." />
