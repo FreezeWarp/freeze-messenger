@@ -18840,6 +18840,19 @@ jQuery.toArray = function(obj) {
 
 
 
+jQuery.formatFileSize = function(fileSize, suffixes) {
+    var fileSize2;
+
+    for (i in suffixes) {
+        if (fileSize > i) fileSize2 = (fileSize / i) + suffixes[i];
+        else return fileSize2;
+    }
+
+    return fileSize2;
+};
+
+
+
 
 
 

@@ -298,18 +298,16 @@ class fimConfig {
 
     /** @var array How to send different files according to their extension. (e.g. video may be shown in HTML <video> tags, etc.) */
     public static $fileContainers = array(
-        'txt' => 'text', 'htm' => 'text', 'php' => 'text', 'css' => 'text', 'java' => 'text', 'js' => 'text', 'json' => 'text', 'xml' => 'text', 'ini' => 'text',
-
         'exe' => 'application', 'msi' => 'application', 'cab' => 'application',
-
         'swf' => 'flash', 'flv' => 'flash',
 
-        'rtf' => 'application', 'pdf' => 'application',
-
+        'rtf' => 'application',
         'doc' => 'application', 'docx' => 'application',  'dotx' => 'application',
         'xls' => 'application', 'xlsx' => 'application', 'xltx' => 'application', 'xlam' => 'application', 'xlsb' => 'application',
         'ppt' => 'application', 'potx' => 'application', 'ppsx' => 'application', 'pptx' => 'application', 'sldx' => 'application',
         'ods' => 'application', 'odt' => 'application', 'odp' => 'application',
+
+        'txt' => 'text', 'htm' => 'text', 'php' => 'text', 'css' => 'text', 'js' => 'text', 'json' => 'text', 'xml' => 'text',
 
         'png' => 'image', 'jpg' => 'image', 'gif' => 'image', 'bmp' => 'image', 'ico' => 'image', 'tif' => 'image', 'svg' => 'image', 'svgz' => 'image',
 
@@ -336,7 +334,7 @@ class fimConfig {
     public static $imageResizeMaxWidth = 10000;
 
     /** @var array Only files with these extensions can be uploaded. (They are also then outputted according to uploadMimes, and can only be as big as specified in uploadSizeLimits.) */
-    public static $allowedExtensions = array('txt', 'css', 'java', 'js', 'json', 'xml', 'ini', 'pdf', 'rtf', 'docx', 'xlsx', 'pptx', 'gif', 'png', 'jpg', 'ogg', 'mp3', 'flac');
+    public static $allowedExtensions = array('gif', 'png', 'jpg', 'txt', 'ogg', 'mp3', 'flac');
 
     /** @var array The mimetypes used to transfer different files. Obviously, certain types are more prone to viruses than others. */
     public static $uploadMimes = array(
@@ -344,11 +342,9 @@ class fimConfig {
         'htm' => 'text/html',
         'php' => 'text/html',
         'css' => 'text/css',
-        'java' => 'text/x-java-source',
         'js' => 'application/javascript',
         'json' => 'application/json',
         'xml' => 'application/xml',
-        'ini' => 'text/plain',
 
         'exe' => 'application/x-msdownload',
         'msi' => 'application/x-msdownload',
@@ -418,9 +414,7 @@ class fimConfig {
         'css' => 1 * 1024 * 1024, // 1MB
         'js' => 1 * 1024 * 1024, // 1MB
         'json' => 1 * 1024 * 1024, // 1MB
-        'java' => 1 * 1024 * 1024, // 1MB
         'xml' => 1 * 1024 * 1024, // 1MB
-        'ini' => 1 * 1024 * 1024, // 1MB
 
         'exe' => 50 * 1024 * 1024, // 50MB
         'msi' => 50 * 1024 * 1024, // 50MB
