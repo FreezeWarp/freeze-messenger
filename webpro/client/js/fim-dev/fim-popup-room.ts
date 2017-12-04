@@ -335,7 +335,7 @@ popup.prototype.room.prototype.init = function(options) {
             data.formData.roomId = this.options.roomId;
 
             if (!("fileName" in data.formData)) {
-                data.formData.fileName = "pasteupload.png";
+                data.formData.fileName = data.originalFiles[0].name;
             }
 
             return true;
