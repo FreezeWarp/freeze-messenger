@@ -12,7 +12,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -27,7 +26,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import javafx.util.Callback;
 
 import java.text.SimpleDateFormat;
@@ -153,14 +151,6 @@ public class MainPane {
                 if (newValue) {
                     settingsList.getParentPopup().styleProperty().setValue("-fx-min-width: " + settingsButton.widthProperty().get() + "px");
                 }
-            }
-        });
-
-        settingsLogout.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                MessengerAPI.user = new LoggedInUser();
-                Platform.exit();
             }
         });
 
@@ -365,14 +355,14 @@ public class MainPane {
 
                             TextFlow t = new TextFlow();
                             TextFlow t2;
-                            TextFlow t3;
+                            /*TextFlow t3;*/
                             if(MessengerAPI.user.getId() == userId) {
                                 t2 = new TextFlow(messageText, new Text("\n"));
                                 t.setTextAlignment(RIGHT);
                             }
 
                             else{
-                                /*t2*/t3 = new TextFlow(user.getAvatarImageView(), new Text(" "), userName, new Text(": "), messageText, new Text("\n"));
+                                t2 = new TextFlow(user.getAvatarImageView(), new Text(" "), userName, new Text(": "), messageText, new Text("\n"));
                                 t.setTextAlignment(LEFT);
                             }
                             t2.maxWidthProperty().bind(messageList.widthProperty().multiply(.6));
