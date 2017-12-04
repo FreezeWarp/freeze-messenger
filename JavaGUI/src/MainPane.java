@@ -355,13 +355,14 @@ public class MainPane {
 
                             TextFlow t = new TextFlow();
                             TextFlow t2;
+                            TextFlow t3;
                             if(MessengerAPI.user.getId() == userId) {
                                 t2 = new TextFlow(messageText, new Text("\n"));
                                 t.setTextAlignment(RIGHT);
                             }
 
                             else{
-                                t2 = new TextFlow(user.getAvatarImageView(), new Text(" "), userName, new Text(": "), messageText, new Text("\n"));
+                                /*t2*/t3 = new TextFlow(user.getAvatarImageView(), new Text(" "), userName, new Text(": "), messageText, new Text("\n"));
                                 t.setTextAlignment(LEFT);
                             }
                             t2.maxWidthProperty().bind(messageList.widthProperty().multiply(.6));

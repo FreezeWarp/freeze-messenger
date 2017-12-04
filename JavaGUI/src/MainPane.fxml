@@ -55,7 +55,7 @@
                         <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
                      </GridPane.margin>
                   </TableView>
-                  <Label styleClass="font1" stylesheets="@FXcss.css" text="Rooms" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+                  <Label styleClass="font16" stylesheets="@FXcss.css" text="Rooms" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
                </children>
             </GridPane>
             <GridPane GridPane.columnIndex="1">
@@ -106,7 +106,7 @@
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                        <AnchorPane prefHeight="200.0" prefWidth="97.0">
                            <children>
                               <MenuButton id="helpButton" fx:id="helpButton" accessibleRole="MENU_ITEM" accessibleText="Help" alignment="CENTER" cache="true" contentDisplay="GRAPHIC_ONLY" graphicTextGap="0.0" minHeight="0.0" minWidth="0.0" mnemonicParsing="false" stylesheets="@FXcss.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="2.0">
                                 <items>
@@ -160,7 +160,7 @@
                         </AnchorPane>
                      </children>
                   </GridPane>
-                  <Label styleClass="font1" stylesheets="@FXcss.css" text="Users in Room" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                  <Label styleClass="font16" stylesheets="@FXcss.css" text="Users in Room" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
                   <TableView fx:id="userList" styleClass="hide-header" stylesheets="@FXcss.css" GridPane.rowIndex="2">
                     <columns>
                       <TableColumn id="avatar" fx:id="avatar" maxWidth="35.0" minWidth="35.0" prefWidth="35.0" text="Avatar" />
@@ -173,7 +173,7 @@
                         <Insets left="2.0" right="2.0" />
                      </GridPane.margin>
                   </TableView>
-                  <Label styleClass="font1" stylesheets="@FXcss.css" text="Users Online" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER" />
+                  <Label styleClass="font16" stylesheets="@FXcss.css" text="Users Online" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER" />
                   <TableView fx:id="userList1" layoutX="10.0" layoutY="80.0" styleClass="hide-header" stylesheets="@FXcss.css" GridPane.rowIndex="4">
                      <columns>
                         <TableColumn id="avatar" fx:id="avatar1" maxWidth="35.0" minWidth="35.0" prefWidth="35.0" text="Avatar" />
