@@ -38,6 +38,9 @@ abstract class LoginDatabase implements LoginRunner {
             new \fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
         }
         else {
+            // Clean Our Database
+            $this->loginFactory->oauthStorage->cleanSessions();
+
             // Get the user object from a user ID
             $user = \fimUserFactory::getFromId((int) $this->oauthGrantType->getUserId());
             $user->setSessionHash($oauthResponse->getParameter('access_token')); // Mainly for logging.

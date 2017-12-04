@@ -6,36 +6,36 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="HelpFAQPane">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" stylesheets="@FXcss.css" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="HelpFAQPane">
    <children>
-      <Accordion prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <Accordion minHeight="75.0" prefHeight="75.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <panes>
-          <TitledPane animated="false" text="Question 1?">
+          <TitledPane animated="false" styleClass="border" stylesheets="@FXcss.css" text="What is FlexChat?">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
                         <TextFlow layoutY="-2.0" prefHeight="326.0" prefWidth="600.0" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Answer" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="FlexChat is a multi-platform chat client that connects over a php backend." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
             </content>
           </TitledPane>
-          <TitledPane animated="false" text="Question 2?">
+          <TitledPane animated="false" text="What platforms can I use FlexChat on?">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
                         <TextFlow prefHeight="326.0" prefWidth="600.0" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Answer" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Currently FlexChat supports a desktop client and web client compatible with browsers and mobile." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
             </content>
           </TitledPane>
-          <TitledPane animated="false" text="Question 3?">
+          <TitledPane animated="false" text="Is FlexChat free?">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
                         <TextFlow prefHeight="326.0" prefWidth="600.0" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Answer" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Currently FlexChat is 100% open source and free to the public." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
             </content>

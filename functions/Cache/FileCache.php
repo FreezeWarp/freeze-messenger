@@ -44,11 +44,6 @@ class FileCache {
     protected $root = null;
 
     /**
-     * For holding any error messages that may have been raised
-     */
-    protected $error = null;
-
-    /**
      * Prefix to append to all files created
      */
     protected $prefix = null;
@@ -70,32 +65,53 @@ class FileCache {
      * @returns boolean True if the save was successful, false if it failed
      */
     public function set($key, $data = false, $ttl = 3600) {
-        if (!$key) {
-            $this->error = "Invalid key";
-            return false;
-        }
-
         $key = $this->_make_file_key($key);
+
         $store = array(
             'data' => $data,
             'ttl'  => time() + $ttl,
         );
-
-        $status = false;
 
         $fh = fopen($key, "w+"); // Open file named with the key..
 
         flock($fh, LOCK_EX); // Lock the file.
         ftruncate($fh, 0); // Empty the file.
         if (!fwrite($fh, serialize($store))) { // Rewrite the file with the new contents.
-            throw new Exception('Could not write cache.');
+            throw new \Exception('Could not write cache.');
         }
         flock($fh, LOCK_UN); // Remove the lock on the file.
         fclose($fh); // Close the file from memory.
 
-        $status = true;
+        return true;
+    }
 
-        return $status;
+    /**
+     * Increment existing cache entry.
+     */
+    public function inc($key, $amt = 1) {
+        $key = $this->_make_file_key($key);
+
+        // Get the data from the file
+        $fh = @fopen($key, "a+");
+        flock($fh, LOCK_EX); // Lock the file for reading.
+        $file_content = @fread($fh, filesize($key)); // Get contents.
+
+        // Assuming we got something back...
+        if ($file_content) {
+            $store = unserialize($file_content);
+            $store['data'] += $amt;
+
+            ftruncate($fh, 0); // Empty the file.
+            if (!fwrite($fh, serialize($store))) { // Rewrite the file with the new contents.
+                throw new \Exception('Could not write cache.');
+            }
+            flock($fh, LOCK_UN); // Remove the lock on the file.
+            fclose($fh); // Close the file from memory.
+
+            return true;
+        }
+
+        return false;
     }
 
 
@@ -105,36 +121,33 @@ class FileCache {
      * @returns mixed Data that was stored
      */
     public function get($key) {
-        if (!$key) {
-            $this->error = "Invalid key";
-            return false;
-        }
-
         $key = $this->_make_file_key($key);
         $file_content = null;
 
 
         // Get the data from the file
-        $fh = fopen($key, "r");
+        $fh = @fopen($key, "r");
 
-        flock($fh, LOCK_SH); // Lock the file for reading.
-        $file_content = fread($fh, filesize($key)); // Get contents.
+        if ($fh !== false) {
+            flock($fh, LOCK_SH); // Lock the file for reading.
+            $file_content = @fread($fh, filesize($key)); // Get contents.
+            fclose($fh); // Close the file from memory.
 
-        fclose($fh); // Close the file from memory.
+            // Assuming we got something back...
+            if ($file_content) {
+                $store = unserialize($file_content);
 
+                if(!isset($store['ttl']) || $store['ttl'] < time()) { // If the cache has expired.
+                    unlink($key); // remove the file
 
-        // Assuming we got something back...
-        if ($file_content) {
-            $store = unserialize($file_content);
+                    return false;
+                }
 
-            if($store['ttl'] < time()) { // If the cache has expired.
-                unlink($key); // remove the file
-
-                return false;
+                return $store['data'];
             }
         }
 
-        return $store['data'];
+        return false;
     }
 
 
@@ -143,15 +156,10 @@ class FileCache {
      * @param string $key An identifier for the data
      */
     public function delete($key) {
-        if (!$key) {
-            $this->error = "Invalid key";
-            return false;
-        }
-
         $key = $this->_make_file_key($key);
 
         if (!unlink($key)) { // Remove the file.
-            throw new Exception('Could not delete cache.');
+            throw new \Exception('Could not delete cache.');
         }
         else {
             return true;
@@ -164,11 +172,6 @@ class FileCache {
      * @returns bool
      */
     public function exists($key) {
-        if (!$key) {
-            $this->error = "Invalid key";
-            return false;
-        }
-
         $key = $this->_make_file_key($key);
         $file_content = null;
 
@@ -179,9 +182,6 @@ class FileCache {
         else {
             return false;
         }
-
-
-        return $store['data'];
     }
 
 
@@ -193,7 +193,7 @@ class FileCache {
 
         foreach ($files AS $file) {
             if (!unlink($file)) { // Remove the file.
-                throw new Exception('Could not delete cache file ' . $file);
+                throw new \Exception('Could not delete cache file ' . $file);
             }
         }
 
@@ -213,26 +213,6 @@ class FileCache {
         }
 
         return $data;
-    }
-
-
-    /**
-     * Reads and clears the internal error
-     * @returns string Text of the error raised by the last process
-     */
-    public function get_error() {
-        $message = $this->error;
-        $this->error = null;
-        return $message;
-    }
-
-
-    /**
-     * Can be used to inspect internal error
-     * @returns boolean True if we have an error, false if we don't
-     */
-    public function have_error() {
-        return ($this->error !== null) ? true : false;
     }
 
 

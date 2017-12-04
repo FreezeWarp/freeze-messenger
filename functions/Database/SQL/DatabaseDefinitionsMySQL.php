@@ -73,6 +73,7 @@ abstract class DatabaseDefinitionsMySQL extends DatabaseSQLStandard {
         DatabaseTypeType::bool => 'BIT(1)',
         DatabaseTypeType::timestamp => 'INTEGER UNSIGNED',
         DatabaseTypeType::blob => 'BLOB',
+        DatabaseTypeType::json => false,
     );
 
     /**
@@ -109,6 +110,8 @@ abstract class DatabaseDefinitionsMySQL extends DatabaseSQLStandard {
      * @var bool We enable MySQL's PARTITION table attribute.
      */
     public $usePartition = true;
+
+    public $useCreateIfNotExist = true;
 
     public $tableTypes = array(
         DatabaseEngine::general => 'InnoDB',
@@ -150,5 +153,14 @@ abstract class DatabaseDefinitionsMySQL extends DatabaseSQLStandard {
 
     public function getLanguage() {
         return 'mysql';
+    }
+
+    /**
+     * Use MySIAM instead of InnoDB on old versions of MySQL for FULLTEXT indexes
+     */
+    public function versionCheck() {
+        if (floatval($this->getVersion()) < 5.6) {
+            $tableTypes[DatabaseEngine::general] = 'MySIAM';
+        }
     }
 }

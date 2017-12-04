@@ -349,6 +349,8 @@ class FIMDatabaseOAuth implements
 
         $this->db->cleanLockout();
         $this->db->cleanPermissionsCache();
+        $this->db->cleanAccessFlood();
+        $this->db->cleanMessageFlood();
     }
 }
 ?>

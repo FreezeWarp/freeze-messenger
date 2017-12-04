@@ -14,6 +14,8 @@ class DatabaseSQLMysql extends DatabaseDefinitionsMySQL {
     public function connect($host, $port, $username, $password, $database = false) {
         $this->connection = mysql_connect("$host:$port", $username, $password);
 
+        $this->versionCheck();
+
         return $this->connection ?: false;
     }
 

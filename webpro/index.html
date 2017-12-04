@@ -362,7 +362,7 @@
 
                             {{#if activeLogin.userData.permissions.createRooms}}
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#editRoom#room=0">{{mainMenu.rooms.create}}</a>
+                                <a class="dropdown-item" href="#editRoom#room=">{{mainMenu.rooms.create}}</a>
                             {{/if}}
                         </div>
                     </li>
@@ -1153,7 +1153,7 @@ Pending Update
             </div>
         </div>
 
-        <div class="card-footer" style="text-align: center;">
+        <div class="card-footer text-center">
             <button class="btn btn-primary" type="submit">{{settingsSave}}</button>
             <button class="btn btn-secondary" type="reset">{{settingsReset}}</button>
             <input type="hidden" name="settingsOfficialAjax" value="true"/>
@@ -1284,8 +1284,8 @@ Pending Update
             </div>
         </div>
 
-        <div class="card-footer">
-            <button type="submit" class="btn btn-success">{{editRoom.submit}}</button>
+        <div class="card-footer text-center">
+            <button type="submit" class="btn btn-success">{{#if hash.room}}{{editRoom.submit}}{{else}}{{createRoom.buttons.submit}}{{/if}}</button>
             <button type="reset" class="btn btn-secondary">{{editRoom.reset}}</button>
         </div>
     </div>

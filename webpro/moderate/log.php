@@ -70,11 +70,13 @@ else {
             ], array('time' => 'desc'), 100, $request['page']);
             $logs = $logsResult->getAsArray(true);
 
+            $rows = "";
             foreach ($logs AS $log) {
                 $rows .= "<tr>
                     <td><a href=\"./moderate.php?do=log&log={$request['log']}&userIds[]={$log['userId']}\">{$log['userId']} ({$log['userName']})</a></td>
                     <td><a href=\"./moderate.php?do=log&log={$request['log']}&ips[]={$log['ip']}\">{$log['ip']}</a></td>
                     <td>" . date('r', $log['time']) . "</td>
+                    <td>{$log['executionTime']}</td>
                     " . ($request['log'] === 'full' ? '<td><pre style="white-space: pre-wrap; font-size: .8em;">' . json_encode(json_decode($log['server']), JSON_PRETTY_PRINT) . '</pre></td>' : '') . "
                     <td><a href=\"./moderate.php?do=log&log={$request['log']}&actions[]={$log['action']}\">{$log['action']}</a></td>
                     <td><pre style=\"white-space: pre-wrap; font-size: .8em;\">" . ($request['log'] !== 'mod' ? json_encode(json_decode($log['data']), JSON_PRETTY_PRINT) : $log['data']) . "</pre></td>
@@ -89,6 +91,7 @@ else {
           <td>User ID (Username)</td>
           <td>IP</td>
           <td>Time</td>
+          <td>Execution Time</td>
           ' . ($request['log'] === 'full' ? '<td>Server Data</td>' : '') . '
           <td>Action</td>
           <td>Data</td>

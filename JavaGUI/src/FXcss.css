@@ -27,8 +27,12 @@
     -fx-padding: 0;
 }
 
-.font1 {
+.font16 {
     -fx-font: 16pt "Arial";
+}
+
+.font12 {
+    -fx-font: 12pt "Arial";
 }
 
 .text {

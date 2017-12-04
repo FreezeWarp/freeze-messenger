@@ -1071,7 +1071,7 @@ class DatabaseSQL extends Database
 
                 /* The column encodes time information, most often using an integral and unix timestamp. */
                 case DatabaseTypeType::timestamp:
-                    $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::timestamp]; // Note: replace with LONGINT to avoid the Epoch issues in 2038 (...I'll do it in FIM5 or so). For now, it's more optimized. Also, since its UNSIGNED, we actually have more until 2106 or something like that.
+                    $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::timestamp];
                 break;
 
 
@@ -1090,29 +1090,33 @@ class DatabaseSQL extends Database
                 /* The column is a textual string or a binary string. */
                 case DatabaseTypeType::string:
                 case DatabaseTypeType::blob:
-                    // Limits may differ depending on table type and column type. Get the correct array encoding limits.
-                    $stringLimits = $this->sqlInterface->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
+                case DatabaseTypeType::json:
 
-                    // Search through the array encoding limits. This array should be keyed in increasing size.
-                    foreach ($stringLimits AS $length => $type) {
-                        if (!is_int($length)) continue; // allow default key
+                    if ($column['type'] === DatabaseTypeType::json && $this->sqlInterface->dataTypes[DatabaseTypeType::json]) {
+                        $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::json];
+                    }
+                    else {
+                        // Limits may differ depending on table type and column type. Get the correct array encoding limits.
+                        $stringLimits = $this->sqlInterface->dataTypes['column' . ($column['type'] === DatabaseTypeType::blob ? 'Blob' : 'String') . ($engine === DatabaseEngine::memory ? 'Temp' : 'Perm') . 'Limits'];
 
-                        if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
-                            if (in_array($type, $this->sqlInterface->dataTypes['columnNoLength']))
-                                $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
-                            else
-                                $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
+                        // Search through the array encoding limits. This array should be keyed in increasing size.
+                        foreach ($stringLimits AS $length => $type) {
+                            if (!is_int($length)) continue; // allow default key
 
-                            break;
+                            if ($column['maxlen'] <= $length) { // If we have found a valid type definition for our column's size...
+                                if (in_array($type, $this->sqlInterface->dataTypes['columnNoLength']))
+                                    $typePiece = $type; // If the particular datatype doesn't encode size information, omit it.
+                                else
+                                    $typePiece = $type . '(' . $column['maxlen'] . ')'; // Otherwise, use the type identifier with our size information.
+
+                                break;
+                            }
+                        }
+
+                        if (!strlen($typePiece)) { // If no type identifier was found...
+                            $typePiece = $stringLimits['default']; // Use the default.
                         }
                     }
-
-                    if (!strlen($typePiece)) { // If no type identifier was found...
-                        $typePiece = $stringLimits['default']; // Use the default.
-                    }
-
-                    // TODO: decide if we want this.
-                    // $typePiece .= ' CHARACTER SET utf8 COLLATE utf8_bin';
                 break;
 
 
@@ -1301,30 +1305,6 @@ class DatabaseSQL extends Database
 
 
     /**
-     * Given a table name and DatabaseEngine constant, produces the SQL string representing that engine.
-     *
-     * @param string $tableName The name of the table.
-     * @param string $engine    The engine used for the table.
-     *
-     * @return string The SQL statement component representing the engine.
-     */
-    private function parseEngine($engine) {
-        if (!isset($this->sqlInterface->tableTypes[$engine])) {
-            $this->triggerError("Unrecognised Table Engine", array(
-                'engine' => $engine
-            ), 'validationFallback');
-
-            return DatabaseEngine::general;
-        }
-
-        if (!in_array($engine, $this->sqlInterface->storeTypes))
-            return DatabaseEngine::general;
-
-        return $engine;
-    }
-
-
-    /**
      * Creates a new table with given properties.
      *
      * @param $tableName       string The table to alter.
@@ -1348,9 +1328,6 @@ class DatabaseSQL extends Database
                                 $hardPartitionCount = 1,
                                 $renameOrDeleteExisting = false)
     {
-        $engine = $this->parseEngine($engine);
-
-
         /* Perform CREATEs */
         $this->startTransaction();
 
@@ -1402,8 +1379,14 @@ class DatabaseSQL extends Database
             /* Table Engine
              * Currently, only MySQL supports different engines. */
             if ($this->sqlInterface->getLanguage() === 'mysql') {
-                $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, ($engine === DatabaseEngine::memory ? "MEMORY" : "InnoDB"));
+                $tableProperties .= ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]);
             }
+
+            /* TODO: a lot more is needed to make this work with SqlServer, but this would be the beginning.
+            elseif ($this->sqlInterface->getLanguage() === 'sqlsrv' && $engine === DatabaseEngine::memory) {
+                $tableProperties .= 'WITH(MEMORY_OPTIMIZED=ON, DURABILITY=SCHEMA_ONLY)';
+            }
+            */
 
 
             /* Table Charset
@@ -1418,7 +1401,6 @@ class DatabaseSQL extends Database
                 && $this->sqlInterface->usePartition) {
                 $tableProperties .= ' PARTITION BY HASH(' . $this->formatValue(DatabaseTypeType::column, $partitionColumn) . ') PARTITIONS 100';
             }
-
 
             $return = $this->rawQuery(
                 'CREATE '
@@ -1494,8 +1476,6 @@ class DatabaseSQL extends Database
      * @return bool True on success, false on failure.
      */
     public function alterTable($tableName, $tableComment, $engine, $partitionColumn = false) {
-        $engine = $this->parseEngine($engine);
-
         return $this->rawQuery('ALTER TABLE ' . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
             . (!is_null($engine) && $this->sqlInterface->getLanguage() === 'mysql' ? ' ENGINE=' . $this->formatValue(DatabaseTypeType::string, $this->sqlInterface->tableTypes[$engine]) : '')
             . (!is_null($tableComment) ? ' COMMENT=' . $this->formatValue(DatabaseTypeType::string, $tableComment) : '')
@@ -1619,11 +1599,18 @@ class DatabaseSQL extends Database
             }
 
             // If we are in useTableAttribute index mode and this is during table creation, or the index is primary, prepare to return the index statement.
-            elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary')
-                $indexes[] = "CONSTRAINT "
-                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $this->getIndexName($tableName, $indexName))
-                    . " PRIMARY KEY "
-                    . $this->formatValue(DatabaseTypeType::arraylist, $this->getIndexColsFromIndexName($indexName));
+            elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary') {
+                $indexes[] = ($index['type'] === 'primary'
+                    ?
+                        "CONSTRAINT "
+                        . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $this->getIndexName($tableName, $indexName))
+                        . ' '
+                    :
+                        ''
+                    )
+                    . $this->sqlInterface->keyTypeConstants[$index['type']] . " KEY "
+                        . $this->formatValue(DatabaseTypeType::arraylist, $this->getIndexColsFromIndexName($indexName));
+            }
 
             // Throw an exception if the index mode is unrecognised.
             else
@@ -1848,7 +1835,8 @@ class DatabaseSQL extends Database
                     return $this->rawQuery('ALTER TABLE '
                         . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName)
                         . ' DROP CONSTRAINT '
-                        . $this->formatValue(DatabaseTypeType::column, $constraintName));
+                        . $this->formatValue(DatabaseTypeType::column, $constraintName)
+                        . ' CASCADE ');
                     break;
             }
         }
@@ -2462,7 +2450,7 @@ class DatabaseSQL extends Database
     private function getTableNameTransformation($tableName, $dataArray)
     {
         if (isset($this->hardPartitions[$tableName])) {
-            return $tableName . "__part" . $dataArray[$this->hardPartitions[$tableName][0]] % $this->auto($this->hardPartitions[$tableName][1])->value;
+            return $tableName . "__part" . filter_var($this->auto($dataArray[$this->hardPartitions[$tableName][0]])->value, FILTER_SANITIZE_NUMBER_INT) % $this->hardPartitions[$tableName][1];
         }
 
         return $tableName;
@@ -2562,7 +2550,7 @@ class DatabaseSQL extends Database
                 $this->triggerError("The table $tableName is partitioned. To delete from it, you _must_ specify the column " . $this->hardPartitions[$tableName][0] . ". Note that you may instead use partitionAt() if you know _any_ column that would apply to the partition (for instance, if you wish to delete the last row from a table before inserting a new one, you can specify the relevant condition using partitionAt().)" . print_r($partitionAt, true));
             }
 
-            $tableName .= "__part" . $partitionAt[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+            $tableName = $this->getTableNameTransformation($tableName, $partitionAt);
         }
 
         $this->partitionAt = [];
@@ -2623,7 +2611,7 @@ class DatabaseSQL extends Database
                 $this->triggerError("The table $tableName is partitioned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
             }
 
-            $tableName .= "__part" . $conditionArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+            $tableName = $this->getTableNameTransformation($tableName, $conditionArray);
         }
 
 
@@ -2669,7 +2657,7 @@ class DatabaseSQL extends Database
                 $this->triggerError("The table $tableName is partitioned by column " . $this->hardPartitions[$tableName][0] . ". As such, you may not apply updates to this column. (...Okay, yes, it would in theory be possible to add such support, but it'd be a pain to make it portable, and is outside of the scope of my usage. Feel free to contribute such functionality.)");
             }
 
-            $tableName .= "__part" . $conditionArray[$this->hardPartitions[$tableName][0]] % $this->hardPartitions[$tableName][1];
+            $tableName = $this->getTableNameTransformation($tableName, $conditionArray);
         }
 
         $allArray = array_merge($dataArray, $dataArrayOnInsert, $conditionArray);

@@ -296,11 +296,14 @@ popup.prototype.room.prototype.init = function(options) {
     // Monitor the window visibility for running favicon flash and notifications.
     var visibilityChangeHandler = (blurred) => {
         if(document.visibilityState == 'hidden' || blurred) {
-            console.log("now blurred");
             this.windowBlurred = true;
+
+            if (this.isTyping) {
+                fimApi.stoppedTyping(this.options.roomId);
+                this.isTyping = false;
+            }
         }
         else {
-            console.log("not blurred");
             this.windowBlurred = false;
             this.faviconFlashStop();
         }
@@ -628,7 +631,7 @@ popup.prototype.room.prototype.getMessagesFromFallback = function() {
                 else {
                     this.eventTimeout = window.setTimeout((() => {
                         this.getMessagesFromFallback()
-                    }), 3000);
+                    }), 2000);
                 }
             })
         });

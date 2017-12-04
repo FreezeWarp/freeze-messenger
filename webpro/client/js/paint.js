@@ -83,7 +83,7 @@ function fim_renderHandlebars(tag, target) {
 function fim_getHandlebarsPhrases(extra) {
     if (!extra) extra = {};
 
-    return Object.assign({}, window.phrases, {serverSettings : window.serverSettings, activeLogin : window.activeLogin}, extra);
+    return Object.assign({}, window.phrases, {serverSettings : window.serverSettings, activeLogin : window.activeLogin, hash : fim_hashToMap()[1]}, extra);
 }
 
 var openObjectInstance;
@@ -156,6 +156,26 @@ function fim_closeView() {
  * @copyright Joseph T. Parsons 2017
  */
 function fim_hashParse(options) {
+    var hashToMap = fim_hashToMap(options),
+        urlHashComponents = hashToMap[0],
+        urlHashComponentsMap = hashToMap[1];
+
+    // If no first hash component, open the default (room) view.
+    if (!urlHashComponents[1])
+        fim_openView('room', urlHashComponentsMap);
+
+    // If we have view data for the hash component, open it.
+    else if ($('#view-' + urlHashComponents[1].split('=')[0]).length > 0)
+        fim_openView(urlHashComponents[1].split('=')[0], urlHashComponentsMap);
+
+    // Otherwise, fallback to the default (room) view
+    else {
+        console.log("no action", urlHashComponentsMap);
+        fim_openView('room', urlHashComponentsMap);
+    }
+}
+
+function fim_hashToMap(options) {
     var urlHashComponents = window.location.hash.split('#'),
         urlHashComponentsMap = Object.assign({}, options);
 
@@ -173,19 +193,7 @@ function fim_hashParse(options) {
     }
     urlHashComponentsMap['roomId'] = urlHashComponentsMap['room'];
 
-    // If no first hash component, open the default (room) view.
-    if (!urlHashComponents[1])
-        fim_openView('room', urlHashComponentsMap);
-
-    // If we have view data for the hash component, open it.
-    else if ($('#view-' + urlHashComponents[1].split('=')[0]).length > 0)
-        fim_openView(urlHashComponents[1].split('=')[0], urlHashComponentsMap);
-
-    // Otherwise, fallback to the default (room) view
-    else {
-        console.log("no action", urlHashComponentsMap);
-        fim_openView('room', urlHashComponentsMap);
-    }
+    return [urlHashComponents, urlHashComponentsMap];
 }
 
 function fim_getHashRegex(name) {
@@ -558,7 +566,9 @@ function fim_buildUsernameTag(tag, userId, deferred, includeAvatar, includeUsern
                 return el.prop('outerHTML');
             },
             html : true,
-            trigger : 'hover'
+            trigger : 'hover',
+            placement : 'auto',
+            container: tag
         }).on("show.bs.popover", function(e){
             console.log($(this).data("bs.popover"), $(this).data("bs.popover").tip)
             $($(this).data("bs.popover").tip).css({"max-width": "600px"});

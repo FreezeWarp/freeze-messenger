@@ -29,10 +29,10 @@ namespace Cache;
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 class CacheFactory {
-    public $methods = [];
+    public static $methods = [];
 
 
-    public function addMethod($method, $servers) {
+    public static function addMethod($method, $servers) {
         $className = 'Cache' . ucfirst($method);
         $classNameSpaced = "\\Cache\\$className";
         $includePath = __DIR__ . "/{$className}.php";
@@ -56,36 +56,36 @@ class CacheFactory {
                     throw new \Exception("The cache method '$method' cannot be loaded, as the system does not support it.");
                 }
 
-                $this->methods[$methodObject->getCacheType()] = $methodObject;
+                self::$methods[$methodObject->getCacheType()] = $methodObject;
             }
         }
     }
 
 
-    private function chooseMethod($preferredMethod) {
+    private static function chooseMethod($preferredMethod) {
         switch ($preferredMethod) {
             case 'memcached': // TODO: remove
             case 'redis':
             case CacheInterface::CACHE_TYPE_DISTRIBUTED:
-                return $this->methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
-                    ?? $this->methods[CacheInterface::CACHE_TYPE_MEMORY]
+                return self::$methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
+                    ?? self::$methods[CacheInterface::CACHE_TYPE_MEMORY]
                     ?? null;
                 break;
 
             case 'apc':
             case 'apcu':
             case CacheInterface::CACHE_TYPE_MEMORY:
-                return $this->methods[CacheInterface::CACHE_TYPE_MEMORY]
-                    ?? $this->methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
+                return self::$methods[CacheInterface::CACHE_TYPE_MEMORY]
+                    ?? self::$methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
                     ?? null;
 
 
             case 'disk':
             case CacheInterface::CACHE_TYPE_DISK:
             default:
-                return $this->methods[CacheInterface::CACHE_TYPE_MEMORY]
-                    ?? $this->methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
-                    ?? $this->methods[CacheInterface::CACHE_TYPE_DISK]
+                return self::$methods[CacheInterface::CACHE_TYPE_MEMORY]
+                    ?? self::$methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
+                    ?? self::$methods[CacheInterface::CACHE_TYPE_DISK]
                     ?? null;
         }
     }
@@ -95,9 +95,9 @@ class CacheFactory {
      *
      * @return mixed
      */
-    public function get($index, $preferredMethod = false) {
-        if ($this->chooseMethod($preferredMethod))
-            return $this->chooseMethod($preferredMethod)->get($index);
+    public static function get($index, $preferredMethod = false) {
+        if (self::chooseMethod($preferredMethod))
+            return self::chooseMethod($preferredMethod)->get($index);
         else
             return false;
     }
@@ -105,9 +105,9 @@ class CacheFactory {
     /**
      * {@link CacheInterface::add($index, $value, $ttl)}
      */
-    public function add($index, $value, $ttl = 31536000, $preferredMethod = false) {
-        if ($this->chooseMethod($preferredMethod))
-            return $this->chooseMethod($preferredMethod)->add($index, $value, $ttl);
+    public static function add($index, $value, $ttl = 31536000, $preferredMethod = false) {
+        if (self::chooseMethod($preferredMethod))
+            return self::chooseMethod($preferredMethod)->add($index, $value, $ttl);
         else
             return false;
     }
@@ -115,9 +115,9 @@ class CacheFactory {
     /**
      * {@link CacheInterface::set($index, $value, $ttl)}
      */
-    public function set($index, $value, $ttl = 31536000, $preferredMethod = false) {
-        if ($this->chooseMethod($preferredMethod))
-            return $this->chooseMethod($preferredMethod)->set($index, $value, $ttl);
+    public static function set($index, $value, $ttl = 31536000, $preferredMethod = false) {
+        if (self::chooseMethod($preferredMethod))
+            return self::chooseMethod($preferredMethod)->set($index, $value, $ttl);
         else
             return false;
     }
@@ -125,9 +125,20 @@ class CacheFactory {
     /**
      * {@link CacheInterface::exists($index, $value, $ttl)}
      */
-    public function exists($index, $preferredMethod = false) : bool {
-        if ($this->chooseMethod($preferredMethod))
-            return $this->chooseMethod($preferredMethod)->exists($index);
+    public static function exists($index, $preferredMethod = false) : bool {
+        if (self::chooseMethod($preferredMethod))
+            return self::chooseMethod($preferredMethod)->exists($index);
+        else
+            return false;
+    }
+
+
+    /**
+     * {@link CacheInterface::inc($index, $amt)}
+     */
+    public static function inc($index, $amt = 1, $preferredMethod = false) {
+        if (self::chooseMethod($preferredMethod))
+            return self::chooseMethod($preferredMethod)->inc($index, $amt);
         else
             return false;
     }
@@ -140,9 +151,9 @@ class CacheFactory {
      *
      * {@link CacheInterface::setAdd($index, $value)}
      */
-    public function setAdd($index, $value, $preferredMethod = 'redis') {
-        if ($this->chooseMethod($preferredMethod))
-            $this->chooseMethod($preferredMethod)->setAdd($index, $value);
+    public static function setAdd($index, $value, $preferredMethod = 'redis') {
+        if (self::chooseMethod($preferredMethod))
+            return self::chooseMethod($preferredMethod)->setAdd($index, $value);
         else
             return false;
     }
@@ -152,12 +163,10 @@ class CacheFactory {
      * {@link CacheInterface::setRemove($index, $value)}
      */
     public function setRemove($index, $value, $preferredMethod = 'redis') {
-
-        if ($this->chooseMethod($preferredMethod))
-            $this->chooseMethod($preferredMethod)->setRemove($index, $value);
+        if (self::chooseMethod($preferredMethod))
+            return self::chooseMethod($preferredMethod)->setRemove($index, $value);
         else
             return false;
-
     }
 
 
@@ -165,8 +174,8 @@ class CacheFactory {
      * {@link CacheInterface::clear($index)}
      */
     public function clear($index, $preferredMethod = false) {
-        if ($this->chooseMethod($preferredMethod))
-            $this->chooseMethod($preferredMethod)->clear($index);
+        if (self::chooseMethod($preferredMethod))
+            return self::chooseMethod($preferredMethod)->clear($index);
         else
             return false;
     }
@@ -176,10 +185,14 @@ class CacheFactory {
     /**
      * {@link CacheInterface::clearAll()}
      */
-    public function clearAll() {
-        foreach ($this->methods AS $method) {
-            $method->clearAll();
+    public static function clearAll() {
+        $return = true;
+
+        foreach (self::$methods AS $method) {
+            $return = $method->clearAll() && $return;
         }
+
+        return $return;
     }
 
 
@@ -188,8 +201,8 @@ class CacheFactory {
      *
      * {@link CacheInterface::dump()}
      */
-    public function dump($driver) {
-        return $this->chooseMethod($driver)->dump();
+    public static function dump($driver) {
+        return self::chooseMethod($driver)->dump();
     }
 }
 ?>

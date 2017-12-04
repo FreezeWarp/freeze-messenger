@@ -17,6 +17,8 @@ class DatabaseSQLMysqli extends DatabaseDefinitionsMySQL {
     public function connect($host, $port, $username, $password, $database = false) {
         $this->connection = new mysqli($host, $username, $password, $database ?: null, (int) $port);
 
+        $this->versionCheck();
+
         return $this->connection->connect_error ? false : $this->connection;
     }
 

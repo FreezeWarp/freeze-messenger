@@ -61,6 +61,7 @@ class DatabaseSQLSqlsrv extends DatabaseSQLStandard {
         DatabaseTypeType::bool => 'BIT',
         DatabaseTypeType::timestamp => 'INTEGER',
         DatabaseTypeType::blob => 'VARBINARY(MAX)',
+        DatabaseTypeType::json => false,
     );
 
 

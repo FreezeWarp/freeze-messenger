@@ -49,6 +49,10 @@ class CacheDisk implements CacheInterface {
         return $this->instance->exists($index);
     }
 
+    public function inc($index, $amt) {
+        return $this->instance->inc($index, $amt);
+    }
+
     public function clear($index) {
         return $this->instance->delete($index);
     }

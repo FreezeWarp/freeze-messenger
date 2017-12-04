@@ -74,5 +74,10 @@ class DatabaseTypeType {
      * An equation, e.g. "$tableColumn + 2". Typically only used for inserting/updating into tables.
      */
     const equation = 'equation';
+
+    /**
+     * A JSON-formatted string.
+     */
+    const json = 'json';
 }
 ?>
