@@ -156,7 +156,6 @@ case 'edit': case 'create':
 
         /* PUT Support */
         if ($requestHead['uploadMethod'] === 'put') {
-            $fileMime = mime_content_type("php://input"); // TODO?
             $putResource = fopen("php://input", "r"); // file data is from stdin
             $fileData = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
 
@@ -167,7 +166,6 @@ case 'edit': case 'create':
             fclose($putResource);
         }
         else {
-            $fileMime = mime_content_type($_FILES['file']['tmp_name']);
             $fileData = file_get_contents($_FILES['file']['tmp_name']);
         }
 
@@ -206,19 +204,18 @@ case 'edit': case 'create':
         if (isset(fimConfig::$extensionChanges[$file->extension])) // Certain extensions are considered to be equivalent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
             $file->extension = fimConfig::$extensionChanges[$fileNameParts[1]];
 
+        if (!isset(fimConfig::$uploadMimes[$file->extension]))
+            throw new fimError('unrecExt', 'The filetype is unrecognised, and thus the file cannot be uploaded.'); // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
+
         if (!in_array($file->extension, fimConfig::$allowedExtensions))
             throw new fimError('badExt', 'The filetype is forbidden, and thus the file cannot be uploaded.'); // Not allowed...
 
-        if (!isset(fimConfig::$uploadMimes[$file->extension]))
-            throw new fimError('unrecExt', 'The filetype is unrecognised, and thus the file cannot be uploaded.'); // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
-        else if (fimConfig::$uploadMimes[$file->extension] !== $fileMime)
-            throw new fimError('invalidFileContent', 'The upload file does not appear to be a valid file of its type.');
+
+        /* Derived from File Type */
+        $maxSize = (fimConfig::$uploadSizeLimits[$file->extension] ? fimConfig::$uploadSizeLimits[$file->extension] : 0);
 
 
         /* File Size Restrictions */
-        // Derived from File Type
-        $maxSize = (fimConfig::$uploadSizeLimits[$file->extension] ? fimConfig::$uploadSizeLimits[$file->extension] : 0);
-
         if ($file->size > $maxSize)
             throw new Exception('tooLarge', 'The file is too large to upload; the maximum size is ' . $maxSize . 'B, and the file you uploaded was ' . $file->size . '.');
 
