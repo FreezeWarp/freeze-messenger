@@ -177,18 +177,20 @@ table#fileUploadInfo td {
     margin-right: 0;
 }
 
-.embedImage {
-  max-width: 300px;
-  max-height: 300px;
-  border: none;
-}
-
 a img:hover {
   opacity: .5;
 }
 img.standard {
   height: 16px;
   width: 16px;
+}
+img.inlineImage {
+    max-width: 100%;
+    max-height: 400px;
+}
+
+audio {
+    max-width: 100%;
 }
 
 label.standard, button.standard {
@@ -287,8 +289,6 @@ button.small.ui-widget {
 button.small.ui-widget .ui-icon {
   left: 0em !important;
 }
-
-
 
 
 /*** Mobile Screen Layout ***/

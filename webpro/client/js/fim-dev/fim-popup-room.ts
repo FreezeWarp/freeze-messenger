@@ -30,6 +30,10 @@ popup.prototype.room = function() {
     this.eventTimeout = false;
     this.pingInterval = false;
 
+    this.focusListener = false;
+    this.blurListener = false;
+    this.visibilitychangeListener = false;
+
     return;
 };
 
@@ -223,6 +227,11 @@ popup.prototype.room.prototype.toBottom = function() { // Scrolls the message li
     $('#messageListContainer').scrollTop($('#messageListContainer')[0].scrollHeight);
 };
 
+popup.prototype.room.prototype.faviconFlashOnce = function() { // Changes the state of the favicon from opaque to transparent or similar.
+    if ($('#favicon').attr('href') === 'images/favicon.ico') $('#favicon').attr('href', 'images/favicon2.ico');
+    else $('#favicon').attr('href', 'images/favicon.ico');
+};
+
 popup.prototype.room.prototype.faviconFlashStart = function() {
     this.faviconFlashTimer = window.setInterval(this.faviconFlashOnce, 1000);
 };
@@ -236,9 +245,27 @@ popup.prototype.room.prototype.faviconFlashStop = function() {
     $('#favicon').attr('href', 'images/favicon.ico');
 };
 
-popup.prototype.room.prototype.faviconFlashOnce = function() { // Changes the state of the favicon from opaque to transparent or similar.
-    if ($('#favicon').attr('href') === 'images/favicon.ico') $('#favicon').attr('href', 'images/favicon2.ico');
-    else $('#favicon').attr('href', 'images/favicon.ico');
+popup.prototype.room.prototype.onBlur = function() {
+    console.log("blurred");
+    this.windowBlurred = true;
+
+    if (this.isTyping) {
+        fimApi.stoppedTyping(this.options.roomId);
+        this.isTyping = false;
+    }
+};
+
+popup.prototype.room.prototype.onFocus = function() {
+    this.windowBlurred = false;
+    this.faviconFlashStop();
+};
+
+popup.prototype.room.prototype.onVisibilityChange = function() {
+    console.log("this", this);
+    if (document.visibilityState == 'hidden')
+        this.onBlur();
+    else
+        this.onFocus();
 };
 
 popup.prototype.room.prototype.onWindowResize = function() {
@@ -266,31 +293,17 @@ popup.prototype.room.prototype.init = function(options) {
     for (var i in options)
         this.options[i] = options[i];
 
-    let pingInterval;
-
 
     /* Setup */
 
     // Monitor the window visibility for running favicon flash and notifications.
-    var visibilityChangeHandler = (blurred) => {
-        if(document.visibilityState == 'hidden' || blurred) {
-            this.windowBlurred = true;
+    document.addEventListener('visibilitychange', this.visibilitychangeListener = this.onVisibilityChange.bind(this));
+    window.addEventListener('blur', this.blurListener = this.onBlur.bind(this));
+    window.addEventListener('focus',  this.focusListener = this.onFocus.bind(this));
+    this.onFocus();
 
-            if (this.isTyping) {
-                fimApi.stoppedTyping(this.options.roomId);
-                this.isTyping = false;
-            }
-        }
-        else {
-            this.windowBlurred = false;
-            this.faviconFlashStop();
-        }
-    };
-    document.addEventListener('visibilitychange', function() { visibilityChangeHandler(false) });
-    window.addEventListener('blur', function() { visibilityChangeHandler(true) });
-    window.addEventListener('focus',  function() { visibilityChangeHandler(false) });
-    visibilityChangeHandler(false);
 
+    // Process Resizes
     $(window).on('resize', null, this.onWindowResize);
 
 
@@ -298,20 +311,25 @@ popup.prototype.room.prototype.init = function(options) {
     $('#chatContainer').fileupload({
         dropZone : $('body'),
         pasteZone : $('textarea#messageInput'),
-        url: window.serverSettings.installUrl + 'api/editFile.php?' + $.param({
-            "_action" : "create",
-            "access_token" : window.sessionHash
-        }),
         paramName : 'file',
         submit: (e, data) => {
             console.log("send", data);
 
+            // Append the access token only on submit, since it may change.
+            data.url = window.serverSettings.installUrl + 'api/editFile.php?' + $.param({
+                "_action" : "create",
+                "access_token" : window.sessionHash
+            });
+
+            // Make sure we have formData
             if (!("formData" in data)) {
                 data.formData = {};
             }
 
+            // Append roomId to formData
             data.formData.roomId = this.options.roomId;
 
+            // Append fileName to formData from original file name
             if (!("fileName" in data.formData)) {
                 data.formData.fileName = data.originalFiles[0].name;
             }
@@ -479,14 +497,18 @@ popup.prototype.room.prototype.init = function(options) {
 };
 
 popup.prototype.room.prototype.close = function() {
-    console.log("close started");
     fimApi.getActiveUsers({}, {
         timerId : 1,
         close : true
     });
 
+    document.removeEventListener('visibilitychange', this.visibilitychangeListener);
+    window.removeEventListener('blur', this.blurListener);
+    window.removeEventListener('focus',  this.focusListener);
+
     if (this.roomSource) {
         this.roomSource.close();
+        this.roomSource = false;
     }
 
     if (this.eventTimeout) {
@@ -509,7 +531,7 @@ popup.prototype.room.prototype.close = function() {
 };
 
 popup.prototype.room.prototype.setRoom = function(roomId) {
-    if (this.options.roomId != roomId) {
+    if (this.options.roomId && this.options.roomId != roomId) {
         this.close();
         this.options.roomId = roomId;
         this.init();
@@ -523,14 +545,14 @@ popup.prototype.room.prototype.beforeUnload = function(roomId) {
 
 popup.prototype.room.prototype.eventListener = function() {
     this.roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
-    this.roomSource.onerror = ((e) => {
+    /*this.roomSource.onerror = ((e) => {
         console.log("event source error", e);
         if (this.roomSource) {
             this.roomSource.close();
             this.roomSource = false;
         }
         this.getMessagesFromFallback();
-    });
+    });*/
 
     let eventHandler = ((callback) => {
         return ((event) => {

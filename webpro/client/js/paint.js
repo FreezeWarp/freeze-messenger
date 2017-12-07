@@ -113,6 +113,18 @@ function fim_openView(viewName, options) {
     }
 
     else {
+        // Close the existing object
+        if (openObjectInstance && typeof openObjectInstance.close !== "undefined") {
+            console.log("close view2");
+            openObjectInstance.close();
+        }
+
+        $('.fim-activeView').each(function() {
+            $(this).remove();
+        });
+
+
+        // Set the new object
         if (typeof popup[viewName] === "function") {
             openObjectInstance = new popup[viewName]();
         }
@@ -123,16 +135,19 @@ function fim_openView(viewName, options) {
             throw "View is invalid type.";
         }
 
+
+        // Find the view tag
         tag = $('#view-' + viewName);
 
         if (tag.length > 0) {
-            fim_closeView();
+            // Render view
             fim_renderHandlebars(tag, $('#content'));
-
             $('#active-view-' + viewName).addClass('fim-activeView');
 
+            // Run init
             openObjectInstance.init(options); // transitional; TODO: remove
 
+            // Run setters
             jQuery.each(options, function(name, value) {
                 var setterName = "set" + name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -141,6 +156,7 @@ function fim_openView(viewName, options) {
                 }
             });
 
+            // Run retrieve method
             if (typeof openObjectInstance.retrieve != "undefined")
                 openObjectInstance.retrieve();
         }
@@ -148,16 +164,6 @@ function fim_openView(viewName, options) {
             throw "Unknown view.";
         }
     }
-}
-
-function fim_closeView() {
-    if (openObjectInstance && typeof openObjectInstance.close != "undefined") {
-        openObjectInstance.close();
-    }
-
-    $('.fim-activeView').each(function() {
-        $(this).remove();
-    });
 }
 
 /**
@@ -343,9 +349,9 @@ function fim_youtubeParse($1) {
 function fim_formatAsImage(imageUrl) {
     return $('<a target="_BLANK" class="imglink">').attr('href', imageUrl).append(
         settings.disableImage ? $('<span>').text('[IMAGE]')
-            : $('<img style="max-width: 250px; max-height: 250px;" />').attr('src', imageUrl + (imageUrl.slice(0, window.serverSettings.installUrl.length) === window.serverSettings.installUrl ? "&" + $.param({
-                'thumbnailWidth' : 250,
-                'thumbnailHeight' : 250,
+            : $('<img class="inlineImage" />').attr('src', imageUrl + (imageUrl.slice(0, window.serverSettings.installUrl.length) === window.serverSettings.installUrl ? "&" + $.param({
+                'thumbnailWidth' : 400,
+                'thumbnailHeight' : 400,
             }) : '')) // todo: only for files on install
     );
 }
