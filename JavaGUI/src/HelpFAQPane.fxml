@@ -24,8 +24,10 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <TextFlow prefHeight="326.0" prefWidth="600.0" />
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Currently FlexChat supports a desktop client and web client compatible with browsers and mobile." AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <TextFlow prefHeight="326.0" prefWidth="600.0">
+                           <children>
+                              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Currently FlexChat supports a desktop client and web client compatible with browsers and mobile." wrappingWidth="529.091796875" />
+                           </children></TextFlow>
                      </children>
                   </AnchorPane>
             </content>
