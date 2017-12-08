@@ -272,7 +272,7 @@
             <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />
             <column name="time" type="time" default="__TIME__" comment="The time the message was made on." />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
-            <column name="flag" type="string" maxlen="10" comment="The content-type flag of the message (e.g. video, image, text, archive, html, url, email)." />
+            <column name="flag" type="enum" restrict="video,audio,  image,text,application,archive,html,url,email," maxlen="10" comment="The content-type flag of the message." />
 
             <key name="id" type="primary" />
             <key name="id,roomId" type="unique" />
