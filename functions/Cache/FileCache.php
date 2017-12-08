@@ -135,10 +135,10 @@ class FileCache {
 
             // Assuming we got something back...
             if ($file_content) {
-                $store = unserialize($file_content);
+                $store = @unserialize($file_content);
 
                 if(!isset($store['ttl']) || $store['ttl'] < time()) { // If the cache has expired.
-                    unlink($key); // remove the file
+                    @unlink($key); // remove the file
 
                     return false;
                 }
