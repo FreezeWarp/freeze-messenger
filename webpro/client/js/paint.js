@@ -71,6 +71,33 @@ Handlebars.registerHelper("byte", function(fileSize) {
     return fileSize2;
 });
 
+Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
+    switch (operator) {
+        case '==':
+            return (v1 == v2) ? options.fn(this) : options.inverse(this);
+        case '===':
+            return (v1 === v2) ? options.fn(this) : options.inverse(this);
+        case '!=':
+            return (v1 != v2) ? options.fn(this) : options.inverse(this);
+        case '!==':
+            return (v1 !== v2) ? options.fn(this) : options.inverse(this);
+        case '<':
+            return (v1 < v2) ? options.fn(this) : options.inverse(this);
+        case '<=':
+            return (v1 <= v2) ? options.fn(this) : options.inverse(this);
+        case '>':
+            return (v1 > v2) ? options.fn(this) : options.inverse(this);
+        case '>=':
+            return (v1 >= v2) ? options.fn(this) : options.inverse(this);
+        case '&&':
+            return (v1 && v2) ? options.fn(this) : options.inverse(this);
+        case '||':
+            return (v1 || v2) ? options.fn(this) : options.inverse(this);
+        default:
+            return options.inverse(this);
+    }
+});
+
 function fim_renderHandlebarsInPlace(tag) {
     var id       = tag.attr('id');
     var source   = tag.html();
@@ -409,7 +436,7 @@ function fim_messageFormat(json, format) {
         case 'video': text = fim_formatAsVideo(text) ; break; // Video
         case 'audio': text = fim_formatAsAudio(text); break; // Audio
         case 'email': text = fim_formatAsEmail(text); break; // Email Link
-        case 'url': case 'text': case 'html': case 'archive': case 'other': // Various Files and URLs
+        case 'url': case 'text': case 'html': case 'archive': case 'application': case 'other': // Various Files and URLs
         text = fim_formatAsUrl(text);
         break;
 

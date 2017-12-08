@@ -316,7 +316,7 @@ popup.prototype.room.prototype.init = function(options) {
             console.log("send", data);
 
             // Append the access token only on submit, since it may change.
-            data.url = window.serverSettings.installUrl + 'api/editFile.php?' + $.param({
+            data.url = window.serverSettings.installUrl + 'api/file.php?' + $.param({
                 "_action" : "create",
                 "access_token" : window.sessionHash
             });

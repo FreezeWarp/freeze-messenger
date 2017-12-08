@@ -14,7 +14,7 @@ class UserCredentialsTest extends BaseTest
         }
 
         // create a new user for testing
-        $success = $storage->setUser('testusername', 'testpass', 'Test', 'User');
+        $success = $storage->setUser('testusername', 'testpass', 'Test', 'user');
         $this->assertTrue($success);
 
         // correct credentials
@@ -35,6 +35,6 @@ class UserCredentialsTest extends BaseTest
         $this->assertArrayHasKey('last_name', $user);
         $this->assertEquals($user['user_id'], 'testusername');
         $this->assertEquals($user['first_name'], 'Test');
-        $this->assertEquals($user['last_name'], 'User');
+        $this->assertEquals($user['last_name'], 'user');
     }
 }

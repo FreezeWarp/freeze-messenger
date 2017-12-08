@@ -65,7 +65,7 @@ $file = $database->getFiles(array(
     'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
     'includeContent' => ($includeThumbnails ? false : true),
     'includeThumbnails' => ($includeThumbnails ? true : false),
-))->getAsArray($includeThumbnails ? true : false);
+))->getAsObjects($includeThumbnails ? '\\Fim\\FileThumbnail' : '\\Fim\\File');
 
 if ($includeThumbnails) {
     $filesIndexed = [];
@@ -75,7 +75,7 @@ if ($includeThumbnails) {
         $file = $database->getFiles(array(
             'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
             'includeContent' => true,
-        ))->getAsArray(false);
+        ))->getAsObject('\\Fim\\File');
     }
 
     else {
@@ -87,7 +87,7 @@ if ($includeThumbnails) {
         // Sort between the multiple thumbnails, trying to find the one with the closest match. This algorithm is probably imperfect. It still could use someone to give it a lookover.
         else {
             foreach ($file AS $index => $f) {
-                $score = ($request['thumbnailWidth'] ? abs($request['thumbnailWidth'] - $f['width']) / $f['width'] : 1) * ($request['thumbnailHeight'] ? abs($request['thumbnailHeight'] - $f['height']) / $f['height'] : 1);
+                $score = ($request['thumbnailWidth'] ? abs($request['thumbnailWidth'] - $f->width) / $f->width : 1) * ($request['thumbnailHeight'] ? abs($request['thumbnailHeight'] - $f->height) / $f->height : 1);
 
                 $filesIndexed[$score * 1000] = $index;
             }
@@ -96,11 +96,15 @@ if ($includeThumbnails) {
             $file = $file[array_values($filesIndexed)[0]];
         }
 
-        $thumbnail = $database->select([$database->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents"], ["versionId" => $file['versionId'], "scaleFactor" => $file['scaleFactor']])->getAsArray(false);
+        $thumbnail = $database->select([$database->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents"], ["versionId" => $file->versionId, "scaleFactor" => $file->scaleFactor])->getAsArray(false);
 
-        $file['contents'] = $thumbnail['contents'];
-        $file['fileType'] = 'image/jpeg';
+        $file->contents = $thumbnail['contents'];
+        $file->name = $file->name . '.thumb.jpg';
     }
+}
+
+else {
+    $file = $file[0];
 }
 
 
@@ -123,22 +127,7 @@ header("Cache-Control: public, max-age=365000000, immutable");
 
 
 
-/* Start Processing */
-
-$parentalBlock = false;
-if (fimConfig::$parentalEnabled) {
-    if ($file['parentalAge'] && $file['parentalAge'] > $request['parentalAge']) $parentalBlock = true;
-    elseif (fim_inArray($request['parentalFlags'], explode(',', $file['parentalFlags']))) $parentalBlock = true;
-}
-
-if ($parentalBlock) {
-    $file['contents'] = ''; // TODO: Placeholder
-
-    header('Content-Type: ' . $file['fileType']);
-    echo $file['contents'];
-}
-else {
-    header('Content-Type: ' . $file['fileType']);
-    echo $file['contents'];
-}
+/* Output File */
+header('Content-Type: ' . $file->mime);
+echo $file->contents;
 ?>

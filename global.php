@@ -86,17 +86,19 @@ set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
 
 ////* Database Stuff *////
 
+/* TODO: the $database, $integrationDatabase, and $slaveDatabase variables are transitional */
+
 /* If the connections are the same, do not make multiple below. */
 /* Connect to the Main Database */
-$database = new fimDatabase();
-
-if (!$database->connect($dbConnect['core']['host'],
+if (!$database = \Fim\Database::connect(
+    $dbConnect['core']['host'],
     $dbConnect['core']['port'],
     $dbConnect['core']['username'],
     $dbConnect['core']['password'],
     $dbConnect['core']['database'],
     $dbConnect['core']['driver'],
-    $dbConfig['vanilla']['tablePrefix'])) {
+    $dbConfig['vanilla']['tablePrefix']
+)) {
     die('Could not connect to the database: ' . $database->getLastError() . '; the application has exitted.'); // Die to prevent further execution.
 }
 else {
@@ -106,40 +108,40 @@ else {
 
 /* Connect to the Integration DB  */
 if ($loginConfig['method'] != 'vanilla') {
-    $integrationDatabase = new fimDatabase();
-
-    if (!$integrationDatabase->connect($dbConnect['integration']['host'],
+    if (!$integrationDatabase = \Fim\DatabaseLogin::connect(
+        $dbConnect['integration']['host'],
         $dbConnect['integration']['port'],
         $dbConnect['integration']['username'],
         $dbConnect['integration']['password'],
         $dbConnect['integration']['database'],
         $dbConnect['integration']['driver'],
-        $dbConfig['integration']['tablePrefix'])) { // Connect to MySQL
+        $dbConfig['integration']['tablePrefix'])
+    ) {
         die('Could not connect to the integration database: ' . $database->getLastError() . '; the application has exitted.');
     }
 }
 else {
-    $integrationDatabase = $database;
+    $integrationDatabase = \Fim\DatabaseLogin::setInstance(\Fim\Database::instance());
 }
 
 
 /* Connect to the DB Slave
  * This assumes external replication is set up, and the slave is a copy of the master with possible latency. (Thus, we use it when a little latency is okay.) */
 if ($dbConnect['core'] != $dbConnect['slave']) {
-    $slaveDatabase = new fimDatabase;
-
-    if (!$database->connect($dbConnect['slave']['host'],
+    if (!$slaveDatabase = \Fim\DatabaseSlave::connect(
+        $dbConnect['slave']['host'],
         $dbConnect['slave']['port'],
         $dbConnect['slave']['username'],
         $dbConnect['slave']['password'],
         $dbConnect['slave']['database'],
         $dbConnect['slave']['driver'],
-        $dbConfig['vanilla']['tablePrefix'])) { // Connect to MySQL
+        $dbConfig['vanilla']['tablePrefix'])
+    ) {
         die('Could not connect to the slave database: ' . $database->getLastError() . '; the application has exitted.');
     }
 }
 else {
-    $slaveDatabase = $database;
+    $slaveDatabase = \Fim\DatabaseSlave::setInstance(\Fim\Database::instance());
 }
 
 
@@ -152,7 +154,8 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 /* Only small tables are cached this way. */
 
 // Initiate cache object.
-$generalCache = new fimCache($slaveDatabase);
+/* TODO: $generalCache is transitional; fimCache should be singleton */
+$generalCache = new fimCache(\Fim\DatabaseSlave::instance());
 foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
     \Cache\CacheFactory::addMethod($cacheConnectName, $cacheConnectParams);
 }

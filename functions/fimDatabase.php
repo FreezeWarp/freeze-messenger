@@ -662,7 +662,7 @@ class fimDatabase extends DatabaseSQL
      *
      * @TODO: Test filters for other file properties.
      */
-    public function getFiles($options = array(), $sort = array('fileId' => 'asc'), $limit = 10, $page = 0)
+    public function getFiles($options = array(), $sort = array('id' => 'asc'), $limit = 10, $page = 0)
     {
         $options = $this->argumentMerge(array(
             'userIds'         => array(),
@@ -670,12 +670,9 @@ class fimDatabase extends DatabaseSQL
             'fileIds'         => array(),
             'versionIds'      => array(),
             'sha256hashes'    => array(),
-            'fileTypes'       => array(),
             'creationTimeMax' => 0,
             'creationTimeMin' => 0,
             'fileNameSearch'  => '',
-            'parentalAgeMin'  => 0,
-            'parentalAgeMax'  => 0,
             'includeContent'  => false,
             'includeThumbnails'=> false,
             'sizeMin' => 0,
@@ -684,42 +681,39 @@ class fimDatabase extends DatabaseSQL
 
 
         $columns = array(
-            $this->sqlPrefix . "files"        => 'fileId, fileName, fileType, creationTime, userId, fileParentalAge parentalAge, fileParentalFlags parentalFlags, roomIdLink, source',
-            $this->sqlPrefix . "fileVersions" => 'fileId versionId, sha256hash, size',
+            $this->sqlPrefix . "files"        => 'fileId id, fileName name, creationTime, userId, roomIdLink, source', // TODO
+            $this->sqlPrefix . "fileVersions" => 'fileId vfileId, versionId, sha256hash sha256Hash, size',
         );
 
         if ($options['includeContent']) $columns[$this->sqlPrefix . 'fileVersions'] .= ', contents';
 
 
         // This is a method of optimisation I'm trying. Basically, if a very small sample is requested, then we can optimise by doing those first. Otherwise, the other filters are usually better performed first.
-        foreach (array('fileIds' => 'fileId', 'versionIds' => 'versionId', 'sha256hashes' => 'sha256hash') AS $group => $key) {
+        foreach (array('fileIds' => 'id', 'versionIds' => 'versionId', 'sha256hashes' => 'sha256Hash') AS $group => $key) {
             if (count($options[$group]) > 0 && count($options[$group]) <= 10) {
                 $conditions['both'][$key] = $this->in($options[$group]);
             }
         }
 
 
-        // Narrow down files _before_ matching to fileVersions. Try to perform the quickest searchest first (those which act on integer indexes).
-        if (!isset($conditions['both']['fileIds']) && count($options['fileIds']) > 0) $conditions['both']['fileId'] = $this->in($options['fileIds']);
+        // Narrow down files _before_ matching to fileVersions. Try to perform the quickest searches first (those which act on integer indexes).
+        if (!isset($conditions['both']['fileIds']) && count($options['fileIds']) > 0) $conditions['both']['id'] = $this->in($options['fileIds']);
         if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
         if (count($options['roomIds']) > 0) $conditions['both']['roomLinkId'] = $this->in($options['roomIds']);
 
-        if ($options['parentalAgeMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
-        if ($options['parentalAgeMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
-
         if ($options['creationTimeMin'] > 0) $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'gte');
         if ($options['creationTimeMax'] > 0) $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'lte');
-        if (count($options['fileTypes']) > 0) $conditions['both']['fileType'] = $this->in($options['fileTypes']);
-        if ($options['fileNameSearch']) $conditions['both']['fileName'] = $this->type('string', $options['fileNameSearch'], 'search');
+
+        if ($options['fileNameSearch']) $conditions['both']['name'] = $this->search($options['fileNameSearch']);
 
 
         // Match files to fileVersions.
-        $conditions['both']['fileId'] = $this->col('versionId');
+        $conditions['both']['id'] = $this->col('vfileId');
 
 
         // Narrow down fileVersions _after_ it has been restricted to matched files.
         if (!isset($conditions['both']['versionIds']) && count($options['versionIds']) > 0) $conditions['both']['versionId'] = $this->in($options['versionIds']);
-        if (!isset($conditions['both']['sha256hashes']) && count($options['sha256hashes']) > 0) $conditions['both']['sha256hash'] = $this->in($options['sha256hashes']);
+        if (!isset($conditions['both']['sha256hashes']) && count($options['sha256hashes']) > 0) $conditions['both']['sha256Hash'] = $this->in($options['sha256hashes']);
 
         if ($options['sizeMin'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'gte');
         if ($options['sizeMax'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'lte');
@@ -915,7 +909,7 @@ class fimDatabase extends DatabaseSQL
     public function getMessages($options = array(), $sort = array('id' => 'asc'), $limit = 40, $page = 0) : fimDatabaseResult
     {
         $options = $this->argumentMerge(array(
-            'room'              => false,
+            'room'           => false,
             'messageIds'        => array(),
             'userIds'           => array(),
             'messageTextSearch' => '', // Overwrites messageIds.
@@ -991,8 +985,8 @@ class fimDatabase extends DatabaseSQL
      */
     public function getMessage(fimRoom $room, $messageId) : fimMessage {
         return $this->getMessages(array(
-            'room' => $room,
-            'messageIds' => array($messageId),
+            'room'     => $room,
+            'messageIds'  => array($messageId),
             'showDeleted' => true,
         ))->getAsMessage();
     }
@@ -1797,7 +1791,7 @@ class fimDatabase extends DatabaseSQL
      * User joins group with ID.
      *
      * @param int     $groupId Group to join.
-     * @param fimUser $user User joining the group.
+     * @param fimUser $user    User joining the group.
      *
      * @return bool|void
      */
@@ -1940,7 +1934,7 @@ class fimDatabase extends DatabaseSQL
          * Flood limit check.
          * As this is... pretty important to ensure, we perform this check at the last possible moment, here in storeMessage.
          */
-        if (fimConfig::$floodDetectionGlobal) {
+        if (fimConfig::$floodDetectionRooms) {
             $time = time();
             $minute = $this->ts($time - ($time % 60));
             $messageFlood = $this->select([
@@ -1951,10 +1945,12 @@ class fimDatabase extends DatabaseSQL
                 'time' => $minute,
             ])->getAsArray('roomId');
 
-            if ($messageFlood[$message->room->id]['messages'] >= fimConfig::$floodRoomLimitPerMinute)
+            if (isset($messageFlood[$message->room->id])
+                && $messageFlood[$message->room->id]['messages'] >= fimConfig::$floodRoomLimitPerMinute)
                 new fimError('roomFlood', 'Room flood limit breached.');
 
-            if ($messageFlood[0]['messages'] >= fimConfig::$floodSiteLimitPerMinute)
+            if (isset($messageFlood[0])
+                && $messageFlood[0]['messages'] >= fimConfig::$floodSiteLimitPerMinute)
                 new fimError('siteFlood', 'Site flood limit breached.');
         }
 
@@ -2177,24 +2173,20 @@ class fimDatabase extends DatabaseSQL
     }
 
 
-    public function storeFile(fimFile $file, fimUser $user, fimRoom $room) {
+    public function storeFile(\Fim\File $file, fimUser $user, fimRoom $room) {
         $this->startTransaction();
 
         $this->insert($this->sqlPrefix . "files", array(
             'userId' => $user->id,
             'roomIdLink' => $room->id,
-            'fileName' => $file->name,
-            'fileType' => $file->mime,
-            'fileParentalAge' => $file->parentalAge,
-            'fileParentalFlags' => implode(',', $file->parentalFlags),
+            'fileName' => $file->name,// TODO
             'creationTime' => time(),
-            'fileSize' => $file->size,
         ));
         $fileId = $this->getLastInsertId();
 
         $this->insert($this->sqlPrefix . "fileVersions", array(
             'fileId' => $fileId,
-            'sha256hash' => $file->sha256hash,
+            'sha256hash' => $file->sha256Hash,
             'size' => $file->size,
             'contents' => $this->blob($file->contents),
             'time' => time(),
@@ -2213,10 +2205,10 @@ class fimDatabase extends DatabaseSQL
 
         if ($room->id)
             $this->storeMessage(new fimMessage([
-                'room'        => $room,
-                'user'        => $user,
-                'text'        => $file->webLocation,
-                'flag'        => $file->container,
+                'room' => $room,
+                'user' => $user,
+                'text'    => $file->webLocation,
+                'flag'    => $file->container,
             ]));
 
         if (in_array($file->extension, fimConfig::$imageTypes)) {
@@ -2250,7 +2242,7 @@ class fimDatabase extends DatabaseSQL
                     $thumbnail = ob_get_clean();
 
                     $this->insert($this->sqlPrefix . "fileVersionThumbnails", array(
-                        'versionId' => $fileId,
+                        'versionId' => $versionId,
                         'scaleFactor' => $this->float($resizeFactor),
                         'width' => $newWidth,
                         'height' => $newHeight,

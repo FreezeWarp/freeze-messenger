@@ -98,6 +98,8 @@ class fimConfig {
     public static $floodDetectionGlobal_sendUser_perMinute = 1;
 
 
+    /** @var bool Whether global API-based flood detection is enabled. This relies on a memory table to be efficient, so it should generally be disabled if memory tables are not available. */
+    public static $floodDetectionRooms = true;
     /** @var int The maximum number of messages a user may send in any given room before trigger a flood lockout for sending additional messages in that room. */
     public static $floodRoomLimitPerMinute = 30;
     /** @var int The maximum number of messages a user may send site-wide before trigger a flood lockout for sending additional messages in ANY room. */

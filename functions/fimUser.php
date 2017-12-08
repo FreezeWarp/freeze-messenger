@@ -14,14 +14,13 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-require_once('fimDynamicObject.php');
 use Database\DatabaseTypeType;
 
 /**
  * Class fimUser
  * Stores user data.
  */
-class fimUser extends fimDynamicObject
+class fimUser extends \Fim\DynamicObject
 {
     /**
      * The user does not wish to enable private messages.

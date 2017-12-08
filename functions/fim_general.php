@@ -129,24 +129,6 @@ function fim_dobToAge($date) {
 }
 
 
-/**
- * Pretty Size
- *
- * @param float $size
- * @return string
- * @author Joseph Todd Parsons <josephtparsons@gmail.com>
- */
-function fim_formatSize($size) {
-    $suffix = 0;
-
-    while ($size > fimConfig::$fileIncrementSize) { // Increase the Byte Prefix, Decrease the Number (1024B = 1KiB)
-        $suffix++;
-        $size /= fimConfig::$fileIncrementSize;
-    }
-
-    return round($size, 2) . fimConfig::$fileSuffixes[$suffix];
-}
-
 function fim_startsWith($haystack, $needle) {
     return strpos($haystack, $needle, 0) === 0;
 }
@@ -676,7 +658,7 @@ function fim_objectArrayFilterKeys($object, array $keys) : array {
     $newArray = [];
 
     foreach ($keys AS $key) {
-        if (property_exists($object, $key)) $newArray[$key] = $object->{$key};
+        $newArray[$key] = $object->{$key};
     }
 
     return $newArray;

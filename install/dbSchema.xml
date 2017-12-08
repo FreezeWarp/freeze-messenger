@@ -110,14 +110,13 @@
         <table name="files" type="general" comment="User-created files.">
             <column name="fileId" type="int" maxlen="6" autoincrement="1" comment="A unique ID for the file." />
             <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
-            <column name="fileType" type="string" maxlen="255" comment="The file's mime-type/content-type." />
+            <!--<column name="fileType" type="string" maxlen="255" comment="The file's mime-type/content-type." />-->
             <column name="creationTime" type="time" default="__TIME__" comment="The date the file was uploaded." />
-            <column name="fileSize" type="int" maxlen="12" comment="The file's size." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who uploaded the file." />
-            <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
             <column name="roomIdLink" type="blob" maxlen="23" comment="If provided, the upload is linked to a particular room, which means that is may only be viewed by those who can view that room. The file will always be viewable by its poster. Additionally, FreezeMessenger may be configured to require that all images are posted to specific rooms -- this is, in-fact, the default." />
-            <column name="fileParentalFlags" type="string" maxlen="255" comment="A comma-seperated list of parent content flags to apply to the file." />
-            <column name="fileParentalAge" type="int" maxlen="2" comment="The file's parental content age rating." />
+
+            <!-- unimplemented -->
+            <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
             <column name="options" type="bitfield" bits="16" comment="File options." />
             <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 

@@ -60,6 +60,7 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'F' => 
         array (
             'Firebase\\JWT\\' => 13,
+            'Fim\\' => 4,
             'Facebook\\' => 9,
         ),
         'D' => 
@@ -148,6 +149,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'Firebase\\JWT\\' => 
         array (
             0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
+        ),
+        'Fim\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/functions/Fim',
         ),
         'Facebook\\' => 
         array (

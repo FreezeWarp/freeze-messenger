@@ -1497,12 +1497,12 @@
 <polygon fill="none" stroke="black" points="1576.48,-5424 1465.48,-5424 1465.48,-5388 1576.48,-5388 1576.48,-5424"/>
 <text text-anchor="middle" x="1520.98" y="-5403.2" font-family="Courier,monospace" font-size="11.00">fimDatabaseUAC</text>
 </g>
-<!-- \\fimDatabase -->
+<!-- \\fimDatabaseInstance -->
 <g id="node128" class="node"><title>\\fimDatabase</title>
 <polygon fill="none" stroke="black" points="1308.98,-5424 1217.98,-5424 1217.98,-5388 1308.98,-5388 1308.98,-5424"/>
 <text text-anchor="middle" x="1263.48" y="-5403.2" font-family="Courier,monospace" font-size="11.00">fimDatabase</text>
 </g>
-<!-- \\fimDatabaseUAC&#45;&gt;\\fimDatabase -->
+<!-- \\fimDatabaseUAC&#45;&gt;\\fimDatabaseInstance -->
 <g id="edge161" class="edge"><title>\\fimDatabaseUAC&#45;&gt;\\fimDatabase</title>
 <path fill="none" stroke="black" d="M1465.17,-5406C1422,-5406 1362.12,-5406 1319.02,-5406"/>
 <polygon fill="none" stroke="black" points="1319,-5402.5 1309,-5406 1319,-5409.5 1319,-5402.5"/>
@@ -1562,7 +1562,7 @@
 <polygon fill="none" stroke="black" points="1054.98,-5424 963.978,-5424 963.978,-5388 1054.98,-5388 1054.98,-5424"/>
 <text text-anchor="middle" x="1009.48" y="-5403.2" font-family="Courier,monospace" font-size="11.00">databaseSQL</text>
 </g>
-<!-- \\fimDatabase&#45;&gt;\\databaseSQL -->
+<!-- \\fimDatabaseInstance&#45;&gt;\\databaseSQL -->
 <g id="edge162" class="edge"><title>\\fimDatabase&#45;&gt;\\databaseSQL</title>
 <path fill="none" stroke="black" d="M1217.72,-5406C1175.11,-5406 1110.91,-5406 1065.27,-5406"/>
 <polygon fill="none" stroke="black" points="1065.25,-5402.5 1055.25,-5406 1065.25,-5409.5 1065.25,-5402.5"/>

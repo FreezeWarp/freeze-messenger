@@ -21,18 +21,25 @@
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
- *
- * @param string users - A comma-seperated list of user IDs to get.
  */
 
-$apiRequest = true;
 
-require('../global.php');
+if (!defined('API_INFILE'))
+    die();
+
 
 
 /* Get Request Data */
 $request = fim_sanitizeGPC('g', array(
-    'users' => array(
+    'fileIds' => [
+        'default'  => [],
+        'cast'     => 'list',
+        'filter'   => 'roomId',
+        'evaltrue' => true,
+        'max'      => 50,
+    ],
+
+    'userIds' => array(
         'default' => array($user->id),
         'cast' => 'list',
         'filter' => 'int',
@@ -44,6 +51,7 @@ $request = fim_sanitizeGPC('g', array(
         'cast' => 'int'
     ]
 ));
+
 $database->accessLog('getFiles', $request);
 
 
@@ -54,27 +62,21 @@ $xmlData['files'] = array();
 
 
 /* Get Uploads from Database */
-$files = $database->getFiles(array(
-    'userIds' => $request['users']
-), ['fileId' => 'asc'], 10, $request['page'])->getAsArray('fileId');
-
+$files = $database->getFiles([
+    'fileIds' => $request['fileIds'],
+    'userIds' => $request['userIds']
+], ['id' => 'asc'], 10, $request['page'])->getAsObjects('\\Fim\\File');
+//var_dump($files->getAsArray(true));
 
 
 /* Start Processing */
 foreach ($files AS $file) {
     // Only show if the user has permission.
-    if ($file['roomIdLink'] && $file['userId'] != $user->id) { /* TODO: Test */
-        if (!($database->hasPermission($user, $database->getRoom($file['roomIdLink'])) & fimRoom::ROOM_PERMISSION_VIEW)) continue;
+    if ($file->room && $file->user->id != $user->id) { /* TODO: Test */
+        if (!($database->hasPermission($user, $file->room) & fimRoom::ROOM_PERMISSION_VIEW)) continue;
     }
 
-    $xmlData['files']['file ' . $file['fileId']] = array(
-        'fileSize' => (int) $file['size'],
-        'fileSizeFormatted' => fim_formatSize($file['size']),
-        'fileName' => $file['fileName'],
-        'parentalAge' => $file['parentalAge'],
-        'parentalFlags' => explode(',', $file['parentalFlags']),
-        'sha256hash' => $file['sha256hash'],
-    );
+    $xmlData['files']['file ' . $file->id] = fim_objectArrayFilterKeys($file, ['name', 'size', 'container', 'sha256Hash', 'webLocation']);
 }
 
 

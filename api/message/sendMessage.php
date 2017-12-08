@@ -109,8 +109,8 @@ else {
 
             else {
                 $message = new fimMessage([
-                    'room'        => $room,
-                    'user'        => $user,
+                    'room'     => $room,
+                    'user'     => $user,
                     'text'        => $request['message'],
                     'flag'        => $request['flag'],
                     'ignoreBlock' => $request['ignoreBlock']

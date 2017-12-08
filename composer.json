@@ -20,7 +20,8 @@
       "Cache\\" : "functions/Cache/",
       "Stream\\" : "functions/Stream/",
       "Database\\" : "functions/Database/",
-      "Http\\" : "functions/Http/"
+      "Http\\" : "functions/Http/",
+      "Fim\\" : "functions/Fim/"
     }
   }
 }

@@ -427,7 +427,7 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
 
     $.ajax({
         type: 'get',
-        url: this.directory + 'api/files.php',
+        url: this.directory + 'api/file.php',
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache

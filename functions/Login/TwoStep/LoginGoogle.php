@@ -56,6 +56,7 @@ class LoginGoogle extends LoginTwoStep {
         $this->client->fetchAccessTokenWithAuthCode($_GET['code']); // verify returned code
 
         $access_token = $this->client->getAccessToken();
+
         if (!$access_token)
             new \fimError('failedLogin', 'We were unable to login to the Google server.');
 

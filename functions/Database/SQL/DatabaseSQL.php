@@ -645,9 +645,9 @@ class DatabaseSQL extends Database
         /* Perform Connection */
         if (!$this->sqlInterface->connect($host, $port, $user, $password, $database)) { // Make the connection.
             $this->triggerError('Could Not Connect: ' . $this->sqlInterface->getLastError(), array( // Note: we do not include "password" in the error data.
-                'host' => $host,
-                'port' => $port,
-                'user' => $user,
+                'host'     => $host,
+                'port'     => $port,
+                'user'  => $user,
                 'database' => $database
             ), 'connection');
 

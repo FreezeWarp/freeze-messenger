@@ -94,5 +94,20 @@ class fimDatabaseResult extends DatabaseResult {
         return new fimMessage($this);
     }
 
+
+    function getAsObjects($objectType) {
+        $return = array();
+
+        for ($i = 0; $i < $this->count; $i++) {
+            $return[] = new $objectType($this);
+        }
+
+        return $return;
+    }
+
+    function getAsObject($objectType) {
+        return new $objectType($this);
+    }
+
 }
 ?>

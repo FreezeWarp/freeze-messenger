@@ -77,13 +77,6 @@ $request = fim_sanitizeGPC('g', [
     'messageTextSearch' => [
     ],
 
-    'encode' => [
-        'default' => 'plaintext',
-        'valid'   => [
-            'plaintext', 'base64',
-        ],
-    ],
-
     'page' => [
         'default' => 0,
         'cast'    => 'int',
@@ -128,19 +121,14 @@ else {
     /* Process Messages */
     if (count($messages) > 0) {
         foreach ($messages AS $id => $message) {
-            $xmlData['messages'][] = array_merge([
-                'text'   => ($request['encode'] == 'base64' ? base64_encode($message->text) : $message->text),
-                'userId' => $message->user->id,
-                'anonId' => $message->user->anonId,
-                'roomId' => $message->room->id,
-            ], fim_objectArrayFilterKeys($message, ['id', 'time', 'formatting', 'flag']));
+            $xmlData['messages'][] = fim_objectArrayFilterKeys($message, ['id', 'text', 'roomId', 'userId', 'anonId', 'time', 'formatting', 'flag']);
         }
     }
 }
 
 
 $xmlData['messages'] = new Http\ApiOutputList($xmlData['messages']); // output the messages as a list
-$xmlData['metadata']['moreResults'] = $messageResults->paginated;
+$xmlData['metadata']['moreResults'] = $messageResults->paginated ?? false;
 
 /* Output Data */
 echo new Http\ApiData($xmlData);

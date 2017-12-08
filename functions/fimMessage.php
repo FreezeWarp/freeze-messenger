@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-class fimMessage
+class fimMessage extends \Fim\MagicGettersSetters
 {
     /**
      * @var fimRoom The room the message is in.
@@ -53,14 +53,14 @@ class fimMessage
     public $flag;
 
     /**
+     * The CSS styling specific to this message. Not yet implemented.
+     */
+    public $formatting;
+
+    /**
      * @var array When the message text is set anew (either for insertion or update), this will be the list of censor matches triggered by the censor.
      */
     public $censorMatches = [];
-
-    /**
-     * @var fimCache The general cache, for caching operations.
-     */
-    private $generalCache;
 
     /**
      * @param $messageData mixed The source of message data. Should be a fimDatabaseResult if from the database, or an associative array with the following indexes:
@@ -73,9 +73,6 @@ class fimMessage
      */
     function __construct($messageData)
     {
-        global $generalCache;
-        $this->generalCache = $generalCache;
-
         // When working with an existing message row. We require that all indexes be present, as otherwise we may accidentally forget certain information on edits.
         if ($messageData instanceof fimDatabaseResult) {
             $messageData = $messageData->getAsArray(false);
@@ -108,17 +105,11 @@ class fimMessage
 
 
     /**
-     * Get the value of $property.
-     * @param $property string The property to get.
-     * @return mixed The value of the property.
-     * @throws Exception If property is invalid.
+     * @see \Fim\MagicGettersSetters::get()
      */
     public function __get($property)
     {
-        if (!property_exists($this, $property))
-            throw new Exception("Invalid property accessed in fimMessage: $property");
-
-        return $this->$property;
+        return parent::get($property);
     }
 
 
@@ -160,6 +151,23 @@ class fimMessage
     public function setDeleted($deleted)
     {
         $this->deleted = $deleted;
+    }
+
+
+    /*******************
+     ***** GETTERS *****
+     *******************/
+
+    public function getRoomId() {
+        return $this->room->id;
+    }
+
+    public function getUserId() {
+        return $this->user->id;
+    }
+
+    public function getAnonId() {
+        return $this->user->anonId;
     }
 }
 ?>

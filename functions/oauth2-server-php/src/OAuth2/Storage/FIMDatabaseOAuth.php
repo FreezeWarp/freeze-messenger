@@ -30,7 +30,7 @@ class FIMDatabaseOAuth implements
 
     public function __construct($db, $exceptionHandler, $config = array())
     {
-        if (!$db instanceof \FIMDatabase) {
+        if (!$db instanceof \fimDatabase) {
             throw new $exceptionHandler('First argument to OAuth2\Storage\FIMDatabase must be an instance of FIMDatabase');
         }
 

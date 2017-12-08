@@ -1,11 +1,11 @@
 <?php
 /**
- * @global fimConfig $config
+ * @global fimConfig   $config
  * @global fimDatabase $database
- * @global fimUser $user
- * @global fimUser $kickUser
- * @global fimRoom $room
- * @global int $permission
+ * @global fimUser     $user
+ * @global fimUser     $kickUser
+ * @global fimRoom     $room
+ * @global int         $permission
 */
 
 /* Prevent Direct Access to Script */
@@ -48,7 +48,7 @@ elseif ($requestHead['_action'] === 'create') {
             $database->storeMessage(new fimMessage([
                 'user' => $user,
                 'room' => $room,
-                'text' => '/me kicked ' . $kickUser->name
+                'text'    => '/me kicked ' . $kickUser->name
             ]));
     }
 }
@@ -60,7 +60,7 @@ elseif ($requestHead['_action'] === 'delete') {
         $database->storeMessage(new fimMessage([
             'user' => $user,
             'room' => $room,
-            'text' => '/me unkicked ' . $kickUser->name
+            'text'    => '/me unkicked ' . $kickUser->name
         ]));
 }
 

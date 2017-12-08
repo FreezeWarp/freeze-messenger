@@ -24,6 +24,7 @@ return array(
     'GuzzleHttp\\' => array($vendorDir . '/guzzlehttp/guzzle/src'),
     'Google\\Auth\\' => array($vendorDir . '/google/auth/src'),
     'Firebase\\JWT\\' => array($vendorDir . '/firebase/php-jwt/src'),
+    'Fim\\' => array($baseDir . '/functions/Fim'),
     'Facebook\\' => array($vendorDir . '/facebook/graph-sdk/src/Facebook'),
     'Database\\' => array($baseDir . '/functions/Database'),
     'Cache\\' => array($baseDir . '/functions/Cache'),

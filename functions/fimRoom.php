@@ -14,14 +14,11 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-
-require_once('fimDynamicObject.php');
-
 /**
  * Class fimRoom
  * The data for a room object.
  */
-class fimRoom extends fimDynamicObject {
+class fimRoom extends \Fim\DynamicObject {
 
     /**
      * The room is official, and will receive special prominence in room searches.
@@ -397,7 +394,7 @@ class fimRoom extends fimDynamicObject {
 
 
     /**
-     * @link fimDynamicObject::exists()
+     * @see dynamicObject::exists()
      */
     public function exists() : bool {
         global $database;
