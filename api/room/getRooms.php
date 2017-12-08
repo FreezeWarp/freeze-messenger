@@ -118,7 +118,7 @@ do {
             ), [
                 'id 1' => \Fim\Database::instance()->in($user->favRooms),
                 $request['sort'] => 'asc'
-            ], fimConfig::$defaultRoomLimit, $request['page']);
+            ], \Fim\Config::$defaultRoomLimit, $request['page']);
 
             $rooms = $roomsQuery->getAsRooms();
         }

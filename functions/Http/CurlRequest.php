@@ -179,7 +179,7 @@ class CurlRequest {
         if (function_exists('curl_init')) {
             $ch = curl_init($file); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); /* obey redirects */
-            curl_setopt($ch, CURLOPT_USERAGENT, \fimConfig::$curlUA);
+            curl_setopt($ch, CURLOPT_USERAGENT, \Fim\Config::$curlUA);
             curl_setopt($ch, CURLOPT_NOBODY, true);
             curl_exec($ch);
 

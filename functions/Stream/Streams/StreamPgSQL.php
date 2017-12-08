@@ -62,7 +62,7 @@ class StreamPgSQL implements StreamInterface {
         }
 
         // Now get the listen results as they come in
-        while ($this->retries++ < \fimConfig::$serverSentMaxRetries) {
+        while ($this->retries++ < \Fim\Config::$serverSentMaxRetries) {
             $message = pg_get_notify($this->database->sqlInterface->connection, PGSQL_ASSOC);
 
             if ($message) {
@@ -75,7 +75,7 @@ class StreamPgSQL implements StreamInterface {
                 ]);
             }
 
-            usleep(\fimConfig::$serverSentEventsWait * 1000000);
+            usleep(\Fim\Config::$serverSentEventsWait * 1000000);
         }
 
         return [];

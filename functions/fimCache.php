@@ -45,12 +45,12 @@ class fimCache extends CacheFactory {
 
 
     /**
-     * Retrieve administer-set changes to fimConfig's configuration data, and use it to modify the defaults of fimConfig.
+     * Retrieve administer-set changes to \Fim\Config's configuration data, and use it to modify the defaults of \Fim\Config.
      */
-    public function loadFimConfig() {
+    public function loadConfig() {
         global $disableConfig;
 
-        if (!$disableConfig) {
+        if (!$disableConfig && false) {
             $configData = $this->getGeneric('fim_config', function() {
                 return \Fim\DatabaseSlave::instance()->getConfigurations()->getAsArray(true);
             });
@@ -61,11 +61,13 @@ class fimCache extends CacheFactory {
                     case 'string':
                     case 'float':
                     case 'bool':
-                        fimConfig::${$configDatabaseRow['directive']} = fim_cast($configDatabaseRow['type'], $configDatabaseRow['value']);
-                        break;
+                        \Fim\Config::${$configDatabaseRow['directive']} = fim_cast($configDatabaseRow['type'], $configDatabaseRow['value']);
+                        echo 'hi';
+                        fim_flush();
+                     break;
 
                     case 'json':
-                        fimConfig::${$configDatabaseRow['directive']} = (array) json_decode($configDatabaseRow['value']);
+                        \Fim\Config::${$configDatabaseRow['directive']} = (array) json_decode($configDatabaseRow['value']);
                         break;
                 }
             }

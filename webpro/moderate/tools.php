@@ -55,7 +55,7 @@ else {
                 }
 
                 echo '<br />';
-                echo container('Contents of fimConfig', '<pre>' . print_r((new ReflectionClass('fimConfig'))->getStaticProperties(), true) . '</pre>');
+                echo container('Contents of \Fim\Config', '<pre>' . print_r((new ReflectionClass('\Fim\Config'))->getStaticProperties(), true) . '</pre>');
                 echo '<br />';
                 echo container('Contents of roomPermissionsCache Table', '<table><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
                 echo '<br />';

@@ -25,7 +25,7 @@ require('global.php');
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache'); // recommended to prevent caching of event data.
 
-    @set_time_limit(fimConfig::$serverSentTimeLimit);
+    @set_time_limit(\Fim\Config::$serverSentTimeLimit);
 
     $serverSentRetries = 0;
 
@@ -54,7 +54,7 @@ require('global.php');
         )
     ));
 
-    if (!fimConfig::$serverSentEvents && !$request['fallback']) {
+    if (!\Fim\Config::$serverSentEvents && !$request['fallback']) {
         new fimError('fallbackMandatory', 'Fallback mode is required on this server.');
     }
 

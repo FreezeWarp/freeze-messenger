@@ -103,15 +103,15 @@ $request = fim_sanitizeGPC('p', [
 
     'parentalAge' => [
         'cast'    => 'int',
-        'valid'   => fimConfig::$parentalAges,
-        'default' => ($requestHead['_action'] === 'create' ? fimConfig::$parentalAgeDefault : null),
+        'valid'   => \Fim\Config::$parentalAges,
+        'default' => ($requestHead['_action'] === 'create' ? \Fim\Config::$parentalAgeDefault : null),
     ],
 
     'parentalFlags' => [
         'cast'      => 'list',
         'transform' => 'csv',
-        'default'   => ($requestHead['_action'] === 'create' ? fimConfig::$parentalFlagsDefault : null),
-        'valid'     => fimConfig::$parentalFlags,
+        'default'   => ($requestHead['_action'] === 'create' ? \Fim\Config::$parentalFlagsDefault : null),
+        'valid'     => \Fim\Config::$parentalFlags,
     ],
 ]);
 
@@ -127,19 +127,19 @@ switch ($requestHead['_action']) {
     case 'edit':
         // Handle Room Creation Exceptions
         if ($requestHead['_action'] === 'create') {
-            if (strlen($request['name']) < fimConfig::$roomLengthMinimum)
-                new fimError('nameMinimumLength', 'The room name specified is too short. It should be at least ' . fimConfig::$roomLengthMinimum . ' characters.');
+            if (strlen($request['name']) < \Fim\Config::$roomLengthMinimum)
+                new fimError('nameMinimumLength', 'The room name specified is too short. It should be at least ' . \Fim\Config::$roomLengthMinimum . ' characters.');
 
-            elseif (strlen($request['name']) > fimConfig::$roomLengthMaximum)
-                new fimError('nameMaximumLength', 'The room name specified is too short. It should be at most ' . fimConfig::$roomLengthMaximum . ' characters.');
+            elseif (strlen($request['name']) > \Fim\Config::$roomLengthMaximum)
+                new fimError('nameMaximumLength', 'The room name specified is too short. It should be at most ' . \Fim\Config::$roomLengthMaximum . ' characters.');
 
             elseif (!$user->hasPriv('createRooms'))
                 new fimError('noPerm', 'You do not have permission to create rooms.');
 
-            elseif (!$user->hasPriv('modRooms') && $user->ownedRooms >= fimConfig::$userRoomMaximum)
+            elseif (!$user->hasPriv('modRooms') && $user->ownedRooms >= \Fim\Config::$userRoomMaximum)
                 new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for a single user.');
 
-            elseif (!$user->hasPriv('modRooms') && ((time() - $user->joinDate / (60 * 60 * 24 * 365)) * $user->ownedRooms) >= fimConfig::$userRoomMaximumPerYear)
+            elseif (!$user->hasPriv('modRooms') && ((time() - $user->joinDate / (60 * 60 * 24 * 365)) * $user->ownedRooms) >= \Fim\Config::$userRoomMaximumPerYear)
                 new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for the age of your account. You may eventually be allowed to create additional rooms.');
 
             elseif (\Fim\DatabaseSlave::instance()->getRooms(['roomNames' => [$request['name']]])->getCount() > 0)

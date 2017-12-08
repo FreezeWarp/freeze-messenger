@@ -80,7 +80,7 @@ foreach ($files AS $file) {
 
 
 
-if (fimConfig::$dev) $xmlData['request'] = $request;
+if (\Fim\Config::$dev) $xmlData['request'] = $request;
 
 
 

@@ -54,10 +54,10 @@ $request = fim_sanitizeGPC('p', [
 
 
 /* Start Processing */
-if (strlen($request['message']) < fimConfig::$messageMinLength || strlen($request['message']) > fimConfig::$messageMaxLength)
+if (strlen($request['message']) < \Fim\Config::$messageMinLength || strlen($request['message']) > \Fim\Config::$messageMaxLength)
     new fimError('messageLength', "The message is too long/too short.", [
-        "minLength" => fimConfig::$messageMinLength,
-        "maxLength" => fimConfig::$messageMaxLength
+        "minLength" => \Fim\Config::$messageMinLength,
+        "maxLength" => \Fim\Config::$messageMaxLength
     ]); // Too short/long.
 
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))

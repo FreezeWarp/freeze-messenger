@@ -51,7 +51,6 @@ require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
 
 require_once('../functions/fimUser.php');
 require_once('../functions/fimRoom.php');
-require_once('../functions/fimConfig.php');
 require_once('../functions/fimCache.php');
 require_once('../functions/fimDatabase.php');
 
@@ -69,7 +68,7 @@ $database = new DatabaseInstance($dbConnect['core']['host'],
     $dbConnect['core']['password'],
     $dbConnect['core']['database'],
     $dbConnect['core']['driver'], $dbConfig['vanilla']['tablePrefix']);
-fimConfig::$dev = true;
+\Fim\Config::$dev = true;
 
 $databaseTests = new databaseSQLTests($database);
 

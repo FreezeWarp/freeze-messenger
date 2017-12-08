@@ -327,7 +327,7 @@ function fim_sanitizeGPC($type, $data) {
                     $newData[$indexName] = json_decode(
                         $activeGlobal[$indexName],
                         true,
-                        fimConfig::$jsonDecodeRecursionLimit,
+                        \Fim\Config::$jsonDecodeRecursionLimit,
                         JSON_BIGINT_AS_STRING
                     );
                 break;
@@ -459,7 +459,7 @@ function fim_sanitizeGPC($type, $data) {
                  * Remove characters that are non-alphanumeric. Note that we will try to romanise what we can, based on the $config directive romanisation.
                  */
                 case 'alphanum':
-                    $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys(fimConfig::$romanisation), array_values(fimConfig::$romanisation), $activeGlobal[$indexName]));
+                    $newData[$indexName] = preg_replace('/[^a-zA-Z0-9]*/', '', str_replace(array_keys(\Fim\Config::$romanisation), array_values(\Fim\Config::$romanisation), $activeGlobal[$indexName]));
                 break;
 
 
@@ -713,7 +713,7 @@ function fim_emptyExplode(string $separator, $list) {
 
 function fim_exceptionHandler($exception) {
     $errorData = array(
-        'contactEmail' => fimConfig::$email,
+        'contactEmail' => \Fim\Config::$email,
     );
     //ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
 
@@ -724,7 +724,7 @@ function fim_exceptionHandler($exception) {
         $errorData['details'] = $exception->getString();
         $errorData['other'] = $exception->getContext();
 
-        if (fimConfig::$displayBacktrace) {
+        if (\Fim\Config::$displayBacktrace) {
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
             //array_shift($backtrace); // Omits this function, fimError->trigger, from the backtrace.
 
@@ -738,10 +738,10 @@ function fim_exceptionHandler($exception) {
 
         $errorData = array_merge($errorData, array(
             'string' => $exception->getMessage(),
-            'contactEmail' => fimConfig::$email,
+            'contactEmail' => \Fim\Config::$email,
         ));
 
-        if (fimConfig::$displayBacktrace) {
+        if (\Fim\Config::$displayBacktrace) {
             $errorData['file'] = $exception->getFile();
             $errorData['line'] = $exception->getLine();
             $errorData['trace'] = $exception->getTrace();
@@ -760,7 +760,7 @@ function fim_exceptionHandler($exception) {
  * Flushes The Output Buffer
  */
 function fim_flush() {
-    echo str_repeat(' ', 1024 * fimConfig::$outputFlushPaddingKilobytes);
+    echo str_repeat(' ', 1024 * \Fim\Config::$outputFlushPaddingKilobytes);
 
     @ob_flush();
     flush();
@@ -785,7 +785,7 @@ function fim_removeNullValues(array &$a) {
  * @return mixed
  */
 function fim_nearestAge($age) {
-    $ages = fimConfig::$parentalAges;
+    $ages = \Fim\Config::$parentalAges;
     sort($ages);
 
     foreach ($ages AS $i => $a) {

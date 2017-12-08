@@ -25,7 +25,6 @@ require(__DIR__ . '/../functions/Xml2Array.php'); // For reading the db*.xml fil
 require(__DIR__ . '/../functions/fimDatabase.php'); // ""
 require(__DIR__ . '/../functions/fimUser.php'); // Creating Users
 require(__DIR__ . '/../functions/fimRoom.php');
-require(__DIR__ . '/../functions/fimConfig.php'); // Configuration
 require(__DIR__ . '/../functions/fimCache.php'); // Caching
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
@@ -245,7 +244,7 @@ switch ($_REQUEST['phase']) {
         if ($forum == 'vanilla') {
             try {
                 $database = new DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix);
-                fimConfig::$displayBacktrace = true;
+                \Fim\Config::$displayBacktrace = true;
 
                 $user = new fimUser(false);
                 if (!$user->setDatabase(array(

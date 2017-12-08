@@ -38,7 +38,6 @@ require_once(__DIR__ . '/config.php'); // Configuration Variables
 require_once(__DIR__ . '/functions/fimUser.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimRoom.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimCache.php'); // FIM-specific Extension to APC Wrapper
-require_once(__DIR__ . '/functions/fimConfig.php'); // FIM config and factory
 require_once(__DIR__ . '/functions/fimError.php'); // FIM Custom Error Class
 require_once(__DIR__ . '/functions/fim_general.php'); // Various Functions
 
@@ -148,11 +147,11 @@ foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
 }
 
 // Get Configuration Data
-$generalCache->loadFimConfig();
+$generalCache->loadConfig();
 
 
 // Log queries, if enabled.
-\Fim\Database::instance()->queryLogToFile = (fimConfig::$logQueries ? fimConfig::$logQueriesFile : false);
+\Fim\Database::instance()->queryLogToFile = (\Fim\Config::$logQueries ? \Fim\Config::$logQueriesFile : false);
 
 
 // Cache object instances at shutdown.

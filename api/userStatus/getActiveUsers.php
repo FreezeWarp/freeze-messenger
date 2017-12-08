@@ -70,7 +70,7 @@ $xmlData = array(
 
 
 $activeUsers = \Fim\Database::instance()->getActiveUsers(array(
-    'onlineThreshold' => fimConfig::$defaultOnlineThreshold,
+    'onlineThreshold' => \Fim\Config::$defaultOnlineThreshold,
     'roomIds' => $request['roomIds'],
     'userIds' => $request['userIds']
 ))->getAsArray(true);

@@ -36,13 +36,13 @@ echo new Http\ApiData([
         'loginMethods' => new Http\ApiOutputList(array_keys($loginConfig['extraMethods'] ?? [])),
 
         'parentalControls' => array(
-            'parentalEnabled' => fimConfig::$parentalEnabled,
-            'parentalAgeChangeable' => fimConfig::$parentalAgeChangeable,
-            'parentalFlags' => new Http\ApiOutputList(fimConfig::$parentalFlags),
-            'parentalAges' => new Http\ApiOutputList(fimConfig::$parentalAges),
+            'parentalEnabled' => \Fim\Config::$parentalEnabled,
+            'parentalAgeChangeable' => \Fim\Config::$parentalAgeChangeable,
+            'parentalFlags' => new Http\ApiOutputList(\Fim\Config::$parentalFlags),
+            'parentalAges' => new Http\ApiOutputList(\Fim\Config::$parentalAges),
         ),
 
-        'censorEnabled' => fimConfig::$censorEnabled,
+        'censorEnabled' => \Fim\Config::$censorEnabled,
 
         'branding' => array(
             'forumType' => $loginConfig['method'],
@@ -51,49 +51,49 @@ echo new Http\ApiData([
 
         'requestMethods' => array(
             'poll' => true,
-            'serverSentEvents' => (bool) fimConfig::$serverSentEvents,
+            'serverSentEvents' => (bool) \Fim\Config::$serverSentEvents,
         ),
 
         'registrationPolicies' => array(
-            'ageRequired' => (bool) fimConfig::$ageRequired,
-            'ageMinimum' => (int) fimConfig::$ageMinimum,
-            'emailRequired' => (bool) fimConfig::$emailRequired,
+            'ageRequired' => (bool) \Fim\Config::$ageRequired,
+            'ageMinimum' => (int) \Fim\Config::$ageMinimum,
+            'emailRequired' => (bool) \Fim\Config::$emailRequired,
         ),
 
         'fileUploads' => array(
-            'enabled' => (bool) fimConfig::$enableUploads,
-            'generalEnabled' => (bool) fimConfig::$enableGeneralUploads,
-            'maxAll' => (int) fimConfig::$uploadMaxFiles,
-            'maxUser' => (int) fimConfig::$uploadMaxUserFiles,
-            'chunkSize' => (int) fimConfig::$fileUploadChunkSize,
-            'orphanFiles' => (bool) fimConfig::$allowOrphanFiles,
-            'allowedExtensions' => new Http\ApiOutputList(fimConfig::$allowedExtensions),
-            'mimes' => new Http\ApiOutputList(fimConfig::$uploadMimes),
-            'extensionChanges' => fimConfig::$extensionChanges,
-            'fileContainers' => fimConfig::$fileContainers,
-            'fileProofs' => fimConfig::$uploadMimeProof,
-            'sizeLimits' => fimConfig::$uploadSizeLimits,
+            'enabled' => (bool) \Fim\Config::$enableUploads,
+            'generalEnabled' => (bool) \Fim\Config::$enableGeneralUploads,
+            'maxAll' => (int) \Fim\Config::$uploadMaxFiles,
+            'maxUser' => (int) \Fim\Config::$uploadMaxUserFiles,
+            'chunkSize' => (int) \Fim\Config::$fileUploadChunkSize,
+            'orphanFiles' => (bool) \Fim\Config::$allowOrphanFiles,
+            'allowedExtensions' => new Http\ApiOutputList(\Fim\Config::$allowedExtensions),
+            'mimes' => new Http\ApiOutputList(\Fim\Config::$uploadMimes),
+            'extensionChanges' => \Fim\Config::$extensionChanges,
+            'fileContainers' => \Fim\Config::$fileContainers,
+            'fileProofs' => \Fim\Config::$uploadMimeProof,
+            'sizeLimits' => \Fim\Config::$uploadSizeLimits,
         ),
 
         'rooms' => array(
-            'roomLengthMinimum' => (int) fimConfig::$roomLengthMinimum,
-            'roomLengthMaximum' => (int) fimConfig::$roomLengthMaximum,
-            'disableTopic' => (bool) fimConfig::$disableTopic,
-            'hiddenRooms' => (bool) fimConfig::$hiddenRooms,
+            'roomLengthMinimum' => (int) \Fim\Config::$roomLengthMinimum,
+            'roomLengthMaximum' => (int) \Fim\Config::$roomLengthMaximum,
+            'disableTopic' => (bool) \Fim\Config::$disableTopic,
+            'hiddenRooms' => (bool) \Fim\Config::$hiddenRooms,
         ),
 
         'officialRooms' => new Http\ApiOutputList(\Fim\Database::instance()->getRooms(['onlyOfficial' => true])->getColumnValues('id')),
 
         'formatting' => array(
-            'fonts' => fimConfig::$defaultFormattingFont ? fimConfig::$fonts : false,
-            'highlight' => fimConfig::$defaultFormattingHighlight,
-            'color' => fimConfig::$defaultFormattingColor,
-            'italics' => fimConfig::$defaultFormattingItalics,
-            'bold' => fimConfig::$defaultFormattingBold,
+            'fonts' => \Fim\Config::$defaultFormattingFont ? \Fim\Config::$fonts : false,
+            'highlight' => \Fim\Config::$defaultFormattingHighlight,
+            'color' => \Fim\Config::$defaultFormattingColor,
+            'italics' => \Fim\Config::$defaultFormattingItalics,
+            'bold' => \Fim\Config::$defaultFormattingBold,
         ),
 
         'cacheDelays' => array(
-            'censorWords' => fimConfig::$censorWordsCacheRefresh,
+            'censorWords' => \Fim\Config::$censorWordsCacheRefresh,
         ),
 
         'emoticons' => $generalCache->getEmoticons(),

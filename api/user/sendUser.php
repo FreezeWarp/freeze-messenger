@@ -46,11 +46,11 @@ $request = fim_sanitizeGPC('p', [
     ],
 
     'email' => [
-        'require' => fimConfig::$emailRequired,
+        'require' => \Fim\Config::$emailRequired,
     ],
 
     'birthDate' => [
-        'require' => fimConfig::$ageRequired,
+        'require' => \Fim\Config::$ageRequired,
         'cast'    => 'int',
     ],
 ]);
@@ -62,7 +62,7 @@ $request = fim_sanitizeGPC('p', [
 if (isset($request['birthDate']))
     $age = fim_dobToAge($request['birthDate']);
 else
-    $age = fimConfig::$parentalAgeDefault;
+    $age = \Fim\Config::$parentalAgeDefault;
 
 
 if ($loginConfig['method'] != 'vanilla')
@@ -74,13 +74,13 @@ elseif ($user->id && !$user->isAnonymousUser())
 elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMAIL)))
     new fimError('emailInvalid', 'The email specified is not allowed.');
 
-elseif (strlen($request['password']) < fimConfig::$passwordMinimumLength)
+elseif (strlen($request['password']) < \Fim\Config::$passwordMinimumLength)
     new fimError('passwordMinimumLength', 'The password provided is too short.');
 
-elseif (isset($request['birthDate']) && ($age < fimConfig::$ageMinimum))
+elseif (isset($request['birthDate']) && ($age < \Fim\Config::$ageMinimum))
     new fimError('ageMinimum', 'The age specified is below the minimum age allowed by the server.', [
         'ageDetected' => $age,
-        'ageMinimum'  => fimConfig::$ageMinimum
+        'ageMinimum'  => \Fim\Config::$ageMinimum
     ]);
 
 elseif (\Fim\Database::instance()->getUsers(['userNames' => [$request['name']]])->getCount() > 0)

@@ -161,8 +161,8 @@ $success = false;
                             echo fimHtml_buildSelect('birthDay', array_merge([""], range(1, 31)), $_POST['birthDay'] ?? 0);
                             echo fimHtml_buildSelect('birthMonth', array_merge([""], $phrases[$lang]['months']), $_POST['birthMonth'] ?? 0);
                             echo fimHtml_buildSelect('birthYear', array_combine(
-                                array_merge([0], range(intval(date('Y')) - fimConfig::$ageMinimum, intval(date('Y')) - 150)),
-                                array_merge([""], range(intval(date('Y')) - fimConfig::$ageMinimum, intval(date('Y')) - 150))
+                                array_merge([0], range(intval(date('Y')) - \Fim\Config::$ageMinimum, intval(date('Y')) - 150)),
+                                array_merge([""], range(intval(date('Y')) - \Fim\Config::$ageMinimum, intval(date('Y')) - 150))
                             ), $_POST['birthYear'] ?? 0);
                             ?>
                             <br/>

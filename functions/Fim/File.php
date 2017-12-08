@@ -19,7 +19,6 @@ namespace Fim;
 use \fimUser;
 use \fimRoom;
 use \fimError;
-use \fimConfig;
 use \Exception;
 
 class File extends MagicGettersSetters {
@@ -128,12 +127,12 @@ class File extends MagicGettersSetters {
 
 
     /**
-     * @return string The file extension of {@see $name}. {@see fimConfig::$extensionChanges} will be used to convert common extensions to a single extension.
+     * @return string The file extension of {@see $name}. {@see Config::$extensionChanges} will be used to convert common extensions to a single extension.
      */
     public function getExtension() {
         $extension = strtolower(pathinfo($this->name, PATHINFO_EXTENSION));
 
-        return fimConfig::$extensionChanges[$extension] ?? $extension;
+        return Config::$extensionChanges[$extension] ?? $extension;
     }
 
     /**
@@ -153,19 +152,19 @@ class File extends MagicGettersSetters {
     }
 
     /**
-     * @return string The mime type of the file, based on the database of mime extensions, {@see fimConfig::$uploadMimes}, and using {@see getExtension()} to lookup a mimetype. If none is detected, will default to "application/octet-stream".
+     * @return string The mime type of the file, based on the database of mime extensions, {@see Config::$uploadMimes}, and using {@see getExtension()} to lookup a mimetype. If none is detected, will default to "application/octet-stream".
      */
     public function getMime() {
-        return fimConfig::$uploadMimes[$this->__get('extension')]
-            ? fimConfig::$uploadMimes[$this->__get('extension')]
+        return Config::$uploadMimes[$this->__get('extension')]
+            ? Config::$uploadMimes[$this->__get('extension')]
             : 'application/octet-stream';
     }
 
     /**
-     * @return string The container that should be used to display this file, based on the database of file containers, {@see fimConfig::$fileContainers}, and using {@see getExtension()} to lookup a container. If none is detected, will default to "other".
+     * @return string The container that should be used to display this file, based on the database of file containers, {@see Config::$fileContainers}, and using {@see getExtension()} to lookup a container. If none is detected, will default to "other".
      */
     public function getContainer() {
-        return fimConfig::$fileContainers[$this->__get('extension')] ?? 'other';
+        return Config::$fileContainers[$this->__get('extension')] ?? 'other';
     }
 
     /**

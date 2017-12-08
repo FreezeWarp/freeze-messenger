@@ -478,15 +478,15 @@ class fimRoom extends DynamicObject {
 
         else {
             // Disallow OTR rooms if disabled.
-            if ($this->type === fimRoom::ROOM_TYPE_OTR && !fimConfig::$otrRoomsEnabled)
+            if ($this->type === fimRoom::ROOM_TYPE_OTR && !\Fim\Config::$otrRoomsEnabled)
                 return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_DISABLED;
 
             // Disallow private rooms if disabled.
-            elseif ($this->type === fimRoom::ROOM_TYPE_PRIVATE && !fimConfig::$privateRoomsEnabled)
+            elseif ($this->type === fimRoom::ROOM_TYPE_PRIVATE && !\Fim\Config::$privateRoomsEnabled)
                 return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_DISABLED;
 
             // Disallow private rooms with too many members.
-            elseif (count($this->getPrivateRoomMemberIds()) > fimConfig::$privateRoomMaxUsers)
+            elseif (count($this->getPrivateRoomMemberIds()) > \Fim\Config::$privateRoomMaxUsers)
                 return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_DISABLED;
 
             else {
@@ -642,7 +642,7 @@ class fimRoom extends DynamicObject {
 
 
     protected function setWatchedByUsers($users) {
-        if (!fimConfig::$enableWatchRooms)
+        if (!\Fim\Config::$enableWatchRooms)
             return;
 
         // TODO
@@ -697,20 +697,20 @@ class fimRoom extends DynamicObject {
 
         $this->deleted  = ($this->options & fimRoom::ROOM_DELETED);
         $this->archived = ($this->options & fimRoom::ROOM_ARCHIVED);
-        $this->official = ($this->options & fimRoom::ROOM_OFFICIAL) && fimConfig::$officialRooms;
-        $this->hidden   = ($this->options & fimRoom::ROOM_HIDDEN) && fimConfig::$hiddenRooms;
+        $this->official = ($this->options & fimRoom::ROOM_OFFICIAL) && \Fim\Config::$officialRooms;
+        $this->hidden   = ($this->options & fimRoom::ROOM_HIDDEN) && \Fim\Config::$hiddenRooms;
     }
 
     protected function setTopic($topic) {
-        $this->topic = fimConfig::$disableTopic ? '' : $topic;
+        $this->topic = \Fim\Config::$disableTopic ? '' : $topic;
     }
 
     protected function setParentalAge($age) {
-        $this->parentalAge = fimConfig::$parentalEnabled ? (int) $age : 0;
+        $this->parentalAge = \Fim\Config::$parentalEnabled ? (int) $age : 0;
     }
 
     protected function setParentalFlags($parentalFlags) {
-        if (fimConfig::$parentalEnabled && is_string($parentalFlags))
+        if (\Fim\Config::$parentalEnabled && is_string($parentalFlags))
             $this->parentalFlags = fim_emptyExplode(',', $parentalFlags);
     }
 
@@ -785,7 +785,7 @@ class fimRoom extends DynamicObject {
     public function changeTopic($topic) {
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->changeTopic on private room.');
-        elseif (fimConfig::$disableTopic)
+        elseif (\Fim\Config::$disableTopic)
             throw new fimError('topicsDisabled', 'Topics are disabled on this server.');
         else {
             $this->setDatabase(['topic' => $topic]);

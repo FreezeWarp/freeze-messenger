@@ -24,7 +24,6 @@ namespace Fim;
 use Database\DatabaseTypeType;
 use Database\SQL\DatabaseSQL;
 
-use \fimConfig;
 use \fimUser;
 use \fimRoom;
 use \fimError;
@@ -202,20 +201,20 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function makeSearchable($string) {
         // Romanise first, to allow us to apply custom replacements before letting the built-in functions do their job
-        $string = str_replace(array_keys(fimConfig::$romanisation), array_values(fimConfig::$romanisation), $string);
+        $string = str_replace(array_keys(Config::$romanisation), array_values(Config::$romanisation), $string);
 
         // Apply the built-in functions, if available
         if (function_exists('transliterator_transliterate'))
-            $string = transliterator_transliterate(fimConfig::$searchTransliteration, $string);
+            $string = transliterator_transliterate(Config::$searchTransliteration, $string);
         elseif (function_exists('iconv'))
             $string = strtolower(iconv('utf-8', 'us-ascii//TRANSLIT', $string));
 
         // Replace punctuation with space (e.g. "a.b" should be treated as "a b" not "ab").
-        $string = str_replace(fimConfig::$searchWordPunctuation, ' ', $string);
+        $string = str_replace(Config::$searchWordPunctuation, ' ', $string);
 
         // If searchWhiteList is set, then we remove any characters not in the whitelist. By default, it is simply a-zA-Z
-        if (fimConfig::$searchWhiteList)
-            $string = preg_replace('/[^' . fimConfig::$searchWhiteList . ']/', '', $string);
+        if (Config::$searchWhiteList)
+            $string = preg_replace('/[^' . Config::$searchWhiteList . ']/', '', $string);
 
         // Get rid of extra spaces. (Also replaces all space characters with " ")
         $string = preg_replace('/\s+/', ' ', $string);
@@ -329,7 +328,7 @@ class DatabaseInstance extends DatabaseSQL
     public function getActiveUsers($options, $sort = array('userName' => 'asc'), $limit = false, $page = false)
     {
         $options = $this->argumentMerge(array(
-            'onlineThreshold' => fimConfig::$defaultOnlineThreshold,
+            'onlineThreshold' => Config::$defaultOnlineThreshold,
             'roomIds'         => array(),
             'userIds'         => array(),
             'typing'          => null,
@@ -566,7 +565,7 @@ class DatabaseInstance extends DatabaseSQL
 
     /**
      * Retrieves all configuration directives matching $options.
-     * Use the global $config (or the fimConfig class) for viewing the values of configuration directives during normal operation.
+     * Use the global $config (or the Config class) for viewing the values of configuration directives during normal operation.
      *
      * @param array $options {
      *      An array of options to filter the resultset by.
@@ -602,7 +601,7 @@ class DatabaseInstance extends DatabaseSQL
 
     /**
      * Retrieves a single configuration directive.
-     * Use the global $config (or the fimConfig class) for viewing the values of configuration directives during normal operation.
+     * Use the global $config (or the Config class) for viewing the values of configuration directives during normal operation.
      *
      * @param string $directive The directive to return.
      * @return array The directive's properties.
@@ -1505,7 +1504,7 @@ class DatabaseInstance extends DatabaseSQL
      * @return int A permission bitfield, or -1 if none/expired.
      */
     public function getPermissionCache($roomId, $userId) {
-        if (!fimConfig::$roomPermissionsCacheEnabled) return -1;
+        if (!Config::$roomPermissionsCacheEnabled) return -1;
         else {
             $permissions = $this->select(array(
                 $this->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'
@@ -1529,13 +1528,13 @@ class DatabaseInstance extends DatabaseSQL
      * @param bool $isKicked Whether the permission cache is because of a kick (this is not generally used internally, but can be used to indicate to a user that they have been denied permission because of a kick)
      */
     public function updatePermissionsCache($roomId, $userId, $permissions, $isKicked = false) {
-        if (fimConfig::$roomPermissionsCacheEnabled) {
+        if (Config::$roomPermissionsCacheEnabled) {
             $this->upsert($this->sqlPrefix . 'roomPermissionsCache', array(
                 'roomId' => $roomId,
                 'userId' => $userId,
             ), array(
                 'permissions' => $permissions,
-                'expires' => $this->now(fimConfig::$roomPermissionsCacheExpires),
+                'expires' => $this->now(Config::$roomPermissionsCacheExpires),
                 'isKicked' => $this->bool($isKicked),
             ));
         }
@@ -1548,7 +1547,7 @@ class DatabaseInstance extends DatabaseSQL
      * @param int $userId The user ID for whom a permission has changed.
      */
     public function deletePermissionsCache($roomId = false, $userId = false) {
-        if (fimConfig::$roomPermissionsCacheEnabled) {
+        if (Config::$roomPermissionsCacheEnabled) {
             $conditions = [];
 
             if ($roomId !== false) $conditions['roomId'] = $roomId;
@@ -1627,7 +1626,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
     public function lockoutIncrement() {
-        if (fimConfig::$dev)
+        if (Config::$dev)
             return true;
 
         // Note: As defined, attempts will further increase, and expires will further increase, with each additional query beyond the "lockout". As a result, this function generally shouldn't be called if a user is already lockedout -- otherwise, further attempts just lock them out further, when they could be the user checking to see if they are still locked out. So always call lockoutActive before calling lockoutIncrement.
@@ -1635,7 +1634,7 @@ class DatabaseInstance extends DatabaseSQL
             'ip' => $_SERVER['REMOTE_ADDR'],
         ), array(
             'attempts' => $this->equation('$attempts + 1'),
-            'expires' => $this->now(fimConfig::$lockoutExpires) // TOOD: Config
+            'expires' => $this->now(Config::$lockoutExpires) // TOOD: Config
         ), array(
             'attempts' => 1,
         ));
@@ -1644,7 +1643,7 @@ class DatabaseInstance extends DatabaseSQL
     }
 
     public function lockoutActive() {
-        if (fimConfig::$dev)
+        if (Config::$dev)
             return false;
 
         // Note: Select condition format is experimental and untested, and numRows is not yet implemented. So, uh, do that. Lockout count is also unimplemented.
@@ -1652,7 +1651,7 @@ class DatabaseInstance extends DatabaseSQL
                 $this->sqlPrefix . 'sessionLockout' => 'ip, attempts, expires'
             ), array(
                 'ip' => $_SERVER['REMOTE_ADDR'],
-            ))->getColumnValue('attempts') >= fimConfig::$lockoutCount) return true;
+            ))->getColumnValue('attempts') >= Config::$lockoutCount) return true;
 
         return false;
     }
@@ -1889,7 +1888,7 @@ class DatabaseInstance extends DatabaseSQL
 
     public function markMessageRead($roomId, $userId)
     {
-        if (fimConfig::$enableUnreadMessages) {
+        if (Config::$enableUnreadMessages) {
             return $this->delete($this->sqlPrefix . "unreadMessages", array(
                 'roomId'    => $roomId,
                 'userId'    => $userId
@@ -1941,7 +1940,7 @@ class DatabaseInstance extends DatabaseSQL
          * Flood limit check.
          * As this is... pretty important to ensure, we perform this check at the last possible moment, here in storeMessage.
          */
-        if (fimConfig::$floodDetectionRooms) {
+        if (Config::$floodDetectionRooms) {
             $time = time();
             $minute = $this->ts($time - ($time % 60));
             $messageFlood = $this->select([
@@ -1953,11 +1952,11 @@ class DatabaseInstance extends DatabaseSQL
             ])->getAsArray('roomId');
 
             if (isset($messageFlood[$message->room->id])
-                && $messageFlood[$message->room->id]['messages'] >= fimConfig::$floodRoomLimitPerMinute)
+                && $messageFlood[$message->room->id]['messages'] >= Config::$floodRoomLimitPerMinute)
                 new fimError('roomFlood', 'Room flood limit breached.');
 
             if (isset($messageFlood[0])
-                && $messageFlood[0]['messages'] >= fimConfig::$floodSiteLimitPerMinute)
+                && $messageFlood[0]['messages'] >= Config::$floodSiteLimitPerMinute)
                 new fimError('siteFlood', 'Site flood limit breached.');
         }
 
@@ -2157,7 +2156,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
     public function createUnreadMessage($sendToUserId, Message $message) {
-        if (fimConfig::$enableUnreadMessages) {
+        if (Config::$enableUnreadMessages) {
             \Stream\StreamFactory::publish('user_' . $sendToUserId, 'missedMessage', [
                 'id' => $message->id,
                 'senderId' => $message->user->id,
@@ -2218,17 +2217,17 @@ class DatabaseInstance extends DatabaseSQL
                 'flag'    => $file->container,
             ]));
 
-        if (in_array($file->extension, fimConfig::$imageTypes)) {
+        if (in_array($file->extension, Config::$imageTypes)) {
             list($width, $height) = getimagesizefromstring($file->contents);
 
-            if ($width > fimConfig::$imageResizeMaxWidth || $height > fimConfig::$imageResizeMaxHeight) {
+            if ($width > Config::$imageResizeMaxWidth || $height > Config::$imageResizeMaxHeight) {
 
             }
             elseif (!$imageOriginal = imagecreatefromstring($file->contents)) {
                 throw new fimError('resizeFailed', 'The image could not be thumbnailed. The file was still uploaded.');
             }
             else {
-                foreach (fimConfig::$imageThumbnails AS $resizeFactor) {
+                foreach (Config::$imageThumbnails AS $resizeFactor) {
                     if ($resizeFactor < 0 || $resizeFactor > 1) {
                         $this->rollbackTransaction();
                         throw new fimError('badServerConfigImageThumbnails', 'The server is configured with an incorrect thumbnail factor, ' . $resizeFactor . '. Image file uploads will be disabled until this issue is rectified.');
@@ -2327,7 +2326,7 @@ class DatabaseInstance extends DatabaseSQL
     {
         if ($this->insert($this->sqlPrefix . "fullLog", array(
             'userId'   => $this->user->id,
-            'server' => json_encode(array_intersect_key($_SERVER,array_flip(fimConfig::$fullLogServerDirectives))),
+            'server' => json_encode(array_intersect_key($_SERVER,array_flip(Config::$fullLogServerDirectives))),
             'action' => $action,
             'time'   => $this->now(),
             'data'   => json_encode($data),
@@ -2360,7 +2359,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
         // If Flood Detection is Enabled...
-        if (fimConfig::$floodDetectionGlobal) {
+        if (Config::$floodDetectionGlobal) {
             $time = time();
             $minute = $time - ($time % 60);
 
@@ -2379,7 +2378,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
             // Error if Flood Weight is Too Great
-            if ($floodCountMinute > fimConfig::${'floodDetectionGlobal_' . $action . '_perMinute'} && !$this->user->hasPriv('modPrivs')) {
+            if ($floodCountMinute > Config::${'floodDetectionGlobal_' . $action . '_perMinute'} && !$this->user->hasPriv('modPrivs')) {
                 new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
@@ -2402,7 +2401,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
         // Insert Access Log, If Enabled
-        if (fimConfig::$accessLogEnabled) {
+        if (Config::$accessLogEnabled) {
             if ($this->insert($this->sqlPrefix . "accessLog", array(
                 'userId' => $notLoggedIn ? null : $this->user->id,
                 'sessionHash' => $notLoggedIn ? '' : $this->user->sessionHash,
@@ -2434,7 +2433,7 @@ class DatabaseInstance extends DatabaseSQL
         $room = RoomFactory::getFromId((int) $roomId);
         $listEntries = $room->{$cacheColumn};
 
-        /*if (count($listEntries) > fimConfig::$databaseCollectionMaxEntries) {
+        /*if (count($listEntries) > Config::$databaseCollectionMaxEntries) {
             $cacheIndex = 'fim_' . $cacheColumn . '_' . $roomId;
 
             if (!$generalCache->exists($cacheIndex, 'redis')) {

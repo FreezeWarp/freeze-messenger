@@ -59,7 +59,7 @@ $request = fim_sanitizeGPC(
         'crc32bhash' => array(),
     
         'roomId' => array(
-            'require' => !fimConfig::$allowOrphanFiles,
+            'require' => !\Fim\Config::$allowOrphanFiles,
             'cast' => 'roomId',
         ),
     
@@ -93,17 +93,17 @@ switch ($requestHead['_action']) {
         else $roomData = false;
 
 
-        if (!fimConfig::$enableUploads)
+        if (!\Fim\Config::$enableUploads)
             throw new fimError('uploadsDisabled', 'Uploads are disabled on this FreezeMessenger server.');
-        if (!$roomData && !fimConfig::$allowOrphanFiles)
+        if (!$roomData && !\Fim\Config::$allowOrphanFiles)
             throw new fimError('noOrphanFiles', 'Files cannot be orphaned on this FreezeMessenger server. You must post them to a room.');
-        if (fimConfig::$uploadMaxFiles !== -1 && \Fim\Database::instance()->getCounterValue('uploads') > fimConfig::$uploadMaxFiles)
+        if (\Fim\Config::$uploadMaxFiles !== -1 && \Fim\Database::instance()->getCounterValue('uploads') > \Fim\Config::$uploadMaxFiles)
             throw new fimError('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
-        if (fimConfig::$uploadMaxUserFiles !== -1 && $user->fileCount > fimConfig::$uploadMaxUserFiles)
+        if (\Fim\Config::$uploadMaxUserFiles !== -1 && $user->fileCount > \Fim\Config::$uploadMaxUserFiles)
             throw new fimError('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
-        if (fimConfig::$uploadMaxSpace !== -1 && \Fim\Database::instance()->getCounterValue('uploadSize') > fimConfig::$uploadMaxSpace)
+        if (\Fim\Config::$uploadMaxSpace !== -1 && \Fim\Database::instance()->getCounterValue('uploadSize') > \Fim\Config::$uploadMaxSpace)
             throw new fimError('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
-        if (fimConfig::$uploadMaxUserSpace !== -1 && $user->fileSize > fimConfig::$uploadMaxUserSpace)
+        if (\Fim\Config::$uploadMaxUserSpace !== -1 && $user->fileSize > \Fim\Config::$uploadMaxUserSpace)
             throw new fimError('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
 
 
@@ -113,7 +113,7 @@ switch ($requestHead['_action']) {
             $putResource = fopen("php://input", "r"); // file data is from stdin
             $fileData = ''; // The only real change is that we're getting things from stdin as opposed to from the headers. Thus, we'll just translate the two here.
 
-            while ($fileContents = fread($putResource, fimConfig::$fileUploadChunkSize)) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
+            while ($fileContents = fread($putResource, \Fim\Config::$fileUploadChunkSize)) { // Read the resource using 1KB chunks. This is slower than a higher chunk, but also avoids issues for now. It can be overridden with the config directive fileUploadChunkSize.
                 $fileData .= $fileContents;
             }
 
@@ -161,21 +161,21 @@ switch ($requestHead['_action']) {
 
 
         /* File Type Restrictions */
-        if (isset(fimConfig::$extensionChanges[$file->extension])) // Certain extensions are considered to be equivalent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
-            $file->extension = fimConfig::$extensionChanges[$fileNameParts[1]];
+        if (isset(\Fim\Config::$extensionChanges[$file->extension])) // Certain extensions are considered to be equivalent, so we only keep records for the primary one. For instance, "html" is considered to be the same as "htm" usually.
+            $file->extension = \Fim\Config::$extensionChanges[$fileNameParts[1]];
 
-        if (!in_array($file->extension, fimConfig::$allowedExtensions))
+        if (!in_array($file->extension, \Fim\Config::$allowedExtensions))
             throw new fimError('badExt', 'The filetype is forbidden, and thus the file cannot be uploaded.'); // Not allowed...
 
-        if (!isset(fimConfig::$uploadMimes[$file->extension]))
+        if (!isset(\Fim\Config::$uploadMimes[$file->extension]))
             throw new fimError('unrecExt', 'The filetype is unrecognised, and thus the file cannot be uploaded.'); // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
-        else if (fimConfig::$uploadMimes[$file->extension] !== $fileMime)
+        else if (\Fim\Config::$uploadMimes[$file->extension] !== $fileMime)
             throw new fimError('invalidFileContent', 'The upload file does not appear to be a valid file of its type.');
 
 
         /* File Size Restrictions */
         // Derived from File Type
-        $maxSize = (fimConfig::$uploadSizeLimits[$file->extension] ? fimConfig::$uploadSizeLimits[$file->extension] : 0);
+        $maxSize = (\Fim\Config::$uploadSizeLimits[$file->extension] ? \Fim\Config::$uploadSizeLimits[$file->extension] : 0);
 
         if ($file->size > $maxSize)
             throw new Exception('tooLarge', 'The file is too large to upload; the maximum size is ' . $maxSize . 'B, and the file you uploaded was ' . $file->size . '.');
@@ -251,7 +251,7 @@ switch ($requestHead['_action']) {
 
 
 /* Update Data for Errors */
-if (fimConfig::$dev) $xmlData['request'] = $request;
+if (\Fim\Config::$dev) $xmlData['request'] = $request;
 
 
 

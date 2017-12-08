@@ -85,14 +85,14 @@ class StreamDatabase implements StreamInterface {
 
 
     public function subscribe($stream, $lastId, $callback) {
-        while ($this->retries++ < \fimConfig::$serverSentMaxRetries) {
+        while ($this->retries++ < \Fim\Config::$serverSentMaxRetries) {
             foreach ($this->subscribeOnce($stream, $lastId) AS $event) {
                 if ($event['id'] > $lastId) $lastId = $event['id'];
 
                 call_user_func($callback, $event);
             }
 
-            usleep(\fimConfig::$serverSentEventsWait * 1000000);
+            usleep(\Fim\Config::$serverSentEventsWait * 1000000);
         }
 
         return [];

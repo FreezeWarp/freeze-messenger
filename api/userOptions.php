@@ -143,7 +143,7 @@ $request = fim_sanitizeGPC('p', array(
 
     'parentalFlags' => array(
         'cast' => 'list',
-        'valid' => fimConfig::$parentalFlags, // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
+        'valid' => \Fim\Config::$parentalFlags, // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
     ),
 
     'watchRooms' => array(
@@ -210,8 +210,8 @@ if ($requestHead['_action'] === 'edit') {
             elseif ($request['avatar'] === '')
                 $updateArray['avatar'] = $request['avatar'];
 
-            elseif ((fimConfig::$avatarMustMatchRegex && !preg_match(fimConfig::$avatarMustMatchRegex, $request['avatar']))
-                || (fimConfig::$avatarMustNotMatchRegex && preg_match(fimConfig::$avatarMustNotMatchRegex, $request['avatar'])))
+            elseif ((\Fim\Config::$avatarMustMatchRegex && !preg_match(\Fim\Config::$avatarMustMatchRegex, $request['avatar']))
+                || (\Fim\Config::$avatarMustNotMatchRegex && preg_match(\Fim\Config::$avatarMustNotMatchRegex, $request['avatar'])))
                 $xmlData['editUserOptions']['avatar'] = (new fimError('bannedFile', 'The avatar specified is not allowed.', null, true))->getArray();
 
             elseif (filter_var($request['avatar'], FILTER_VALIDATE_URL) === FALSE)
@@ -223,13 +223,13 @@ if ($requestHead['_action'] === 'edit') {
             else {
                 $imageData = getimagesize($request['avatar']);
 
-                if ($imageData[0] <= fimConfig::$avatarMinimumWidth || $imageData[1] <= fimConfig::$avatarMinimumHeight)
+                if ($imageData[0] <= \Fim\Config::$avatarMinimumWidth || $imageData[1] <= \Fim\Config::$avatarMinimumHeight)
                     $xmlData['editUserOptions']['avatar'] = (new fimError('smallSize', 'The avatar specified is too small.', null, true))->getArray();
 
-                elseif ($imageData[0] >= fimConfig::$avatarMaximumWidth || $imageData[1] >= fimConfig::$avatarMaximumHeight)
+                elseif ($imageData[0] >= \Fim\Config::$avatarMaximumWidth || $imageData[1] >= \Fim\Config::$avatarMaximumHeight)
                     $xmlData['editUserOptions']['avatar'] = (new fimError('bigSize', 'The avatar specified is too large.', null, true))->getArray();
 
-                elseif (!in_array($imageData[2], fimConfig::$imageTypesAvatar))
+                elseif (!in_array($imageData[2], \Fim\Config::$imageTypesAvatar))
                     $xmlData['editUserOptions']['avatar'] = (new fimError('badType', 'The avatar is not a valid image type.', null, true))->getArray();
 
                 else
@@ -253,8 +253,8 @@ if ($requestHead['_action'] === 'edit') {
             elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === false)
                 $xmlData['editUserOptions']['profile'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->getArray();
 
-            elseif ((fimConfig::$profileMustMatchRegex && !preg_match(fimConfig::$profileMustMatchRegex, $request['profile']))
-                || (fimConfig::$profileMustNotMatchRegex && preg_match(fimConfig::$profileMustNotMatchRegex, $request['profile'])))
+            elseif ((\Fim\Config::$profileMustMatchRegex && !preg_match(\Fim\Config::$profileMustMatchRegex, $request['profile']))
+                || (\Fim\Config::$profileMustNotMatchRegex && preg_match(\Fim\Config::$profileMustNotMatchRegex, $request['profile'])))
                 $xmlData['editUserOptions']['profile'] = (new fimError('bannedUrl', 'The URL specified is not allowed.', null, true))->getArray();
 
 //            elseif (!Http\CurlRequest::exists($request['profile']))
@@ -303,10 +303,10 @@ if ($requestHead['_action'] === 'edit') {
      ********* Default Formatting *******
      ************************************/
     if (isset($request['defaultFormatting'])) {
-        if (in_array('bold', $request['defaultFormatting']) && fimConfig::$defaultFormattingBold)
+        if (in_array('bold', $request['defaultFormatting']) && \Fim\Config::$defaultFormattingBold)
             $updateArray['messageFormatting'][] = 'font-weight:bold';
 
-        if (in_array('italic', $request['defaultFormatting']) && fimConfig::$defaultFormattingItalics)
+        if (in_array('italic', $request['defaultFormatting']) && \Fim\Config::$defaultFormattingItalics)
             $updateArray['messageFormatting'][] = 'font-style:italic';
     }
 
@@ -319,7 +319,7 @@ if ($requestHead['_action'] === 'edit') {
         if (isset($request[$value])) {
             $rgb = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
 
-            if (!fimConfig::${'defaultFormatting' . substr($value, 7)})
+            if (!\Fim\Config::${'defaultFormatting' . substr($value, 7)})
                 $xmlData['editUserOptions'][$value] = (new fimError('disabled', $value . ' is disabled on this server.', null, true))->getArray();
 
             elseif (count($rgb) !== 3) // Too many entries.
@@ -353,14 +353,14 @@ if ($requestHead['_action'] === 'edit') {
      ********* Default Fontface *********
      ************************************/
     if (isset($request['defaultFontface'])) {
-        if (!fimConfig::$defaultFormattingFont)
+        if (!\Fim\Config::$defaultFormattingFont)
             $xmlData['editUserOptions']['defaultFontface'] = (new fimError('disabled', 'Defaults fonts are disabled on this server.', null, true))->getArray();
 
-        else if (!isset(fimConfig::$fonts[$request['defaultFontface']]))
+        else if (!isset(\Fim\Config::$fonts[$request['defaultFontface']]))
             $xmlData['editUserOptions']['defaultFontface'] = (new fimError('noFont', 'The specified font is not recognised. A list of recognised fonts can be obtained through the getServerStatus API.', null, true))->getArray();
 
         else
-            $updateArray['messageFormatting'][] = 'font-family:' . fimConfig::$fonts[$request['defaultFontface']];
+            $updateArray['messageFormatting'][] = 'font-family:' . \Fim\Config::$fonts[$request['defaultFontface']];
     }
 
 
@@ -369,7 +369,7 @@ if ($requestHead['_action'] === 'edit') {
      *********** Parental Age ***********
      ************************************/
     if (isset($request['parentalAge'])) {
-        if (!in_array($request['parentalAge'], fimConfig::$parentalAges, true))
+        if (!in_array($request['parentalAge'], \Fim\Config::$parentalAges, true))
             $xmlData['editUserOptions']['parentalAge'] = (new fimError('badAge', 'The parental age specified is invalid. A list of valid parental ages can be obtained from the getServerStatus API.', null, true))->getArray();
 
         else
