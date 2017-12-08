@@ -60,7 +60,7 @@ switch ($_REQUEST['phase']) {
 
         /* Part 1 : Connect to the Database, Create a New Database If Needed */
 
-        $database = new fimDatabase();
+        $database = new DatabaseInstance();
         $database->setErrorLevel(E_USER_WARNING);
 
         try {
@@ -244,7 +244,7 @@ switch ($_REQUEST['phase']) {
 
         if ($forum == 'vanilla') {
             try {
-                $database = new fimDatabase($host, $port, $userName, $password, $databaseName, $driver, $prefix);
+                $database = new DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix);
                 fimConfig::$displayBacktrace = true;
 
                 $user = new fimUser(false);

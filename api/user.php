@@ -51,7 +51,7 @@ if (isset($requestHead['id'])) {
         new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
 
     try {
-        $userData = $database->getUser($requestHead['id']);
+        $userData = \Fim\Database::instance()->getUser($requestHead['id']);
     } catch (Exception $ex) {
         new fimError('idNoExist', 'The given "id" parameter does not correspond with a real user.');
     }

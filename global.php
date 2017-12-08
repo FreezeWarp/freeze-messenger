@@ -35,7 +35,6 @@ elseif ($phpVersion < 7) { // Removed outright in 5.4, may as well save a CPU cy
 require_once(__DIR__ . '/vendor/autoload.php'); // Various Functions
 
 require_once(__DIR__ . '/config.php'); // Configuration Variables
-require_once(__DIR__ . '/functions/fimDatabase.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimUser.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimRoom.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimMessage.php'); // FIM-specific Extensions
@@ -86,11 +85,9 @@ set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
 
 ////* Database Stuff *////
 
-/* TODO: the $database, $integrationDatabase, and $slaveDatabase variables are transitional */
-
 /* If the connections are the same, do not make multiple below. */
 /* Connect to the Main Database */
-if (!$database = \Fim\Database::connect(
+if (!\Fim\Database::connect(
     $dbConnect['core']['host'],
     $dbConnect['core']['port'],
     $dbConnect['core']['username'],
@@ -99,7 +96,7 @@ if (!$database = \Fim\Database::connect(
     $dbConnect['core']['driver'],
     $dbConfig['vanilla']['tablePrefix']
 )) {
-    die('Could not connect to the database: ' . $database->getLastError() . '; the application has exitted.'); // Die to prevent further execution.
+    die('Could not connect to the database: ' . \Fim\Database::instance()->getLastError() . '; the application has exitted.'); // Die to prevent further execution.
 }
 else {
     require('databaseParameters.php');
@@ -108,7 +105,7 @@ else {
 
 /* Connect to the Integration DB  */
 if ($loginConfig['method'] != 'vanilla') {
-    if (!$integrationDatabase = \Fim\DatabaseLogin::connect(
+    if (!\Fim\DatabaseLogin::connect(
         $dbConnect['integration']['host'],
         $dbConnect['integration']['port'],
         $dbConnect['integration']['username'],
@@ -117,18 +114,18 @@ if ($loginConfig['method'] != 'vanilla') {
         $dbConnect['integration']['driver'],
         $dbConfig['integration']['tablePrefix'])
     ) {
-        die('Could not connect to the integration database: ' . $database->getLastError() . '; the application has exitted.');
+        die('Could not connect to the integration database: ' . \Fim\DatabaseLogin::instance()->getLastError() . '; the application has exitted.');
     }
 }
 else {
-    $integrationDatabase = \Fim\DatabaseLogin::setInstance(\Fim\Database::instance());
+    \Fim\DatabaseLogin::setInstance(\Fim\Database::instance());
 }
 
 
 /* Connect to the DB Slave
  * This assumes external replication is set up, and the slave is a copy of the master with possible latency. (Thus, we use it when a little latency is okay.) */
 if ($dbConnect['core'] != $dbConnect['slave']) {
-    if (!$slaveDatabase = \Fim\DatabaseSlave::connect(
+    if (!\Fim\DatabaseSlave::connect(
         $dbConnect['slave']['host'],
         $dbConnect['slave']['port'],
         $dbConnect['slave']['username'],
@@ -137,11 +134,11 @@ if ($dbConnect['core'] != $dbConnect['slave']) {
         $dbConnect['slave']['driver'],
         $dbConfig['vanilla']['tablePrefix'])
     ) {
-        die('Could not connect to the slave database: ' . $database->getLastError() . '; the application has exitted.');
+        die('Could not connect to the slave database: ' . \Fim\DatabaseSlave::instance()->getLastError() . '; the application has exitted.');
     }
 }
 else {
-    $slaveDatabase = \Fim\DatabaseSlave::setInstance(\Fim\Database::instance());
+    \Fim\DatabaseSlave::setInstance(\Fim\Database::instance());
 }
 
 
@@ -165,7 +162,7 @@ $generalCache->loadFimConfig();
 
 
 // Log queries, if enabled.
-$database->queryLogToFile = (fimConfig::$logQueries ? fimConfig::$logQueriesFile : false);
+\Fim\Database::instance()->queryLogToFile = (fimConfig::$logQueries ? fimConfig::$logQueriesFile : false);
 
 
 // Cache object instances at shutdown.

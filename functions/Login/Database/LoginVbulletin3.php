@@ -57,7 +57,7 @@ class LoginVbulletin3 extends LoginDatabase {
     }
 
     public function setUser() {
-        global $loginConfig, $database;
+        global $loginConfig;
 
         $vbUser = $this->loginFactory->database->select([
             "{$this->loginFactory->database->sqlPrefix}user" => 'userid, username, password, salt, displaygroupid, usergroupid, membergroupids, email, joindate, usertitle, posts, lastvisit',
@@ -142,29 +142,29 @@ class LoginVbulletin3 extends LoginDatabase {
             /* Create User Groups */
             $groupNames = [];
 
-            $database->autoQueue(true);
+            \Fim\Database::instance()->autoQueue(true);
             foreach ($vbUserGroups AS $userGroup) {
                 $groupNames[] = $userGroup['title'];
-                @$database->createSocialGroup($userGroup['title']);
+                @\Fim\Database::instance()->createSocialGroup($userGroup['title']);
             }
 
             foreach ($vbSocialGroups AS $socialGroup) {
                 $groupNames[] = 'Social Group: ' . $socialGroup['name'];
-                @$database->createSocialGroup('Social Group: ' . $socialGroup['name'], $loginConfig['url'] . '/image.php?groupid=' . $socialGroup['groupid']);
+                @\Fim\Database::instance()->createSocialGroup('Social Group: ' . $socialGroup['name'], $loginConfig['url'] . '/image.php?groupid=' . $socialGroup['groupid']);
             }
-            @$database->autoQueue(false);
+            @\Fim\Database::instance()->autoQueue(false);
 
 
             /* Join User Groups */
-            $dbGroupIds = $database->select([
+            $dbGroupIds = \Fim\Database::instance()->select([
                 'socialGroups' => 'id, name'
-            ], ['name' => $database->in($groupNames)])->getColumnValues('id');
+            ], ['name' => \Fim\Database::instance()->in($groupNames)])->getColumnValues('id');
 
-            $database->autoQueue(true);
+            \Fim\Database::instance()->autoQueue(true);
             foreach ($dbGroupIds AS $groupId) {
-                @$database->enterSocialGroup($groupId, $this->loginFactory->user);
+                @\Fim\Database::instance()->enterSocialGroup($groupId, $this->loginFactory->user);
             }
-            @$database->autoQueue(false);
+            @\Fim\Database::instance()->autoQueue(false);
 
 
 
@@ -185,14 +185,14 @@ class LoginVbulletin3 extends LoginDatabase {
         ))->getAsArray(true);
         //var_dump($smilies); die();
 
-        $database->autoQueue(true);
+        \Fim\Database::instance()->autoQueue(true);
         foreach ($smilies AS $smilie) {
-            @$database->insert("{$database->sqlPrefix}emoticons", [
+            @\Fim\Database::instance()->insert("{\Fim\Database::instance()->sqlPrefix}emoticons", [
                 'emoticonText' => $smilie['emoticonText'],
                 'emoticonFile' => "{$loginConfig['url']}/{$smilie['emoticonFile']}"
             ]);
         }
-        @$database->autoQueue(false);
+        @\Fim\Database::instance()->autoQueue(false);
     }
 
 }

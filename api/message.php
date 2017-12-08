@@ -85,7 +85,7 @@ $requestHead = fim_sanitizeGPC('g', [
 
 
 /* Early Validation */
-if (!($room = new fimRoom($requestHead['roomId']))->exists() || !($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
+if (!($room = new fimRoom($requestHead['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
     new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.'); // Make sure we have a valid room.
 
 if (isset($requestHead['id'])) {
@@ -93,7 +93,7 @@ if (isset($requestHead['id'])) {
         new fimError('idExtra', 'Parameter ID should not be used with POST/create requests.');
 
     try {
-        $message = $database->getMessage($room, $requestHead['id']); // Get message object.
+        $message = \Fim\Database::instance()->getMessage($room, $requestHead['id']); // Get message object.
     } catch (fimErrorThrown $ex) { // If getMessage() fails, it usually indicates in invalid ID.
         new fimError('idNoExist', 'The given "id" parameter does not correspond with a real message.');
     }

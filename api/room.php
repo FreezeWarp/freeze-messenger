@@ -112,9 +112,9 @@ if (isset($requestHead['id'])) {
         new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
 
     try {
-        $room = $database->getRoom($requestHead['id']);
+        $room = \Fim\Database::instance()->getRoom($requestHead['id']);
 
-        if (!($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)) {
+        if (!(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)) {
             new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.');
         }
     } catch (Exception $ex) {

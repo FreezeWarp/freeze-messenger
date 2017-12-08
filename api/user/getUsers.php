@@ -76,7 +76,7 @@ $request = fim_sanitizeGPC('g', [
     ]
 ]);
 
-$database->accessLog('getUsers', $request);
+\Fim\Database::instance()->accessLog('getUsers', $request);
 
 
 
@@ -104,7 +104,7 @@ else {
         $request['bannedStatus'] = 'unbanned';
 
 
-    $users = $slaveDatabase->getUsers(
+    $users = \Fim\DatabaseSlave::instance()->getUsers(
         fim_arrayFilterKeys($request, ['userIds', 'userNames', 'bannedStatus']),
         [$request['sort'] => 'asc'],
         10,

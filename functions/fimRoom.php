@@ -14,11 +14,14 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+use \Fim\DatabaseInstance;
+use \Fim\DynamicObject;
+
 /**
  * Class fimRoom
  * The data for a room object.
  */
-class fimRoom extends \Fim\DynamicObject {
+class fimRoom extends DynamicObject {
 
     /**
      * The room is official, and will receive special prominence in room searches.
@@ -397,9 +400,7 @@ class fimRoom extends \Fim\DynamicObject {
      * @see dynamicObject::exists()
      */
     public function exists() : bool {
-        global $database;
-
-        return $this->exists = ($this->exists || ($this->isPrivateRoom() ? $this->arePrivateRoomMembersValid() : (count($database->getRooms([
+        return $this->exists = ($this->exists || ($this->isPrivateRoom() ? $this->arePrivateRoomMembersValid() : (count(\Fim\Database::instance()->getRooms([
             'roomIds' => $this->id,
         ])->getAsArray(false)) > 0)));
     }
@@ -547,15 +548,10 @@ class fimRoom extends \Fim\DynamicObject {
      * @return array
      */
     public function getCensorWords() {
-        /**
-         * @var fimDatabase
-         */
-        global $slaveDatabase;
-
         if ($this->censorWordsArray !== null)
             return $this->censorWordsArray;
 
-        return $this->censorWordsArray = $slaveDatabase->getCensorWordsActive($this->id)->getAsArray(true);
+        return $this->censorWordsArray = \Fim\DatabaseSlave::instance()->getCensorWordsActive($this->id)->getAsArray(true);
     }
 
     /**
@@ -649,22 +645,20 @@ class fimRoom extends \Fim\DynamicObject {
             return;
 
         // TODO
-        elseif ($users === fimDatabase::decodeError) {
-            global $database;
-            $this->watchedByUsers = $database->getWatchRoomUsers($this->id);
+        elseif ($users === DatabaseInstance::decodeError) {
+            $this->watchedByUsers = \Fim\Database::instance()->getWatchRoomUsers($this->id);
 
-            $database->update($database->sqlPrefix . "rooms", [
+            \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "rooms", [
                 "watchedByUsers" => $this->watchedByUsers
             ], [
                 "id" => $this->id,
             ]);
         }
 
-        elseif ($users === fimDatabase::decodeExpired) {
-            global $database;
-            $this->watchedByUsers = $database->getWatchRoomUsers($this->id);
+        elseif ($users === DatabaseInstance::decodeExpired) {
+            $this->watchedByUsers = \Fim\Database::instance()->getWatchRoomUsers($this->id);
 
-            $database->update($database->sqlPrefix . "rooms", [
+            \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "rooms", [
                 "watchedByUsers" => $this->watchedByUsers
             ], [
                 "id" => $this->id,
@@ -729,13 +723,11 @@ class fimRoom extends \Fim\DynamicObject {
      */
     protected function getColumns(array $columns) : bool
     {
-        global $database;
-
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->getColumns on private room.');
 
         elseif (count($columns) > 0)
-            return $this->populateFromArray($database->where(array('id' => $this->id))->select(array($database->sqlPrefix . 'rooms' => array_merge(array('id'), $columns)))->getAsArray(false));
+            return $this->populateFromArray(\Fim\Database::instance()->where(array('id' => $this->id))->select(array(\Fim\Database::instance()->sqlPrefix . 'rooms' => array_merge(array('id'), $columns)))->getAsArray(false));
 
         else
             return true;
@@ -790,8 +782,6 @@ class fimRoom extends \Fim\DynamicObject {
 
     /* TODO: move to DB, I think? */
     public function changeTopic($topic) {
-        global $database;
-
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->changeTopic on private room.');
         elseif (fimConfig::$disableTopic)
@@ -849,8 +839,6 @@ class fimRoom extends \Fim\DynamicObject {
      */
     public function setDatabase(array $roomParameters)
     {
-        global $database;
-
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->setDatabase on private rooms.');
 
@@ -861,31 +849,35 @@ class fimRoom extends \Fim\DynamicObject {
         $this->populateFromArray($roomParameters);
 
         if ($this->id) {
-            $database->startTransaction();
+            \Fim\Database::instance()->startTransaction();
 
-            if ($existingRoomData = $database->getRooms([
+            if ($existingRoomData = \Fim\Database::instance()->getRooms([
                 'roomIds' => [$this->id],
-                'columns' => explode(', ', $database->roomHistoryColumns), // TODO: uh... shouldn't roomHistoryColumns be array?
+                'columns' => explode(', ', \Fim\DatabaseInstance::roomHistoryColumns), // TODO: uh... shouldn't roomHistoryColumns be array?
             ])->getAsArray(false)) {
-                $database->insert($database->sqlPrefix . "roomHistory", fim_arrayFilterKeys(fim_removeNullValues($existingRoomData), ['roomId', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge']));
+                \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "roomHistory", fim_arrayFilterKeys(fim_removeNullValues($existingRoomData), ['roomId', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge']));
 
-                $return = $database->update($database->sqlPrefix . "rooms", array_merge(fim_arrayFilterKeys((array)$this, ['name', 'topic', 'options', 'defaultPermissions', 'parentalFlags', 'parentalAge']), $roomParameters), array(
-                    'id' => $this->id,
-                ));
+                $return = \Fim\Database::instance()->update(
+                    \Fim\Database::instance()->sqlPrefix . "rooms",
+                    array_merge(fim_arrayFilterKeys((array) $this, ['name', 'topic', 'options', 'defaultPermissions', 'parentalFlags', 'parentalAge']), $roomParameters),
+                    array(
+                        'id' => $this->id,
+                    )
+                );
 
                 if (isset($roomParameters['defaultPermissions'])) {
-                    $database->deletePermissionsCache($this->id);
+                    \Fim\Database::instance()->deletePermissionsCache($this->id);
                 }
             }
 
-            $database->endTransaction();
+            \Fim\Database::instance()->endTransaction();
 
             return $return;
         }
 
         else {
-            $database->insert($database->sqlPrefix . "rooms", $roomParameters);
-            return $this->id = $database->getLastInsertId();
+            \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "rooms", $roomParameters);
+            return $this->id = \Fim\Database::instance()->getLastInsertId();
         }
     }
 }

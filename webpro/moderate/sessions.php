@@ -28,7 +28,7 @@ else {
     if ($user->hasPriv('modPrivs')) {
         switch ($request['do2']) {
             case 'view':
-            $sessions = $database->getSessions()->getAsArray(true);
+            $sessions = \Fim\Database::instance()->getSessions()->getAsArray(true);
 
             $rows = '';
 

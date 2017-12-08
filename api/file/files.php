@@ -52,7 +52,7 @@ $request = fim_sanitizeGPC('g', array(
     ]
 ));
 
-$database->accessLog('getFiles', $request);
+\Fim\Database::instance()->accessLog('getFiles', $request);
 
 
 
@@ -62,18 +62,17 @@ $xmlData['files'] = array();
 
 
 /* Get Uploads from Database */
-$files = $database->getFiles([
+$files = \Fim\DatabaseSlave::instance()->getFiles([
     'fileIds' => $request['fileIds'],
     'userIds' => $request['userIds']
 ], ['id' => 'asc'], 10, $request['page'])->getAsObjects('\\Fim\\File');
-//var_dump($files->getAsArray(true));
 
 
 /* Start Processing */
 foreach ($files AS $file) {
     // Only show if the user has permission.
     if ($file->room && $file->user->id != $user->id) { /* TODO: Test */
-        if (!($database->hasPermission($user, $file->room) & fimRoom::ROOM_PERMISSION_VIEW)) continue;
+        if (!(\Fim\Database::instance()->hasPermission($user, $file->room) & fimRoom::ROOM_PERMISSION_VIEW)) continue;
     }
 
     $xmlData['files']['file ' . $file->id] = fim_objectArrayFilterKeys($file, ['name', 'size', 'container', 'sha256Hash', 'webLocation']);

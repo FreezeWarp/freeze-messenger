@@ -23,22 +23,6 @@ use Cache\CacheFactory;
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 class fimCache extends CacheFactory {
-    protected $slaveDatabase = false;
-
-
-
-    /**
-     * @param fimDatabase $database
-     */
-    function __construct($database) {
-        if (!$database) {
-            throw new Exception('No database provided');
-        }
-
-        $this->slaveDatabase = $database;
-    }
-
-
     /**
      * Return data in $index if it exists, otherwise invoke $callbackToCreate to generate the data, and then store and return it.
      *
@@ -68,7 +52,7 @@ class fimCache extends CacheFactory {
 
         if (!$disableConfig) {
             $configData = $this->getGeneric('fim_config', function() {
-                return $this->slaveDatabase->getConfigurations()->getAsArray(true);
+                return \Fim\DatabaseSlave::instance()->getConfigurations()->getAsArray(true);
             });
 
             foreach ($configData AS $configDatabaseRow) {
@@ -96,8 +80,8 @@ class fimCache extends CacheFactory {
      */
     public function getEmoticons() {
         return $this->getGeneric('fim_emoticons', function() {
-            return $this->slaveDatabase->select(array(
-                $this->slaveDatabase->sqlPrefix . "emoticons" => 'emoticonText, emoticonFile'
+            return \Fim\DatabaseSlave::instance()->select(array(
+                \Fim\DatabaseSlave::instance()->sqlPrefix . "emoticons" => 'emoticonText, emoticonFile'
             ))->getAsArray(true);
         });
     }

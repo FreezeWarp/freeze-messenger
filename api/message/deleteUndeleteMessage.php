@@ -17,6 +17,7 @@
 /**
  * Delete or undelete a message.
  *
+ * @global $message fimMessage
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
@@ -30,14 +31,14 @@ if (!defined('API_INMESSAGE'))
 
 
 if (($message->user->id = $user->id && $user->hasPriv('editOwnPosts'))
-    || ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE)) {
+    || (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE)) {
 
     if ($requestHead['_action'] == 'delete')
         $message->setDeleted(true);
     else
         $message->setDeleted(false);
 
-    $database->updateMessage($message);
+    \Fim\Database::instance()->updateMessage($message);
 }
 
 else

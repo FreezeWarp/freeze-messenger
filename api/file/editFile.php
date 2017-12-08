@@ -69,7 +69,7 @@ $request = fim_sanitizeGPC(
         ),
     )
 );
-$database->accessLog('editFile', $request);
+\Fim\Database::instance()->accessLog('editFile', $request);
 
 
 
@@ -80,13 +80,13 @@ $xmlData = array(
 
 
 
-$database->startTransaction();
+\Fim\Database::instance()->startTransaction();
 
 
 
 /* Start Processing */
 switch ($requestHead['_action']) {
-case 'edit': case 'create':
+    case 'edit': case 'create':
     if ($requestHead['_action'] === 'create') {
         /* Get Room Data, if Applicable */
         if ($request['roomId']) $roomData = fimRoomFactory::getFromId($request['roomId']);
@@ -97,11 +97,11 @@ case 'edit': case 'create':
             throw new fimError('uploadsDisabled', 'Uploads are disabled on this FreezeMessenger server.');
         if (!$roomData && !fimConfig::$allowOrphanFiles)
             throw new fimError('noOrphanFiles', 'Files cannot be orphaned on this FreezeMessenger server. You must post them to a room.');
-        if (fimConfig::$uploadMaxFiles !== -1 && $database->getCounter('uploads') > fimConfig::$uploadMaxFiles)
+        if (fimConfig::$uploadMaxFiles !== -1 && \Fim\Database::instance()->getCounterValue('uploads') > fimConfig::$uploadMaxFiles)
             throw new fimError('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
         if (fimConfig::$uploadMaxUserFiles !== -1 && $user->fileCount > fimConfig::$uploadMaxUserFiles)
             throw new fimError('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
-        if (fimConfig::$uploadMaxSpace !== -1 && $database->getCounter('uploadSize') > fimConfig::$uploadMaxSpace)
+        if (fimConfig::$uploadMaxSpace !== -1 && \Fim\Database::instance()->getCounterValue('uploadSize') > fimConfig::$uploadMaxSpace)
             throw new fimError('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
         if (fimConfig::$uploadMaxUserSpace !== -1 && $user->fileSize > fimConfig::$uploadMaxUserSpace)
             throw new fimError('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
@@ -182,14 +182,14 @@ case 'edit': case 'create':
 
 
         /* Get Files with Existing, Matching Sha256 */
-        $prefile = $database->getFiles(array(
+        $prefile = \Fim\Database::instance()->getFiles(array(
             'sha256hashes' => array($file->sha256hash)
         ))->getAsArray(false);
 
 
         /* Upload or Redirect, if Sha256 Match Found */
         if (count($prefile) > 0) { // The odds of a collision are astronomically low unless the server is handling an absolutely massive number of files. ...We could make the effort to detect the collision by actually comparing file contents, but it hardly seems worth the processing power.
-            if ($roomData) $database->storeMessage(new fimMessage([
+            if ($roomData) \Fim\Database::instance()->storeMessage(new fimMessage([
                 'room' => $roomData,
                 'user' => $user,
                 'text'    => $file->webLocation,
@@ -197,13 +197,13 @@ case 'edit': case 'create':
                 ]));
         }
         else {
-            $database->storeFile($file, $user, $roomData);
+            \Fim\Database::instance()->storeFile($file, $user, $roomData);
         }
 
         $xmlData['response']['webLocation'] = $file->webLocation;
     }
     elseif ($requestHead['_action'] === 'edit') {
-        /*      $fileData = $database->getFile($request['fileId']);
+        /*      $fileData = \Fim\Database::instance()->getFile($request['fileId']);
 
             if (!$fileData) {
               $errStr = 'invalidFile';
@@ -215,53 +215,38 @@ case 'edit': case 'create':
           }
 
           if ($parentalFileId > 0) {
-            $database->update("{$sqlPrefix}files", array(
+            \Fim\Database::instance()->update("{$sqlPrefix}files", array(
               'parentalAge' => (int) $request['parentalAge'],
               'parentalFlags' => implode(',', $request['parentalFlags']),
             ), array(
               'fileId' => $request['fileId'],
             )); TODO */
     }
-break;
+    break;
 
     // TODO
-case 'delete':
-    $fileData = $database->getFile($request['fileId']);
+    case 'delete': case 'undelete':
+        $fileData = \Fim\DatabaseSlave::instance()->getFiles(['fileIds' => $request['fileId']]);
 
-    if ($user->hasPriv('modFiles') || $user->id == $fileData['userId']) {
-        $database->modLog('deleteImage', $request['fileId']);
+        if ($user->hasPriv('modFiles') || $user->id == $fileData['userId']) {
+            \Fim\Database::instance()->modLog('deleteImage', $request['fileId']);
 
-        $database->update("{$sqlPrefix}files", array(
-            'deleted' => 1,
-        ), array(
-            'fileId' => $request['fileId'],
-        ));
-    }
-    else throw new Exception('noPerm');
-break;
+            \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "files", array(
+                'deleted' => ($requestHead['_action'] == 'delete' ? 1 : 0)
+            ), array(
+                'fileId' => $request['fileId'],
+            ));
+        }
+        else new fimError('noPerm');
+    break;
 
-case 'undelete':
-    $fileData = $database->getFile($request['fileId']);
+    case 'flag': // TODO: Allows users to flag images that are not appropriate for a room.
 
-    if ($user->hasPriv('modFiles')) {
-        modLog('undeleteImage', $request['fileId']);
-
-        $database->update("{$sqlPrefix}files", array(
-            'deleted' => 0,
-        ), array(
-            'fileId' => $request['fileId'],
-        ));
-    }
-    else throw new Exception('noPerm');
-break;
-
-case 'flag': // TODO: Allows users to flag images that are not appropriate for a room.
-
-break;
+    break;
 }
 
 
-$database->endTransaction();
+\Fim\Database::instance()->endTransaction();
 
 
 

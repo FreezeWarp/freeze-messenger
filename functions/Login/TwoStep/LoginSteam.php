@@ -26,7 +26,7 @@ class LoginSteam extends LoginTwoStep {
     }
 
     public function setUser() {
-        global $loginConfig, $database;
+        global $loginConfig;
 
         if ($this->client->validate()) {
             $matches = [];
@@ -80,19 +80,19 @@ class LoginSteam extends LoginTwoStep {
                             $groupNames[] = 'Steam Players of ' . $game['name'];
 
                             // create group if doesn't exist
-                            @$database->createSocialGroup('Steam Players of ' . $game['name']);
+                            @\Fim\Database::instance()->createSocialGroup('Steam Players of ' . $game['name']);
                         }
                     }
 
-                    $dbGroupIds = $database->select([
+                    $dbGroupIds = \Fim\Database::instance()->select([
                         'socialGroups' => 'id, name'
-                    ], ['name' => $database->in($groupNames)])->getColumnValues('id');
+                    ], ['name' => \Fim\Database::instance()->in($groupNames)])->getColumnValues('id');
 
-                    $database->autoQueue(true);
+                    \Fim\Database::instance()->autoQueue(true);
                     foreach ($dbGroupIds AS $groupId) {
-                        @$database->enterSocialGroup($groupId, $this->loginFactory->user);
+                        @\Fim\Database::instance()->enterSocialGroup($groupId, $this->loginFactory->user);
                     }
-                    @$database->autoQueue(false);
+                    @\Fim\Database::instance()->autoQueue(false);
                 }
 
 
@@ -113,7 +113,7 @@ class LoginSteam extends LoginTwoStep {
                         ];
                     }
 
-                    $dbFriends = $database->select([
+                    $dbFriends = \Fim\Database::instance()->select([
                         'users' => 'id, name, integrationId, integrationMethod'
                     ], ['either' => $friendMatches])->getColumnValues('id');
                     $this->loginFactory->user->editList('friendedUsers', $dbFriends, 'create');

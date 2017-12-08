@@ -24,7 +24,7 @@ $request = fim_sanitizeGPC('p', array(
         'cast' => 'roomId',
     ),
 ));
-$database->accessLog('markMessageRead', $request);
+\Fim\Database::instance()->accessLog('markMessageRead', $request);
 
 
 /* Data Predefine */
@@ -33,7 +33,7 @@ $xmlData = array(
     ),
 );
 
-$database->markMessageRead($request['roomId'], $user->id);
+\Fim\Database::instance()->markMessageRead($request['roomId'], $user->id);
 
 
 /* Output Data */

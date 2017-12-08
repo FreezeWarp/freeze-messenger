@@ -17,6 +17,7 @@
 /**
  * Creates, Edits, or Deletes a Room
  *
+ * @global    $room fimRoom
  * @package   fim3
  * @version   3.0
  * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
@@ -38,8 +39,6 @@ if (!defined('API_INROOM'))
  */
 function alterRoomPermissions($roomId, $userArray, $groupArray)
 {
-    global $database;
-
     foreach (['user' => $userArray, 'group' => $groupArray] AS $attribute => $array) {
         foreach ((array)$array AS $code => $permissionsArray) {
             $operation = substr($code, 0, 1); // The first character of the code is going to be either '+', '-', or '*', representing which action we are taking.
@@ -48,21 +47,21 @@ function alterRoomPermissions($roomId, $userArray, $groupArray)
             $permissionsField = fimRoom::getPermissionsField($permissionsArray);
 
             if ($attribute === 'user')
-                $databasePermissionsField = $database->getPermissionsField($roomId, $param);
+                $databasePermissionsField = \Fim\Database::instance()->getPermissionsField($roomId, $param);
             elseif ($attribute === 'group')
-                $databasePermissionsField = $database->getPermissionsField($roomId, [], $param);
+                $databasePermissionsField = \Fim\Database::instance()->getPermissionsField($roomId, [], $param);
 
             if ($databasePermissionsField === -1) $databasePermissionsField = 0;
 
             switch ($operation) {
                 case '+':
-                    @$database->setPermission($roomId, $attribute, $param, $databasePermissionsField | $permissionsField);
+                    @\Fim\Database::instance()->setPermission($roomId, $attribute, $param, $databasePermissionsField | $permissionsField);
                 break; // Add new permissions to any existing permissions.
                 case '-':
-                    $database->setPermission($roomId, $attribute, $param, $databasePermissionsField & ~$permissionsField);
+                    \Fim\Database::instance()->setPermission($roomId, $attribute, $param, $databasePermissionsField & ~$permissionsField);
                 break; // Remove permissions from any existing permissions.
                 case '*':
-                    $database->setPermission($roomId, $attribute, $param, $permissionsField);
+                    \Fim\Database::instance()->setPermission($roomId, $attribute, $param, $permissionsField);
                 break; // Replace permissions.
             }
         }
@@ -116,12 +115,12 @@ $request = fim_sanitizeGPC('p', [
     ],
 ]);
 
-$database->accessLog('editRoom', $request);
+\Fim\Database::instance()->accessLog('editRoom', $request);
 
 
 
 /* Start Processing */
-$database->startTransaction();
+\Fim\Database::instance()->startTransaction();
 
 switch ($requestHead['_action']) {
     case 'create':
@@ -143,7 +142,7 @@ switch ($requestHead['_action']) {
             elseif (!$user->hasPriv('modRooms') && ((time() - $user->joinDate / (60 * 60 * 24 * 365)) * $user->ownedRooms) >= fimConfig::$userRoomMaximumPerYear)
                 new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for the age of your account. You may eventually be allowed to create additional rooms.');
 
-            elseif ($slaveDatabase->getRooms(['roomNames' => [$request['name']]])->getCount() > 0)
+            elseif (\Fim\DatabaseSlave::instance()->getRooms(['roomNames' => [$request['name']]])->getCount() > 0)
                 new fimError('nameTaken', 'A room with the name specified already exists.');
 
             else
@@ -158,7 +157,7 @@ switch ($requestHead['_action']) {
                     new fimError('nameExtra', 'The room\'s name cannot be edited except by administrators.');
 
                 elseif ($request['name'] != $room->name
-                    && $slaveDatabase->getRooms(['roomNames' => [$request['name']]])->getCount() > 0)
+                    && \Fim\DatabaseSlave::instance()->getRooms(['roomNames' => [$request['name']]])->getCount() > 0)
                     new fimError('nameTaken', 'The room name specified already belongs to another room.');
             }
 
@@ -187,19 +186,19 @@ switch ($requestHead['_action']) {
 
         // Handle Room Properties
         if ($requestHead['_action'] === 'create' ||
-            ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_PROPERTIES)) {
+            (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_PROPERTIES)) {
             $room->setDatabase(array_merge(
                 fim_arrayFilterKeys($request, ['name', 'parentalFlags', 'parentalAge', 'defaultPermissions', 'options'])
             ));
 
             if (isset($request['censorLists']))
-                $database->setCensorLists($room->id, $request['censorLists']);
+                \Fim\Database::instance()->setCensorLists($room->id, $request['censorLists']);
         }
 
 
         // Handle Room Grants
         if ($requestHead['_action'] === 'create' ||
-            ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_GRANT)) {
+            (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_GRANT)) {
             alterRoomPermissions($room->id, $request['userPermissions'], $request['groupPermissions']);
         }
     break;
@@ -216,7 +215,7 @@ switch ($requestHead['_action']) {
     break;
 }
 
-$database->endTransaction();
+\Fim\Database::instance()->endTransaction();
 
 
 /* Output Data */

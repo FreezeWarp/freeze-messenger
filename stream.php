@@ -59,10 +59,10 @@ require('global.php');
     }
 
     if ($request['streamType'] === 'room') {
-        if (!($database->hasPermission($user, new fimRoom($request['queryId'])) & fimRoom::ROOM_PERMISSION_VIEW))
+        if (!(\Fim\Database::instance()->hasPermission($user, new fimRoom($request['queryId'])) & fimRoom::ROOM_PERMISSION_VIEW))
             new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
-        $database->markMessageRead($request['queryId'], $user->id);
+        \Fim\Database::instance()->markMessageRead($request['queryId'], $user->id);
     }
     elseif ($request['streamType'] === 'user') {
         $request['queryId'] = $user->id;

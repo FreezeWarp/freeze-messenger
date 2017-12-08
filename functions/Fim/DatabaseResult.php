@@ -1,8 +1,14 @@
 <?php
 
-use Database\DatabaseResult;
+namespace Fim;
 
-class fimDatabaseResult extends DatabaseResult {
+use \fimRoom;
+use \fimRoomFactory;
+use \fimUser;
+use \fimUserFactory;
+use \fimMessage;
+
+class DatabaseResult extends \Database\DatabaseResult {
     /**
      * @return fimRoom[]
      *
@@ -48,28 +54,6 @@ class fimDatabaseResult extends DatabaseResult {
      */
     function getAsUser() : fimUser {
         return fimUserFactory::getFromData($this->getAsArray(false));
-    }
-
-
-    /**
-     * @return fimGroup[]
-     */
-    function getAsGroups() : array {
-        $groups = $this->getAsArray('groupId');
-        $return = array();
-
-        foreach ($groups AS $group) {
-            $return[] = fimGroupFactory::getFromData($group);
-        }
-
-        return $return;
-    }
-
-    /**
-     * @return fimGroup
-     */
-    function getAsGroup() : fimGroup {
-        return fimGroupFactory::getFromData($this->getAsArray(false));
     }
 
 

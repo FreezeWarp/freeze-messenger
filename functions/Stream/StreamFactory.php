@@ -31,6 +31,7 @@ class StreamFactory {
      * @var StreamInterface The currently in-use Stream instance.
      */
     private static $instance;
+
     /**
      * @var StreamInterface A secondary DatabaseStream instance, used for the initial request in most implementors.
      */
@@ -81,8 +82,7 @@ class StreamFactory {
     }
 
     public static function getDatabaseInstance() : StreamDatabase {
-        global $database;
-        return StreamFactory::$databaseInstance = new StreamDatabase($database);
+        return StreamFactory::$databaseInstance = new StreamDatabase(\Fim\Database::instance());
     }
 
     public static function publish($stream, $eventName, $data) {

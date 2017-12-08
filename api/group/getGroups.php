@@ -53,7 +53,7 @@ $request = fim_sanitizeGPC('g', [
     ],
 ]);
 
-$database->accessLog('getGroups', $request);
+\Fim\Database::instance()->accessLog('getGroups', $request);
 
 
 /* Data Predefine */
@@ -68,7 +68,7 @@ if (isset($groupData)) { // From api/user.php
     $groups = [$groupData];
 }
 else {
-    $groups = $slaveDatabase->getGroups(
+    $groups = \Fim\DatabaseSlave::instance()->getGroups(
         fim_arrayFilterKeys($request, ['groupIds', 'groupNames']),
         [$request['sort'] => 'asc']
     )->getAsArray(true);

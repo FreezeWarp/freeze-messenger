@@ -28,7 +28,7 @@ else {
     if ($user->hasPriv('modPrivs')) {
         switch ($request['do2']) {
             case 'view':
-            $users = $database->getUsers(array(
+            $users = \Fim\Database::instance()->getUsers(array(
                  'hasPrivs' => array(fimUser::ADMIN_CENSOR, fimUser::ADMIN_FILES, fimUser::ADMIN_GRANT, fimUser::ADMIN_PROTECTED, fimUser::ADMIN_ROOMS, fimUser::ADMIN_USERS, fimUser::ADMIN_VIEW_PRIVATE),
             ))->getAsUsers();
 

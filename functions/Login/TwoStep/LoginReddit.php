@@ -47,8 +47,6 @@ class LoginReddit extends LoginTwoStep {
     }
 
     public function setUser() {
-        global $database;
-
         if (!session_id())
             session_start();
 
@@ -101,19 +99,19 @@ class LoginReddit extends LoginTwoStep {
 
             foreach ($subscriptions['data'] AS $subscription) {
                 $subscriptionNames[] = 'Subscribers of /r/' . $subscription['sr'];
-                @$database->createSocialGroup('Subscribers of /r/' . $subscription['sr']);
+                @\Fim\Database::instance()->createSocialGroup('Subscribers of /r/' . $subscription['sr']);
             }
 
 
-            $dbGroupIds = $database->select([
+            $dbGroupIds = \Fim\Database::instance()->select([
                 'socialGroups' => 'id, name'
-            ], ['name' => $database->in($subscriptionNames)])->getColumnValues('id');
+            ], ['name' => \Fim\Database::instance()->in($subscriptionNames)])->getColumnValues('id');
 
-            $database->autoQueue(true);
+            \Fim\Database::instance()->autoQueue(true);
             foreach ($dbGroupIds AS $groupId) {
-                @$database->enterSocialGroup($groupId, $this->loginFactory->user);
+                @\Fim\Database::instance()->enterSocialGroup($groupId, $this->loginFactory->user);
             }
-            @$database->autoQueue(false);
+            @\Fim\Database::instance()->autoQueue(false);
         }
     }
 }

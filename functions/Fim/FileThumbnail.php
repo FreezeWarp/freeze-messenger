@@ -17,7 +17,6 @@
 namespace Fim;
 
 use \Exception;
-use \fimDatabaseResult;
 
 class FileThumbnail extends File {
     // Thumbnails only
@@ -28,7 +27,7 @@ class FileThumbnail extends File {
 
     public function __construct($fileData) {
         // When working with an existing file row, we require that all (almost) indexes be present.
-        if ($fileData instanceof fimDatabaseResult) {
+        if ($fileData instanceof \Database\DatabaseResult) {
             $fileData = $fileData->getAsArray(false);
         }
         // When creating a new file.

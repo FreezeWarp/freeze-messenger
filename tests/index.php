@@ -60,10 +60,10 @@ require_once('./DatabaseSQL1.php');
 require_once('./DatabaseSQL2.php');
 
 echo "Creating Object...<br />";
-$database = new fimDatabase();
+$database = new DatabaseInstance();
 
 echo "Performing Database Connection...<br />";
-$database = new fimDatabase($dbConnect['core']['host'],
+$database = new DatabaseInstance($dbConnect['core']['host'],
     $dbConnect['core']['port'],
     $dbConnect['core']['username'],
     $dbConnect['core']['password'],

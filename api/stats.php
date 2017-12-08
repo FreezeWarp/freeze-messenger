@@ -52,7 +52,7 @@ $request = fim_sanitizeGPC('g', array(
         'default' => 0
     ]
 ));
-$database->accessLog('getStats', $request);
+\Fim\Database::instance()->accessLog('getStats', $request);
 
 
 
@@ -65,12 +65,12 @@ $xmlData = array(
 
 /* Start Processing */
 
-if (!($room = fimRoomFactory::getFromId($request['roomId']))->exists() || !($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)) {
+if (!($room = fimRoomFactory::getFromId($request['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)) {
     new fimError('roomIdNoExist', 'The given "roomId" parameter does not correspond with a real room.');
 }
 
 else {
-    $totalPosts = $database->getPostStats(array(
+    $totalPosts = \Fim\DatabaseSlave::instance()->getPostStats(array(
         'roomId' => $request['roomId'],
     ), array('messages' => 'desc', 'roomId' => 'asc', 'userId' => 'asc'), 10, $request['page'])->getAsArray(['userId']);
 

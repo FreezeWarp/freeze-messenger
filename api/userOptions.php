@@ -174,7 +174,7 @@ $request = fim_sanitizeGPC('p', array(
         'valid' => [fimUser::USER_PRIVACY_ALLOWALL, fimUser::USER_PRIVACY_BLOCKALL, fimUser::USER_PRIVACY_FRIENDSONLY],
     )
 ));
-$database->accessLog('editUserOptions', $request);
+\Fim\Database::instance()->accessLog('editUserOptions', $request);
 
 
 /* Data Predefine */
@@ -290,7 +290,7 @@ if ($requestHead['_action'] === 'edit') {
         if (!$defaultRoom->exists())
             $xmlData['editUserOptions']['defaultRoom'] = (new fimError('invalidRoom', 'The room specified does not exist.', null, true))->getArray();
 
-        elseif (!($database->hasPermission($user, $defaultRoom) & fimRoom::ROOM_PERMISSION_VIEW))
+        elseif (!(\Fim\Database::instance()->hasPermission($user, $defaultRoom) & fimRoom::ROOM_PERMISSION_VIEW))
             $xmlData['editUserOptions']['defaultRoom'] = (new fimError('noPerm', 'You do not have permission to view the room you are trying to default to.', null, true))->getArray();
 
         else
@@ -415,7 +415,7 @@ if (count($updateArray) > 0) {
  **** Edit/Replace/Delete Lists *****
  ************************************/
 
-$database->autoQueue(true);
+\Fim\Database::instance()->autoQueue(true);
 
 /* Watch Rooms (used for notifications of new messages, which are placed in unreadMessages) */
 
@@ -443,7 +443,7 @@ if (isset($request['friendsList'])) {
     $user->editList('friendedUsers', $request['friendsList'], $requestHead['_action']);
 }
 
-$database->autoQueue(false);
+\Fim\Database::instance()->autoQueue(false);
 
 
 

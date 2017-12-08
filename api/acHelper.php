@@ -14,10 +14,6 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-/**
- * @global $slaveDatabase fimDatabase
- */
-
 $apiRequest = true;
 
 require('../global.php');
@@ -36,25 +32,25 @@ $request = fim_sanitizeGPC('g', [
         'require' => true,
     ],
 ]);
-$database->accessLog('acHelper', $request);
+\Fim\Database::instance()->accessLog('acHelper', $request);
 
 
 switch ($request['list']) {
 
     case 'users':
-        $entries = new Http\ApiOutputDict($slaveDatabase->getUsers([
+        $entries = new Http\ApiOutputDict(\Fim\DatabaseSlave::instance()->getUsers([
             'userNameSearch' => $request['search'],
         ], null, 10)->getAsSlicedArray(['name', 'avatar'], 'id'));
         break;
 
     case 'rooms':
-        $entries = new Http\ApiOutputDict($slaveDatabase->getRooms([
+        $entries = new Http\ApiOutputDict(\Fim\DatabaseSlave::instance()->getRooms([
             'roomNameSearch' => $request['search'],
         ], null, 10)->getAsSlicedArray(['name'], 'id'));
         break;
 
     case 'groups':
-        $entries = new Http\ApiOutputDict($slaveDatabase->getGroups([
+        $entries = new Http\ApiOutputDict(\Fim\DatabaseSlave::instance()->getGroups([
             'groupNameSearch' => $request['search'],
         ], null, 10)->getAsSlicedArray(['name', 'avatar'], 'id'));
         break;

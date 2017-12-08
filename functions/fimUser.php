@@ -429,15 +429,13 @@ class fimUser extends \Fim\DynamicObject
     }
     
     private function setList($listName, $value) {
-        global $database;
-
         /* The returned value was "incomplete," indicating that it was truncated by the database software.
          * We check to see if it exists in a database list cache (Redis), and then invoke the database wrapper's relevant method to retrieve it from the full table.
          * Performance note: I would argue that performing the Redis check first will typically be faster, but that would require a fairly large rearchitecture of the User class. */
-        if ($value === fimDatabase::decodeError) {
+        if ($value === \Fim\DatabaseInstance::decodeError) {
             $cacheIndex = 'fim_' . $listName . '_' . $this->id;
 
-            $this->{$listName} = call_user_func([$database, 'getUser' . ucfirst($listName)], $this->id);
+            $this->{$listName} = call_user_func([\Fim\Database::instance(), 'getUser' . ucfirst($listName)], $this->id);
 
             throw new Exception('User data corrupted: ' . $cacheIndex . '; fallback refused. (Note: this error is for development purposes. A fallback is available, we\'re just not using it. Recovery data found as: ' + print_r($this->{$property}, true));
         }
@@ -452,8 +450,6 @@ class fimUser extends \Fim\DynamicObject
     }
 
     public function editList($listName, $ids, $action) {
-        global $database;
-
         $this->doCache = true;
 
         // todo: room/user factories that use cached data if available, database otherwise
@@ -469,7 +465,7 @@ class fimUser extends \Fim\DynamicObject
 
         if ($listName === 'favRooms' || $listName === 'watchRooms') {
             $items = (count($ids) > 0
-                ? $database->getRooms(array(
+                ? \Fim\Database::instance()->getRooms(array(
                     'roomIds' => $ids
                 ))->getAsRooms()
                 : []);
@@ -478,7 +474,7 @@ class fimUser extends \Fim\DynamicObject
         }
         elseif ($listName === 'ignoredUsers' || $listName === 'friendedUsers') {
             $items = (count($ids) > 0
-                ? $database->getUsers(array(
+                ? \Fim\Database::instance()->getUsers(array(
                     'userIds' => $ids
                 ))->getAsUsers()
                 : []);
@@ -490,12 +486,12 @@ class fimUser extends \Fim\DynamicObject
         }
 
 
-        $table = $database->sqlPrefix . $tableNames[$listName];
+        $table = \Fim\Database::instance()->sqlPrefix . $tableNames[$listName];
 
 
         if ($action === 'delete') {
             foreach ($items AS $item) {
-                $database->delete($table, array(
+                \Fim\Database::instance()->delete($table, array(
                     'userId' => $this->id,
                     $columnName => $item->id,
                 ));
@@ -508,7 +504,7 @@ class fimUser extends \Fim\DynamicObject
 
         if ($action === 'edit') {
             foreach ($this->{$listName} AS $id) {
-                $database->delete($table, array(
+                \Fim\Database::instance()->delete($table, array(
                     'userId' => $this->id,
                     $columnName => $id,
                 ));
@@ -521,13 +517,13 @@ class fimUser extends \Fim\DynamicObject
             foreach ($items AS $item) {
                 // Skip Rooms That The User Doesn't Have Permission To
                 if ($listName === 'favRooms' || $listName === 'watchRooms') {
-                    if (!($database->hasPermission($this, $item) & fimRoom::ROOM_PERMISSION_VIEW)) {
+                    if (!(\Fim\Database::instance()->hasPermission($this, $item) & fimRoom::ROOM_PERMISSION_VIEW)) {
                         continue;
                     }
                 }
 
                 // Update the Database List
-                $database->insert($table, array(
+                \Fim\Database::instance()->insert($table, array(
                     'userId' => $this->id,
                     $columnName => $item->id,
                 ));
@@ -686,9 +682,7 @@ class fimUser extends \Fim\DynamicObject
      */
     public function checkPasswordAndLockout($password)
     {
-        global $database;
-
-        if ($database->lockoutActive()) {
+        if (\Fim\Database::instance()->lockoutActive()) {
             new fimError('lockoutActive', 'You have attempted to login too many times. Please wait a while and then try again.');
             return false;
         }
@@ -697,7 +691,7 @@ class fimUser extends \Fim\DynamicObject
                 return true;
             }
             else {
-                $database->lockoutIncrement();
+                \Fim\Database::instance()->lockoutIncrement();
                 return false;
             }
         }
@@ -749,16 +743,14 @@ class fimUser extends \Fim\DynamicObject
      */
     protected function getColumns(array $columns) : bool
     {
-        global $database;
-
         if (count($columns) == 0)
             return true;
 
         elseif ($this->id) // We can fetch data given the user's unique ID.
-            return $this->populateFromArray($database->where(['id' => $this->id])->select([$database->sqlPrefix . 'users' => array_merge(['id'], $columns)])->getAsArray(false));
+            return $this->populateFromArray(\Fim\Database::instance()->where(['id' => $this->id])->select([\Fim\Database::instance()->sqlPrefix . 'users' => array_merge(['id'], $columns)])->getAsArray(false));
 
         elseif ($this->integrationId && $this->integrationMethod) // We can fetch data given the user's unique pair of integration ID and integration method.
-            return $this->populateFromArray($database->where(['integrationMethod' => $this->integrationMethod, 'integrationId' => $this->integrationId])->select([$database->sqlPrefix . 'users' => array_merge(['integrationId', 'integrationMethod'], $columns)])->getAsArray(false));
+            return $this->populateFromArray(\Fim\Database::instance()->where(['integrationMethod' => $this->integrationMethod, 'integrationId' => $this->integrationId])->select([\Fim\Database::instance()->sqlPrefix . 'users' => array_merge(['integrationId', 'integrationMethod'], $columns)])->getAsArray(false));
 
         else
             throw new Exception('fimUser does not have uniquely identifying information required to perform database retrieval.');
@@ -777,9 +769,7 @@ class fimUser extends \Fim\DynamicObject
      * @link fimDynamicObject::exists()
      */
     public function exists() : bool {
-        global $database;
-
-        return $this->exists = ($this->exists || (count($database->getUsers([
+        return $this->exists = ($this->exists || (count(\Fim\Database::instance()->getUsers([
             'userIds' => $this->id,
         ])->getAsArray(false)) > 0));
     }
@@ -795,8 +785,6 @@ class fimUser extends \Fim\DynamicObject
      */
     public function setDatabase($databaseFields)
     {
-        global $database;
-
         if (isset($databaseFields['password'])) {
             require 'PasswordHash.php';
             $h = new PasswordHash(8, FALSE);
@@ -810,22 +798,22 @@ class fimUser extends \Fim\DynamicObject
         $databaseFields = fim_dbCastArrayEntry($databaseFields, 'privs', DatabaseTypeType::bitfield);
 
         if ($this->id) {
-            $database->startTransaction();
+            \Fim\Database::instance()->startTransaction();
 
-            if (fim_inArray(array_keys($databaseFields), explode(', ', $database->userHistoryColumns))) {
-                if ($existingUserData = $database->getUsers(array(
+            if (fim_inArray(array_keys($databaseFields), explode(', ', \Fim\Database::instance()->userHistoryColumns))) {
+                if ($existingUserData = \Fim\Database::instance()->getUsers(array(
                     'userIds' => array($this->id),
-                    'columns' => $database->userHistoryColumns,
+                    'columns' => \Fim\Database::instance()->userHistoryColumns,
                 ))->getAsArray(false)) {
-                    $database->insert($database->sqlPrefix . "userHistory", fim_arrayFilterKeys($existingUserData, ['userId', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
+                    \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "userHistory", fim_arrayFilterKeys($existingUserData, ['userId', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
                 }
             }
 
-            $return = $database->upsert($database->sqlPrefix . "users", array(
+            $return = \Fim\Database::instance()->upsert(\Fim\Database::instance()->sqlPrefix . "users", array(
                 'id' => $this->id,
             ), $databaseFields);
 
-            $database->endTransaction();
+            \Fim\Database::instance()->endTransaction();
 
             return $return;
         }
@@ -835,9 +823,9 @@ class fimUser extends \Fim\DynamicObject
                 'privs' => fimConfig::$defaultUserPrivs
             ), $databaseFields);
 
-            $return = $database->insert($database->sqlPrefix . "users", $databaseFields);
+            $return = \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "users", $databaseFields);
 
-            $this->id = $database->getLastInsertId();
+            $this->id = \Fim\Database::instance()->getLastInsertId();
 
             return $return;
         }

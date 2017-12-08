@@ -42,7 +42,7 @@ $request = fim_sanitizeGPC('p', array(
         'cast' => 'bool',
     )
 ));
-$database->accessLog('editUserStatus', $request);
+\Fim\Database::instance()->accessLog('editUserStatus', $request);
 
 
 
@@ -50,8 +50,8 @@ $database->accessLog('editUserStatus', $request);
 foreach ($requestHead['roomIds'] AS $roomId) {
     $room = new fimRoom($roomId);
 
-    if ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)
-        $database->setUserStatus($room->id, $request['status'],  $request['typing']);
+    if (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)
+        \Fim\Database::instance()->setUserStatus($room->id, $request['status'],  $request['typing']);
 }
 
 

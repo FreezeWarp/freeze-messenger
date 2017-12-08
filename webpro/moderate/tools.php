@@ -57,9 +57,9 @@ else {
                 echo '<br />';
                 echo container('Contents of fimConfig', '<pre>' . print_r((new ReflectionClass('fimConfig'))->getStaticProperties(), true) . '</pre>');
                 echo '<br />';
-                echo container('Contents of roomPermissionsCache Table', '<table><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . $database->select([$database->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
+                echo container('Contents of roomPermissionsCache Table', '<table><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::instance()->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
                 echo '<br />';
-                echo container('Contents of counters Table', '<table><tr><th>Name</th><th>Value</th></tr>' . $database->select([$database->sqlPrefix . 'counters' => 'counterName, counterValue'])->getAsTemplate('<tr><td>$counterName</td><td>$counterValue</td></tr>') . '</table>');
+                echo container('Contents of counters Table', '<table><tr><th>Name</th><th>Value</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::instance()->sqlPrefix . 'counters' => 'counterName, counterValue'])->getAsTemplate('<tr><td>$counterName</td><td>$counterValue</td></tr>') . '</table>');
                 break;
 
             case 'clearCache':
@@ -72,8 +72,8 @@ else {
 
             case 'updateDatabaseSchema':
                 require(__DIR__ . '/../../functions/Xml2Array.php');
-                $showTables = $database->getTablesAsArray();
-                $showColumns = $database->getTableColumnsAsArray();
+                $showTables = \Fim\Database::instance()->getTablesAsArray();
+                $showColumns = \Fim\Database::instance()->getTableColumnsAsArray();
                 set_time_limit(0);
 
                 $xmlData = new Xml2Array(file_get_contents('../install/dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
@@ -88,7 +88,7 @@ else {
                     $tablePartitions = $table['@hardPartitions'] ?? 1;
 
                     for ($i = 0; $i < $tablePartitions; $i++) {
-                        $tableName = $database->sqlPrefix . $table['@name'] . ($tablePartitions > 1 ? '__part' . $i : '');
+                        $tableName = \Fim\Database::instance()->sqlPrefix . $table['@name'] . ($tablePartitions > 1 ? '__part' . $i : '');
 
                         $tableColumns = [];
                         $tableIndexes = [];
@@ -121,42 +121,42 @@ else {
                             }
                         }
 
-                        //$database->startTransaction();
-                        $database->holdTriggers(true);
+                        //\Fim\Database::instance()->startTransaction();
+                        \Fim\Database::instance()->holdTriggers(true);
                         if (in_array(strtolower($tableName), $showTables)) {
-                            echo 'Update: ' . $tableName . ': ' . $database->alterTable($tableName, $tableComment, $tableType, $tablePartition  ) . '<br />';
+                            echo 'Update: ' . $tableName . ': ' . \Fim\Database::instance()->alterTable($tableName, $tableComment, $tableType, $tablePartition  ) . '<br />';
                             fim_flush();
-                            echo 'Delete Foreign Keys : ' . $tableName . ': ' . $database->deleteForeignKeyConstraints($tableName) . '<br />';
+                            echo 'Delete Foreign Keys : ' . $tableName . ': ' . \Fim\Database::instance()->deleteForeignKeyConstraints($tableName) . '<br />';
                             fim_flush();
-                            $database->createTableIndexes($tableName, $tableIndexes);
+                            \Fim\Database::instance()->createTableIndexes($tableName, $tableIndexes);
 
                             foreach ($tableColumns AS $name => $column) {
                                 if (in_array($name, $showColumns[strtolower($tableName)])) {
-                                    echo 'Update: ' . $tableName . ',' . $name . ': ' . $database->alterTableColumns($tableName, [$name => $column], $tableType) . '<br />';
+                                    echo 'Update: ' . $tableName . ',' . $name . ': ' . \Fim\Database::instance()->alterTableColumns($tableName, [$name => $column], $tableType) . '<br />';
                                     fim_flush();
                                 }
                                 else {
-                                    echo 'Create: ' . $tableName . ',' . $name . ': ' . $database->createTableColumns($tableName, [$name => $column], $tableType) . '<br />';
+                                    echo 'Create: ' . $tableName . ',' . $name . ': ' . \Fim\Database::instance()->createTableColumns($tableName, [$name => $column], $tableType) . '<br />';
                                     fim_flush();
                                 }
                             }
                         }
                         else {
-                            if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes, $tablePartition)) {
-                                die("Could not create table.\n" . $database->getLastError());
+                            if (!\Fim\Database::instance()->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes, $tablePartition)) {
+                                die("Could not create table.\n" . \Fim\Database::instance()->getLastError());
                             }
                             else {
                                 echo 'Created Table: ' . $tableName . '<br />';
                                 fim_flush();
                             }
                         }
-                        //$database->endTransaction();
+                        //\Fim\Database::instance()->endTransaction();
                     }
                 }
 
                 echo 'Running Triggers for All Tables and Columns...<br />';
                 fim_flush();
-                $database->holdTriggers(false);
+                \Fim\Database::instance()->holdTriggers(false);
 
                 echo '<strong>Complete.</strong>';
                 break;

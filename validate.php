@@ -26,9 +26,6 @@
  * Standard Directives Required for __ALL__ API Calls:
  * @param string fim3_userId
  * @param string fim3_sessionHash
- *
- * @global DatabaseSQL $database
- * @global DatabaseSQL $integrationDatabase
  */
 
 
@@ -107,7 +104,7 @@ if (!$ignoreLogin) {
     /**
      * How our OAuth data is stored.
      */
-    $oauthStorage = new OAuth2\Storage\FIMDatabaseOAuth($database, 'fimError');
+    $oauthStorage = new OAuth2\Storage\FIMDatabaseOAuth(\Fim\Database::instance(), 'fimError');
 
     /**
      * How our OAuth processes requests.
@@ -122,7 +119,7 @@ if (!$ignoreLogin) {
     /**
      * A factory for performing integration logins.
      */
-    $loginFactory = new \Login\LoginFactory($oauthRequest, $oauthStorage, $oauthServer, $integrationDatabase);
+    $loginFactory = new \Login\LoginFactory($oauthRequest, $oauthStorage, $oauthServer, \Fim\DatabaseLogin::instance());
 
 
 
@@ -168,7 +165,7 @@ if (!$ignoreLogin) {
 
 
     if ($hookLogin) {
-        $database->registerUser($user);
+        \Fim\Database::instance()->registerUser($user);
         define('FIM_LOGINRUN', true);
     }
     else {

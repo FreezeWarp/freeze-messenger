@@ -23,17 +23,17 @@
  * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  *
- * @global fimDatabase $database
- * @global fimUser     $user
- * @global fimUser     $kickUser
- * @global fimRoom     $room
- * @global int         $permission
+ * @global DatabaseInstance $database
+ * @global fimUser          $user
+ * @global fimUser          $kickUser
+ * @global fimRoom          $room
+ * @global int              $permission
  */
 
 if (!defined('API_INKICK'))
     die();
 
-$database->accessLog('getKicks', $requestHead);
+\Fim\Database::instance()->accessLog('getKicks', $requestHead);
 
 
 
@@ -51,7 +51,7 @@ if (!isset($requestHead['roomId']) && !$user->hasPriv('modRooms'))
 
 else {
     /* Get Kicks from Database */
-    $kicks = $database->getKicks([
+    $kicks = \Fim\Database::instance()->getKicks([
         'userIds' => isset($kickUser) ? [$kickUser->id] : [],
         'roomIds' => isset($room) ? [$room->id] : [],
     ])->getAsArray(true);

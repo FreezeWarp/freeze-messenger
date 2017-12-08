@@ -98,20 +98,20 @@ class LoginPhpbb extends LoginDatabase {
     }
 
     public function syncInstall() {
-        global $integrationDatabase, $database, $loginConfig;
+        global $loginConfig;
 
-        $smilies = $integrationDatabase->select(array(
-            "{$integrationDatabase->sqlPrefix}smilies" => 'code emoticonText, smiley_url emoticonFile'
+        $smilies = \Fim\DatabaseLogin::instance()->select(array(
+            \Fim\DatabaseLogin::instance()->sqlPrefix . "smilies" => 'code emoticonText, smiley_url emoticonFile'
         ))->getAsArray(true);
 
-        $database->autoQueue(true);
+        \Fim\Database::instance()->autoQueue(true);
         foreach ($smilies AS $smilie) {
-            @$database->insert("{$database->sqlPrefix}emoticons", [
+            @\Fim\Database::instance()->insert("{\Fim\Database::instance()->sqlPrefix}emoticons", [
                 'emoticonText' => $smilie['emoticonText'],
                 'emoticonFile' => $loginConfig['url'] . 'images/smilies/' . $smilie['emoticonFile']
             ]);
         }
-        @$database->autoQueue(false);
+        @\Fim\Database::instance()->autoQueue(false);
     }
 
 }

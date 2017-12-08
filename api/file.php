@@ -75,7 +75,7 @@ if (isset($requestHead['id'])) {
         new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
 
     try {
-        $file = $database->getFiles(['fileIds' => $requestHead['id']])->getAsObject('\\Fim\\File');
+        $file = \Fim\Database::instance()->getFiles(['fileIds' => $requestHead['id']])->getAsObject('\\Fim\\File');
     } catch (Exception $ex) {
         new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.');
     }

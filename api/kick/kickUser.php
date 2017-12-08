@@ -1,11 +1,11 @@
 <?php
 /**
- * @global fimConfig   $config
- * @global fimDatabase $database
- * @global fimUser     $user
- * @global fimUser     $kickUser
- * @global fimRoom     $room
- * @global int         $permission
+ * @global fimConfig        $config
+ * @global DatabaseInstance $database
+ * @global fimUser          $user
+ * @global fimUser          $kickUser
+ * @global fimRoom          $room
+ * @global int              $permission
 */
 
 /* Prevent Direct Access to Script */
@@ -23,7 +23,7 @@ $request = fim_sanitizeGPC('p', [
 
 
 /* Logging */
-$database->accessLog('getKicks', $requestHead + $request);
+\Fim\Database::instance()->accessLog('getKicks', $requestHead + $request);
 
 
 /* Data Predefine */
@@ -38,14 +38,14 @@ if (!($permission & fimRoom::ROOM_PERMISSION_MODERATE))
     new fimError('noPerm', 'You do not have permission to moderate this room.');
 
 elseif ($requestHead['_action'] === 'create') {
-    if ($database->hasPermission($kickUser, $room) & fimRoom::ROOM_PERMISSION_MODERATE)
+    if (\Fim\Database::instance()->hasPermission($kickUser, $room) & fimRoom::ROOM_PERMISSION_MODERATE)
         throw new fimError('unkickableUser', 'Other room moderators may not be kicked.');
 
     else {
-        $database->kickUser($kickUser->id, $room->id, $request['length']);
+        \Fim\Database::instance()->kickUser($kickUser->id, $room->id, $request['length']);
 
         if (fimConfig::$kickSendMessage)
-            $database->storeMessage(new fimMessage([
+            \Fim\Database::instance()->storeMessage(new fimMessage([
                 'user' => $user,
                 'room' => $room,
                 'text'    => '/me kicked ' . $kickUser->name
@@ -54,10 +54,10 @@ elseif ($requestHead['_action'] === 'create') {
 }
 
 elseif ($requestHead['_action'] === 'delete') {
-    $database->unkickUser($kickUser->id, $room->id);
+    \Fim\Database::instance()->unkickUser($kickUser->id, $room->id);
 
     if (fimConfig::$unkickSendMessage)
-        $database->storeMessage(new fimMessage([
+        \Fim\Database::instance()->storeMessage(new fimMessage([
             'user' => $user,
             'room' => $room,
             'text'    => '/me unkicked ' . $kickUser->name

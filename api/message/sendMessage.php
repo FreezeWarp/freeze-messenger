@@ -17,6 +17,8 @@
 /**
  * Send or update a message.
  *
+ * @global    $message fimMessage
+ * @global    $room    fimRoom
  * @package   fim3
  * @version   3.0
  * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
@@ -48,7 +50,7 @@ $request = fim_sanitizeGPC('p', [
 
 
 /* Logging */
-$database->accessLog('sendMessage', $request);
+\Fim\Database::instance()->accessLog('sendMessage', $request);
 
 
 /* Start Processing */
@@ -61,7 +63,7 @@ if (strlen($request['message']) < fimConfig::$messageMinLength || strlen($reques
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))
     new fimError('spaceMessage', 'The sent message is all whitespace.'); // All spaces. TODO: MB Support
 
-elseif (!($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_POST))
+elseif (!(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_POST))
     new fimError('noPerm', 'You may not post in this room.');
 
 elseif (in_array($request['flag'], ['image', 'video', 'url', 'html', 'audio'])
@@ -73,7 +75,7 @@ elseif ($request['flag'] === 'email'
     new fimError('badEmail', 'The sent email is invalid.'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 
 else {
-    $database->setUserStatus($room->id); // The user seems active to me...
+    \Fim\Database::instance()->setUserStatus($room->id); // The user seems active to me...
 
     switch ($requestHead['_action']) {
         case 'edit':
@@ -86,25 +88,25 @@ else {
             else {
                 $message->setText($request['message'], $request['ignoreBlock']);
                 $message->setFlag($request['flag']);
-                $database->updateMessage($message);
+                \Fim\Database::instance()->updateMessage($message);
             }
         break;
 
         case 'create':
             // if /kick starts the message, the user is using a shorthand to kick a user. We don't actually create a new message, but we do attempt to kick the user given.
             if (strpos($request['message'], '/kick') === 0
-                && ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE)) {
+                && (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE)) {
                 $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i', '$1,$2', $request['message']);
                 $kickData = explode(',', $kickData);
 
-                $userData = $database->getUsers([
+                $userData = \Fim\Database::instance()->getUsers([
                     'userNames' => [$kickData[0]]
                 ])->getAsUser();
 
                 if ($userData)
                     new fimError('kickUserNameInvalid', 'That username does not exist.');
                 else
-                    $database->kickUser($userData->id, $room->id, $kickData[1] ?: 600);
+                    \Fim\Database::instance()->kickUser($userData->id, $room->id, $kickData[1] ?: 600);
             }
 
             else {
@@ -119,13 +121,13 @@ else {
 
                 // if /topic starts the message, the user is trying to change the topic.
                 if (strpos($message->text, '/topic') === 0) {
-                    if ($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_TOPIC)
+                    if (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_TOPIC)
                         $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $message->text));
                     else
                         new fimError('noPerm', 'You do not have permission to change the topic.');
                 }
                 else {
-                    $database->storeMessage($message);
+                    \Fim\Database::instance()->storeMessage($message);
                 }
             }
         break;

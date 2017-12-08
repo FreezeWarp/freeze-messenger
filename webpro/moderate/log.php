@@ -62,7 +62,7 @@ else {
             echo '</select>';
         }
         else {
-            $logsResult = $database->getModLog([
+            $logsResult = \Fim\Database::instance()->getModLog([
                 'actions' => $request['actions'],
                 'ips' => $request['ips'],
                 'log' => $request['log'],

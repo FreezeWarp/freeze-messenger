@@ -74,7 +74,7 @@ class fimMessage extends \Fim\MagicGettersSetters
     function __construct($messageData)
     {
         // When working with an existing message row. We require that all indexes be present, as otherwise we may accidentally forget certain information on edits.
-        if ($messageData instanceof fimDatabaseResult) {
+        if ($messageData instanceof \Database\DatabaseResult) {
             $messageData = $messageData->getAsArray(false);
 
             $this->id = (int) $messageData['id'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have id column.');

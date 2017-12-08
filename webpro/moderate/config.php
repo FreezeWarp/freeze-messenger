@@ -40,7 +40,7 @@ else {
     if ($user->hasPriv('modPrivs')) {
         switch ($_GET['do2'] ?? 'view') {
             case 'view':
-                $config3 = $database->getConfigurations()->getAsArray(true);
+                $config3 = \Fim\Database::instance()->getConfigurations()->getAsArray(true);
 
                 $rows = '';
                 foreach ($config3 AS $config2) {
@@ -66,7 +66,7 @@ else {
 
             case 'edit':
                 if (isset($request['directive'])) {
-                    $config2 = $database->getConfigurations(array('directives' => array($request['directive'])))->getAsArray(false);
+                    $config2 = \Fim\Database::instance()->getConfigurations(array('directives' => array($request['directive'])))->getAsArray(false);
                     $title = 'Edit Configuration Value "' . $config2['directive'] . '"';
                 }
                 else {
@@ -136,11 +136,11 @@ else {
 
             case 'edit2':
                 if (!$request['newDirective']) {
-                    $config2 = $database->getConfiguration($request['directive']);
+                    $config2 = \Fim\Database::instance()->getConfiguration($request['directive']);
 
-                    $database->modLog('editConfigDirective', $config2['directive']);
-                    $database->fullLog('editConfigDirective', array('config' => $config2));
-                    $database->update("{$sqlPrefix}configuration", array(
+                    \Fim\Database::instance()->modLog('editConfigDirective', $config2['directive']);
+                    \Fim\Database::instance()->fullLog('editConfigDirective', array('config' => $config2));
+                    \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "configuration", array(
                         'type' => $request['type'],
                         'value' => $request['value'],
                     ), array(
@@ -156,22 +156,22 @@ else {
                         'value' => $request['value'],
                     );
 
-                    $database->modLog('createConfigDirective', $config2['directive']);
-                    $database->fullLog('createConfigDirective', array('config' => $config2));
-                    $database->insert("{$sqlPrefix}configuration", $config2);
+                    \Fim\Database::instance()->modLog('createConfigDirective', $config2['directive']);
+                    \Fim\Database::instance()->fullLog('createConfigDirective', array('config' => $config2));
+                    \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "configuration", $config2);
 
                     echo container('Configuration Added','The config has been added.<br /><br /><form method="post" action="moderate.php?do=config"><button type="submit">Return to Viewing Lists</button></form>');
                 }
             break;
 
             case 'delete':
-                $config2 = $database->getConfiguration($request['directive']);
+                $config2 = \Fim\Database::instance()->getConfiguration($request['directive']);
 
                 if ($config2) {
-                    $database->modLog('deleteConfigDirective', $config2['directive']);
-                    $database->fullLog('deleteConfigDirective', array('config' => $config2));
+                    \Fim\Database::instance()->modLog('deleteConfigDirective', $config2['directive']);
+                    \Fim\Database::instance()->fullLog('deleteConfigDirective', array('config' => $config2));
 
-                    $database->delete("{$sqlPrefix}config", array(
+                    \Fim\Database::instance()->delete(\Fim\Database::instance()->sqlPrefix . "config", array(
                         'directive' => $request['directive'],
                     ));
 

@@ -30,7 +30,7 @@
 $apiRequest = true;
 
 require('../global.php');
-$database->accessLog('getUnreadMessages', []);
+\Fim\Database::instance()->accessLog('getUnreadMessages', []);
 
 
 
@@ -48,7 +48,7 @@ if (!$user->isValid() || $user->isAnonymousUser())
     throw new fimError('loginRequired', 'You must be logged in to get your unread messages.');
 
 
-$xmlData['unreadMessages'] = $database->getUnreadMessages()->getAsArray(true);
+$xmlData['unreadMessages'] = \Fim\Database::instance()->getUnreadMessages()->getAsArray(true);
 
 
 /* Output Data */

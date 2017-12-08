@@ -84,7 +84,7 @@ $request = fim_sanitizeGPC('g', [
 ]);
 
 
-$database->accessLog('getMessages', $request);
+\Fim\Database::instance()->accessLog('getMessages', $request);
 
 
 /* Data Predefine */
@@ -92,13 +92,13 @@ $xmlData = [
     'messages' => [],
 ];
 
-if (!($database->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
+if (!(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
     new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
 else {
     /* Process Ping */
     if (!$request['noping'])
-        $database->setUserStatus($room->id);
+        \Fim\Database::instance()->setUserStatus($room->id);
 
 
     /* Get Messages from Database */
@@ -106,7 +106,7 @@ else {
         $messages = [$message];
     }
     else {
-        $messageResults = $database->getMessages(
+        $messageResults = \Fim\Database::instance()->getMessages(
             array_merge([
                 'room' => $room,
             ], fim_arrayFilterKeys($request, ['messageIdEnd', 'messageIdStart', 'messageDateMin', 'messageDateMax', 'showDeleted', 'messageTextSearch', 'userIds'])),

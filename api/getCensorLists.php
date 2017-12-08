@@ -49,7 +49,7 @@ $request = fim_sanitizeGPC('g', array(
         'filter' => 'bool',
     ),
 ));
-$database->accessLog('getCensorLists', $request);
+\Fim\Database::instance()->accessLog('getCensorLists', $request);
 
 
 /* Data Predefine */
@@ -60,7 +60,7 @@ $xmlData = array(
 
 
 /* Get Censor Lists from Slave Database */
-$censorLists = $slaveDatabase->getCensorLists(array(
+$censorLists = \Fim\DatabaseSlave::instance()->getCensorLists(array(
     'listIds' => $request['listIds'],
     'includeStatus' => $request['roomId'] ?? false,
     'hiddenStatus' => 'unhidden', // Don't include hidden lists.
@@ -68,7 +68,7 @@ $censorLists = $slaveDatabase->getCensorLists(array(
 ))->getAsArray(array('listId'));
 
 if ($request['includeWords']) {
-    $censorWords = $slaveDatabase->getCensorWords(array(
+    $censorWords = \Fim\DatabaseSlave::instance()->getCensorWords(array(
         'listIds' => array_keys($censorLists),
     ))->getAsArray(array('listId', 'wordId'));
 }

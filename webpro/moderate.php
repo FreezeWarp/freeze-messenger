@@ -278,14 +278,6 @@ require('../global.php');
             <li><a href="moderate.php?do=logout">Logout</a></li>
         </ul>
 
-        <?php if ($user->hasPriv('modPrivs')) { ?>
-            <h3><a href="#" data-itemId="2">WebPro</a></h3>
-            <ul>
-                <li><a href="moderate.php?do=phrases">Modify Phrases</a></li>
-                <li><a href="moderate.php?do=templates">Modify Templates</a></li>
-            </ul>
-        <?php } ?>
-
         <h3><a href="#" data-itemId="3">Engines</a></h3>
         <ul>
             <?php echo ($user->hasPriv('modCensor') ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : ''); ?>
@@ -337,12 +329,9 @@ require('../global.php');
   </form>');
     }
     else {
-        $database->startTransaction();
+        \Fim\Database::instance()->startTransaction();
 
         switch ($_GET['do'] ?? '') {
-            case 'phrases': require('./moderate/phrases.php'); break;
-            case 'templates': require('./moderate/templates.php'); break;
-
             case 'plugins': require('./moderate/plugins.php'); break;
             case 'censor': require('./moderate/censor.php'); break;
             case 'emoticons': require('./moderate/emoticons.php'); break;
@@ -370,9 +359,9 @@ require('../global.php');
             default: require('./moderate/main.php'); break;
         }
 
-        $database->accessLog('moderate', $request);
+        \Fim\Database::instance()->accessLog('moderate', $request);
 
-        $database->endTransaction();
+        \Fim\Database::instance()->endTransaction();
     }
     ?>
 </div>

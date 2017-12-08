@@ -55,7 +55,7 @@ $request = fim_sanitizeGPC('p', [
     ],
 ]);
 
-$database->accessLog('sendUser', $request, true);
+\Fim\Database::instance()->accessLog('sendUser', $request, true);
 
 
 /* Start Processing */
@@ -83,7 +83,7 @@ elseif (isset($request['birthDate']) && ($age < fimConfig::$ageMinimum))
         'ageMinimum'  => fimConfig::$ageMinimum
     ]);
 
-elseif ($database->getUsers(['userNames' => [$request['name']]])->getCount() > 0)
+elseif (\Fim\Database::instance()->getUsers(['userNames' => [$request['name']]])->getCount() > 0)
     new fimError('nameTaken', 'That user specified already exists.');
 
 else {

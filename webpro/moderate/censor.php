@@ -71,7 +71,7 @@ else {
 
             case false:
             case 'viewLists':
-                $lists = $database->getCensorLists()->getAsArray(true);
+                $lists = \Fim\Database::instance()->getCensorLists()->getAsArray(true);
 
                 foreach ($lists AS $list) {
                     $options = array();
@@ -103,7 +103,7 @@ else {
 
             case 'editList':
                 if ($request['listId']) {
-                    $list = $database->getCensorList($request['listId']);
+                    $list = \Fim\Database::instance()->getCensorList($request['listId']);
 
                     $title = 'Edit Censor List "' . $list['listName'] . '"';
                 }
@@ -160,19 +160,19 @@ else {
                 $listOptions = (!$request['inactive'] ? 1 : 0) + ($request['candis'] ? 2 : 0) + ($request['hidden'] ? 4 : 0) + ($request['privdis'] ? 256 : 0);
 
                 if ($request['listId']) {
-                    $list = $database->getCensorList($request['listId']);
+                    $list = \Fim\Database::instance()->getCensorList($request['listId']);
                     $newList = array(
                         'listName' => $request['listName'],
                         'listType' => $request['listType'],
                         'options' => $listOptions,
                     );
 
-                    $database->update("{$sqlPrefix}censorLists", $newList, array(
+                    \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "censorLists", $newList, array(
                         'listId' => $request['listId'],
                     ));
 
-                    $database->modLog('changeCensorList', $list['listId']);
-                    $database->fullLog('changeCensorList', array('list' => $list, 'newList' => $newList));
+                    \Fim\Database::instance()->modLog('changeCensorList', $list['listId']);
+                    \Fim\Database::instance()->fullLog('changeCensorList', array('list' => $list, 'newList' => $newList));
 
                     echo container('List "' . $list['listName'] . '" Updated', 'The list has been updated.<br /><br /><form action="moderate.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
                 }
@@ -183,27 +183,27 @@ else {
                         'options' => $listOptions,
                     );
 
-                    $database->insert("{$sqlPrefix}censorLists", $list);
-                    $list['listId'] = $database->getLastInsertId();
+                    \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "censorLists", $list);
+                    $list['listId'] = \Fim\Database::instance()->getLastInsertId();
 
-                    $database->modLog('addCensorList', $list['listId']);
-                    $database->fullLog('addCensorList', array('list' => $list));
+                    \Fim\Database::instance()->modLog('addCensorList', $list['listId']);
+                    \Fim\Database::instance()->fullLog('addCensorList', array('list' => $list));
 
                     echo container('List "' . $list['listName'] . '" Added', 'The list has been added.<br /><br /><form action="moderate.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
                 }
                 break;
 
             case 'deleteList':
-                $list = $database->getCensorList($request['listid']);
-                $words = $database->getCensorWords(array('listIds' => array($request['listIds'])))->getAsArray(true);
+                $list = \Fim\Database::instance()->getCensorList($request['listid']);
+                $words = \Fim\Database::instance()->getCensorWords(array('listIds' => array($request['listIds'])))->getAsArray(true);
 
-                $database->modLog('deleteCensorList', $list['listId']);
-                $database->fullLog('deleteCensorList', array('list' => $list, 'words' => $words));
+                \Fim\Database::instance()->modLog('deleteCensorList', $list['listId']);
+                \Fim\Database::instance()->fullLog('deleteCensorList', array('list' => $list, 'words' => $words));
 
-                $database->delete("{$sqlPrefix}censorLists", array(
+                \Fim\Database::instance()->delete(\Fim\Database::instance()->sqlPrefix . "censorLists", array(
                     'listId' => $request['listId'],
                 ));
-                $database->delete("{$sqlPrefix}censorWords", array(
+                \Fim\Database::instance()->delete(\Fim\Database::instance()->sqlPrefix . "censorWords", array(
                     'listId' => $request['listId'],
                 ));
 
@@ -211,7 +211,7 @@ else {
                 break;
 
             case 'viewWords':
-                $words = $database->getCensorWords(array('listIds' => array($request['listId'])))->getAsArray(true);
+                $words = \Fim\Database::instance()->getCensorWords(array('listIds' => array($request['listId'])))->getAsArray(true);
 
                 if (count($words) > 0) {
                     foreach ($words AS $word) {
@@ -240,8 +240,8 @@ else {
 
             case 'editWord':
                 if ($request['wordId']) { // We are editing a word.
-                    $word = $database->getCensorWord($request['wordId']);
-                    $list = $database->getCensorList($word['listId']);
+                    $word = \Fim\Database::instance()->getCensorWord($request['wordId']);
+                    $list = \Fim\Database::instance()->getCensorList($word['listId']);
 
                     if (!$word) die('Invalid Word');
                     if (!$list) die('Invalid List');
@@ -249,7 +249,7 @@ else {
                     $title = 'Edit Censor Word "' . $word['word'] . '"';
                 }
                 elseif ($request['listId']) { // We are adding a word to a list.
-                    $list = $database->getCensorList($request['listId']);
+                    $list = \Fim\Database::instance()->getCensorList($request['listId']);
 
                     if (!$list) die('Invalid List');
 
@@ -306,13 +306,13 @@ else {
 
             case 'editWord2':
                 if ($request['wordId']) { // We are editing a word.
-                    $word = $database->getCensorWord($request['wordId']);
-                    $list = $database->getCensorList($word['listId']);
+                    $word = \Fim\Database::instance()->getCensorWord($request['wordId']);
+                    $list = \Fim\Database::instance()->getCensorList($word['listId']);
 
-                    $database->modLog('editCensorWord', $request['wordId']);
-                    $database->fullLog('editCensorWord', array('word' => $word, 'list' => $list));
+                    \Fim\Database::instance()->modLog('editCensorWord', $request['wordId']);
+                    \Fim\Database::instance()->fullLog('editCensorWord', array('word' => $word, 'list' => $list));
 
-                    $database->update("{$sqlPrefix}censorWords", array(
+                    \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "censorWords", array(
                         'word' => $request['word'],
                         'severity' => $request['severity'],
                         'param' => $request['param'],
@@ -323,7 +323,7 @@ else {
                     echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
                 }
                 elseif ($request['listId']) { // We are adding a word to a list.
-                    $list = $database->getCensorList($request['listId']);
+                    $list = \Fim\Database::instance()->getCensorList($request['listId']);
                     $word = array(
                         'word' => $request['word'],
                         'severity' => $request['severity'],
@@ -331,11 +331,11 @@ else {
                         'listId' => $request['listId'],
                     );
 
-                    $database->insert("{$sqlPrefix}censorWords", $word);
-                    $word['wordId'] = $database->getLastInsertId();
+                    \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "censorWords", $word);
+                    $word['wordId'] = \Fim\Database::instance()->getLastInsertId();
 
-                    $database->modLog('addCensorWord', $request['listId'] . ',' . $database->getLastInsertId());
-                    $database->fullLog('addCensorWord', array('word' => $word, 'list' => $list));
+                    \Fim\Database::instance()->modLog('addCensorWord', $request['listId'] . ',' . \Fim\Database::instance()->getLastInsertId());
+                    \Fim\Database::instance()->fullLog('addCensorWord', array('word' => $word, 'list' => $list));
 
                     echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
                 }
@@ -345,15 +345,15 @@ else {
                 break;
 
             case 'deleteWord':
-                $word = $database->getCensorWord($request['wordId']);
-                $list = $database->getCensorList($word['listId']);
+                $word = \Fim\Database::instance()->getCensorWord($request['wordId']);
+                $list = \Fim\Database::instance()->getCensorList($word['listId']);
 
-                $database->delete("{$sqlPrefix}censorWords", array(
+                \Fim\Database::instance()->delete(\Fim\Database::instance()->sqlPrefix . "censorWords", array(
                     'wordId' => $request['wordId'],
                 ));
 
-                $database->modLog('deleteCensorWord', $request['wordId']);
-                $database->fullLog('deleteCensorWord', array('word' => $word, 'list' => $list));
+                \Fim\Database::instance()->modLog('deleteCensorWord', $request['wordId']);
+                \Fim\Database::instance()->fullLog('deleteCensorWord', array('word' => $word, 'list' => $list));
 
                 echo container('Word Deleted','The word has been removed.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button type="submit">Return to Viewing Words</button></form>');
                 break;

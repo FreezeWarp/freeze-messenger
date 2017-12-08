@@ -19,7 +19,6 @@ namespace Fim;
 use \fimUser;
 use \fimRoom;
 use \fimError;
-use \fimDatabaseResult;
 use \fimUserFactory;
 use \fimConfig;
 use \Exception;
@@ -83,7 +82,7 @@ class File extends MagicGettersSetters {
 
     public function __construct($fileData) {
         // When working with an existing file row, we require that all (almost) indexes be present.
-        if ($fileData instanceof fimDatabaseResult) {
+        if ($fileData instanceof \Database\DatabaseResult) {
             $fileData = $fileData->getAsArray(false);
         }
 

@@ -61,7 +61,7 @@ $request = fim_sanitizeGPC('g', array(
 $includeThumbnails = isset($request['thumbnailHeight']) || isset($request['thumbnailWidth']);
 
 
-$file = $database->getFiles(array(
+$file = \Fim\Database::instance()->getFiles(array(
     'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
     'includeContent' => ($includeThumbnails ? false : true),
     'includeThumbnails' => ($includeThumbnails ? true : false),
@@ -72,7 +72,7 @@ if ($includeThumbnails) {
 
     // If this has happened, the thumbnail most likely didn't finish resizing/uploading at the time the file was requested. Retry for the full-version instead.
     if (count($file) === 0) {
-        $file = $database->getFiles(array(
+        $file = \Fim\Database::instance()->getFiles(array(
             'sha256hashes' => $request['sha256hash'] ? array($request['sha256hash']) : array(),
             'includeContent' => true,
         ))->getAsObject('\\Fim\\File');
@@ -96,7 +96,7 @@ if ($includeThumbnails) {
             $file = $file[array_values($filesIndexed)[0]];
         }
 
-        $thumbnail = $database->select([$database->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents"], ["versionId" => $file->versionId, "scaleFactor" => $file->scaleFactor])->getAsArray(false);
+        $thumbnail = \Fim\Database::instance()->select([\Fim\Database::instance()->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents"], ["versionId" => $file->versionId, "scaleFactor" => $file->scaleFactor])->getAsArray(false);
 
         $file->contents = $thumbnail['contents'];
         $file->name = $file->name . '.thumb.jpg';

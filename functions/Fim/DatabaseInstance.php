@@ -19,10 +19,20 @@
  * So, yeah, unfortunately this will be using ugly, ugly arrays. I felt this was the best compromise, but I'm not exactly happy about it. It's hard to document, etc, etc.
  */
 
-use Database\Database;
-use Database\DatabaseResult;
+namespace Fim;
+
 use Database\DatabaseTypeType;
 use Database\SQL\DatabaseSQL;
+
+use \fimConfig;
+use \fimUser;
+use \fimRoom;
+use \fimRoomFactory;
+use \fimUserFactory;
+use \fimMessage;
+use \fimError;
+
+use \Exception;
 
 /**
  * FreezeMessenger-specific database functionality. Attempts to define a function for effectively every needed database call; most database calls, that is, will be through these methods instead of custom query logic.
@@ -31,27 +41,27 @@ use Database\SQL\DatabaseSQL;
  *
  * @author Joseph T. Parsons <josephtparsons@gmail.com>
  */
-class fimDatabase extends DatabaseSQL
+class DatabaseInstance extends DatabaseSQL
 {
     /**
      * @var string The columns containing all user data.
      */
-    public $userColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, parentalAge, parentalFlags, privs, lastSync, bio, privacyLevel';
+    const userColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, parentalAge, parentalFlags, privs, lastSync, bio, privacyLevel';
 
     /**
      * @var string The columns containing all user login data.
      */
-    public $userPasswordColumns = 'passwordHash, passwordFormat, passwordResetNow, passwordLastReset';
+    const userPasswordColumns = 'passwordHash, passwordFormat, passwordResetNow, passwordLastReset';
 
     /**
      * @var string The columns containing all user data that is recorded in the user history.
      */
-    public $userHistoryColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, parentalAge, parentalFlags, privs';
+    const userHistoryColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, parentalAge, parentalFlags, privs';
 
     /**
      * @var string The columns containing all room data that is recorded in the room history.
      */
-    public $roomHistoryColumns = 'id, name, topic, options, ownerId, defaultPermissions, parentalAge, parentalFlags';
+    const roomHistoryColumns = 'id, name, topic, options, ownerId, defaultPermissions, parentalAge, parentalFlags';
 
     /**
      * @var string An error format function to be used when errors are encountered. Overrides {@link database:errorFormatFunction}
@@ -111,7 +121,7 @@ class fimDatabase extends DatabaseSQL
             $decoded = rtrim(unpack("H*", $blob)[1], '0');
 
             if (substr($decoded, -2) !== 'ff' || substr($decoded, 0, 2) !== 'ff')
-                return fimDatabase::decodeError;
+                return DatabaseInstance::decodeError;
 
             elseif (strlen($decoded) === 4)
                 return [];
@@ -135,7 +145,7 @@ class fimDatabase extends DatabaseSQL
     public static function packListCache(array $list, int $cacheLength = 5 * 60) {
         array_unshift($list, time() + $cacheLength);
 
-        return fimDatabase::packList($list);
+        return DatabaseInstance::packList($list);
     }
 
     /**
@@ -146,16 +156,16 @@ class fimDatabase extends DatabaseSQL
      */
     public static function unpackListCache($blob) { //var_dump($blob); die(';7');
         if (strlen($blob) === 0) { // Happens when uninitialised, generally, but could also happen as part of a cache cleanup -- the most efficient way to invalidate is simply to null.
-            return fimDatabase::decodeExpired;
+            return DatabaseInstance::decodeExpired;
         }
         else {
-            $list = fimDatabase::unpackList($blob);
+            $list = DatabaseInstance::unpackList($blob);
 
-            if ($list === fimDatabase::decodeError)
-                return fimDatabase::decodeError;
+            if ($list === DatabaseInstance::decodeError)
+                return DatabaseInstance::decodeError;
 
             elseif ($list[0] < time())
-                return fimDatabase::decodeExpired;
+                return DatabaseInstance::decodeExpired;
 
             else {
                 unset($list[0]); // One imagines this is faster than array_slice
@@ -906,7 +916,7 @@ class fimDatabase extends DatabaseSQL
      *
      * @return DatabaseResult
      */
-    public function getMessages($options = array(), $sort = array('id' => 'asc'), $limit = 40, $page = 0) : fimDatabaseResult
+    public function getMessages($options = array(), $sort = array('id' => 'asc'), $limit = 40, $page = 0) : DatabaseResult
     {
         $options = $this->argumentMerge(array(
             'room'           => false,
@@ -1091,7 +1101,7 @@ class fimDatabase extends DatabaseSQL
      * @param int $pagination
      * @return bool|object|resource
      */
-    public function getRooms($options, $sort = array('id' => 'asc'), $limit = 50, $pagination = 0) : fimDatabaseResult
+    public function getRooms($options, $sort = array('id' => 'asc'), $limit = 50, $pagination = 0) : DatabaseResult
     {
         $options = $this->argumentMerge(array(
             'roomIds'            => [],
@@ -1161,7 +1171,7 @@ class fimDatabase extends DatabaseSQL
 
 
 
-    public function getUsers($options = array(), $sort = array('id' => 'asc'), $limit = 0, $pagination = 0) : fimDatabaseResult
+    public function getUsers($options = array(), $sort = array('id' => 'asc'), $limit = 0, $pagination = 0) : DatabaseResult
     {
         $options = $this->argumentMerge(array(
             'userIds'        => array(),
@@ -1169,13 +1179,13 @@ class fimDatabase extends DatabaseSQL
             'userNameSearch' => false,
             'bannedStatus'   => false,
             'hasPrivs' => [],
-            'columns' => $this->userColumns, // csvstring a list of columns to include in the return; if not specified, this will default to almost everything except passwords
+            'columns' => self::userColumns, // csvstring a list of columns to include in the return; if not specified, this will default to almost everything except passwords
             'includePasswords' => false, // bool shorthand to add password fields -- whatever they are -- to the otherwise specified columns
         ), $options);
 
 
         $columns = array(
-            $this->sqlPrefix . "users" => $options['columns'] . ($options['includePasswords'] ? ', ' . $this->userPasswordColumns : '') // For this particular request, you can also access user password information using the includePasswords flag.
+            $this->sqlPrefix . "users" => $options['columns'] . ($options['includePasswords'] ? ', ' . self::userPasswordColumns : '') // For this particular request, you can also access user password information using the includePasswords flag.
         );
 
 
@@ -1236,7 +1246,7 @@ class fimDatabase extends DatabaseSQL
         if (count($options['ips']) > 0) $conditions['both']['either']['sessionIp'] = $this->in($options['ips']);
 
         if ($options['combineUserData']) {
-            $columns[$this->sqlPrefix . "users"] = $this->userColumns;
+            $columns[$this->sqlPrefix . "users"] = self::userColumns;
             $conditions['both']['id'] = $this->col('suserId');
         }
 
@@ -1741,7 +1751,7 @@ class fimDatabase extends DatabaseSQL
      * @param int $pagination
      * @return bool|object|resource
      */
-    public function getGroups($options, $sort = array('id' => 'asc'), $limit = 50, $pagination = 0) : fimDatabaseResult
+    public function getGroups($options, $sort = array('id' => 'asc'), $limit = 50, $pagination = 0) : DatabaseResult
     {
         $options = $this->argumentMerge(array(
             'groupIds'            => [],
@@ -2473,13 +2483,11 @@ class fimDatabase extends DatabaseSQL
 
 
     /**
-     * Overrides the normal function to use fimDatabaseResult instead.
+     * Overrides the normal function to use \Fim\DatabaseResult instead.
      * @see Database::DatabaseResultPipe()
      */
-    protected function DatabaseResultPipe($queryData, $reverseAlias, string $sourceQuery, Database $database, int $paginated = 0) {
-        return new fimDatabaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
+    protected function DatabaseResultPipe($queryData, $reverseAlias, string $sourceQuery, \Database\Database $database, int $paginated = 0) {
+        return new DatabaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
     }
 }
-
-require('fimDatabaseResult.php');
 ?>

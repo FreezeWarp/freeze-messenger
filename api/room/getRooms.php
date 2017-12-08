@@ -83,7 +83,7 @@ if (!$user->hasPriv('modRooms')) {
     $request['showDeleted'] = false;
 }
 
-$database->accessLog('getRooms', $request);
+\Fim\Database::instance()->accessLog('getRooms', $request);
 
 
 /* Data Predefine */
@@ -112,11 +112,11 @@ do {
         }
 
         if (!(count($privateRoomIds) > 0 && count($request['roomIds']) == 0)) {
-            $roomsQuery = $database->getRooms(array_merge(
+            $roomsQuery = \Fim\DatabaseSlave::instance()->getRooms(array_merge(
                 fim_arrayFilterKeys($request, ['roomIds', 'roomNames', 'showDeleted', 'showHidden', 'roomNameSearch']),
                 ['ownerIds' => ($request['permFilter'] === 'own' ? [$user->id] : [])]
             ), [
-                'id 1' => $database->in($user->favRooms),
+                'id 1' => \Fim\Database::instance()->in($user->favRooms),
                 $request['sort'] => 'asc'
             ], fimConfig::$defaultRoomLimit, $request['page']);
 
@@ -131,7 +131,7 @@ do {
     }
 
     foreach ($rooms AS $number => &$roomLocal) {
-        $permission = $database->hasPermission($user, $roomLocal);
+        $permission = \Fim\Database::instance()->hasPermission($user, $roomLocal);
 
         if ($request['permFilter'] != 'own'
             && ($permission & fimRoom::$permArray[$request['permFilter']]) != fimRoom::$permArray[$request['permFilter']]) {
@@ -142,26 +142,26 @@ do {
             fim_objectArrayFilterKeys($roomLocal, ['id', 'name', 'ownerId', 'parentalAge', 'official', 'archived', 'hidden', 'deleted', 'topic', 'ownerId', 'lastMessageId', 'lastMessageTime', 'messageCount']),
             [
                 'defaultPermissions' => $roomLocal->getPermissionsArray($roomLocal->defaultPermissions),
-                'permissions'        => $roomLocal->getPermissionsArray($database->hasPermission($user, $roomLocal)),
+                'permissions'        => $roomLocal->getPermissionsArray(\Fim\Database::instance()->hasPermission($user, $roomLocal)),
                 'parentalFlags'      => new Http\ApiOutputList($roomLocal->parentalFlags)
             ]
         );
 
         if ($permission & fimRoom::ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
             $xmlData['rooms']["room {$roomLocal->id}"]['userPermissions'] = [];
-            foreach ($database->getRoomPermissions([$roomLocal->id], 'user')->getAsArray() AS $row) {
+            foreach (\Fim\Database::instance()->getRoomPermissions([$roomLocal->id], 'user')->getAsArray() AS $row) {
                 $xmlData['rooms']["room {$roomLocal->id}"]['userPermissions'][$row['param']] = $roomLocal->getPermissionsArray($row['permissions']);
             }
 
             $xmlData['rooms']["room {$roomLocal->id}"]['groupPermissions'] = [];
-            foreach ($database->getRoomPermissions([$roomLocal->id], 'group')->getAsArray() AS $row) {
+            foreach (\Fim\Database::instance()->getRoomPermissions([$roomLocal->id], 'group')->getAsArray() AS $row) {
                 $xmlData['rooms']["room {$roomLocal->id}"]['groupPermissions'][$row['param']] = $roomLocal->getPermissionsArray($row['permissions']);
             }
         }
     }
 
     $request['page']++;
-    $database->accessLog('getRooms', $request); // We relog so that the next query counts as part of the flood detection. The only big drawback is that we will throw an exception eventually, without properly informing the user of where to resume searching from. (TODO)
+    \Fim\Database::instance()->accessLog('getRooms', $request); // We relog so that the next query counts as part of the flood detection. The only big drawback is that we will throw an exception eventually, without properly informing the user of where to resume searching from. (TODO)
 } while (isset($roomsQuery) && $roomsQuery->paginated && count($xmlData['rooms']) == 0);
 
 
