@@ -144,8 +144,10 @@ abstract class Database
      */
     public $transaction = false;
 
-    
-    /** TODO */
+
+    /**
+     * @var string A prefix used with tables. It is NOT automatically appended to tables, and is included here for convenience.
+     */
     public $sqlPrefix;
 
 

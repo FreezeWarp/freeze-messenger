@@ -61,15 +61,6 @@ define("POST_FORMAT_ITALICS", 0x2);
 
 
 
-
-/* Legacy Code
- * Will be removed shortly, maybe.*/
-$sqlPrefix = $dbConfig['vanilla']['tablePrefix']; // It's more sane this way...
-//$forumTablePrefix = $dbConfig['integration']['tablePrefix'];
-
-
-
-
 /* Language
  * The defaultLanguage flag was created with the WebPro interface in mind, however it's a good one for all people to have (as with the template and phrase tables). Likewise, it could even be used in the API in theory, but... meh. Anyway, even if set to anything other than en, don't expect much (so far as the WebPro interface goes).
  * Sadly, the entire language backend more or less is broken in FIMv3. */

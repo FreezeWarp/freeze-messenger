@@ -60,7 +60,7 @@ $dbConnect['core']['database'] = '';
 $dbConnect['slave']['database'] = '';
 $dbConnect['integration']['database'] = '';
 
-/* $sqlPrefix
+/* $dbConfig['vanilla']['tablePrefix']
  * A prefix used for all tables.
  * If uncertain, a random string is often the best bet.
  * If you are integrating with a forum, it is imperative you not leave this blank. */
