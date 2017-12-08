@@ -45,7 +45,7 @@ elseif ($requestHead['_action'] === 'create') {
         \Fim\Database::instance()->kickUser($kickUser->id, $room->id, $request['length']);
 
         if (fimConfig::$kickSendMessage)
-            \Fim\Database::instance()->storeMessage(new fimMessage([
+            \Fim\Database::instance()->storeMessage(new \Fim\Message([
                 'user' => $user,
                 'room' => $room,
                 'text'    => '/me kicked ' . $kickUser->name
@@ -57,7 +57,7 @@ elseif ($requestHead['_action'] === 'delete') {
     \Fim\Database::instance()->unkickUser($kickUser->id, $room->id);
 
     if (fimConfig::$unkickSendMessage)
-        \Fim\Database::instance()->storeMessage(new fimMessage([
+        \Fim\Database::instance()->storeMessage(new \Fim\Message([
             'user' => $user,
             'room' => $room,
             'text'    => '/me unkicked ' . $kickUser->name

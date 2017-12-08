@@ -14,7 +14,15 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-class fimMessage extends \Fim\MagicGettersSetters
+namespace Fim;
+
+use \fimRoom;
+use \fimUserFactory;
+use \fimUser;
+use \fimError;
+use \Exception;
+
+class Message extends \Fim\MagicGettersSetters
 {
     /**
      * @var fimRoom The room the message is in.

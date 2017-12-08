@@ -29,7 +29,6 @@ use \fimUser;
 use \fimRoom;
 use \fimRoomFactory;
 use \fimUserFactory;
-use \fimMessage;
 use \fimError;
 
 use \Exception;
@@ -993,7 +992,7 @@ class DatabaseInstance extends DatabaseSQL
      *
      * @return DatabaseResult
      */
-    public function getMessage(fimRoom $room, $messageId) : fimMessage {
+    public function getMessage(fimRoom $room, $messageId) : Message {
         return $this->getMessages(array(
             'room'     => $room,
             'messageIds'  => array($messageId),
@@ -1938,7 +1937,7 @@ class DatabaseInstance extends DatabaseSQL
     /*
      * Store message does not check for permissions. Make sure that all permissions are cleared before calling storeMessage.
      */
-    public function storeMessage(fimMessage $message)
+    public function storeMessage(Message $message)
     {
         /**
          * Flood limit check.
@@ -2096,9 +2095,9 @@ class DatabaseInstance extends DatabaseSQL
     /**
      * Updates the database representation of an object to match its state as an object.
      *
-     * @param fimMessage $message The message object, as currently stored.
+     * @param Message $message The message object, as currently stored.
      */
-    public function updateMessage(fimMessage $message) {
+    public function updateMessage(Message $message) {
         if (!$message->id)
             new fimError('badUpdateMessage', 'Update message must operate on a message with a valid ID.');
 
@@ -2159,7 +2158,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
 
-    public function createUnreadMessage($sendToUserId, fimMessage $message) {
+    public function createUnreadMessage($sendToUserId, Message $message) {
         if (fimConfig::$enableUnreadMessages) {
             \Stream\StreamFactory::publish('user_' . $sendToUserId, 'missedMessage', [
                 'id' => $message->id,
@@ -2214,7 +2213,7 @@ class DatabaseInstance extends DatabaseSQL
         $this->incrementCounter('uploadSize', $file->size);
 
         if ($room->id)
-            $this->storeMessage(new fimMessage([
+            $this->storeMessage(new Message([
                 'room' => $room,
                 'user' => $user,
                 'text'    => $file->webLocation,

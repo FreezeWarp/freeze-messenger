@@ -6,7 +6,6 @@ use \fimRoom;
 use \fimRoomFactory;
 use \fimUser;
 use \fimUserFactory;
-use \fimMessage;
 
 class DatabaseResult extends \Database\DatabaseResult {
     /**
@@ -58,13 +57,13 @@ class DatabaseResult extends \Database\DatabaseResult {
 
 
     /**
-     * @return fimMessage[]
+     * @return Message[]
      */
     function getAsMessages() : array {
         $return = array();
 
         for ($i = 0; $i < $this->count; $i++) {
-            $message = new fimMessage($this);
+            $message = new Message($this);
             $return[] = $message;
         }
 
@@ -72,10 +71,10 @@ class DatabaseResult extends \Database\DatabaseResult {
     }
 
     /**
-     * @return fimMessage
+     * @return Message
      */
-    function getAsMessage() : fimMessage {
-        return new fimMessage($this);
+    function getAsMessage() : Message {
+        return new Message($this);
     }
 
 

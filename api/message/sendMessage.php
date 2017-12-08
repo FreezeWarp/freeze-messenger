@@ -17,7 +17,7 @@
 /**
  * Send or update a message.
  *
- * @global    $message fimMessage
+ * @global    $message \Fim\Message
  * @global    $room    fimRoom
  * @package   fim3
  * @version   3.0
@@ -110,7 +110,7 @@ else {
             }
 
             else {
-                $message = new fimMessage([
+                $message = new \Fim\Message([
                     'room'     => $room,
                     'user'     => $user,
                     'text'        => $request['message'],

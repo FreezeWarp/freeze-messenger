@@ -17,7 +17,7 @@
 /**
  * Delete or undelete a message.
  *
- * @global $message fimMessage
+ * @global $message \Fim\Message
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>

@@ -189,7 +189,7 @@ switch ($requestHead['_action']) {
 
         /* Upload or Redirect, if Sha256 Match Found */
         if (count($prefile) > 0) { // The odds of a collision are astronomically low unless the server is handling an absolutely massive number of files. ...We could make the effort to detect the collision by actually comparing file contents, but it hardly seems worth the processing power.
-            if ($roomData) \Fim\Database::instance()->storeMessage(new fimMessage([
+            if ($roomData) \Fim\Database::instance()->storeMessage(new \Fim\Message([
                 'room' => $roomData,
                 'user' => $user,
                 'text'    => $file->webLocation,

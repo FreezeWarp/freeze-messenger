@@ -37,7 +37,6 @@ require_once(__DIR__ . '/vendor/autoload.php'); // Various Functions
 require_once(__DIR__ . '/config.php'); // Configuration Variables
 require_once(__DIR__ . '/functions/fimUser.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimRoom.php'); // FIM-specific Extensions
-require_once(__DIR__ . '/functions/fimMessage.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimCache.php'); // FIM-specific Extension to APC Wrapper
 require_once(__DIR__ . '/functions/fimConfig.php'); // FIM config and factory
 require_once(__DIR__ . '/functions/fimError.php'); // FIM Custom Error Class
