@@ -82,7 +82,7 @@ if (isset($requestHead['roomId'])) {
 }
 
 if (isset($requestHead['userId'])) {
-    if (!($kickUser = fimUserFactory::getFromId($requestHead['userId']))->exists())
+    if (!($kickUser = \Fim\UserFactory::getFromId($requestHead['userId']))->exists())
         new fimError('userIdNoExist', 'The given "userId" parameter does not correspond with a real user.');
 }
 

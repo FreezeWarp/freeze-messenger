@@ -1,22 +1,25 @@
 <?php
-/**
- * Class fimUserFactory
- */
-class fimUserFactory {
+
+namespace Fim;
+
+use \fimUser;
+use \Exception;
+
+class UserFactory {
     static $instances = [];
 
     public static function getFromId(int $userId) {
         global $generalCache;
 
-        if (isset(fimUserFactory::$instances[$userId]))
-            return fimUserFactory::$instances[$userId];
+        if (isset(UserFactory::$instances[$userId]))
+            return UserFactory::$instances[$userId];
 
         elseif ($generalCache->exists('fim_fimUser_' . $userId)
             && ($user = $generalCache->get('fim_fimUser_' . $userId)) != false)
-            return fimUserFactory::$instances[$userId] = $user;
+            return UserFactory::$instances[$userId] = $user;
 
         else
-            return fimUserFactory::$instances[$userId] = new fimUser($userId);
+            return UserFactory::$instances[$userId] = new fimUser($userId);
     }
 
     public static function getFromData(array $userData) : fimUser {
@@ -25,25 +28,25 @@ class fimUserFactory {
         if (!isset($userData['id']))
             throw new Exception('Userdata must contain id');
 
-        elseif (isset(fimUserFactory::$instances[$userData['id']])) {
-            fimUserFactory::$instances[$userData['id']]->populateFromArray($userData);
-            return fimUserFactory::$instances[$userData['id']];
+        elseif (isset(UserFactory::$instances[$userData['id']])) {
+            UserFactory::$instances[$userData['id']]->populateFromArray($userData);
+            return UserFactory::$instances[$userData['id']];
         }
 
         elseif ($generalCache->exists('fim_fimUser_' . $userData['id'])
             && ($user = $generalCache->get('fim_fimUser_' . $userData['id'])) != false) {
-            return fimUserFactory::$instances[$userData['id']] = $user;
+            return UserFactory::$instances[$userData['id']] = $user;
         }
 
         else {
-            return fimUserFactory::$instances[$userData['id']] = new fimUser($userData);
+            return UserFactory::$instances[$userData['id']] = new fimUser($userData);
         }
     }
 
     public static function cacheInstances() {
         global $generalCache;
 
-        foreach (fimUserFactory::$instances AS $id => $instance) {
+        foreach (UserFactory::$instances AS $id => $instance) {
             if (!$generalCache->exists('fim_fimUser_' . $id)) {
                 $generalCache->add('fim_fimUser_' . $id, $instance, 5 * 60);
             }

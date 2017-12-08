@@ -157,7 +157,7 @@ $generalCache->loadFimConfig();
 
 // Cache object instances at shutdown.
 register_shutdown_function(function() {
-    fimUserFactory::cacheInstances();
+    \Fim\UserFactory::cacheInstances();
     fimRoomFactory::cacheInstances();
 });
 

@@ -28,7 +28,6 @@ use \fimConfig;
 use \fimUser;
 use \fimRoom;
 use \fimRoomFactory;
-use \fimUserFactory;
 use \fimError;
 
 use \Exception;

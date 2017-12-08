@@ -16,6 +16,7 @@
 
 use \Fim\DatabaseInstance;
 use \Fim\DynamicObject;
+use \Fim\UserFactory;
 
 /**
  * Class fimRoom
@@ -432,7 +433,7 @@ class fimRoom extends DynamicObject {
 
         $users = [];
         foreach ($this->getPrivateRoomMemberIds() AS $userId) {
-            $user = fimUserFactory::getFromId($userId);
+            $user = UserFactory::getFromId($userId);
 
             if ($user->exists()) {
                 $users[] = $user;

@@ -831,6 +831,4 @@ class fimUser extends \Fim\DynamicObject
         }
     }
 }
-
-require('fimUserFactory.php');
 ?>

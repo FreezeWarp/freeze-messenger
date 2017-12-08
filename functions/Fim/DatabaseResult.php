@@ -3,9 +3,8 @@
 namespace Fim;
 
 use \fimRoom;
-use \fimRoomFactory;
 use \fimUser;
-use \fimUserFactory;
+use \fimRoomFactory;
 
 class DatabaseResult extends \Database\DatabaseResult {
     /**
@@ -18,7 +17,7 @@ class DatabaseResult extends \Database\DatabaseResult {
         $return = array();
 
         foreach ($rooms AS $room) {
-            $return[] = new fimRoom($room);
+            $return[] = fimRoomFactory::getFromData($room);
         }
 
         return $return;
@@ -28,7 +27,7 @@ class DatabaseResult extends \Database\DatabaseResult {
      * @return fimRoom
      */
     function getAsRoom() : fimRoom {
-        return new fimRoom($this->getAsArray(false));
+        return fimRoomFactory::getFromData($this->getAsArray(false));
     }
 
 
@@ -42,7 +41,7 @@ class DatabaseResult extends \Database\DatabaseResult {
         $return = array();
 
         foreach ($users AS $user) {
-            $return[] = fimUserFactory::getFromData($user);
+            $return[] = UserFactory::getFromData($user);
         }
 
         return $return;
@@ -52,7 +51,7 @@ class DatabaseResult extends \Database\DatabaseResult {
      * @return fimUser
      */
     function getAsUser() : fimUser {
-        return fimUserFactory::getFromData($this->getAsArray(false));
+        return UserFactory::getFromData($this->getAsArray(false));
     }
 
 

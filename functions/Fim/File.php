@@ -19,7 +19,6 @@ namespace Fim;
 use \fimUser;
 use \fimRoom;
 use \fimError;
-use \fimUserFactory;
 use \fimConfig;
 use \Exception;
 
@@ -110,7 +109,7 @@ class File extends MagicGettersSetters {
         $userId = $fileData['userId'] ?? new fimError('badfimFile', 'fimFile must be invoked with userId.');
         $roomIdLink = $fileData['roomIdLink'] ?? new fimError('badfimFile', 'fimFile must be invoked with roomIdLink.');
 
-        $this->user = fimUserFactory::getFromId($userId);
+        $this->user = UserFactory::getFromId($userId);
         $this->room = $roomIdLink
             ? new fimRoom($fileData['roomIdLink'])
             : null;

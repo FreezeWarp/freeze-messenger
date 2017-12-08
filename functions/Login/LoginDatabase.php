@@ -42,7 +42,7 @@ abstract class LoginDatabase implements LoginRunner {
             $this->loginFactory->oauthStorage->cleanSessions();
 
             // Get the user object from a user ID
-            $user = \fimUserFactory::getFromId((int) $this->oauthGrantType->getUserId());
+            $user = \Fim\UserFactory::getFromId((int) $this->oauthGrantType->getUserId());
             $user->setSessionHash($oauthResponse->getParameter('access_token')); // Mainly for logging.
             $user->setClientCode($oauthResponse->getParameter('client_id')); // Mainly for logging.
 
