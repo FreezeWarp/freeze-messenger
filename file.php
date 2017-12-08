@@ -96,7 +96,7 @@ if ($includeThumbnails) {
             $file = $file[array_values($filesIndexed)[0]];
         }
 
-        $thumbnail = \Fim\Database::instance()->select([\Fim\Database::instance()->sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents"], ["versionId" => $file->versionId, "scaleFactor" => $file->scaleFactor])->getAsArray(false);
+        $thumbnail = \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . "fileVersionThumbnails" => "versionId, scaleFactor, contents"], ["versionId" => $file->versionId, "scaleFactor" => $file->scaleFactor])->getAsArray(false);
 
         $file->contents = $thumbnail['contents'];
         $file->name = $file->name . '.thumb.jpg';

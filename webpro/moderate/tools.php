@@ -57,9 +57,9 @@ else {
                 echo '<br />';
                 echo container('Contents of fimConfig', '<pre>' . print_r((new ReflectionClass('fimConfig'))->getStaticProperties(), true) . '</pre>');
                 echo '<br />';
-                echo container('Contents of roomPermissionsCache Table', '<table><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::instance()->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
+                echo container('Contents of roomPermissionsCache Table', '<table><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
                 echo '<br />';
-                echo container('Contents of counters Table', '<table><tr><th>Name</th><th>Value</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::instance()->sqlPrefix . 'counters' => 'counterName, counterValue'])->getAsTemplate('<tr><td>$counterName</td><td>$counterValue</td></tr>') . '</table>');
+                echo container('Contents of counters Table', '<table><tr><th>Name</th><th>Value</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . 'counters' => 'counterName, counterValue'])->getAsTemplate('<tr><td>$counterName</td><td>$counterValue</td></tr>') . '</table>');
                 break;
 
             case 'clearCache':
@@ -88,7 +88,7 @@ else {
                     $tablePartitions = $table['@hardPartitions'] ?? 1;
 
                     for ($i = 0; $i < $tablePartitions; $i++) {
-                        $tableName = \Fim\Database::instance()->sqlPrefix . $table['@name'] . ($tablePartitions > 1 ? '__part' . $i : '');
+                        $tableName = \Fim\Database::$sqlPrefix . $table['@name'] . ($tablePartitions > 1 ? '__part' . $i : '');
 
                         $tableColumns = [];
                         $tableIndexes = [];

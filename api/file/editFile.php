@@ -231,7 +231,7 @@ switch ($requestHead['_action']) {
         if ($user->hasPriv('modFiles') || $user->id == $fileData['userId']) {
             \Fim\Database::instance()->modLog('deleteImage', $request['fileId']);
 
-            \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "files", array(
+            \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "files", array(
                 'deleted' => ($requestHead['_action'] == 'delete' ? 1 : 0)
             ), array(
                 'fileId' => $request['fileId'],

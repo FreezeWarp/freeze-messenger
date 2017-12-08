@@ -81,7 +81,7 @@ class fimCache extends CacheFactory {
     public function getEmoticons() {
         return $this->getGeneric('fim_emoticons', function() {
             return \Fim\DatabaseSlave::instance()->select(array(
-                \Fim\DatabaseSlave::instance()->sqlPrefix . "emoticons" => 'emoticonText, emoticonFile'
+                \Fim\DatabaseSlave::$sqlPrefix . "emoticons" => 'emoticonText, emoticonFile'
             ))->getAsArray(true);
         });
     }

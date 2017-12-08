@@ -187,7 +187,7 @@ class LoginVbulletin3 extends LoginDatabase {
 
         \Fim\Database::instance()->autoQueue(true);
         foreach ($smilies AS $smilie) {
-            @\Fim\Database::instance()->insert("{\Fim\Database::instance()->sqlPrefix}emoticons", [
+            @\Fim\Database::instance()->insert("{\Fim\Database::$sqlPrefix}emoticons", [
                 'emoticonText' => $smilie['emoticonText'],
                 'emoticonFile' => "{$loginConfig['url']}/{$smilie['emoticonFile']}"
             ]);

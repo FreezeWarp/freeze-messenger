@@ -140,7 +140,7 @@ else {
 
                     \Fim\Database::instance()->modLog('editConfigDirective', $config2['directive']);
                     \Fim\Database::instance()->fullLog('editConfigDirective', array('config' => $config2));
-                    \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "configuration", array(
+                    \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "configuration", array(
                         'type' => $request['type'],
                         'value' => $request['value'],
                     ), array(
@@ -158,7 +158,7 @@ else {
 
                     \Fim\Database::instance()->modLog('createConfigDirective', $config2['directive']);
                     \Fim\Database::instance()->fullLog('createConfigDirective', array('config' => $config2));
-                    \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "configuration", $config2);
+                    \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "configuration", $config2);
 
                     echo container('Configuration Added','The config has been added.<br /><br /><form method="post" action="moderate.php?do=config"><button type="submit">Return to Viewing Lists</button></form>');
                 }
@@ -171,7 +171,7 @@ else {
                     \Fim\Database::instance()->modLog('deleteConfigDirective', $config2['directive']);
                     \Fim\Database::instance()->fullLog('deleteConfigDirective', array('config' => $config2));
 
-                    \Fim\Database::instance()->delete(\Fim\Database::instance()->sqlPrefix . "config", array(
+                    \Fim\Database::instance()->delete(\Fim\Database::$sqlPrefix . "config", array(
                         'directive' => $request['directive'],
                     ));
 

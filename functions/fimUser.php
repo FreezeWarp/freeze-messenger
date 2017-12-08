@@ -486,7 +486,7 @@ class fimUser extends \Fim\DynamicObject
         }
 
 
-        $table = \Fim\Database::instance()->sqlPrefix . $tableNames[$listName];
+        $table = \Fim\Database::$sqlPrefix . $tableNames[$listName];
 
 
         if ($action === 'delete') {
@@ -747,10 +747,10 @@ class fimUser extends \Fim\DynamicObject
             return true;
 
         elseif ($this->id) // We can fetch data given the user's unique ID.
-            return $this->populateFromArray(\Fim\Database::instance()->where(['id' => $this->id])->select([\Fim\Database::instance()->sqlPrefix . 'users' => array_merge(['id'], $columns)])->getAsArray(false));
+            return $this->populateFromArray(\Fim\Database::instance()->where(['id' => $this->id])->select([\Fim\Database::$sqlPrefix . 'users' => array_merge(['id'], $columns)])->getAsArray(false));
 
         elseif ($this->integrationId && $this->integrationMethod) // We can fetch data given the user's unique pair of integration ID and integration method.
-            return $this->populateFromArray(\Fim\Database::instance()->where(['integrationMethod' => $this->integrationMethod, 'integrationId' => $this->integrationId])->select([\Fim\Database::instance()->sqlPrefix . 'users' => array_merge(['integrationId', 'integrationMethod'], $columns)])->getAsArray(false));
+            return $this->populateFromArray(\Fim\Database::instance()->where(['integrationMethod' => $this->integrationMethod, 'integrationId' => $this->integrationId])->select([\Fim\Database::$sqlPrefix . 'users' => array_merge(['integrationId', 'integrationMethod'], $columns)])->getAsArray(false));
 
         else
             throw new Exception('fimUser does not have uniquely identifying information required to perform database retrieval.');
@@ -805,11 +805,11 @@ class fimUser extends \Fim\DynamicObject
                     'userIds' => array($this->id),
                     'columns' => \Fim\Database::instance()->userHistoryColumns,
                 ))->getAsArray(false)) {
-                    \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "userHistory", fim_arrayFilterKeys($existingUserData, ['userId', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
+                    \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "userHistory", fim_arrayFilterKeys($existingUserData, ['userId', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
                 }
             }
 
-            $return = \Fim\Database::instance()->upsert(\Fim\Database::instance()->sqlPrefix . "users", array(
+            $return = \Fim\Database::instance()->upsert(\Fim\Database::$sqlPrefix . "users", array(
                 'id' => $this->id,
             ), $databaseFields);
 
@@ -823,7 +823,7 @@ class fimUser extends \Fim\DynamicObject
                 'privs' => fimConfig::$defaultUserPrivs
             ), $databaseFields);
 
-            $return = \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "users", $databaseFields);
+            $return = \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "users", $databaseFields);
 
             $this->id = \Fim\Database::instance()->getLastInsertId();
 

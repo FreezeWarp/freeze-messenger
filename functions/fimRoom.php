@@ -648,7 +648,7 @@ class fimRoom extends DynamicObject {
         elseif ($users === DatabaseInstance::decodeError) {
             $this->watchedByUsers = \Fim\Database::instance()->getWatchRoomUsers($this->id);
 
-            \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "rooms", [
+            \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "rooms", [
                 "watchedByUsers" => $this->watchedByUsers
             ], [
                 "id" => $this->id,
@@ -658,7 +658,7 @@ class fimRoom extends DynamicObject {
         elseif ($users === DatabaseInstance::decodeExpired) {
             $this->watchedByUsers = \Fim\Database::instance()->getWatchRoomUsers($this->id);
 
-            \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "rooms", [
+            \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "rooms", [
                 "watchedByUsers" => $this->watchedByUsers
             ], [
                 "id" => $this->id,
@@ -727,7 +727,7 @@ class fimRoom extends DynamicObject {
             throw new Exception('Can\'t call fimRoom->getColumns on private room.');
 
         elseif (count($columns) > 0)
-            return $this->populateFromArray(\Fim\Database::instance()->where(array('id' => $this->id))->select(array(\Fim\Database::instance()->sqlPrefix . 'rooms' => array_merge(array('id'), $columns)))->getAsArray(false));
+            return $this->populateFromArray(\Fim\Database::instance()->where(array('id' => $this->id))->select(array(\Fim\Database::$sqlPrefix . 'rooms' => array_merge(array('id'), $columns)))->getAsArray(false));
 
         else
             return true;
@@ -855,10 +855,10 @@ class fimRoom extends DynamicObject {
                 'roomIds' => [$this->id],
                 'columns' => explode(', ', \Fim\DatabaseInstance::roomHistoryColumns), // TODO: uh... shouldn't roomHistoryColumns be array?
             ])->getAsArray(false)) {
-                \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "roomHistory", fim_arrayFilterKeys(fim_removeNullValues($existingRoomData), ['roomId', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge']));
+                \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "roomHistory", fim_arrayFilterKeys(fim_removeNullValues($existingRoomData), ['roomId', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge']));
 
                 $return = \Fim\Database::instance()->update(
-                    \Fim\Database::instance()->sqlPrefix . "rooms",
+                    \Fim\Database::$sqlPrefix . "rooms",
                     array_merge(fim_arrayFilterKeys((array) $this, ['name', 'topic', 'options', 'defaultPermissions', 'parentalFlags', 'parentalAge']), $roomParameters),
                     array(
                         'id' => $this->id,
@@ -876,7 +876,7 @@ class fimRoom extends DynamicObject {
         }
 
         else {
-            \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "rooms", $roomParameters);
+            \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "rooms", $roomParameters);
             return $this->id = \Fim\Database::instance()->getLastInsertId();
         }
     }

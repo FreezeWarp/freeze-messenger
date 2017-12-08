@@ -13,10 +13,18 @@ class DatabaseSlave {
     private static $instance;
 
     /**
+     * @var string A prefix used with tables. It is NOT automatically appended to tables, and is included here for convenience.
+     */
+    public static $sqlPrefix;
+
+
+    /**
      * Connect the {@see $instance} to a DBMS server.
      * @see DatabaseInstance::connect() For the paramaters of this method.
      */
     public static function connect($host, $port, $user, $password, $database, $driver, $tablePrefix = '') {
+        self::$sqlPrefix = $tablePrefix;
+
         return self::$instance = new DatabaseInstance($host, $port, $user, $password, $database, $driver, $tablePrefix);
     }
 

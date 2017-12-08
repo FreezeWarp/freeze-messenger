@@ -167,7 +167,7 @@ else {
                         'options' => $listOptions,
                     );
 
-                    \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "censorLists", $newList, array(
+                    \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "censorLists", $newList, array(
                         'listId' => $request['listId'],
                     ));
 
@@ -183,7 +183,7 @@ else {
                         'options' => $listOptions,
                     );
 
-                    \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "censorLists", $list);
+                    \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "censorLists", $list);
                     $list['listId'] = \Fim\Database::instance()->getLastInsertId();
 
                     \Fim\Database::instance()->modLog('addCensorList', $list['listId']);
@@ -200,10 +200,10 @@ else {
                 \Fim\Database::instance()->modLog('deleteCensorList', $list['listId']);
                 \Fim\Database::instance()->fullLog('deleteCensorList', array('list' => $list, 'words' => $words));
 
-                \Fim\Database::instance()->delete(\Fim\Database::instance()->sqlPrefix . "censorLists", array(
+                \Fim\Database::instance()->delete(\Fim\Database::$sqlPrefix . "censorLists", array(
                     'listId' => $request['listId'],
                 ));
-                \Fim\Database::instance()->delete(\Fim\Database::instance()->sqlPrefix . "censorWords", array(
+                \Fim\Database::instance()->delete(\Fim\Database::$sqlPrefix . "censorWords", array(
                     'listId' => $request['listId'],
                 ));
 
@@ -312,7 +312,7 @@ else {
                     \Fim\Database::instance()->modLog('editCensorWord', $request['wordId']);
                     \Fim\Database::instance()->fullLog('editCensorWord', array('word' => $word, 'list' => $list));
 
-                    \Fim\Database::instance()->update(\Fim\Database::instance()->sqlPrefix . "censorWords", array(
+                    \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "censorWords", array(
                         'word' => $request['word'],
                         'severity' => $request['severity'],
                         'param' => $request['param'],
@@ -331,7 +331,7 @@ else {
                         'listId' => $request['listId'],
                     );
 
-                    \Fim\Database::instance()->insert(\Fim\Database::instance()->sqlPrefix . "censorWords", $word);
+                    \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "censorWords", $word);
                     $word['wordId'] = \Fim\Database::instance()->getLastInsertId();
 
                     \Fim\Database::instance()->modLog('addCensorWord', $request['listId'] . ',' . \Fim\Database::instance()->getLastInsertId());
@@ -348,7 +348,7 @@ else {
                 $word = \Fim\Database::instance()->getCensorWord($request['wordId']);
                 $list = \Fim\Database::instance()->getCensorList($word['listId']);
 
-                \Fim\Database::instance()->delete(\Fim\Database::instance()->sqlPrefix . "censorWords", array(
+                \Fim\Database::instance()->delete(\Fim\Database::$sqlPrefix . "censorWords", array(
                     'wordId' => $request['wordId'],
                 ));
 

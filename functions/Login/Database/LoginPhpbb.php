@@ -101,12 +101,12 @@ class LoginPhpbb extends LoginDatabase {
         global $loginConfig;
 
         $smilies = \Fim\DatabaseLogin::instance()->select(array(
-            \Fim\DatabaseLogin::instance()->sqlPrefix . "smilies" => 'code emoticonText, smiley_url emoticonFile'
+            \Fim\DatabaseLogin::$sqlPrefix . "smilies" => 'code emoticonText, smiley_url emoticonFile'
         ))->getAsArray(true);
 
         \Fim\Database::instance()->autoQueue(true);
         foreach ($smilies AS $smilie) {
-            @\Fim\Database::instance()->insert("{\Fim\Database::instance()->sqlPrefix}emoticons", [
+            @\Fim\Database::instance()->insert("{\Fim\Database::$sqlPrefix}emoticons", [
                 'emoticonText' => $smilie['emoticonText'],
                 'emoticonFile' => $loginConfig['url'] . 'images/smilies/' . $smilie['emoticonFile']
             ]);
