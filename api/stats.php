@@ -65,7 +65,7 @@ $xmlData = array(
 
 /* Start Processing */
 
-if (!($room = fimRoomFactory::getFromId($request['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)) {
+if (!($room = \Fim\RoomFactory::getFromId($request['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)) {
     new fimError('roomIdNoExist', 'The given "roomId" parameter does not correspond with a real room.');
 }
 

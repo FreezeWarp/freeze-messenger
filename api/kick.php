@@ -73,7 +73,7 @@ $requestHead = array_merge($requestHead, fim_sanitizeGPC('g', [
 
 /* Early Validation */
 if (isset($requestHead['roomId'])) {
-    if (!($room = fimRoomFactory::getFromId($requestHead['roomId']))->exists()
+    if (!($room = \Fim\RoomFactory::getFromId($requestHead['roomId']))->exists()
         || !(($permission = \Fim\Database::instance()->hasPermission($user, $room)) & fimRoom::ROOM_PERMISSION_VIEW))
         new fimError('roomIdNoExist', 'The given "roomId" parameter does not correspond with a real room.');
 

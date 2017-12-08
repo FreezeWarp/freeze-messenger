@@ -27,7 +27,6 @@ use Database\SQL\DatabaseSQL;
 use \fimConfig;
 use \fimUser;
 use \fimRoom;
-use \fimRoomFactory;
 use \fimError;
 
 use \Exception;
@@ -2432,7 +2431,7 @@ class DatabaseInstance extends DatabaseSQL
     }
 
     public function triggerRoomListCache($roomId, $cacheColumn, $dataChanges) {
-        $room = fimRoomFactory::getFromId((int) $roomId);
+        $room = RoomFactory::getFromId((int) $roomId);
         $listEntries = $room->{$cacheColumn};
 
         /*if (count($listEntries) > fimConfig::$databaseCollectionMaxEntries) {

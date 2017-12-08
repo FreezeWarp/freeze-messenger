@@ -882,6 +882,4 @@ class fimRoom extends DynamicObject {
         }
     }
 }
-
-require_once('fimRoomFactory.php');
 ?>

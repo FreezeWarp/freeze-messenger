@@ -89,7 +89,7 @@ switch ($requestHead['_action']) {
     case 'edit': case 'create':
     if ($requestHead['_action'] === 'create') {
         /* Get Room Data, if Applicable */
-        if ($request['roomId']) $roomData = fimRoomFactory::getFromId($request['roomId']);
+        if ($request['roomId']) $roomData = \Fim\RoomFactory::getFromId($request['roomId']);
         else $roomData = false;
 
 

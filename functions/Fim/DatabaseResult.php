@@ -4,7 +4,6 @@ namespace Fim;
 
 use \fimRoom;
 use \fimUser;
-use \fimRoomFactory;
 
 class DatabaseResult extends \Database\DatabaseResult {
     /**
@@ -17,7 +16,7 @@ class DatabaseResult extends \Database\DatabaseResult {
         $return = array();
 
         foreach ($rooms AS $room) {
-            $return[] = fimRoomFactory::getFromData($room);
+            $return[] = RoomFactory::getFromData($room);
         }
 
         return $return;
@@ -27,7 +26,7 @@ class DatabaseResult extends \Database\DatabaseResult {
      * @return fimRoom
      */
     function getAsRoom() : fimRoom {
-        return fimRoomFactory::getFromData($this->getAsArray(false));
+        return RoomFactory::getFromData($this->getAsArray(false));
     }
 
 
