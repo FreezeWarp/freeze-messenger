@@ -48,13 +48,13 @@ class UserFactory {
 
         foreach (UserFactory::$instances AS $id => $instance) {
             if (!$generalCache->exists('fim_fimUser_' . $id)) {
-                $generalCache->add('fim_fimUser_' . $id, $instance, 5 * 60);
+                $generalCache->add('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
             }
             elseif ($instance->doCache) {
                 $instance->resolveAll();
                 $instance->doCache = false;
 
-                $generalCache->set('fim_fimUser_' . $id, $instance, 5 * 60);
+                $generalCache->set('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
             }
         }
     }

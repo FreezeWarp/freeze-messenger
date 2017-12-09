@@ -47,10 +47,12 @@ class RoomFactory {
     public static function cacheInstances() {
         global $generalCache;
 
+        // todo: docache
+
         foreach (RoomFactory::$instances AS $id => $instance) {
             if (!$generalCache->exists('fim_fimRoom_' . $id)) {
                 $instance->resolveAll();
-                $generalCache->add('fim_fimRoom_' . $id, $instance, 5 * 60);
+                $generalCache->add('fim_fimRoom_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
             }
         }
     }

@@ -167,9 +167,12 @@ switch ($requestHead['_action']) {
         if (!in_array($file->extension, \Fim\Config::$allowedExtensions))
             throw new fimError('badExt', 'The filetype is forbidden, and thus the file cannot be uploaded.'); // Not allowed...
 
+        // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
         if (!isset(\Fim\Config::$uploadMimes[$file->extension]))
-            throw new fimError('unrecExt', 'The filetype is unrecognised, and thus the file cannot be uploaded.'); // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
-        else if (\Fim\Config::$uploadMimes[$file->extension] !== $fileMime)
+            throw new fimError('unrecExt', 'The filetype is unrecognised, and thus the file cannot be uploaded.');
+        // We "check" the contents of a file to see if they match the extension-determined mimetype if the extension is in the list of those to check.
+        else if (in_array($file->extension, \Fim\Config::$uploadMimeProof)
+            && \Fim\Config::$uploadMimes[$file->extension] !== $fileMime)
             throw new fimError('invalidFileContent', 'The upload file does not appear to be a valid file of its type.');
 
 
