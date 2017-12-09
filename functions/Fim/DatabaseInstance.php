@@ -583,7 +583,7 @@ class DatabaseInstance extends DatabaseSQL
         ), $options);
 
         $columns = array(
-            $this->sqlPrefix . "configuration" => 'directive, type, value',
+            $this->sqlPrefix . "configuration" => 'directive, value',
         );
 
         $conditions = [

@@ -50,25 +50,14 @@ class fimCache extends CacheFactory {
     public function loadConfig() {
         global $disableConfig;
 
-        if (!$disableConfig && false) {
+        if (!$disableConfig) {
             $configData = $this->getGeneric('fim_config', function() {
                 return \Fim\DatabaseSlave::instance()->getConfigurations()->getAsArray(true);
             });
 
             foreach ($configData AS $configDatabaseRow) {
-                switch ($configDatabaseRow['type']) {
-                    case 'int':
-                    case 'string':
-                    case 'float':
-                    case 'bool':
-                        \Fim\Config::${$configDatabaseRow['directive']} = fim_cast($configDatabaseRow['type'], $configDatabaseRow['value']);
-                        echo 'hi';
-                        fim_flush();
-                     break;
-
-                    case 'json':
-                        \Fim\Config::${$configDatabaseRow['directive']} = (array) json_decode($configDatabaseRow['value']);
-                        break;
+                if (($value = @unserialize($configDatabaseRow['value'])) !== false || $configDatabaseRow['value'] === serialize(false)) {
+                    \Fim\Config::${$configDatabaseRow['directive']} = $value;
                 }
             }
         }

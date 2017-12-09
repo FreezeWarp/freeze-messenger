@@ -40,16 +40,14 @@ else {
     if ($user->hasPriv('modPrivs')) {
         switch ($_GET['do2'] ?? 'view') {
             case 'view':
-                $config3 = \Fim\Database::instance()->getConfigurations()->getAsArray(true);
+                $directives = (new ReflectionClass('\\Fim\\Config'))->getStaticProperties();
 
                 $rows = '';
-                foreach ($config3 AS $config2) {
-                    if ($config2['type'] == 'array' || $config2['type'] == 'associative') $config2['value'] = str_replace(',', ', ', $config2['value']);
-
-                    $rows .= "<tr><td>$config2[directive]</td><td>$config2[type]</td><td>$config2[value]</td><td><a href=\"./moderate.php?do=config&do2=edit&directive=$config2[directive]\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
+                foreach ($directives AS $directive => $value) {
+                    $rows .= "<tr><td>$directive</td><td>" . gettype($value) . "</td><td>" . var_export($value, true) . "</td><td><a href=\"./moderate.php?do=config&do2=edit&directive=$directive\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
                 }
 
-                echo container('Configurations<a href="./moderate.php?do=config&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
+                echo container('Configurations','<table class="page rowHover">
   <thead>
     <tr class="ui-widget-header">
       <td>Directive</td>
@@ -65,105 +63,84 @@ else {
             break;
 
             case 'edit':
-                if (isset($request['directive'])) {
-                    $config2 = \Fim\Database::instance()->getConfigurations(array('directives' => array($request['directive'])))->getAsArray(false);
-                    $title = 'Edit Configuration Value "' . $config2['directive'] . '"';
-                }
-                else {
-                    $config2 = array(
-                        'directive' => '',
-                        'value' => '',
-                        'type' => 'string',
-                    );
+                $directiveValue = \Fim\Config::${$request['directive']};
+                $directiveType = gettype($directiveValue);
 
-                    $title = 'Create New Configuration Value';
-                }
-
-                switch($config2['type']) {
-                    case 'bool':
+                switch($directiveType) {
+                    case 'boolean':
                         $valueBlock = fimHtml_buildSelect('value', array(
-                            'true' => 'true',
-                            'false' => 'false',
-                        ), $config2['value']);
+                            true => 'true',
+                            false => 'false',
+                        ), $directiveValue);
                     break;
 
                     case 'integer':
                     case 'float':
-                        $valueBlock = '<input type="number" name="value" required="required" value="' . $config2['value'] . '" />';
+                        $valueBlock = '<input type="number" name="value" required="required" value="' . $directiveValue . '" />';
                     break;
 
 
-                    case 'associative':
-                        $valueBlock = '<textarea name="value">' . json_encode(json_decode($config2['value']), JSON_PRETTY_PRINT) . '</textarea>';
+                    case 'array':
+                        $valueBlock = '<textarea name="value" style="width: 100%; height: 300px;">' . json_encode($directiveValue, JSON_PRETTY_PRINT) . '</textarea>';
                     break;
 
 
                     default:
-                        $valueBlock = '<input type="text" name="value" value="' . str_replace('"', '&quot;', $config2['value']) . '" />';
+                        $valueBlock = '<input type="text" name="value" value="' . str_replace('"', '&quot;', $directiveValue) . '" />';
                 }
 
-                echo container($title, '<form action="./moderate.php?do=config&do2=edit2" method="post">
-  <table class="ui-widget page">
+                echo container("Edit Directive '{$request['directive']}'", "<form action='./moderate.php?do=config&do2=edit2' method='post'>
+  <table class='ui-widget page'>
     <tr>
       <td>Directive:</td>
-      <td>' . ($config2['directive'] ? '<input type="hidden" name="newDirective" value="false" /><input type="hidden" name="directive" value="' . $config2['directive'] . '" />' . $config2['directive'] : '<input type="hidden" name="newDirective" value="true" /><input type="text" name="directive" value="' . $config2['directive'] . '" />') . '</td>
+      <td><input type='hidden' name='directive' value='{$request['directive']}' />{$request['directive']}</td>
     </tr>
     <tr>
       <td>Type:</td>
-      <td>
-        ' . fimHtml_buildSelect('type', array(
-                        'bool' => 'Boolean',
-                        'int' => 'Integer',
-                        'float' => 'Float',
-                        'string' => 'String',
-                        'json' => 'JSON (for arrays)',
-                    ), $config2['type']) . '<br />
-        <small>This is the type of the variable when interpreted. It should not normally be altered.</small>
-      </td>
+      <td>$directiveType</td>
     </tr>
     <tr>
       <td>Value:</td>
-      <td>
-        ' . $valueBlock . '<br />
-      </td>
+      <td>$valueBlock</td>
     </tr>
   </table>
 
-  <button type="submit">Submit</button>
-  <button type="reset">Reset</button>
-</form>');
+  <button type='submit'>Submit</button>
+  <button type='reset'>Reset</button>
+</form>");
             break;
 
             case 'edit2':
-                if (!$request['newDirective']) {
-                    $config2 = \Fim\Database::instance()->getConfiguration($request['directive']);
+                $directiveType = gettype(\Fim\Config::${$request['directive']});
 
-                    \Fim\Database::instance()->modLog('editConfigDirective', $config2['directive']);
-                    \Fim\Database::instance()->fullLog('editConfigDirective', array('config' => $config2));
-                    \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "configuration", array(
-                        'type' => $request['type'],
-                        'value' => $request['value'],
-                    ), array(
-                        'directive' => $request['directive'],
-                    ));
-
-                    echo container('Configuration Updated','The configuration has been updated. Note that certain settings do not take effect retroactively (e.g. "userRoomCreation" does not change the setting for existing users). <br /><br /><form method="post" action="moderate.php?do=config"><button type="submit">Return to Viewing Lists</button></form>');
+                if ($directiveType === 'array') {
+                    $request['value'] = json_decode($request['value'], true);
                 }
                 else {
-                    $config2 = array(
-                        'directive' => $request['directive'],
-                        'type' => $request['type'],
-                        'value' => $request['value'],
-                    );
-
-                    \Fim\Database::instance()->modLog('createConfigDirective', $config2['directive']);
-                    \Fim\Database::instance()->fullLog('createConfigDirective', array('config' => $config2));
-                    \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "configuration", $config2);
-
-                    echo container('Configuration Added','The config has been added.<br /><br /><form method="post" action="moderate.php?do=config"><button type="submit">Return to Viewing Lists</button></form>');
+                    settype($request['value'], gettype(\Fim\Config::${$request['directive']}));
                 }
+
+                \Fim\Database::instance()->modLog('editConfigDirective', $request['directive']);
+                \Fim\Database::instance()->fullLog('editConfigDirective',
+                    [
+                        'directive' => $request['directive'],
+                        'prevValue'     => \Fim\Config::${$request['directive']},
+                        'newValue'     => $request['value']
+                    ]
+                );
+
+                \Fim\Database::instance()->upsert(\Fim\Database::$sqlPrefix . "configuration", [
+                    'directive' => $request['directive'],
+                ], [
+                    'value' => serialize($request['value']),
+                ]);
+
+                \Cache\CacheFactory::clearAll(); // TODO: just clear the one
+
+                echo container('Configuration Updated','The configuration has been updated. Note that certain settings do not take effect retroactively (e.g. "userRoomCreation" does not change the setting for existing users). <br /><br /><form method="post" action="moderate.php?do=config"><button type="submit">Return to Viewing Lists</button></form>');
             break;
 
+            /* TODO: delete DB added directives */
             case 'delete':
                 $config2 = \Fim\Database::instance()->getConfiguration($request['directive']);
 
