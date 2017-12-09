@@ -22,7 +22,6 @@ ini_set('display_errors', 1);
 require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
 
 require(__DIR__ . '/../functions/Xml2Array.php'); // For reading the db*.xml files
-require(__DIR__ . '/../functions/fimDatabase.php'); // ""
 require(__DIR__ . '/../functions/fimUser.php'); // Creating Users
 require(__DIR__ . '/../functions/fimRoom.php');
 require(__DIR__ . '/../functions/fimCache.php'); // Caching
@@ -59,7 +58,7 @@ switch ($_REQUEST['phase']) {
 
         /* Part 1 : Connect to the Database, Create a New Database If Needed */
 
-        $database = new DatabaseInstance();
+        $database = new \Fim\DatabaseInstance();
         $database->setErrorLevel(E_USER_WARNING);
 
         try {
@@ -243,7 +242,7 @@ switch ($_REQUEST['phase']) {
 
         if ($forum == 'vanilla') {
             try {
-                $database = new DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix);
+                $database = new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix);
                 \Fim\Config::$displayBacktrace = true;
 
                 $user = new fimUser(false);
