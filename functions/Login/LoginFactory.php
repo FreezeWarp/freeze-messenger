@@ -173,7 +173,7 @@ class LoginFactory {
      * @return \OAuth2\GrantType\IntegrationLogin
      */
     public function oauthGetIntegrationLogin() {
-        if (!$this->oauthRequest->request['client_id'])
+        if (empty($this->oauthRequest->request['client_id']))
             $this->oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this (if we don't).
 
         $this->oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.

@@ -85,7 +85,7 @@ class LoginSteam extends LoginTwoStep {
                     }
 
                     $dbGroupIds = \Fim\Database::instance()->select([
-                        'socialGroups' => 'id, name'
+                        \Fim\Database::$sqlPrefix . 'socialGroups' => 'id, name'
                     ], ['name' => \Fim\Database::instance()->in($groupNames)])->getColumnValues('id');
 
                     \Fim\Database::instance()->autoQueue(true);
@@ -114,7 +114,7 @@ class LoginSteam extends LoginTwoStep {
                     }
 
                     $dbFriends = \Fim\Database::instance()->select([
-                        'users' => 'id, name, integrationId, integrationMethod'
+                        \Fim\Database::$sqlPrefix . 'users' => 'id, name, integrationId, integrationMethod'
                     ], ['either' => $friendMatches])->getColumnValues('id');
                     $this->loginFactory->user->editList('friendedUsers', $dbFriends, 'create');
                 }

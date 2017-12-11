@@ -800,10 +800,10 @@ class fimUser extends \Fim\DynamicObject
         if ($this->id) {
             \Fim\Database::instance()->startTransaction();
 
-            if (fim_inArray(array_keys($databaseFields), explode(', ', \Fim\Database::instance()->userHistoryColumns))) {
+            if (fim_inArray(array_keys($databaseFields), explode(', ', \Fim\DatabaseInstance::userHistoryColumns))) {
                 if ($existingUserData = \Fim\Database::instance()->getUsers(array(
                     'userIds' => array($this->id),
-                    'columns' => \Fim\Database::instance()->userHistoryColumns,
+                    'columns' => \Fim\DatabaseInstance::userHistoryColumns,
                 ))->getAsArray(false)) {
                     \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "userHistory", fim_arrayFilterKeys($existingUserData, ['userId', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
                 }

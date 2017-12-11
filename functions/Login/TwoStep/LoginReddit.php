@@ -104,7 +104,7 @@ class LoginReddit extends LoginTwoStep {
 
 
             $dbGroupIds = \Fim\Database::instance()->select([
-                'socialGroups' => 'id, name'
+                \Fim\Database::$sqlPrefix . 'socialGroups' => 'id, name'
             ], ['name' => \Fim\Database::instance()->in($subscriptionNames)])->getColumnValues('id');
 
             \Fim\Database::instance()->autoQueue(true);
