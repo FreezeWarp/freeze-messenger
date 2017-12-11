@@ -32,6 +32,8 @@ class DatabaseLogin {
      * Replace the current {@see $instance} used by this class.
      */
     public static function setInstance(DatabaseInstance $instance) {
+        self::$sqlPrefix = $instance->sqlPrefix;
+
         return self::$instance = $instance;
     }
 
