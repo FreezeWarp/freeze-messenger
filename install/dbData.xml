@@ -28,23 +28,19 @@
         <!-- Table configuration -->
         <table name="configuration" mode="dev">
             <column name="directive" value="displayBacktrace" />
-            <column name="value" value="true" />
-            <column name="type" value="bool" />
+            <column name="value" value="b:1;" />
         </table>
         <table name="configuration" mode="dev">
             <column name="directive" value="logQueries" />
-            <column name="value" value="true" />
-            <column name="type" value="bool" />
+            <column name="value" value="b:1;" />
         </table>
         <table name="configuration" mode="dev">
             <column name="directive" value="accessLogEnabled" />
-            <column name="value" value="true" />
-            <column name="type" value="bool" />
+            <column name="value" value="b:1;" />
         </table>
         <table name="configuration" mode="dev">
             <column name="directive" value="dev" />
-            <column name="value" value="true" />
-            <column name="type" value="bool" />
+            <column name="value" value="b:1;" />
         </table>
 
 
