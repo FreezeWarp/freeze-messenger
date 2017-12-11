@@ -58,44 +58,44 @@ switch ($_REQUEST['phase']) {
 
         /* Part 1 : Connect to the Database, Create a New Database If Needed */
 
-        $database = new \Fim\DatabaseInstance();
-        $database->setErrorLevel(E_USER_WARNING);
+        \Fim\Database::setInstance(new \Fim\DatabaseInstance());
+        \Fim\Database::instance()->setErrorLevel(E_USER_WARNING);
 
         try {
-            $database->connect($host, $port, $userName, $password, $createdb ? false : $databaseName, $driver, $prefix);
+            \Fim\Database::instance()->connect($host, $port, $userName, $password, $createdb ? false : $databaseName, $driver, $prefix);
         } catch (Exception $exception) {
             die($exception->getMessage());
         }
 
 
-        if ($database->getLastError()) {
-            die("Connection Error.\n" . $database->getLastError());
+        if (\Fim\Database::instance()->getLastError()) {
+            die("Connection Error.\n" . \Fim\Database::instance()->getLastError());
         }
         else {
             require('../databaseParameters.php');
-            $database->loadVersion();
+            \Fim\Database::instance()->loadVersion();
 
             if ($driver === 'mysql' || $driver === 'mysqli') {
-                if ($database->versionPrimary <= 4) { // MySQL 4 is a no-go.
-                    die('You have attempted to connect to a MySQL version ' . $database->version . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
+                if (\Fim\Database::instance()->versionPrimary <= 4) { // MySQL 4 is a no-go.
+                    die('You have attempted to connect to a MySQL version ' . \Fim\Database::instance()->versionString . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
                 }
-                elseif ($database->versionPrimary == 5 && $database->versionSecondary == 0 && $database->versionTertiary <= 4) { // MySQL 5.0.0-5.0.4 is also a no-g	o (we require the BIT type, even though in theory we could work without it)
-                    die('You have attempted to connect to a MySQL version ' . $database->version . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
+                elseif (\Fim\Database::instance()->versionPrimary == 5 && \Fim\Database::instance()->versionSecondary == 0 && \Fim\Database::instance()->versionTertiary <= 4) { // MySQL 5.0.0-5.0.4 is also a no-g	o (we require the BIT type, even though in theory we could work without it)
+                    die('You have attempted to connect to a MySQL version ' . \Fim\Database::instance()->versionString . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
                 }
-                elseif ($database->versionPrimary > 5) { // Note: I figure this might be best for now. Note that the code should still run for any version of MySQL 5.x.
+                elseif (\Fim\Database::instance()->versionPrimary > 5) { // Note: I figure this might be best for now. Note that the code should still run for any version of MySQL 5.x.
                     die ('You have attempted to connect to a MySQL version greater than 5. Such a thing did not exist when I was writing this code, and there is a good chance it won\'t work as expected. Either download a newer version of FreezeMessenger, or, if one does not yet exist, you can try to modify the source code of the installer script to remove this restriction. If you\'re lucky, things will still work.');
                 }
             }
             elseif ($driver === 'pgsql') {
-                if ($database->versionPrimary <= 8) { // PostGreSQL 8 is a no-go.
+                if (\Fim\Database::instance()->versionPrimary <= 8) { // PostGreSQL 8 is a no-go.
                     die('You have attempted to connect to a PostGreSQL version 8 database. PostGreSQL 8.2+ is required for FreezeMessenger.');
                 }
-                elseif ($database->versionPrimary == 9 && $database->versionSecondary <= 2) { // PostGreSQL 9.0-9.2 is also a no-go.
+                elseif (\Fim\Database::instance()->versionPrimary == 9 && \Fim\Database::instance()->versionSecondary <= 2) { // PostGreSQL 9.0-9.2 is also a no-go.
                     die('You have attempted to connect to an out-of-date version of a PostGreSQL 9 database (PostGreSQL 9.0-9.2). PostGreSQL 9.3+ is required for FreezeMessenger.');
                 }
             }
             elseif ($driver === 'sqlsrv') {
-                if ($database->versionPrimary <= 12) {
+                if (\Fim\Database::instance()->versionPrimary <= 12) {
                     die('SqlServer 13+ is required for FreezeMessenger.');
                 }
             }
@@ -105,10 +105,10 @@ switch ($_REQUEST['phase']) {
 
 
             if ($createdb) { // Create the database if needed. This will not work for all drivers.
-                if (!$database->createDatabase($databaseName)) { // We're supposed to create it, let's try.
-                    die("The database could not be created.\n" . $database->getLastError());
+                if (!\Fim\Database::instance()->createDatabase($databaseName)) { // We're supposed to create it, let's try.
+                    die("The database could not be created.\n" . \Fim\Database::instance()->getLastError());
                 }
-                elseif (!$database->selectDatabase($databaseName)) {
+                elseif (!\Fim\Database::instance()->selectDatabase($databaseName)) {
                     die('The created database could not be selected.');
                 }
             }
@@ -116,7 +116,7 @@ switch ($_REQUEST['phase']) {
 
 
             // Get Pre-Existing Tables So We Don't Overwrite Any of Them Later
-            $showTables = array_map('strtolower', (array) $database->getTablesAsArray()); // ...In Windows, table names may not be returned as entered (uppercase letters usually become lowercase), so this is the most efficient work-around I could come up with.
+            $showTables = array_map('strtolower', (array) \Fim\Database::instance()->getTablesAsArray()); // ...In Windows, table names may not be returned as entered (uppercase letters usually become lowercase), so this is the most efficient work-around I could come up with.
 
             // Read the various XML files.
             $xmlData = new Xml2Array(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
@@ -136,11 +136,11 @@ switch ($_REQUEST['phase']) {
                 die('The XML data source appears to be out of date. Reinstall FreezeMessenger and try again.');
             }
             else {
-                $database->startTransaction();
+                \Fim\Database::instance()->startTransaction();
 
 
                 /* Part 2: Create the Tables */
-                $database->holdTriggers(true); // Don't run triggers. The trigger statements set our foreign keys, and thus must be run at the very end.
+                \Fim\Database::instance()->holdTriggers(true); // Don't run triggers. The trigger statements set our foreign keys, and thus must be run at the very end.
 
                 $time = time();
 
@@ -181,12 +181,12 @@ switch ($_REQUEST['phase']) {
                     }
 
 
-                    if (!$database->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes, isset($table['@partitionBy']) ? $table['@partitionBy'] : false, isset($table['@hardPartitions']) ? $table['@hardPartitions'] : 1, true)) {
-                        die("Could not create table.\n" . $database->getLastError());
+                    if (!\Fim\Database::instance()->createTable($tableName, $tableComment, $tableType, $tableColumns, $tableIndexes, isset($table['@partitionBy']) ? $table['@partitionBy'] : false, isset($table['@hardPartitions']) ? $table['@hardPartitions'] : 1, true)) {
+                        die("Could not create table.\n" . \Fim\Database::instance()->getLastError());
                     }
                 }
 
-                $database->holdTriggers(false);
+                \Fim\Database::instance()->holdTriggers(false);
 
 
                 /* Part 3: Insert Predefined Data */
@@ -199,20 +199,20 @@ switch ($_REQUEST['phase']) {
                     $insertData = array();
 
                     foreach ($table['column'] AS $column) {
-                        $insertData[$column['@name']] = (isset($column['@type']) ? new DatabaseType($column['@type'], $column['@value']) : $database->auto($column['@value']));
+                        $insertData[$column['@name']] = (isset($column['@type']) ? new DatabaseType($column['@type'], $column['@value']) : \Fim\Database::instance()->auto($column['@value']));
                     }
 
-                    if (!$database->insert($prefix . $table['@name'], $insertData)) {
-                        die("Failed to insert data into {$prefix}{$table['@name']}.\n" . print_r($database->queryLog, true));
+                    if (!\Fim\Database::instance()->insert($prefix . $table['@name'], $insertData)) {
+                        die("Failed to insert data into {$prefix}{$table['@name']}.\n" . print_r(\Fim\Database::instance()->queryLog, true));
                     }
                 }
 
-                $database->endTransaction();
+                \Fim\Database::instance()->endTransaction();
             }
         }
 
 
-        $database->close();
+        \Fim\Database::instance()->close();
 
         echo 'success';
         break;
@@ -251,7 +251,7 @@ switch ($_REQUEST['phase']) {
                     'password' => $adminPassword,
                     'privs' => 0x7FFFFFFF,
                 ))) {
-                    //var_dump($database->errors);
+                    //var_dump(\Fim\Database::instance()->errors);
                     die("Could not create user.");
                 }
             } catch(Exception $ex) {
