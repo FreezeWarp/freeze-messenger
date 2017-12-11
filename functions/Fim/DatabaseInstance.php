@@ -1126,25 +1126,38 @@ class DatabaseInstance extends DatabaseSQL
             ]
         ];
         // Modify Query Data for Directives
-      	if (!$options['showDeleted']) $conditions['both']['!options'] = $this->int(fimRoom::ROOM_DELETED, 'bAnd');
-        if (!$options['showHidden']) $conditions['both']['!options'] = $this->int(fimRoom::ROOM_HIDDEN, 'bAnd');
+      	if (!$options['showDeleted'])
+      	    $conditions['both']['!options'] = $this->int(fimRoom::ROOM_DELETED, 'bAnd');
+        if (!$options['showHidden'])
+            $conditions['both']['!options'] = $this->int(fimRoom::ROOM_HIDDEN, 'bAnd');
 
-        if ($options['onlyOfficial']) $conditions['both']['options'] = $this->int(fimRoom::ROOM_OFFICIAL, 'bAnd');
+        if ($options['onlyOfficial'])
+            $conditions['both']['options'] = $this->int(fimRoom::ROOM_OFFICIAL, 'bAnd');
 
-        if (count($options['roomIds']) > 0) $conditions['both']['either']['id'] = $this->in($options['roomIds']);
-        if (count($options['roomNames']) > 0) $conditions['both']['either']['name'] = $this->in($options['roomNames']);
-        if ($options['roomNameSearch']) $conditions['both']['either']['name'] = $this->fulltextSearch($options['roomNameSearch']);
+        if (count($options['roomIds']) > 0)
+            $conditions['both']['either']['id'] = $this->in($options['roomIds']);
+        if (count($options['roomNames']) > 0)
+            $conditions['both']['either']['name'] = $this->in($options['roomNames']);
+        if ($options['roomNameSearch'])
+            $conditions['both']['either']['nameSearchable'] = $this->search($options['roomNameSearch']);
 
-        if (count($options['ownerIds']) > 0) $conditions['both']['either']['ownerId'] = $this->in($options['ownerIds']);
+        if (count($options['ownerIds']) > 0)
+            $conditions['both']['either']['ownerId'] = $this->in($options['ownerIds']);
 
-        if ($options['parentalAgeMin'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
-        if ($options['parentalAgeMax'] > 0) $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
+        if ($options['parentalAgeMin'] > 0)
+            $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMin'], 'gte');
+        if ($options['parentalAgeMax'] > 0)
+            $conditions['both']['parentalAge'] = $this->int($options['parentalAgeMax'], 'lte');
 
-        if ($options['messageCountMin'] > 0) $conditions['both']['messageCount'] = $this->int($options['messageCount'], 'gte');
-        if ($options['messageCountMax'] > 0) $conditions['both']['messageCount'] = $this->int($options['messageCount'], 'lte');
+        if ($options['messageCountMin'] > 0)
+            $conditions['both']['messageCount'] = $this->int($options['messageCount'], 'gte');
+        if ($options['messageCountMax'] > 0)
+            $conditions['both']['messageCount'] = $this->int($options['messageCount'], 'lte');
 
-        if ($options['lastMessageTimeMin'] > 0) $conditions['both']['lastMessageTime'] = $this->int($options['lastMessageTime'], 'gte');
-        if ($options['lastMessageTimeMax'] > 0) $conditions['both']['lastMessageTime'] = $this->int($options['lastMessageTime'], 'lte');
+        if ($options['lastMessageTimeMin'] > 0)
+            $conditions['both']['lastMessageTime'] = $this->int($options['lastMessageTime'], 'gte');
+        if ($options['lastMessageTimeMax'] > 0)
+            $conditions['both']['lastMessageTime'] = $this->int($options['lastMessageTime'], 'lte');
 
 
         // Perform Query
@@ -1203,9 +1216,9 @@ class DatabaseInstance extends DatabaseSQL
         if (count($options['userIds']) > 0)
             $conditions['both']['either']['id'] = $this->in($options['userIds']);
         if (count($options['userNames']) > 0)
-            $conditions['both']['either']['name 1'] = $this->in($options['userNames']);
+            $conditions['both']['either']['name'] = $this->in($options['userNames']);
         if ($options['userNameSearch'])
-            $conditions['both']['either']['name 2'] = $this->type('string', $options['userNameSearch'], 'search');
+            $conditions['both']['either']['nameSearchable'] = $this->search($options['userNameSearch']);
 
 
         return $this->select($columns, $conditions, $sort, $limit);

@@ -8,6 +8,7 @@ use Database\DatabaseTypeType;
     \Fim\Database::$sqlPrefix . 'messageEditHistory' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     \Fim\Database::$sqlPrefix . 'ping' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     \Fim\Database::$sqlPrefix . 'rooms' => [
+        'nameSearchable'  => ['\Fim\DatabaseInstance::makeSearchable', DatabaseTypeType::string, null],
         'watchedByUsers'  => ['\Fim\DatabaseInstance::packListCache', DatabaseTypeType::blob, '\Fim\DatabaseInstance::unpackListCache']
     ],
     \Fim\Database::$sqlPrefix . 'roomStats' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
@@ -18,6 +19,7 @@ use Database\DatabaseTypeType;
     \Fim\Database::$sqlPrefix . 'searchCache' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     \Fim\Database::$sqlPrefix . 'unreadMessages' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     \Fim\Database::$sqlPrefix . 'users' => [
+        'nameSearchable'  => ['\Fim\DatabaseInstance::makeSearchable', DatabaseTypeType::string, null],
         'defaultRoomId' => ['fimRoom::encodeId',     DatabaseTypeType::blob, 'fimRoom::decodeId'],
         'favRooms'      => ['\Fim\DatabaseInstance::packList', DatabaseTypeType::blob, '\Fim\DatabaseInstance::unpackList'],
         'watchRooms'    => ['\Fim\DatabaseInstance::packList', DatabaseTypeType::blob, '\Fim\DatabaseInstance::unpackList'],

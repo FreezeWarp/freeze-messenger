@@ -346,6 +346,7 @@
             <column name="id" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
             <column name="idEncoded" type="blob" maxlen="23" comment="The unique ID for the room, encoded as appropriate." />
             <column name="name" type="string" maxlen="50" comment="The name of the room." />
+            <column name="nameSearchable" type="string" maxlen="50" comment="The name of the room." />
             <column name="topic" type="string" maxlen="200" comment="The current topic of the room." />
             <column name="options" type="bitfield" bits="8" default="0" comment="A bitfield corrosponding to certain room options." />
 
@@ -370,7 +371,7 @@
 
             <key name="id" type="primary" />
             <key name="idEncoded" type="unique" />
-            <key name="name" type="fulltext" />
+            <key name="nameSearchable" type="index" />
             <key name="options" type="index" />
             <key name="ownerId" type="index" />
             <key name="lastMessageId" type="index" />
@@ -499,6 +500,7 @@
             <column name="integrationMethod" type="string" maxlen="10" comment="The integration system corresponding with integrationId. Current supported values: 'google'" />
 
             <column name="name" type="string" maxlen="50" comment="The user's name." />
+            <column name="nameSearchable" type="string" maxlen="50" comment="The user's name, made more easily searchable." />
             <column name="mainGroupId" type="int" maxlen="6" default="1" comment="The admin-set socialGroup ID of the user." />
             <column name="socialGroupIds" type="blob" maxlen="10000" comment="A cache of the IDs of all groups the user has joined." />
             <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
@@ -562,6 +564,7 @@
             <key name="integrationMethod,integrationId" type="unique" />
 
             <key name="name" type="index" />
+            <key name="nameSearchable" type="index" />
             <key name="mainGroupId" type="index" />
             <key name="lastSync" type="index" />
             <key name="privs" type="index" />
