@@ -221,7 +221,7 @@ class DatabaseResult
         if (isset($this->reverseAlias[$column])) {
             $tableName = $this->reverseAlias[$column][0];
 
-            if (isset($this->database->encode[$tableName][$column])) {
+            if (isset($this->database->encode[$tableName][$column]) && $this->database->encode[$tableName][$column][2]) {
                 return call_user_func($this->database->encode[$tableName][$column][2], $value);
             }
 
