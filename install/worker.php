@@ -242,7 +242,7 @@ switch ($_REQUEST['phase']) {
 
         if ($forum == 'vanilla') {
             try {
-                $database = new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix);
+                \Fim\Database::setInstance(new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix));
                 \Fim\Config::$displayBacktrace = true;
 
                 $user = new fimUser(false);
