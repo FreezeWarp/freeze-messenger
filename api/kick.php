@@ -72,6 +72,10 @@ $requestHead = array_merge($requestHead, fim_sanitizeGPC('g', [
 
 
 /* Early Validation */
+if (!\Fim\Config::$kicksEnabled) {
+    new fimError('kicksDisabled', 'Kicks are disabled on this server.');
+}
+
 if (isset($requestHead['roomId'])) {
     if (!($room = \Fim\RoomFactory::getFromId($requestHead['roomId']))->exists()
         || !(($permission = \Fim\Database::instance()->hasPermission($user, $room)) & fimRoom::ROOM_PERMISSION_VIEW))

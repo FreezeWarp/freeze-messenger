@@ -347,6 +347,7 @@ class FIMDatabaseOAuth implements
             'expires' => $this->db->now(-300, 'lte')
         ));
 
+        $this->db->cleanKicks();
         $this->db->cleanLockout();
         $this->db->cleanPermissionsCache();
         $this->db->cleanAccessFlood();

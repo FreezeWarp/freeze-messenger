@@ -759,8 +759,6 @@ class DatabaseInstance extends DatabaseSQL
      *      @param array ['userIds']           An array of userIds corresponding with the kick recipient to filter by.
      *      @param array ['roomIds']           An array of roomIds corresponding with the kicked-from room to filter by.
      *      @param array ['kickerIds']         An array of userIds corresponding with the kicking user (the moderator, that is) to filter by.
-     *      @param array ['lengthMax']         An upper-range for the duration of the kick to filter by.
-     *      @param array ['lengthMin']         A lower-range for duration of the kick to filter by.
      *      @param array ['timeMax']           An upper-range for the time of the start of the kick to filter by.
      *      @param array ['timeMin']           A lower-range for the time of the end of the kick to filter by.
      *      @param bool  ['includeUserData']   Whether to include the userdata of the kickee: columns users.id AS kuserId, users.name AS userName, users.nameFormat AS userNameFormat
@@ -779,10 +777,10 @@ class DatabaseInstance extends DatabaseSQL
             'userIds'   => array(),
             'roomIds'   => array(),
             'kickerIds' => array(),
-            'lengthMin' => 0,
-            'lengthMax' => 0,
-            'timeMin'   => 0,
-            'timeMax'   => 0,
+            'setMin'    => 0,
+            'setMax'    => 0,
+            'expiresMin'=> 0,
+            'expiresMax'=> 0,
             'includeUserData' => true,
             'includeKickerData' => true,
             'includeRoomData' => true,
@@ -792,7 +790,7 @@ class DatabaseInstance extends DatabaseSQL
 
         // Base Query
         $columns = array(
-            $this->sqlPrefix . "kicks" => 'kickerId, userId, roomId, length, time',
+            $this->sqlPrefix . "kicks" => 'kickerId, userId, roomId, expires, time set',
         );
         $conditions = array();
 
@@ -815,15 +813,22 @@ class DatabaseInstance extends DatabaseSQL
 
 
         // Modify Query Data for Directives (First for Performance)
-        if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in((array) $options['userIds']);
-        if (count($options['roomIds']) > 0) $conditions['both']['roomId'] = $this->in((array) $options['roomIds']);
-        if (count($options['kickerIds']) > 0) $conditions['both']['userId'] = $this->in((array) $options['kickerIds']);
+        if (count($options['userIds']) > 0)
+            $conditions['both']['userId'] = $this->in((array) $options['userIds']);
+        if (count($options['roomIds']) > 0)
+            $conditions['both']['roomId'] = $this->in((array) $options['roomIds']);
+        if (count($options['kickerIds']) > 0)
+            $conditions['both']['userId'] = $this->in((array) $options['kickerIds']);
 
-        if ($options['lengthMin'] > 0) $conditions['both']['length 1'] = $this->int($options['lengthMin'], 'gte');
-        if ($options['lengthMax'] > 0) $conditions['both']['length 2'] = $this->int($options['lengthMax'], 'lte');
+        if ($options['setMin'] > 0)
+            $conditions['both']['set 1'] = $this->int($options['setMin'], 'gte');
+        if ($options['setMax'] > 0)
+            $conditions['both']['set 2'] = $this->int($options['setMax'], 'lte');
 
-        if ($options['timeMin'] > 0) $conditions['both']['time 1'] = $this->int($options['timeMin'], 'gte');
-        if ($options['timeMax'] > 0) $conditions['both']['time 2'] = $this->int($options['timeMax'], 'lte');
+        if ($options['expiresMin'] > 0)
+            $conditions['both']['expires 1'] = $this->int($options['expiresMin'], 'gte');
+        if ($options['expiresMax'] > 0)
+            $conditions['both']['expires 2'] = $this->int($options['expiresMax'], 'lte');
 
 
 
@@ -840,18 +845,20 @@ class DatabaseInstance extends DatabaseSQL
      * @param int $length The duration of the kick, in seconds.
      */
     public function kickUser($userId, $roomId, $length) {
-        $this->modLog('kickUser', "$userId,$roomId");
+        if (Config::$kicksEnabled) {
+            $this->modLog('kickUser', "$userId,$roomId");
 
-        $this->upsert($this->sqlPrefix . "kicks", array(
-            'userId' => (int) $userId,
-            'roomId' => (int) $roomId,
-        ), array(
-            'length' => (int) $length,
-            'kickerId' => (int) $this->user->id,
-            'time' => $this->now(),
-        ));
+            $this->upsert($this->sqlPrefix . "kicks", array(
+                'userId' => (int) $userId,
+                'roomId' => (int) $roomId,
+            ), array(
+                'expires' => $this->now($length),
+                'kickerId' => (int) $this->user->id,
+                'time' => $this->now(),
+            ));
 
-        $this->deletePermissionsCache($roomId, $userId);
+            $this->deletePermissionsCache($roomId, $userId);
+        }
     }
 
 
@@ -862,14 +869,16 @@ class DatabaseInstance extends DatabaseSQL
      * @param int $roomId The ID of the room for the kick to be removed from.
      */
     public function unkickUser($userId, $roomId) {
-        $this->modLog('unkickUser', "$userId,$roomId");
+        if (Config::$kicksEnabled) {
+            $this->modLog('unkickUser', "$userId,$roomId");
 
-        $this->delete($this->sqlPrefix . "kicks", array(
-            'userId' => (int) $userId,
-            'roomId' => (int) $roomId,
-        ));
+            $this->delete($this->sqlPrefix . "kicks", array(
+                'userId' => (int) $userId,
+                'roomId' => (int) $roomId,
+            ));
 
-        $this->deletePermissionsCache($roomId, $userId);
+            $this->deletePermissionsCache($roomId, $userId);
+        }
     }
 
     /*********************************************************
@@ -1355,12 +1364,13 @@ class DatabaseInstance extends DatabaseSQL
                     $returnBitfield = $permissionsBitfield;
 
                 // Kicked users may ONLY view.
-                if ($this->getKicks(array(
+                if (Config::$kicksEnabled && $this->getKicks(array(
                         'userIds' => array($user->id),
                         'roomIds' => array($room->id),
                         'includeUserData' => false,
                         'includeKickerData' => false,
                         'includeRoomData' => false,
+                        'expires' => $this->now(0, 'gt')
                     ))->getCount() > 0) {
                     $returnBitfield &= fimRoom::ROOM_PERMISSION_VIEW;
                 }
@@ -1616,6 +1626,15 @@ class DatabaseInstance extends DatabaseSQL
         $this->delete($this->sqlPrefix . 'sessionLockout', array(
             'expires' => $this->now(0, 'lte')
         ));
+    /**
+     * Delete expired kick entries.
+     */
+    public function cleanKicks() {
+        if (Config::$kicksEnabled) {
+            $this->delete($this->sqlPrefix . 'kicks', array(
+                'expires' => $this->now(0, 'lte')
+            ));
+        }
     }
 
     /**

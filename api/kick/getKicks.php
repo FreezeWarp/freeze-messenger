@@ -63,19 +63,11 @@ else {
             $xmlData['kicks']['user ' . $kick['userId']] = [
                 'userId'         => (int)$kick['userId'],
                 'userName'       => $kick['userName'],
-                'userAvatar'     => $kick['userAvatar'],
-                'userNameFormat' => $kick['userNameFormat'],
                 'kicks'          => []
             ];
         }
 
-        $xmlData['kicks']['user ' . $kick['userId']]['kicks']['room ' . $kick['roomId']] = array_merge(
-            fim_arrayFilterKeys($kick, ['roomId', 'roomName', 'kickerId', 'kickerName', 'kickerNameFormat', 'kickerAvatar', 'length']),
-            [
-                'set'              => (int)$kick['time'],
-                'expires'          => (int)($kick['time'] + $kick['length']),
-            ]
-        );
+        $xmlData['kicks']['user ' . $kick['userId']]['kicks']['room ' . $kick['roomId']] = fim_arrayFilterKeys($kick, ['roomId', 'roomName', 'kickerId', 'kickerName', 'set', 'expires']);
     }
 }
 

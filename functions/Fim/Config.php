@@ -161,6 +161,8 @@ class Config {
 
 
     /* Kick Functionality */
+    /** @var bool If true, the kick subsystem is enabled. */
+    public static $kicksEnabled = true;
     /** @var bool If true, whenever a user is kicked a message will be sent by the kicking moderator informing the room of the action. */
     public static $kickSendMessage = true;
     /** @var int The minimum number of seconds a user can be kicked for. */
