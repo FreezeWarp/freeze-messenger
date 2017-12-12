@@ -539,11 +539,8 @@ class Config {
     /** @var bool If true, permissions will be cached in the roomPermissionsCache table. */
     public static $roomPermissionsCacheEnabled = true;
 
-    /** @var bool If true, permissions changes will automatically update in the table. May be disabled if too many queries are being made to the table. (TODO: unimplemented) */
-    public static $roomPermissionsCacheAutoUpdate = true;
-
-    /** @var int  Time after which a cache entry will no longer be considered valid. A low value will keep the cache table small (which may be required in some installations), while a high value will cause the greatest speed-up. However, a high value should _only_ be used if roomPermissionsCacheAutoUpdate is true; otherwise, a low value should be used. */
-    public static $roomPermissionsCacheExpires = 60 * 60 * 24 * 7;
+    /** @var int  Time after which a cache entry will no longer be considered valid. A low value will keep the cache table small (which may be required in some installations), while a high value will cause the greatest speed-up. Of-course, the higher the value, the more delay there may be in permission updates; while the system will automatically prune permission cache entries when users are kicked and when room permissions change, the system will *not* prune permission caches when a kick expires; thus, very high values should be avoided if kicks are enabled. */
+    public static $roomPermissionsCacheExpires = 5 * 60;
 
     /** @var int The time in seconds that a user object is considered valid for in the cache. */
     public static $cacheDynamicObjectsTimeout = 300;
