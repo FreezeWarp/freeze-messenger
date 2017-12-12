@@ -1370,7 +1370,7 @@ class DatabaseInstance extends DatabaseSQL
                         'includeUserData' => false,
                         'includeKickerData' => false,
                         'includeRoomData' => false,
-                        'expires' => $this->now(0, 'gt')
+                        'expiresMin' => $this->now()
                     ))->getCount() > 0) {
                     $returnBitfield &= fimRoom::ROOM_PERMISSION_VIEW;
                 }
