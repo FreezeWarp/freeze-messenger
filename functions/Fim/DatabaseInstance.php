@@ -1532,12 +1532,14 @@ class DatabaseInstance extends DatabaseSQL
                 $this->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'
             ), array(
                 'roomId' => $this->int($roomId),
-                'userId' => $this->int($userId)
+                'userId' => $this->int($userId),
+                'expires' => $this->now(0, 'gte')
             ))->getAsArray(false);
 
-            if (!count($permissions)) return -1;
-            elseif (time() > $permissions['expires']) return -1;
-            else return (int) $permissions['permissions'];
+            if (!count($permissions))
+                return -1;
+            else
+                return (int) $permissions['permissions'];
         }
     }
 
