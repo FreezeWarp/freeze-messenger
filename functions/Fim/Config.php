@@ -50,7 +50,7 @@ class Config {
 
 
     /* Lockout */
-    /** @var int The maximum number of failed login attempts allowed before a user is locked out. */
+    /** @var int The maximum number of failed login attempts allowed before a user is locked out. Use 0 to disable the lockout subsystem. */
     public static $lockoutCount = 5;
     /** @var int The time before an active user lockout expires. */
     public static $lockoutExpires = 15 * 60;

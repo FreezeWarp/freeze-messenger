@@ -1623,9 +1623,13 @@ class DatabaseInstance extends DatabaseSQL
      * Delete expired entries from the user lockout table.
      */
     public function cleanLockout() {
-        $this->delete($this->sqlPrefix . 'sessionLockout', array(
-            'expires' => $this->now(0, 'lte')
-        ));
+        if (Config::$lockoutCount > 0) {
+            $this->delete($this->sqlPrefix . 'sessionLockout', array(
+                'expires' => $this->now(0, 'lte')
+            ));
+        }
+    }
+
     /**
      * Delete expired kick entries.
      */
@@ -1641,23 +1645,27 @@ class DatabaseInstance extends DatabaseSQL
      * Delete old flood counters.
      */
     public function cleanAccessFlood() {
-        $this->partitionAt(['ip' => $_SERVER['REMOTE_ADDR']])->delete($this->sqlPrefix . 'accessFlood', array(
-            'expires' => $this->now(0, 'lte')
-        ));
+        if (Config::$floodDetectionGlobal) {
+            $this->partitionAt(['ip' => $_SERVER['REMOTE_ADDR']])->delete($this->sqlPrefix . 'accessFlood', array(
+                'expires' => $this->now(0, 'lte')
+            ));
+        }
     }
 
     /**
      * Delete old message flood counters.
      */
     public function cleanMessageFlood() {
-        $this->delete($this->sqlPrefix . 'messageFlood', array(
-            'time' => $this->ts(-60, 'lte')
-        ));
+        if (Config::$floodDetectionRooms) {
+            $this->delete($this->sqlPrefix . 'messageFlood', array(
+                'time' => $this->ts(-60, 'lte')
+            ));
+        }
     }
 
 
     public function lockoutIncrement() {
-        if (Config::$dev)
+        if (Config::$dev || Config::$lockoutCount <= 0)
             return true;
 
         // Note: As defined, attempts will further increase, and expires will further increase, with each additional query beyond the "lockout". As a result, this function generally shouldn't be called if a user is already lockedout -- otherwise, further attempts just lock them out further, when they could be the user checking to see if they are still locked out. So always call lockoutActive before calling lockoutIncrement.
@@ -1674,7 +1682,7 @@ class DatabaseInstance extends DatabaseSQL
     }
 
     public function lockoutActive() {
-        if (Config::$dev)
+        if (Config::$dev || Config::$lockoutCount <= 0)
             return false;
 
         // Note: Select condition format is experimental and untested, and numRows is not yet implemented. So, uh, do that. Lockout count is also unimplemented.
