@@ -306,7 +306,7 @@
 
     <div id="page" data-role="page" class="mt-1 ml-1 mr-1"><!-- START links -->
         <nav class="navbar sticky-top navbar-expand-md navbar-dark bg-primary mb-2 mx-auto rounded" id="navbar" style="z-index: 100; max-width: 1200px;">
-            <a class="navbar-brand" href="#">FlexChat</a>
+            <a class="navbar-brand" accesskey="h" href="#">FlexChat</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -318,7 +318,7 @@
                     </li>
 
                     <li class="nav-item dropdown dropdown-primary">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarRooms" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" href="#" accesskey="r" id="navbarRooms" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             {{mainMenu.rooms.title}}
                         </a>
                         <div class="dropdown-menu" name="roomMenu" aria-labelledby="navbarRooms">
@@ -339,7 +339,7 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="#settings">{{mainMenu.settings}}</a>
+                        <a class="nav-link" accesskey="s" href="#settings">{{mainMenu.settings}}</a>
                     </li>
 
                     <li class="nav-item dropdown">
@@ -347,8 +347,8 @@
                             {{mainMenu.more.title}}
                         </a>
                         <div class="dropdown-menu" name="otherMenu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="javascript:popup.online()">{{mainMenu.more.online}}</a>
-                            <a class="dropdown-item" href="#uploads">{{mainMenu.more.uploads}}</a>
+                            <a class="dropdown-item" accesskey="o" href="javascript:popup.online()">{{mainMenu.more.online}}</a>
+                            <a class="dropdown-item" accesskey="p" href="#uploads">{{mainMenu.more.uploads}}</a>
 
                             {{#if activeLogin}}
                                 {{#unless activeLogin.userData.anonId}}
@@ -376,62 +376,6 @@
             </div>
         </nav>
 
-        <!--<div id="menuParent" class="col-med-auto" style="width: 300px;" role="tablist">
-            <div class="card">
-                <a data-toggle="collapse" href="#quickCatContents" aria-expanded="true" aria-controls="quickCatContents" accesskey="v">
-                    <div class="card-header" role="tab" id="quickCat">
-                        <h5 class="mb-0">{{template.quickCat}}</h5>
-                    </div>
-                </a>
-
-                <div id="quickCatContents" class="collapse show" role="tabpanel" aria-labelledby="quickCat" data-parent="#menuParent">
-                    <div class="card-body">
-                        <ul>
-                            <li style="border-bottom: 1px solid;"><a href="#archive" id="messageArchive" accesskey="a">{{template.archive}}</a>
-                            </li>
-                            <li><a href="#rooms" id="roomList" accesskey="r">{{template.roomList}}</a></li>
-                            <li><a href="#editRoom" class="createRoomLink" accesskey="c">{{template.createRoom}}</a></li>
-                            <li style="border-bottom: 1px solid;"><a href="javascript:popup.privateRoom();" accesskey="p">{{template.privateIM}}</a>
-                            </li>
-                            <li><a href="javascript:popup.online()" id="online" accesskey="o">{{template.activeUsers}}</a></li>
-                            <li><a href="#uploads" id="viewUploads" accesskey="l">{{template.viewUploads}}</a></li>
-                            <li><a href="#settings" id="changeSettings" accesskey="s">{{template.changeSettings}}</a></li>
-                            <li><a href="#kicks" accesskey="k">{{template.myKicks}}</a></li>
-                            <li><a href="javascript:standard.logout()" id="logout" accesskey="x">{{template.logout}}</a></li>
-                            <li><a href="javascript:popup.login()" id="login" accesskey="i">{{template.login}}</a></li>
-                            <li style="border-top: 1px solid;"><a href="#copyright" id="copyrightLink">{{template.allCopyrights}}</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="card">
-                <a data-toggle="collapse" href="#roomCatContents" aria-expanded="true" aria-controls="roomCatContents" accesskey="x">
-                    <div class="card-header" role="tab" id="roomCat">
-                        <h5 class="mb-0">{{template.roomListCat}}</h5>
-                    </div>
-                </a>
-
-                <div id="roomCatContents" class="collapse" role="tabpanel" aria-labelledby="roomCat" data-parent="#menuParent">
-                    <div class="card-body">
-                        <a href="#" accesskey="r">{{template.roomList}}</a>
-                        <hr style="border: 0px; border-bottom: 1px solid;"/>
-                        <div id="roomListShort"><h4>{Owned Rooms}</h4>
-                            <ul id="ownedRoomsList"></ul>
-                            <h4>{Fav Rooms}</h4>
-                            <ul id="favRoomsList"></ul>
-                            <h4>{Watch Rooms}</h4>
-                            <ul id="watchRoomsList"></ul>
-                            <h4>{Promoted Rooms}</h4>
-                            <ul id="officialRoomsList"></ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>-->
-
 
         <div id="content" data-role="content">
         </div>
@@ -446,6 +390,9 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3 class="modal-title">{{fileUploadLegend}}</h3>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
 
                     <div class="modal-body row">
@@ -523,12 +470,12 @@
 
                                             <div class="dropdown-menu" aria-labelledby="roomModerateMenu">
                                                 {{inner '#ifCond roomData.permissions.grant "||" roomData.permissions.properties'}}
-                                                    <a class="dropdown-item" href="#editRoom" onclick="$(this).attr('href', '#editRoom#room=' + window.roomId)"><i class="fa fa-cog" aria-hidden="true"></i> {{room.buttons.edit}}</a>
+                                                    <a class="dropdown-item" href="#editRoom" accesskey="e" onclick="$(this).attr('href', '#editRoom#room=' + window.roomId)"><i class="fa fa-cog" aria-hidden="true"></i> {{room.buttons.edit}}</a>
                                                 {{inner "/ifCond"}}
 
                                                 {{inner "#if roomData.permissions.moderate"}}
-                                                    <a class="dropdown-item" href="#" onclick="popup.kick(null, window.roomId);"><i class="fa fa-ban" aria-hidden="true"></i> {{room.buttons.kick}}</a>
-                                                    <a class="dropdown-item" href="#kicks"><i class="fa fa-list" aria-hidden="true"></i> {{room.buttons.kicks}}</a>
+                                                    <a class="dropdown-item" href="#" accesskey="k" onclick="popup.kick(null, window.roomId);"><i class="fa fa-ban" aria-hidden="true"></i> {{room.buttons.kick}}</a>
+                                                    <a class="dropdown-item" href="#kicks" accesskey="i"><i class="fa fa-list" aria-hidden="true"></i> {{room.buttons.kicks}}</a>
                                                 {{inner "/if"}}
                                             </div>
                                         </div>
@@ -538,6 +485,7 @@
                                                 class="btn btn-primary mx-1"
                                                 title="Top Posters"
                                                 name="topPosters"
+                                                accesskey="t"
                                                 onclick="popup.viewStats()">
                                             <i class="fa fa-list-ol" aria-hidden="true"></i> {{room.buttons.top}}
                                         </button>
@@ -546,6 +494,7 @@
                                                 class="btn btn-primary mx-1"
                                                 title="Archive"
                                                 name="archive"
+                                                accesskey="a"
                                                 onclick="location.hash='#archive#room=' + window.roomId">
                                             <i class="fa fa-history"></i> {{room.buttons.archive}}
                                         </button>
@@ -585,7 +534,7 @@
                             </div>
                         </div>
                         <div>
-                            <textarea id="messageInput" class="form-control" autofocus="autofocus" placeholder="{{room.messageBox.placeholder}}"></textarea>
+                            <textarea id="messageInput" accesskey="m" class="form-control" autofocus="autofocus" placeholder="{{room.messageBox.placeholder}}"></textarea>
                         </div>
                     </form>
                 </div>
