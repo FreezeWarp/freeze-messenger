@@ -173,11 +173,11 @@
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The ID of the room the kick is active in. Note that this cannot be used for private roomIds." />
             <column name="kickerid" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who made the kick." />
             <column name="time" type="time" default="__TIME__" comment="The time the kick was made on." />
-            <column name="length" type="int" maxlen="8" comment="The time the kick will remain active for." />
+            <column name="expires" type="time" comment="When the kick expires." />
 
             <key name="userId,roomId" type="primary" />
             <key name="time" type="index" />
-            <key name="length" type="index" />
+            <key name="expires" type="index" />
         </table>
 
 
@@ -271,7 +271,7 @@
             <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />
             <column name="time" type="time" default="__TIME__" comment="The time the message was made on." />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
-            <column name="flag" type="enum" restrict="video,audio,  image,text,application,archive,html,url,email," maxlen="10" comment="The content-type flag of the message." />
+            <column name="flag" type="enum" restrict="video,audio,image,text,application,archive,html,url,email," maxlen="10" comment="The content-type flag of the message." />
 
             <key name="id" type="primary" />
             <key name="id,roomId" type="unique" />
