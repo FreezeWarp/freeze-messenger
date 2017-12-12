@@ -820,15 +820,11 @@ class DatabaseInstance extends DatabaseSQL
         if (count($options['kickerIds']) > 0)
             $conditions['both']['userId'] = $this->in((array) $options['kickerIds']);
 
-        if ($options['setMin'] > 0)
-            $conditions['both']['set 1'] = $this->int($options['setMin'], 'gte');
-        if ($options['setMax'] > 0)
-            $conditions['both']['set 2'] = $this->int($options['setMax'], 'lte');
 
-        if ($options['expiresMin'] > 0)
-            $conditions['both']['expires 1'] = $this->int($options['expiresMin'], 'gte');
-        if ($options['expiresMax'] > 0)
-            $conditions['both']['expires 2'] = $this->int($options['expiresMax'], 'lte');
+        if ($options['set'])
+            $conditions['both']['set'] = $options['set'];
+        if ($options['expires'])
+            $conditions['both']['expires'] = $options['expires'];
 
 
 
@@ -1370,7 +1366,7 @@ class DatabaseInstance extends DatabaseSQL
                         'includeUserData' => false,
                         'includeKickerData' => false,
                         'includeRoomData' => false,
-                        'expiresMin' => $this->now()
+                        'expires' => $this->now(0, 'gt')
                     ))->getCount() > 0) {
                     $returnBitfield &= fimRoom::ROOM_PERMISSION_VIEW;
                 }
