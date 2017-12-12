@@ -175,8 +175,13 @@ popup.prototype.room.prototype.newMessage = function(roomId, messageId, messageT
 
 
     // Scroll Down
-    if (!window.settings.reversePostOrder)
+    if (!window.settings.reversePostOrder) {
+        $('#message' + messageId + ' img').on('load', (() => {
+            this.toBottom();
+        }));
+
         this.toBottom();
+    }
 
 
     // Blur Events
