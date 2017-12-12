@@ -1029,195 +1029,133 @@ $.when(
 
 
         /*** Context Menus ***/
-        var contextAction_msgLink = function(roomId, messageId) {
-            dia.full({
-                title : 'Link to this Message',
-                content : $('<span>').text('This message can be bookmarked using the following archive link:').append(
-                    $('<br>'), $('<br>'), $('<input>').attr({
-                        type : "text",
-                        value : currentLocation + '#archive#room=' + roomId + '#lastMessage=' + messageId,
-                        autofocus : true,
-                        id : 'messageLink-' + roomId + '-' + messageId,
-                        style : "width: 100%;"
-                    })).prop('outerHTML'),
-                oF : function() {
-                    $('#' + 'messageLink-' + roomId + '-' + messageId).focus().select();
-                }
-            });
-        };
-
-        var contextAction_msgDelete = function(roomId, messageId) {
-            dia.confirm({
-                text : 'Are you sure you want to delete this message?',
-                'true' : function() {
-                    fimApi.deleteMessage(roomId, messageId, {
-                        'end' : function() {
-                            $.notify({"message" : "The message was deleted."}, {
-                                type: "success",
-                                placement: {
-                                    from: 'top',
-                                    align: 'middle'
-                                },
-                            });
-                        }
-                    });
-                }
-            });
-        };
-
-        var contextAction_msgEdit = function(messageId) {
-            $('#message' + messageId + ' .messageText').dblclick();
-        };
-
-
         var classNames = {
             //hover:            'bg-primary',          // Item hover
             disabled:         'bg-inverse',       // Item disabled
             visible:          'bg-primary',        // Item visible
             notSelectable:    'not-selectable', // Item not selectable
-        }
+        };
+
+        var focusPreventionEvents = {
+            show : function() {
+                window.restrictFocus = 'contextMenu';
+            },
+            hide : function() {
+                window.restrictFocus = null;
+            }
+        };
 
 
         $.contextMenu({
             classNames : classNames,
-            selector : '.messageText',
+            selector : '.messageText, .messageText *',
+            events : focusPreventionEvents,
             items : {
                 delete : {
                     name : 'Delete',
                     callback: function() {
-                        contextAction_msgDelete($(this).attr('data-roomId'), $(this).attr('data-messageid'))
+                        dia.confirm({
+                            text : 'Are you sure you want to delete this message?',
+                            'true' : function() {
+                                fimApi.deleteMessage($(this).attr('data-roomId'), $(this).attr('data-messageid'), {
+                                    'end' : function() {
+                                        dia.info("The message was deleted.", "success");
+                                    }
+                                });
+                            }
+                        });
                     }
                 },
 
                 link : {
-                    name : 'Link',
+                    name : 'Message Link',
                     callback: function() {
-                        contextAction_msgLink($(this).attr('data-roomId'), $(this).attr('data-messageid'))
+                        var roomId = $(this).attr('data-roomId'),
+                            messageId = $(this).attr('data-messageid');
+
+                        dia.full({
+                            title : 'Link to this Message',
+                            content : $('<span>').text('This message can be bookmarked using the following archive link:').append(
+                                $('<br>'), $('<br>'), $('<input>').attr({
+                                    type : "text",
+                                    value : currentLocation + '#archive#room=' + roomId + '#lastMessage=' + messageId,
+                                    autofocus : true,
+                                    id : 'messageLink-' + roomId + '-' + messageId,
+                                    style : "width: 100%;"
+                                })).prop('outerHTML'),
+                            oF : function() {
+                                $('#' + 'messageLink-' + roomId + '-' + messageId).focus().select();
+                            }
+                        });
                     }
                 },
 
                 edit : {
                     name : 'Edit',
                     callback : function() {
-                        contextAction_msgEdit($(this).attr('data-messageid'))
+                        $('#message' + $(this).attr('data-messageid') + ' .messageText').dblclick();
                     },
                     visible : function() {
                         return $(this).parent('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
                     }
-                }
-            }
-        });
-
-        $.contextMenu({
-            classNames : classNames,
-            selector : '.messageText img', // Todo: exclude emoticons
-            items : {
-                delete : {
-                    name : 'Delete',
-                    callback: function() {
-                        contextAction_msgDelete($(this).closest('.messageText').attr('data-roomId'), $(this).closest('.messageText').attr('data-messageid'))
-                    }
-                },
-
-                link : {
-                    name : 'Link',
-                    callback: function() {
-                        contextAction_msgLink($(this).closest('.messageText').attr('data-roomId'), $(this).closest('.messageText').attr('data-messageid'))
-                    }
-                },
-
-                edit : {
-                    name : 'Edit',
-                    callback : function() {
-                        contextAction_msgEdit($(this).closest('.messageText').attr('data-messageid'))
-                    },
-                    visible : function() {
-                        return $(this).closest('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
-                    }
                 },
 
                 click : {
                     name : 'URL',
                     callback : function() {
-                        var url = $(this).attr('src').replace(/&thumbnailWidth=[^\&]*/, '')
-                                                     .replace(/&thumbnailHeight=[^\&]*/, '');
-                        dia.full({
-                            title : 'Copy Image URL',
-                            content : $('<div>').append(
-                                $('<img>').attr({
-                                    src : url,
-                                    style : 'width: 100%;'
-                                }), $('<br>'), $('<br>'), $('<input>').attr({
+                        if ($(this).prop('tagName') === 'IMG') {
+                            var url = $(this).attr('src').replace(/&thumbnailWidth=[^\&]*/, '')
+                                .replace(/&thumbnailHeight=[^\&]*/, '');
+                            dia.full({
+                                title : 'Copy Image URL',
+                                content : $('<div>').append(
+                                    $('<img>').attr({
+                                        src : url,
+                                        style : 'width: 100%;'
+                                    }), $('<br>'), $('<br>'), $('<input>').attr({
+                                        type : 'text',
+                                        name : 'url',
+                                        value : url,
+                                        style : 'width: 100%'
+                                    })).prop('outerHTML'),
+                                width : 800,
+                                position : 'top',
+                                oF : function() {
+                                    $('input[name=url]', this).first().focus();
+                                }
+                            });
+                        }
+                        else {
+                            dia.full({
+                                title : 'Copy URL',
+                                position : 'top',
+                                content : $('<input>').attr({
                                     type : 'text',
                                     name : 'url',
-                                    value : url,
-                                    style : 'width: 100%'
-                                })).prop('outerHTML'),
-                            width : 800,
-                            position : 'top',
-                            oF : function() {
-                                $('input[name=url]', this).first().focus();
-                            }
-                        });
+                                    value : $(this).attr('href'),
+                                    style : 'width: 100%;'
+                                }).prop('outerHTML'),
+                                width : 800,
+                                oF : function() {
+                                    $('input[name=url]', this).first().focus();
+                                }
+                            });
+                        }
                     },
+                    visible : function(e, f) {
+                        //console.log("visibleE", e, f, f.$trigger.nodeName);
+                        console.log("visible", $(this), f);
+                        return $(this).prop('tagName') === 'IMG' || $(this).prop('tagName') === 'A';
+                    }
                 }
             }
         });
 
-        $.contextMenu({
-            classNames : classNames,
-            selector : '.messageText a', // Todo: exclude emoticons
-            items : {
-                delete : {
-                    name : 'Delete',
-                    callback: function() {
-                        contextAction_msgDelete($(this).closest('.messageText').attr('data-roomId'), $(this).closest('.messageText').attr('data-messageid'))
-                    }
-                },
-
-                link : {
-                    name : 'Link',
-                    callback: function() {
-                        console.log($(this), $(this).closest('.messageText'), $(this).closest('.messageText').attr('data-roomId'))
-                        contextAction_msgLink($(this).closest('.messageText').attr('data-roomId'), $(this).closest('.messageText').attr('data-messageid'))
-                    }
-                },
-
-                edit : {
-                    name : 'Edit',
-                    callback : function() {
-                        contextAction_msgEdit($(this).closest('.messageText').attr('data-messageid'))
-                    },
-                    visible : function() {
-                        return $(this).closest('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
-                    }
-                },
-
-                click : {
-                    name : 'URL',
-                    callback : function() {
-                        dia.full({
-                            title : 'Copy URL',
-                            position : 'top',
-                            content : $('<input>').attr({
-                                type : 'text',
-                                name : 'url',
-                                value : $(this).attr('href'),
-                                style : 'width: 100%;'
-                            }).prop('outerHTML'),
-                            width : 800,
-                            oF : function() {
-                                $('input[name=url]', this).first().focus();
-                            }
-                        });
-                    },
-                }
-            }
-        });
 
         $.contextMenu({
             classNames : classNames,
-            selector : '.userName', // Todo: exclude emoticons
+            selector : '.userName',
+            events : focusPreventionEvents,
             items : {
                 profile : {
                     name : 'Profile',
@@ -1268,11 +1206,44 @@ $.when(
                 ignore : {
                     name : 'Ignore',
                     callback : function() {
-                        dia.alert('This functionality is not yet implemented.');
+                        var tag = $(this);
+
+                        fimApi.editUserOptions("create", {
+                            "ignoreList" : [$(this).attr('data-userId')]
+                        }, {
+                            "end" : function() {
+                                dia.info("You have added " + tag.prop('outerHTML') + " to your ignore list. They will not be able to send you private messages.");
+                            }
+                        });
+                    },
+                    visible : function() {
+                        return $(this).attr('data-userId') != window.activeLogin.userData.id
+                        && window.activeLogin.userData.ignoredUsers.indexOf(Number($(this).attr('data-userId'))) < 0;
                     }
                 },
+
+                unignore : {
+                    name : 'Unignore',
+                    callback : function() {
+                        var tag = $(this);
+
+                        fimApi.editUserOptions("delete", {
+                            "ignoreList" : [$(this).attr('data-userId')]
+                        }, {
+                            "end" : function() {
+                                dia.info("You have removed " + tag.prop('outerHTML') + " from your ignore list.");
+                            }
+                        });
+                    },
+                    visible : function() {
+                        return $(this).attr('data-userId') != window.activeLogin.userData.id
+                        && window.activeLogin.userData.ignoredUsers.indexOf(Number($(this).attr('data-userId'))) >= 0;
+                    }
+                }
             }
         });
+
+
         /**
          * (Re-)Parse the "room" context menus.
          * TODO

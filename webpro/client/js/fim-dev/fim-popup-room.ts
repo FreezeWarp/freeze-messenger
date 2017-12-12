@@ -233,7 +233,6 @@ popup.prototype.room.prototype.faviconFlashStop = function() {
 };
 
 popup.prototype.room.prototype.onBlur = function() {
-    console.log("blurred");
     this.windowBlurred = true;
 
     if (this.isTyping) {
@@ -248,7 +247,6 @@ popup.prototype.room.prototype.onFocus = function() {
 };
 
 popup.prototype.room.prototype.onVisibilityChange = function() {
-    console.log("this", this);
     if (document.visibilityState == 'hidden')
         this.onBlur();
     else
