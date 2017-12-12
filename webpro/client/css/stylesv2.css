@@ -267,6 +267,10 @@ table.center td, table.center th {
   font-size: .8em;
 }
 
+.ui-autocomplete {
+    z-index: 1500 !important;
+}
+
 #waitOverlay {
   z-index: 10000;
 }
