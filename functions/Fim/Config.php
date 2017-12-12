@@ -83,13 +83,13 @@ class Config {
     /** @var int The maximum number of calls a user can make to api/getMessages per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getMessages_perMinute = 20;
     /** @var int The maximum number of calls a user can make to api/getRooms per minute before triggering a flood lockout on that specific API. */
-    public static $floodDetectionGlobal_getRooms_perMinute = 20;
+    public static $floodDetectionGlobal_getRooms_perMinute = 30;
     /** @var int The maximum number of calls a user can make to api/getStats per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getStats_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/getUnreadMessages per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getUnreadMessages_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/getUsers per minute before triggering a flood lockout on that specific API. */
-    public static $floodDetectionGlobal_getUsers_perMinute = 20;
+    public static $floodDetectionGlobal_getUsers_perMinute = 30;
     /** @var int The maximum number of calls a user can make to api/markMessageRead per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_markMessageRead_perMinute = 10;
     /** @var int The maximum number of calls a user can make to api/moderate per minute before triggering a flood lockout on that specific API. */

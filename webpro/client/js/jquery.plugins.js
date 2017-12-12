@@ -21447,7 +21447,7 @@ var notify = {
 
 /* Start Dia -- Simplified jQueryUI Dialogues
  * Joseph T. Parsons
- * http://www.gnu.org/licenses/gpl.html */
+ * http://www.gnu7.org/licenses/gpl.html */
 var dia = {
     exception: function(exception) {
         $('#modal-dynamicException .modal-title').html('Exception: ' + exception.string);
