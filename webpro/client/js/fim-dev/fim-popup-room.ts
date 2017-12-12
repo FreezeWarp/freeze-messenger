@@ -208,27 +208,6 @@ popup.prototype.room.prototype.newMessage = function(roomId, messageId, messageT
             window.notify.webkitNotify("images/favicon.ico", "New Message [" + $('#roomName').text() + "]", $(messageText).text());
         }
     }
-
-
-    /* Allow Keyboard Scrolling through Messages
-     * (kinda broken atm) */
-    $('.messageLine .messageText, .messageLine .userName, body').unbind('keydown');
-
-    $('.messageLine .messageText').bind('keydown', function(e) {
-        if (window.restrictFocus === 'contextMenu') return true;
-
-        if (e.which === 38) { $(this).parent().prev('.messageLine').children('.messageText').focus(); return false; } // Left
-        else if (e.which === 37 || e.which === 39) { $(this).parent().children('.userName').focus(); return false; } // Right+Left
-        else if (e.which === 40) { $(this).parent().next('.messageLine').children('.messageText').focus(); return false; } // Down
-    });
-
-    $('.messageLine .userName').bind('keydown', function(e) {
-        if (window.restrictFocus === 'contextMenu') return true;
-
-        if (e.which === 38) { $(this).parent().prev('.messageLine').children('.userName').focus(); return false; } // Up
-        else if (e.which === 39 || e.which === 37) { $(this).parent().children('.messageText').focus(); return false; } // Left+Right
-        else if (e.which === 40) { $(this).parent() .next('.messageLine').children('.userName').focus(); return false; } // Down
-    });
 };
 
 popup.prototype.room.prototype.toBottom = function() { // Scrolls the message list to the bottom.
@@ -345,6 +324,33 @@ popup.prototype.room.prototype.init = function(options) {
             return true;
         }
     });
+
+
+
+
+    /* Allow Keyboard Scrolling through Messages
+     * (kinda broken atm) */
+    $('#messageList')
+        .off('keydown', '.messageLine .userName, .messageLine .messageText')
+        .on('keydown', '.messageLine .userName, .messageLine .messageText', {}, function(e) {
+            if (window.restrictFocus === 'contextMenu') // TODO?
+                return true;
+
+            if (e.which === 38) { // Up
+                $(this).closest('.messageLine').prev('.messageLine').find($(this).hasClass('userName') ? '.userName' : '.messageText').focus();
+                return false;
+            }
+            else if (e.which === 37 || e.which === 39) { // Left+Right
+                $(this).closest('.messageLine').find($(this).hasClass('userName') ? '.messageText' : '.userName').focus();
+                return false;
+            }
+            else if (e.which === 40) { // Down
+                console.log("down", $(this).closest('.messageLine'), $(this).closest('.messageLine').next('.messageLine'), $(this).hasClass('userName'));
+                $(this).closest('.messageLine').next('.messageLine').find($(this).hasClass('userName') ? '.userName' : '.messageText').focus();
+                return false;
+            }
+        });
+
 
     // Prevent default drag/drop handler, in conjunction with above.
     $(document).bind('drop dragover', function (e) {
