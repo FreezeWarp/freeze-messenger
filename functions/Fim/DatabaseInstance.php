@@ -42,7 +42,7 @@ class DatabaseInstance extends DatabaseSQL
     /**
      * @var string The columns containing all user data.
      */
-    const userColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, parentalAge, parentalFlags, privs, lastSync, bio, privacyLevel';
+    const userColumns = 'id, name, nameSearchable, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, parentalAge, parentalFlags, privs, lastSync, bio, privacyLevel';
 
     /**
      * @var string The columns containing all user login data.
@@ -199,7 +199,7 @@ class DatabaseInstance extends DatabaseSQL
      *
      * @return string The searchable string.
      */
-    public function makeSearchable($string) {
+    public static function makeSearchable($string) {
         // Romanise first, to allow us to apply custom replacements before letting the built-in functions do their job
         $string = str_replace(array_keys(Config::$romanisation), array_values(Config::$romanisation), $string);
 
@@ -219,7 +219,7 @@ class DatabaseInstance extends DatabaseSQL
         // Get rid of extra spaces. (Also replaces all space characters with " ")
         $string = preg_replace('/\s+/', ' ', $string);
 
-        return $string;
+        return trim($string);
     }
 
     /*********************************************************
@@ -1113,18 +1113,17 @@ class DatabaseInstance extends DatabaseSQL
             'showDeleted'        => false,
             'onlyOfficial'       => false,
             'roomNameSearch'     => false,
-            'columns'            => ['id', 'name', 'topic', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount'],
+            'columns'            => ['id', 'name', 'nameSearchable', 'topic', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge', 'options', 'lastMessageId', 'lastMessageTime', 'messageCount'],
         ), $options);
 
         $columns = [$this->sqlPrefix . 'rooms' => $options['columns']];
-
-
 
         $conditions = [
             'both' => [
                 'either' => []
             ]
         ];
+
         // Modify Query Data for Directives
       	if (!$options['showDeleted'])
       	    $conditions['both']['!options'] = $this->int(fimRoom::ROOM_DELETED, 'bAnd');

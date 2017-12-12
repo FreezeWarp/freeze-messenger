@@ -8,7 +8,6 @@ use Database\DatabaseTypeType;
     \Fim\Database::$sqlPrefix . 'messageEditHistory' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     \Fim\Database::$sqlPrefix . 'ping' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
     \Fim\Database::$sqlPrefix . 'rooms' => [
-        'nameSearchable'  => ['\Fim\DatabaseInstance::makeSearchable', DatabaseTypeType::string, null],
         'watchedByUsers'  => ['\Fim\DatabaseInstance::packListCache', DatabaseTypeType::blob, '\Fim\DatabaseInstance::unpackListCache']
     ],
     \Fim\Database::$sqlPrefix . 'roomStats' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
@@ -30,7 +29,11 @@ use Database\DatabaseTypeType;
     \Fim\Database::$sqlPrefix . 'userFavRooms' => ['roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId']],
 ], [
     \Fim\Database::$sqlPrefix . 'rooms' => [
+        'name'  => ['\Fim\DatabaseInstance::makeSearchable', DatabaseTypeType::string, 'nameSearchable'],
         'id' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'idEncoded'],
+    ],
+    \Fim\Database::$sqlPrefix . 'users' => [
+        'name'  => ['\Fim\DatabaseInstance::makeSearchable', DatabaseTypeType::string, 'nameSearchable'],
     ],
 ], [
     \Fim\Database::$sqlPrefix . 'users' => 'id',

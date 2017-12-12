@@ -121,6 +121,11 @@ class fimRoom extends DynamicObject {
      */
     protected $name = "Missingname.";
 
+    /**
+     * @var string The name of the room, transformed for searchability.
+     */
+    protected $nameSearchable = "";
+
         /**
      * @var int A bitfield containing options for delete, official, hidden, and archive.
      */

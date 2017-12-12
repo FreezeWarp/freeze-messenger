@@ -58,23 +58,26 @@ switch ($_REQUEST['phase']) {
 
         /* Part 1 : Connect to the Database, Create a New Database If Needed */
 
-        \Fim\Database::setInstance(new \Fim\DatabaseInstance());
-        \Fim\Database::instance()->setErrorLevel(E_USER_WARNING);
+        $databaseInstance = new \Fim\DatabaseInstance();
+        $databaseInstance->setErrorLevel(E_USER_WARNING);
 
         try {
-            \Fim\Database::instance()->connect($host, $port, $userName, $password, $createdb ? false : $databaseName, $driver, $prefix);
+            $databaseInstance->connect($host, $port, $userName, $password, $createdb ? false : $databaseName, $driver, $prefix);
         } catch (Exception $exception) {
             die($exception->getMessage());
         }
 
 
-        if (\Fim\Database::instance()->getLastError()) {
+        if ($databaseInstance->getLastError()) {
             die("Connection Error.\n" . \Fim\Database::instance()->getLastError());
         }
         else {
+            \Fim\Database::setInstance($databaseInstance);
             require('../databaseParameters.php');
-            \Fim\Database::instance()->loadVersion();
 
+
+            // Check Version Issues
+            \Fim\Database::instance()->loadVersion();
             if ($driver === 'mysql' || $driver === 'mysqli') {
                 if (\Fim\Database::instance()->versionPrimary <= 4) { // MySQL 4 is a no-go.
                     die('You have attempted to connect to a MySQL version ' . \Fim\Database::instance()->versionString . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
@@ -104,7 +107,8 @@ switch ($_REQUEST['phase']) {
             }
 
 
-            if ($createdb) { // Create the database if needed. This will not work for all drivers.
+            // Create the database if needed. This will not work for all drivers.
+            if ($createdb) {
                 if (!\Fim\Database::instance()->createDatabase($databaseName)) { // We're supposed to create it, let's try.
                     die("The database could not be created.\n" . \Fim\Database::instance()->getLastError());
                 }
@@ -136,9 +140,6 @@ switch ($_REQUEST['phase']) {
                 die('The XML data source appears to be out of date. Reinstall FreezeMessenger and try again.');
             }
             else {
-                \Fim\Database::instance()->startTransaction();
-
-
                 /* Part 2: Create the Tables */
                 \Fim\Database::instance()->holdTriggers(true); // Don't run triggers. The trigger statements set our foreign keys, and thus must be run at the very end.
 
@@ -202,12 +203,10 @@ switch ($_REQUEST['phase']) {
                         $insertData[$column['@name']] = (isset($column['@type']) ? new DatabaseType($column['@type'], $column['@value']) : \Fim\Database::instance()->auto($column['@value']));
                     }
 
-                    if (!\Fim\Database::instance()->insert($prefix . $table['@name'], $insertData)) {
+                    if (!\Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . $table['@name'], $insertData)) {
                         die("Failed to insert data into {$prefix}{$table['@name']}.\n" . print_r(\Fim\Database::instance()->queryLog, true));
                     }
                 }
-
-                \Fim\Database::instance()->endTransaction();
             }
         }
 
@@ -243,6 +242,7 @@ switch ($_REQUEST['phase']) {
         if ($forum == 'vanilla') {
             try {
                 \Fim\Database::setInstance(new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix));
+                require('../databaseParameters.php');
                 \Fim\Config::$displayBacktrace = true;
 
                 $user = new fimUser(false);

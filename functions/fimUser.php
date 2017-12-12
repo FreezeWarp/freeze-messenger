@@ -159,6 +159,12 @@ class fimUser extends \Fim\DynamicObject
 
 
     /**
+     * @var string The user's name, transformed for searchability.
+     */
+    protected $nameSearchable = "";
+
+
+    /**
      * @var array The list of social group IDs the user belongs to.
      */
     protected $socialGroupIds;
