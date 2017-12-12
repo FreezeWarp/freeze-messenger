@@ -723,7 +723,7 @@ Pending Update
 <script id="view-rooms-row" type="text/x-handlebars-template">
     <tr id="room{{id}}">
         <td>
-            <a href="#room={{id}}">{{name}}</a>
+            <a class="roomName" data-roomId="{{id}}" data-roomName="{{name}}" href="#room={{id}}">{{name}}</a>
         </td>
         <td>
             {{topic}}

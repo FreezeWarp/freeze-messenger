@@ -1047,8 +1047,8 @@ $.when(
 
 
         $.contextMenu({
-            classNames : classNames,
             selector : '.messageText, .messageText *',
+            classNames : classNames,
             events : focusPreventionEvents,
             items : {
                 delete : {
@@ -1153,8 +1153,8 @@ $.when(
 
 
         $.contextMenu({
-            classNames : classNames,
             selector : '.userName',
+            classNames : classNames,
             events : focusPreventionEvents,
             items : {
                 profile : {
@@ -1218,7 +1218,7 @@ $.when(
                     },
                     visible : function() {
                         return $(this).attr('data-userId') != window.activeLogin.userData.id
-                        && window.activeLogin.userData.ignoredUsers.indexOf(Number($(this).attr('data-userId'))) < 0;
+                        && window.activeLogin.userData.ignoredUsers.indexOf($(this).attr('data-userId')) < 0;
                     }
                 },
 
@@ -1237,52 +1237,79 @@ $.when(
                     },
                     visible : function() {
                         return $(this).attr('data-userId') != window.activeLogin.userData.id
-                        && window.activeLogin.userData.ignoredUsers.indexOf(Number($(this).attr('data-userId'))) >= 0;
+                        && window.activeLogin.userData.ignoredUsers.indexOf($(this).attr('data-userId')) >= 0;
                     }
                 }
             }
         });
 
 
-        /**
-         * (Re-)Parse the "room" context menus.
-         * TODO
-         *
-         * @author Jospeph T. Parsons <josephtparsons@gmail.com>
-         * @copyright Joseph T. Parsons 2017
-         */
-        /*function contextMenuParseRoom() {
-            $('.room').contextMenu({
-                    menu: 'roomMenu',
-                    altMenu : settings.disableRightClick
-                },
-                function(action, el) {
-                    roomId = $(el).attr('data-roomId');
-
-                    switch(action) {
-                        case 'delete':
-                            dia.confirm({
-                                text : 'Are you sure you want to delete this room?',
-                                'true' : function() {
-                                    standard.deleteRoom(roomId);
-
-                                    $(el).parent().fadeOut();
-
-                                    return false;
-                                }
-                            });
-                            break;
-
-                        case 'edit': popup.editRoom(roomId); break;
-                        case 'archive': popup.archive.init({roomId : roomId}); break;
-                        case 'enter': standard.changeRoom(roomId); break;
+        $.contextMenu({
+            selector : '.roomName',
+            classNames : classNames,
+            events : focusPreventionEvents,
+            items : {
+                edit : {
+                    name : 'Edit',
+                    callback : function() {
+                        window.location.hash = '#editRoom#room=' + $(this).attr('data-roomId');
+                    },
+                    visible : function() { // TODO, sorta kinda
+                        return window.activeLogin.userData.permissions.modRooms;
                     }
+                },
 
-                    return false;
-                });
+                archive : {
+                    name : 'View Archive',
+                    callback : function() {
+                        window.location.hash = '#archive#room=' + $(this).attr('data-roomId');
+                    }
+                },
 
-            return false;
-        }*/
+                enter : {
+                    name : 'Enter',
+                    callback : function() {
+                        window.location.hash = '#room=' + $(this).attr('data-roomId')
+                    }
+                },
+
+                watch : {
+                    name : 'Watch',
+                    callback : function() {
+                        var tag = $(this);
+
+                        fimApi.editUserOptions("create", {
+                            "watchRooms" : [$(this).attr('data-roomId')]
+                        }, {
+                            "end" : function() {
+                                dia.info("You have added " + tag.prop('outerHTML') + " to your watched rooms. You will now be notified when new messages are posted in this room.");
+                            }
+                        });
+                    },
+                    visible : function() {
+                        return window.activeLogin.userData.watchRooms.indexOf($(this).attr('data-roomId')) < 0;
+                    }
+                },
+
+                unwatch : {
+                    name : 'Unwatch',
+                    callback : function() {
+                        var tag = $(this);
+
+                        fimApi.editUserOptions("delete", {
+                            "watchRooms" : [$(this).attr('data-roomId')]
+                        }, {
+                            "end" : function() {
+                                dia.info("You have removed " + tag.prop('outerHTML') + " from your watched rooms. You will no longer be notified when new messages are posted in this room.");
+                            }
+                        });
+                    },
+                    visible : function() {
+                        return window.activeLogin.userData.watchRooms.indexOf($(this).attr('data-roomId')) >= 0;
+                    }
+                }
+            }
+        });
 
 
 

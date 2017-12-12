@@ -278,7 +278,7 @@
   "settingsParentalAgeLabel" : "Content Must Be Appropriate For: ",
   "settingsParentalControlsBlurb" : "By default parental controls are enabled that help keep younger users safe. Check this to disable these features, however we take no responsibility for any repercussions.",
   "settingsParentalControlsLabel" : "Disable Parental Controls: ",
-  "settingsParentalFlagsBlurb" : "If an item is selected and you attempt to view and image or enter a room that is marked as containing an excessive ammount of this type of content, you will be blocked from seeing it. You can change these settings at any time.</strong>",
+  "settingsParentalFlagsBlurb" : "If an item is selected and you attempt to view and image or enter a room that is marked as containing an excessive ammount of this type of content, you will be blocked from seeing it. You can change these settings at any time.",
   "settingsParentalFlagsLabel" : "Do Not Show Content Containing: ",
   "settingsPrivacyAllowAll" : "Allow Everybody to Contact Me",
   "settingsPrivacyAllowAllBlurb" : "You will be able to receive private instant messages from all users, except for those in your Ignore List.",
