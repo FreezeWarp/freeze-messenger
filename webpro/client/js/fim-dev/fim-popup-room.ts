@@ -578,7 +578,7 @@ popup.prototype.room.prototype.eventListener = function() {
     this.roomSource.addEventListener('newMessage', eventHandler(this.newMessageHandler), false);
     this.roomSource.addEventListener('topicChange', eventHandler(this.topicChangeHandler), false);
     this.roomSource.addEventListener('deletedMessage', eventHandler(this.deletedMessageHandler), false);
-    this.roomSource.addEventListener('editedMessage', eventHandler(this.editedMesageHandler), false);
+    this.roomSource.addEventListener('editedMessage', eventHandler(this.editedMessageHandler), false);
 };
 
 

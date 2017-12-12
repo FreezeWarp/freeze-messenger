@@ -1054,10 +1054,13 @@ $.when(
                 delete : {
                     name : 'Delete',
                     callback: function() {
+                        var roomId = $(this).closest('.messageText').attr('data-roomId'),
+                            messageId = $(this).closest('.messageText').attr('data-messageid');
+
                         dia.confirm({
                             text : 'Are you sure you want to delete this message?',
                             'true' : function() {
-                                fimApi.deleteMessage($(this).attr('data-roomId'), $(this).attr('data-messageid'), {
+                                fimApi.deleteMessage(roomId, messageId, {
                                     'end' : function() {
                                         dia.info("The message was deleted.", "success");
                                     }
@@ -1070,8 +1073,8 @@ $.when(
                 link : {
                     name : 'Message Link',
                     callback: function() {
-                        var roomId = $(this).attr('data-roomId'),
-                            messageId = $(this).attr('data-messageid');
+                        var roomId = $(this).closest('.messageText').attr('data-roomId'),
+                            messageId = $(this).closest('.messageText').attr('data-messageid');
 
                         dia.full({
                             title : 'Link to this Message',
@@ -1093,10 +1096,10 @@ $.when(
                 edit : {
                     name : 'Edit',
                     callback : function() {
-                        $('#message' + $(this).attr('data-messageid') + ' .messageText').dblclick();
+                        $('#message' + $(this).closest('.messageText').attr('data-messageid') + ' .messageText').dblclick();
                     },
                     visible : function() {
-                        return $(this).parent('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
+                        return $(this).closest('.messageLine').find('.userName').attr('data-userid') == window.userId && window.activeLogin.userData.permissions.editOwnPosts;
                     }
                 },
 
@@ -1132,7 +1135,7 @@ $.when(
                                 content : $('<input>').attr({
                                     type : 'text',
                                     name : 'url',
-                                    value : $(this).attr('href'),
+                                    value : $(this).closest('.messageText').attr('href'),
                                     style : 'width: 100%;'
                                 }).prop('outerHTML'),
                                 width : 800,
