@@ -219,21 +219,44 @@
         </div>
     </div>
 
-    <div id="modal-kick" class="modal">
-        <form action="#" id="kickUserForm" method="post">
-            <label for="userName">User</label>: <input type="text" name="userName" id="userName" required/><br/>
-            <label for="roomNameKick">Room</label>: <input type="text" id="roomNameKick" name="roomNameKick" required/><br/>
-            <label for="time">Time</label>: <input type="text" name="time" id="time" style="width: 50px;" required/>
-            <select name="interval" id="interval">
-                <option value="1">Seconds</option>
-                <option value="60">Minutes</option>
-                <option value="3600">Hours</option>
-                <option value="86400">Days</option>
-                <option value="604800">Weeks</option>
-            </select><br/><br/>
-            <button type="submit">Kick User</button>
-            <button type="reset">Reset</button>
-        </form>
+    <div id="modal-kick" class="modal" tabindex="-1">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{kick.title}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="#" id="kickUserForm" method="post">
+                    <div class="modal-body">
+                        <label class="input-group">
+                            <span class="input-group-addon">{{kick.form.username}}</span>
+                            <input type="text" name="userName" class="form-control" required/>
+                        </label>
+                        <label class="input-group">
+                            <span class="input-group-addon">{{kick.form.room}}</span>
+                            <input type="text" name="roomName" class="form-control" required/>
+                        </label>
+                        <label class="input-group">
+                            <span class="input-group-addon">{{kick.form.time}}</span>
+                            <input type="text" name="time" class="form-control" required/>
+                            <select name="interval" class="input-group-addon">
+                                {{#each units.time}}
+                                <option value="{{@key}}">{{this}}</option>
+                                {{/each}}
+                            </select>
+                        </label>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success" type="submit">{{kick.buttons.submit}}</button>
+                        <button class="btn btn-danger" type="button" data-dismiss="modal" aria-label="{{kick.buttons.cancel}}">
+                            {{kick.buttons.cancel}}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <div id="modal-stats" class="modal" tabindex="-1">
@@ -483,40 +506,53 @@
             <div id="chatContainer" class="card border-secondary">
                 <div id="messageListCard">
                     <div id="messageListCardHeader" class="card-header">
-                        <div class="row align-items-center">
-                            <div class="col text-center text-lg-left mb-2 mb-lg-0">
-                                <h4 id="roomName" class="card-title m-0"></h4>
-                                <em id="topic"></em>
-                            </div>
+                        <{{!}}script id="messageListCardHeaderTemplate" type="text/x-handlebars-template">
+                            <div class="row align-items-center">
+                                <div class="col text-center text-lg-left mb-2 mb-lg-0">
+                                    <h4 id="roomName" class="card-title m-0">{{inner "roomData.name"}}</h4>
+                                    <em id="topic">{{inner "roomData.topic"}}</em>
+                                </div>
 
-                            <div class="col-lg-auto text-center text-lg-left">
-                                <div class="btn-toolbar text-center d-inline-block" role="toolbar">
-                                    <button type="button"
-                                            class="btn btn-primary mx-1"
-                                            title="Edit Room"
-                                            name="editRoom"
-                                            onclick="location.hash='#editRoom#room=' + window.roomId">
-                                        <i class="fa fa-cog" aria-hidden="true"></i> {{room.buttons.edit}}
-                                    </button>
+                                <div class="col-lg-auto text-center text-lg-left">
+                                    <div class="btn-toolbar text-center d-inline-block" role="toolbar">
+                                        {{inner "#if roomData.permissions.moderate"}}
+                                        <div class="dropdown d-inline">
+                                            <button class="btn btn-primary dropdown-toggle" type="button" id="roomModerateMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                {{room.buttons.moderate}}
+                                            </button>
 
-                                    <button type="button"
-                                            class="btn btn-primary mx-1"
-                                            title="Top Posters"
-                                            name="topPosters"
-                                            onclick="popup.viewStats()">
-                                        <i class="fa fa-list-ol" aria-hidden="true"></i> {{room.buttons.top}}
-                                    </button>
+                                            <div class="dropdown-menu" aria-labelledby="roomModerateMenu">
+                                                {{inner '#ifCond roomData.permissions.grant "||" roomData.permissions.properties'}}
+                                                    <a class="dropdown-item" href="#editRoom" onclick="$(this).attr('href', '#editRoom#room=' + window.roomId)"><i class="fa fa-cog" aria-hidden="true"></i> {{room.buttons.edit}}</a>
+                                                {{inner "/ifCond"}}
 
-                                    <button type="button"
-                                            class="btn btn-primary mx-1"
-                                            title="Archive"
-                                            name="archive"
-                                            onclick="location.hash='#archive#room=' + window.roomId">
-                                        <i class="fa fa-history"></i> {{room.buttons.archive}}
-                                    </button>
+                                                {{inner "#if roomData.permissions.moderate"}}
+                                                    <a class="dropdown-item" href="#" onclick="popup.kick(null, window.roomId);"><i class="fa fa-ban" aria-hidden="true"></i> {{room.buttons.kick}}</a>
+                                                    <a class="dropdown-item" href="#kicks"><i class="fa fa-list" aria-hidden="true"></i> {{room.buttons.kicks}}</a>
+                                                {{inner "/if"}}
+                                            </div>
+                                        </div>
+                                        {{inner "/if"}}
+
+                                        <button type="button"
+                                                class="btn btn-primary mx-1"
+                                                title="Top Posters"
+                                                name="topPosters"
+                                                onclick="popup.viewStats()">
+                                            <i class="fa fa-list-ol" aria-hidden="true"></i> {{room.buttons.top}}
+                                        </button>
+
+                                        <button type="button"
+                                                class="btn btn-primary mx-1"
+                                                title="Archive"
+                                                name="archive"
+                                                onclick="location.hash='#archive#room=' + window.roomId">
+                                            <i class="fa fa-history"></i> {{room.buttons.archive}}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        <{{!}}/script>
                     </div>
 
                     <div id="messageListContainer">
@@ -1304,8 +1340,38 @@ Pending Update
 </form>
 </script>
 
+
+
+<script id="view-kicks-row" type="text/x-handlebars-template">
+    <tr id="kick{{kick.id}}">
+        <td>
+            {{render userTag}}
+        </td>
+
+        <td>
+            {{render kickerTag}}
+        </td>
+
+        <td>
+            {{render roomTag}}
+        </td>
+
+        <td>
+            {{date kick.set}}
+        </td>
+
+        <td>
+            {{date kick.expires}}
+        </td>
+
+        <td>
+            <button class="btn btn-primary" onclick="standard.unkick({{kick.userId}}, {{kick.roomId}})">{{kicks.unkick}}</button>
+        </td>
+    </tr>
+</script>
+
 <script id="view-kicks" type="text/x-handlebars-template">
-<table class="table table-sm">
+<table class="table table-sm table-stripped">
     <thead>
     <tr class="hrow">
         <th>{{kicks.userName}}</th>

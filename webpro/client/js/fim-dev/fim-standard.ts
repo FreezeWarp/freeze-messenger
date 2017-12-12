@@ -279,17 +279,6 @@ standard.prototype.logout = function() {
     }); // Send the form data via AJAX.
 };
 
-standard.prototype.kick = function(userId, roomId, length) {
-    fimApi.kickUser(userId, roomId, length, {
-        'end' : function() {
-            dia.info('The user has been kicked.', 'Success');
-            $("#kickUserDialogue").dialog('close');
-        }
-    });
-
-    return false;
-};
-
 standard.prototype.unkick = function(userId, roomId) {
     fimApi.unkickUser(userId, roomId, {
         'exception' : function(exception) {

@@ -726,88 +726,48 @@ popup.prototype.online = function() {
 
 
 
-/*** START Kick Manager ***/
-
-popup.prototype.kicks = {
-    dateOptions : {year : "numeric", month : "numeric", day : "numeric", hour: "numeric", minute: "numeric", second: "numeric"},
-
-    init : function() {
-        fimApi.getKicks(params, {
-            'each' : function(kick) {
-                jQuery.each(kick.kicks, function(kickId, kickData) {
-                    console.log(kickData);
-                    $('#kickedUsers').append(
-                        $('<tr>').append(
-                            $('<td>').append(
-                                $('<span class="userName userNameTable">').attr({'data-userId' : kick.userId, 'style' : kick.userNameFormat}).text(kick.userName)
-                            )
-                        ).append(
-                            $('<td>').append(
-                                $('<span class="userName userNameTable">').attr({'data-userId' : kickData.kickerId, 'style' : kickData.kickerNameFormat}).text(kickData.kickerName)
-                            )
-                        ).append(
-                            $('<td>').append(
-                                $('<span class="roomName roomNameTable">').attr({'data-roomId' : kickData.roomId}).text(kickData.roomName)
-                            )
-                        ).append(
-                            $('<td>').text(fim_dateFormat(kickData.set, dateOptions))
-                        ).append(
-                            $('<td>').text(fim_dateFormat(kickData.expires, dateOptions))
-                        ).append(
-                            $('<td>').append(
-                                $('<button>').click(function() {
-                                    standard.unkick(kick.userId, kickData.roomId)
-                                }).text('Unkick')
-                            )
-                        )
-                    );
-                });
-            }
-        });
-    }
-};
-
-/*** END Kick Manager ***/
-
-
-
-
 /*** START Kick ***/
 
-popup.prototype.kick = function() {
+popup.prototype.kick = function(userId, roomId) {
+    // Render Modal
     $('#modal-kick').modal();
 
-    $('#userName').autocompleteHelper('users');
-    $('#roomNameKick').autocompleteHelper('rooms');
 
+    // Create Autocompletes
+    $('#kickUserForm input[name=userName]').autocompleteHelper('users', userId);
+    $('#kickUserForm input[name=roomName]').autocompleteHelper('rooms', roomId);
+
+
+    // Process Submit
     $("#kickUserForm").submit(function() {
-        var userName = $('#kickUserForm > #userName').val();
-        var userId = $("#kickUserForm > #userName").attr('data-id');
-        var roomName = $('#kickUserForm > #roomNameKick').val();
-        var roomId = $("#kickUserForm > #roomNameKick").attr('data-id');
-        var length = Math.floor(Number($('#kickUserForm > #time').val() * Number($('#kickUserForm > #interval > option:selected').attr('value'))));
+        var userId = $("#kickUserForm input[name=userName]").attr('data-id'),
+            roomId = $("#kickUserForm input[name=roomName]").attr('data-id'),
+            length = Math.floor(
+                Number($('#kickUserForm input[name=time]').val()
+                    *
+                    Number($('#kickUserForm select[name=interval] > option:selected').attr('value')))
+            );
 
-        var userIdDeferred = true;
-        var roomIdDeferred = true;
 
-        if (roomName && !roomId) {
-            userIdDeferred = $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
-                userId = pairs[userName].id;
-            }));
+        if (!roomId) {
+            dia.error("An invalid room was provided.");
+        }
+        else if (!userId) {
+            dia.error("An invalid user was provided.");
+        }
+        else {
+            fimApi.kickUser(userId, roomId, length, {
+                'end' : function() {
+                    dia.info('The user has been kicked.', 'success');
+                    $('#modal-kick').modal('hide');
+                }
+            });
         }
 
-        if (roomName && !roomId) {
-            roomIdDeferred = $.when(Resolver.resolveRoomsFromNames([roomName]).then(function(pairs) {
-                roomId = pairs[roomName].id;
-            }));
-        }
-
-        $.when(userIdDeferred, roomIdDeferred).then(function() {
-            standard.kick(userId, roomId, length);
-        });
 
         return false;
     });
+
 
     return false;
 };

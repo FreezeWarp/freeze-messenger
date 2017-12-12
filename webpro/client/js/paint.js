@@ -1,11 +1,39 @@
 /* START WebPro
  * Note that: WebPro is not optimised for large sets of rooms. It can handle around 1,000 "normal" rooms. */
 
+
+var originalLeave = $.fn.popover.Constructor.prototype._leave;
+$.fn.popover.Constructor.prototype._leave = function(obj, context){
+    var  dataKey = this.constructor.DATA_KEY;
+    var  context = context || $(obj.currentTarget).data(dataKey);
+
+    if (!context) {
+        context = new this.constructor(
+            obj.currentTarget,
+            this._getDelegateConfig()
+        );
+        $(obj.currentTarget).data(dataKey, context);
+    }
+
+    originalLeave.call(this, obj);
+
+    if (obj.currentTarget) {
+        $(context.tip).one('mouseenter', function() {
+            console.log("enter");
+            clearTimeout(context._timeout);
+            $(context.tip).one('mouseleave', function() {
+                $.fn.popover.Constructor.prototype._leave.call(context, obj, context);
+            });
+        })
+    }
+};
+
 //$q($l('errorQuitMessage', 'errorGenericQuit'));
 function $q(message, error) {
     $('body').replaceWith(message);
     throw new Error(error || message);
 }
+
 
 /**
  * TODO: DEPRECATED
@@ -63,12 +91,26 @@ Handlebars.registerHelper("contains", function( value, array, options ){
 Handlebars.registerHelper("byte", function(fileSize) {
     var fileSize2 = fileSize;
 
-    for (i in window.phrases.byteUnits) {
+    for (i in window.phrases.units.bytes) {
         if (fileSize > i)
-            fileSize2 = (fileSize / i) + window.phrases.byteUnits[i];
+            fileSize2 = (fileSize / i) + window.phrases.units.bytes[i];
     }
 
     return fileSize2;
+});
+
+Handlebars.registerHelper("date", function(date) {
+    return fim_dateFormat(date);
+});
+
+Handlebars.registerHelper("inner", function(string) {
+    return new Handlebars.SafeString("{{" + string + "}}");
+});
+
+Handlebars.registerHelper("render", function(object) {
+    return new Handlebars.SafeString(
+        object.prop('outerHTML')
+    );
 });
 
 Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
@@ -98,14 +140,14 @@ Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
     }
 });
 
-function fim_renderHandlebarsInPlace(tag) {
+function fim_renderHandlebarsInPlace(tag, extra) {
     var id       = tag.attr('id');
     var source   = tag.html();
     var template = Handlebars.compile(source);
 
     $('#active-' + id).remove();
 
-    $('<div id="active-' + id + '">' + template(fim_getHandlebarsPhrases()) + '</div>').insertAfter(tag);
+    $('<div id="active-' + id + '">' + template(fim_getHandlebarsPhrases(extra)) + '</div>').insertAfter(tag);
 }
 
 function fim_renderHandlebars(tag, target) {
@@ -548,13 +590,21 @@ function fim_messageFormat(json, format) {
 }
 
 function fim_buildUsernameTag(tag, userId, deferred, includeAvatar, includeUsername) {
+    fim_buildUsernameTagPromise(tag, userId, deferred, includeAvatar, includeUsername);
+
+    return tag;
+}
+
+
+function fim_buildUsernameTagPromise(tag, userId, userDeferred, includeAvatar, includeUsername) {
+    var deferred = $.Deferred();
+
     if (includeAvatar == undefined)
         includeAvatar = true;
     if (includeUsername == undefined)
         includeUsername = true;
 
-
-    $.when(deferred).then(function(pairs) {
+    $.when(userDeferred).then(function(pairs) {
         var userName = pairs[userId].name,
             userNameFormat = pairs[userId].nameFormat,
             avatar = pairs[userId].avatar ? pairs[userId].avatar : 'client/images/blankperson.png',
@@ -563,9 +613,13 @@ function fim_buildUsernameTag(tag, userId, deferred, includeAvatar, includeUsern
         tag.attr({
             'class': 'userName' + (includeAvatar ? ' userNameAvatar' : ''),
             'style': (includeUsername ? userNameFormat : ''),
+            'data-style' : userNameFormat,
             'data-userId': userId,
             'data-userName': userName,
             'data-avatar': avatar,
+            'data-bio': pairs[userId].bio,
+            'data-profile': pairs[userId].profile,
+            'data-joinDate': pairs[userId].joinDate,
             'tabindex': 1000
         }).append(
             includeAvatar
@@ -580,50 +634,22 @@ function fim_buildUsernameTag(tag, userId, deferred, includeAvatar, includeUsern
                 : ''
         );
 
-        tag.popover({
-            content : function() {
-                var el = $('<div class="row no-gutters">');
-                var data = $('<div class="col">').append(
-                    $('<div class="userName">').attr({
-                        'data-userId' : userId,
-                        'style' : userNameFormat
-                    }).css('font-weight', 'bold').text(userName),
-                    $('<hr>')
-                );
-
-                if (pairs[userId].bio)
-                    data.append($('<div>').text(pairs[userId].bio));
-
-                if (pairs[userId].profile)
-                    data.append($('<div>').append($('<em><strong>Profile</strong></em>'), ': ', $('<a>').attr('href', pairs[userId].profile).text(pairs[userId].profile)));
-
-                if (pairs[userId].joinDate)
-                    data.append($('<div>').append($('<em><strong>Member Since</strong></em>'), ': ', $('<span>').text(fim_dateFormat(pairs[userId].joinDate, {year : "numeric", month : "numeric", day : "numeric"})))); // TODO:just date
-
-                el.append(
-                    $('<div class="col-sm-auto">').append(
-                        $('<img style="max-height: 200px; max-width: 200px;" class="mr-2">').attr('src', avatar)
-                    ),
-                    data
-                );
-
-                return el.prop('outerHTML');
-            },
-            html : true,
-            trigger : 'hover',
-            placement : 'auto',
-            container: tag
-        }).on("show.bs.popover", function(e){
-            console.log($(this).data("bs.popover"), $(this).data("bs.popover").tip)
-            $($(this).data("bs.popover").tip).css({"max-width": "600px"});
-        });
+        deferred.resolve(tag);
     });
+
+    return deferred.promise();
+}
+
+function fim_buildRoomNameTag(tag, roomId, deferred) {
+    fim_buildRoomNameTagPromise(tag, roomId, deferred);
 
     return tag;
 }
 
-function fim_buildRoomNameTag(tag, roomId, deferred) {
-    $.when(deferred).then(function(pairs) {
+function fim_buildRoomNameTagPromise(tag, roomId, roomDeferred) {
+    var deferred = $.Deferred();
+
+    $.when(roomDeferred).then(function(pairs) {
         var roomName = pairs[String(roomId)].name;
 
         tag.attr({
@@ -634,9 +660,11 @@ function fim_buildRoomNameTag(tag, roomId, deferred) {
         }).append(
             $('<a>').attr('href', '#room=' + roomId).text(roomName)
         );
+
+        deferred.resolve(tag);
     });
 
-    return tag;
+    return deferred.promise();
 }
 
 function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred) {
@@ -962,6 +990,44 @@ $.when(
         fim_renderHandlebarsInPlace($("#entry-template"));
 
 
+        /*** Popovers ***/
+        $('body').popover({
+            selector : '.userName',
+            content : function() {
+                var el = $('<div class="row no-gutters">');
+                var data = $('<div class="col">').append(
+                    $('<div class="userName">').attr({
+                        'data-userId' : userId,
+                        'style' : $(this).attr('data-style')
+                    }).css('font-weight', 'bold').text($(this).attr('data-userName')),
+                    $('<hr>')
+                );
+
+                if ($(this).attr('data-bio'))
+                    data.append($('<div>').text($(this).attr('data-bio')));
+
+                if ($(this).attr('data-profile'))
+                    data.append($('<div>').append($('<em><strong>Profile</strong></em>'), ': ', $('<a target="_blank">').attr('href', $(this).attr('data-profile')).text($(this).attr('data-profile'))));
+
+                if ($(this).attr('data-joinDate'))
+                    data.append($('<div>').append($('<em><strong>Member Since</strong></em>'), ': ', $('<span>').text(fim_dateFormat($(this).attr('data-joinDate'), {year : "numeric", month : "numeric", day : "numeric"})))); // TODO:just date
+
+                el.append(
+                    $('<div class="col-sm-auto">').append(
+                        $('<img style="max-height: 200px; max-width: 200px;" class="mr-2">').attr('src', $(this).attr('data-avatar'))
+                    ),
+                    data
+                );
+
+                return el.prop('outerHTML');
+            },
+            html : true,
+            trigger : 'hover',
+            placement : 'auto',
+            delay: {show: 50, hide: 100}
+        });
+
+
         /*** Context Menus ***/
         var contextAction_msgLink = function(roomId, messageId) {
             dia.full({
@@ -1181,10 +1247,11 @@ $.when(
                 kick : {
                     name : 'Kick',
                     callback : function() {
-                        popup.kick($('data-userid'), window.roomId)
+                        popup.kick($(this).attr('data-userid'), window.roomId)
                     },
                     visible : function() {
-                        return false; // TODO!
+                        return window.openObjectInstance instanceof popup.room
+                            && window.openObjectInstance.roomData.permissions.moderate;
                     }
                 },
 
@@ -1194,7 +1261,7 @@ $.when(
                         standard.banUser($('data-userid'))
                     },
                     visible : function() {
-                        return false; // TODO!
+                        return window.activeLogin.userData.permissions.modUsers;
                     }
                 },
 

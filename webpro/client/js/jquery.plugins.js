@@ -21338,12 +21338,9 @@ jQuery.toArray = function(obj) {
 // ######################################################################################################### //
 
 
-
-
-
 $.widget( "custom.imageAutocomplete", $.ui.autocomplete, {
     _renderItem: function(ul, item) {
-        console.log("render called", item);
+        console.log("render item");
         return $("<li>")
             .append($("<div>")
                 .append("avatar" in item.label && item.label.avatar ? $('<span class="userNameAvatar">').append($("<img>").attr('src', item.label.avatar)) : '')
@@ -21354,14 +21351,16 @@ $.widget( "custom.imageAutocomplete", $.ui.autocomplete, {
 });
 
 
-jQuery.fn.extend({autocompleteHelper : function(resourceName) {
-    var lastValue;
-
-    this.imageAutocomplete({
+jQuery.fn.extend({autocompleteHelper : function(resourceName, defaultId) {
+    var _this = this.imageAutocomplete({
         source: fimApi.acHelper(resourceName),
+
+        // Bootstrap styling
         classes: {
             'ui-autocomplete' : 'bg-light'
         },
+
+        // Set data-id and data-value whenever a value is selected from the menu
         select: function (event, ui) {
             $(event.target).val(ui.item.label.name);
             $(event.target).attr('data-id', ui.item.value);
@@ -21369,13 +21368,30 @@ jQuery.fn.extend({autocompleteHelper : function(resourceName) {
 
             return false;
         },
+
         change : function(event) {
+            // Empty data-id and data-value if the user types something
             if ($(event.target).attr('data-value') != $(event.target).val()) {
                 $(event.target).attr('data-id', '');
                 $(event.target).attr('data-value', '');
             }
         }
     });
+
+
+    // Set the initial value of the form field, if needed
+    if (defaultId) {
+        $.when(Resolver.resolveFromId(resourceName, defaultId)).then(function(pairs) {
+            _this.val(pairs[defaultId].name);
+            _this.attr('data-value', pairs[defaultId].name);
+            _this.attr('data-id', defaultId);
+        });
+    }
+    else {
+        _this.val('');
+        _this.attr('data-id', '');
+        _this.attr('data-value', '');
+    }
 
 
     return this;
@@ -21449,11 +21465,11 @@ var dia = {
         $('#modal-dynamicError').modal();
     },
 
-    info: function (message, title) {
+    info: function (message, type) {
         $.notify({
             message : message
         }, {
-            type : "info",
+            type : (type ? type : "info"),
             placement: {
                 from : 'top',
                 align : 'center',

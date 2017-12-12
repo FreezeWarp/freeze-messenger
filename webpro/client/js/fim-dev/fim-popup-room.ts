@@ -8,6 +8,7 @@ declare var dia: any;
 declare var fim_buildUsernameTag : any;
 declare var fim_getUsernameDeferred : any;
 declare var fim_messageFormat : any;
+declare var fim_renderHandlebarsInPlace : any;
 declare var fim_debounce: any;
 declare var EventSource : any;
 
@@ -21,6 +22,8 @@ popup.prototype.room = function() {
         lastEvent : 0,
         lastMessage : 0
     };
+
+    this.roomData = false;
 
     this.faviconFlashTimer = false;
     this.windowBlurred = false;
@@ -360,38 +363,6 @@ popup.prototype.room.prototype.init = function(options) {
     }));
 
 
-    // Send user status pings
-    fimApi.ping(this.options.roomId);
-    this.pingInterval = window.setInterval((() => {
-        fimApi.editUserStatus(this.options.roomId, {
-            status : "",
-            typing : this.typing
-        });
-    }), 5 * 60 * 1000);
-
-
-    // Detect form typing
-    $('textarea#messageInput').on('keyup', fim_debounce(() => {
-        fimApi.stoppedTyping(this.options.roomId);
-        this.isTyping = false;
-    }, 2000)).on('keydown', (e) => {
-        if (e.keyCode == 13 && !e.shiftKey) {
-            $('#sendForm').submit();
-            e.preventDefault();
-        }
-        else if (!this.isTyping) {
-            this.isTyping = true;
-            fimApi.startedTyping(this.options.roomId);
-        }
-    });
-
-
-    // Send logoff event on window close.
-    $(window).on('beforeunload', null, () => {
-        this.beforeUnload(this.options.roomId);
-    });
-
-
     // Try to allow resizes of the messageInput. (Currently kinda broken.)
     //$('textarea#messageInput').mouseup(this.onWindowResize);
 
@@ -407,14 +378,17 @@ popup.prototype.room.prototype.init = function(options) {
         'id' : this.options.roomId,
     }, {
         each : ((roomData) => {
+            this.roomData = roomData;
+
+
             if (!roomData.permissions.view) { // If we can not view the room
-                window.roomId = false; // Set the global roomId false.
+                window.roomId = null; // Set the global roomId false.
                 window.location.hash = "#rooms";
                 dia.error('You have been restricted access from this room. Please select a new room.');
             }
 
             else if (!roomData.permissions.post) { // If we can view, but not post
-                dia.error('You are not allowed to post in this room. You will be able to view it, though.');
+                dia.info('You are not allowed to post in this room. You will be able to view it, though.', 'danger');
                 this.disableSender();
             }
 
@@ -426,18 +400,74 @@ popup.prototype.room.prototype.init = function(options) {
             if (roomData.permissions.view) { // If we can view the room...
                 window.roomId = roomData.id;
 
-                $('#roomName').html(roomData.name); // Update the room name.
-                $('#topic').html(roomData.topic); // Update the room topic.
+
+                // Populate Active Users for the Room
+                fimApi.getActiveUsers({
+                    'roomIds' : [this.options.roomId]
+                }, {
+                    'refresh' : 15000,
+                    'timerId' : 1,
+                    'begin' : (() => {
+                        $('ul#activeUsers').html('');
+                    }),
+                    'each' : (user) => {
+                        jQuery.each(user.rooms, (index, status) => {
+                            this.userStatusChangeHandler({
+                                status : status.status,
+                                typing : status.typing,
+                                userId : user.id
+                            });
+                        });
+                    }
+                });
+
+
+                // Send user status pings
+                fimApi.ping(this.options.roomId);
+                this.pingInterval = window.setInterval((() => {
+                    fimApi.editUserStatus(this.options.roomId, {
+                        status : "",
+                        typing : this.typing
+                    });
+                }), 5 * 60 * 1000);
+
+
+                // Detect form typing
+                $('textarea#messageInput').on('keyup', fim_debounce(() => {
+                    fimApi.stoppedTyping(this.options.roomId);
+                    this.isTyping = false;
+                }, 2000)).on('keydown', (e) => {
+                    if (e.keyCode == 13 && !e.shiftKey) {
+                        $('#sendForm').submit();
+                        e.preventDefault();
+                    }
+                    else if (!this.isTyping) {
+                        this.isTyping = true;
+                        fimApi.startedTyping(this.options.roomId);
+                    }
+                });
+
+
+                // Send logoff event on window close.
+                $(window).on('beforeunload', null, () => {
+                    this.beforeUnload(this.options.roomId);
+                });
+
+
+                // Render Header Template
+                fim_renderHandlebarsInPlace($('#messageListCardHeaderTemplate'), {roomData : roomData});
+
 
                 // Clear the message list.
                 $('#messageList').html('');
 
+
+                // Get New Messages
                 window.requestSettings[this.options.roomId] = {
                     lastMessage : null,
                     firstRequest : true
                 };
 
-                // Get New Messages
                 fimApi.getMessages({
                     'roomId': this.options.roomId,
                 }, {
@@ -455,44 +485,17 @@ popup.prototype.room.prototype.init = function(options) {
                 });
             }
 
-            if (!(roomData.permissions.properties || roomData.permissions.grant)) {
-                $('#active-view-room #chatContainer button[name=editRoom]').hide();
-            }
-
             this.onWindowResize();
         }),
 
         exception : ((exception) => {
-            if (exception.string === 'idNoExist') {
-                window.roomId = false; // Set the global roomId false.
+            if (exception.string === 'idNoExist' || exception.string === 'roomIdInvalid') {
+                window.roomId = null; // Set the global roomId false.
                 window.location.hash = "#rooms";
                 dia.error('That room doesn\'t exist. Please select a room.');
             }
             else { fimApi.getDefaultExceptionHandler()(exception); }
         })
-    });
-
-
-
-    /* Populate Active Users for the Room */
-
-    fimApi.getActiveUsers({
-        'roomIds' : [this.options.roomId]
-    }, {
-        'refresh' : 15000,
-        'timerId' : 1,
-        'begin' : (() => {
-            $('ul#activeUsers').html('');
-        }),
-        'each' : (user) => {
-            jQuery.each(user.rooms, (index, status) => {
-                this.userStatusChangeHandler({
-                    status : status.status,
-                    typing : status.typing,
-                    userId : user.id
-                });
-            });
-        }
     });
 };
 

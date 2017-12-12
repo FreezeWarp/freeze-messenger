@@ -42,6 +42,14 @@ class Resolver {
         }
     }
 
+    private static getCapital(thing : string) {
+        return thing.charAt(0).toUpperCase() + thing.slice(1);
+    }
+
+    private static getPlural(thing : string) {
+        return Resolver.getCapital(thing) + "s";
+    }
+
     private static resolve(type : string, property : string, items: Array<any>) {
         //console.log(["resolve", type, property, items]);
 
@@ -50,7 +58,7 @@ class Resolver {
         let unresolvedItems = [];
         let unresolvedItemsWaiting = [];
 
-        let propertyPlural = property.charAt(0).toUpperCase() + property.slice(1) + "s"; // e.g. if property = id, this creates "Ids"
+        let propertyPlural = Resolver.getPlural(property); // e.g. if property = id, this creates "Ids"
         let typeProperty = type + propertyPlural;
 
         if (property == "id") {
@@ -100,7 +108,7 @@ class Resolver {
             let query = {};
             query[typeProperty] = unresolvedItems;
 
-            fimApi["get" + type.charAt(0).toUpperCase() + type.slice(1) + "s"](query, {
+            fimApi["get" + Resolver.getPlural(type)](query, {
                 'each': function(entry) {
                     Resolver.cacheEntry(type, entry);
                     returnData[entry[property]] = entry;
@@ -152,5 +160,13 @@ class Resolver {
 
     public static resolveGroupsFromNames(names: Array<string>) {
         return Resolver.resolve("group", "name", names);
+    }
+
+    public static resolveFromId(type : string, id : number) {
+        return Resolver["resolve" + Resolver.getCapital(type) + "FromIds"]([id]);
+    }
+
+    public static resolveFromName (type : string, name : string) {
+        return Resolver["resolve" + Resolver.getCapital(type) + "FromNames"]([name]);
     }
 }
