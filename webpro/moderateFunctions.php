@@ -25,21 +25,13 @@
  * @return string
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-function container($title, $content, $class = 'page') {
-  return $return = "<table class=\"$class ui-widget\">
-  <thead>
-    <tr class=\"hrow ui-widget-header ui-corner-top\">
-      <td>$title</td>
-    </tr>
-  </thead>
-  <tbody class=\"ui-widget-content ui-corner-bottom\">
-    <tr>
-      <td>
-        <div>$content</div>
-      </td>
-    </tr>
-  </tbody>
-</table>
+function container($title, $content, $class = '') {
+  return $return = "<div class=\"$class card\">
+  <h4 class=\"card-header\">$title</h4>
+  <div class=\"card-body\">
+    $content
+  </div>
+</div>
 
 ";
 }

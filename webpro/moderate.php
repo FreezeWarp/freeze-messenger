@@ -90,18 +90,15 @@ require('../global.php');
     <meta name="author" content="Joseph T. Parsons" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="icon" id="favicon" type="image/png" href="images/favicon.png" />
-    <!--[if lte IE 9]>
-    <link rel="shortcut icon" id="faviconfallback" href="images/favicon1632.ico" />
-    <![endif]-->
 
     <!-- START Styles -->
-    <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/jquery-ui-1.8.16.custom.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/fim.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
+    <link
+            href="https://maxcdn.bootstrapcdn.com/bootswatch/4.0.0-beta.2/simplex/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-ofc00ja/z8wrU97EAHQRb4i4wsa/Zgr9JZll2R3KW33iqhFSfmVz/6xuWFx5pjcn"
+            crossorigin="anonymous">
 
-    <link rel="stylesheet" type="text/css" href="./client/codemirror/lib/codemirror.css">
-    <!--<link rel="stylesheet" type="text/css" href="./client/codemirror/mode/xml/xml.css">
-    <link rel="stylesheet" type="text/css" href="./client/codemirror/mode/clike/clike.css">-->
+    <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
 
     <style>
         *, *:before, *:after {
@@ -282,15 +279,6 @@ require('../global.php');
         <ul>
             <?php echo ($user->hasPriv('modCensor') ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : ''); ?>
             <?php echo ($user->hasPriv('modPrivs') ? '<li><a href="moderate.php?do=emoticons">Modify Emoticons</a></li>' : ''); ?>
-            <?php echo ($user->hasPriv('modPrivs') && false ? '<li><a href="moderate.php?do=plugins">Modify Plugins</a></li>' : ''); ?>
-        </ul>
-
-        <h3><a href="#" data-itemId="4">Moderation</a></h3>
-        <ul>
-            <?php echo ($user->hasPriv('modUsers') ? '<li><a href="moderate.php?do=users">Manage Users</a></li>' : ''); ?>
-            <?php echo ($user->hasPriv('modRooms') ? '<li><a href="moderate.php?do=rooms">Manage Rooms</a></li>' : ''); ?>
-            <?php echo ($user->hasPriv('modPrivate') ? '<li><a href="moderate.php?do=private">Manage Private</a></li>' : ''); ?>
-            <?php echo ($user->hasPriv('modFiles') ? '<li><a href="moderate.php?do=files">Manage Files</a></li>' : ''); ?>
         </ul>
 
         <?php if ($user->hasPriv('modPrivs')) { ?>
@@ -299,7 +287,7 @@ require('../global.php');
                 <li><a href="moderate.php?do=admin">Admin Permissions</a></li>
                 <li><a href="moderate.php?do=sessions">User Sessions</a></li>
                 <li><a href="moderate.php?do=config">Configuration Editor</a></li>
-                <li><a href="moderate.php?do=sys">System Check</a></li>
+                <li><a href="moderate.php?do=sys">System Check (TODO)</a></li>
                 <li><a href="moderate.php?do=tools">Tools</a></li>
                 <li><a href="moderate.php?do=phpinfo">PHP Info</a></li>
             </ul>

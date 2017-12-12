@@ -19,10 +19,13 @@ if (!defined('WEBPRO_INMOD')) {
 }
 else {
     $request = fim_sanitizeGPC('r', array(
-        'do2' => array(
+        'do2' => [
             'default' => 'view',
-            'valid' => ['view'],
-        ),
+            'valid' => ['view', 'edit', 'edit2'],
+        ],
+        'userId' => [
+            'cast' => 'int'
+        ]
     ));
 
     if ($user->hasPriv('modPrivs')) {
@@ -43,22 +46,55 @@ else {
                 if ($user2->hasPriv('modFiles'))   $adminPrivs[] = 'Global Files Control';
                 if ($user2->hasPriv('modCensor'))  $adminPrivs[] = 'Censor Control';
 
-                $rows .= "<tr><td>{$user2->id}</td><td>{$user2->name}</td><td>" . implode(', ', $adminPrivs) . "</td><td><a href=\"./moderate.php?do=admin&do2=edit&user={$user2->id}\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
+                $rows .= "<tr><td>{$user2->id}</td><td>{$user2->name}</td><td>" . implode(', ', $adminPrivs) . "</td><td><a href=\"./moderate.php?do=admin&do2=edit&userId={$user2->id}\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
             }
 
-            echo container('Administrators<a href="./moderate.php?do=admin&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
-  <thead>
-    <tr class="ui-widget-header">
-      <td>User ID</td>
-      <td>Username</td>
-      <td>Permissions</td>
-      <td>Actions</td>
+            echo container('Administrators<a href="./moderate.php?do=admin&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="table table-striped">
+  <thead class="thead-light">
+    <tr>
+      <th>User ID</th>
+      <th>Username</th>
+      <th>Permissions</th>
+      <th>Actions</th>
     </tr>
   </thead>
   <tbody>
 ' . $rows . '
   </tbody>
 </table>');
+            break;
+
+            case 'edit':
+                $adminUser = \Fim\UserFactory::getFromId($request['userId']);
+
+                if (!$adminUser->exists()) {
+                    echo container('No User', 'The user specified is invalid.');
+                }
+                else {
+                    echo container("Edit User '{$adminUser->name}'", '
+                    <form action="./moderate.php?do=admin&do2=edit&userId=' . $request['userId'] . '" method="post">
+                        <label class="btn btn-secondary">
+                            <input type="checkbox" name="ADMIN_GRANT" ' . ($adminUser->hasPriv('modPrivs') ? 'checked="checked"' : '') . 'value="true" /> Grant Permissions
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input type="checkbox" name="ADMIN_PROTECTED" ' . ($adminUser->hasPriv('protected') ? 'checked="checked"' : '') . 'value="true" /> Protected from Changes
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input type="checkbox" name="ADMIN_ROOMS" ' . ($adminUser->hasPriv('modRooms') ? 'checked="checked"' : '') . 'value="true" /> Administer Rooms
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input type="checkbox" name="ADMIN_USERS" ' . ($adminUser->hasPriv('modUsers') ? 'checked="checked"' : '') . 'value="true" /> Administer Users
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input type="checkbox" name="ADMIN_FILES" ' . ($adminUser->hasPriv('modFiles') ? 'checked="checked"' : '') . 'value="true" /> Administer Files
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input type="checkbox" name="ADMIN_CENSOR" ' . ($adminUser->hasPriv('modCensor') ? 'checked="checked"' : '') . 'value="true" /> Alter Censor
+                        </label><br />
+                        <input type="submit" class="btn btn-primary" value="Submit" />
+                    </form>');
+                }
+
             break;
         }
     }

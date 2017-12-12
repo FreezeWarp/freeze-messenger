@@ -47,13 +47,13 @@ else {
                     $rows .= "<tr><td>$directive</td><td>" . gettype($value) . "</td><td>" . var_export($value, true) . "</td><td><a href=\"./moderate.php?do=config&do2=edit&directive=$directive\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
                 }
 
-                echo container('Configurations','<table class="page rowHover">
-  <thead>
-    <tr class="ui-widget-header">
-      <td>Directive</td>
-      <td>Type</td>
-      <td>Value</td>
-      <td>Actions</td>
+                echo container('Configurations','<table class="table table-sm table-stripped">
+  <thead class="thead-light">
+    <tr>
+      <th>Directive</th>
+      <th>Type</th>
+      <th>Value</th>
+      <th>Actions</th>
     </tr>
   </thead>
   <tbody>

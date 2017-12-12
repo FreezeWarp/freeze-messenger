@@ -36,14 +36,14 @@ else {
                 $rows .= "<tr><td>{$session['id']}-{$session['anonId']} ({$session['name']})</td><td>" . date('r', $session['expires']) . "</td><td>{$session['sessionIp']}</td><td>{$session['clientId']}</td><td>{$session['userAgent']}</td></tr>";
             }
 
-            echo container('Sessions','<table class="page rowHover">
-  <thead>
-    <tr class="ui-widget-header">
-      <td>UID-AID (Username)</td>
-      <td>Expires</td>
-      <td>IP Address</td>
-      <td>Client</td>
-      <td>Useragent</td>
+            echo container('Sessions','<table class="table table-stripped">
+  <thead class="thead-light">
+    <tr>
+      <th>UID-AID (Username)</th>
+      <th>Expires</th>
+      <th>IP Address</th>
+      <th>Client</th>
+      <th>Useragent</th>
     </tr>
   </thead>
   <tbody>

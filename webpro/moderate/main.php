@@ -23,9 +23,9 @@ else {
 To perform an action, click a link on the sidebar. Further instructions can be found in the documentation.<br /><br />
 
 <strong>Note</strong>: All users can sign into this control panel to see copyright information.<br /><br />
-<table class="page ui-widget">
-  <thead>
-    <tr class="ui-widget-header">
+<table class="table table-striped" style="max-width: 600px;">
+  <thead class="thead">
+    <tr>
         <th colspan="2">About FreezeMessenger</td>
     </tr>
   </thead>
