@@ -874,7 +874,7 @@ popup.prototype.archive = {
 
                 jQuery.each(messages, function(index, messageData) {
                     $('#active-view-archive table.messageTable > tbody').append(fim_messageFormat(messageData, 'table').append(
-                        $('<td>').append(
+                        $('<td class="d-none d-md-table-cell">').append(
                             $('<a href="#archive#room=' + _this.options.roomId + '#lastMessage=' + messageData.id + '">Show</a>')
                         )
                     ));

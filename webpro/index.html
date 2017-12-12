@@ -457,7 +457,7 @@
                             <div class="row align-items-center">
                                 <div class="col text-center text-lg-left mb-2 mb-lg-0">
                                     <h4 id="roomName" class="card-title m-0">{{inner "roomData.name"}}</h4>
-                                    <em id="topic">{{inner "roomData.topic"}}</em>
+                                    <em id="topic" class="d-none d-sm-inline">{{inner "roomData.topic"}}</em>
                                 </div>
 
                                 <div class="col-lg-auto text-center text-lg-left">
@@ -682,7 +682,7 @@ Pending Update
                 <button name="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
             </div>
             <div class="col">
-                <button name="export" class="btn btn-secondary"><span class="fa fa-floppy-o"></span> {{archiveExportButton}}</button>
+                <button name="export" class="btn btn-secondary d-none d-sm-inline-block"><span class="fa fa-floppy-o"></span> {{archiveExportButton}}</button>
             </div>
             <div class="col">
                 <button name="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
@@ -695,9 +695,9 @@ Pending Update
             <thead class="table-primary">
             <tr>
                 <th style="width: 20%;">{{archiveHeaderUser}}</th>
-                <th style="width: 20%;">{{archiveHeaderTime}}</th>
+                <th style="width: 20%;" class="d-none d-sm-table-cell">{{archiveHeaderTime}}</th>
                 <th style="width: 50%;">{{archiveHeaderMessage}}</th>
-                <th></th>
+                <th class="d-none d-md-table-cell"></th>
             </tr>
             </thead>
             <tbody></tbody>
@@ -710,7 +710,7 @@ Pending Update
                 <button name="archivePrev" class="btn btn-primary">{{archivePreviousButton}}</button>
             </div>
             <div class="col">
-                <button name="export" class="btn btn-secondary"><span class="fa fa-floppy-o"></span> {{archiveExportButton}}</button>
+                <button name="export" class="btn btn-secondary d-none d-sm-inline-block"><span class="fa fa-floppy-o"></span> {{archiveExportButton}}</button>
             </div>
             <div class="col">
                 <button name="archiveNext" class="btn btn-primary">{{archiveNextButton}}</button>
@@ -725,7 +725,7 @@ Pending Update
         <td>
             <a class="roomName" data-roomId="{{id}}" data-roomName="{{name}}" href="#room={{id}}">{{name}}</a>
         </td>
-        <td>
+        <td class="d-none d-sm-table-cell">
             {{topic}}
         </td>
         <td>
@@ -824,7 +824,7 @@ Pending Update
         <thead class="table-primary">
         <tr>
             <th>{{selectRoomHeaderName}}</th>
-            <th>{{selectRoomHeaderTopic}}</th>
+            <th class="d-none d-sm-table-cell">{{selectRoomHeaderTopic}}</th>
             <th>{{selectRoomHeaderActions}}</th>
         </tr>
         </thead>

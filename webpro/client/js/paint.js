@@ -548,7 +548,7 @@ function fim_messageFormat(json, format) {
                     fim_buildUsernameTag($('<span class="userName userNameTable">'), userId, userNameDeferred)
                 )
             ).append(
-                $('<td>').text(fim_dateFormat(messageTime))
+                $('<td class="d-none d-sm-table-cell">').text(fim_dateFormat(messageTime))
             ).append(
                 $('<td>').append(
                     fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred).append(text)
