@@ -4,6 +4,8 @@ Copyright © 2017 Joseph T. Parsons <josephtparsons@gmail.com>
 
 Licensed under the GPLv3 (see LICENSE)
 
+![FreezeMessenger, Development Screenshot](https://raw.githubusercontent.com/FreezeWarp/freeze-messenger/master/screenshot1.png "FreezeMessenger, Development Screenshot")
+
 Headline Functionality
 ----------------------
   * Event streams provide functionality for getting new messages, being informed of new messages in watched rooms, tracking which users are currently typing a message (and when users go offline), and more. Plus, most of this functionality works if event streams are disabled.
