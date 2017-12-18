@@ -2370,6 +2370,7 @@ class DatabaseInstance extends DatabaseSQL
         if ($this->insert($this->sqlPrefix . "fullLog", array(
             'userId'   => $this->user->id,
             'server' => json_encode(array_intersect_key($_SERVER,array_flip(Config::$fullLogServerDirectives))),
+            'ip'     => $_SERVER['REMOTE_ADDR'],
             'action' => $action,
             'time'   => $this->now(),
             'data'   => json_encode($data),
