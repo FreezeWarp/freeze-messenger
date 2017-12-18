@@ -10,7 +10,8 @@ Headline Functionality
 ----------------------
   * Event streams provide functionality for getting new messages, being informed of new messages in watched rooms, tracking which users are currently typing a message (and when users go offline), and more. Plus, most of this functionality works if event streams are disabled.
   * Kafka, Redis, and Postgres can be used for the lowest possible event stream latency.
-  * Users may, if allowed, create their own rooms and open direct messages with other users. Rooms can permissioned to only allow specific users and specific usergroups.
+  * Users may, if allowed, create their own rooms and open direct messages with other users.
+  * Rooms can permissioned to only allow specific users and specific usergroups.
   * Rooms can be age- and content- restricted. Messages can also be censored on a per-room basis.
   * Files are easily uploaded, and thumbnails are generated for inline message display. In the browser frontend, images can even be pasted from the clipboard. Importantly, the administrator has full control over which files can be uploaded and how much space any user can use.
   * Integration with PHPBB and vBulletin is supported, as is single-sign on with Google, Twitter, Facebook, Steam, and Reddit.
