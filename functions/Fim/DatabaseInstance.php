@@ -1094,11 +1094,36 @@ class DatabaseInstance extends DatabaseSQL
 
 
     /**
-     * @param $options
-     * @param array $sort
-     * @param int $limit
-     * @param int $pagination
-     * @return bool|object|resource
+     * Run a query to obtain rooms.
+     *
+     * @param array $options {
+     *      An array of options to filter by.
+     *
+     *      @param array  ['roomIds']            An array of roomIds to filter by.
+     *      @param array  ['roomNames']          An array of roomNames to filter by.
+     *      @param array  ['ownerIds']           An array of ownerIds to filter by (that is, filter by the owners of rooms).
+     *      @param array  ['roomNameSearch']     Filter results by searching for this string in the roomName.
+     *
+     *      @param array  ['parentalAgeMin']     Filter results to at least this parental age.
+     *      @param array  ['parentalAgeMax']     Filter results to at most this parental age.
+     *
+     *      @param array  ['messageCountMin']    Filter results to at least this many messages.
+     *      @param array  ['messageCountMax']    Filter results to at most this many messages.
+     *
+     *      @param array  ['lastMessageTimeMin'] Filter results to rooms that have been posted in since this time.
+     *      @param array  ['lastMessageTimeMax'] Filter results to rooms that haven't been posted in after this time.
+     *
+     *      @param bool   ['showHidden']         Include hidden rooms with results.
+     *      @param bool   ['showDeleted']        Include deleted rooms with results.
+     *      @param bool   ['onlyOfficial']       Filter results to only official rooms.
+     *
+     *      @param mixed  ['columns']            An override for which columsn to include in the result.
+     * }
+     * @param array $sort        Sort columns (see standard definition).
+     * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
+     * @param int   $page        The page of the resultset to return.
+     *
+     * @return DatabaseResult
      */
     public function getRooms($options, $sort = array('id' => 'asc'), $limit = 50, $pagination = 0) : DatabaseResult
     {
@@ -1168,6 +1193,15 @@ class DatabaseInstance extends DatabaseSQL
 
 
 
+    /**
+     * Obtain the fimRoom object with a given ID from the database.
+     *
+     * @see RoomFactory::getFromId() for resolving a room from an ID using the cache.
+     *
+     * @param mixed $roomId The ID of the room to get.
+     *
+     * @return fimRoom
+     */
     public function getRoom($roomId) : fimRoom
     {
         if (fimRoom::isPrivateRoomId($roomId)) {
@@ -1181,7 +1215,28 @@ class DatabaseInstance extends DatabaseSQL
     }
 
 
-
+    /**
+     * Run a query to obtain users.
+     *
+     * @param array $options {
+     *      An array of options to filter by.
+     *
+     *      @param array  ['userIds']           An array of userIds to filter by.
+     *      @param array  ['userNames']         An array of userNames to filter by.
+     *      @param array  ['userNameSearch']    Filter results by searching for this string in the userName.
+     *
+     *      @param string ['bannedStatus']      Either 'banned' or 'unbanned'; if included, only such users will be returned.
+     *      @param string ['hasPrivs']          Filter by a list of named priviledges; see the keys of {@see fimUser::$permArray} for valid options.
+     *
+     *      @param mixed  ['columns']           An override for which columsn to include in the result.
+     *      @param bool   ['includePasswords']  Shorthand to include password fields along with any other specified columns.
+     * }
+     * @param array $sort        Sort columns (see standard definition).
+     * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
+     * @param int   $page        The page of the resultset to return.
+     *
+     * @return DatabaseResult
+     */
     public function getUsers($options = array(), $sort = array('id' => 'asc'), $limit = 0, $pagination = 0) : DatabaseResult
     {
         $options = $this->argumentMerge(array(
@@ -1190,8 +1245,8 @@ class DatabaseInstance extends DatabaseSQL
             'userNameSearch' => false,
             'bannedStatus'   => false,
             'hasPrivs' => [],
-            'columns' => self::userColumns, // csvstring a list of columns to include in the return; if not specified, this will default to almost everything except passwords
-            'includePasswords' => false, // bool shorthand to add password fields -- whatever they are -- to the otherwise specified columns
+            'columns' => self::userColumns,
+            'includePasswords' => false,
         ), $options);
 
 
@@ -1223,11 +1278,20 @@ class DatabaseInstance extends DatabaseSQL
             $conditions['both']['either']['nameSearchable'] = $this->search($options['userNameSearch']);
 
 
-        return $this->select($columns, $conditions, $sort, $limit);
+        return $this->select($columns, $conditions, $sort, $limit, $pagination);
     }
 
 
 
+    /**
+     * Obtain the fimUser object with a given ID from the database.
+     *
+     * @see UserFactory::getFromId() for resolving a user from an ID using the cache.
+     *
+     * @param mixed $userId The ID of the user to get.
+     *
+     * @return fimUser
+     */
     public function getUser($userId) : fimUser
     {
         return $this->getUsers(array(
