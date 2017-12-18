@@ -6,6 +6,9 @@ use \fimRoom;
 use \Exception;
 
 class RoomFactory {
+    /**
+     * @var fimRoom[]
+     */
     static $instances = [];
 
     public static function getFromId($roomId) {
@@ -52,6 +55,8 @@ class RoomFactory {
         foreach (RoomFactory::$instances AS $id => $instance) {
             if (!$generalCache->exists('fim_fimRoom_' . $id)) {
                 $instance->resolveAll();
+                $instance->getCensorWords();
+
                 $generalCache->add('fim_fimRoom_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
             }
         }
