@@ -28,9 +28,9 @@ else {
         switch($_GET['tool'] ?? false) {
             case false:
                 echo container('Please Choose a Tool','<ul>
-                    <li><a href="./moderate.php?do=tools&tool=viewCache">View Cache</a> - This shows all cache entries available to the current server. APC caches for other servers will not be displayed.</li>
-                    <li><a href="./moderate.php?do=tools&tool=clearCache">Clear Cache</a> - This clears all cache entries available to the current server. APC caches for other servers will not be cleared.</li>
-                    <li><a href="./moderate.php?do=tools&tool=updateDatabaseSchema">Perform Database Schema Update</a> - This will update your database schema to correspond with install/dbSchema.xml. It is primarily intended for development purposes (as updating to a new version should come with its own custom schema update procedure), but you also have the option of manually tweaking the DB schema in dbSchema.xml and then using this tool to have the changes take effect. Note that the tool is currently not fully tested, and will currently take a while, as it does not check if a column has changed before running the update command.</li>
+                    <li><a href="./index.php?do=tools&tool=viewCache">View Cache</a> - This shows all cache entries available to the current server. APC caches for other servers will not be displayed.</li>
+                    <li><a href="./index.php?do=tools&tool=clearCache">Clear Cache</a> - This clears all cache entries available to the current server. APC caches for other servers will not be cleared.</li>
+                    <li><a href="./index.php?do=tools&tool=updateDatabaseSchema">Perform Database Schema Update</a> - This will update your database schema to correspond with install/dbSchema.xml. It is primarily intended for development purposes (as updating to a new version should come with its own custom schema update procedure), but you also have the option of manually tweaking the DB schema in dbSchema.xml and then using this tool to have the changes take effect. Note that the tool is currently not fully tested, and will currently take a while, as it does not check if a column has changed before running the update command.</li>
                 </ul>');
                 break;
 
@@ -64,10 +64,10 @@ else {
 
             case 'clearCache':
                 if (\Cache\CacheFactory::clearAll())
-                    echo container('Cache Cleared','The cache has been cleared.<br /><br /><form action="moderate.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
+                    echo container('Cache Cleared','The cache has been cleared.<br /><br /><form action="index.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
 
                 else
-                    echo container('Failed','The clear was unsuccessful.<form action="moderate.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
+                    echo container('Failed','The clear was unsuccessful.<form action="index.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
                 break;
 
             case 'updateDatabaseSchema':

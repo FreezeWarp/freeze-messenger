@@ -89,7 +89,6 @@ require('../global.php');
     <meta name="robots" content="noindex, nofollow" />
     <meta name="author" content="Joseph T. Parsons" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="icon" id="favicon" type="image/png" href="images/favicon.png" />
 
     <!-- START Styles -->
     <link
@@ -97,8 +96,6 @@ require('../global.php');
             rel="stylesheet"
             integrity="sha384-ofc00ja/z8wrU97EAHQRb4i4wsa/Zgr9JZll2R3KW33iqhFSfmVz/6xuWFx5pjcn"
             crossorigin="anonymous">
-
-    <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
 
     <style>
         *, *:before, *:after {
@@ -208,16 +205,6 @@ require('../global.php');
 
 
     <!-- START Scripts -->
-    <script src="./client/js/jquery-1.6.2.min.js" type="text/javascript"></script>
-
-    <script src="./client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
-    <script src="./client/js/jquery.plugins.js" type="text/javascript"></script>
-
-
-    <script src="./client/codemirror/lib/codemirror.js"></script>
-    <script src="./client/codemirror/mode/xml/xml.js"></script>
-    <script src="./client/codemirror/mode/clike/clike.js"></script>
-
     <script>
         function windowDraw() {
             $('button, input[type=button], input[type=submit]').button();
@@ -265,93 +252,85 @@ require('../global.php');
 
 </head>
 <body>
-<div id="moderateLeft">
-    <div id="mainMenu">
-        <h3><a href="#" data-itemId="1">General Information</a></h3>
-        <ul>
-            <li><a href="moderate.php?do=main">Home</a></li>
-            <?php echo ($user->hasPriv('modPrivs') ? '<li><a href="moderate.php?do=log">View Logs</a></li>' : ''); ?>
-            <li><a href="moderate.php?do=copyright">Copyright</a></li>
-            <li><a href="moderate.php?do=logout">Logout</a></li>
-        </ul>
-
-        <h3><a href="#" data-itemId="3">Engines</a></h3>
-        <ul>
-            <?php echo ($user->hasPriv('modCensor') ? '<li><a href="moderate.php?do=censor">Modify Censor</a></li>' : ''); ?>
-            <?php echo ($user->hasPriv('modPrivs') ? '<li><a href="moderate.php?do=emoticons">Modify Emoticons</a></li>' : ''); ?>
-        </ul>
-
-        <?php if ($user->hasPriv('modPrivs')) { ?>
-            <h3><a href="#" data-itemId="5">Advanced</a></h3>
-            <ul>
-                <li><a href="moderate.php?do=admin">Admin Permissions</a></li>
-                <li><a href="moderate.php?do=sessions">User Sessions</a></li>
-                <li><a href="moderate.php?do=config">Configuration Editor</a></li>
-                <li><a href="moderate.php?do=sys">System Check (TODO)</a></li>
-                <li><a href="moderate.php?do=tools">Tools</a></li>
-                <li><a href="moderate.php?do=phpinfo">PHP Info</a></li>
+<div class="row">
+    <div class="col-sm-3" style="min-width: 250px;">
+        <div class="card">
+            <h3 class="card-header">General Information</h3>
+            <ul class="card-body">
+                <li><a href="index.php?do=main">Home</a></li>
+                <?php echo ($user->hasPriv('modPrivs') ? '<li><a href="index.php?do=log">View Logs</a></li>' : ''); ?>
+                <li><a href="index.php?do=copyright">Copyright</a></li>
+                <li><a href="index.php?do=logout">Logout</a></li>
             </ul>
-        <?php } ?>
+
+            <?php if ($user->hasPriv('modCensor') || $user->hasPriv('modPrivs')): ?>
+                <h3 class="card-header">Engines</h3>
+                <ul class="card-body">
+                    <?php echo ($user->hasPriv('modCensor') ? '<li><a href="index.php?do=censor">Modify Censor</a></li>' : ''); ?>
+                    <?php echo ($user->hasPriv('modPrivs') ? '<li><a href="index.php?do=emoticons">Modify Emoticons</a></li>' : ''); ?>
+                </ul>
+            <?php endif; ?>
+
+            <?php if ($user->hasPriv('modPrivs')): ?>
+                <h3 class="card-header">Advanced</h3>
+                <ul class="card-body">
+                    <li><a href="index.php?do=admin">Admin Permissions</a></li>
+                    <li><a href="index.php?do=sessions">User Sessions</a></li>
+                    <li><a href="index.php?do=config">Configuration Editor</a></li>
+                    <li><a href="index.php?do=sys">System Check (TODO)</a></li>
+                    <li><a href="index.php?do=tools">Tools</a></li>
+                    <li><a href="index.php?do=phpinfo">PHP Info</a></li>
+                </ul>
+            <?php endif ?>
+        </div>
     </div>
-</div>
-<div id="moderateRight" class="ui-widget">
 
-    <?php
-    if (!$user->id) {
-        echo container('Please Login',(isset($message) ? $message : 'You have not logged in. Please login:') . '<br /><br />
+    <div class="col">
+        <?php
+        if (!$user->id) {
+            echo container('Please Login',(isset($message) ? $message : 'You have not logged in. Please login:') . '<br /><br />
+            <form action="index.php" method="post" style="max-width: 500px;">
+                <div class="row mb-2">
+                    <div class="input-group col-lg-6">
+                        <span class="input-group-addon">Username</span>
+                        <input type="text" class="form-control" name="webproModerate_userName" />
+                    </div>
+    
+                    <div class="input-group col-lg-6">
+                        <span class="input-group-addon">Password</span>
+                        <input type="password" class="form-control" name="webproModerate_password" id="password" />
+                    </div>
+                </div>
 
-  <form action="moderate.php" method="post">
-    <table>
-      <tr>
-        <td>Username: </td>
-        <td><input type="text" name="webproModerate_userName" /></td>
-      </tr>
-      <tr>
-        <td>Password: </td>
-        <td><input type="password" name="webproModerate_password" /></td>
-      </tr>
-      <tr>
-        <td colspan="2" align="center"><input type="submit" value="Login" /></td>
-      </tr>
-    </table>
-  </form>');
-    }
-    else {
-        \Fim\Database::instance()->startTransaction();
-
-        switch ($_GET['do'] ?? '') {
-            case 'plugins': require('./moderate/plugins.php'); break;
-            case 'censor': require('./moderate/censor.php'); break;
-            case 'emoticons': require('./moderate/emoticons.php'); break;
-
-            case 'users': require('./moderate/users.php'); break;
-            case 'rooms': require('./moderate/rooms.php'); break;
-            case 'private': require('./moderate/private.php'); break;
-            case 'files': require('./moderate/files.php'); break;
-
-            case 'admin': require('./moderate/admin.php'); break;
-            case 'log': require('./moderate/log.php'); break;
-            case 'sessions': require('./moderate/sessions.php'); break;
-            case 'config': require('./moderate/config.php'); break;
-            case 'sys': require('./moderate/status.php'); break;
-            case 'tools': require('./moderate/tools.php'); break;
-            case 'phpinfo': require('./moderate/phpinfo.php'); break;
-
-            case 'demoGetKeyPair': require('./moderate/encryptionDemo/demoGetKeyPair.php'); break;
-            case 'demoEncrypt': require('./moderate/encryptionDemo/demoEncrypt.php'); break;
-            case 'demoDecrypt': require('./moderate/encryptionDemo/demoDecrypt.php'); break;
-            case 'demoEncryptSym': require('./moderate/encryptionDemo/demoEncryptSym.php'); break;
-            case 'demoDecryptSym': require('./moderate/encryptionDemo/demoDecryptSym.php'); break;
-
-            case 'copyright': require('./moderate/copyright.php'); break;
-            default: require('./moderate/main.php'); break;
+                <input type="submit" value="Login" class="form-control btn btn-success" />
+            </form>
+            ');
         }
+        else {
+            \Fim\Database::instance()->startTransaction();
 
-        \Fim\Database::instance()->accessLog('moderate', $request);
+            switch ($_GET['do'] ?? '') {
+                case 'plugins': require('./actions/plugins.php'); break;
+                case 'censor': require('./actions/censor.php'); break;
 
-        \Fim\Database::instance()->endTransaction();
-    }
-    ?>
+                case 'admin': require('./actions/admin.php'); break;
+                case 'log': require('./actions/log.php'); break;
+                case 'sessions': require('./actions/sessions.php'); break;
+                case 'config': require('./actions/config.php'); break;
+                case 'sys': require('./actions/status.php'); break;
+                case 'tools': require('./actions/tools.php'); break;
+                case 'phpinfo': require('./actions/phpinfo.php'); break;
+
+                case 'copyright': require('./actions/copyright.php'); break;
+                default: require('./actions/main.php'); break;
+            }
+
+            \Fim\Database::instance()->accessLog('moderate', $request);
+
+            \Fim\Database::instance()->endTransaction();
+        }
+        ?>
+    </div>
 </div>
 </body>
 </html>

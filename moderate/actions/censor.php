@@ -82,11 +82,11 @@ else {
                     if ($list['options'] & 256)  $options[] = "Disabled in Private";
 //        if ($list['options'] & 8) $options[] = "Mature";
 
-                    $rows .= '    <tr><td>' . $list['listName'] . '</td><td>' . ($list['listType'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td><a href="./moderate.php?do=censor&do2=deleteList&listId=' . $list['listId'] . '"><img src="./images/document-close.png" /></a><a href="./moderate.php?do=censor&do2=editList&listId=' . $list['listId'] . '"><img src="./images/document-edit.png" /></a><a href="./moderate.php?do=censor&do2=viewWords&listId=' . $list['listId'] . '"><img src="./images/view-list-details.png" /></a></td></tr>
+                    $rows .= '    <tr><td>' . $list['listName'] . '</td><td>' . ($list['listType'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td><a href="./index.php?do=censor&do2=deleteList&listId=' . $list['listId'] . '"><img src="./images/document-close.png" /></a><a href="./index.php?do=censor&do2=editList&listId=' . $list['listId'] . '"><img src="./images/document-edit.png" /></a><a href="./index.php?do=censor&do2=viewWords&listId=' . $list['listId'] . '"><img src="./images/view-list-details.png" /></a></td></tr>
   ';
                 }
 
-                echo container('Current Lists<a href="./moderate.php?do=censor&do2=editList"><img src="./images/document-new.png" style="float: right;" /></a>', '<table class="page rowHover">
+                echo container('Current Lists<a href="./index.php?do=censor&do2=editList"><img src="./images/document-new.png" style="float: right;" /></a>', '<table class="page rowHover">
   <thead>
     <tr class="ui-widget-header">
       <td>List Name</td>
@@ -118,7 +118,7 @@ else {
                     $title = 'Add New Censor List';
                 }
 
-                echo container($title, '<form action="./moderate.php?do=censor&do2=editList2&listId=' . $list['listId'] . '" method="post">
+                echo container($title, '<form action="./index.php?do=censor&do2=editList2&listId=' . $list['listId'] . '" method="post">
   <table class="page ui-widget">
     <tr>
 
@@ -174,7 +174,7 @@ else {
                     \Fim\Database::instance()->modLog('changeCensorList', $list['listId']);
                     \Fim\Database::instance()->fullLog('changeCensorList', array('list' => $list, 'newList' => $newList));
 
-                    echo container('List "' . $list['listName'] . '" Updated', 'The list has been updated.<br /><br /><form action="moderate.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
+                    echo container('List "' . $list['listName'] . '" Updated', 'The list has been updated.<br /><br /><form action="index.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
                 }
                 else {
                     $list = array(
@@ -189,7 +189,7 @@ else {
                     \Fim\Database::instance()->modLog('addCensorList', $list['listId']);
                     \Fim\Database::instance()->fullLog('addCensorList', array('list' => $list));
 
-                    echo container('List "' . $list['listName'] . '" Added', 'The list has been added.<br /><br /><form action="moderate.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
+                    echo container('List "' . $list['listName'] . '" Added', 'The list has been added.<br /><br /><form action="index.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
                 }
                 break;
 
@@ -207,7 +207,7 @@ else {
                     'listId' => $request['listId'],
                 ));
 
-                echo container('List Deleted','The list and its words have been deleted.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewLists"><button type="submit">Return to Viewing Words</button></form>');
+                echo container('List Deleted','The list and its words have been deleted.<br /><br /><form method="post" action="index.php?do=censor&do2=viewLists"><button type="submit">Return to Viewing Words</button></form>');
                 break;
 
             case 'viewWords':
@@ -215,7 +215,7 @@ else {
 
                 if (count($words) > 0) {
                     foreach ($words AS $word) {
-                        $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./moderate.php?do=censor&do2=deleteWord&wordId=' . $word['wordId'] . '"><img src="./images/document-close.png" /></a><a href="./moderate.php?do=censor&do2=editWord&wordId=' . $word['wordId'] . '"><img src="./images/document-edit.png" /></a></td></tr>
+                        $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./index.php?do=censor&do2=deleteWord&wordId=' . $word['wordId'] . '"><img src="./images/document-close.png" /></a><a href="./index.php?do=censor&do2=editWord&wordId=' . $word['wordId'] . '"><img src="./images/document-edit.png" /></a></td></tr>
     ';
                     }
                 }
@@ -223,7 +223,7 @@ else {
                     $rows = '<tr><td colspan="4">No words have been added.</td></tr>';
                 }
 
-                echo container('Current Words<a href="./moderate.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
+                echo container('Current Words<a href="./index.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
   <thead>
     <tr class="hrow ui-widget-header">
       <td>Word</td>
@@ -273,7 +273,7 @@ else {
                     'block' => 'block',
                 ), $word['severity']);
 
-                echo container($title, '<form action="./moderate.php?do=censor&do2=editWord2" method="post">
+                echo container($title, '<form action="./index.php?do=censor&do2=editWord2" method="post">
   <table class="page ui-widget">
     <tr>
       <td>Text</td>
@@ -320,7 +320,7 @@ else {
                                           'wordId' => $request['wordId']
                                       ));
 
-                    echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
+                    echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br /><form method="post" action="./index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
                 }
                 elseif ($request['listId']) { // We are adding a word to a list.
                     $list = \Fim\Database::instance()->getCensorList($request['listId']);
@@ -337,7 +337,7 @@ else {
                     \Fim\Database::instance()->modLog('addCensorWord', $request['listId'] . ',' . \Fim\Database::instance()->getLastInsertId());
                     \Fim\Database::instance()->fullLog('addCensorWord', array('word' => $word, 'list' => $list));
 
-                    echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br /><form method="post" action="./moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
+                    echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br /><form method="post" action="./index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
                 }
                 else {
                     die('Invalid params specified.');
@@ -355,7 +355,7 @@ else {
                 \Fim\Database::instance()->modLog('deleteCensorWord', $request['wordId']);
                 \Fim\Database::instance()->fullLog('deleteCensorWord', array('word' => $word, 'list' => $list));
 
-                echo container('Word Deleted','The word has been removed.<br /><br /><form method="post" action="moderate.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button type="submit">Return to Viewing Words</button></form>');
+                echo container('Word Deleted','The word has been removed.<br /><br /><form method="post" action="index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button type="submit">Return to Viewing Words</button></form>');
                 break;
         }
     }
