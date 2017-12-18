@@ -28,7 +28,7 @@ var io = require('socket.io')(app);
 var fs = require('fs');
 var EventSource = require('eventsource');
 app.listen(3033);
-var User = (function () {
+var User = /** @class */ (function () {
     function User(username, password) {
         this.username = username;
         this.password = password;
@@ -74,7 +74,7 @@ var User = (function () {
     };
     return User;
 }());
-var Room = (function () {
+var Room = /** @class */ (function () {
     function Room(name) {
         this.name = name;
     }
