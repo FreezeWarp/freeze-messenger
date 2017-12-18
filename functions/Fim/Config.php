@@ -324,7 +324,7 @@ class Config {
     /* Active Users */
 
     /** @var int The default period of time after which a user is considered inactive. */
-    public static $defaultOnlineThreshold = 15 * 60;
+    public static $defaultOnlineThreshold = 90;
 
 
 
