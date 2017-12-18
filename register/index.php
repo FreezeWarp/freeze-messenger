@@ -18,79 +18,21 @@ $success = false;
     <![endif]-->
 
     <!-- START Styles -->
-    <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/jquery-ui-1.8.16.custom.css"
-          media="screen"/>
-    <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/fim.css" media="screen"/>
-    <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen"/>
-    <style>
-        h1 {
-            margin: 0px;
-            padding: 5px;
-        }
+    <link
+            href="https://maxcdn.bootstrapcdn.com/bootswatch/4.0.0-beta.2/simplex/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-ofc00ja/z8wrU97EAHQRb4i4wsa/Zgr9JZll2R3KW33iqhFSfmVz/6xuWFx5pjcn"
+            crossorigin="anonymous">
 
-        .main {
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            display: block;
-            border: 1px solid black;
-        }
-
-        .ui-widget {
-            font-size: 12px;
-        }
-
-        .ui-widget-content {
-            padding: 5px;
-        }
-
-        table td {
-            padding: 5px;
-        }
-
-        table.page td {
-            border-bottom: 1px solid black;
-        }
-
-        table.page tr:last-child td {
-            border-bottom: none;
-        }
-
-        tbody tr:nth-child(2n) {
-            background: #efefef !important;
-        }
-    </style>
-    <!-- END Styles -->
-
-    <!-- START Scripts -->
-    <script src="../webpro/client/js/jquery-1.6.2.min.js" type="text/javascript"></script>
-
-    <script src="../webpro/client/js/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
-    <script src="../webpro/client/js/jquery.plugins.js" type="text/javascript"></script>
-
-    <script>
-        function windowDraw() {
-            $('body').css('min-height', window.innerHeight);
-        }
-
-        $(document).ready(function () {
-            windowDraw();
-            $('button, input[type=button], input[type=submit]').button();
-        });
-        window.onwindowDraw = windowDraw;
-
-        var alert = function (text) {
-            dia.info(text, "Alert");
-        };
-    </script>
-    <!-- END Scripts -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
 </head>
 
-<body class="ui-widget">
-<div id="part1" class="main">
-    <h1 class="ui-widget-header">FreezeMessenger: User Registration</h1>
-    <div class="ui-widget-content">
-
+<body>
+<div class="card mx-auto" style="max-width: 800px;">
+    <h1 class="card-header">FreezeMessenger: User Registration</h1>
+    <div class="card-body">
         <?php
         if (isset($_REQUEST['formSubmitted'])) {
             $result = Http\CurlRequest::quickRunPost($installUrl . '/api/user.php', [], [
@@ -128,33 +70,33 @@ $success = false;
             <script type="text/javascript" src="register.js"></script>
 
             <form name="register_form" id="register_form" action="index.php" method="post">
-                <table class="page">
+                <table class="table table-striped">
                     <tr>
-                        <td><strong><?php echo $phrases[$lang]['stage1formUserNameLabel']; ?></strong></td>
+                        <td style="vertical-align: middle"><strong><?php echo $phrases[$lang]['stage1formUserNameLabel']; ?></strong></td>
                         <td><input id="userName" type="text" name="name" value="<?php echo $_POST['name'] ?? ''; ?>" required /><br/>
-                            <small><?php echo $phrases[$lang]['stage1formUserNameBlurb']; ?></small>
+                            <small class="text-muted"><?php echo $phrases[$lang]['stage1formUserNameBlurb']; ?></small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong><?php echo $phrases[$lang]['stage1formPasswordLabel']; ?></strong></td>
+                        <td style="vertical-align: middle"><strong><?php echo $phrases[$lang]['stage1formPasswordLabel']; ?></strong></td>
                         <td><input id="password" type="password" name="password"/><br/>
-                            <small><?php echo $phrases[$lang]['stage1formPasswordBlurb']; ?></small>
+                            <small class="text-muted"><?php echo $phrases[$lang]['stage1formPasswordBlurb']; ?></small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong><?php echo $phrases[$lang]['stage1formPasswordAgainLabel']; ?></strong></td>
+                        <td style="vertical-align: middle"><strong><?php echo $phrases[$lang]['stage1formPasswordAgainLabel']; ?></strong></td>
                         <td><input id="passwordConfirm" type="password"/><br/>
-                            <small><?php echo $phrases[$lang]['stage1formPasswordAgainBlurb']; ?></small>
+                            <small class="text-muted"><?php echo $phrases[$lang]['stage1formPasswordAgainBlurb']; ?></small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong><?php echo $phrases[$lang]['stage1formEmailLabel']; ?></strong></td>
+                        <td style="vertical-align: middle"><strong><?php echo $phrases[$lang]['stage1formEmailLabel']; ?></strong></td>
                         <td><input id="email" type="text" name="email" value="<?php echo $_POST['email'] ?? ''; ?>" /><br/>
-                            <small><?php echo $phrases[$lang]['stage1formEmailBlurb']; ?></small>
+                            <small class="text-muted"><?php echo $phrases[$lang]['stage1formEmailBlurb']; ?></small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong><?php echo $phrases[$lang]['stage1formBirthDateLabel']; ?></strong></td>
+                        <td style="vertical-align: middle"><strong><?php echo $phrases[$lang]['stage1formBirthDateLabel']; ?></strong></td>
                         <td>
                             <div name="datepicker" id="datepicker"></div>
                             <?php
@@ -166,14 +108,14 @@ $success = false;
                             ), $_POST['birthYear'] ?? 0);
                             ?>
                             <br/>
-                            <small><?php echo $phrases[$lang]['stage1formBirthDateBlurb']; ?></small>
+                            <small class="text-muted"><?php echo $phrases[$lang]['stage1formBirthDateBlurb']; ?></small>
                         </td>
                     </tr>
                 </table>
                 <br/>
 
-                <div style="height: 30px;">
-                    <input style="float: right;" type="submit" value="Finish &rarr;"/>
+                <div class="text-right">
+                    <input class="btn btn-success" type="submit" value="Register &rarr;"/>
                     <input type="hidden" name="formSubmitted" value="true"/>
                 </div>
             </form>
