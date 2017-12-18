@@ -1520,7 +1520,12 @@ class DatabaseInstance extends DatabaseSQL
      * @return int A permission bitfield, or -1 if none/expired.
      */
     public function getPermissionCache($roomId, $userId) {
-        if (!Config::$roomPermissionsCacheEnabled) return -1;
+        if (!Config::$roomPermissionsCacheEnabled)
+            return -1;
+
+        elseif (($permissionsCache = \Cache\CacheFactory::get("permission_{$this->user->id}_{$this->room->id}", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) !== false)
+            return $permissionsCache;
+
         else {
             $permissions = $this->select(array(
                 $this->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'
@@ -1530,15 +1535,15 @@ class DatabaseInstance extends DatabaseSQL
                 'expires' => $this->now(0, 'gte')
             ))->getAsArray(false);
 
-            if (!count($permissions))
-                return -1;
-            else
-                return (int) $permissions['permissions'];
+            return !count($permissions)
+                ? -1
+                : (int) $permissions['permissions'];
         }
     }
 
     /**
-     * Updates an entry in the room permissions cache. When a permission change occurs, this or deletePermissionCache should be called.
+     * Updates an entry in the room permissions cache, using the cache server if available, or the {@link http://josephtparsons.com/messenger/docs/database.htm#roomPermissionsCache roomPermissionsCache} table if not.
+     * When a permission change occurs, this or {@see deletePermissionCache} should be called.
      *
      * @param int $roomId The room ID a permission change has occured in.
      * @param int $userId The user ID for whom a permission has changed.
@@ -1547,31 +1552,34 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function updatePermissionsCache($roomId, $userId, $permissions, $isKicked = false) {
         if (Config::$roomPermissionsCacheEnabled) {
-            $this->upsert($this->sqlPrefix . 'roomPermissionsCache', array(
-                'roomId' => $roomId,
-                'userId' => $userId,
-            ), array(
-                'permissions' => $permissions,
-                'expires' => $this->now(Config::$roomPermissionsCacheExpires),
-                'isKicked' => $this->bool($isKicked),
-            ));
+            if (!\Cache\CacheFactory::set("permission_{$userId}_{$roomId}", $permissions, Config::$roomPermissionsCacheExpires, \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) {
+                $this->upsert($this->sqlPrefix . 'roomPermissionsCache', [
+                    'roomId' => $roomId,
+                    'userId' => $userId,
+                ], [
+                    'permissions' => $permissions,
+                    'expires'     => $this->now(Config::$roomPermissionsCacheExpires),
+                    'isKicked'    => $this->bool($isKicked),
+                ]);
+            }
         }
     }
 
     /**
-     * Deleletes an entry in the room permissions cache. When a permission change occurs, this or updatePermissionCache should be called.
+     * Deletes an entry in the room permissions cache, both from the cache server and from the {@link http://josephtparsons.com/messenger/docs/database.htm#roomPermissionsCache roomPermissionsCache} table.
+     * When a permission change occurs, this or {@see updatePermissionCache} should be called.
      *
-     * @param int $roomId The room ID a permission change has occured in.
+     * @param int $roomId The room ID a permission change has occurred in.
      * @param int $userId The user ID for whom a permission has changed.
      */
-    public function deletePermissionsCache($roomId = false, $userId = false) {
+    public function deletePermissionsCache($roomId, $userId) {
         if (Config::$roomPermissionsCacheEnabled) {
-            $conditions = [];
+            \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
 
-            if ($roomId !== false) $conditions['roomId'] = $roomId;
-            if ($userId !== false) $conditions['userId'] = $userId;
-
-            $this->delete($this->sqlPrefix . 'roomPermissionsCache', $conditions);
+            $this->delete($this->sqlPrefix . 'roomPermissionsCache', [
+                'roomId' => $roomId,
+                'userId' => $userId
+            ]);
         }
     }
 
@@ -2389,7 +2397,7 @@ class DatabaseInstance extends DatabaseSQL
     public function accessLog($action, $data, $notLoggedIn = false)
     {
         if (!$this->user && !$notLoggedIn) {
-            throw new exception('No user login registered.');
+            throw new Exception('No user login registered.');
         }
 
 
@@ -2398,7 +2406,7 @@ class DatabaseInstance extends DatabaseSQL
             $time = time();
             $minute = $time - ($time % 60);
 
-            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_{$action}_$minute")) {
+            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) {
                 // Get Current Flood Weight
                 $floodCountMinute = $this->select([
                       $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
@@ -2408,7 +2416,7 @@ class DatabaseInstance extends DatabaseSQL
                     'period' => $this->ts($minute),
                 ])->getColumnValue('count');
 
-                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_{$action}_$minute", $floodCountMinute ?: 0, 60);
+                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_{$action}_$minute", $floodCountMinute ?: 0, 60, \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
             }
 
 
@@ -2417,7 +2425,7 @@ class DatabaseInstance extends DatabaseSQL
                 new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
-                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute");
+                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
 
                 // Increment the Flood Weight
                 $this->upsert($this->sqlPrefix . "accessFlood", [
