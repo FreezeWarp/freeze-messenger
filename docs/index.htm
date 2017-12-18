@@ -3,7 +3,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
     <title>Table of Contents - FreezeMessenger Documentation</title>
-    <meta name="robots" content="noindex, nofollow" />
     <meta name="author" content="Joseph T. Parsons" />
     <meta charset="utf-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -13,22 +12,27 @@
     <![endif]-->
 
     <!-- START Styles -->
-    <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/jquery-ui-1.8.16.custom.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="../webpro/client/css/absolution/fim.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="../webpro/client/css/stylesv2.css" media="screen" />
+    <link
+            href="https://maxcdn.bootstrapcdn.com/bootswatch/4.0.0-beta.2/simplex/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-ofc00ja/z8wrU97EAHQRb4i4wsa/Zgr9JZll2R3KW33iqhFSfmVz/6xuWFx5pjcn"
+            crossorigin="anonymous">
 </head>
 
 <body>
-<section>
-    <header>
-        <h1>Table of Contents</h1>
+<section class="card">
+    <header class="card-header">
+        <h1>FreezeMessenger Documentation</h1>
     </header>
-    <nav>
-        <h2><a href="design.htm">Design Documentation</a> (Updated May 2017)</h2>
-        <h2><a href="classes/">Class Documentation (PHPDOC)</a> (Updated September 2017)</h2>
-        <h2><a href="api.htm">Application Programming Interface Introduction</a> (<a href="api.pdf">PDF</a>) (Updated September 2017)</h2>
-        <h2><a href="classes/classes/fimConfig.html">Configuration</a> (Updated September 2017)</h2>
-        <h2><a href="database.htm">Database</a> (Updated September 2017)</h2>
+    <nav class="card-body">
+        <h6 class="mb-2 text-muted">For Installers:</h6>
+        <h3><a href="classes/classes/Fim.Config.html">Configuration</a></h3>
+        <hr />
+        <h6 class="mb-2 text-muted">For Developers:</h6>
+        <h3><a href="design.htm">Design Documentation</a></h3>
+        <h3><a href="classes/">Class Documentation (PhpDoc)</a></h3>
+        <h3><a href="api.htm">API Introduction</a></h3>
+        <h3><a href="database.htm">Database</a></h3>
         <!--<h2><a href="functions.htm">Functions</a></h2>-->
     </nav>
 </body>

@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <meta charset="utf-8"/>
+    <title>API Documentation</title>
+    <meta name="author" content=""/>
+    <meta name="description" content=""/>
+
+    <link href="../css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/prism.css" rel="stylesheet" media="all"/>
+    <link href="../css/template.css" rel="stylesheet" media="all"/>
+    
+    <!--[if lt IE 9]>
+    <script src="../js/html5.js"></script>
+    <![endif]-->
+    <script src="../js/jquery-1.11.0.min.js"></script>
+    <script src="../js/ui/1.10.4/jquery-ui.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.smooth-scroll.js"></script>
+    <script src="../js/prism.min.js"></script>
+    <!-- TODO: Add http://jscrollpane.kelvinluck.com/ to style the scrollbars for browsers not using webkit-->
+    <script type="text/javascript">
+    function loadExternalCodeSnippets() {
+        Array.prototype.slice.call(document.querySelectorAll('pre[data-src]')).forEach(function (pre) {
+            var src = pre.getAttribute('data-src').replace( /\\/g, '/');
+            var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
+            var language = 'php';
+
+            var code = document.createElement('code');
+            code.className = 'language-' + language;
+
+            pre.textContent = '';
+
+            code.textContent = 'Loading…';
+
+            pre.appendChild(code);
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.open('GET', src, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+
+                    if (xhr.status < 400 && xhr.responseText) {
+                        code.textContent = xhr.responseText;
+
+                        Prism.highlightElement(code);
+                    }
+                    else if (xhr.status >= 400) {
+                        code.textContent = '✖ Error ' + xhr.status + ' while fetching file: ' + xhr.statusText;
+                    }
+                    else {
+                        code.textContent = '✖ Error: File does not exist or is empty';
+                    }
+                }
+            };
+
+            xhr.send(null);
+        });
+    }
+
+    $(document).ready(function(){
+        loadExternalCodeSnippets();
+    });
+    $('#source-view').on('shown', function () {
+        loadExternalCodeSnippets();
+    })
+</script>
+
+    <link rel="shortcut icon" href="../images/favicon.ico"/>
+    <link rel="apple-touch-icon" href="../images/apple-touch-icon.png"/>
+    <link rel="apple-touch-icon" sizes="72x72" href="../images/apple-touch-icon-72x72.png"/>
+    <link rel="apple-touch-icon" sizes="114x114" href="../images/apple-touch-icon-114x114.png"/>
+</head>
+<body>
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <i class="icon-ellipsis-vertical"></i>
+            </a>
+            <a class="brand" href="../index.html">API Documentation</a>
+
+            <div class="nav-collapse">
+                <ul class="nav pull-right">
+                                        <li class="dropdown">
+                        <a href="../index.html" class="dropdown-toggle" data-toggle="dropdown">
+                            API Documentation <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                                                        <li><a href="../namespaces/Cache.html">\Cache</a></li>
+                                                        <li><a href="../namespaces/Database.html">\Database</a></li>
+                                                        <li><a href="../namespaces/Fim.html">\Fim</a></li>
+                                                        <li><a href="../namespaces/Http.html">\Http</a></li>
+                                                        <li><a href="../namespaces/Login.html">\Login</a></li>
+                                                        <li><a href="../namespaces/OAuth2.html">\OAuth2</a></li>
+                                                        <li><a href="../namespaces/Stream.html">\Stream</a></li>
+                                                    </ul>
+                    </li>
+                                        <li class="dropdown" id="charts-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Charts <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../graphs/class.html">
+                                    <i class="icon-list-alt"></i>&#160;Class hierarchy diagram
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown" id="reports-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Reports <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../reports/errors.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">2874</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/markers.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">63</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/deprecated.html">
+                                                                                                            <i class="icon-list-alt"></i>&#160;Deprecated <span class="label label-info pull-right">0</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--<div class="go_to_top">-->
+    <!--<a href="#___" style="color: inherit">Back to top&#160;&#160;<i class="icon-upload icon-white"></i></a>-->
+    <!--</div>-->
+</div>
+
+<div id="___" class="container-fluid">
+        <section class="row-fluid">
+        <div class="span2 sidebar">
+                                <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-141080208"></a>
+                                <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
+            </div>
+            <div id="namespace-141080208" class="accordion-body collapse in">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-164287023"></a>
+                                <a href="../namespaces/Cache.html" style="margin-left: 30px; padding-left: 0">Cache</a>
+            </div>
+            <div id="namespace-164287023" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Cache.CacheInterface.html">CacheInterface</a></li>
+                                                                            <li class="trait"><a href="../classes/Cache.CacheAddFallbackTrait.html">CacheAddFallbackTrait</a></li>
+                                                    <li class="trait"><a href="../classes/Cache.CacheSetFallbackTrait.html">CacheSetFallbackTrait</a></li>
+                                                                            <li class="class"><a href="../classes/Cache.CacheApc.html">CacheApc</a></li>
+                                                    <li class="class"><a href="../classes/Cache.CacheApcu.html">CacheApcu</a></li>
+                                                    <li class="class"><a href="../classes/Cache.CacheDisk.html">CacheDisk</a></li>
+                                                    <li class="class"><a href="../classes/Cache.CacheFactory.html">CacheFactory</a></li>
+                                                    <li class="class"><a href="../classes/Cache.CacheMemcached.html">CacheMemcached</a></li>
+                                                    <li class="class"><a href="../classes/Cache.CacheRedis.html">CacheRedis</a></li>
+                                                    <li class="class"><a href="../classes/Cache.FileCache.html">FileCache</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2074405297"></a>
+                                <a href="../namespaces/Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
+            </div>
+            <div id="namespace-2074405297" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1897076723"></a>
+                                <a href="../namespaces/Database.SQL.html" style="margin-left: 30px; padding-left: 0">SQL</a>
+            </div>
+            <div id="namespace-1897076723" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Database.SQL.DatabaseSQLInterface.html">DatabaseSQLInterface</a></li>
+                                                                            <li class="trait"><a href="../classes/Database.SQL.DatabaseManualInsertIDTrait.html">DatabaseManualInsertIDTrait</a></li>
+                                                    <li class="trait"><a href="../classes/Database.SQL.DatabaseReconnectOnSelectDatabaseTrait.html">DatabaseReconnectOnSelectDatabaseTrait</a></li>
+                                                                            <li class="class"><a href="../classes/Database.SQL.DatabaseDefinitionsMySQL.html">DatabaseDefinitionsMySQL</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.DatabaseSQL.html">DatabaseSQL</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.DatabaseSQLPdoMysql.html">DatabaseSQLPdoMysql</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.DatabaseSQLStandard.html">DatabaseSQLStandard</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Database.DatabaseResultInterface.html">DatabaseResultInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/Database.Database.html">Database</a></li>
+                                                    <li class="class"><a href="../classes/Database.DatabaseEngine.html">DatabaseEngine</a></li>
+                                                    <li class="class"><a href="../classes/Database.DatabaseIndexType.html">DatabaseIndexType</a></li>
+                                                    <li class="class"><a href="../classes/Database.DatabaseResult.html">DatabaseResult</a></li>
+                                                    <li class="class"><a href="../classes/Database.DatabaseType.html">DatabaseType</a></li>
+                                                    <li class="class"><a href="../classes/Database.DatabaseTypeComparison.html">DatabaseTypeComparison</a></li>
+                                                    <li class="class"><a href="../classes/Database.DatabaseTypeType.html">DatabaseTypeType</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1742427085"></a>
+                                <a href="../namespaces/Fim.html" style="margin-left: 30px; padding-left: 0">Fim</a>
+            </div>
+            <div id="namespace-1742427085" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Fim.Config.html">Config</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Database.html">Database</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseInstance.html">DatabaseInstance</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseLogin.html">DatabaseLogin</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseResult.html">DatabaseResult</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseSlave.html">DatabaseSlave</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DynamicObject.html">DynamicObject</a></li>
+                                                    <li class="class"><a href="../classes/Fim.File.html">File</a></li>
+                                                    <li class="class"><a href="../classes/Fim.FileThumbnail.html">FileThumbnail</a></li>
+                                                    <li class="class"><a href="../classes/Fim.MagicGettersSetters.html">MagicGettersSetters</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Message.html">Message</a></li>
+                                                    <li class="class"><a href="../classes/Fim.RoomFactory.html">RoomFactory</a></li>
+                                                    <li class="class"><a href="../classes/Fim.UserFactory.html">UserFactory</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-331185976"></a>
+                                <a href="../namespaces/Http.html" style="margin-left: 30px; padding-left: 0">Http</a>
+            </div>
+            <div id="namespace-331185976" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Http.ApiData.html">ApiData</a></li>
+                                                    <li class="class"><a href="../classes/Http.ApiOutputDict.html">ApiOutputDict</a></li>
+                                                    <li class="class"><a href="../classes/Http.ApiOutputList.html">ApiOutputList</a></li>
+                                                    <li class="class"><a href="../classes/Http.CurlRequest.html">CurlRequest</a></li>
+                                                    <li class="class"><a href="../classes/Http.CurlRequestMethod.html">CurlRequestMethod</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1817598542"></a>
+                                <a href="../namespaces/Login.html" style="margin-left: 30px; padding-left: 0">Login</a>
+            </div>
+            <div id="namespace-1817598542" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-100784702"></a>
+                                <a href="../namespaces/Login.Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
+            </div>
+            <div id="namespace-100784702" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Login.Database.LoginPhpbb.html">LoginPhpbb</a></li>
+                                                    <li class="class"><a href="../classes/Login.Database.LoginVanilla.html">LoginVanilla</a></li>
+                                                    <li class="class"><a href="../classes/Login.Database.LoginVbulletin3.html">LoginVbulletin3</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-293155732"></a>
+                                <a href="../namespaces/Login.TwoStep.html" style="margin-left: 30px; padding-left: 0">TwoStep</a>
+            </div>
+            <div id="namespace-293155732" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginFacebook.html">LoginFacebook</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginGoogle.html">LoginGoogle</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginMicrosoft.html">LoginMicrosoft</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginReddit.html">LoginReddit</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginSteam.html">LoginSteam</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginTwitter.html">LoginTwitter</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Login.LoginRunner.html">LoginRunner</a></li>
+                                                                                                    <li class="class"><a href="../classes/Login.LoginDatabase.html">LoginDatabase</a></li>
+                                                    <li class="class"><a href="../classes/Login.LoginFactory.html">LoginFactory</a></li>
+                                                    <li class="class"><a href="../classes/Login.LoginOAuth.html">LoginOAuth</a></li>
+                                                    <li class="class"><a href="../classes/Login.LoginTwoStep.html">LoginTwoStep</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1357033832"></a>
+                                <a href="../namespaces/OAuth2.html" style="margin-left: 30px; padding-left: 0">OAuth2</a>
+            </div>
+            <div id="namespace-1357033832" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1693262927"></a>
+                                <a href="../namespaces/OAuth2.ClientAssertionType.html" style="margin-left: 30px; padding-left: 0">ClientAssertionType</a>
+            </div>
+            <div id="namespace-1693262927" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.ClientAssertionType.ClientAssertionTypeInterface.html">ClientAssertionTypeInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.ClientAssertionType.HttpBasic.html">HttpBasic</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-392061234"></a>
+                                <a href="../namespaces/OAuth2.Controller.html" style="margin-left: 30px; padding-left: 0">Controller</a>
+            </div>
+            <div id="namespace-392061234" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.Controller.AuthorizeControllerInterface.html">AuthorizeControllerInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Controller.ResourceControllerInterface.html">ResourceControllerInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Controller.TokenControllerInterface.html">TokenControllerInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.Controller.AuthorizeController.html">AuthorizeController</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Controller.AuthorizeControllerTest.html">AuthorizeControllerTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Controller.ResourceController.html">ResourceController</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Controller.ResourceControllerTest.html">ResourceControllerTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Controller.TokenController.html">TokenController</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Controller.TokenControllerTest.html">TokenControllerTest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-873629868"></a>
+                                <a href="../namespaces/OAuth2.Encryption.html" style="margin-left: 30px; padding-left: 0">Encryption</a>
+            </div>
+            <div id="namespace-873629868" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.Encryption.EncryptionInterface.html">EncryptionInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.Encryption.FirebaseJwt.html">FirebaseJwt</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Encryption.FirebaseJwtTest.html">FirebaseJwtTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Encryption.Jwt.html">Jwt</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Encryption.JwtTest.html">JwtTest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1098651287"></a>
+                                <a href="../namespaces/OAuth2.GrantType.html" style="margin-left: 30px; padding-left: 0">GrantType</a>
+            </div>
+            <div id="namespace-1098651287" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.GrantType.GrantTypeInterface.html">GrantTypeInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.GrantType.AccessToken.html">AccessToken</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.Anonymous.html">Anonymous</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.AuthorizationCode.html">AuthorizationCode</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.AuthorizationCodeTest.html">AuthorizationCodeTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.ClientCredentials.html">ClientCredentials</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.ClientCredentialsTest.html">ClientCredentialsTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.ImplicitTest.html">ImplicitTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.IntegrationLogin.html">IntegrationLogin</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.JwtBearer.html">JwtBearer</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.JwtBearerTest.html">JwtBearerTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.RefreshToken.html">RefreshToken</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.RefreshTokenTest.html">RefreshTokenTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.UserCredentials.html">UserCredentials</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.GrantType.UserCredentialsTest.html">UserCredentialsTest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1978130847"></a>
+                                <a href="../namespaces/OAuth2.OpenID.html" style="margin-left: 30px; padding-left: 0">OpenID</a>
+            </div>
+            <div id="namespace-1978130847" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2146585345"></a>
+                                <a href="../namespaces/OAuth2.OpenID.Controller.html" style="margin-left: 30px; padding-left: 0">Controller</a>
+            </div>
+            <div id="namespace-2146585345" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.OpenID.Controller.AuthorizeControllerInterface.html">AuthorizeControllerInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.OpenID.Controller.UserInfoControllerInterface.html">UserInfoControllerInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.OpenID.Controller.AuthorizeController.html">AuthorizeController</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.Controller.AuthorizeControllerTest.html">AuthorizeControllerTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.Controller.UserInfoController.html">UserInfoController</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.Controller.UserInfoControllerTest.html">UserInfoControllerTest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2068781172"></a>
+                                <a href="../namespaces/OAuth2.OpenID.GrantType.html" style="margin-left: 30px; padding-left: 0">GrantType</a>
+            </div>
+            <div id="namespace-2068781172" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.OpenID.GrantType.AuthorizationCode.html">AuthorizationCode</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.GrantType.AuthorizationCodeTest.html">AuthorizationCodeTest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1966757293"></a>
+                                <a href="../namespaces/OAuth2.OpenID.ResponseType.html" style="margin-left: 30px; padding-left: 0">ResponseType</a>
+            </div>
+            <div id="namespace-1966757293" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.OpenID.ResponseType.AuthorizationCodeInterface.html">AuthorizationCodeInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.OpenID.ResponseType.CodeIdTokenInterface.html">CodeIdTokenInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.OpenID.ResponseType.IdTokenInterface.html">IdTokenInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.OpenID.ResponseType.IdTokenTokenInterface.html">IdTokenTokenInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.OpenID.ResponseType.AuthorizationCode.html">AuthorizationCode</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.ResponseType.CodeIdToken.html">CodeIdToken</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.ResponseType.CodeIdTokenTest.html">CodeIdTokenTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.ResponseType.IdToken.html">IdToken</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.ResponseType.IdTokenTest.html">IdTokenTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.ResponseType.IdTokenToken.html">IdTokenToken</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.ResponseType.IdTokenTokenTest.html">IdTokenTokenTest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-234480268"></a>
+                                <a href="../namespaces/OAuth2.OpenID.Storage.html" style="margin-left: 30px; padding-left: 0">Storage</a>
+            </div>
+            <div id="namespace-234480268" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.OpenID.Storage.AuthorizationCodeInterface.html">AuthorizationCodeInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.OpenID.Storage.UserClaimsInterface.html">UserClaimsInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.OpenID.Storage.AuthorizationCodeTest.html">AuthorizationCodeTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.OpenID.Storage.UserClaimsTest.html">UserClaimsTest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1972127325"></a>
+                                <a href="../namespaces/OAuth2.Request.html" style="margin-left: 30px; padding-left: 0">Request</a>
+            </div>
+            <div id="namespace-1972127325" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.Request.TestRequest.html">TestRequest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1180849395"></a>
+                                <a href="../namespaces/OAuth2.ResponseType.html" style="margin-left: 30px; padding-left: 0">ResponseType</a>
+            </div>
+            <div id="namespace-1180849395" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.ResponseType.AccessTokenInterface.html">AccessTokenInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.ResponseType.AuthorizationCodeInterface.html">AuthorizationCodeInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.ResponseType.ResponseTypeInterface.html">ResponseTypeInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.ResponseType.AccessToken.html">AccessToken</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.ResponseType.AccessTokenTest.html">AccessTokenTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.ResponseType.AuthorizationCode.html">AuthorizationCode</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.ResponseType.JwtAccessToken.html">JwtAccessToken</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.ResponseType.JwtAccessTokenTest.html">JwtAccessTokenTest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-516612108"></a>
+                                <a href="../namespaces/OAuth2.Storage.html" style="margin-left: 30px; padding-left: 0">Storage</a>
+            </div>
+            <div id="namespace-516612108" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.Storage.AccessTokenInterface.html">AccessTokenInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Storage.AuthorizationCodeInterface.html">AuthorizationCodeInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Storage.ClientCredentialsInterface.html">ClientCredentialsInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Storage.ClientInterface.html">ClientInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Storage.JwtAccessTokenInterface.html">JwtAccessTokenInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Storage.JwtBearerInterface.html">JwtBearerInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Storage.PublicKeyInterface.html">PublicKeyInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Storage.RefreshTokenInterface.html">RefreshTokenInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Storage.ScopeInterface.html">ScopeInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.Storage.UserCredentialsInterface.html">UserCredentialsInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.Storage.AccessTokenTest.html">AccessTokenTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.AuthorizationCodeTest.html">AuthorizationCodeTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.BaseTest.html">BaseTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.Bootstrap.html">Bootstrap</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.Cassandra.html">Cassandra</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.ClientCredentialsTest.html">ClientCredentialsTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.ClientTest.html">ClientTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.CouchbaseDB.html">CouchbaseDB</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.DynamoDB.html">DynamoDB</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.DynamoDBTest.html">DynamoDBTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.FIMDatabaseOAuth.html">FIMDatabaseOAuth</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.JwtAccessToken.html">JwtAccessToken</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.JwtAccessTokenTest.html">JwtAccessTokenTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.JwtBearerTest.html">JwtBearerTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.Memory.html">Memory</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.Mongo.html">Mongo</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.MongoDB.html">MongoDB</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.NullStorage.html">NullStorage</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.Pdo.html">Pdo</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.PdoTest.html">PdoTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.PublicKeyTest.html">PublicKeyTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.Redis.html">Redis</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.RefreshTokenTest.html">RefreshTokenTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.ScopeTest.html">ScopeTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Storage.UserCredentialsTest.html">UserCredentialsTest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1783994127"></a>
+                                <a href="../namespaces/OAuth2.TokenType.html" style="margin-left: 30px; padding-left: 0">TokenType</a>
+            </div>
+            <div id="namespace-1783994127" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.TokenType.TokenTypeInterface.html">TokenTypeInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.TokenType.Bearer.html">Bearer</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.TokenType.BearerTest.html">BearerTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.TokenType.Mac.html">Mac</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/OAuth2.RequestInterface.html">RequestInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.ResponseInterface.html">ResponseInterface</a></li>
+                                                    <li class="interface"><a href="../classes/OAuth2.ScopeInterface.html">ScopeInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/OAuth2.Autoloader.html">Autoloader</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.AutoloadTest.html">AutoloadTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Request.html">Request</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.RequestTest.html">RequestTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Response.html">Response</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.ResponseTest.html">ResponseTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Scope.html">Scope</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.ScopeTest.html">ScopeTest</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.Server.html">Server</a></li>
+                                                    <li class="class"><a href="../classes/OAuth2.ServerTest.html">ServerTest</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-190689525"></a>
+                                <a href="../namespaces/Stream.html" style="margin-left: 30px; padding-left: 0">Stream</a>
+            </div>
+            <div id="namespace-190689525" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2107774057"></a>
+                                <a href="../namespaces/Stream.Streams.html" style="margin-left: 30px; padding-left: 0">Streams</a>
+            </div>
+            <div id="namespace-2107774057" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Stream.Streams.StreamDatabase.html">StreamDatabase</a></li>
+                                                    <li class="class"><a href="../classes/Stream.Streams.StreamKafka.html">StreamKafka</a></li>
+                                                    <li class="class"><a href="../classes/Stream.Streams.StreamPgSQL.html">StreamPgSQL</a></li>
+                                                    <li class="class"><a href="../classes/Stream.Streams.StreamRedis.html">StreamRedis</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Stream.StreamInterface.html">StreamInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/Stream.StreamFactory.html">StreamFactory</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/ArrayPosition.html">ArrayPosition</a></li>
+                                                    <li class="class"><a href="../classes/databaseSQLTests.html">databaseSQLTests</a></li>
+                                                    <li class="class"><a href="../classes/databaseSQLTests1.html">databaseSQLTests1</a></li>
+                                                    <li class="class"><a href="../classes/databaseSQLTests2.html">databaseSQLTests2</a></li>
+                                                    <li class="class"><a href="../classes/fimCache.html">fimCache</a></li>
+                                                    <li class="class"><a href="../classes/fimError.html">fimError</a></li>
+                                                    <li class="class"><a href="../classes/fimErrorThrown.html">fimErrorThrown</a></li>
+                                                    <li class="class"><a href="../classes/fimRoom.html">fimRoom</a></li>
+                                                    <li class="class"><a href="../classes/fimUser.html">fimUser</a></li>
+                                                    <li class="class"><a href="../classes/PasswordHash.html">PasswordHash</a></li>
+                                                    <li class="class"><a href="../classes/Xml2Array.html">Xml2Array</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </div>
+    </section>
+    <section class="row-fluid">
+        <div class="span10 offset2">
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <nav>
+                                                <a href="../namespaces/Cache.html">\Cache</a> <i class="icon-level-up"></i>
+                                            </nav>
+                    <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal"><i class="icon-code"></i></a>
+
+                    <h1><small>\Cache</small>FileCache</h1>
+                    <p><em></em></p>
+                    
+                    
+                                        
+                    <section id="summary">
+                        <h2>Summary</h2>
+                        <section class="row-fluid heading">
+                            <section class="span4">
+                                <a href="#methods">Methods</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#properties">Properties</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#constants">Constants</a>
+                            </section>
+                        </section>
+                        <section class="row-fluid public">
+                            <section class="span4">
+                                                                    <a href="../classes/Cache.FileCache.html#method___construct" class="">__construct()</a><br />
+                                                                    <a href="../classes/Cache.FileCache.html#method_set" class="">set()</a><br />
+                                                                    <a href="../classes/Cache.FileCache.html#method_inc" class="">inc()</a><br />
+                                                                    <a href="../classes/Cache.FileCache.html#method_get" class="">get()</a><br />
+                                                                    <a href="../classes/Cache.FileCache.html#method_delete" class="">delete()</a><br />
+                                                                    <a href="../classes/Cache.FileCache.html#method_exists" class="">exists()</a><br />
+                                                                    <a href="../classes/Cache.FileCache.html#method_deleteAll" class="">deleteAll()</a><br />
+                                                                    <a href="../classes/Cache.FileCache.html#method_dumpAll" class="">dumpAll()</a><br />
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No public properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No constants found</em>
+                                                            </section>
+                        </section>
+                        <section class="row-fluid protected">
+                            <section class="span4">
+                                                                    <em>No protected methods found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <a href="../classes/Cache.FileCache.html#property_root" class="">$root</a><br />
+                                                                    <a href="../classes/Cache.FileCache.html#property_prefix" class="">$prefix</a><br />
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                        <section class="row-fluid private">
+                            <section class="span4">
+                                                                    <a href="../classes/Cache.FileCache.html#method__make_file_key" class="">_make_file_key()</a><br />
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No private properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                    </section>
+                </div>
+                <aside class="span4 detailsbar">
+                                        
+                    
+                    <dl>
+                        <dt>File</dt>
+                            <dd><a href="../files/functions.Cache.FileCache.html"><div class="path-wrapper">functions/Cache/FileCache.php</div></a></dd>
+                                                <dt>Package</dt>
+                            <dd><div class="namespace-wrapper">FileCache - A simple file based cache</div></dd>
+                                                <dt>Class hierarchy</dt>
+                            <dd class="hierarchy">
+                                                                                                                                                                    <div class="namespace-wrapper">\Cache\FileCache</div>
+                            </dd>
+
+                        
+                        
+                        
+                                                
+                                                                        </dl>
+                    <h2>Tags</h2>
+                    <table class="table table-condensed">
+                                            <tr>
+                            <th>
+                                author
+                            </th>
+                            <td>
+                                                                                                        <p>Erik Giberti</p>
+                                                            </td>
+                        </tr>
+                                            <tr>
+                            <th>
+                                copyright
+                            </th>
+                            <td>
+                                                                                                        <p>2010 Erik Giberti, all rights reserved</p>
+                                                            </td>
+                        </tr>
+                                            <tr>
+                            <th>
+                                license
+                            </th>
+                            <td>
+                                                                                                        <p><a href="http://opensource.org/licenses/gpl-license.php">http://opensource.org/licenses/gpl-license.php</a> GNU Public License</p>
+<p>Class to implement a file based cache. This is useful for caching large objects such as
+API/Curl responses or HTML results that aren't well suited to storing in small memory caches
+or are infrequently accessed but are still expensive to generate.</p>
+<p>For security reasons, it's <em>strongly</em> recommended you set your cache directory to be outside
+of your web root and on a drive independent of your operating system.</p>
+<p>Uses JSON to serialize the data object.</p>
+<p>Sample usage:</p>
+<p>$cache = new FileCache('/var/www/cache/');
+$data = $cache-&gt;get('sampledata');
+if(!$data){
+$data = array('a'=&gt;1,'b'=&gt;2,'c'=&gt;3);
+$cache-&gt;set('sampledata', $data, 3600);
+}
+print $data['a'];</p>
+<p>Changes by Joseph T. Parsons:</p>
+<ul>
+<li>FIM syntax style</li>
+<li>exists function</li>
+<li>add function</li>
+<li>dump function</li>
+<li>serialize instead of json</li>
+</ul>
+                                                            </td>
+                        </tr>
+                                        </table>
+                </aside>
+            </div>
+
+                        
+                                    <a id="properties" name="properties"></a>
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <h2>Properties</h2>
+                </div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_root" name="property_root" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$root</h3>
+                <pre class="signature">$root : </pre>
+                <p><em>Value is pre-pended to the cache, should be the full path to the directory</em></p>
+                
+
+                                <h4>Type</h4>
+                
+                                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_prefix" name="property_prefix" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$prefix</h3>
+                <pre class="signature">$prefix : </pre>
+                <p><em>Prefix to append to all files created</em></p>
+                
+
+                                <h4>Type</h4>
+                
+                                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                            
+                                    <a id="methods" name="methods"></a>
+            <div class="row-fluid">
+                <div class="span8 content class"><h2>Methods</h2></div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method___construct" name="method___construct" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">__construct()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">__construct(string  <span class="argument">$root = &#039;/tmp/&#039;</span>,   <span class="argument">$prefix = &#039;fileCache_&#039;</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$root </td>
+                                <td><p>The root of the file cache.</p></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$prefix </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Cache.FileCache.html"><div class="path-wrapper">\Cache\FileCache</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_set" name="method_set" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">set()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">set(string  <span class="argument">$key</span>, mixed  <span class="argument">$data = false</span>, integer  <span class="argument">$ttl = 3600</span>) </pre>
+                <p><em>Saves data to the cache. Anything that evaluates to false, null, &#039;&#039;, boolean false, 0 will
+not be saved.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$key </td>
+                                <td><p>An identifier for the data</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>mixed</td>
+                                <td>$data </td>
+                                <td><p>The data to save</p></td>
+                            </tr>
+                                                    <tr>
+                                <td>integer</td>
+                                <td>$ttl </td>
+                                <td><p>Seconds to store the data</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Cache.FileCache.html"><div class="path-wrapper">\Cache\FileCache</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            returns
+                        </th>
+                        <td>
+                                                                                            <p>boolean True if the save was successful, false if it failed</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_inc" name="method_inc" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">inc()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">inc(  <span class="argument">$key</span>,   <span class="argument">$amt = 1</span>) </pre>
+                <p><em>Increment existing cache entry.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$key </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$amt </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Cache.FileCache.html"><div class="path-wrapper">\Cache\FileCache</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_get" name="method_get" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">get()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">get(string  <span class="argument">$key</span>) </pre>
+                <p><em>Reads the data from the cache</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$key </td>
+                                <td><p>An identifier for the data</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Cache.FileCache.html"><div class="path-wrapper">\Cache\FileCache</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            returns
+                        </th>
+                        <td>
+                                                                                            <p>mixed Data that was stored</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_delete" name="method_delete" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">delete()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">delete(string  <span class="argument">$key</span>) </pre>
+                <p><em>Remove a key, regardless of it&#039;s expire time</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$key </td>
+                                <td><p>An identifier for the data</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Cache.FileCache.html"><div class="path-wrapper">\Cache\FileCache</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_exists" name="method_exists" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">exists()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">exists(string  <span class="argument">$key</span>) </pre>
+                <p><em>Checks if cache exists</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$key </td>
+                                <td><p>An identifier for the data</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Cache.FileCache.html"><div class="path-wrapper">\Cache\FileCache</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            returns
+                        </th>
+                        <td>
+                                                                                            <p>bool</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_deleteAll" name="method_deleteAll" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">deleteAll()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">deleteAll() </pre>
+                <p><em>Deletes all data</em></p>
+                
+
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Cache.FileCache.html"><div class="path-wrapper">\Cache\FileCache</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_dumpAll" name="method_dumpAll" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">dumpAll()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">dumpAll() </pre>
+                <p><em>Dumps all data</em></p>
+                
+
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Cache.FileCache.html"><div class="path-wrapper">\Cache\FileCache</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method__make_file_key" name="method__make_file_key" class="anchor"></a>
+            <article class="method">
+                <h3 class="private ">_make_file_key()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">_make_file_key(string  <span class="argument">$key</span>) </pre>
+                <p><em>Create a key for the cache</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$key </td>
+                                <td><p>The key to create</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Cache.FileCache.html"><div class="path-wrapper">\Cache\FileCache</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr>
+                        <th>
+                            todo
+                        </th>
+                        <td>
+                                                                                            <p>Beef up the cleansing of the file.</p>
+                                                    </td>
+                    </tr>
+                                    <tr>
+                        <th>
+                            returns
+                        </th>
+                        <td>
+                                                                                            <p>string The full path and filename to access</p>
+                                                    </td>
+                    </tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    </div>
+    </section>
+
+    <div id="source-view" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="source-view-label" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="source-view-label">FileCache.php</h3>
+        </div>
+        <div class="modal-body">
+            <pre data-src="../files/functions/Cache/FileCache.php.txt" class="language-php line-numbers"></pre>
+        </div>
+    </div>
+
+    <footer class="row-fluid">
+        <section class="span10 offset2">
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <section class="row-fluid footer-sections">
+                        <section class="span4">
+                                                        <h1><i class="icon-code"></i></h1>
+                            <div>
+                                <ul>
+                                                                            <li><a href="../namespaces/Cache.html">\Cache</a></li>
+                                                                            <li><a href="../namespaces/Database.html">\Database</a></li>
+                                                                            <li><a href="../namespaces/Fim.html">\Fim</a></li>
+                                                                            <li><a href="../namespaces/Http.html">\Http</a></li>
+                                                                            <li><a href="../namespaces/Login.html">\Login</a></li>
+                                                                            <li><a href="../namespaces/OAuth2.html">\OAuth2</a></li>
+                                                                            <li><a href="../namespaces/Stream.html">\Stream</a></li>
+                                                                    </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-bar-chart"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../graphs/class.html">Class Hierarchy Diagram</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-pushpin"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../reports/errors.html">Errors</a></li>
+                                    <li><a href="../reports/markers.html">Markers</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                    </section>
+                </section>
+            </section>
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <hr />
+                    Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
+                    on December 18th, 2017 at 03:10.
+                </section>
+            </section>
+        </section>
+    </footer>
+</div>
+
+</body>
+</html>
