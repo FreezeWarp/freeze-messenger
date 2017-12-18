@@ -29,47 +29,6 @@ if (!defined('API_INROOM'))
     die();
 
 
-/**
- * Alters a room's permissions based on a specially formatted userArray and groupArray. This function does not check for permissions -- make sure that a user has permission to alter permissions before executing this function.
- *
- *
- * @param $roomId
- * @param $userArray
- * @param $groupArray
- */
-function alterRoomPermissions($roomId, $userArray, $groupArray)
-{
-    foreach (['user' => $userArray, 'group' => $groupArray] AS $attribute => $array) {
-        foreach ((array)$array AS $code => $permissionsArray) {
-            $operation = substr($code, 0, 1); // The first character of the code is going to be either '+', '-', or '*', representing which action we are taking.
-            $param = (int)substr($code, 1); // Everything after the first character represents either a group or user ID.
-
-            $permissionsField = fimRoom::getPermissionsField($permissionsArray);
-
-            if ($attribute === 'user')
-                $databasePermissionsField = \Fim\Database::instance()->getPermissionsField($roomId, $param);
-            elseif ($attribute === 'group')
-                $databasePermissionsField = \Fim\Database::instance()->getPermissionsField($roomId, [], $param);
-
-            if ($databasePermissionsField === -1) $databasePermissionsField = 0;
-
-            switch ($operation) {
-                case '+':
-                    @\Fim\Database::instance()->setPermission($roomId, $attribute, $param, $databasePermissionsField | $permissionsField);
-                break; // Add new permissions to any existing permissions.
-                case '-':
-                    \Fim\Database::instance()->setPermission($roomId, $attribute, $param, $databasePermissionsField & ~$permissionsField);
-                break; // Remove permissions from any existing permissions.
-                case '*':
-                    \Fim\Database::instance()->setPermission($roomId, $attribute, $param, $permissionsField);
-                break; // Replace permissions.
-            }
-        }
-    }
-}
-
-
-
 /* Get Request Data */
 $request = fim_sanitizeGPC('p', [
     'name' => [
@@ -81,18 +40,6 @@ $request = fim_sanitizeGPC('p', [
         'cast'      => 'list',
         'transform' => 'bitfield',
         'bitTable'  => fimRoom::$permArray
-    ],
-
-    'userPermissions' => [
-        'cast' => 'dict',
-        'filter' => 'array',
-        'default' => [],
-    ],
-
-    'groupPermissions' => [
-        'cast' => 'dict',
-        'filter' => 'array',
-        'default' => [],
     ],
 
     'censorLists' => [
@@ -193,13 +140,6 @@ switch ($requestHead['_action']) {
 
             if (isset($request['censorLists']))
                 \Fim\Database::instance()->setCensorLists($room->id, $request['censorLists']);
-        }
-
-
-        // Handle Room Grants
-        if ($requestHead['_action'] === 'create' ||
-            (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_GRANT)) {
-            alterRoomPermissions($room->id, $request['userPermissions'], $request['groupPermissions']);
         }
     break;
 

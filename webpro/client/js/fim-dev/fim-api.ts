@@ -740,21 +740,53 @@ fimApi.prototype.undeleteRoom = function(id, requestSettings) {
 
 
 
-fimApi.prototype.editRoomPermissionUser = function(roomId, userId, permissionsArray) {
-    let permissionsObj = {};
-    permissionsObj['*' + userId] = permissionsArray;
-    this.editRoom(roomId, 'edit', {
-        'userPermissions' : permissionsObj
-    });
+fimApi.prototype.editRoomPermission = function(action, param, roomId, paramId, permissionsArray, requestSettings) {
+    let requestHead = {
+        '_action' : action,
+        'access_token' : this.lastSessionHash,
+        'roomId' : roomId,
+    };
+    requestHead[param + 'Id'] = paramId;
+    
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+
+    $.ajax({
+        url: this.directory + 'api/roomPermission.php?' + $.param(requestHead),
+        method: 'POST',
+        data: {
+            'permissions' : permissionsArray
+        },
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (() => {
+        this.editRoomPermission(action, param, roomId, paramId, permissionsArray, requestSettings)
+    })));
 };
 
-fimApi.prototype.editRoomPermissionGroup = function(roomId, groupId, permissionsArray) {
-    let permissionsObj = {};
-    permissionsObj['*' + groupId] = permissionsArray;
-    this.editRoom(roomId, 'edit', {
-        'groupPermissions' : permissionsObj
-    });
+fimApi.prototype.editRoomPermissionUser = function(roomId, userId, permissionsArray, requestSettings) {
+    this.editRoomPermission('edit', 'user', roomId, userId, permissionsArray, requestSettings);
 };
+
+fimApi.prototype.editRoomPermissionGroup = function(roomId, groupId, permissionsArray, requestSettings) {
+    this.editRoomPermission('edit', 'group', roomId, groupId, permissionsArray, requestSettings);
+};
+
+fimApi.prototype.deleteRoomPermissionUser = function(roomId, userId, permissionsArray, requestSettings) {
+    this.deleteRoomPermission('delete', 'user', roomId, userId, permissionsArray, requestSettings);
+};
+
+fimApi.prototype.deleteRoomPermissionGroup = function(roomId, groupId, permissionsArray, requestSettings) {
+    this.deleteRoomPermission('delete', 'group', roomId, groupId, permissionsArray, requestSettings);
+};
+
+fimApi.prototype.createRoomPermissionUser = function(roomId, userId, permissionsArray, requestSettings) {
+    this.createRoomPermission('create', 'user', roomId, userId, permissionsArray, requestSettings);
+};
+
+fimApi.prototype.createRoomPermissionGroup = function(roomId, groupId, permissionsArray, requestSettings) {
+    this.createRoomPermission('create', 'group', roomId, groupId, permissionsArray, requestSettings);
+};
+
 
 
 fimApi.prototype.editUserStatus = function(roomId, params, requestSettings) {

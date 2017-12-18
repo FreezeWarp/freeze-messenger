@@ -503,10 +503,10 @@ popup.prototype.editRoom = {
             'name' : 'moderators',
             'list' : 'users',
             'onAdd' : function(id) {
-                if (action === 'edit') fimApi.editRoomPermissionUser(_this.options.roomId, id, ["post", "moderate", "properties", "grant"])
+                if (action === 'edit') fimApi.createRoomPermissionUser(_this.options.roomId, id, ["view", "post", "moderate", "properties", "grant"])
             },
             'onRemove' : function(id) {
-                if (action === 'edit') fimApi.editRoomPermissionUser(_this.options.roomId, id, ["post"]) // todo: just remove moderate privs
+                if (action === 'edit') fimApi.deleteRoomPermissionUser(_this.options.roomId, id, ["moderate", "properties", "grant"])
             },
             'resolveFromIds' : Resolver.resolveUsersFromIds,
             'resolveFromNames' : Resolver.resolveUsersFromNames
@@ -516,10 +516,10 @@ popup.prototype.editRoom = {
             'name' : 'allowedUsers',
             'list' : 'users',
             'onAdd' : function(id) {
-                if (action === 'edit') fimApi.editRoomPermissionUser(_this.options.roomId, id, ["post"])
+                if (action === 'edit') fimApi.createRoomPermissionUser(_this.options.roomId, id, ["view", "post"])
             },
             'onRemove' : function(id) {
-                if (action === 'edit') fimApi.editRoomPermissionUser(_this.options.roomId, id, [""])
+                if (action === 'edit') fimApi.deleteRoomPermissionUser(_this.options.roomId, id, ["view", "post", "changeTopic", "moderate", "properties", "grant"]) // In effect, reset the user's permissions to the default.
             },
             'resolveFromIds' : Resolver.resolveUsersFromIds,
             'resolveFromNames' : Resolver.resolveUsersFromNames
@@ -529,10 +529,10 @@ popup.prototype.editRoom = {
             'name' : 'allowedGroups',
             'list' : 'groups',
             'onAdd' : function(id) {
-                if (action === 'edit') fimApi.editRoomPermissionGroup(_this.options.roomId, id, ["post"])
+                if (action === 'edit') fimApi.createRoomPermissionGroup(_this.options.roomId, id, ["view", "post"])
             },
             'onRemove' : function(id) {
-                if (action === 'edit') fimApi.editRoomPermissionGroup(_this.options.roomId, id, [""])
+                if (action === 'edit') fimApi.deleteRoomPermissionGroup(_this.options.roomId, id, ["view", "post", "changeTopic", "moderate", "properties", "grant"]) // In effect, reset the user's permissions to the default.
             },
             'resolveFromIds' : Resolver.resolveGroupsFromIds,
             'resolveFromNames' : Resolver.resolveGroupsFromNames
@@ -619,22 +619,6 @@ popup.prototype.editRoom = {
 
         /* Submit */
         $("#editRoomForm").submit(function() {
-            var combinedUserPermissions = {},
-                combinedGroupPermissions = {};
-
-            // Parse Allowed Users
-            if (action === 'create') {
-                allowedUsersList.getList().forEach(function(user) {
-                    combinedUserPermissions["+" + user] = ['view', 'post'];
-                });
-                moderatorsList.getList().forEach(function(user) {
-                    combinedUserPermissions["+" + user] = ['view', 'post', 'moderate'];
-                });
-                allowedGroupsList.getList().forEach(function(group) {
-                    combinedGroupPermissions["+" + group] = ['post'];
-                });
-            }
-
             // Parse Default Permissions
             defaultPermissions = [];
             if ($('#editRoomForm input[name=allowViewing]').is(':checked'))
@@ -646,8 +630,6 @@ popup.prototype.editRoom = {
             fimApi.editRoom(_this.options.roomId, action, {
                 "name" : $('#editRoomForm input[name=name]').val(),
                 "defaultPermissions" : defaultPermissions,
-                "userPermissions" : combinedUserPermissions,
-                "groupPermissions" : combinedGroupPermissions,
                 "parentalAge" : $('#editRoomForm select[name=parentalAge] option:selected').val(),
                 "parentalFlags" : $('#editRoomForm input[name=parentalFlags]:checked').map(function(){
                     return $(this).attr('value');
@@ -659,6 +641,19 @@ popup.prototype.editRoom = {
                 "hidden" : $("#editRoomForm input[name=hidden]").is(":checked")
             }, {
                 end : function(room) {
+                    // Parse Allowed Users
+                    if (action === 'create') {
+                        allowedUsersList.getList().forEach(function(user) {
+                            fimApi.createRoomPermissionUser(_this.options.roomId, user, ["view", "post"]);
+                        });
+                        moderatorsList.getList().forEach(function(user) {
+                            fimApi.createRoomPermissionUser(_this.options.roomId, id, ["view", "post", "changeTopic", "moderate", "properties", "grant"]);
+                        });
+                        allowedGroupsList.getList().forEach(function(group) {
+                            fimApi.createRoomPermissionGroup(_this.options.roomId, group, ["view", "post"]);
+                        });
+                    }
+
                     window.location.hash = '#';
 
                     dia.full({
