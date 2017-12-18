@@ -76,7 +76,7 @@
             <column name="listId" type="int" maxlen="6" autoincrement="1" comment="The unique ID of the list." />
             <column name="listName" type="string" maxlen="40" comment="The name of the list. It is only used for user identification." />
             <column name="listType" type="enum" restrict="black,white" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
-            <column name="options" type="bitfield" bits="6" default="3" comment="A bitfield of specific options for the list (6 bits are alotted, but only three are used by default)." />
+            <column name="options" type="bitfield" bits="6" default="3" comment="A bitfield of specific options for the list (6 bits are allotted, but only three are used by default)." />
 
             <key name="listId" type="primary" />
             <key name="options" type="index" />
@@ -651,7 +651,7 @@
             <def bit="1" comment="If false, the list is considered inactive and is neither used nor shown to users under any circumstances.">Enabled</def>
             <def bit="2" comment="If true, the list can not be disabled by non-administrators.">Required</def>
             <def bit="4" comment="If true, the list is not 'shown' to users. The authors of FIM really don't like this option, but provide it anyway.">Hidden</def>
-            <def bit="256" comment="If true, the list is automatically disabled in private and OTR communication.">Disabled in Private/OTR</def>
+            <def bit="8" comment="If true, the list is automatically disabled in private and OTR communication.">Disabled in Private/OTR</def>
         </bitfield>
 
         <bitfield name="options" table="files">
