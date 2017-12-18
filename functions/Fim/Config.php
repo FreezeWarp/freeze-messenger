@@ -5,16 +5,16 @@ namespace Fim;
 use \fimUser;
 
 /**
- * The Config class is used to reference all configuration variables. It is not currently optimised, but we may eventually cache config variables seperately, lowering the memory footprint.
+ * The Config class is used to reference all configuration variables.
  */
 class Config {
-    /** @var int A bitfield consisting of some combination of fimUser::USER_PRIV_VIEW, fimUser::USER_PRIV_POST, fimUser::USER_PRIV_TOPIC, fimUser::USER_PRIV_CREATE_ROOMS, fimUser::USER_PRIV_PRIVATE_FRIENDS, fimUser::USER_PRIV_PRIVATE_ALL, fimUser::USER_PRIV_ACTIVE_USERS. fimUser::USER_PRIV_TOPIC and fimUser::USER_PRIV_PRIVATE_ALL are omitted by default. */
+    /** @var int A bitfield consisting of some combination of {@see fimUser::USER_PRIV_VIEW}, {@see fimUser::USER_PRIV_POST}, {@see fimUser::USER_PRIV_TOPIC}, {@see fimUser::USER_PRIV_CREATE_ROOMS}, {@see fimUser::USER_PRIV_PRIVATE_FRIENDS}, {@see fimUser::USER_PRIV_PRIVATE_ALL}, {@see fimUser::USER_PRIV_ACTIVE_USERS}. {@see fimUser::USER_PRIV_TOPIC} and {@see fimUser::USER_PRIV_PRIVATE_ALL} are omitted by default. */
     public static $defaultUserPrivs = fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_CREATE_ROOMS | fimUser::USER_PRIV_PRIVATE_FRIENDS | fimUser::USER_PRIV_ACTIVE_USERS;
 
-    /** @var int */
-    public static $anonymousUserMinId = 0;
+    /** @var int The minimum ID that can be appended to the anonymous user name to differentiate between anonymous users. */
+    public static $anonymousUserMinId = 1;
 
-    /** @var int */
+    /** @var int The maximum ID that can be appended to the anonymous user name to differentiate between anonymous users. */
     public static $anonymousUserMaxId = 100000;
 
     /** @var int The time after which a user's vanilla data is resycned with its integration data, such as adminGroups. The default of 6 hours means that if a user is banned, for instance, in a forum, it may take 6 hours for this to be reflected in the messenger. */
@@ -26,96 +26,136 @@ class Config {
     /** @var int (Vanilla logins only.) The minimum number of characters needed in a password for it to be valid. */
     public static $passwordMinimumLength = 4;
 
+
     /** @var int The maximum width allowed for a user avatar. (Vanilla logins only.) */
     public static $avatarMaximumWidth = 1000;
+
     /** @var int The maximum height allowed for a user avatar. (Vanilla logins only.) */
     public static $avatarMaximumHeight = 1000;
+
     /** @var int The minimum width allowed for a user avatar. (Vanilla logins only.) */
     public static $avatarMinimumWidth = 10;
+
     /** @var int The minimum height allowed for a user avatar. (Vanilla logins only.) */
     public static $avatarMinimumHeight = 10;
 
     /** @var int A regex any avatar path must match. (Vanilla logins only.) */
     public static $avatarMustMatchRegex = false;
+
     /** @var int A regex any avatar path must NOT match. (Vanilla logins only.) */
     public static $avatarMustNotMatchRegex = false;
 
     /** @var int An avatar to be used if a user has not specified one. */
     public static $avatarDefault = '';
 
+
     /** @var int A regex any user profile must match. (Vanilla logins only.) */
     public static $profileMustMatchRegex = false;
+
     /** @var int A regex any user profile must NOT match. (Vanilla logins only.) */
     public static $profileMustNotMatchRegex = false;
 
 
+
     /* Lockout */
+
     /** @var int The maximum number of failed login attempts allowed before a user is locked out. Use 0 to disable the lockout subsystem. */
     public static $lockoutCount = 5;
+
     /** @var int The time before an active user lockout expires. */
     public static $lockoutExpires = 15 * 60;
 
 
-    /*** FIM Features ***/
-    /* Posting Restrictions */
+
+    /* Flood */
+
     /** @var bool Whether global API-based flood detection is enabled. This relies on a memory table to be efficient, so it should generally be disabled if memory tables are not available. */
     public static $floodDetectionGlobal = true;
+
     /** @var int The maximum number of calls a user can make to api/acHelper per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_acHelper_perMinute = 60;
+
     /** @var int The maximum number of calls a user can make to api/editFile per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_editFile_perMinute = 5;
+
     /** @var int The maximum number of calls a user can make to api/editMessage per minute before triggering a flood lockout on that specific API. Note that message sends (which are also tracked by floodRoomLimitPerMinute and floodSiteLimitPerMinute) count against this as well. */
     public static $floodDetectionGlobal_editRoom_perMinute = 5;
+
     /** @var int The maximum number of calls a user can make to api/editUserOptions per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_editUserOptions_perMinute = 10;
+
     /** @var int The maximum number of calls a user can make to api/editUserStatus per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_editUserStatus_perMinute = 60;
+
     /** @var int The maximum number of calls a user can make to api/getActiveUsers per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getActiveUsers_perMinute = 20;
+
     /** @var int The maximum number of calls a user can make to api/getCensorLists per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getCensorLists_perMinute = 10;
+
     /** @var int The maximum number of calls a user can make to api/getFiles per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getFiles_perMinute = 10;
+
     /** @var int The maximum number of calls a user can make to api/getGroups per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getGroups_perMinute = 10;
+
     /** @var int The maximum number of calls a user can make to api/getKicks per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getKicks_perMinute = 10;
+
     /** @var int The maximum number of calls a user can make to api/getMessages per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getMessages_perMinute = 20;
+
     /** @var int The maximum number of calls a user can make to api/getRooms per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getRooms_perMinute = 30;
+
     /** @var int The maximum number of calls a user can make to api/getStats per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getStats_perMinute = 10;
+
     /** @var int The maximum number of calls a user can make to api/getUnreadMessages per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getUnreadMessages_perMinute = 10;
+
     /** @var int The maximum number of calls a user can make to api/getUsers per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_getUsers_perMinute = 30;
+
     /** @var int The maximum number of calls a user can make to api/markMessageRead per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_markMessageRead_perMinute = 10;
+
     /** @var int The maximum number of calls a user can make to api/moderate per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_moderate_perMinute = 15;
+
     /** @var int The maximum number of calls a user can make to api/sendMessage per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_sendMessage_perMinute = 120;
+
     /** @var int The maximum number of calls a user can make to api/sendUser per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_sendUser_perMinute = 1;
 
 
     /** @var bool Whether global API-based flood detection is enabled. This relies on a memory table to be efficient, so it should generally be disabled if memory tables are not available. */
     public static $floodDetectionRooms = true;
+
     /** @var int The maximum number of messages a user may send in any given room before trigger a flood lockout for sending additional messages in that room. */
     public static $floodRoomLimitPerMinute = 30;
+
     /** @var int The maximum number of messages a user may send site-wide before trigger a flood lockout for sending additional messages in ANY room. */
     public static $floodSiteLimitPerMinute = 60;
 
+
+
+    /* Default Permissions */
+
     /** @var bool Whether a user is allowed to edit their posts. (Unimplemented) */
     public static $usersCanEditOwnPosts = true;
+
     /** @var bool Whether a user can delete their own posts. If $usersCanEditOwnPosts is enabled, then this is automatically enabled as well for consistency. (Unimplemented) */
     public static $usersCanDeleteOwnPosts = true;
 
 
+
     /* Rooms */
+
     /** @var int Requires all room names to be at least this many characters. */
     public static $roomLengthMinimum = 5;
+
     /** @var int Requires all room names to not exceed this many characters in length. */
     public static $roomLengthMaximum = 20;
 
@@ -124,35 +164,45 @@ class Config {
 
     /** @var bool Whether _any_ user can create rooms, even those with the permission to do so. Setting this false, in effect; disables the entire feature. (Admins are excluded.) */
     public static $userRoomCreation = false;
+
     /** @var bool Whether _any_ user can create private rooms, even those with the permission to do so. Setting this false, in effect; disables the entire feature. */
     public static $userPrivateRoomCreation = true;
 
     /** @var int The maximum number of rooms a single user can create. TODO */
     public static $userRoomMaximum = 1000;
+
     /** @var int The maximum number of rooms a single user can create times the number of years the user has been registered. TODO */
     public static $userRoomMaximumPerYear = 50;
 
     /** @var bool Whether hidden rooms are enabled. Disable this if the functionality is deemed too confusing. */
     public static $hiddenRooms = true;
+
     /** @var bool Whether rooms should can be marked as "official." It may make sense to disable this if user room creation is disabled. */
     public static $officialRooms = true;
 
     /** @var int The room that new users will enter by default. */
     public static $defaultRoomId = 1;
 
+
     /** @var int The maximum number of favourited rooms a user is allowed to have. This can be increased if Redis is available. TODO */
     public static $userMaxFavRooms = 100;
+
     /** @var int The maximum number of watched rooms a user is allowed to have. This can be increased if Redis is available, though it shouldn't go too high lest unreadMessages becomes unwieldy/slow. TODO */
     public static $userMaxWatchRooms = 10;
+
     /** @var int The maximum number of friends a user is allowed to have. This can be increased if Redis is available. TODO */
     public static $userMaxFriends = 100;
+
     /** @var int The maximum number of ignored users a user is allowed to have. This can be increased if Redis is available. TODO */
     public static $userMaxIgnored = 100;
 
 
+
     /* Private & OTR Rooms */
+
     /** @var bool Whether users are allowed to send direct messages to other users. (TODO?) */
     public static $privateRoomsEnabled = true;
+
     /** @var bool Whether users are allowed to send off-the-record messages to other users. (TODO?) */
     public static $otrRoomsEnabled = true;
 
@@ -160,31 +210,44 @@ class Config {
     public static $privateRoomMaxUsers = 5;
 
 
+
     /* Kick Functionality */
+
     /** @var bool If true, the kick subsystem is enabled. */
     public static $kicksEnabled = true;
+
     /** @var bool If true, whenever a user is kicked a message will be sent by the kicking moderator informing the room of the action. */
     public static $kickSendMessage = true;
+
     /** @var int The minimum number of seconds a user can be kicked for. */
     public static $kickMinimumLength = 10;
+
     /** @var bool If true, whenever a user is unkicked a message will be sent by the unkicking moderator informing the room of the action. */
     public static $unkickSendMessage = true;
 
 
+
     /* Message Sending & Formatting */
+
     /** @var int The maximum length every message must be. This will additionally be limited by the database; right now, increasing it above 1000 will almost certainly cause problems with the event streams. */
     public static $messageMaxLength = 1000;
+
     /** @var int The minimum length every message must be. */
     public static $messageMinLength = 1;
 
+
     /** @var bool Whether to allow users to set a default background formatting color. */
     public static $defaultFormattingHighlight = true;
+
     /** @var bool Whether to allow users to set a default foreground formatting color. */
     public static $defaultFormattingColor = true;
+
     /** @var bool Whether to allow users to set default formatting using italics. */
     public static $defaultFormattingItalics = true;
+
     /** @var bool Whether to allow users to set default formatting using bolded text. */
     public static $defaultFormattingBold = true;
+
     /** @var bool Whether to allow users to set default formatting font. */
     public static $defaultFormattingFont = true;
 
@@ -218,7 +281,9 @@ class Config {
     );
 
 
+
     /* Message Retrieval */
+
     /** @var int The default number of messages that will be returned by api/getMessages.php. */
     public static $defaultMessageLimit = 50;
 
@@ -239,7 +304,9 @@ class Config {
     public static $serverSentTimeLimit = 120;
 
 
+
     /* Searching */
+
     /** @var string The transliteration code that will be used if Transliterator is installed. */
     public static $searchTransliteration = 'Any-Latin; Latin-ASCII; [\u0080-\u7fff] remove; Lower();';
 
@@ -253,12 +320,16 @@ class Config {
     public static $searchWordPunctuation = array(',','.',';',':','-','"','\'','=','?','\\','/','[',']','^','&','#','@','!','%','*','(',')','‘','’','¡','¿','¦');
 
 
+
     /* Active Users */
+
     /** @var int The default period of time after which a user is considered inactive. */
     public static $defaultOnlineThreshold = 15 * 60;
 
 
+
     /* File Uploads */
+
     /** @var bool Whether to allow file uploads site-wide. */
     public static $enableUploads = true;
 
@@ -487,7 +558,9 @@ class Config {
     public static $blockFrames = true;
 
 
+
     /* Parental Controls */
+
     /** @var bool Whether or not the parental controls are enabled. */
     public static $parentalEnabled = true;
 
@@ -513,13 +586,16 @@ class Config {
     public static $parentalAges = array(6, 10, 13, 16, 18);
 
 
+
     /* Censor */
+
     /** @var bool Whether the censor is enabled. Generally, there is no expected performance gain from disabling it, especially when APC or Memcached is available. */
     public static $censorEnabled = true;
 
 
 
     /*** Localisation ***/
+
     /** @var string The language that is default when a user has not specified one. 'en' is the only value supported by default. TODO */
     public static $defaultLanguage = 'en';
 
@@ -566,6 +642,7 @@ class Config {
 
 
     /*** Error Handling and Logging ***/
+
     /** @var string If specified, emails may automatically be sent to this address when errors occur. */
     public static $email = '';
 
@@ -593,6 +670,7 @@ class Config {
 
 
     /*** PHP Functions ***/
+
     /** @var int The maximum depth of JSON decoding as part of cURL requests. Should generally be at least around 6 unless extensions expect more, or detailed exception handling is enabled. */
     public static $jsonDecodeRecursionLimit = 6; // Places a limit on the maximum recursion depth for json_decode when handling user input. The software generally expects a depth of around 3 to be available; but greater depths may be provided for for plugins; exceptions; etc.
 
@@ -600,13 +678,16 @@ class Config {
     public static $curlUA = 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)';
 
 
+
     /*** Caching Methods ***/
+
     /** @var bool When true, database collection caching will be disabled. You should not enable this unless a an alternative collection cache (like Redis) is available, in which case it will perform _all_ collection caches (by default, it only performs collection caches when the database field runs out of space.) */
     public static $databaseCollectionMaxEntries = false;
 
 
 
     /*** MISC ***/
+
     /** @var bool Whether "dev mode" is enabled. */
     public static $dev = false;
 
@@ -617,6 +698,7 @@ class Config {
     public static $outputFlushPaddingKilobytes = 4;
 
     public static $recaptchaPublicKey = '';
+
     public static $recaptchaPrivateKey = '';
 }
 ?>

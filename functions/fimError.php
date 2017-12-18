@@ -18,8 +18,16 @@
  * An error class that is intended to communicate the error to a client user or client developer. In some cases, it may be used to communicate errors to the FreezeMessenger developer, but such communication usually uses normally exceptions.
  */
 class fimError extends Exception {
+    /** @var string The HTTP response string to use for 403 Forbidden responses. */
     const HTTP_403_FORBIDDEN = "HTTP/1.1 403 Forbidden";
+
+    /** @var string The HTTP response string to use for 405 Method Not Allowed responses. */
+    const HTTP_405_METHOD_NOT_ALLOWED = "HTTP/1.1 405 Method Not Allowed";
+
+    /** @var string The HTTP response string to use for 429 Too Many Requests responses. */
     const HTTP_429_TOO_MANY = "HTTP/1.1 429 Too Many Requests";
+
+    /** @var string The HTTP response string to use for 500 Internal Server Error responses. */
     const HTTP_500_INTERNAL = "HTTP/1.1 500 Internal Server Error";
 
     /**

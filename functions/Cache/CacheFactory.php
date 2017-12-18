@@ -162,7 +162,7 @@ class CacheFactory {
     /**
      * {@link CacheInterface::setRemove($index, $value)}
      */
-    public function setRemove($index, $value, $preferredMethod = 'redis') {
+    public static function setRemove($index, $value, $preferredMethod = 'redis') {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->setRemove($index, $value);
         else
@@ -173,7 +173,7 @@ class CacheFactory {
     /**
      * {@link CacheInterface::clear($index)}
      */
-    public function clear($index, $preferredMethod = false) {
+    public static function clear($index, $preferredMethod = false) {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->clear($index);
         else

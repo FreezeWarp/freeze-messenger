@@ -94,7 +94,7 @@ if (!is_writable('../')) $installFlags += INSTALL_ISSUE_WRITEORIGINDIR;
 if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
 
 ?><!DOCTYPE HTML>
-<!-- Original Source Code Copyright © 2011 Joseph T. Parsons. -->
+<!-- Original Source Code Copyright © 2017 Joseph T. Parsons. -->
 <!-- Note: Installation Backend @ Worker.php -->
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>

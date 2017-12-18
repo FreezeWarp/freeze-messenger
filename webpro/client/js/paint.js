@@ -625,7 +625,7 @@ function fim_buildUsernameTagPromise(tag, userId, userDeferred, includeAvatar, i
             includeAvatar
                 ? $('<img>').attr({
                     'alt': userName,
-                    'src': avatar ? avatar : 'client/images/blankperson.png'
+                    'src': avatar ? avatar : 'images/blankperson.png'
                 })
                 : ''
         ).append(
