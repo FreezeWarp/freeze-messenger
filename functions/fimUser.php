@@ -822,6 +822,8 @@ class fimUser extends \Fim\DynamicObject
 
             \Fim\Database::instance()->endTransaction();
 
+            $this->doCache = true;
+
             return $return;
         }
 
