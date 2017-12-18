@@ -13,7 +13,7 @@ class MagicGettersSetters {
      *
      * @throws Exception If a property doesn't exist.
      */
-    protected function set($property, $value) {
+    public function set($property, $value) {
         if (!property_exists($this, $property))
             throw new Exception('Invalid property to set in ' . get_called_class() . ': ' . $property);
 
@@ -33,7 +33,7 @@ class MagicGettersSetters {
      *
      * @throws Exception If a property doesn't exist.
      */
-    protected function get($property) {
+    public function get($property) {
         $getterName = 'get' . ucfirst($property);
 
         if (!$property)

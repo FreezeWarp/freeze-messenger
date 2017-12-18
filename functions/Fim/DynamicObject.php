@@ -43,7 +43,7 @@ abstract class DynamicObject extends MagicGettersSetters {
      * Adds properties to list of resolved properties.
      * @see magicGettersSetters::set()
      */
-    protected function set($property, $value) {
+    public function set($property, $value) {
         parent::set($property, $value);
 
         if (!in_array($property, $this->resolved))
