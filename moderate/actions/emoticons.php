@@ -98,6 +98,7 @@ else {
 
 
             case 'edit2':
+                // Get Request
                 $request = array_merge($request, fim_sanitizeGPC('p', [
                     'emoticonText' => [
                         'require' => true
@@ -107,7 +108,11 @@ else {
                     ],
                 ]));
 
+                // Log and Perform Request
                 if ($request['emoticonId']) {
+                    \Fim\Database::instance()->modLog('editEmoticon', $request['emoticonId']);
+                    \Fim\Database::instance()->fullLog('editEmoticon', fim_arrayFilterKeys($request, ['emoticonId', 'emoticonText', 'emoticonFile']));
+
                     \Fim\Database::instance()->update(
                         \Fim\Database::$sqlPrefix . 'emoticons',
                         fim_arrayFilterKeys($request, ['emoticonText', 'emoticonFile']),
@@ -115,27 +120,41 @@ else {
                     );
                 }
                 else {
+                    \Fim\Database::instance()->modLog('addEmoticon', $request['emoticonText']);
+                    \Fim\Database::instance()->fullLog('addEmoticon', fim_arrayFilterKeys($request, ['emoticonText', 'emoticonFile']));
+
                     \Fim\Database::instance()->insert(
                         \Fim\Database::$sqlPrefix . 'emoticons',
                         fim_arrayFilterKeys($request, ['emoticonText', 'emoticonFile'])
                     );
                 }
 
+                // Clear the Cache
                 \Fim\Cache::clearEmoticons();
 
+                // Respond
                 echo container('Emoticon Updated','The emote has been created/updated.<br /><br /><a class="btn btn-success" href="index.php?do=emoticons">Return to Viewing Emotes</a>');
             break;
 
 
 
             case 'delete':
+                // Log the Deletion
+                $emoticon = \Fim\Cache::getEmoticons()[$request['emoticonId']];
+
+                \Fim\Database::instance()->modLog('deleteEmoticon', $emoticon['emoticonText']);
+                \Fim\Database::instance()->fullLog('deleteEmoticon', $emoticon);
+
+                // Perform the Deletion
                 \Fim\Database::instance()->delete(
                     \Fim\Database::$sqlPrefix . 'emoticons',
                     fim_arrayFilterKeys($request, ['emoticonId'])
                 );
 
+                // Clear the Cache
                 \Fim\Cache::clearEmoticons();
 
+                // Respond
                 echo container('Emoticon Deleted','The emote has been deleted.<br /><br /><a class="btn btn-success" href="index.php?do=emoticons">Return to Viewing Emotes</a>');
             break;
         }
