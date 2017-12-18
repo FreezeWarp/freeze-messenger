@@ -301,7 +301,7 @@ class Config {
     public static $serverSentMaxRetries = 240;
 
     /** @var int This is how long the server-sent events script is allowed to run for. It relies on PHP's set_time_limit, and may as a result be inconsistent between Windows and Linux (in-fact, it's basically useless on Windows -- rely on serverSentMaxRetries instead); and will be ignored in safe mode (though how well the chat runs in safe mode I'm not sure). */
-    public static $serverSentTimeLimit = 120;
+    public static $serverSentTimeLimit = 150;
 
 
 
