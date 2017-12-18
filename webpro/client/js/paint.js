@@ -420,7 +420,7 @@ function fim_formatAsImage(imageUrl) {
         settings.disableImage ? $('<span>').text('[IMAGE]')
             : $('<img class="inlineImage" />').attr('src', imageUrl + (imageUrl.slice(0, window.serverSettings.installUrl.length) === window.serverSettings.installUrl ? "&" + $.param({
                 'thumbnailWidth' : 400,
-                'thumbnailHeight' : 400,
+                'thumbnailHeight' : 400
             }) : '')) // todo: only for files on install
     );
 }
@@ -602,12 +602,12 @@ function fim_buildUsernameTagPromise(tag, userId, userDeferred, includeAvatar, i
     if (includeAvatar == undefined)
         includeAvatar = true;
     if (includeUsername == undefined)
-        includeUsername = true;
+        includeUsername = true;//
 
     $.when(userDeferred).then(function(pairs) {
         var userName = pairs[userId].name,
             userNameFormat = pairs[userId].nameFormat,
-            avatar = pairs[userId].avatar ? pairs[userId].avatar : 'client/images/blankperson.png',
+            avatar = pairs[userId].avatar ? pairs[userId].avatar : 'images/blankperson.png',
             style = settings.disableFormatting ? '' : pairs[userId].messageFormatting;
 
         tag.attr({
@@ -832,12 +832,7 @@ var regexs = {
 window.isBlurred = false; // By default, we assume the window is active and not blurred.
 var favicon = $('#favicon').attr('href'),
     requestSettings = {
-        serverSentEvents : false, // We may set this to true if the server supports it.
-        //timeout : 2400, // We may increase this dramatically if the server supports longPolling.
-        //firstRequest : true,
-        //totalFails : 0,
-        //lastMessage : 0,
-        //lastEvent : 0
+        serverSentEvents : false // We may set this to true if the server supports it.
     },
     timers = {t1 : false},
     messageIndex = {};
@@ -1033,7 +1028,7 @@ $.when(
             //hover:            'bg-primary',          // Item hover
             disabled:         'bg-inverse',       // Item disabled
             visible:          'bg-primary',        // Item visible
-            notSelectable:    'not-selectable', // Item not selectable
+            notSelectable:    'not-selectable' // Item not selectable
         };
 
         var focusPreventionEvents = {
@@ -1051,7 +1046,7 @@ $.when(
             classNames : classNames,
             events : focusPreventionEvents,
             items : {
-                delete : {
+                'delete' : {
                     name : 'Delete',
                     callback: function() {
                         var roomId = $(this).closest('.messageText').attr('data-roomId'),
