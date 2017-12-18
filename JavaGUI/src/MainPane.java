@@ -124,7 +124,7 @@ public class MainPane {
             newUser.setName(user.get("name").asText());
 
             if (user.get("avatar").asText().length() < 1) {
-                newUser.setAvatar(GUIDisplay.api.getServerUrl() + "webpro/client/images/blankperson.png");
+                newUser.setAvatar(GUIDisplay.api.getServerUrl() + "webpro/images/blankperson.png");
             } else {
                 newUser.setAvatar(user.get("avatar").asText());
             }
