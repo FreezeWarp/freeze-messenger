@@ -851,7 +851,7 @@ class DatabaseInstance extends DatabaseSQL
                 'time' => $this->now(),
             ));
 
-            $this->deletePermissionsCache($roomId, $userId);
+            $this->deleteUserPermissionsCache($roomId, $userId);
         }
     }
 
@@ -871,7 +871,7 @@ class DatabaseInstance extends DatabaseSQL
                 'roomId' => (int) $roomId,
             ));
 
-            $this->deletePermissionsCache($roomId, $userId);
+            $this->deleteUserPermissionsCache($roomId, $userId);
         }
     }
 
@@ -1301,7 +1301,25 @@ class DatabaseInstance extends DatabaseSQL
 
 
 
-    public function getSessions($options = array(), $sort = array('expires' => 'desc'), $limit = 0, $pagination = 1)
+    /**
+     * Run a query to obtain current oauth sessions.
+     *
+     * @param array $options {
+     *      An array of options to filter by.
+     *
+     *      @param array  ['sessionIds']        An array of sessionIds to filter by.
+     *      @param array  ['userIds']           An array of userIds to filter by.
+     *      @param array  ['ips']               An array of IP addresses to filter by
+     *
+     *      @param bool   ['combineUserData']   If true, user information will be added to the result columns; otherwise, only session data will be used.
+     * }
+     * @param array $sort        Sort columns (see standard definition).
+     * @param int   $limit       The maximum number of returned rows (with 0 being unlimited).
+     * @param int   $page        The page of the resultset to return.
+     *
+     * @return DatabaseResult
+     */
+    public function getSessions($options = array(), $sort = array('expires' => 'desc'), $limit = 0, $pagination = 0)
     {
         $options = $this->argumentMerge(array(
             'sessionIds' => array(),
@@ -1325,7 +1343,7 @@ class DatabaseInstance extends DatabaseSQL
             $conditions['both']['id'] = $this->col('suserId');
         }
 
-        return $this->select($columns, $conditions, $sort);
+        return $this->select($columns, $conditions, $sort, $limit, $pagination);
     }
 
 
@@ -1422,14 +1440,14 @@ class DatabaseInstance extends DatabaseSQL
                     $returnBitfield = $permissionsBitfield;
 
                 // Kicked users may ONLY view.
-                if (Config::$kicksEnabled && $this->getKicks(array(
+                if (Config::$kicksEnabled && ($kicks = $this->getKicks(array(
                         'userIds' => array($user->id),
                         'roomIds' => array($room->id),
                         'includeUserData' => false,
                         'includeKickerData' => false,
                         'includeRoomData' => false,
                         'expires' => $this->now(0, 'gt')
-                    ))->getCount() > 0) {
+                    )))->getCount() > 0) {
                     $returnBitfield &= fimRoom::ROOM_PERMISSION_VIEW;
                 }
             }
@@ -1468,7 +1486,6 @@ class DatabaseInstance extends DatabaseSQL
      * @param array $roomIds
      * @param string $attribute enum("user", "group")
      * @param array $params
-     * @todo cache calls
      *
      * @return DatabaseResult
      */
@@ -1479,9 +1496,14 @@ class DatabaseInstance extends DatabaseSQL
             $this->sqlPrefix . "roomPermissions" => 'roomId, attribute, param, permissions',
         );
 
-        if (count($roomIds) > 0) $conditions['both']['roomId'] = $this->in((array) $roomIds);
-        if ($attribute) $conditions['both']['attribute'] = $this->str($attribute);
-        if (count($params) > 0) $conditions['both']['param'] = $this->in((array) $params);
+        if (count($roomIds) > 0)
+            $conditions['both']['roomId'] = $this->in((array) $roomIds);
+
+        if ($attribute)
+            $conditions['both']['attribute'] = $this->str($attribute);
+
+        if (count($params) > 0)
+            $conditions['both']['param'] = $this->in((array) $params);
 
         return $this->select($columns, $conditions);
     }
@@ -1530,6 +1552,14 @@ class DatabaseInstance extends DatabaseSQL
     }
 
 
+    /**
+     * This will replace a given room permission entry from the database.
+     *
+     * @param int $roomId The room ID corresponding with the room whose permission entry will be removed.
+     * @param string $attribute The attribute type of the permission entry, either 'user' or 'group'.
+     * @param int $param The userId or groupId (depending on $attribute) of the permission entry to delete.
+     * @param int $permissionMask The new permissions to set, as a bitfield generated using {@see fimUser::$permArray}.
+     */
     public function setPermission($roomId, $attribute, $param, $permissionsMask) {
         /* Start Transaction */
         $this->startTransaction();
@@ -1548,29 +1578,38 @@ class DatabaseInstance extends DatabaseSQL
         ));
 
         /* Delete Permissions Cache */
-        if ($attribute === 'user')
-            $this->deletePermissionsCache($roomId, $param);
-        elseif ($attribute === 'group')
-            $this->deleteGroupPermissionsCache($roomId, $param);
+        $this->deletePermissionsCache($roomId, $attribute, $param);
 
         /* End Transaction */
         $this->endTransaction();
     }
 
 
+    /**
+     * This will remove a given room permission entry from the database.
+     *
+     * @param int $roomId The room ID corresponding with the room whose permission entry will be removed.
+     * @param string $attribute The attribute type of the permission entry, either 'user' or 'group'.
+     * @param int $param The userId or groupId (depending on $attribute) of the permission entry to delete.
+     */
     public function clearPermission($roomId, $attribute, $param) {
+        /* Start Transaction */
         $this->startTransaction();
 
+        /* Modlog */
         $this->modLog('deletePermission', "$roomId,$attribute,$param");
 
+        /* Delete The Old Permission Setting */
         $this->delete($this->sqlPrefix . 'roomPermissions', array(
             'roomId' => $roomId,
             'attribute' => $attribute,
             'param' => $param,
         ));
 
+        /* Delete Permissions Cache */
         $this->deletePermissionsCache($roomId, $attribute, $param);
 
+        /* End Transaction */
         $this->endTransaction();
     }
 
@@ -1587,7 +1626,7 @@ class DatabaseInstance extends DatabaseSQL
         if (!Config::$roomPermissionsCacheEnabled)
             return -1;
 
-        elseif (($permissionsCache = \Cache\CacheFactory::get("permission_{$this->user->id}_{$this->room->id}", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) !== false)
+        elseif (($permissionsCache = \Cache\CacheFactory::get("permission_{$userId}_{$roomId}", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) !== false)
             return $permissionsCache;
 
         else {
@@ -1629,14 +1668,37 @@ class DatabaseInstance extends DatabaseSQL
         }
     }
 
+
+    /**
+     * This will delete a given room permission entry from the {@link http://josephtparsons.com/messenger/docs/database.htm#roomPermissionsCache roomPermissionsCache}  table.
+     * When a permission change occurs, this or {@see updatePermissionCache} should be called.
+     *
+     * @param int $roomId The room ID corresponding with the room whose permission entry will be removed.
+     * @param string $attribute The attribute type of the permission entry, either 'user' or 'group'.
+     * @param int $param The userId or groupId (depending on $attribute) of the permission entry to delete.
+     */
+    public function deletePermissionsCache($roomId, $attribute = false, $param = false) {
+        if ($attribute === 'user')
+            return $this->deleteUserPermissionsCache($roomId, $param);
+
+        elseif ($attribute === 'group')
+            return $this->deleteGroupPermissionsCache($roomId, $param);
+
+        elseif ($attribute === false)
+            return; // TODO: delete all entries in the room
+
+        else
+            throw new Exception('Unrecognised attribute.');
+    }
+
+
     /**
      * Deletes an entry in the room permissions cache, both from the cache server and from the {@link http://josephtparsons.com/messenger/docs/database.htm#roomPermissionsCache roomPermissionsCache} table.
-     * When a permission change occurs, this or {@see updatePermissionCache} should be called.
      *
      * @param int $roomId The room ID a permission change has occurred in.
      * @param int $userId The user ID for whom a permission has changed.
      */
-    public function deletePermissionsCache($roomId, $userId) {
+    public function deleteUserPermissionsCache($roomId, $userId) {
         if (Config::$roomPermissionsCacheEnabled) {
             \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
 
@@ -1656,20 +1718,20 @@ class DatabaseInstance extends DatabaseSQL
      * @param int $param The new permission.
      */
     public function deleteGroupPermissionsCache($roomId, $groupId) {
-        /**
-         * TODO: this is currently stubbed out. That's fine, probably! Since the cache naturally expires every five or so minutes, this just means the invalid cache entries will persist for a little while. (The main concern is that the memory table writes this causes could be problematic, and since social groups are barely used, didn't really want to worry about potential instability resulting from this.)
-         */
-        /*
-        $users = $this->getSocialGroupMembers(array(
-            'groupIds' => array($groupId),
-            'type' => array('member', 'moderator')
-        ))->getColumnValues('userId');
+        if (Config::$roomPermissionsCacheEnabled) {
+            $userIds = $this->getSocialGroupMembers($groupId);
 
-        $this->delete($this->prefix . 'roomPermissionsCache', array(
-            'roomId' => $roomId,
-            'userId' => $this->in($users)
-        )); */
+            foreach ($userIds AS $userId) {
+                \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
+            }
+
+            $this->delete($this->sqlPrefix . 'roomPermissionsCache', [
+                'roomId' => $roomId,
+                'userId' => $this->in($userIds)
+            ]);
+        }
     }
+
 
 
     /****** Insert/Update Functions *******/
@@ -1843,7 +1905,22 @@ class DatabaseInstance extends DatabaseSQL
         ], [
             'userId' => $userId,
             'type' => $this->in(['member', 'moderator'])
-        ])->getColumns('roomId');
+        ])->getColumns('groupId');
+    }
+
+    /**
+     * Gets an array list of all user IDs belonging to a social gropu.
+     *
+     * @param int $groupId The group to filter by.
+     * @return int[]
+     */
+    public function getSocialGroupMembers($groupId) {
+        return $this->select([
+            $this->sqlPrefix . 'socialGroupMembers' => 'groupId, userId, type'
+        ], [
+            'groupId' => $groupId,
+            'type' => $this->in(['member', 'moderator'])
+        ])->getColumns('userId');
     }
 
 
