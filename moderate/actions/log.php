@@ -82,7 +82,7 @@ else {
 
             echo container('Mod Log',
                 ($request['page'] > 0 ? "<div style=\"float: left;\"><a href=\"./index.php?do=log&" . http_build_query(array_merge($request, ['page' => $request['page'] - 1])) . "\">Previous Page</a></div>" : "") .
-                ($logsResult->paginated ? "<div style=\"float: right;\"><a href=\"./index.php?do=log&" . http_build_query(array_merge($request, ['page' => $request['page'] + 1])) . "\">Next Page</a></div>" : "") . '<table class="table table-sm table-stripped"> 
+                ($logsResult->paginated ? "<div style=\"float: right;\"><a href=\"./index.php?do=log&" . http_build_query(array_merge($request, ['page' => $request['page'] + 1])) . "\">Next Page</a></div>" : "") . '<table class="table table-sm table-striped"> 
       <thead class="thead-light"> 
         <tr> 
           <th>User ID (Username)</th> 
