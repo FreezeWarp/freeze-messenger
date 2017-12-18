@@ -4,6 +4,8 @@ Copyright © 2017 Joseph T. Parsons <josephtparsons@gmail.com>
 
 Licensed under the GPLv3 (see LICENSE)
 
+![FreezeMessenger, Development Screenshot](https://raw.githubusercontent.com/FreezeWarp/freeze-messenger/master/screenshot1.png "FreezeMessenger, Development Screenshot")
+
 Headline Functionality
 ----------------------
   * Event streams provide functionality for getting new messages, being informed of new messages in watched rooms, tracking which users are currently typing a message (and when users go offline), and more. Plus, most of this functionality works if event streams are disabled.
@@ -13,7 +15,7 @@ Headline Functionality
   * Files are easily uploaded, and thumbnails are generated for inline message display. In the browser frontend, images can even be pasted from the clipboard. Importantly, the administrator has full control over which files can be uploaded and how much space any user can use.
   * Integration with PHPBB and vBulletin is supported, as is single-sign on with Google, Twitter, Facebook, Steam, and Reddit.
   * In addition to fallback disk caching, APC, Memcached, and Redis can all be used for blazing fast cache performance, used to optimise the performance for checking usage rights, flood detection, and more.
-Compatible with MySQL, PostgreSQL, and SQL Server databases. Supports fulltext message searching with all three.
+  * Compatible with MySQL, PostgreSQL, and SQL Server databases. Supports fulltext message searching with all three.
 
 Requirements
 ---------------------
