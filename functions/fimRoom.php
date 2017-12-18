@@ -219,12 +219,7 @@ class fimRoom extends DynamicObject {
     /**
      * @var array An array of censor words applied to this room, to aid in caching.
      */
-    protected $censorWordsArray;
-
-    /**
-     * @var mixed The room data the room was initialised with.
-     */
-    protected $roomData;
+    protected $censorWordsArray = null;
 
 
     /**
@@ -274,8 +269,6 @@ class fimRoom extends DynamicObject {
 
         else
             throw new Exception('Invalid room data specified -- must either be an associative array corresponding to a table row, a room ID, or false (to create a room, etc.) Passed: ' . print_r($roomData, true));
-
-        $this->roomData = $roomData;
     }
 
 
@@ -571,6 +564,7 @@ class fimRoom extends DynamicObject {
      */
     public function censorScan($text, $dontAsk = false, &$matches) {
         foreach ($this->getCensorWords() AS $word) {
+
             if ($dontAsk && $word['severity'] === 'confirm') continue;
 
             if (stripos($text, $word['word']) !== FALSE) {

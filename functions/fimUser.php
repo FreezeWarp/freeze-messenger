@@ -333,12 +333,6 @@ class fimUser extends \Fim\DynamicObject
     protected $fileSize;
 
     /**
-     * @var array The source userdata.
-     * @todo remove?
-     */
-    protected $userData;
-
-    /**
      * @var array The list of fields that have been resolved on this user object.
      */
     protected $resolved = array();
@@ -376,8 +370,6 @@ class fimUser extends \Fim\DynamicObject
 
         else
             throw new Exception('Invalid user data specified -- must either be an associative array corresponding to a table row, a user ID, or false (to create a user, etc.)');
-
-        $this->userData = $userData;
     }
 
 
