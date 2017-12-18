@@ -44,7 +44,7 @@ else {
                 if ($user2->hasPriv('modFiles'))   $adminPrivs[] = 'Global Files Control';
                 if ($user2->hasPriv('modCensor'))  $adminPrivs[] = 'Censor Control';
 
-                $rows .= "<tr><td>{$user2->id}</td><td>{$user2->name}</td><td>" . implode(', ', $adminPrivs) . "</td><td><a class='btn btn-sm btn-secondary' href='./index.php?do=admin&do2=edit&userId={$user2->id}'><i class='fas fa-edit'></i> Edit</a></td></tr>";
+                $rows .= "<tr><td>{$user2->id}</td><td>{$user2->name}</td><td>" . implode(', ', $adminPrivs) . "</td><td><a class='btn btn-sm btn-secondary' href='./index.php?do=users&do2=edit&userId={$user2->id}'><i class='fas fa-edit'></i> Edit</a></td></tr>";
             }
 
             echo container('User Editor','<table class="table table-striped">
@@ -93,7 +93,7 @@ else {
                     }
 
                     echo container("Edit User '{$adminUser->name}'", '
-                    <form action="./index.php?do=admin&do2=edit2&userId=' . $request['userId'] . '" method="post">
+                    <form action="./index.php?do=users&do2=edit2&userId=' . $request['userId'] . '" method="post">
                         <h4>Admin Permissions</h4>' . $permissionsBox . '
                         <br />
                         

@@ -177,7 +177,7 @@ require('../global.php');
             <?php if ($user->hasPriv('modPrivs')): ?>
                 <h3 class="card-header">Advanced</h3>
                 <div class="list-group list-group-flush">
-                    <a class="list-group-item list-group-item-action" href="index.php?do=admin">User Editor</a>
+                    <a class="list-group-item list-group-item-action" href="index.php?do=users">User Editor</a>
                     <a class="list-group-item list-group-item-action" href="index.php?do=sessions">User Sessions</a>
                     <a class="list-group-item list-group-item-action" href="index.php?do=config">Configuration Editor</a>
                     <a class="list-group-item list-group-item-action" href="index.php?do=tools">Tools</a>
@@ -215,7 +215,7 @@ require('../global.php');
                 case 'emoticons': require('./actions/emoticons.php'); break;
                 case 'censor': require('./actions/censor.php'); break;
 
-                case 'admin': require('./actions/admin.php'); break;
+                case 'users': require('./actions/users.php'); break;
                 case 'log': require('./actions/log.php'); break;
                 case 'sessions': require('./actions/sessions.php'); break;
                 case 'config': require('./actions/config.php'); break;
