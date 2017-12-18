@@ -51,7 +51,6 @@ require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
 
 require_once('../functions/fimUser.php');
 require_once('../functions/fimRoom.php');
-require_once('../functions/fimCache.php');
 require_once('../functions/fimDatabase.php');
 
 echo "Requiring Test Suites...<br />";

@@ -9,13 +9,11 @@ class UserFactory {
     static $instances = [];
 
     public static function getFromId(int $userId) {
-        global $generalCache;
-
         if (isset(UserFactory::$instances[$userId]))
             return UserFactory::$instances[$userId];
 
-        elseif ($generalCache->exists('fim_fimUser_' . $userId)
-            && ($user = $generalCache->get('fim_fimUser_' . $userId)) != false)
+        elseif (\Fim\Cache::exists('fim_fimUser_' . $userId)
+            && ($user = \Fim\Cache::get('fim_fimUser_' . $userId)) != false)
             return UserFactory::$instances[$userId] = $user;
 
         else
@@ -23,8 +21,6 @@ class UserFactory {
     }
 
     public static function getFromData(array $userData) : fimUser {
-        global $generalCache;
-
         if (!isset($userData['id']))
             throw new Exception('Userdata must contain id');
 
@@ -33,8 +29,8 @@ class UserFactory {
             return UserFactory::$instances[$userData['id']];
         }
 
-        elseif ($generalCache->exists('fim_fimUser_' . $userData['id'])
-            && ($user = $generalCache->get('fim_fimUser_' . $userData['id'])) != false) {
+        elseif (\Fim\Cache::exists('fim_fimUser_' . $userData['id'])
+            && ($user = \Fim\Cache::get('fim_fimUser_' . $userData['id'])) != false) {
             return UserFactory::$instances[$userData['id']] = $user;
         }
 
@@ -44,17 +40,15 @@ class UserFactory {
     }
 
     public static function cacheInstances() {
-        global $generalCache;
-
         foreach (UserFactory::$instances AS $id => $instance) {
-            if (!$generalCache->exists('fim_fimUser_' . $id)) {
-                $generalCache->add('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
+            if (!\Fim\Cache::exists('fim_fimUser_' . $id)) {
+                \Fim\Cache::add('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
             }
             elseif ($instance->doCache) {
                 $instance->resolveAll();
                 $instance->doCache = false;
 
-                $generalCache->set('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
+                \Fim\Cache::set('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
             }
         }
     }

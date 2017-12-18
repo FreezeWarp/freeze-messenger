@@ -14,15 +14,21 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-require('Cache/CacheFactory.php');
-use Cache\CacheFactory;
+namespace Fim;
 
 /**
  * Class designed to store and recall cache variables.
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-class fimCache extends CacheFactory {
+class Cache extends \Cache\CacheFactory {
+    /** @var string The cache key used for emoticons. */
+    const EMOTICON_KEY = 'fim_emoticons';
+
+    /** @var string The cache key used for configuration data. */
+    const CONFIG_KEY = 'fim_config';
+
+
     /**
      * Return data in $index if it exists, otherwise invoke $callbackToCreate to generate the data, and then store and return it.
      *
@@ -31,14 +37,14 @@ class fimCache extends CacheFactory {
      *
      * @return mixed
      */
-    private function getGeneric($index, $callbackToCreate) {
-        if ($this->exists($index)) {
-            return $this->get($index);
+    private static function getGeneric($index, $callbackToCreate) {
+        if (self::exists($index)) {
+            return self::get($index);
         }
         else {
             $data = $callbackToCreate();
 
-            $this->set($index, $data);
+            self::set($index, $data);
             return $data;
         }
     }
@@ -47,11 +53,11 @@ class fimCache extends CacheFactory {
     /**
      * Retrieve administer-set changes to \Fim\Config's configuration data, and use it to modify the defaults of \Fim\Config.
      */
-    public function loadConfig() {
+    public static function loadConfig() {
         global $disableConfig;
 
         if (!$disableConfig) {
-            $configData = $this->getGeneric('fim_config', function() {
+            $configData = self::getGeneric(self::CONFIG_KEY, function() {
                 return \Fim\DatabaseSlave::instance()->getConfigurations()->getAsArray(true);
             });
 
@@ -63,18 +69,36 @@ class fimCache extends CacheFactory {
         }
     }
 
+    /**
+     * Clear the cache entry for emoticons.
+     *
+     * @return True on success, false on failure.
+     */
+    public static function clearConfig() {
+        return self::clear(self::CONFIG_KEY);
+    }
+
 
     /**
      * Retrieve the emoticons registered for the messenger.
      *
      * @return array, where entries are arrays with the 'emoticonText' and 'emoticonFile' indexes.
      */
-    public function getEmoticons() {
-        return $this->getGeneric('fim_emoticons', function() {
+    public static function getEmoticons() {
+        return self::getGeneric(self::EMOTICON_KEY, function() {
             return \Fim\DatabaseSlave::instance()->select(array(
-                \Fim\DatabaseSlave::$sqlPrefix . "emoticons" => 'emoticonText, emoticonFile'
-            ))->getAsArray(true);
+                \Fim\DatabaseSlave::$sqlPrefix . "emoticons" => 'emoticonId, emoticonText, emoticonFile'
+            ))->getAsArray('emoticonId');
         });
+    }
+
+    /**
+     * Clear the cache entry for emoticons.
+     *
+     * @return True on success, false on failure.
+     */
+    public static function clearEmoticons() {
+        return self::clear(self::EMOTICON_KEY);
     }
 }
 ?>

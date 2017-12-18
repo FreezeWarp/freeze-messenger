@@ -12,13 +12,11 @@ class RoomFactory {
     static $instances = [];
 
     public static function getFromId($roomId) {
-        global $generalCache;
-
         if (isset(RoomFactory::$instances[$roomId]))
             return RoomFactory::$instances[$roomId];
 
-        elseif ($generalCache->exists('fim_fimRoom_' . $roomId)
-            && ($room = $generalCache->get('fim_fimRoom_' . $roomId)) != false)
+        elseif (\Fim\Cache::exists('fim_fimRoom_' . $roomId)
+            && ($room = \Fim\Cache::get('fim_fimRoom_' . $roomId)) != false)
             return RoomFactory::$instances[$roomId] = $room;
 
         else
@@ -26,8 +24,6 @@ class RoomFactory {
     }
 
     public static function getFromData(array $roomData) : fimRoom {
-        global $generalCache;
-
         if (!isset($roomData['id']))
             throw new Exception('Roomdata must contain id');
 
@@ -36,8 +32,8 @@ class RoomFactory {
             return RoomFactory::$instances[$roomData['id']];
         }
 
-        elseif ($generalCache->exists('fim_fimRoom_' . $roomData['id'])
-            && ($room = $generalCache->get('fim_fimRoom_' . $roomData['id'])) != false) {
+        elseif (\Fim\Cache::exists('fim_fimRoom_' . $roomData['id'])
+            && ($room = \Fim\Cache::get('fim_fimRoom_' . $roomData['id'])) != false) {
             $room->populateFromArray($roomData);
             return RoomFactory::$instances[$roomData['id']] = $room;
         }
@@ -48,16 +44,14 @@ class RoomFactory {
     }
 
     public static function cacheInstances() {
-        global $generalCache;
-
         // todo: docache
 
         foreach (RoomFactory::$instances AS $id => $instance) {
-            if (!$generalCache->exists('fim_fimRoom_' . $id)) {
+            if (!\Fim\Cache::exists('fim_fimRoom_' . $id)) {
                 $instance->resolveAll();
                 $instance->getCensorWords();
 
-                $generalCache->add('fim_fimRoom_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
+                \Fim\Cache::add('fim_fimRoom_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
             }
         }
     }

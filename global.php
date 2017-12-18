@@ -37,7 +37,6 @@ require_once(__DIR__ . '/vendor/autoload.php'); // Various Functions
 require_once(__DIR__ . '/config.php'); // Configuration Variables
 require_once(__DIR__ . '/functions/fimUser.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimRoom.php'); // FIM-specific Extensions
-require_once(__DIR__ . '/functions/fimCache.php'); // FIM-specific Extension to APC Wrapper
 require_once(__DIR__ . '/functions/fimError.php'); // FIM Custom Error Class
 require_once(__DIR__ . '/functions/fim_general.php'); // Various Functions
 
@@ -140,14 +139,12 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 /* Only small tables are cached this way. */
 
 // Initiate cache object.
-/* TODO: $generalCache is transitional; fimCache should be singleton */
-$generalCache = new fimCache(\Fim\DatabaseSlave::instance());
 foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
     \Cache\CacheFactory::addMethod($cacheConnectName, $cacheConnectParams);
 }
 
 // Get Configuration Data
-$generalCache->loadConfig();
+\Fim\Cache::loadConfig();
 
 
 // Log queries, if enabled.

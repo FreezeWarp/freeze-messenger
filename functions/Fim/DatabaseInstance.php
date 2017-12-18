@@ -2479,22 +2479,22 @@ class DatabaseInstance extends DatabaseSQL
         /*if (count($listEntries) > Config::$databaseCollectionMaxEntries) {
             $cacheIndex = 'fim_' . $cacheColumn . '_' . $roomId;
 
-            if (!$generalCache->exists($cacheIndex, 'redis')) {
-                $generalCache->setAdd($cacheIndex, $listEntries);
+            if (!\Fim\Cache::exists($cacheIndex, 'redis')) {
+                \Fim\Cache::setAdd($cacheIndex, $listEntries);
             }
 
             foreach ($dataChanges AS $operation => $values) {
                 switch ($operation) {
                     case 'delete':
                         if (is_string($values) && $values === '*')
-                            $generalCache->clear($cacheIndex, 'redis');
+                            \Fim\Cache::clear($cacheIndex, 'redis');
 
                         else
-                            $generalCache->setRemove($cacheIndex, $listEntries);
+                            \Fim\Cache::setRemove($cacheIndex, $listEntries);
                     break;
 
                     case 'insert':
-                        $generalCache->setAdd($cacheIndex, $values);
+                        \Fim\Cache::setAdd($cacheIndex, $values);
                     break;
                 }
             }

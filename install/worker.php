@@ -24,7 +24,6 @@ require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
 require(__DIR__ . '/../functions/Xml2Array.php'); // For reading the db*.xml files
 require(__DIR__ . '/../functions/fimUser.php'); // Creating Users
 require(__DIR__ . '/../functions/fimRoom.php');
-require(__DIR__ . '/../functions/fimCache.php'); // Caching
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!@ini_get('safe_mode')) {
