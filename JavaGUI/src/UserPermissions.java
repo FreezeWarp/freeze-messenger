@@ -10,7 +10,6 @@ public class UserPermissions {
     public boolean editOwnPosts;
     public boolean modCensor;
     public boolean modFiles;
-    public boolean modPrivate;
     public boolean modPrivs;
     public boolean modRooms;
     public boolean modUsers;

@@ -90,12 +90,6 @@ class fimUser extends \Fim\DynamicObject
     const ADMIN_ROOMS = 0x40000;
 
     /**
-     * The user may view private rooms.
-     * @todo: remove?
-     */
-    const ADMIN_VIEW_PRIVATE = 0x80000;
-
-    /**
      * The user may administer users.
      */
     const ADMIN_USERS = 0x100000;
@@ -109,6 +103,25 @@ class fimUser extends \Fim\DynamicObject
      * The user may administer the censor.
      */
     const ADMIN_CENSOR = 0x1000000;
+
+    /**
+     * @var array A map of string permissions to their bits in a bitfield.
+     */
+    public static $permArray = [
+        'view' => fimUser::USER_PRIV_VIEW,
+        'post' => fimUser::USER_PRIV_POST,
+        'changeTopic' => fimUser::USER_PRIV_TOPIC,
+        'createRooms' => fimUser::USER_PRIV_CREATE_ROOMS,
+        'privateFriends' => fimUser::USER_PRIV_PRIVATE_FRIENDS,
+        'privateAll' => fimUser::USER_PRIV_PRIVATE_ALL,
+        'roomsOnline' => fimUser::USER_PRIV_ACTIVE_USERS,
+        'modPrivs' => fimUser::ADMIN_GRANT,
+        'protected' => fimUser::ADMIN_PROTECTED,
+        'modRooms' => fimUser::ADMIN_ROOMS,
+        'modUsers' => fimUser::ADMIN_USERS,
+        'modFiles' => fimUser::ADMIN_FILES,
+        'modCensor' => fimUser::ADMIN_CENSOR,
+    ];
 
 
     /**
@@ -614,7 +627,7 @@ class fimUser extends \Fim\DynamicObject
     /**
      * Checks to see if the user has permission to do the specified thing.
      *
-     * @param $priv The priviledge to check, one of ['protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline']
+     * @param $priv string The priviledge to check, one of ['protected', 'modPrivs', 'modRooms', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline']
      * @return bool True if user has permission, false if not.
      * @throws Exception for unrecognised priviledges
      */
@@ -623,31 +636,12 @@ class fimUser extends \Fim\DynamicObject
         $privs = $this->__get('privs');
 
         switch ($priv) {
-            /* Admin Privs */
-            case 'protected' :  return (bool)($privs & fimUser::ADMIN_PROTECTED);     break; // This the "untouchable" flag; break; but that's more or less all it means.
-            case 'modPrivs' :   return (bool)($privs & fimUser::ADMIN_GRANT);         break; // This effectively allows a user to give himself everything else below. It is also used for admin functions that can not be delegated effectively -- such as modifying the site configuration.
-            case 'modRooms' :   return (bool)($privs & fimUser::ADMIN_ROOMS);         break; // Alter rooms -- kicking users; break; delete posts; break; and change hidden/official status
-            case 'modPrivate' : return (bool)($privs & fimUser::ADMIN_VIEW_PRIVATE);  break; // View private communications.
-            case 'modUsers' :   return (bool)($privs & fimUser::ADMIN_USERS);         break; // Site-wide bans; break; mostly.
-            case 'modFiles' :   return (bool)($privs & fimUser::ADMIN_FILES);         break; // File Uploads
-            case 'modCensor' :  return (bool)($privs & fimUser::ADMIN_CENSOR);        break; // Censor
-
-            /* User Privs */
-            case 'view' :                 return (bool)($privs & fimUser::USER_PRIV_VIEW);            break; // Is not banned
-            case 'post' :                 return (bool)($privs & fimUser::USER_PRIV_POST);            break;
-            case 'changeTopic':           return (bool)($privs & fimUser::USER_PRIV_TOPIC);           break;
-            case 'createRooms':           return (bool)($privs & fimUser::USER_PRIV_CREATE_ROOMS);    break; // May create rooms
-            case 'privateRoomsFriends':   return (bool)($privs & fimUser::USER_PRIV_PRIVATE_FRIENDS); break; // May create private rooms (friends only)
-            case 'privateRoomsAll':       return (bool)($privs & fimUser::USER_PRIV_PRIVATE_ALL);     break; // May create private rooms (anybody)
-            case 'roomsOnline':           return (bool)($privs & fimUser::USER_PRIV_ACTIVE_USERS);    break; // May see rooms online.
-
             /* Config Aliases
              * (These may become full priviledges in the future.) */
             case 'editOwnPosts':   return \Fim\Config::$usersCanEditOwnPosts && !$this->isAnonymousUser();   break;
             case 'deleteOwnPosts': return \Fim\Config::$usersCanDeleteOwnPosts && !$this->isAnonymousUser(); break;
 
-            /* Login Features
-             */
+            /* Login Features */
             case 'selfChangeProfile':
             case 'selfChangeAvatar':
             case 'selfChangeParentalAge':
@@ -665,18 +659,25 @@ class fimUser extends \Fim\DynamicObject
                 }
                 break;
 
-            default: throw new Exception("Invalid priv; $priv"); break;
+            /* Normal Priviledges */
+            default:
+                if (isset(self::$permArray[$priv]))
+                    return ($privs & self::$permArray[$priv]) == self::$permArray[$priv];
+                else
+                    throw new Exception("Invalid priv; $priv");
+            break;
         }
     }
 
 
     public function getPermissionsArray() {
-        $privs = array();
+        $returnArray = array();
 
-        foreach (array('protected', 'modPrivs', 'modRooms', 'modPrivate', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline', 'editOwnPosts', 'deleteOwnPosts', 'selfChangeProfile', 'selfChangeAvatar', 'selfChangeParentalAge', 'selfChangeParentalFlags', 'selfChangeFriends', 'selfChangeIgnore') AS $priv)
-            $privs[$priv] = $this->hasPriv($priv);
+        foreach(array_keys(fimUser::$permArray) AS $perm) {
+            $returnArray[$perm] = $this->hasPriv($perm);
+        }
 
-        return $privs;
+        return $returnArray;
     }
 
     /**

@@ -31,9 +31,7 @@ else {
     if ($user->hasPriv('modPrivs')) {
         switch ($request['do2']) {
             case 'view':
-            $users = \Fim\Database::instance()->getUsers(array(
-                 'hasPrivs' => array(fimUser::ADMIN_CENSOR, fimUser::ADMIN_FILES, fimUser::ADMIN_GRANT, fimUser::ADMIN_PROTECTED, fimUser::ADMIN_ROOMS, fimUser::ADMIN_USERS, fimUser::ADMIN_VIEW_PRIVATE),
-            ))->getAsUsers();
+            $users = \Fim\Database::instance()->getUsers()->getAsUsers();
 
             $rows = '';
             foreach ($users AS $user2) {
@@ -46,10 +44,10 @@ else {
                 if ($user2->hasPriv('modFiles'))   $adminPrivs[] = 'Global Files Control';
                 if ($user2->hasPriv('modCensor'))  $adminPrivs[] = 'Censor Control';
 
-                $rows .= "<tr><td>{$user2->id}</td><td>{$user2->name}</td><td>" . implode(', ', $adminPrivs) . "</td><td><a href=\"./index.php?do=admin&do2=edit&userId={$user2->id}\"><img src=\"./images/document-edit.png\" /></a></td></tr>";
+                $rows .= "<tr><td>{$user2->id}</td><td>{$user2->name}</td><td>" . implode(', ', $adminPrivs) . "</td><td><a class='btn btn-sm btn-secondary' href='./index.php?do=admin&do2=edit&userId={$user2->id}'><i class='fas fa-edit'></i> Edit</a></td></tr>";
             }
 
-            echo container('Administrators<a href="./index.php?do=admin&do2=edit"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="table table-striped">
+            echo container('User Editor','<table class="table table-striped">
   <thead class="thead-light">
     <tr>
       <th>User ID</th>
@@ -71,30 +69,51 @@ else {
                     echo container('No User', 'The user specified is invalid.');
                 }
                 else {
+                    $permissions = [
+                        'view' => 'View Rooms',
+                        'post' => 'Post in Rooms',
+                        'changeTopic' => 'Change Room Topics',
+                        'createRooms' => 'Create Rooms',
+                        'privateFriends' => 'Message Friended Users',
+                        'privateAll' => 'Message All Users',
+                        'roomsOnline' => 'View Online Users',
+                        'modPrivs' => 'Change User Priviledges (Super Admin)',
+                        'protected' => 'Protected Users (Priviledges Can\'t be Changed)',
+                        'modRooms' => 'Administrate Rooms',
+                        'modUsers' => 'Administrate Users',
+                        'modFiles' => 'Administrate Files',
+                        'modCensor' => 'Administrate Censor',
+                    ];
+
+                    $permissionsBox = '';
+                    foreach($permissions AS $permission => $permissionText) {
+                        $permissionsBox .= "<label class='btn btn-secondary'>
+                            <input type='checkbox' name='privs[]' " . ($adminUser->hasPriv($permission) ? 'checked="checked"' : '') . "value='$permission' /> $permissionText
+                        </label>";
+                    }
+
                     echo container("Edit User '{$adminUser->name}'", '
-                    <form action="./index.php?do=admin&do2=edit&userId=' . $request['userId'] . '" method="post">
-                        <label class="btn btn-secondary">
-                            <input type="checkbox" name="ADMIN_GRANT" ' . ($adminUser->hasPriv('modPrivs') ? 'checked="checked"' : '') . 'value="true" /> Grant Permissions
-                        </label>
-                        <label class="btn btn-secondary">
-                            <input type="checkbox" name="ADMIN_PROTECTED" ' . ($adminUser->hasPriv('protected') ? 'checked="checked"' : '') . 'value="true" /> Protected from Changes
-                        </label>
-                        <label class="btn btn-secondary">
-                            <input type="checkbox" name="ADMIN_ROOMS" ' . ($adminUser->hasPriv('modRooms') ? 'checked="checked"' : '') . 'value="true" /> Administer Rooms
-                        </label>
-                        <label class="btn btn-secondary">
-                            <input type="checkbox" name="ADMIN_USERS" ' . ($adminUser->hasPriv('modUsers') ? 'checked="checked"' : '') . 'value="true" /> Administer Users
-                        </label>
-                        <label class="btn btn-secondary">
-                            <input type="checkbox" name="ADMIN_FILES" ' . ($adminUser->hasPriv('modFiles') ? 'checked="checked"' : '') . 'value="true" /> Administer Files
-                        </label>
-                        <label class="btn btn-secondary">
-                            <input type="checkbox" name="ADMIN_CENSOR" ' . ($adminUser->hasPriv('modCensor') ? 'checked="checked"' : '') . 'value="true" /> Alter Censor
-                        </label><br />
+                    <form action="./index.php?do=admin&do2=edit2&userId=' . $request['userId'] . '" method="post">
+                        <h4>Admin Permissions</h4>' . $permissionsBox . '
+                        <br />
+                        
                         <input type="submit" class="btn btn-primary" value="Submit" />
                     </form>');
                 }
 
+            break;
+
+            case 'edit2':
+                $request = array_merge($request, fim_sanitizeGPC('p', [
+                    'privs' => [
+                        'cast'      => 'list',
+                        'transform' => 'bitfield',
+                        'bitTable'  =>  fimUser::$permArray
+                    ]
+                ]));
+                $editUser = \Fim\UserFactory::getFromId($request['userId']);
+                $editUser->set('privs', $request['privs']);
+                $editUser->setDatabase(['privs' => $editUser->privs]);
             break;
         }
     }

@@ -36,7 +36,7 @@ else {
                 $rows .= "<tr><td>{$session['id']}-{$session['anonId']} ({$session['name']})</td><td>" . date('r', $session['expires']) . "</td><td>{$session['sessionIp']}</td><td>{$session['clientId']}</td><td>{$session['userAgent']}</td></tr>";
             }
 
-            echo container('Sessions','<table class="table table-stripped">
+            echo container('Sessions','<table class="table table-striped">
   <thead class="thead-light">
     <tr>
       <th>UID-AID (Username)</th>

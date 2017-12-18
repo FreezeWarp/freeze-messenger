@@ -40,10 +40,6 @@ else {
             'default' => 'replace',
         ),
 
-        'options' => array(
-            'cast' => 'int',
-        ),
-
         'listName' => array(
             'cast' => 'string',
         ),
@@ -51,14 +47,6 @@ else {
         'listType' => array(
             'valid' => array('black', 'white'),
             'default' => 'white',
-        ),
-
-        'candis' => array(
-            'cast' => 'bool',
-        ),
-
-        'privdis' => array(
-            'cast' => 'bool',
         ),
 
         'mature' => array(
@@ -76,30 +64,48 @@ else {
                 foreach ($lists AS $list) {
                     $options = array();
 
-                    if (!$list['options'] & 1)   $options[] = "Inactive";
-                    if ($list['options'] & 2)    $options[] = "Disableable";
-                    if ($list['options'] & 4)    $options[] = "Hidden";
-                    if ($list['options'] & 256)  $options[] = "Disabled in Private";
-//        if ($list['options'] & 8) $options[] = "Mature";
+                    if (!($list['options'] & \Fim\CensorList::CENSORLIST_ENABLED))
+                        $options[] = "Inactive";
+                    if ($list['options'] & \Fim\CensorList::CENSORLIST_DISABLEABLE)
+                        $options[] = "Disableable";
+                    if ($list['options'] & \Fim\CensorList::CENSORLIST_HIDDEN)
+                        $options[] = "Hidden";
+                    if ($list['options'] & \Fim\CensorList::CENSORLIST_PRIVATE_DISABLED)
+                        $options[] = "Disabled in Private";
+                    //if ($list['options'] & 8) $options[] = "Mature";
 
-                    $rows .= '    <tr><td>' . $list['listName'] . '</td><td>' . ($list['listType'] == 'white' ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>' : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>') . '</td><td>' . implode(', ',$options) . '</td><td><a href="./index.php?do=censor&do2=deleteList&listId=' . $list['listId'] . '"><img src="./images/document-close.png" /></a><a href="./index.php?do=censor&do2=editList&listId=' . $list['listId'] . '"><img src="./images/document-edit.png" /></a><a href="./index.php?do=censor&do2=viewWords&listId=' . $list['listId'] . '"><img src="./images/view-list-details.png" /></a></td></tr>
+                    $rows .= '    <tr>
+                        <td>' . $list['listName'] . '</td>
+                        <td>' . ($list['listType'] == 'white'
+                            ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>'
+                            : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>'
+                        ) . '</td>
+                        <td>' . implode(', ',$options) . '</td>
+                        <td>
+                            <a href="./index.php?do=censor&do2=editList&listId=' . $list['listId'] . '" class="btn btn-secondary"><i class="fas fa-edit"></i> Edit</a>
+                            <a href="./index.php?do=censor&do2=viewWords&listId=' . $list['listId'] . '" class="btn btn-secondary" title="View List"><i class="fas fa-list"></i> Words</a>
+                            <a href="./index.php?do=censor&do2=deleteList&listId=' . $list['listId'] . '" class="btn btn-danger"><i class="fas fa-trash"></i> Delete</a>
+                        </td>
+                    </tr>
   ';
                 }
 
-                echo container('Current Lists<a href="./index.php?do=censor&do2=editList"><img src="./images/document-new.png" style="float: right;" /></a>', '<table class="page rowHover">
-  <thead>
-    <tr class="ui-widget-header">
-      <td>List Name</td>
-      <td>Type</td>
-      <td>Notes</td>
-      <td>Actions</td>
-    </tr>
-  </thead>
-  <tbody>
-' . $rows . '
-  </tbody>
-</table>');
+                echo container('Current Lists <a class="btn btn-success float-right" href="./index.php?do=censor&do2=editList"><i class="fas fa-plus-square"></i> Add New List</a>', '<table class="table table-bordered table-striped table-align-middle">
+                    <thead class="thead">
+                    <tr>
+                        <th>List Name</th>
+                        <th>Type</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        ' . $rows . '
+                    </tbody>
+                </table>');
                 break;
+
+
 
             case 'editList':
                 if ($request['listId']) {
@@ -112,59 +118,77 @@ else {
                         'listId' => 0,
                         'listName' => '',
                         'listType' => 'white',
-                        'options' => 0,
+                        'options' => 3,
                     );
 
                     $title = 'Add New Censor List';
                 }
 
                 echo container($title, '<form action="./index.php?do=censor&do2=editList2&listId=' . $list['listId'] . '" method="post">
-  <table class="page ui-widget">
-    <tr>
-
-      <td width="30%">Name:</td>
-      <td width="70%"><input type="text" name="listName" value="' . $list['listName'] . '" /></td>
-    </tr>
-    <tr>
-      <td>Type:</td>
-      <td>
-        ' . fimHtml_buildSelect('listType', array(
-                                         'black' => 'black',
-                                         'white' => 'white',
-                                     ), $list['listType']) . '
-      </td>
-    </tr>
-    <tr>
-      <td>Inactive:</td>
-      <td><input type="checkbox" name="inactive" value="true" ' . (!$list['options'] & 1 ? ' checked="checked"' : '') . ' /></td>
-    </tr>
-    <tr>
-      <td>Can be Disabled:</td>
-      <td><input type="checkbox" name="candis" value="true" ' . ($list['options'] & 2 ? ' checked="checked"' : '') . ' /></td>
-    </tr>
-    <tr>
-      <td>Hidden:</td>
-      <td><input type="checkbox" name="hidden" value="true" ' . ($list['options'] & 4 ? ' checked="checked"' : '') . ' /></td>
-    </tr>
-    <tr>
-      <td>Disabled in Private Rooms:</td>
-      <td><input type="checkbox" name="privdis" value="true" ' . ($list['options'] & 256 ? ' checked="checked"' : '') . ' /></td>
-    </tr>
-  </table><br />
-
-  <button type="submit">Submit</button><button type="reset">Reset</button>
-</form>');
+                    <label class="input-group">
+                        <span class="input-group-addon">Name</span>
+                        <input class="form-control" type="text" name="listName" value="' . $list['listName'] . '" />
+                    </label>
+                    <small class="form-text text-muted">This is the name that will identify the list to users.</small><br />
+                    
+                    
+                    <label class="input-group">
+                      <span class="input-group-addon">Type</span>
+                      ' . fimHtml_buildSelect('listType', array(
+                                                         'black' => 'black',
+                                                         'white' => 'white',
+                                                     ), $list['listType']) . '
+                    </label>
+                    <small class="form-text text-muted">A "black list" is opt-in: rooms can choose to black list themselves, but the list won\'t be enabled by default. A "white list" is opt-out: rooms can choose to white list themselves out of the list, but it will be enabled in those rooms by default.</small><br />
+                    
+                    
+                    <label class="btn btn-secondary">
+                        <input type="checkbox" name="options[]" value="enabled" ' . ($list['options'] & \Fim\CensorList::CENSORLIST_ENABLED ? ' checked="checked"' : '') . ' />
+                        Active
+                    </label>
+                    
+                    <label class="btn btn-secondary">
+                        <input type="checkbox" name="options[]" value="disableable" ' . ($list['options'] & \Fim\CensorList::CENSORLIST_DISABLEABLE ? ' checked="checked"' : '') . ' />
+                        Can be Disabled in Rooms
+                    </label>
+                    
+                    <label class="btn btn-secondary">
+                        <input type="checkbox" name="options[]" value="hidden" ' . ($list['options'] & \Fim\CensorList::CENSORLIST_HIDDEN ? ' checked="checked"' : '') . ' />
+                        Hidden
+                    </label>
+                    
+                    <label class="btn btn-secondary">
+                        <input type="checkbox" name="options[]" value="privateDisabled" ' . ($list['options'] & \Fim\CensorList::CENSORLIST_PRIVATE_DISABLED ? ' checked="checked"' : '') . ' />
+                        Disabled in Private Rooms
+                    </label><br /><br />
+                    
+                    <button class="btn btn-success" type="submit">Submit</button>
+                    <button class="btn btn-secondary" type="reset">Reset</button>
+                </form>');
                 break;
 
+
+
             case 'editList2':
-                $listOptions = (!$request['inactive'] ? 1 : 0) + ($request['candis'] ? 2 : 0) + ($request['hidden'] ? 4 : 0) + ($request['privdis'] ? 256 : 0);
+                $request = array_merge($request, fim_sanitizeGPC('p', [
+                    'options' => [
+                        'cast'      => 'list',
+                        'transform' => 'bitfield',
+                        'bitTable'  =>  [
+                            'enabled' => \Fim\CensorList::CENSORLIST_ENABLED,
+                            'disableable' => \Fim\CensorList::CENSORLIST_DISABLEABLE,
+                            'hidden' => \Fim\CensorList::CENSORLIST_HIDDEN,
+                            'privateDisabled' => \Fim\CensorList::CENSORLIST_PRIVATE_DISABLED
+                        ]
+                    ],
+                ]));
 
                 if ($request['listId']) {
                     $list = \Fim\Database::instance()->getCensorList($request['listId']);
                     $newList = array(
                         'listName' => $request['listName'],
                         'listType' => $request['listType'],
-                        'options' => $listOptions,
+                        'options' => $request['options'],
                     );
 
                     \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "censorLists", $newList, array(
@@ -174,13 +198,13 @@ else {
                     \Fim\Database::instance()->modLog('changeCensorList', $list['listId']);
                     \Fim\Database::instance()->fullLog('changeCensorList', array('list' => $list, 'newList' => $newList));
 
-                    echo container('List "' . $list['listName'] . '" Updated', 'The list has been updated.<br /><br /><form action="index.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
+                    echo container('List "' . $list['listName'] . '" Updated', 'The list has been updated.<br /><br /><form action="index.php?do=censor&do2=viewLists" method="POST"><button type="submit" class="btn btn-success">Return to Viewing Lists</button></form>');
                 }
                 else {
                     $list = array(
                         'listName' => $request['listName'],
                         'listType' => $request['listType'],
-                        'options' => $listOptions,
+                        'options' => $request['options'],
                     );
 
                     \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "censorLists", $list);
@@ -189,9 +213,11 @@ else {
                     \Fim\Database::instance()->modLog('addCensorList', $list['listId']);
                     \Fim\Database::instance()->fullLog('addCensorList', array('list' => $list));
 
-                    echo container('List "' . $list['listName'] . '" Added', 'The list has been added.<br /><br /><form action="index.php?do=censor&do2=viewLists" method="POST"><button type="submit">Return to Viewing Lists</button></form>');
+                    echo container('List "' . $list['listName'] . '" Added', 'The list has been added.<br /><br /><a class="btn btn-success" href="index.php?do=censor&do2=viewLists">Return to Viewing Lists</a>');
                 }
                 break;
+
+
 
             case 'deleteList':
                 $list = \Fim\Database::instance()->getCensorList($request['listid']);
@@ -207,36 +233,47 @@ else {
                     'listId' => $request['listId'],
                 ));
 
-                echo container('List Deleted','The list and its words have been deleted.<br /><br /><form method="post" action="index.php?do=censor&do2=viewLists"><button type="submit">Return to Viewing Words</button></form>');
+                echo container('List Deleted','The list and its words have been deleted.<br /><br /><a class="btn btn-success" href="index.php?do=censor&do2=viewLists">Return to Viewing Words</form>');
                 break;
+
+
 
             case 'viewWords':
                 $words = \Fim\Database::instance()->getCensorWords(array('listIds' => array($request['listId'])))->getAsArray(true);
 
                 if (count($words) > 0) {
                     foreach ($words AS $word) {
-                        $rows .= '    <tr><td>' . $word['word'] . '</td><td>' . $word['severity'] . '</td><td>' . $word['param'] . '</td><td><a href="./index.php?do=censor&do2=deleteWord&wordId=' . $word['wordId'] . '"><img src="./images/document-close.png" /></a><a href="./index.php?do=censor&do2=editWord&wordId=' . $word['wordId'] . '"><img src="./images/document-edit.png" /></a></td></tr>
-    ';
+                        $rows .= '    <tr>
+                            <td>' . $word['word'] . '</td>
+                            <td>' . $word['severity'] . '</td>
+                            <td>' . $word['param'] . '</td>
+                            <td>
+                                <a class="btn btn-danger" href="./index.php?do=censor&do2=deleteWord&wordId=' . $word['wordId'] . '"><i class="fas fa-trash"></i> Delete</a>
+                                <a class="btn btn-secondary" href="./index.php?do=censor&do2=editWord&wordId=' . $word['wordId'] . '"><i class="fas fa-edit"></i> Edit</a>    
+                            </td>
+                        </tr>';
                     }
                 }
                 else {
                     $rows = '<tr><td colspan="4">No words have been added.</td></tr>';
                 }
 
-                echo container('Current Words<a href="./index.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><img src="./images/document-new.png" style="float: right;" /></a>','<table class="page rowHover">
-  <thead>
-    <tr class="hrow ui-widget-header">
-      <td>Word</td>
-      <td>Type</td>
-      <td>Param</td>
-      <td>Actions</td>
-    </tr>
-  </thead>
-  <tbody>
-' . $rows . '
-  </tbody>
-</table>');
+                echo container('Current Words <a class="btn btn-success float-right" href="./index.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><i class="fas fa-plus-square"></i> Add New Word</a>','<table class="table table-bordered table-striped table-align-middle">
+                    <thead class="thead">
+                        <tr>
+                            <th>Word</th>
+                            <th>Type</th>
+                            <th>Param</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                  ' . $rows . '
+                    </tbody>
+                </table>');
                 break;
+
+
 
             case 'editWord':
                 if ($request['wordId']) { // We are editing a word.
@@ -274,35 +311,32 @@ else {
                 ), $word['severity']);
 
                 echo container($title, '<form action="./index.php?do=censor&do2=editWord2" method="post">
-  <table class="page ui-widget">
-    <tr>
-      <td>Text</td>
-      <td>
-        <input type="text" name="word" value="' . $word['word'] . '" /><br />
-        <small>This is the word to be filtered or blocked out.</small>
-      </td>
-    </tr>
-      <td>Severity:
-      <td>
-        ' . $selectBlock . '<br />
-        <small>This is the type of filter to apply to the word. <tt>replace</tt> will replace the word above with the one below; <tt>warn</tt> warns the user upon sending the message, but sends the message without user intervention; <tt>confirm</tt> requires the user to confirm that they wish to send the message before it is sent; <tt>block</tt> outright blocks a user from sending the message - they will need to change the content of it first.</small>
-      </td>
-    </tr>
-    <tr>
-      <td>Param:</td>
-      <td>
-        <input type="text" name="param" value="' . $word['param'] . '"  /><br />
-        <small>This is what the text will be replaced with if using the <tt>replace</tt> severity, while for <tt>warn</tt>, <tt>confirm</tt>, and <tt>block</tt> it is the message that will be displayed to the user.</small>
-      </td>
-    </tr>
-  </table><br /><br />
-
-  <input type="hidden" name="wordId" value="' . $word['wordId'] . '" />
-  <input type="hidden" name="listId" value="' . $list['listId'] . '" />
-  <button type="submit">Submit</button>
-  <button type="reset">Reset</button>
-</form>');
+                    <label class="input-group">
+                        <span class="input-group-addon">Text</span>
+                        <input class="form-control" type="text" name="word" value="' . $word['word'] . '" required />
+                    </label>
+                    <small class="form-text text-muted">This is the word to be filtered or blocked out.</small><br />
+                    
+                    <label class="input-group">
+                        <span class="input-group-addon">Severity</span>
+                        ' . $selectBlock . '
+                    </label>
+                    <small class="form-text text-muted">This is the type of filter to apply to the word. <tt>replace</tt> will replace the word above with the one below; <tt>warn</tt> warns the user upon sending the message, but sends the message without user intervention; <tt>confirm</tt> requires the user to confirm that they wish to send the message before it is sent; <tt>block</tt> outright blocks a user from sending the message - they will need to change the content of it first.</small><br />
+                    
+                    <label class="input-group">
+                        <span class="input-group-addon">Param</span>
+                        <input class="form-control" type="text" name="param" value="' . $word['param'] . '"  />
+                    </label>
+                    <small class="form-text text-muted">This is what the text will be replaced with if using the <tt>replace</tt> severity, while for <tt>warn</tt>, <tt>confirm</tt>, and <tt>block</tt> it is the message that will be displayed to the user.</small><br />
+                    
+                    <input type="hidden" name="wordId" value="' . $word['wordId'] . '" />
+                    <input type="hidden" name="listId" value="' . $list['listId'] . '" />
+                    <button type="submit" class="btn btn-success">Submit</button>
+                    <button type="reset" class="btn btn-secondary">Reset</button>
+                </form>');
                 break;
+
+
 
             case 'editWord2':
                 if ($request['wordId']) { // We are editing a word.
@@ -320,7 +354,7 @@ else {
                                           'wordId' => $request['wordId']
                                       ));
 
-                    echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br /><form method="post" action="./index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
+                    echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br /><a class="btn btn-success" href="./index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '">Return to Viewing Words</a>');
                 }
                 elseif ($request['listId']) { // We are adding a word to a list.
                     $list = \Fim\Database::instance()->getCensorList($request['listId']);
@@ -337,12 +371,14 @@ else {
                     \Fim\Database::instance()->modLog('addCensorWord', $request['listId'] . ',' . \Fim\Database::instance()->getLastInsertId());
                     \Fim\Database::instance()->fullLog('addCensorWord', array('word' => $word, 'list' => $list));
 
-                    echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br /><form method="post" action="./index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button>Return to Viewing Words</button></form>');
+                    echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br /><a class="btn btn-success" href="./index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '">Return to Viewing Words</a>');
                 }
                 else {
                     die('Invalid params specified.');
                 }
                 break;
+
+
 
             case 'deleteWord':
                 $word = \Fim\Database::instance()->getCensorWord($request['wordId']);
@@ -355,7 +391,7 @@ else {
                 \Fim\Database::instance()->modLog('deleteCensorWord', $request['wordId']);
                 \Fim\Database::instance()->fullLog('deleteCensorWord', array('word' => $word, 'list' => $list));
 
-                echo container('Word Deleted','The word has been removed.<br /><br /><form method="post" action="index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '"><button type="submit">Return to Viewing Words</button></form>');
+                echo container('Word Deleted','The word has been removed.<br /><br /><a class="btn btn-success" href="index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '">Return to Viewing Words</a>');
                 break;
         }
     }

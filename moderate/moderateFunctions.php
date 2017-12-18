@@ -26,9 +26,9 @@
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
 function container($title, $content, $class = '') {
-  return $return = "<div class=\"$class card\">
-  <h4 class=\"card-header\">$title</h4>
-  <div class=\"card-body\">
+  return $return = "<div class='$class card'>
+  <h4 class='card-header d-flex align-items-center justify-content-between'>$title</h4>
+  <div class='card-body'>
     $content
   </div>
 </div>

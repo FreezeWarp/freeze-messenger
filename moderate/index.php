@@ -97,108 +97,11 @@ require('../global.php');
             integrity="sha384-ofc00ja/z8wrU97EAHQRb4i4wsa/Zgr9JZll2R3KW33iqhFSfmVz/6xuWFx5pjcn"
             crossorigin="anonymous">
 
+    <script defer src="https://use.fontawesome.com/releases/v5.0.1/js/all.js"></script>
+
     <style>
-        *, *:before, *:after {
-            -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
-        }
-
-        body {
-            padding: 5px;
-        }
-
-        #moderateRight {
-            float: right;
-            width: 75%;
-            overflow: auto;
-        }
-
-        #moderateLeft {
-            float: left;
-            width: 25%;
-            padding-right: 20px;
-        }
-
-        .CodeMirror {
-            border: 1px solid white;
-            background-color: white;
-            color: black;
-            width: 100%;
-            min-width: 200px !important;
-        }
-
-        .searched {background: yellow;}
-        .mustache {color: #0ca;}
-
-        h1 {
-            margin: 0px;
-            padding: 5px;
-        }
-
-        .main {
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
-            display: block;
-            border: 1px solid black;
-        }
-
-        .ui-widget {
-            font-size: 12px;
-        }
-        .ui-widget-content {
-            padding: 5px;
-        }
-        .uninstalledFlag {
-            font-weight: bold;
-        }
-        abbr {
-            outline-bottom: dotted 1px;
-        }
-        pre {
-            display: inline;
-        }
-
-        /* General Tables */
-        table td {
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
-        table tr {
-            border-bottom: 1px solid black;
-        }
-        table {
-            border-collapse: collapse;
-        }
-        table tr:last-child {
-            border-bottom: none;
-        }
-        tbody tr:nth-child(2n) {
-            background: #efefef !important;
-        }
-        table.page td {
-            padding: 5px;
-        }
-        table.page tr.hrow {
-            font-size: 2em;
-            font-weight: bold;
-        }
-
-        /*** Mobile Screen Layout ***/
-        @media screen and (max-width: 600px) {
-            #moderateLeft, #moderateRight {
-                clear: both;
-                float: none;
-                width: 100%;
-            }
-
-            #moderateLeft {
-                padding-right: 0px;
-                padding-bottom: 20px;
-            }
-
-            table.page tr.hrow {
-                font-size: 1.4em;
-            }
+        table.table-align-middle td, table.table-align-middle th {
+            vertical-align: middle;
         }
     </style>
     <!-- END Styles -->
@@ -256,31 +159,30 @@ require('../global.php');
     <div class="col-sm-3" style="min-width: 250px;">
         <div class="card">
             <h3 class="card-header">General Information</h3>
-            <ul class="card-body">
-                <li><a href="index.php?do=main">Home</a></li>
-                <?php echo ($user->hasPriv('modPrivs') ? '<li><a href="index.php?do=log">View Logs</a></li>' : ''); ?>
-                <li><a href="index.php?do=copyright">Copyright</a></li>
-                <li><a href="index.php?do=logout">Logout</a></li>
-            </ul>
+            <div class="list-group list-group-flush">
+                <a class="list-group-item list-group-item-action" href="index.php?do=main">Home</a>
+                <?php echo ($user->hasPriv('modPrivs') ? '<a class="list-group-item list-group-item-action" href="index.php?do=log">View Logs</a>' : ''); ?>
+                <a class="list-group-item list-group-item-action" href="index.php?do=copyright">Copyright</a>
+                <a class="list-group-item list-group-item-action" href="index.php?do=logout">Logout</a>
+            </div>
 
             <?php if ($user->hasPriv('modCensor') || $user->hasPriv('modPrivs')): ?>
                 <h3 class="card-header">Engines</h3>
-                <ul class="card-body">
-                    <?php echo ($user->hasPriv('modCensor') ? '<li><a href="index.php?do=censor">Modify Censor</a></li>' : ''); ?>
-                    <?php echo ($user->hasPriv('modPrivs') ? '<li><a href="index.php?do=emoticons">Modify Emoticons</a></li>' : ''); ?>
-                </ul>
+                <div class="list-group list-group-flush">
+                    <?php echo ($user->hasPriv('modCensor') ? '<a class="list-group-item list-group-item-action" href="index.php?do=censor">Modify Censor</a>' : ''); ?>
+                    <?php echo ($user->hasPriv('modPrivs') ? '<a class="list-group-item list-group-item-action" href="index.php?do=emoticons">Modify Emoticons</a>' : ''); ?>
+                </div>
             <?php endif; ?>
 
             <?php if ($user->hasPriv('modPrivs')): ?>
                 <h3 class="card-header">Advanced</h3>
-                <ul class="card-body">
-                    <li><a href="index.php?do=admin">Admin Permissions</a></li>
-                    <li><a href="index.php?do=sessions">User Sessions</a></li>
-                    <li><a href="index.php?do=config">Configuration Editor</a></li>
-                    <li><a href="index.php?do=sys">System Check (TODO)</a></li>
-                    <li><a href="index.php?do=tools">Tools</a></li>
-                    <li><a href="index.php?do=phpinfo">PHP Info</a></li>
-                </ul>
+                <div class="list-group list-group-flush">
+                    <a class="list-group-item list-group-item-action" href="index.php?do=admin">User Editor</a>
+                    <a class="list-group-item list-group-item-action" href="index.php?do=sessions">User Sessions</a>
+                    <a class="list-group-item list-group-item-action" href="index.php?do=config">Configuration Editor</a>
+                    <a class="list-group-item list-group-item-action" href="index.php?do=tools">Tools</a>
+                    <a class="list-group-item list-group-item-action" href="index.php?do=phpinfo">PHP Info</a>
+                </div>
             <?php endif ?>
         </div>
     </div>

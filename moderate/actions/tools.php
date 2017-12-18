@@ -35,7 +35,7 @@ else {
                 break;
 
             case 'viewCache':
-                foreach (array('fim_config') AS $cache) {
+                foreach (array('fim_config', 'fim_fimRoom_1', 'fim_fimUser_1') AS $cache) {
                     $formattedCache = '';
 
                     foreach ((array) \Cache\CacheFactory::get($cache) AS $key => $value) {
@@ -46,7 +46,7 @@ else {
                         $formattedCache .= '<tr><td>' . $key . '</td><td><pre>' . $value . '</pre></td></tr>';
                     }
 
-                    echo container('Cache Entries: ' . $cache, '<table class="page ui-widget ui-widget-content" border="1">' . $formattedCache . '</table>');
+                    echo container('Cache Entries: ' . $cache, '<table class="table table-bordered table-striped table-sm">' . $formattedCache . '</table>');
                     echo '<br />';
                 }
 
@@ -57,9 +57,9 @@ else {
                 echo '<br />';
                 echo container('Contents of \Fim\Config', '<pre>' . print_r((new ReflectionClass('\Fim\Config'))->getStaticProperties(), true) . '</pre>');
                 echo '<br />';
-                echo container('Contents of roomPermissionsCache Table', '<table><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
+                echo container('Contents of roomPermissionsCache Table', '<table class="table table-bordered table-striped table-sm"><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
                 echo '<br />';
-                echo container('Contents of counters Table', '<table><tr><th>Name</th><th>Value</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . 'counters' => 'counterName, counterValue'])->getAsTemplate('<tr><td>$counterName</td><td>$counterValue</td></tr>') . '</table>');
+                echo container('Contents of counters Table', '<table class="table table-bordered table-striped table-sm"><tr><th>Name</th><th>Value</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . 'counters' => 'counterName, counterValue'])->getAsTemplate('<tr><td>$counterName</td><td>$counterValue</td></tr>') . '</table>');
                 break;
 
             case 'clearCache':
