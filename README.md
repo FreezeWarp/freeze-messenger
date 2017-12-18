@@ -23,7 +23,7 @@ Requirements
 ### Minimum
   * PHP 5.6 (PHP 7 is required in the nightlies; beginning with Release Candidate 1, a transpiler will be used to support PHP 5.6 in releases)
   * MySQL, PostgreSQL, **or** SQL Server
-  * PHP's [MBString](http://php.net/manual/en/book.mbstring.php) and [DOM](http://php.net/manual/en/book.dom.php) libraries
+  * PHP's [DOM](http://php.net/manual/en/book.dom.php) library
   
 ### Recommended
   * APC, APCu, Memcached, or Redis for optimal caching.
