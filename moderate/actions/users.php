@@ -28,38 +28,90 @@ else {
         ]
     ));
 
+    $permissions = [
+        'view' => 'View Rooms',
+        'post' => 'Post in Rooms',
+        'changeTopic' => 'Change Room Topics',
+        'createRooms' => 'Create Rooms',
+        'privateFriends' => 'Message Friended Users',
+        'privateAll' => 'Message All Users',
+        'roomsOnline' => 'View Online Users',
+        'modPrivs' => 'Change User Priviledges (Super Admin)',
+        'protected' => '<abbr title="This user cannot be altered by any user other than themself and the site owner.">Protected</abbr>',
+        'modRooms' => 'Administrate Rooms',
+        'modUsers' => 'Administrate Users',
+        'modFiles' => 'Administrate Files',
+        'modCensor' => 'Administrate Censor',
+    ];
+
     if ($user->hasPriv('modPrivs')) {
         switch ($request['do2']) {
             case 'view':
-            $users = \Fim\Database::instance()->getUsers()->getAsUsers();
+            $request = array_merge($request, fim_sanitizeGPC('g', [
+                'page' => [
+                    'cast' => 'int',
+                    'default' => 0
+                ],
+                'sort' => [
+                    'valid' => ['name', 'id'],
+                    'default' => 'id'
+                ],
+                'userNameSearch' => [
+                    'cast' => 'string',
+                ]
+            ]));
+
+            $usersQuery = \Fim\Database::instance()->getUsers(
+                fim_arrayFilterKeys($request, ['userNameSearch']),
+                [$request['sort'] => 'asc'],
+                20,
+                $request['page']
+            );
+            $users = $usersQuery->getAsUsers();
 
             $rows = '';
             foreach ($users AS $user2) {
                 $adminPrivs = array();
 
-                if ($user2->hasPriv('modPrivs'))   $adminPrivs[] = 'Grant';
-                if ($user2->hasPriv('protected'))  $adminPrivs[] = '<abbr title="This user cannot be altered by any user other than themself and the site owner.">Protected</abbr>';
-                if ($user2->hasPriv('modRooms'))   $adminPrivs[] = 'Global Room Moderator';
-                if ($user2->hasPriv('modUsers'))   $adminPrivs[] = 'Global Ban Ability';
-                if ($user2->hasPriv('modFiles'))   $adminPrivs[] = 'Global Files Control';
-                if ($user2->hasPriv('modCensor'))  $adminPrivs[] = 'Censor Control';
+                foreach ($permissions AS $permission => $permissionText) {
+                    if ($user2->hasPriv($permission)) $adminPrivs[] = $permissionText;
+                }
 
-                $rows .= "<tr><td>{$user2->id}</td><td>{$user2->name}</td><td>" . implode(', ', $adminPrivs) . "</td><td><a class='btn btn-sm btn-secondary' href='./index.php?do=users&do2=edit&userId={$user2->id}'><i class='fas fa-edit'></i> Edit</a></td></tr>";
+                $rows .= "<tr>
+                    <td>{$user2->id}</td>
+                    <td>{$user2->name}</td>
+                    <td>" . implode(', ', $adminPrivs) . "</td>
+                    <td><a class='btn btn-sm btn-secondary' href='./index.php?do=users&do2=edit&userId={$user2->id}'><i class='fas fa-edit'></i> Edit</a></td>
+                </tr>";
             }
 
-            echo container('User Editor','<table class="table table-striped">
-  <thead class="thead-light">
-    <tr>
-      <th>User ID</th>
-      <th>Username</th>
-      <th>Permissions</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-' . $rows . '
-  </tbody>
-</table>');
+            echo container('User Editor', "<form method='get' action='./index.php'>
+                    <label class='input-group'>
+                        <span class='input-group-addon'>Search by Name</span>
+                        <input class='form-control' type='text' name='userNameSearch' value='{$request['userNameSearch']}' />
+                        <button class='input-group-addon'>Search</button>
+                    </label>
+                    <input type='hidden' name='do' value='users' />
+                </form>"
+                . ($request['page'] > 0
+                    ? '<div class="float-left"><a href="./index.php?do=users&' . http_build_query(array_merge($request, ['page' => $request['page'] - 1])) . '">Previous Page</a></div>'
+                    : ''
+                ) . ($usersQuery->paginated
+                    ? '<div class="float-right"><a href="./index.php?do=users&' . http_build_query(array_merge($request, ['page' => $request['page'] + 1])) . '">Next Page</a></div>'
+                    : ''
+                ) . "<table class='table table-striped'>
+                <thead class='thead-light'>
+                <tr>
+                    <th><a href='./index.php?do=users&sort=id'>User ID</a></th>
+                    <th><a href='./index.php?do=users&sort=name'>Username</a></th>
+                    <th>Permissions</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                    $rows
+                </tbody>
+            </table>");
             break;
 
             case 'edit':
@@ -69,21 +121,6 @@ else {
                     echo container('No User', 'The user specified is invalid.');
                 }
                 else {
-                    $permissions = [
-                        'view' => 'View Rooms',
-                        'post' => 'Post in Rooms',
-                        'changeTopic' => 'Change Room Topics',
-                        'createRooms' => 'Create Rooms',
-                        'privateFriends' => 'Message Friended Users',
-                        'privateAll' => 'Message All Users',
-                        'roomsOnline' => 'View Online Users',
-                        'modPrivs' => 'Change User Priviledges (Super Admin)',
-                        'protected' => 'Protected Users (Priviledges Can\'t be Changed)',
-                        'modRooms' => 'Administrate Rooms',
-                        'modUsers' => 'Administrate Users',
-                        'modFiles' => 'Administrate Files',
-                        'modCensor' => 'Administrate Censor',
-                    ];
 
                     $permissionsBox = '';
                     foreach($permissions AS $permission => $permissionText) {
@@ -111,9 +148,15 @@ else {
                         'bitTable'  =>  fimUser::$permArray
                     ]
                 ]));
+
+                // Get the user from the database
                 $editUser = \Fim\UserFactory::getFromId($request['userId']);
+                // Use the fimUser setPrivs method to set the priviledges (which may be adjusted from what we received)
                 $editUser->set('privs', $request['privs']);
+                // Update the fimUser entry in the database
                 $editUser->setDatabase(['privs' => $editUser->privs]);
+
+                echo container('User Updated','The user has been updated.<br /><br /><a class="btn btn-success" href="index.php?do=users">Return to Viewing Users</a>');
             break;
         }
     }
