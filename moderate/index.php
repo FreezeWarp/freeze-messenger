@@ -212,7 +212,7 @@ require('../global.php');
             \Fim\Database::instance()->startTransaction();
 
             switch ($_GET['do'] ?? '') {
-                case 'plugins': require('./actions/plugins.php'); break;
+                case 'emoticons': require('./actions/emoticons.php'); break;
                 case 'censor': require('./actions/censor.php'); break;
 
                 case 'admin': require('./actions/admin.php'); break;
