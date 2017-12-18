@@ -136,5 +136,10 @@ class StreamDatabase implements StreamInterface {
     public function unsubscribe($stream) {
         return;
     }
+
+
+    public function getLastInsertId() {
+        return $this->database->getLastInsertId();
+    }
 }
 ?>

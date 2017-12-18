@@ -20,6 +20,7 @@ use Database\SQL\DatabaseSQL;
 use Stream\Streams\StreamRedis;
 use Stream\Streams\StreamPgSQL;
 use Stream\Streams\StreamDatabase;
+use Stream\Streams\StreamKafka;
 
 
 /**
@@ -47,7 +48,11 @@ class StreamFactory {
         else {
             global $dbConnect, $streamMethods;
 
-            if (isset($streamMethods['redis']['host']) && extension_loaded('redis')) {
+            if (isset($streamMethods['kafka']['brokers']) && extension_loaded('rdkafka')) {
+                return StreamFactory::$instance = new StreamKafka($streamMethods['kafka']);
+            }
+
+            elseif (isset($streamMethods['redis']['host']) && extension_loaded('redis')) {
                 return StreamFactory::$instance = new StreamRedis($streamMethods['redis']);
             }
 
@@ -75,7 +80,7 @@ class StreamFactory {
                 return StreamFactory::$instance = new StreamPgSQL($database);
             }
 
-            else {
+            else { var_dump(extension_loaded('rdkafka')); die('nope.');
                 return self::getDatabaseInstance();
             }
         }

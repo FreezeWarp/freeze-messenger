@@ -70,30 +70,34 @@ $dbConfig['integration']['tablePrefix'] = '';
 
 
 
-////* Cache and Stream Servers *////
+////* Cache Servers *////
+
 /* $cacheConnectMethods['disk']
  * If specified, this will enable disk caching, where applicable. */
 $cacheConnectMethods['disk'] = [
     //'directory' => '', // If omitted, defaults to sys_get_temp_dir().
 ];
 
+
 /* $cacheConnectMethods['apc']
  * If specified, this will enable APC caching, where applicable. */
 /*$cacheConnectMethods['apc'] = [];*/
+
 
 /* $cacheConnectMethods['apcu']
  * If specified, this will enable APCu caching, where applicable. */
 /*$cacheConnectMethods['apcu'] = [];*/
 
+
 /* $cacheConnectMethods['redis']
- * If specified, this will enable Redis caching. */
+ * If specified, this will enable Redis caching and message streaming. */
 /*$cacheConnectMethods['redis'] = [
     'host' => '127.0.0.1',
     'port' => 6379,
     'timeout' => 0,
     'password' => false,
-];
-$streamMethods['redis'] = $cacheConnectionMethods['redis'];*/
+];*/
+
 
 /* $cacheConnectMethods['memcached']
  * If specified, this will enable memcached with the attached list of servers to use in the connection pool. */
@@ -106,7 +110,24 @@ $streamMethods['redis'] = $cacheConnectionMethods['redis'];*/
         'timeout' => 1,
         'retry_interval' => 15,
     ),
-); */
+);*/
+
+
+
+
+////* Message Streaming Servers*////
+
+/* $streamMethods['kafka']
+ * If specified, this will enable Kafka message streaming, which takes priority over all other message systems. */
+/* $streamMethods['kafka'] = [
+    'brokers' => 'localhost:9092', // This is a comma-separated list of Kafka servers.
+]; */
+
+
+/* $streamMethods['redis']
+ * If speciifed, this will enable Redis for message streaming, which takes priority over Postgres. */
+/*$streamMethods['redis'] = $cacheConnectionMethods['redis'];*/
+
 
 /* $streamMethods['pgsql']
  * If specified, this will enable PostGreSQL pub/sub. */
@@ -116,6 +137,8 @@ $streamMethods['redis'] = $cacheConnectionMethods['redis'];*/
     'username' => '',
     'password' => '',
 ];*/
+
+
 
 
 ////* Forum Integration *////

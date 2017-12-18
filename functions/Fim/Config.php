@@ -225,14 +225,18 @@ class Config {
     /** @var int The default number of rooms that will be returned by api/getRooms.php. */
     public static $defaultRoomLimit = 50;
 
-    /** @var bool Whether to enable SSE. These are fairly stable; but some server configurations will still have problems with server sent events. Disable if you have issues. */
+
+    /** @var bool Whether to enable SSE. These are fairly stable; but some server configurations will still have problems with server sent events (in particular, enabling this means that every user will open at least two PHP threads that will stay open for the duration of the user's activity; as such, only use this if you have enough available PHP threads and memory for those PHP threads to serve your expected number of users). Disable if you have issues. */
     public static $serverSentEvents = true;
-    /** @var float Server sent events are more controlled; so we can call them at a greater frequency. */
+
+    /** @var float Server sent events are more controlled; so we can call them at a greater frequency. Note that this setting is ignored if using Kafka or Redis message streaming; it is still used for regular database streaming, and with Postgres LISTEN/NOTIFY. */
     public static $serverSentEventsWait = .5;
-    /** @var int The number of tries the server will requery before requiring the client to resend a SSE request. */
-    public static $serverSentMaxRetries = 50;
+
+    /** @var int The number of tries the server will requery before requiring the client to resend a SSE request. Note that this setting is ignored if using Kafka or Redis message streaming; it is still used for regular database streaming, and with Postgres LISTEN/NOTIFY. */
+    public static $serverSentMaxRetries = 240;
+
     /** @var int This is how long the server-sent events script is allowed to run for. It relies on PHP's set_time_limit, and may as a result be inconsistent between Windows and Linux (in-fact, it's basically useless on Windows -- rely on serverSentMaxRetries instead); and will be ignored in safe mode (though how well the chat runs in safe mode I'm not sure). */
-    public static $serverSentTimeLimit = 30;
+    public static $serverSentTimeLimit = 120;
 
 
     /* Searching */

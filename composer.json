@@ -12,7 +12,8 @@
     "stevenmaguire/oauth2-microsoft" : "2.2.0",
     "rtheunissen/oauth2-reddit" : "*",
     "iignatov/lightopenid": "*",
-    "google/recaptcha": "~1.1"
+    "google/recaptcha": "~1.1",
+    "kwn/php-rdkafka-stubs": "^1.0.2"
   },
   "autoload" : {
     "psr-4": {

@@ -36,26 +36,21 @@ class StreamRedis implements StreamInterface {
         StreamFactory::getDatabaseInstance()->publish($stream, $eventName, $data);
 
         $this->redis->publish($stream, json_encode([
+            'id' => StreamFactory::getDatabaseInstance()->getLastInsertId(),
             'eventName' => $eventName,
             'data' => $data
         ]));
     }
 
     public function subscribe($stream, $lastId, $callback) {
-        // The subscribe below will block, so we call this first. (Unfortunately, this does mean the    re is a small -- or possibly big -- window wherein messages may not be retrieved.)
+        // The subscribe below will block, so we call this first. (Unfortunately, this does mean there is a small -- or possibly big -- window wherein messages may not be retrieved.)
         foreach (StreamFactory::getDatabaseInstance()->subscribeOnce($stream, $lastId) AS $result) {
             call_user_func($callback, $result);
         }
 
         // And now subscribe to the Redis socket.
         $this->redis->subscribe(["room_1"], function ($instance, $channel, $data) use ($callback) {
-            $event = json_decode($data, true);
-
-            call_user_func($callback, [
-                'id' => time(),
-                'eventName' => $event['eventName'],
-                'data' => $event['data'],
-            ]);
+            call_user_func($callback, json_decode($data, true));
         });
     }
 

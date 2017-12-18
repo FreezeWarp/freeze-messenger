@@ -43,8 +43,9 @@ class StreamPgSQL implements StreamInterface {
         StreamFactory::getDatabaseInstance()->publish($stream, $eventName, $data);
 
         $json = json_encode([
-           'eventName' => $eventName,
-           'data' => $data
+            'id' => StreamFactory::getDatabaseInstance()->getLastInsertId(),
+            'eventName' => $eventName,
+            'data' => $data
         ]);
 
         $this->database->rawQuery('NOTIFY ' . $this->database->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $stream) . ', ' . $this->database->formatValue(DatabaseTypeType::string, $json));
@@ -66,13 +67,7 @@ class StreamPgSQL implements StreamInterface {
             $message = pg_get_notify($this->database->sqlInterface->connection, PGSQL_ASSOC);
 
             if ($message) {
-                $event = json_decode($message['payload'], true);
-
-                call_user_func($callback, [
-                    'id' => time(),
-                    'eventName' => $event['eventName'],
-                    'data' => $event['data'],
-                ]);
+                call_user_func($callback, json_decode($message['payload'], true));
             }
 
             usleep(\Fim\Config::$serverSentEventsWait * 1000000);
