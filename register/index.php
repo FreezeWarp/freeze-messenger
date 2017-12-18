@@ -45,17 +45,17 @@ $success = false;
             ]);
 
             if (isset($result['exception'])) {
-                echo 'Error "' . $result['exception']['string'] . '": ' . $result['exception']['details'] . '<br /><br />';
+                echo '<p class="text-danger">Error "' . $result['exception']['string'] . '": ' . $result['exception']['details'] . '<br /><br /></p>';
             }
 
             elseif (!isset($result['user'])) {
-                echo 'An unknown error occurred.<br /><br />';
+                echo '<p class="text-danger">An unknown error occurred.<br /><br /></p>';
             }
 
             else {
                 $success = true;
                 ?>
-                <h1 class="ui-widget-header">Registration Complete!</h1>
+                <h3>Registration Complete!</h3>
                 <p>You have now registered as <?php echo $_POST['name']; ?>. <a href="../">Click here to
                         continue to the messenger.</a></p>
                 <?php
@@ -65,48 +65,83 @@ $success = false;
         if (!$success) {
             echo $phrases[$lang]['stage1introduction']; ?><br/><br/>
 
-            <!-- Javascript is NOT required, but interfaces naturally work better with it.
-              -- This script, to be stable, must work without it, however. -->
-            <script type="text/javascript" src="register.js"></script>
+            <script>
+                $(document).ready(function() {
+                    var directory = window.location.pathname.split('/').splice(0, window.location.pathname.split('/').length - 2).join('/') + '/'; // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
+
+                    $.ajax({
+                        url: directory + 'api/serverStatus.php',
+                        type: 'GET',
+                        timeout: 1000,
+                        dataType: 'json',
+                        success: function(json) {
+                            var registrationPolicies = json.serverStatus.registrationPolicies;
+
+                            if (registrationPolicies.emailRequired)
+                                $('#email').attr('required', 'true');
+
+                            if (registrationPolicies.ageRequired)
+                                $('#birthday, #birthmonth, #birthyear').attr('required', true);
+
+                            $('#register_form').submit(function() {
+                                if ($('#password').val() !== $('#passwordConfirm').val()) {
+                                    alert('The entered passwords do not match. Please retype them.');
+                                    $('#passwordConfirm').val('');
+
+                                    return false;
+                                }
+
+                                return true;
+                            });
+                        }
+                    });
+                });
+            </script>
 
             <form name="register_form" id="register_form" action="index.php" method="post">
                 <table class="table table-striped">
                     <tr>
                         <td style="vertical-align: middle"><strong><?php echo $phrases[$lang]['stage1formUserNameLabel']; ?></strong></td>
-                        <td><input id="userName" type="text" name="name" value="<?php echo $_POST['name'] ?? ''; ?>" required /><br/>
-                            <small class="text-muted"><?php echo $phrases[$lang]['stage1formUserNameBlurb']; ?></small>
+                        <td><input class="form-control" id="userName" type="text" name="name" value="<?php echo $_POST['name'] ?? ''; ?>" required />
+                            <small class="form-text text-muted"><?php echo $phrases[$lang]['stage1formUserNameBlurb']; ?></small>
                         </td>
                     </tr>
                     <tr>
                         <td style="vertical-align: middle"><strong><?php echo $phrases[$lang]['stage1formPasswordLabel']; ?></strong></td>
-                        <td><input id="password" type="password" name="password"/><br/>
-                            <small class="text-muted"><?php echo $phrases[$lang]['stage1formPasswordBlurb']; ?></small>
+                        <td><input class="form-control" id="password" type="password" name="password" required />
+                            <small class="form-text text-muted"><?php echo $phrases[$lang]['stage1formPasswordBlurb']; ?></small>
                         </td>
                     </tr>
                     <tr>
                         <td style="vertical-align: middle"><strong><?php echo $phrases[$lang]['stage1formPasswordAgainLabel']; ?></strong></td>
-                        <td><input id="passwordConfirm" type="password"/><br/>
-                            <small class="text-muted"><?php echo $phrases[$lang]['stage1formPasswordAgainBlurb']; ?></small>
+                        <td><input class="form-control" id="passwordConfirm" type="password" required />
+                            <small class="form-text text-muted"><?php echo $phrases[$lang]['stage1formPasswordAgainBlurb']; ?></small>
                         </td>
                     </tr>
                     <tr>
                         <td style="vertical-align: middle"><strong><?php echo $phrases[$lang]['stage1formEmailLabel']; ?></strong></td>
-                        <td><input id="email" type="text" name="email" value="<?php echo $_POST['email'] ?? ''; ?>" /><br/>
-                            <small class="text-muted"><?php echo $phrases[$lang]['stage1formEmailBlurb']; ?></small>
+                        <td><input class="form-control" id="email" type="text" name="email" value="<?php echo $_POST['email'] ?? ''; ?>" />
+                            <small class="form-text text-muted"><?php echo $phrases[$lang]['stage1formEmailBlurb']; ?></small>
                         </td>
                     </tr>
                     <tr>
                         <td style="vertical-align: middle"><strong><?php echo $phrases[$lang]['stage1formBirthDateLabel']; ?></strong></td>
                         <td>
-                            <div name="datepicker" id="datepicker"></div>
-                            <?php
-                            echo fimHtml_buildSelect('birthDay', array_merge([""], range(1, 31)), $_POST['birthDay'] ?? 0);
-                            echo fimHtml_buildSelect('birthMonth', array_merge([""], $phrases[$lang]['months']), $_POST['birthMonth'] ?? 0);
-                            echo fimHtml_buildSelect('birthYear', array_combine(
-                                array_merge([0], range(intval(date('Y')) - \Fim\Config::$ageMinimum, intval(date('Y')) - 150)),
-                                array_merge([""], range(intval(date('Y')) - \Fim\Config::$ageMinimum, intval(date('Y')) - 150))
-                            ), $_POST['birthYear'] ?? 0);
-                            ?>
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <?php echo fimHtml_buildSelect('birthDay', array_merge(["0" => "Day"], range(1, 31)), $_POST['birthDay'] ?? 0); ?>
+                                </div>
+
+                                <div class="col-sm-3">
+                                    <?php echo fimHtml_buildSelect('birthMonth', array_merge(["0" => "Month"], $phrases[$lang]['months']), $_POST['birthMonth'] ?? 0); ?>
+                                </div>
+
+                                <div class="col-sm-6">
+                                    <?php echo fimHtml_buildSelect('birthYear', array_combine(
+                                        array_merge([0], range(intval(date('Y')) - \Fim\Config::$ageMinimum, intval(date('Y')) - 150)),
+                                        array_merge(["Year"], range(intval(date('Y')) - \Fim\Config::$ageMinimum, intval(date('Y')) - 150))
+                                    ), $_POST['birthYear'] ?? 0); ?>
+                                </div>
                             <br/>
                             <small class="text-muted"><?php echo $phrases[$lang]['stage1formBirthDateBlurb']; ?></small>
                         </td>
