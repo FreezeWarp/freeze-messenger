@@ -14,6 +14,13 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Admin Control Panel: Emoticon Tools
+ * This script can create, edit, and delete emoticons.
+ * At present, it can only be used by users with modPrivs permissions; in the future, modEmoticons will be used instead.
+ *
+ */
+
 if (!defined('WEBPRO_INMOD')) {
     die();
 }

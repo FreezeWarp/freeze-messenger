@@ -14,6 +14,11 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Admin Control Panel: Main Page
+ * This is the main page for the admin panel, and displays basic system information.
+ */
+
 if (!defined('WEBPRO_INMOD')) {
     die();
 }

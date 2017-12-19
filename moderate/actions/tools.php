@@ -14,6 +14,12 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Admin Control Panel: Tools
+ * This script houses the view and clear cache tools, as well as the "update database schema" tool.
+ * To use this script, users must have modPrivs permissions.
+ */
+
 if (!defined('WEBPRO_INMOD')) {
     die();
 }

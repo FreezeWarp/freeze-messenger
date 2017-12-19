@@ -14,6 +14,11 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Admin Control Panel: Copyright Information
+ * This page lists FreezeMessenger copyright and license information.
+ */
+
 if (!defined('WEBPRO_INMOD')) {
     die();
 }

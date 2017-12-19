@@ -14,6 +14,12 @@
  * You should have received a copy of the GNU General Public License 
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Admin Control Panel: Log Tools
+ * This script can list the short and long moderation logs, as well as the full access log and query log, if enabled.
+ * To use this script, users must have modPrivs permissions.
+ */
+
 if (!defined('WEBPRO_INMOD')) {
     die();
 }

@@ -14,6 +14,13 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+/**
+ * Admin Control Panel: User Tools
+ * This script allows administrators to edit user permissions, and may house more advanced user controls in the future.
+ * To use this script, users must have modPrivs permissions.
+ * @todo modPrivs only for admin priviledges; modUsers for everything else.
+ */
+
 if (!defined('WEBPRO_INMOD')) {
     die();
 }
