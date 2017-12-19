@@ -219,7 +219,6 @@ require('../global.php');
                 case 'log': require('./actions/log.php'); break;
                 case 'sessions': require('./actions/sessions.php'); break;
                 case 'config': require('./actions/config.php'); break;
-                case 'sys': require('./actions/status.php'); break;
                 case 'tools': require('./actions/tools.php'); break;
                 case 'phpinfo': require('./actions/phpinfo.php'); break;
 
