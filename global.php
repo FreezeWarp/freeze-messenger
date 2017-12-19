@@ -19,7 +19,7 @@
  * It will include all needed resources, defines a small number of constants,
  * @global $cacheConnectMethods array
  * @global $loginConfig array
- * @global $dbConfig array
+ * @global $dbConnect array
  */
 
 /* Version Requirement, Magic Quotes, Display Errors and Register Globals */
@@ -76,7 +76,7 @@ if (!\Fim\Database::connect(
     $dbConnect['core']['password'],
     $dbConnect['core']['database'],
     $dbConnect['core']['driver'],
-    $dbConfig['vanilla']['tablePrefix']
+    $dbConnect['vanilla']['tablePrefix']
 )) {
     die('Could not connect to the database: ' . \Fim\Database::instance()->getLastError() . '; the application has exitted.'); // Die to prevent further execution.
 }
@@ -94,7 +94,7 @@ if ($loginConfig['method'] != 'vanilla') {
         $dbConnect['integration']['password'],
         $dbConnect['integration']['database'],
         $dbConnect['integration']['driver'],
-        $dbConfig['integration']['tablePrefix'])
+        $dbConnect['integration']['tablePrefix'])
     ) {
         die('Could not connect to the integration database: ' . \Fim\DatabaseLogin::instance()->getLastError() . '; the application has exitted.');
     }
@@ -114,7 +114,7 @@ if ($dbConnect['core'] != $dbConnect['slave']) {
         $dbConnect['slave']['password'],
         $dbConnect['slave']['database'],
         $dbConnect['slave']['driver'],
-        $dbConfig['vanilla']['tablePrefix'])
+        $dbConnect['vanilla']['tablePrefix'])
     ) {
         die('Could not connect to the slave database: ' . \Fim\DatabaseSlave::instance()->getLastError() . '; the application has exitted.');
     }

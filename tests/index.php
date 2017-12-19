@@ -66,7 +66,7 @@ $database = new DatabaseInstance($dbConnect['core']['host'],
     $dbConnect['core']['username'],
     $dbConnect['core']['password'],
     $dbConnect['core']['database'],
-    $dbConnect['core']['driver'], $dbConfig['vanilla']['tablePrefix']);
+    $dbConnect['core']['driver'], $dbConnect['vanilla']['tablePrefix']);
 \Fim\Config::$dev = true;
 
 $databaseTests = new databaseSQLTests($database);

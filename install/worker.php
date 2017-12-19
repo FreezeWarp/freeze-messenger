@@ -277,8 +277,8 @@ switch ($_REQUEST['phase']) {
             "\$dbConnect['core']['database'] = '';
 \$dbConnect['slave']['database'] = '';
 \$dbConnect['integration']['database'] = '';",
-            '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'\';',
-            '$dbConfig[\'integration\'][\'tablePrefix\'] = \'\';',
+            '$dbConnect[\'vanilla\'][\'tablePrefix\'] = \'\';',
+            '$dbConnect[\'integration\'][\'tablePrefix\'] = \'\';',
             '$loginConfig[\'method\'] = \'vanilla\';',
             '$loginConfig[\'url\'] = \'http://example.com/forums/\';',
             '$loginConfig[\'superUsers\'] = array();',
@@ -307,8 +307,8 @@ switch ($_REQUEST['phase']) {
             "\$dbConnect['core']['database'] = '" . addslashes($databaseName) . "';
 \$dbConnect['slave']['database'] = '" . addslashes($databaseName) . "';
 \$dbConnect['integration']['database'] = '" . addslashes($databaseName) . "';",
-            '$dbConfig[\'vanilla\'][\'tablePrefix\'] = \'' . addslashes($prefix) . '\';',
-            '$dbConfig[\'integration\'][\'tablePrefix\'] = \'' . addslashes($forumTablePrefix) . '\';',
+            '$dbConnect[\'vanilla\'][\'tablePrefix\'] = \'' . addslashes($prefix) . '\';',
+            '$dbConnect[\'integration\'][\'tablePrefix\'] = \'' . addslashes($forumTablePrefix) . '\';',
             '$loginConfig[\'method\'] = \'' . addslashes($forum) . '\';',
             '$loginConfig[\'url\'] = \'' . addslashes($forumUrl) . '\';',
             '$loginConfig[\'superUsers\'] = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
