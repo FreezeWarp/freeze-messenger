@@ -15,6 +15,8 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
+ * This is the global runner for FreezeMessenger.
+ * It will include all needed resources, defines a small number of constants,
  * @global $cacheConnectMethods array
  * @global $loginConfig array
  * @global $dbConfig array
@@ -26,8 +28,8 @@ $phpVersion = floatval(PHP_VERSION);
 if ($phpVersion < 5.5) {
     die('The installed version of PHP is out of date. Only PHP versions 5.5 and above are supported. Contact your server host for more information if possible.');
 }
-elseif ($phpVersion < 7) { // Removed outright in 5.4, may as well save a CPU cycle or two.
-    die('The installed version of PHP is not supported on development branches. Please wait until Preview Release 2 to for PHP 5.5 and 5.6 support.');
+elseif ($phpVersion < 7) {
+    die('The installed version of PHP is not supported on development branches. Please wait until Release Candidate 1 for PHP 5.5 and 5.6 support.');
 }
 
 
@@ -47,14 +49,6 @@ require_once(__DIR__ . '/functions/fim_general.php'); // Various Functions
  * These are mostly beneficial to third-party plugins. */
 define("FIM_VERSION", "1.0-nightly"); // Version to be used by plugins if needed.
 define("FIM_LANGUAGE", "EN_US"); // No plans to change this exist, but again, just in case...
-
-define("CENSORLIST_INACTIVE", 1);
-define("CENSORLIST_FORCED", 2);
-define("CENSORLIST_HIDDEN", 4);
-define("CENSORLIST_DISABLED_PRIVATE", 256);
-
-define("POST_FORMAT_BOLD", 0x1);
-define("POST_FORMAT_ITALICS", 0x2);
 
 
 
