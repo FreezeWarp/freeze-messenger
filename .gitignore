@@ -7,6 +7,7 @@ querylog
 vendor/google/apiclient-services/src/Google/*
 !vendor/google/apiclient-services/src/Google/Oauth2/*
 !vendor/google/apiclient-services/src/Google/Oauth2.php
+vendor/kwn/php-rdkafka-stubs/*
 webpro/client/js/fim-dev/*.js
 webpro/client/js/fim-dev/*.js.map
 !webpro/client/js/fim-dev/autoEntry.js
