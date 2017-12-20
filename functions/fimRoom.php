@@ -132,26 +132,6 @@ class fimRoom extends DynamicObject {
     protected $options;
 
     /**
-     * @var bool Whether or not the room is deleted.
-     */
-    protected $deleted;
-
-    /**
-     * @var bool Whether or not the room is "official" and should be displayed with special prominence (typically, they are stickied).
-     */
-    protected $official;
-
-    /**
-     * @var bool Whether or not the room is hidden and won't be shown in a room search except to admins (but will otherwise be accessible).
-     */
-    protected $hidden;
-
-    /**
-     * @var bool Whether or not the room is archived and can't be posted in.
-     */
-    protected $archived;
-
-    /**
      * @var bool The ID of the owner of the room. TODO: make user object?
      */
     protected $ownerId = null;
@@ -235,14 +215,9 @@ class fimRoom extends DynamicObject {
     ];
 
     /**
-     * @var array A mapping between fimRoom's parameters and their column names in the database.
-     * TODO: Eventually, we'll hopefully rename everything in the DB itself, but that'd be too time-consuming right now.
-     */
-
-    /**
      * @var array When one column in one of these arrays is resolved, the rest will be as well.
      */
-    private static $roomDataPullGroups = array(
+    public static $pullGroups = array(
         ['id','name'],
         ['defaultPermissions','options','ownerId'],
         ['parentalFlags','parentalAge','topic'],
@@ -596,79 +571,41 @@ class fimRoom extends DynamicObject {
     }
 
 
-    /**
-     * This is a common getter for all fimRoom parameters.
-     * It returns the object's property, fetching from the database or cache if needed.
-     * Notably, it exposes all private variables to be publically read.
-     *
-     * @param $property
-     *
-     * @return mixed
-     * @throws Exception
-     */
     public function __get($property) {
-        if (!property_exists($this, $property))
-            throw new Exception("Invalid property accessed in fimRoom: $property");
-
-        if ($this->id && !in_array($property, $this->resolved)) {
-            if ($property === 'deleted' || $property === 'archived' || $property === 'hidden' || $property === 'official') {
-                $this->resolveFromPullGroup("options");
-            }
-
-            else {
-                if ($this->isPrivateRoom()) {
-                    switch ($property) {
-                        case 'name':
-                            $userNames = [];
-                            foreach($this->getPrivateRoomMembers() AS $user)
-                                $userNames[] = $user->name;
-
-                            $name = ($this->type === fimRoom::ROOM_TYPE_PRIVATE ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
-                            $this->set('name', $name);
-                            return $name;
-                            break;
-                    }
-                 }
-
-                else {
-                    $this->resolveFromPullGroup($property);
-                }
-            }
-        }
-
-        return $this->{$property};
+        return $this->get($property);
     }
 
 
-    protected function setWatchedByUsers($users) {
-        if (!\Fim\Config::$enableWatchRooms)
-            return;
+    public function getName() {
+        if ($this->isPrivateRoom()) {
+            $userNames = [];
+            foreach($this->getPrivateRoomMembers() AS $user)
+                $userNames[] = $user->name;
 
-        // TODO
-        elseif ($users === DatabaseInstance::decodeError) {
-            $this->watchedByUsers = \Fim\Database::instance()->getWatchRoomUsers($this->id);
-
-            \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "rooms", [
-                "watchedByUsers" => $this->watchedByUsers
-            ], [
-                "id" => $this->id,
-            ]);
-        }
-
-        elseif ($users === DatabaseInstance::decodeExpired) {
-            $this->watchedByUsers = \Fim\Database::instance()->getWatchRoomUsers($this->id);
-
-            \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "rooms", [
-                "watchedByUsers" => $this->watchedByUsers
-            ], [
-                "id" => $this->id,
-            ]);
+            $name = ($this->type === fimRoom::ROOM_TYPE_PRIVATE ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
+            $this->set('name', $name);
+            return $name;
         }
 
         else {
-            $this->watchedByUsers = $users;
+            return $this->name;
         }
     }
+
+
+    public function getWatchedByUsers() {
+        if (!\Fim\Config::$enableWatchRooms)
+            return [];
+
+        else {
+            return $this->watchedByUsers =
+                ($this->watchedByUsers === null
+                    ? \Fim\Database::instance()->getWatchRoomUsers($this->id)
+                    : $this->watchedByUsers
+                );
+        }
+    }
+
 
     protected function setId($id) {
         $this->id = $id;
@@ -690,27 +627,49 @@ class fimRoom extends DynamicObject {
         }
     }
 
-
-    protected function setOptions($options) {
-        $this->options = $options;
-
-        $this->deleted  = ($this->options & fimRoom::ROOM_DELETED);
-        $this->archived = ($this->options & fimRoom::ROOM_ARCHIVED);
-        $this->official = ($this->options & fimRoom::ROOM_OFFICIAL) && \Fim\Config::$officialRooms;
-        $this->hidden   = ($this->options & fimRoom::ROOM_HIDDEN) && \Fim\Config::$hiddenRooms;
-    }
-
     protected function setTopic($topic) {
-        $this->topic = \Fim\Config::$disableTopic ? '' : $topic;
+        $this->topic = \Fim\Config::$disableTopic
+            ? ''
+            : $topic;
     }
 
     protected function setParentalAge($age) {
-        $this->parentalAge = \Fim\Config::$parentalEnabled ? (int) $age : 0;
+        $this->parentalAge = \Fim\Config::$parentalEnabled
+            ? (int) $age
+            : 0;
     }
 
     protected function setParentalFlags($parentalFlags) {
         if (\Fim\Config::$parentalEnabled && is_string($parentalFlags))
             $this->parentalFlags = fim_emptyExplode(',', $parentalFlags);
+    }
+
+    /**
+     * @return bool If the room is currently deleted (and will only be readable by administrators).
+     */
+    public function getDeleted() : bool {
+        return ($this->options & fimRoom::ROOM_DELETED) === fimRoom::ROOM_DELETED;
+    }
+
+    /**
+     * @return bool If the room is currently in archived mode (and will only be readable).
+     */
+    public function getArchived() : bool {
+        return ($this->options & fimRoom::ROOM_ARCHIVED) === fimRoom::ROOM_ARCHIVED;
+    }
+
+    /**
+     * @return bool If the room is currently in official mode (and will be prioritised when getting the list of rooms).
+     */
+    public function getOfficial() : bool {
+        return ($this->options & fimRoom::ROOM_OFFICIAL) === fimRoom::ROOM_OFFICIAL;
+    }
+
+    /**
+     * @return bool If the room is currently in hidden mode (and won't be shown when getting the list of rooms).
+     */
+    public function getHidden() : bool {
+        return ($this->options & fimRoom::ROOM_HIDDEN) === fimRoom::ROOM_HIDDEN;
     }
 
 
@@ -784,8 +743,10 @@ class fimRoom extends DynamicObject {
     public function changeTopic($topic) {
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->changeTopic on private room.');
+
         elseif (\Fim\Config::$disableTopic)
             throw new fimError('topicsDisabled', 'Topics are disabled on this server.');
+
         else {
             $this->setDatabase(['topic' => $topic]);
             \Stream\StreamFactory::publish('room_' . $this->id, 'topicChange', [
@@ -861,7 +822,7 @@ class fimRoom extends DynamicObject {
                     \Fim\Database::$sqlPrefix . "rooms",
                     array_merge(fim_arrayFilterKeys((array) $this, ['name', 'topic', 'options', 'defaultPermissions', 'parentalFlags', 'parentalAge']), $roomParameters),
                     array(
-                        'id' => $this->id,
+                        'id' => (int) $this->id,
                     )
                 );
 

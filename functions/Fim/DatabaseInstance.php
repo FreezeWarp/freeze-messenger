@@ -1890,7 +1890,7 @@ class DatabaseInstance extends DatabaseSQL
             $this->sqlPrefix . 'watchRooms' => 'userId, roomId'
         ], [
             'userId' => $userId
-        ])->getColumns('roomId');
+        ])->getColumnValues('roomId');
     }
 
     /**
@@ -1905,7 +1905,7 @@ class DatabaseInstance extends DatabaseSQL
         ], [
             'userId' => $userId,
             'type' => $this->in(['member', 'moderator'])
-        ])->getColumns('groupId');
+        ])->getColumnValues('groupId');
     }
 
     /**
@@ -1920,7 +1920,7 @@ class DatabaseInstance extends DatabaseSQL
         ], [
             'groupId' => $groupId,
             'type' => $this->in(['member', 'moderator'])
-        ])->getColumns('userId');
+        ])->getColumnValues('userId');
     }
 
 

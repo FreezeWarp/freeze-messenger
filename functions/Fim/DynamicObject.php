@@ -51,6 +51,16 @@ abstract class DynamicObject extends MagicGettersSetters {
     }
 
 
+    public function get($property) {
+        if (!$this->hasGetter($property)
+            && !in_array($property, $this->resolved)) {
+            $this->resolveFromPullGroup($property);
+        }
+
+        return parent::get($property);
+    }
+
+
     abstract protected function getColumns(array $columns) : bool;
 
 
@@ -63,10 +73,36 @@ abstract class DynamicObject extends MagicGettersSetters {
         return $this->getColumns(array_diff($properties, $this->resolved));
     }
 
+
     /**
      * Resolves all database properties.
      */
     abstract public function resolveAll();
+
+
+    /**
+     * Resolves the needle property and all similar properties.
+     *
+     * @param $needle
+     *
+     * @throws Exception If matching pullgroup not found.
+     */
+    public function resolveFromPullGroup($needle) {
+        $groupPointer = [];
+
+        foreach (static::$pullGroups AS $group) {
+            if (in_array($needle, $group)) {
+                $groupPointer =& $group;
+                break;
+            }
+        }
+
+        if ($groupPointer) {
+            $this->resolve($groupPointer);
+        }
+        else
+            throw new \Exception("Selection group not found for '$needle'");
+    }
 
 
     /**

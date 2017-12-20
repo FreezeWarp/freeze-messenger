@@ -46,17 +46,4 @@ use Database\DatabaseTypeType;
     \Fim\Database::$sqlPrefix . 'messages' => ['roomId', 10],
     \Fim\Database::$sqlPrefix . 'accessFlood' => ['ip', 10],
 ]);
-
-
-/* These maintain collections. */
-\Fim\Database::instance()->setCollectionTriggers([
-    \Fim\Database::$sqlPrefix . 'watchRooms' => [
-        ['roomId', 'userId', [\Fim\Database::instance(), 'triggerRoomWatchedByIds']],
-    ]
-        // TODO: do this in fimUser
-        //\Fim\Database::$sqlPrefix . 'socialGroupMembers' => [
-        //['userId', 'groupId', [\Fim\Database::instance(), 'triggerUserMemberOfGroupIds']],
-        //['groupId', 'userId', '\Fim\DatabaseInstance:triggerGroupMemberIds'],
-        //],
-]);
 ?>
