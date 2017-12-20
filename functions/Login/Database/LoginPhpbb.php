@@ -98,20 +98,18 @@ class LoginPhpbb extends LoginDatabase {
     }
 
     public function syncInstall() {
-        global $loginConfig;
-
-        $smilies = \Fim\DatabaseLogin::instance()->select(array(
+        $this->syncEmoticons(\Fim\DatabaseLogin::instance()->select(array(
             \Fim\DatabaseLogin::$sqlPrefix . "smilies" => 'code emoticonText, smiley_url emoticonFile'
-        ))->getAsArray(true);
+        ))->getAsArray('emoticonText'));
+    }
 
-        \Fim\Database::instance()->autoQueue(true);
-        foreach ($smilies AS $smilie) {
-            @\Fim\Database::instance()->insert("{\Fim\Database::$sqlPrefix}emoticons", [
-                'emoticonText' => $smilie['emoticonText'],
-                'emoticonFile' => $loginConfig['url'] . 'images/smilies/' . $smilie['emoticonFile']
-            ]);
-        }
-        @\Fim\Database::instance()->autoQueue(false);
+
+    public static function isProfileFeatureDisabled($feature): bool {
+        return in_array($feature, ['selfChangeAvatar', 'selfChangeProfile']);
+    }
+
+    public static function isSiteFeatureDisabled($feature): bool {
+        return in_array($feature, ['emoticons']);
     }
 
 }

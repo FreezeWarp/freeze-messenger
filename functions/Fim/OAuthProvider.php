@@ -1,16 +1,21 @@
 <?php
-namespace OAuth2\Storage;
+namespace Fim;
 
 use OAuth2\OpenID\Storage\UserClaimsInterface;
 use OAuth2\OpenID\Storage\AuthorizationCodeInterface as OpenIDAuthorizationCodeInterface;
 use OAuth2\GrantType\Anonymous as Anonymous;
+use OAuth2\Storage\AccessTokenInterface;
+use OAuth2\Storage\AuthorizationCodeInterface;
+use OAuth2\Storage\ClientCredentialsInterface;
+use OAuth2\Storage\RefreshTokenInterface;
+use OAuth2\Storage\UserCredentialsInterface;
 
 /**
  * FIMDatabase implementation of OAuth
  *
  * @author Joseph Parsons
  */
-class FIMDatabaseOAuth implements
+class OAuthProvider implements
     AuthorizationCodeInterface,
     AccessTokenInterface,
     ClientCredentialsInterface,
@@ -31,7 +36,7 @@ class FIMDatabaseOAuth implements
     public function __construct($db, $exceptionHandler, $config = array())
     {
         if (!$db instanceof \Fim\DatabaseInstance) {
-            throw new $exceptionHandler('First argument to OAuth2\Storage\FIMDatabaseOAuth must be an instance of FIM\DatabaseInstance');
+            throw new $exceptionHandler('First argument to \Fim\OAuthProvider must be an instance of FIM\DatabaseInstance');
         }
 
         $this->db = $db;
@@ -291,7 +296,7 @@ class FIMDatabaseOAuth implements
         //   if (fimUser($userArray['userId'])) update name, etc.
         //   else create user w/ name
 
-        require_once(__DIR__ . '/../../../../fimUser.php');
+        require_once(__DIR__ . '/../fimUser.php');
 
         $userData = $this->db->getUsers(array(
             'userNames' => array($username),

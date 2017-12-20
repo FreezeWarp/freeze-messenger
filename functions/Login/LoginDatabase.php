@@ -74,9 +74,40 @@ abstract class LoginDatabase implements LoginRunner {
         }
     }
 
+    /**
+     * Update our {@link http://josephtparsons.com/messenger/docs/database.htm#emoticons emoticons} table using a third party data set.
+     *
+     * @param $emoticons array An array of emoticons, indexed by the 'emoticonText' value, which in turn contains an array with the keys 'emoticonText' and 'emoticonFile'
+     */
+    public function syncEmoticons($emoticons) {
+        global $loginConfig;
+
+        // Queue the queries, which may combine queries (and may not).
+        \Fim\Database::instance()->autoQueue(true);
+
+        // Start by upserting all of the emoticons we fetched
+        foreach ($emoticons AS $emoticon) {
+            @\Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . 'emoticons', [
+                'emoticonText' => $emoticon['emoticonText'],
+                'emoticonFile' => $loginConfig['url'] . 'images/smilies/' . $emoticon['emoticonFile']
+            ]);
+        }
+
+        // Now delete all the ones we didn't
+        @\Fim\Database::instance()->delete(\Fim\Database::$sqlPrefix . 'emoticons', [
+            '!emoticonText' => @\Fim\Database::instance()->in(array_keys($emoticons))
+        ]);
+
+        // Commit the queued queries.
+        @\Fim\Database::instance()->autoQueue(false);
+    }
+
 
     public static function isProfileFeatureDisabled($feature): bool {
         return false;
     }
 
+    public static function isSiteFeatureDisabled($feature): bool {
+        return false;
+    }
 }

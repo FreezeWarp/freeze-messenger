@@ -104,7 +104,7 @@ if (!$ignoreLogin) {
     /**
      * How our OAuth data is stored.
      */
-    $oauthStorage = new OAuth2\Storage\FIMDatabaseOAuth(\Fim\Database::instance(), 'fimError');
+    $oauthStorage = new \Fim\OAuthProvider(\Fim\Database::instance(), 'fimError');
 
     /**
      * How our OAuth processes requests.

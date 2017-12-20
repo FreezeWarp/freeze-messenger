@@ -29,7 +29,7 @@ class LoginFactory {
     public $oauthRequest;
 
     /**
-     * @var \OAuth2\Storage\FIMDatabaseOAuth
+     * @var \Fim\OAuthProvider
      */
     public $oauthStorage;
 
@@ -54,7 +54,7 @@ class LoginFactory {
     public $user;
 
 
-    public function __construct(\OAuth2\Request $oauthRequest, \OAuth2\Storage\FIMDatabaseOAuth $oauthStorage, \OAuth2\Server $oauthServer, DatabaseSQL $database) {
+    public function __construct(\OAuth2\Request $oauthRequest, \Fim\OAuthProvider $oauthStorage, \OAuth2\Server $oauthServer, DatabaseSQL $database) {
         global $loginConfig;
 
         $this->oauthRequest = $oauthRequest;

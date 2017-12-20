@@ -1,7 +1,6 @@
 <?php
 namespace Login;
 
-//require_once('LoginDatabase.php');
 class LoginOAuth extends LoginDatabase {
     public function __construct(LoginFactory $loginFactory) {
         parent::__construct($loginFactory);

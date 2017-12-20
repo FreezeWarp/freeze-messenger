@@ -26,6 +26,7 @@ class LoginVbulletin3 extends LoginDatabase {
             'joindate' => 'joinDate', 'usertitle' => 'userTitle',
             'posts' => 'posts', 'lastvisit' => 'lastVisit',
         ),
+
 /*        'adminGroups' => array(
             'groupId' => 'usergroupid', 'groupName' => 'title',
             'startTag' => 'opentag', 'endTag' => 'closetag',
@@ -178,21 +179,18 @@ class LoginVbulletin3 extends LoginDatabase {
     }
 
     public function syncInstall() {
-        global $database, $loginConfig;
-
-        $smilies = $this->loginFactory->database->select(array(
+        $this->syncEmoticons($this->loginFactory->database->select(array(
             "{$this->loginFactory->database->sqlPrefix}smilie" => 'smilietext emoticonText, smiliepath emoticonFile'
-        ))->getAsArray(true);
-        //var_dump($smilies); die();
+        ))->getAsArray('emoticonText'));
+    }
 
-        \Fim\Database::instance()->autoQueue(true);
-        foreach ($smilies AS $smilie) {
-            @\Fim\Database::instance()->insert("{\Fim\Database::$sqlPrefix}emoticons", [
-                'emoticonText' => $smilie['emoticonText'],
-                'emoticonFile' => "{$loginConfig['url']}/{$smilie['emoticonFile']}"
-            ]);
-        }
-        @\Fim\Database::instance()->autoQueue(false);
+
+    public static function isProfileFeatureDisabled($feature): bool {
+        return in_array($feature, ['selfChangeAvatar', 'selfChangeProfile']);
+    }
+
+    public static function isSiteFeatureDisabled($feature): bool {
+        return in_array($feature, ['emoticons']);
     }
 
 }
