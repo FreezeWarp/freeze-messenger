@@ -1,27 +1,47 @@
 <?php
+
 namespace Login\Database;
 
 use Login\LoginDatabase;
 use Login\LoginFactory;
+use Login\LoginRunner;
 
-class LoginVanilla extends LoginDatabase {
-    public function __construct(LoginFactory $loginFactory) {
+/**
+ * The LoginRunner used for vanilla FreezeMessenger database logins.
+ */
+class LoginVanilla extends LoginDatabase
+{
+    /**
+     * LoginVanilla constructor.
+     *
+     * @param $loginFactory LoginFactory The LoginFactory instance used to create this object.
+     */
+    public function __construct(LoginFactory $loginFactory)
+    {
         parent::__construct($loginFactory);
     }
 
-    public function getLoginFactory(): LoginFactory {
-        return $this->loginFactory;
-    }
-
-    public function hasLoginCredentials(): bool {
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
+    public function hasLoginCredentials(): bool
+    {
         return isset($_REQUEST['username'], $_REQUEST['password']);
     }
 
-    public function getLoginCredentials() {
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
+    public function getLoginCredentials()
+    {
         return;
     }
 
-    public function setUser() {
+    /**
+     * @see LoginRunner::setUser()
+     */
+    public function setUser()
+    {
         $this->oauthGrantType = new \OAuth2\GrantType\UserCredentials($this->loginFactory->oauthStorage);
     }
 

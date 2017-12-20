@@ -16,47 +16,78 @@
 
 namespace Login\TwoStep;
 
+use Login\LoginFactory;
 use Login\LoginTwoStep;
 use \Facebook;
 
-class LoginFacebook extends LoginTwoStep {
+/**
+ * Facebook Login Provider
+ * This will use the Facebook client library to authenticate users using Facebook login credentials.
+ */
+class LoginFacebook extends LoginTwoStep
+{
+    /**
+     * @var Facebook\Facebook The Facebook client instance.
+     */
     public $client;
-    public $loginFactory;
 
-    public function __construct($loginFactory, $clientId, $clientSecret) {
+    /**
+     * LoginFacebook constructor.
+     *
+     * @param $loginFactory LoginFactory The LoginFactory instance used to create this object.
+     * @param $clientId     string The Facebook API client ID.
+     * @param $clientSecret string The Facebook API client secret.
+     */
+    public function __construct(LoginFactory $loginFactory, string $clientId, string $clientSecret)
+    {
         parent::__construct($loginFactory);
 
         // Session Data for Facebook
-        if(!session_id()) {
+        if (!session_id()) {
             session_start();
         }
 
         // create our client credentials
         $this->client = new Facebook\Facebook([
-            'app_id' => $clientId, // Replace {app-id} with your app id
-            'app_secret' => $clientSecret,
+            'app_id'                => $clientId, // Replace {app-id} with your app id
+            'app_secret'            => $clientSecret,
             'default_graph_version' => 'v2.2',
         ]);
     }
 
-    public function hasLoginCredentials() : bool {
+
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
+    public function hasLoginCredentials(): bool
+    {
         return isset($_REQUEST['code']) || isset($_REQUEST['state']);
     }
 
-    public function getLoginCredentials() {
+
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
+    public function getLoginCredentials()
+    {
         global $installUrl;
         header('Location: ' . filter_var($this->client->getRedirectLoginHelper()->getLoginUrl($installUrl . 'validate.php?integrationMethod=facebook'), FILTER_SANITIZE_URL));
         die();
     }
 
-    public function setUser() {
+
+    /**
+     * @see LoginRunner::setUser()
+     */
+    public function setUser()
+    {
         try {
             $accessToken = $this->client->getRedirectLoginHelper()->getAccessToken();
-        } catch(Facebook\Exceptions\FacebookResponseException $e) {
+        } catch (Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             new \fimError('facebookError', 'Graph returned an error: ' . $e->getMessage());
             die();
-        } catch(Facebook\Exceptions\FacebookSDKException $e) {
+        } catch (Facebook\Exceptions\FacebookSDKException $e) {
             // When validation fails or other local issues
             new \fimError('facebookError', 'Facebook SDK returned an error: ' . $e->getMessage());
             die();
@@ -67,10 +98,11 @@ class LoginFacebook extends LoginTwoStep {
 
             if ($this->client->getRedirectLoginHelper()->getError()) {
                 new \fimError($helper->getErrorCode(), $helper->getError(), [
-                    'reason' => $helper->getErrorReason(),
+                    'reason'      => $helper->getErrorReason(),
                     'description' => $helper->getErrorDescription()
                 ]);
-            } else {
+            }
+            else {
                 new \fimError('facebookError', 'Unknown Facebook Error.');
             }
             exit;
@@ -78,11 +110,11 @@ class LoginFacebook extends LoginTwoStep {
 
         try {
             $user = $this->client->get('/me?fields=id,name,about', $accessToken)->getDecodedBody();
-        } catch(Facebook\Exceptions\FacebookResponseException $e) {
+        } catch (Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             new \fimError('facebookError', 'Graph returned an error: ' . $e->getMessage());
             die();
-        } catch(Facebook\Exceptions\FacebookSDKException $e) {
+        } catch (Facebook\Exceptions\FacebookSDKException $e) {
             // When validation fails or other local issues
             new \fimError('facebookError', 'Facebook SDK returned an error: ' . $e->getMessage());
             die();
@@ -90,11 +122,11 @@ class LoginFacebook extends LoginTwoStep {
 
         try {
             $picture = $this->client->get('/me/picture?redirect=false&type=large', $accessToken)->getDecodedBody();
-        } catch(Facebook\Exceptions\FacebookResponseException $e) {
+        } catch (Facebook\Exceptions\FacebookResponseException $e) {
             // When Graph returns an error
             new \fimError('facebookError', 'Graph returned an error: ' . $e->getMessage());
             die();
-        } catch(Facebook\Exceptions\FacebookSDKException $e) {
+        } catch (Facebook\Exceptions\FacebookSDKException $e) {
             // When validation fails or other local issues
             new \fimError('facebookError', 'Facebook SDK returned an error: ' . $e->getMessage());
             die();
@@ -120,7 +152,12 @@ class LoginFacebook extends LoginTwoStep {
         }
     }
 
-    public static function isProfileFeatureDisabled($feature): bool {
+    /**
+     * Indicates that 'selfChangeAvatar' is a disabled profile feature when using Facebook logins.
+     * @see LoginRunner::isProfileFeatureDisabled()
+     */
+    public static function isProfileFeatureDisabled($feature): bool
+    {
         return in_array($feature, ['selfChangeAvatar']);
     }
 }

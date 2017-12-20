@@ -16,15 +16,30 @@
 
 namespace Login\TwoStep;
 
+use Login\LoginFactory;
 use Login\LoginTwoStep;
 use \Google_Client;
 use \Google_Service_Oauth2;
 
+/**
+ * Google Login Provider
+ * This will use the Google client library to authenticate users using Google login credentials.
+ */
 class LoginGoogle extends LoginTwoStep {
+    /**
+     * @var Google_Client The Google_Client instance.
+     */
     public $client;
-    public $loginFactory;
 
-    public function __construct($loginFactory, $clientId, $clientSecret) {
+
+    /**
+     * LoginGoogle constructor.
+     *
+     * @param $loginFactory LoginFactory The LoginFactory instance used to create this object.
+     * @param $clientId     string The Google API client ID.
+     * @param $clientSecret string The Google API client secret.
+     */
+    public function __construct(LoginFactory $loginFactory, string $clientId, string $clientSecret) {
         global $installUrl;
 
         parent::__construct($loginFactory);
@@ -43,15 +58,27 @@ class LoginGoogle extends LoginTwoStep {
         ]);
     }
 
+
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
     public function hasLoginCredentials() : bool {
         return isset($_REQUEST['code']);
     }
 
+
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
     public function getLoginCredentials() {
         header('Location: ' . filter_var($this->client->createAuthUrl(), FILTER_SANITIZE_URL));
         die();
     }
 
+
+    /**
+     * @see LoginRunner::setUser()
+     */
     public function setUser() {
         $this->client->fetchAccessTokenWithAuthCode($_GET['code']); // verify returned code
 
@@ -85,6 +112,11 @@ class LoginGoogle extends LoginTwoStep {
         ]); // If the ID wasn't resolved above, a new user will be created.
     }
 
+
+    /**
+     * Indicates that 'selfChangeAvatar' is a disabled profile feature when using Google logins.
+     * @see LoginRunner::isProfileFeatureDisabled()
+     */
     public static function isProfileFeatureDisabled($feature): bool {
         return in_array($feature, ['selfChangeAvatar']);
     }

@@ -22,7 +22,8 @@ use Database\SQL\DatabaseSQL;
  * A factory that looks that the $_REQUEST information and initialises an appropriate LoginRunner instance.
  * Use hasLogin() to check if a valid LoginRunner is available. Use getLogin() to run the LoginRunner. Use apiResponse() to return an appropriate API response given the current LoginRunner status.
  */
-class LoginFactory {
+class LoginFactory
+{
     /**
      * @var \OAuth2\Request
      */
@@ -54,7 +55,8 @@ class LoginFactory {
     public $user;
 
 
-    public function __construct(\OAuth2\Request $oauthRequest, \Fim\OAuthProvider $oauthStorage, \OAuth2\Server $oauthServer, DatabaseSQL $database) {
+    public function __construct(\OAuth2\Request $oauthRequest, \Fim\OAuthProvider $oauthStorage, \OAuth2\Server $oauthServer, DatabaseSQL $database)
+    {
         global $loginConfig;
 
         $this->oauthRequest = $oauthRequest;
@@ -118,16 +120,19 @@ class LoginFactory {
     }
 
 
-    public static function getLoginRunnerFromName($name) {
+    public static function getLoginRunnerFromName($name)
+    {
         $className = 'Login' . ucfirst($name);
 
         if (class_exists("\\Login\\Database\\$className")) {
             $className = "\\Login\\Database\\$className";
+
             return $className;
         }
 
-        else if (class_exists("\\Login\\TwoStep\\$className")) {
+        elseif (class_exists("\\Login\\TwoStep\\$className")) {
             $className = "\\Login\\TwoStep\\$className";
+
             return $className;
         }
 
@@ -141,7 +146,8 @@ class LoginFactory {
      * Whether or not an integration login is available.
      * @return bool
      */
-    public function hasLogin() {
+    public function hasLogin()
+    {
         return $this->loginRunner != null;
     }
 
@@ -149,7 +155,8 @@ class LoginFactory {
     /**
      * Perform a login.
      */
-    public function getLogin() {
+    public function getLogin()
+    {
         if ($this->loginRunner->hasLoginCredentials()) {
             $this->loginRunner->setUser();
         }
@@ -162,7 +169,8 @@ class LoginFactory {
     /**
      * Get the API response following a login. This should generally exit execution, though may cause redirects.
      */
-    public function apiResponse() {
+    public function apiResponse()
+    {
         $this->loginRunner->apiResponse();
     }
 
@@ -172,12 +180,14 @@ class LoginFactory {
      *
      * @return \OAuth2\GrantType\IntegrationLogin
      */
-    public function oauthGetIntegrationLogin() {
+    public function oauthGetIntegrationLogin()
+    {
         if (empty($this->oauthRequest->request['client_id']))
             $this->oauthRequest->request['client_id'] = 'IntegrationLogin'; // Pretend we have this (if we don't).
 
         $this->oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
-        $this->oauthRequest->server['REQUEST_METHOD'] =  'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
+        $this->oauthRequest->server['REQUEST_METHOD'] = 'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
+
         return new \OAuth2\GrantType\IntegrationLogin($this->user);
     }
 }

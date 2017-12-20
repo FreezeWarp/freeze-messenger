@@ -1,7 +1,9 @@
 <?php
+
 namespace Login;
 
-abstract class LoginDatabase implements LoginRunner {
+abstract class LoginDatabase implements LoginRunner
+{
     /**
      * @var LoginFactory
      */
@@ -13,19 +15,45 @@ abstract class LoginDatabase implements LoginRunner {
     public $oauthGrantType;
 
 
-    public function __construct(LoginFactory $loginFactory) {
+    /**
+     * LoginDatabase constructor.
+     *
+     * @param $loginFactory LoginFactory The LoginFactory instance used to create this object.
+     */
+    public function __construct(LoginFactory $loginFactory)
+    {
         $this->loginFactory = $loginFactory;
     }
 
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
     abstract public function hasLoginCredentials(): bool;
+
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
     abstract public function getLoginCredentials();
+
+    /**
+     * @see LoginRunner::setUser()
+     */
     abstract public function setUser();
 
-    public function getLoginFactory(): LoginFactory {
+    /**
+     * @see LoginRunner::getLoginFactory()
+     */
+    public function getLoginFactory(): LoginFactory
+    {
         return $this->loginFactory;
     }
 
-    public function apiResponse() {
+
+    /**
+     * @see LoginRunner::apiResponse()
+     */
+    public function apiResponse()
+    {
         /* Get Session Information */
         // Add our grant type, set by an implementor.
         $this->loginFactory->oauthServer->addGrantType($this->oauthGrantType);
@@ -42,7 +70,7 @@ abstract class LoginDatabase implements LoginRunner {
             $this->loginFactory->oauthStorage->cleanSessions();
 
             // Get the user object from a user ID
-            $user = \Fim\UserFactory::getFromId((int) $this->oauthGrantType->getUserId());
+            $user = \Fim\UserFactory::getFromId((int)$this->oauthGrantType->getUserId());
             $user->setSessionHash($oauthResponse->getParameter('access_token')); // Mainly for logging.
             $user->setClientCode($oauthResponse->getParameter('client_id')); // Mainly for logging.
 
@@ -56,12 +84,12 @@ abstract class LoginDatabase implements LoginRunner {
             $user->resolveAll();
             $this->loginFactory->user = $user;
 
-            die(new \Http\ApiData(array(
-                'login' => array(
-                    'access_token' => $user->sessionHash,
+            die(new \Http\ApiData([
+                'login' => [
+                    'access_token'  => $user->sessionHash,
                     'refresh_token' => $oauthResponse->getParameter('refresh_token'),
-                    'expires' => $oauthResponse->getParameter('expires_in'),
-                    'userData' => array_merge([
+                    'expires'       => $oauthResponse->getParameter('expires_in'),
+                    'userData'      => array_merge([
                         'permissions' => $user->getPermissionsArray()
                     ], fim_castArrayEntry(
                         fim_objectArrayFilterKeys(
@@ -69,17 +97,19 @@ abstract class LoginDatabase implements LoginRunner {
                             ['id', 'anonId', 'name', 'nameFormat', 'mainGroupId', 'socialGroupIds', 'avatar', 'profile', 'parentalAge', 'parentalFlags', 'messageFormatting', 'defaultRoomId', 'options', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms']
                         ), ['socialGroupIds', 'parentalFlags', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms'], '\Http\ApiOutputList'
                     ))
-                ),
-            )));
+                ],
+            ]));
         }
     }
+
 
     /**
      * Update our {@link http://josephtparsons.com/messenger/docs/database.htm#emoticons emoticons} table using a third party data set.
      *
      * @param $emoticons array An array of emoticons, indexed by the 'emoticonText' value, which in turn contains an array with the keys 'emoticonText' and 'emoticonFile'
      */
-    public function syncEmoticons($emoticons) {
+    public function syncEmoticons($emoticons)
+    {
         global $loginConfig;
 
         // Queue the queries, which may combine queries (and may not).
@@ -103,11 +133,19 @@ abstract class LoginDatabase implements LoginRunner {
     }
 
 
-    public static function isProfileFeatureDisabled($feature): bool {
+    /**
+     * @see LoginRunner::isProfileFeatureDisabled()
+     */
+    public static function isProfileFeatureDisabled($feature): bool
+    {
         return false;
     }
 
-    public static function isSiteFeatureDisabled($feature): bool {
+    /**
+     * @see LoginRunner::isSiteFeatureDisabled()
+     */
+    public static function isSiteFeatureDisabled($feature): bool
+    {
         return false;
     }
 }

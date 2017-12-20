@@ -2,17 +2,29 @@
 
 namespace Login\TwoStep;
 
-use Google\Auth\HttpHandler\Guzzle5HttpHandler;
 use Login\LoginFactory;
 use Login\LoginTwoStep;
 use Rudolf\OAuth2\Client\Provider\Reddit;
 
+/**
+ * Reddit Login Provider
+ * This will use the Reddit client library to authenticate users using Reddit login credentials.
+ */
 class LoginReddit extends LoginTwoStep {
-    public $loginFactory;
-
+    /**
+     * @var Reddit The Reddit instance.
+     */
     public $client;
 
-    public function __construct(LoginFactory $loginFactory, $clientId, $clientSecret) {
+
+    /**
+     * LoginReddit constructor.
+     *
+     * @param $loginFactory LoginFactory The LoginFactory instance used to create this object.
+     * @param $clientId     string The Reddit API client ID.
+     * @param $clientSecret string The Reddit API client secret.
+     */
+    public function __construct(LoginFactory $loginFactory, string $clientId, string $clientSecret) {
         global $installUrl;
 
         parent::__construct($loginFactory);
@@ -25,10 +37,18 @@ class LoginReddit extends LoginTwoStep {
         ]);
     }
 
+
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
     public function hasLoginCredentials(): bool {
         return isset($_REQUEST['code']);
     }
 
+
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
     public function getLoginCredentials() {
         $url = $this->client->getAuthorizationUrl([
             'scope'       => ['identity', 'mysubreddits']
@@ -46,6 +66,10 @@ class LoginReddit extends LoginTwoStep {
         die();
     }
 
+
+    /**
+     * @see LoginRunner::setUser()
+     */
     public function setUser() {
         if (!session_id())
             session_start();

@@ -5,9 +5,29 @@ namespace Login\TwoStep;
 use Login\LoginFactory;
 use Login\LoginTwoStep;
 
+/**
+ * Steam Login Provider
+ * This will use the Steam client library to authenticate users using Steam login credentials.
+ * It does not use a client secret.
+ */
 class LoginSteam extends LoginTwoStep {
+    /**
+     * @var \LightOpenID The LightOpenID instance.
+     */
     public $client;
+    /**
+     * @var int The Steam API client ID.
+     */
+    public $clientId;
 
+
+    /**
+     * LoginSteam constructor.
+     *
+     * @param $loginFactory LoginFactory The LoginFactory instance used to create this object.
+     * @param $clientId     string {@see $clientId}.
+     * @param $clientSecret string Unused.
+     */
     public function __construct(LoginFactory $loginFactory, $clientId, $clientSecret) {
         global $installUrl;
         parent::__construct($loginFactory);
@@ -16,15 +36,27 @@ class LoginSteam extends LoginTwoStep {
         $this->client->identity = 'http://steamcommunity.com/openid';
     }
 
+
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
     public function hasLoginCredentials(): bool {
         return $this->client->mode && $this->client->mode != "cancel";
     }
 
+
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
     public function getLoginCredentials() {
         header('Location: ' . $this->client->authUrl());
         die();
     }
 
+
+    /**
+     * @see LoginRunner::setUser()
+     */
     public function setUser() {
         global $loginConfig;
 
@@ -126,6 +158,10 @@ class LoginSteam extends LoginTwoStep {
     }
 
 
+    /**
+     * Indicates that 'selfChangeAvatar' and 'selfChangeProfile' are disabled profile feature when using Steam logins.
+     * @see LoginRunner::isProfileFeatureDisabled()
+     */
     public static function isProfileFeatureDisabled($feature): bool {
         return in_array($feature, ['selfChangeAvatar', 'selfChangeProfile']);
     }

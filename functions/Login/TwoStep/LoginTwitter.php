@@ -6,20 +6,42 @@ use Abraham\TwitterOAuth\TwitterOAuth;
 use Login\LoginFactory;
 use Login\LoginTwoStep;
 
+/**
+ * Twitter Login Provider
+ * This will use the Twitter client library to authenticate users using Twitter login credentials.
+ */
 class LoginTwitter extends LoginTwoStep {
+    /**
+     * @var TwitterOAuth The TwitterOAuth instance.
+     */
     public $client;
 
-    public function __construct(LoginFactory $loginFactory, $clientId, $clientSecret) {
+    /**
+     * LoginTwitter constructor.
+     *
+     * @param $loginFactory LoginFactory The LoginFactory instance used to create this object.
+     * @param $clientId     string The Twitter API client ID.
+     * @param $clientSecret string The Twitter API client secret.
+     */
+    public function __construct(LoginFactory $loginFactory, string $clientId, string $clientSecret) {
         parent::__construct($loginFactory);
 
         // create our client credentials
         $this->client = new TwitterOAuth($clientId, $clientSecret);
     }
 
+
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
     public function hasLoginCredentials(): bool {
         return isset($_REQUEST['oauth_token']) && $_SESSION['oauth_token'] !== $_REQUEST['oauth_token'];
     }
 
+
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
     public function getLoginCredentials() {
         global $installUrl;
 
@@ -34,6 +56,10 @@ class LoginTwitter extends LoginTwoStep {
         die();
     }
 
+
+    /**
+     * @see LoginRunner::setUser()
+     */
     public function setUser() {
         session_start();
         $request_token = [];
@@ -63,6 +89,11 @@ class LoginTwitter extends LoginTwoStep {
         ]);
     }
 
+
+    /**
+     * Indicates that 'selfChangeAvatar' and 'selfChangeProfile' are disabled profile feature when using Twitter logins.
+     * @see LoginRunner::isProfileFeatureDisabled()
+     */
     public static function isProfileFeatureDisabled($feature): bool {
         return in_array($feature, ['selfChangeAvatar', 'selfChangeProfile']);
     }

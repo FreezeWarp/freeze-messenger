@@ -3,20 +3,36 @@
 namespace Login\TwoStep;
 
 use Login\LoginFactory;
+use Login\LoginRunner;
 use Login\LoginTwoStep;
+use \Stevenmaguire\OAuth2\Client\Provider\Microsoft;
 
+/**
+ * Microsoft Login Provider
+ * This will use the Microsoft client library to authenticate users using Microsoft login credentials.
+ * It requires that a connection be made using HTTPS.
+ */
 class LoginMicrosoft extends LoginTwoStep {
-    public $loginFactory;
-
+    /**
+     * @var Microsoft The Microsoft client instance.
+     */
     public $client;
 
+
+    /**
+     * LoginMicrosoft constructor.
+     *
+     * @param $loginFactory LoginFactory The LoginFactory instance used to create this object.
+     * @param $clientId     string The Microsoft API client ID.
+     * @param $clientSecret string The Microsoft API client secret.
+     */
     public function __construct(LoginFactory $loginFactory, $clientId, $clientSecret) {
         global $installUrl;
 
         parent::__construct($loginFactory);
 
         // create our client credentials
-        $this->client = new \Stevenmaguire\OAuth2\Client\Provider\Microsoft([
+        $this->client = new Microsoft([
             // Required
             'clientId'                  => $clientId,
             'clientSecret'              => $clientSecret,
@@ -24,10 +40,18 @@ class LoginMicrosoft extends LoginTwoStep {
         ]);
     }
 
+
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
     public function hasLoginCredentials(): bool {
         return isset($_REQUEST['code']);
     }
 
+
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
     public function getLoginCredentials() {
         $url = $this->client->getAuthorizationUrl([
             'scope' => ['wl.basic', 'wl.signin', 'wl.offline_access']
@@ -45,6 +69,10 @@ class LoginMicrosoft extends LoginTwoStep {
         die();
     }
 
+
+    /**
+     * @see LoginRunner::setUser()
+     */
     public function setUser() {
         if (!session_id())
             session_start();
@@ -94,6 +122,11 @@ class LoginMicrosoft extends LoginTwoStep {
         ]);
     }
 
+
+    /**
+     * Indicates that 'selfChangeAvatar' is a disabled profile feature when using Microsoft logins.
+     * @see LoginRunner::isProfileFeatureDisabled()
+     */
     public static function isProfileFeatureDisabled($feature): bool {
         return in_array($feature, ['selfChangeAvatar']);
     }

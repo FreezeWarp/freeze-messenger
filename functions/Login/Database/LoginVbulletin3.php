@@ -1,63 +1,46 @@
 <?php
+
 namespace Login\Database;
 
 use Login\LoginDatabase;
 use Login\LoginFactory;
 
-class LoginVbulletin3 extends LoginDatabase {
+class LoginVbulletin3 extends LoginDatabase
+{
     /**
-     * @var array A reference to the tables used by PHPBB.
+     * LoginVbulletin3 constructor.
+     *
+     * @param $loginFactory \Login\LoginFactory The LoginFactory instance used to create this object.
      */
-    private $tables = [
-        'users' => 'user',
-        'adminGroups' => 'usergroup',
-        'socialGroups' => 'socialgroup',
-        'socialGroupMembers' => 'socialgroupmember',
-    ];
-
-    /**
-     * @var array A reference to the tables columns used by PHPBB.
-     */
-    private $fields = [
-        'users' => array(
-            'userid' => 'id', 'username' => 'name',
-            'password' => 'password', 'salt' => 'salt',
-            'displaygroupid' => 'mainGroupId', 'email' => 'email',
-            'joindate' => 'joinDate', 'usertitle' => 'userTitle',
-            'posts' => 'posts', 'lastvisit' => 'lastVisit',
-        ),
-
-/*        'adminGroups' => array(
-            'groupId' => 'usergroupid', 'groupName' => 'title',
-            'startTag' => 'opentag', 'endTag' => 'closetag',
-        ),
-        'socialGroups' => array(
-            'groupId' => 'groupid', 'groupName' => 'name',
-        ),
-        'socialGroupMembers' => array(
-            'groupId' => 'groupid', 'userId' => 'userid',
-            'type' => 'type', 'validType' => 'member',
-        ),*/
-    ];
-
-
-    public function __construct(LoginFactory $loginFactory) {
+    public function __construct(LoginFactory $loginFactory)
+    {
         parent::__construct($loginFactory);
     }
 
-    public function getLoginFactory(): LoginFactory {
-        return $this->loginFactory;
-    }
 
-    public function hasLoginCredentials(): bool {
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
+    public function hasLoginCredentials(): bool
+    {
         return isset($_REQUEST['username'], $_REQUEST['password']);
     }
 
-    public function getLoginCredentials() {
+
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
+    public function getLoginCredentials()
+    {
         return;
     }
 
-    public function setUser() {
+
+    /**
+     * @see LoginRunner::setUser()
+     */
+    public function setUser()
+    {
         global $loginConfig;
 
         $vbUser = $this->loginFactory->database->select([
@@ -108,20 +91,20 @@ class LoginVbulletin3 extends LoginDatabase {
             /* Create User */
             $this->loginFactory->user = new \fimUser([
                 'integrationMethod' => 'vb34',
-                'integrationId' => $vbUser['userid'],
+                'integrationId'     => $vbUser['userid'],
             ]);
             $this->loginFactory->user->resolveAll();
             $this->loginFactory->user->setDatabase([
                 'integrationMethod' => 'vb34',
-                'integrationId' => $vbUser['userid'],
-                'profile' => "{$loginConfig['url']}member.php?u={$vbUser['userid']}",
-                'name' => $vbUser['username'],
-                'email' => $vbUser['email'],
-                'bio' => $vbUser['usertitle'],
-                'nameFormat' => $css,
-                'mainGroupId' => $vbUser['usergroupid'],
-                'joinDate' => $vbUser['joindate'],
-                'avatar' => "{$loginConfig['url']}/image.php?u={$vbUser['userid']}", // TODO, I think
+                'integrationId'     => $vbUser['userid'],
+                'profile'           => "{$loginConfig['url']}member.php?u={$vbUser['userid']}",
+                'name'              => $vbUser['username'],
+                'email'             => $vbUser['email'],
+                'bio'               => $vbUser['usertitle'],
+                'nameFormat'        => $css,
+                'mainGroupId'       => $vbUser['usergroupid'],
+                'joinDate'          => $vbUser['joindate'],
+                'avatar'            => "{$loginConfig['url']}/image.php?u={$vbUser['userid']}", // TODO, I think
             ]);
 
 
@@ -130,7 +113,7 @@ class LoginVbulletin3 extends LoginDatabase {
                 "{$this->loginFactory->database->sqlPrefix}socialgroupmember" => 'userid, groupid, type'
             ], [
                 'userid' => $vbUser['userid'],
-                'type' => 'member'
+                'type'   => 'member'
             ])->getColumnValues('groupid');
 
             $vbSocialGroups = $this->loginFactory->database->select([
@@ -178,18 +161,33 @@ class LoginVbulletin3 extends LoginDatabase {
         }
     }
 
-    public function syncInstall() {
-        $this->syncEmoticons($this->loginFactory->database->select(array(
+
+    /**
+     * Sync the remote vBulletin installation information with the locally-available FreezeMessenger installation information.
+     */
+    public function syncInstall()
+    {
+        $this->syncEmoticons($this->loginFactory->database->select([
             "{$this->loginFactory->database->sqlPrefix}smilie" => 'smilietext emoticonText, smiliepath emoticonFile'
-        ))->getAsArray('emoticonText'));
+        ])->getAsArray('emoticonText'));
     }
 
 
-    public static function isProfileFeatureDisabled($feature): bool {
+    /**
+     * Indicates that 'selfChangeAvatar' and 'selfChangeProfile' is a disabled profile feature when using PHPBB logins.
+     * @see LoginRunner::isProfileFeatureDisabled()
+     */
+    public static function isProfileFeatureDisabled($feature): bool
+    {
         return in_array($feature, ['selfChangeAvatar', 'selfChangeProfile']);
     }
 
-    public static function isSiteFeatureDisabled($feature): bool {
+    /**
+     * Indicates that 'emoticons' is a disabled site feature when using PHPBB logins.
+     * @see LoginRunner::isSiteFeatureDisabled()
+     */
+    public static function isSiteFeatureDisabled($feature): bool
+    {
         return in_array($feature, ['emoticons']);
     }
 

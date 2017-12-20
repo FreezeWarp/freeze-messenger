@@ -1,26 +1,53 @@
 <?php
+
 namespace Login;
 
-abstract class LoginTwoStep implements LoginRunner {
-
+/**
+ * This is the broad functionality used by any Two-Step login provider: one that first launches a remote application to obtain a login instance, and then uses that login instance to obtain user information.
+ */
+abstract class LoginTwoStep implements LoginRunner
+{
     /**
-     * @var LoginFactory
+     * @var LoginFactory The LoginFactory instance used to create the TwoStep provider.
      */
     public $loginFactory;
 
-    public function __construct(LoginFactory $loginFactory) {
+    /**
+     * LoginTwoStep constructor.
+     */
+    public function __construct(LoginFactory $loginFactory)
+    {
         $this->loginFactory = $loginFactory;
     }
 
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
     abstract public function hasLoginCredentials(): bool;
+
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
     abstract public function getLoginCredentials();
+
+    /**
+     * @see LoginRunner::setUser()
+     */
     abstract public function setUser();
 
-    public function getLoginFactory(): LoginFactory {
+    /**
+     * @see LoginRunner::getLoginFactory()
+     */
+    public function getLoginFactory(): LoginFactory
+    {
         return $this->loginFactory;
     }
 
-    public function apiResponse() {
+    /**
+     * @see LoginRunner::apiResponse()
+     */
+    public function apiResponse()
+    {
         global $installUrl;
 
         $this->loginFactory->oauthServer->addGrantType($this->loginFactory->oauthGetIntegrationLogin());
@@ -37,11 +64,19 @@ abstract class LoginTwoStep implements LoginRunner {
         die();
     }
 
-
-    public static function isProfileFeatureDisabled($feature): bool {
+    /**
+     * @see LoginRunner::isProfileFeatureDisabled()
+     */
+    public static function isProfileFeatureDisabled($feature): bool
+    {
         return false;
     }
-    public static function isSiteFeatureDisabled($feature): bool {
+
+    /**
+     * @see LoginRunner::isSiteFeatureDisabled()
+     */
+    public static function isSiteFeatureDisabled($feature): bool
+    {
         return false;
     }
 

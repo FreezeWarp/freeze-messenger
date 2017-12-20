@@ -1,17 +1,19 @@
 <?php
+
 namespace Login\Database;
 
 use Login\LoginDatabase;
 use Login\LoginFactory;
 
-class LoginPhpbb extends LoginDatabase {
+class LoginPhpbb extends LoginDatabase
+{
     /**
      * @var array A reference to the tables used by PHPBB.
      */
     private $tables = [
-        'users' => 'users',
-        'adminGroups' => false,
-        'socialGroups' => 'groups',
+        'users'              => 'users',
+        'adminGroups'        => false,
+        'socialGroups'       => 'groups',
         'socialGroupMembers' => 'user_group'
     ];
 
@@ -19,45 +21,62 @@ class LoginPhpbb extends LoginDatabase {
      * @var array A reference to the tables columns used by PHPBB.
      */
     private $fields = [
-        'users' => array(
-            'user_id' => 'id', 'username' => 'name',
+        'users' => [
+            'user_id'       => 'id', 'username' => 'name',
             'user_password' => 'password',
-            'group_id' => 'mainGroupId', 'user_email' => 'email',
-            'user_regdate' => 'joinDate', 'user_avatar' => 'avatar',
-            'user_colour' => 'nameColor', 'user_posts' => 'posts'
-        ),
+            'group_id'      => 'mainGroupId', 'user_email' => 'email',
+            'user_regdate'  => 'joinDate', 'user_avatar' => 'avatar',
+            'user_colour'   => 'nameColor', 'user_posts' => 'posts'
+        ],
     ];
 
 
-    public function __construct(LoginFactory $loginFactory) {
+    /**
+     * LoginPhpbb constructor.
+     *
+     * @param $loginFactory \Login\LoginFactory The LoginFactory instance used to create this object.
+     */
+    public function __construct(LoginFactory $loginFactory)
+    {
         parent::__construct($loginFactory);
     }
 
-    public function getLoginFactory(): LoginFactory {
-        return $this->loginFactory;
-    }
 
-    public function hasLoginCredentials(): bool {
+    /**
+     * @see LoginRunner::hasLoginCredentials()
+     */
+    public function hasLoginCredentials(): bool
+    {
         return isset($_REQUEST['username'], $_REQUEST['password']);
     }
 
-    public function getLoginCredentials() {
+
+    /**
+     * @see LoginRunner::getLoginCredentials()
+     */
+    public function getLoginCredentials()
+    {
         return;
     }
 
-    public function setUser() {
+
+    /**
+     * @see LoginRunner::setUser()
+     */
+    public function setUser()
+    {
         global $loginConfig;
 
-        $phpbbUser = $this->loginFactory->database->select(array(
+        $phpbbUser = $this->loginFactory->database->select([
             $this->loginFactory->database->sqlPrefix . $this->tables['users'] => $this->fields['users']
-        ), [
+        ], [
             "name" => $_REQUEST['username']
         ])->getAsArray(false);
 
         if (!$phpbbUser) {
             new \fimError('usernameInvalid', 'A user by the given name does not exist.');
         }
-        elseif (strlen($_REQUEST['password']) <= 0 || !(new \PasswordHash(8, FALSE))->CheckPassword($_REQUEST['password'], $phpbbUser['password'])) {
+        elseif (strlen($_REQUEST['password']) <= 0 || !(new \PasswordHash(8, false))->CheckPassword($_REQUEST['password'], $phpbbUser['password'])) {
             new \fimError('passwordInvalid', 'A user by the given password does not exist.');
         }
         else {
@@ -67,19 +86,19 @@ class LoginPhpbb extends LoginDatabase {
 
             $this->loginFactory->user = new \fimUser([
                 'integrationMethod' => 'phpbb',
-                'integrationId' => $phpbbUser['id'],
+                'integrationId'     => $phpbbUser['id'],
             ]);
             $this->loginFactory->user->resolveAll();
             $this->loginFactory->user->setDatabase([
                 'integrationMethod' => 'phpbb',
-                'integrationId' => $phpbbUser['id'],
-                'profile' => "{$loginConfig['url']}memberlist.php?mode=viewprofile&u={$phpbbUser['id']}",
-                'email' => $phpbbUser['email'],
-                'mainGroupId' => $phpbbUser['mainGroupId'],
-                'joinDate' => $phpbbUser['joinDate'],
-                'name' => $phpbbUser['name'],
-                'avatar' => ($phpbbUser['avatar'] ? "{$loginConfig['url']}/download/file.php?avatar={$phpbbUser['avatar']}" : ''),
-                'nameFormat' => ($phpbbUser['nameColor'] ? 'color: #' . $phpbbUser['nameColor'] : ''),
+                'integrationId'     => $phpbbUser['id'],
+                'profile'           => "{$loginConfig['url']}memberlist.php?mode=viewprofile&u={$phpbbUser['id']}",
+                'email'             => $phpbbUser['email'],
+                'mainGroupId'       => $phpbbUser['mainGroupId'],
+                'joinDate'          => $phpbbUser['joinDate'],
+                'name'              => $phpbbUser['name'],
+                'avatar'            => ($phpbbUser['avatar'] ? "{$loginConfig['url']}/download/file.php?avatar={$phpbbUser['avatar']}" : ''),
+                'nameFormat'        => ($phpbbUser['nameColor'] ? 'color: #' . $phpbbUser['nameColor'] : ''),
             ]);
 
             /*
@@ -97,18 +116,33 @@ class LoginPhpbb extends LoginDatabase {
         }
     }
 
-    public function syncInstall() {
-        $this->syncEmoticons(\Fim\DatabaseLogin::instance()->select(array(
+
+    /**
+     * Sync the remote PHPBB installation information with the locally-available FreezeMessenger installation information.
+     */
+    public function syncInstall()
+    {
+        $this->syncEmoticons(\Fim\DatabaseLogin::instance()->select([
             \Fim\DatabaseLogin::$sqlPrefix . "smilies" => 'code emoticonText, smiley_url emoticonFile'
-        ))->getAsArray('emoticonText'));
+        ])->getAsArray('emoticonText'));
     }
 
 
-    public static function isProfileFeatureDisabled($feature): bool {
+    /**
+     * Indicates that 'selfChangeAvatar' and 'selfChangeProfile' is a disabled profile feature when using PHPBB logins.
+     * @see LoginRunner::isProfileFeatureDisabled()
+     */
+    public static function isProfileFeatureDisabled($feature): bool
+    {
         return in_array($feature, ['selfChangeAvatar', 'selfChangeProfile']);
     }
 
-    public static function isSiteFeatureDisabled($feature): bool {
+    /**
+     * Indicates that 'emoticons' is a disabled site feature when using PHPBB logins.
+     * @see LoginRunner::isSiteFeatureDisabled()
+     */
+    public static function isSiteFeatureDisabled($feature): bool
+    {
         return in_array($feature, ['emoticons']);
     }
 
