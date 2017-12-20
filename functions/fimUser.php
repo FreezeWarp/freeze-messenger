@@ -384,7 +384,7 @@ class fimUser extends \Fim\DynamicObject
 
     /**
      * We don't want to resolve this property, so we define a getter for it.
-     * @return {@see anonId}
+     * @return {@see $anonId}
      */
     public function getAnonId()
     {
@@ -597,7 +597,7 @@ class fimUser extends \Fim\DynamicObject
     }
 
     /**
-     * Set {@see anonId}
+     * Set {@see $anonId}
      */
     public function setAnonId($anonId)
     {
@@ -608,7 +608,7 @@ class fimUser extends \Fim\DynamicObject
     }
 
     /**
-     * Set {@see sessionHash}
+     * Set {@see $sessionHash}
      */
     public function setSessionHash($hash)
     {
@@ -618,7 +618,7 @@ class fimUser extends \Fim\DynamicObject
     }
 
     /**
-     * Set {@see clientCode}
+     * Set {@see $clientCode}
      */
     public function setClientCode($code)
     {
@@ -628,7 +628,7 @@ class fimUser extends \Fim\DynamicObject
     }
 
     /**
-     * Set {@see defaultRoomId}
+     * Set {@see $defaultRoomId}
      */
     public function setDefaultRoomId($defaultRoomId)
     {
@@ -636,7 +636,7 @@ class fimUser extends \Fim\DynamicObject
     }
 
     /**
-     * Set {@see parentalAge}
+     * Set {@see $parentalAge}
      */
     protected function setParentalAge($age)
     {
@@ -645,7 +645,7 @@ class fimUser extends \Fim\DynamicObject
     }
 
     /**
-     * Set {@see parentalFlags}
+     * Set {@see $parentalFlags}
      */
     protected function setParentalFlags($flags)
     {
@@ -723,7 +723,7 @@ class fimUser extends \Fim\DynamicObject
 
 
     /**
-     * Gets a displayable array of permsisions based on the current user's {@see privs} field.
+     * Gets a displayable array of permsisions based on the current user's {@see $privs} field.
      *
      * @return array An associative array corresponding to the permissions user has based on their bitfield. Keys are the keys of {@see fimUser::$permArray}.
      */
