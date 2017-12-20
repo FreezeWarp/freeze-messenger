@@ -80,7 +80,7 @@ class StreamFactory {
                 return StreamFactory::$instance = new StreamPgSQL($database);
             }
 
-            else { var_dump(extension_loaded('rdkafka')); die('nope.');
+            else {
                 return self::getDatabaseInstance();
             }
         }

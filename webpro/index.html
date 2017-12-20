@@ -89,41 +89,17 @@
 
                     {{#if serverSettings.loginMethods}}
                         <h3>{{login.sections.oauth}}</h3>
-                        {{#contains "google" serverSettings.loginMethods}}
-                        <a href="../validate.php?integrationMethod=google" class="btn btn-block btn-social btn-google">
-                            <span class="fa fa-google"></span> {{login.methods.google}}
-                        </a>
-                        {{/contains}}
-
-                        {{#contains "twitter" serverSettings.loginMethods}}
-                        <a href="../validate.php?integrationMethod=twitter" class="btn btn-block btn-social btn-twitter">
-                            <span class="fa fa-twitter"></span> {{login.methods.twitter}}
-                        </a>
-                        {{/contains}}
-
-                        {{#contains "facebook" serverSettings.loginMethods}}
-                        <a href="../validate.php?integrationMethod=facebook" class="btn btn-block btn-social btn-facebook">
-                            <span class="fa fa-facebook"></span> {{login.methods.facebook}}
-                        </a>
-                        {{/contains}}
-
-                        {{#contains "reddit" serverSettings.loginMethods}}
-                        <a href="../validate.php?integrationMethod=reddit" class="btn btn-block btn-social btn-reddit">
-                            <span class="fa fa-reddit"></span> {{login.methods.reddit}}
-                        </a>
-                        {{/contains}}
-
-                        {{#contains "microsoft" serverSettings.loginMethods}}
-                        <a href="../validate.php?integrationMethod=microsoft" class="btn btn-block btn-social btn-microsoft">
-                            <span class="fa fa-windows"></span> {{login.methods.microsoft}}
-                        </a>
-                        {{/contains}}
-
-                        {{#contains "steam" serverSettings.loginMethods}}
-                        <a href="../validate.php?integrationMethod=steam" class="btn btn-block btn-social btn-steam">
-                            <span class="fa fa-steam"></span> {{login.methods.steam}}
-                        </a>
-                        {{/contains}}
+                        {{#each serverSettings.loginMethods}}
+                            {{#ifCond this "==" "microsoft"}}
+                                <a href="../validate.php?integrationMethod={{this}}" class="btn btn-block btn-social btn-{{this}}">
+                                    <span class="fa fa-windows"></span> {{lookup @root.login.methods this}}
+                                </a>
+                            {{else}}
+                                <a href="../validate.php?integrationMethod={{this}}" class="btn btn-block btn-social btn-{{this}}">
+                                    <span class="fa fa-{{this}}"></span> {{lookup @root.login.methods this}}
+                                </a>
+                            {{/ifCond}}
+                        {{/each}}
                         <br />
                     {{/if}}
 
@@ -355,16 +331,26 @@
                                     <a class="dropdown-item" name="logout" href="javascript:standard.logout()">Logout</a>
                                 {{/unless}}
                             {{/if}}
-
-                            {{#if activeLogin.userData.anonId}}
-                                <a class="dropdown-item" name="login" href="javascript:popup.login()">Login</a>
-                            {{/if}}
-
-                            {{#unless activeLogin}}
-                                <a class="dropdown-item" name="login" href="javascript:popup.login()">Login</a>
-                            {{/unless}}
                         </div>
                     </li>
+
+                    {{#if activeLogin.userData.anonId}}
+                    <li class="nav-item">
+                        <a class="nav-link" name="login" href="javascript:popup.login()">Login</a>
+                    </li>
+                    {{/if}}
+
+                    {{#unless activeLogin}}
+                    <li class="nav-item">
+                        <a class="nav-link" name="login" href="javascript:popup.login()">Login</a>
+                    </li>
+                    {{/unless}}
+
+                    {{#if activeLogin.userData.permissions.modPrivs}}
+                    <li class="nav-item">
+                        <a class="nav-link" name="login" href="../moderate/" target="_blank">Admin Control Panel</a>
+                    </li>
+                    {{/if}}
                 </ul>
 
                 {{#if activeLogin.userData.permissions.privateRoomsFriends}}

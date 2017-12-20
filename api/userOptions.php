@@ -418,11 +418,9 @@ if (count($updateArray) > 0) {
 \Fim\Database::instance()->autoQueue(true);
 
 /* Watch Rooms (used for notifications of new messages, which are placed in unreadMessages) */
-
 if (isset($request['watchRooms'])) {
     $user->editList('watchRooms', $request['watchRooms'], $requestHead['_action']);
 }
-
 
 
 /* Fav List */
@@ -431,12 +429,10 @@ if (isset($request['favRooms'])) {
 }
 
 
-
 /* Ignore List */
 if (isset($request['ignoreList'])) {
     $user->editList('ignoredUsers', $request['ignoreList'], $requestHead['_action']);
 }
-
 
 
 if (isset($request['friendsList'])) {

@@ -49,6 +49,8 @@ $request = fim_sanitizeGPC('g', array(
     ),
 ));
 
+
+/* Access Log */
 \Fim\Database::instance()->accessLog('getActiveUsers', $request);
 
 
@@ -69,6 +71,7 @@ $xmlData = array(
 );
 
 
+/* Get Users from DB */
 $activeUsers = \Fim\Database::instance()->getActiveUsers(array(
     'onlineThreshold' => \Fim\Config::$defaultOnlineThreshold,
     'roomIds' => $request['roomIds'],
@@ -76,6 +79,7 @@ $activeUsers = \Fim\Database::instance()->getActiveUsers(array(
 ))->getAsArray(true);
 
 
+/* Process Users for Output */
 foreach ($activeUsers AS $activeUser) {
     if (!isset($xmlData['users']['user ' . $activeUser['userId']])) {
         $xmlData['users']['user ' . $activeUser['userId']] = array(
@@ -91,7 +95,6 @@ foreach ($activeUsers AS $activeUser) {
         'typing' => (bool) $activeUser['typing']
     );
 }
-
 
 
 /* Output Data */

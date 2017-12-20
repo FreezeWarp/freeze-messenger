@@ -93,10 +93,10 @@ if (isset($userData)) { // From api/user.php
 }
 else {
     if (in_array('friends', $request['showOnly']))
-        $request['userIds'] = array_merge($request['userIds'], $user->friendedUsers);
+        $request['userIds'] = array_merge($request['userIds'], $user->getFriendedUsers());
 
     if (in_array('ignored', $request['showOnly']))
-        $request['userIds'] = array_merge($request['userIds'], $user->ignoredUsers);
+        $request['userIds'] = array_merge($request['userIds'], $user->getIgnoredUsers());
 
     if (in_array('banned', $request['showOnly']) && $user->hasPriv('modUsers'))
         $request['bannedStatus'] = 'banned';

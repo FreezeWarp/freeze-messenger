@@ -768,6 +768,13 @@ function fim_flush() {
 }
 
 
+/**
+ * Remove null values from the given array.
+ *
+ * @param array $a
+ *
+ * @return array
+ */
 function fim_removeNullValues(array &$a) {
     foreach ($a AS $key => $value) {
         if (is_null($value)) unset($a[$key]);
@@ -797,6 +804,15 @@ function fim_nearestAge($age) {
 
 
 
+/**
+ * Renders a <select> HTML element with the given contents.
+ *
+ * @param string $selectName The "name" attribute for the <select>
+ * @param array $selectArray An array containing the <option>s -- array keys will be used for the "value" attribute, and array values will be used for the text.
+ * @param string $selectedItem The array key, if any, corresponding to the default <option> (the one with the "select" attribute).
+ *
+ * @return string Containing HTML of <select><option />...</select>
+ */
 function fimHtml_buildSelect($selectName, $selectArray, $selectedItem) {
     $code = "<select class='form-control' name=\"$selectName\">";
 
