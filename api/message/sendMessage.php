@@ -122,7 +122,7 @@ else {
                 // if /topic starts the message, the user is trying to change the topic.
                 if (strpos($message->text, '/topic') === 0) {
                     if (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_TOPIC)
-                        $room->changeTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $message->text));
+                        $room->setDatabaseTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $message->text));
                     else
                         new fimError('noPerm', 'You do not have permission to change the topic.');
                 }

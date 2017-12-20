@@ -434,7 +434,7 @@ if (isset($request['ignoreList'])) {
     $user->editList('ignoredUsers', $request['ignoreList'], $requestHead['_action']);
 }
 
-
+/* Friends Lsit */
 if (isset($request['friendsList'])) {
     $user->editList('friendedUsers', $request['friendsList'], $requestHead['_action']);
 }

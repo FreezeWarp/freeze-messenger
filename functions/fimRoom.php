@@ -22,7 +22,8 @@ use \Fim\UserFactory;
  * Class fimRoom
  * The data for a room object.
  */
-class fimRoom extends DynamicObject {
+class fimRoom extends DynamicObject
+{
 
     /**
      * The room is official, and will receive special prominence in room searches.
@@ -110,7 +111,7 @@ class fimRoom extends DynamicObject {
     const PRIVATE_ROOM_STATE_DISABLED = 'disabled';
 
 
-    
+
     /**
      * @var mixed The ID of the room.
      */
@@ -126,7 +127,7 @@ class fimRoom extends DynamicObject {
      */
     protected $nameSearchable = "";
 
-        /**
+    /**
      * @var int A bitfield containing options for delete, official, hidden, and archive.
      */
     protected $options;
@@ -206,30 +207,31 @@ class fimRoom extends DynamicObject {
      * @var array A map of string permissions to their bits in a bitfield.
      */
     public static $permArray = [
-        'view' => fimRoom::ROOM_PERMISSION_VIEW,
-        'post' => fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Post implies view.
+        'view'        => fimRoom::ROOM_PERMISSION_VIEW,
+        'post'        => fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Post implies view.
         'changeTopic' => fimRoom::ROOM_PERMISSION_TOPIC + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Changetopic implies post and view.
-        'moderate' => fimRoom::ROOM_PERMISSION_MODERATE + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Moderate implies post and view.
-        'properties' => fimRoom::ROOM_PERMISSION_PROPERTIES + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Properties implies post and view.
-        'grant' => fimRoom::ROOM_PERMISSION_GRANT + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW + fimRoom::ROOM_PERMISSION_MODERATE + fimRoom::ROOM_PERMISSION_PROPERTIES, // Grant implies all.
+        'moderate'    => fimRoom::ROOM_PERMISSION_MODERATE + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Moderate implies post and view.
+        'properties'  => fimRoom::ROOM_PERMISSION_PROPERTIES + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW, // Properties implies post and view.
+        'grant'       => fimRoom::ROOM_PERMISSION_GRANT + fimRoom::ROOM_PERMISSION_POST + fimRoom::ROOM_PERMISSION_VIEW + fimRoom::ROOM_PERMISSION_MODERATE + fimRoom::ROOM_PERMISSION_PROPERTIES, // Grant implies all.
     ];
 
     /**
      * @var array When one column in one of these arrays is resolved, the rest will be as well.
      */
-    public static $pullGroups = array(
-        ['id','name'],
-        ['defaultPermissions','options','ownerId'],
-        ['parentalFlags','parentalAge','topic'],
-        ['lastMessageTime','lastMessageId','messageCount','flags'],
+    public static $pullGroups = [
+        ['id', 'name'],
+        ['defaultPermissions', 'options', 'ownerId'],
+        ['parentalFlags', 'parentalAge', 'topic'],
+        ['lastMessageTime', 'lastMessageId', 'messageCount', 'flags'],
         ['watchedByUsers']
-    );
+    ];
 
 
     /**
      * @param $roomData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
      */
-    function __construct($roomData) {
+    function __construct($roomData)
+    {
         if (is_int($roomData))
             $this->set('id', $roomData);
 
@@ -254,7 +256,8 @@ class fimRoom extends DynamicObject {
      *
      * @return bool True if the ID string can be evaluated as a private room ID string, false otherwise.
      */
-    public static function isPrivateRoomId(string $id) {
+    public static function isPrivateRoomId(string $id)
+    {
         if (strlen($id) == 0) {
             return false;
         }
@@ -270,7 +273,7 @@ class fimRoom extends DynamicObject {
 
             else {
                 foreach ($idList AS $id) {
-                    if ((int) $id < 1)
+                    if ((int)$id < 1)
                         return false;
                     elseif (!ctype_digit($id))
                         return false;
@@ -295,14 +298,20 @@ class fimRoom extends DynamicObject {
      * For instance, "p1,2,100" is encoded at 0xF1F2F6AF. "o1,2,100" is encoded as 0xFF1F2F6AF. "100" is encoded as 0x6AF.
      *
      * @param $id string The roomId to encode.
+     *
      * @return string The roomId encoded.
      */
-    public static function encodeId($id) {
+    public static function encodeId($id)
+    {
         $packString = '';
 
         switch ($id[0]) {
-            case 'p': $packString .= 'f'; break;
-            case 'o': $packString .= 'ff'; break;
+            case 'p':
+                $packString .= 'f';
+            break;
+            case 'o':
+                $packString .= 'ff';
+            break;
         }
 
         if ($packString) {
@@ -324,9 +333,11 @@ class fimRoom extends DynamicObject {
      * Decodes a packed roomId into its string representation by {@link fimRoom::encodeId()}.
      *
      * @param $id string The roomId encoded.
+     *
      * @return string The roomId decoded, e.g. "12" or "p1,3"
      */
-    public static function decodeId($id) {
+    public static function decodeId($id)
+    {
         $unpackString = '';
 
         $decoded = rtrim(unpack("H*", $id)[1], '0');
@@ -338,7 +349,7 @@ class fimRoom extends DynamicObject {
                 else
                     $unpackString .= 'p';
 
-                $array = array_map(function($value) {
+                $array = array_map(function ($value) {
                     return base_convert($value, 15, 10);
                 }, explode('f', trim($decoded, 'f')));
 
@@ -354,10 +365,125 @@ class fimRoom extends DynamicObject {
 
 
     /**
+     * Gets a displayable array of permsisions based on a permissions bitfield.
+     *
+     * @param $field int The bitfield storing the permissions.
+     *
+     * @return array An associative array corresponding to the permissions user has based on their bitfield. Keys are "view", "post", "moderate", etc., and values are true if the user has the given permission, false otherwise.
+     */
+    public static function getPermissionsArray(int $field)
+    {
+        $returnArray = [];
+
+        foreach (fimRoom::$permArray AS $perm => $bit) {
+            $returnArray[$perm] = ($field & $bit) == $bit;
+        }
+
+        return $returnArray;
+    }
+
+    /**
+     * Generates a permissions bitfield from a list of permission strings.
+     *
+     * @param $permissionsArray array List of strings corresponding with permissions in {@link fimRoom::$permArray}.
+     */
+    public static function getPermissionsField(array $permissionsArray)
+    {
+        $permissionsField = 0;
+
+        foreach (fimRoom::$permArray AS $string => $byte) {
+            if (in_array($string, $permissionsArray)) $permissionsField |= $byte;
+        }
+
+        return $permissionsField;
+    }
+
+
+    public function __get($property)
+    {
+        return $this->get($property);
+    }
+
+
+    /**
+     * @return array The name of this room, which will be automatically generated if it is a private room.
+     */
+    public function getName()
+    {
+        if ($this->isPrivateRoom()) {
+            $userNames = [];
+            foreach ($this->getPrivateRoomMembers() AS $user)
+                $userNames[] = $user->name;
+
+            $name = ($this->type === fimRoom::ROOM_TYPE_PRIVATE ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
+            $this->set('name', $name);
+
+            return $name;
+        }
+
+        else {
+            $this->resolve(['name']);
+
+            return $this->name;
+        }
+    }
+
+
+    /**
+     * @return array The list of users watching this room for new messages.
+     */
+    public function getWatchedByUsers()
+    {
+        if (!\Fim\Config::$enableWatchRooms)
+            return [];
+
+        else {
+            return $this->watchedByUsers =
+                ($this->watchedByUsers === null
+                    ? \Fim\Database::instance()->getWatchRoomUsers($this->id)
+                    : $this->watchedByUsers
+                );
+        }
+    }
+
+    /**
+     * @return bool If the room is currently deleted (and will only be readable by administrators).
+     */
+    public function getDeleted(): bool
+    {
+        return ($this->options & fimRoom::ROOM_DELETED) === fimRoom::ROOM_DELETED;
+    }
+
+    /**
+     * @return bool If the room is currently in archived mode (and will only be readable).
+     */
+    public function getArchived(): bool
+    {
+        return ($this->options & fimRoom::ROOM_ARCHIVED) === fimRoom::ROOM_ARCHIVED;
+    }
+
+    /**
+     * @return bool If the room is currently in official mode (and will be prioritised when getting the list of rooms).
+     */
+    public function getOfficial(): bool
+    {
+        return ($this->options & fimRoom::ROOM_OFFICIAL) === fimRoom::ROOM_OFFICIAL;
+    }
+
+    /**
+     * @return bool If the room is currently in hidden mode (and won't be shown when getting the list of rooms).
+     */
+    public function getHidden(): bool
+    {
+        return ($this->options & fimRoom::ROOM_HIDDEN) === fimRoom::ROOM_HIDDEN;
+    }
+
+    /**
      * Returns true if the room type is a general room, or false otherwise.
      * @return bool
      */
-    public function isGeneralRoom() {
+    public function isGeneralRoom()
+    {
         return $this->type === fimRoom::ROOM_TYPE_GENERAL;
     }
 
@@ -365,7 +491,8 @@ class fimRoom extends DynamicObject {
      * Returns true if the room type is a private or OTR room, or false otherwise.
      * @return bool
      */
-    public function isPrivateRoom() {
+    public function isPrivateRoom()
+    {
         return $this->type === fimRoom::ROOM_TYPE_PRIVATE || $this->type === fimRoom::ROOM_TYPE_OTR;
     }
 
@@ -373,10 +500,11 @@ class fimRoom extends DynamicObject {
     /**
      * @see dynamicObject::exists()
      */
-    public function exists() : bool {
+    public function exists(): bool
+    {
         return $this->exists = ($this->exists || ($this->isPrivateRoom() ? $this->arePrivateRoomMembersValid() : (count(\Fim\Database::instance()->getRooms([
-            'roomIds' => $this->id,
-        ])->getAsArray(false)) > 0)));
+                    'roomIds' => $this->id,
+                ])->getAsArray(false)) > 0)));
     }
 
 
@@ -386,7 +514,8 @@ class fimRoom extends DynamicObject {
      * @throws Exception
      * TODO: move into fimRoomPrivate class
      */
-    public function getPrivateRoomMemberIds() {
+    public function getPrivateRoomMemberIds()
+    {
         if (!$this->isPrivateRoom())
             throw new Exception('Call to fimRoom->getPrivateRoomMemberIds only supported on instances of a private room.');
 
@@ -400,7 +529,8 @@ class fimRoom extends DynamicObject {
      * @throws Exception
      * TODO: move into fimRoomPrivate class
      */
-    public function getPrivateRoomMembers() : array {
+    public function getPrivateRoomMembers(): array
+    {
         if (!$this->isPrivateRoom())
             throw new Exception('Call to fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
 
@@ -421,7 +551,8 @@ class fimRoom extends DynamicObject {
      * @throws Exception If the room is not a private room.
      * TODO: move into fimRoomPrivate class
      */
-    public function arePrivateRoomMembersValid() : bool {
+    public function arePrivateRoomMembersValid(): bool
+    {
         if (!$this->isPrivateRoom())
             throw new Exception('Call to fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
 
@@ -438,7 +569,8 @@ class fimRoom extends DynamicObject {
      * @return bool True if all private room members are allowed to private message all other private room members, false otherwise.
      * @throws Exception If the room is not a private room.
      */
-    public function getPrivateRoomState() {
+    public function getPrivateRoomState()
+    {
         if (!$this->isPrivateRoom())
             throw new Exception('Call to fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
 
@@ -446,7 +578,7 @@ class fimRoom extends DynamicObject {
         if ($this->privateRoomState !== null)
             return $this->privateRoomState;
 
-        else if (!$this->arePrivateRoomMembersValid())
+        elseif (!$this->arePrivateRoomMembersValid())
             return $this->privateRoomState = fimRoom::PRIVATE_ROOM_STATE_DISABLED;
 
         else {
@@ -513,15 +645,19 @@ class fimRoom extends DynamicObject {
         }
     }
 
-    public function getEncodedId() {
+    /**
+     * @return string The current room ID encoded for compact storage.
+     */
+    public function getEncodedId()
+    {
         return fimRoom::encodeId($this->id);
     }
 
     /**
-     * TODO
-     * @return array
+     * @return array The list of censor words applied to this room.
      */
-    public function getCensorWords() {
+    public function getCensorWords()
+    {
         if ($this->censorWordsArray !== null)
             return $this->censorWordsArray;
 
@@ -529,85 +665,12 @@ class fimRoom extends DynamicObject {
     }
 
     /**
+     * Set this room's ID. This will also set most other properties if this is a private room ID.
      *
-     * @param $text - The text to censor
-     * @param null $roomId - The roomID whose rules should be applied. If not specified, the global rules (for, e.g., usernames) will be used
-     * @param bool $dontAsk - If true, we won't stop for words that merely trigger confirms
-     * @param $matches - This array will fill with all matched words.
-     *
-     * @return string text with substitutions made.
+     * @param $id string The new room ID.
      */
-    public function censorScan($text, $dontAsk = false, &$matches) {
-        foreach ($this->getCensorWords() AS $word) {
-
-            if ($dontAsk && $word['severity'] === 'confirm') continue;
-
-            if (stripos($text, $word['word']) !== FALSE) {
-                switch ($word['severity']) {
-                    // Automatically replaces text
-                    case 'replace':
-                        $text = str_ireplace($word['word'], $word['param'], $text);
-                        break;
-
-                    // Passes the word to $matches, to advise the user to be careful
-                    case 'warn':
-                        $matches[$word['word']] = $word['param'];
-                        break;
-
-                    // Blocks the word, throwing an exception
-                    case 'block':
-                        new fimError('blockCensor', "The message can not be sent: '{$word['word']}' is not allowed.");
-                        break;
-
-                    // Blocks the word, throwing an exception, but can be overwridden with $dontAsk
-                    case 'confirm':
-                        new fimError('confirmCensor', "The message must be resent because a word may not be allowed: {$word['word']} is discouraged: {$word['param']}.");
-                        break;
-                }
-            }
-        }
-
-        return $text;
-    }
-
-
-    public function __get($property) {
-        return $this->get($property);
-    }
-
-
-    public function getName() {
-        if ($this->isPrivateRoom()) {
-            $userNames = [];
-            foreach($this->getPrivateRoomMembers() AS $user)
-                $userNames[] = $user->name;
-
-            $name = ($this->type === fimRoom::ROOM_TYPE_PRIVATE ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
-            $this->set('name', $name);
-            return $name;
-        }
-
-        else {
-            return $this->name;
-        }
-    }
-
-
-    public function getWatchedByUsers() {
-        if (!\Fim\Config::$enableWatchRooms)
-            return [];
-
-        else {
-            return $this->watchedByUsers =
-                ($this->watchedByUsers === null
-                    ? \Fim\Database::instance()->getWatchRoomUsers($this->id)
-                    : $this->watchedByUsers
-                );
-        }
-    }
-
-
-    protected function setId($id) {
+    protected function setId($id)
+    {
         $this->id = $id;
 
         if (fimRoom::isPrivateRoomId($id)) {
@@ -627,66 +690,100 @@ class fimRoom extends DynamicObject {
         }
     }
 
-    protected function setTopic($topic) {
+    /**
+     * Set this to the room's topic only if topic functionality is enabled.
+     *
+     * @param $topic
+     */
+    protected function setTopic($topic)
+    {
         $this->topic = \Fim\Config::$disableTopic
             ? ''
             : $topic;
     }
 
-    protected function setParentalAge($age) {
+    /**
+     * Set this to the room's parental age only if parental function is enabled.
+     *
+     * @param $parentalAge
+     */
+    protected function setParentalAge($parentalAge)
+    {
         $this->parentalAge = \Fim\Config::$parentalEnabled
-            ? (int) $age
+            ? (int)$parentalAge
             : 0;
     }
 
-    protected function setParentalFlags($parentalFlags) {
+    /**
+     * Set this to the room's parental flags only if parental function is enabled.
+     *
+     * @param $parentalFlags string A comma-separated list of parental flags from the database.
+     */
+    protected function setParentalFlags($parentalFlags)
+    {
         if (\Fim\Config::$parentalEnabled && is_string($parentalFlags))
             $this->parentalFlags = fim_emptyExplode(',', $parentalFlags);
     }
 
     /**
-     * @return bool If the room is currently deleted (and will only be readable by administrators).
+     * Scan a string for words to censor, based on the censor lists active for this room.
+     *
+     * @param      $text    - The text to censor
+     * @param null $roomId  - The roomID whose rules should be applied. If not specified, the global rules (for, e.g., usernames) will be used
+     * @param bool $dontAsk - If true, we won't stop for words that merely trigger confirms
+     * @param      $matches - This array will fill with all matched words.
+     *
+     * @return string text with substitutions made.
      */
-    public function getDeleted() : bool {
-        return ($this->options & fimRoom::ROOM_DELETED) === fimRoom::ROOM_DELETED;
-    }
+    public function censorScan($text, $dontAsk = false, &$matches) : string
+    {
+        foreach ($this->getCensorWords() AS $word) {
 
-    /**
-     * @return bool If the room is currently in archived mode (and will only be readable).
-     */
-    public function getArchived() : bool {
-        return ($this->options & fimRoom::ROOM_ARCHIVED) === fimRoom::ROOM_ARCHIVED;
-    }
+            if ($dontAsk && $word['severity'] === 'confirm') continue;
 
-    /**
-     * @return bool If the room is currently in official mode (and will be prioritised when getting the list of rooms).
-     */
-    public function getOfficial() : bool {
-        return ($this->options & fimRoom::ROOM_OFFICIAL) === fimRoom::ROOM_OFFICIAL;
-    }
+            if (stripos($text, $word['word']) !== false) {
+                switch ($word['severity']) {
+                    // Automatically replaces text
+                    case 'replace':
+                        $text = str_ireplace($word['word'], $word['param'], $text);
+                    break;
 
-    /**
-     * @return bool If the room is currently in hidden mode (and won't be shown when getting the list of rooms).
-     */
-    public function getHidden() : bool {
-        return ($this->options & fimRoom::ROOM_HIDDEN) === fimRoom::ROOM_HIDDEN;
-    }
+                    // Passes the word to $matches, to advise the user to be careful
+                    case 'warn':
+                        $matches[$word['word']] = $word['param'];
+                    break;
 
+                    // Blocks the word, throwing an exception
+                    case 'block':
+                        new fimError('blockCensor', "The message can not be sent: '{$word['word']}' is not allowed.");
+                    break;
+
+                    // Blocks the word, throwing an exception, but can be overwridden with $dontAsk
+                    case 'confirm':
+                        new fimError('confirmCensor', "The message must be resent because a word may not be allowed: {$word['word']} is discouraged: {$word['param']}.");
+                    break;
+                }
+            }
+        }
+
+        return $text;
+    }
 
     /**
      * Resolves an array of database columns. This can be called preemptively to prevent fimRoom from making multiple database calls to resolve itself.
      *
      * @param array $columns
+     *
      * @return bool
      * @throws Exception
      */
-    protected function getColumns(array $columns) : bool
+    protected function getColumns(array $columns): bool
     {
         if ($this->isPrivateRoom())
             throw new Exception('Can\'t call fimRoom->getColumns on private room.');
 
         elseif (count($columns) > 0)
-            return $this->populateFromArray(\Fim\Database::instance()->where(array('id' => $this->id))->select(array(\Fim\Database::$sqlPrefix . 'rooms' => array_merge(array('id'), $columns)))->getAsArray(false));
+            return $this->populateFromArray(\Fim\Database::instance()->where(['id' => $this->id])->select([\Fim\Database::$sqlPrefix . 'rooms' => array_merge(['id'], $columns)])->getAsArray(false));
 
         else
             return true;
@@ -696,9 +793,10 @@ class fimRoom extends DynamicObject {
     /**
      * @link fimDynamicObject::resolve
      */
-    public function resolve(array $properties) {
+    public function resolve(array $properties): bool
+    {
         if ($this->isPrivateRoom())
-            return;
+            return true;
 
         return $this->getColumns(array_diff($properties, $this->resolved));
     }
@@ -709,7 +807,8 @@ class fimRoom extends DynamicObject {
      * @return bool
      * @throws Exception
      */
-    public function resolveAll() {
+    public function resolveAll(): bool
+    {
         return $this->resolve(['id', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge', 'lastMessageTime', 'lastMessageId', 'messageCount', 'flags', 'watchedByUsers']);
     }
 
@@ -721,7 +820,8 @@ class fimRoom extends DynamicObject {
      *
      * @throws Exception If matching pullgroup not found.
      */
-    public function resolveFromPullGroup($needle) {
+    public function resolveFromPullGroup(string $needle)
+    {
         $groupPointer = false;
 
         foreach (fimRoom::$roomDataPullGroups AS $group) {
@@ -736,58 +836,6 @@ class fimRoom extends DynamicObject {
         }
         else
             throw new Exception("Selection group not found for '$needle'");
-    }
-
-
-    /* TODO: move to DB, I think? */
-    public function changeTopic($topic) {
-        if ($this->isPrivateRoom())
-            throw new Exception('Can\'t call fimRoom->changeTopic on private room.');
-
-        elseif (\Fim\Config::$disableTopic)
-            throw new fimError('topicsDisabled', 'Topics are disabled on this server.');
-
-        else {
-            $this->setDatabase(['topic' => $topic]);
-            \Stream\StreamFactory::publish('room_' . $this->id, 'topicChange', [
-                'topic' => $topic,
-                'time' => time(),
-            ]);
-        }
-    }
-
-
-    /**
-     * Gets a displayable array of permsisions based on a permissions bitfield.
-     *
-     * @param $field int The bitfield storing the permissions.
-     *
-     * @return array An associative array corresponding to the permissions user has based on their bitfield. Keys are "view", "post", "moderate", etc., and values are true if the user has the given permission, false otherwise.
-     */
-    public static function getPermissionsArray($field) {
-        $returnArray = [];
-
-        foreach(fimRoom::$permArray AS $perm => $bit) {
-            $returnArray[$perm] = ($field & $bit) == $bit;
-        }
-
-        return $returnArray;
-    }
-
-    /**
-     * Generates a permissions bitfield from a list of permission strings.
-     *
-     * @param $permissionsArray array List of strings corresponding with permissions in {@link fimRoom::$permArray}.
-     */
-    public static function getPermissionsField($permissionsArray)
-    {
-        $permissionsField = 0;
-
-        foreach (fimRoom::$permArray AS $string => $byte) {
-            if (in_array($string, $permissionsArray)) $permissionsField |= $byte;
-        }
-
-        return $permissionsField;
     }
 
 
@@ -820,10 +868,10 @@ class fimRoom extends DynamicObject {
 
                 $return = \Fim\Database::instance()->update(
                     \Fim\Database::$sqlPrefix . "rooms",
-                    array_merge(fim_arrayFilterKeys((array) $this, ['name', 'topic', 'options', 'defaultPermissions', 'parentalFlags', 'parentalAge']), $roomParameters),
-                    array(
-                        'id' => (int) $this->id,
-                    )
+                    array_merge(fim_arrayFilterKeys((array)$this, ['name', 'topic', 'options', 'defaultPermissions', 'parentalFlags', 'parentalAge']), $roomParameters),
+                    [
+                        'id' => (int)$this->id,
+                    ]
                 );
 
                 if (isset($roomParameters['defaultPermissions'])) {
@@ -838,8 +886,33 @@ class fimRoom extends DynamicObject {
 
         else {
             \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "rooms", $roomParameters);
+
             return $this->id = \Fim\Database::instance()->getLastInsertId();
         }
     }
+
+
+    /**
+     * Set the topic for the room.
+     *
+     * @param $topic
+     */
+    public function setDatabaseTopic(string $topic)
+    {
+        if ($this->isPrivateRoom())
+            throw new Exception('Can\'t call fimRoom->changeTopic on private room.');
+
+        elseif (\Fim\Config::$disableTopic)
+            throw new fimError('topicsDisabled', 'Topics are disabled on this server.');
+
+        else {
+            $this->setDatabase(['topic' => $topic]);
+            \Stream\StreamFactory::publish('room_' . $this->id, 'topicChange', [
+                'topic' => $topic,
+                'time'  => time(),
+            ]);
+        }
+    }
 }
+
 ?>

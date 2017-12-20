@@ -113,20 +113,20 @@ class fimUser extends \Fim\DynamicObject
      * @var array A map of string permissions to their bits in a bitfield.
      */
     public static $permArray = [
-        'view' => fimUser::USER_PRIV_VIEW,
-        'post' => fimUser::USER_PRIV_POST,
-        'changeTopic' => fimUser::USER_PRIV_TOPIC,
-        'createRooms' => fimUser::USER_PRIV_CREATE_ROOMS,
+        'view'           => fimUser::USER_PRIV_VIEW,
+        'post'           => fimUser::USER_PRIV_POST,
+        'changeTopic'    => fimUser::USER_PRIV_TOPIC,
+        'createRooms'    => fimUser::USER_PRIV_CREATE_ROOMS,
         'privateFriends' => fimUser::USER_PRIV_PRIVATE_FRIENDS,
-        'privateAll' => fimUser::USER_PRIV_PRIVATE_ALL,
-        'roomsOnline' => fimUser::USER_PRIV_ACTIVE_USERS,
-        'modPrivs' => fimUser::ADMIN_GRANT,
-        'protected' => fimUser::ADMIN_PROTECTED,
-        'modRooms' => fimUser::ADMIN_ROOMS,
-        'modUsers' => fimUser::ADMIN_USERS,
-        'modFiles' => fimUser::ADMIN_FILES,
-        'modCensor' => fimUser::ADMIN_CENSOR,
-        'modEmoticons' => fimUser::ADMIN_EMOTICONS,
+        'privateAll'     => fimUser::USER_PRIV_PRIVATE_ALL,
+        'roomsOnline'    => fimUser::USER_PRIV_ACTIVE_USERS,
+        'modPrivs'       => fimUser::ADMIN_GRANT,
+        'protected'      => fimUser::ADMIN_PROTECTED,
+        'modRooms'       => fimUser::ADMIN_ROOMS,
+        'modUsers'       => fimUser::ADMIN_USERS,
+        'modFiles'       => fimUser::ADMIN_FILES,
+        'modCensor'      => fimUser::ADMIN_CENSOR,
+        'modEmoticons'   => fimUser::ADMIN_EMOTICONS,
     ];
 
 
@@ -337,26 +337,27 @@ class fimUser extends \Fim\DynamicObject
     /**
      * @var array The list of fields that have been resolved on this user object.
      */
-    protected $resolved = array();
+    protected $resolved = [];
 
     /**
      * @var array User data fields that should be resolved together when a resolution is needed.
      */
     public static $pullGroups = [
-        ['id','integrationId','integrationMethod','name','privs'],
-        ['mainGroupId','socialGroupIds','parentalFlags','parentalAge','birthDate'], // Permission flags.
-        ['joinDate','messageFormatting','profile','avatar','nameFormat','bio'],
-        ['options','defaultRoomId'],
-        ['passwordHash','passwordFormat'],
-        ['fileCount','fileSize'],
-        ['favRooms','watchRooms'],
-        ['privacyLevel','ignoredUsers','friendedUsers'],
+        ['id', 'integrationId', 'integrationMethod', 'name', 'privs'],
+        ['mainGroupId', 'socialGroupIds', 'parentalFlags', 'parentalAge', 'birthDate'], // Permission flags.
+        ['joinDate', 'messageFormatting', 'profile', 'avatar', 'nameFormat', 'bio'],
+        ['options', 'defaultRoomId'],
+        ['passwordHash', 'passwordFormat'],
+        ['fileCount', 'fileSize'],
+        ['favRooms', 'watchRooms'],
+        ['privacyLevel', 'ignoredUsers', 'friendedUsers'],
         ['email'],
     ];
 
 
     /**
      * @param $userData mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the `rooms` database, if an integer should correspond with the room ID.
+     *
      * @return $this
      */
     public function __construct($userData)
@@ -385,14 +386,16 @@ class fimUser extends \Fim\DynamicObject
      * We don't want to resolve this property, so we define a getter for it.
      * @return {@see anonId}
      */
-    public function getAnonId() {
+    public function getAnonId()
+    {
         return $this->anonId;
     }
 
     /**
      * @return array The list of groups this user belongs to.
      */
-    public function getSocialGroupIds() : array {
+    public function getSocialGroupIds(): array
+    {
         return $this->socialGroupIds =
             ($this->socialGroupIds === null
                 ? \Fim\Database::instance()->getUserSocialGroupIds($this->id)
@@ -403,7 +406,8 @@ class fimUser extends \Fim\DynamicObject
     /**
      * @return array The list of rooms favourited by this user.
      */
-    public function getFavRooms() : array {
+    public function getFavRooms(): array
+    {
         return $this->favRooms =
             ($this->favRooms === null
                 ? \Fim\Database::instance()->getUserSocialGroupIds($this->id)
@@ -414,7 +418,8 @@ class fimUser extends \Fim\DynamicObject
     /**
      * @return array The list of rooms watched by this user.
      */
-    public function getWatchedRooms() : array {
+    public function getWatchedRooms(): array
+    {
         if (\Fim\Config::$enableWatchRooms) {
             return $this->watchRooms =
                 ($this->watchRooms === null
@@ -430,7 +435,8 @@ class fimUser extends \Fim\DynamicObject
     /**
      * @return array The list of users friended by this user.
      */
-    public function getFriendedUsers() : array {
+    public function getFriendedUsers(): array
+    {
         return $this->friendedUsers =
             ($this->friendedUsers === null
                 ? \Fim\Database::instance()->getUserFriendsList($this->id)
@@ -441,7 +447,8 @@ class fimUser extends \Fim\DynamicObject
     /**
      * @return array The list of users ignored by this user.
      */
-    public function getIgnoredUsers() : array {
+    public function getIgnoredUsers(): array
+    {
         return $this->ignoredUsers =
             ($this->ignoredUsers === null
                 ? \Fim\Database::instance()->getUserIgnoreList($this->id)
@@ -449,16 +456,17 @@ class fimUser extends \Fim\DynamicObject
             );
     }
 
-    public function editList($listName, $ids, $action) {
+    public function editList($listName, $ids, $action)
+    {
         /* Flag the Object for Recaching */
         $this->doCache = true;
 
 
         /* Define Tables */
         $tableNames = [
-            'favRooms' => 'userFavRooms',
-            'watchRooms' => 'watchRooms',
-            'ignoredUsers' => 'userIgnoreList',
+            'favRooms'      => 'userFavRooms',
+            'watchRooms'    => 'watchRooms',
+            'ignoredUsers'  => 'userIgnoreList',
             'friendedUsers' => 'userFriendsList'
         ];
 
@@ -468,22 +476,24 @@ class fimUser extends \Fim\DynamicObject
         /* Get Valid Entries from the Database */
         if ($listName === 'favRooms' || $listName === 'watchRooms') {
             $items = (count($ids) > 0
-                ? \Fim\Database::instance()->getRooms(array(
+                ? \Fim\Database::instance()->getRooms([
                     'roomIds' => $ids
-                ))->getAsRooms()
+                ])->getAsRooms()
                 : []);
 
             $columnName = 'roomId';
         }
+
         elseif ($listName === 'ignoredUsers' || $listName === 'friendedUsers') {
             $items = (count($ids) > 0
-                ? \Fim\Database::instance()->getUsers(array(
+                ? \Fim\Database::instance()->getUsers([
                     'userIds' => $ids
-                ))->getAsUsers()
+                ])->getAsUsers()
                 : []);
 
             $columnName = 'subjectId';
         }
+
         else {
             throw new Exception('Unknown list.');
         }
@@ -492,19 +502,19 @@ class fimUser extends \Fim\DynamicObject
         /* Perform Action */
         // Delete Elements for a Delete
         if ($action === 'delete') {
-            \Fim\Database::instance()->delete($table, array(
-                'userId' => $this->id,
+            \Fim\Database::instance()->delete($table, [
+                'userId'    => $this->id,
                 $columnName => \Fim\Database::instance()->in($items),
-            ));
+            ]);
 
             $this->{$listName} = array_diff($this->{$listName}, $items);
         }
 
         // Empty the List Before an Edit
         if ($action === 'edit') {
-            \Fim\Database::instance()->delete($table, array(
+            \Fim\Database::instance()->delete($table, [
                 'userId' => $this->id,
-            ));
+            ]);
 
             $this->{$listName} = [];
         }
@@ -520,10 +530,10 @@ class fimUser extends \Fim\DynamicObject
                 }
 
                 // Update the Database List
-                \Fim\Database::instance()->insert($table, array(
-                    'userId' => $this->id,
+                \Fim\Database::instance()->insert($table, [
+                    'userId'    => $this->id,
                     $columnName => $item->id,
-                ));
+                ]);
 
                 // Update Our Local List
                 if (!in_array($item->id, $this->{$listName}))
@@ -543,7 +553,8 @@ class fimUser extends \Fim\DynamicObject
      *
      * @param $privs int The database-stored bitfield.
      */
-    protected function setPrivs($privs) {
+    protected function setPrivs($privs)
+    {
         global $loginConfig;
 
         $this->privs = $privs;
@@ -552,24 +563,30 @@ class fimUser extends \Fim\DynamicObject
         if (!\Fim\Config::$userRoomCreation)
             $this->privs &= ~fimUser::USER_PRIV_CREATE_ROOMS;
 
+
         // Superuser override (note that any user with GRANT or in the $config superuser array is automatically given all permissions, and is marked as protected. The only way, normally, to remove a user's GRANT status, because they are automatically protected, is to do so directly in the database.)
         // LoginConfig is not guranteed to be set here (e.g. during installation), which is why we cast.
-        if (in_array($this->id, (array) $loginConfig['superUsers'])
-            || in_array($this->mainGroupId, (array) $loginConfig['adminGroups'])
+        if (in_array($this->id, (array)$loginConfig['superUsers'])
+            || in_array($this->mainGroupId, (array)$loginConfig['adminGroups'])
             || ($this->privs & fimUser::ADMIN_GRANT))
             $this->privs = 0x7FFFFFFF;
+
         elseif ($this->privs & fimUser::ADMIN_ROOMS)
             $this->privs |= (fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
+
 
         // Note that we set these after setting admin privs, becuase we don't want admins using these functionalities when they are disabled.
         if (!\Fim\Config::$userPrivateRoomCreation)
             $this->privs &= ~(fimUser::USER_PRIV_PRIVATE_ALL | fimUser::USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
+
         if (\Fim\Config::$disableTopic)
             $this->privs &= ~fimUser::USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
+
 
         // Certain bits imply other bits. Make sure that these are consistent.
         if ($this->privs & fimUser::USER_PRIV_PRIVATE_ALL)
             $this->privs |= fimUser::USER_PRIV_PRIVATE_FRIENDS;
+
 
         // Disable bits based on login-provider disabled features
         $loginRunner = \Login\LoginFactory::getLoginRunnerFromName($loginConfig['method']);
@@ -582,7 +599,8 @@ class fimUser extends \Fim\DynamicObject
     /**
      * Set {@see anonId}
      */
-    public function setAnonId($anonId) {
+    public function setAnonId($anonId)
+    {
         if (!$this->isAnonymousUser())
             throw new Exception('Can\'t set anonymous user ID on non-anonymous users.');
 
@@ -592,7 +610,8 @@ class fimUser extends \Fim\DynamicObject
     /**
      * Set {@see sessionHash}
      */
-    public function setSessionHash($hash) {
+    public function setSessionHash($hash)
+    {
         $this->sessionHash = $hash;
 
         $this->resolved[] = 'sessionHash';
@@ -601,7 +620,8 @@ class fimUser extends \Fim\DynamicObject
     /**
      * Set {@see clientCode}
      */
-    public function setClientCode($code) {
+    public function setClientCode($code)
+    {
         $this->clientCode = $code;
 
         $this->resolved[] = 'clientCode';
@@ -610,14 +630,16 @@ class fimUser extends \Fim\DynamicObject
     /**
      * Set {@see defaultRoomId}
      */
-    public function setDefaultRoomId($defaultRoomId) {
+    public function setDefaultRoomId($defaultRoomId)
+    {
         $this->defaultRoomId = $defaultRoomId ?: \Fim\Config::$defaultRoomId;
     }
 
     /**
      * Set {@see parentalAge}
      */
-    protected function setParentalAge($age) {
+    protected function setParentalAge($age)
+    {
         if (\Fim\Config::$parentalEnabled)
             $this->parentalAge = $age;
     }
@@ -625,7 +647,8 @@ class fimUser extends \Fim\DynamicObject
     /**
      * Set {@see parentalFlags}
      */
-    protected function setParentalFlags($flags) {
+    protected function setParentalFlags($flags)
+    {
         if (\Fim\Config::$parentalEnabled)
             $this->parentalFlags = fim_emptyExplode(',', $flags);
     }
@@ -635,14 +658,16 @@ class fimUser extends \Fim\DynamicObject
      *
      * @return bool True if the user is a valid user, false otherwise.
      */
-    public function isValid() {
+    public function isValid()
+    {
         return $this->id != 0;
     }
 
     /**
      * @link fimDynamicObject::exists()
      */
-    public function exists() : bool {
+    public function exists(): bool
+    {
         return $this->exists = ($this->exists || (count(\Fim\Database::instance()->getUsers([
                     'userIds' => $this->id,
                 ])->getAsArray(false)) > 0));
@@ -652,18 +677,24 @@ class fimUser extends \Fim\DynamicObject
      * Checks to see if the user has permission to do the specified thing.
      *
      * @param $priv string The priviledge to check, one of ['protected', 'modPrivs', 'modRooms', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline']
+     *
      * @return bool True if user has permission, false if not.
      * @throws Exception for unrecognised priviledges
      */
-    public function hasPriv(string $priv) : bool
+    public function hasPriv(string $priv): bool
     {
         $privs = $this->__get('privs');
 
         switch ($priv) {
             /* Config Aliases
              * (These may become full priviledges in the future.) */
-            case 'editOwnPosts':   return \Fim\Config::$usersCanEditOwnPosts && !$this->isAnonymousUser();   break;
-            case 'deleteOwnPosts': return \Fim\Config::$usersCanDeleteOwnPosts && !$this->isAnonymousUser(); break;
+            case 'editOwnPosts':
+                return \Fim\Config::$usersCanEditOwnPosts && !$this->isAnonymousUser();
+            break;
+
+            case 'deleteOwnPosts':
+                return \Fim\Config::$usersCanDeleteOwnPosts && !$this->isAnonymousUser();
+            break;
 
             /* Login Features */
             case 'selfChangeProfile':
@@ -672,16 +703,13 @@ class fimUser extends \Fim\DynamicObject
             case 'selfChangeParentalFlags':
             case 'selfChangeFriends':
             case 'selfChangeIgnore':
-                if ($this->isAnonymousUser()) {
+                if ($this->isAnonymousUser())
                     return false;
-                }
-                elseif ($loginRunner = \Login\LoginFactory::getLoginRunnerFromName($this->__get('integrationMethod'))) {
+                elseif ($loginRunner = \Login\LoginFactory::getLoginRunnerFromName($this->__get('integrationMethod')))
                     return !$loginRunner::isProfileFeatureDisabled($priv);
-                }
-                else {
+                else
                     return true;
-                }
-                break;
+            break;
 
             /* Normal Priviledges */
             default:
@@ -699,10 +727,11 @@ class fimUser extends \Fim\DynamicObject
      *
      * @return array An associative array corresponding to the permissions user has based on their bitfield. Keys are the keys of {@see fimUser::$permArray}.
      */
-    public function getPermissionsArray() {
-        $returnArray = array();
+    public function getPermissionsArray(): array
+    {
+        $returnArray = [];
 
-        foreach(array_keys(fimUser::$permArray) AS $perm) {
+        foreach (array_keys(fimUser::$permArray) AS $perm) {
             $returnArray[$perm] = $this->hasPriv($perm);
         }
 
@@ -713,13 +742,15 @@ class fimUser extends \Fim\DynamicObject
      * Checks if the plaintext password matches the user's password (generally after some hashing).
      *
      * @param $password string The password to check against.
+     *
      * @return bool True if the password match, false otherwise.
      * @throws Exception If the user's passwordFormat is not understood.
      */
-    public function checkPasswordAndLockout($password)
+    public function checkPasswordAndLockout($password): bool
     {
         if (\Fim\Database::instance()->lockoutActive()) {
             new fimError('lockoutActive', 'You have attempted to login too many times. Please wait a while and then try again.');
+
             return false;
         }
         else {
@@ -728,23 +759,20 @@ class fimUser extends \Fim\DynamicObject
             }
             else {
                 \Fim\Database::instance()->lockoutIncrement();
+
                 return false;
             }
         }
     }
 
-    public function checkPassword($password) {
+    public function checkPassword($password): bool
+    {
         switch ($this->__get('passwordFormat')) {
             case 'phpass':
-                if (!isset($this->passwordHash)) {
-                    throw new Exception('User object was not generated with password hash information.');
-                }
+                require_once('PasswordHash.php');
+                $h = new PasswordHash(8, false);
 
-                else {
-                    require_once('PasswordHash.php');
-                    $h = new PasswordHash(8, FALSE);
-                    return $h->CheckPassword($password, $this->passwordHash);
-                }
+                return $h->CheckPassword($password, $this->__get('passwordHash'));
             break;
 
             /* Obviously, this method is almost never used. It primarily exists to make testing a little bit easier. */
@@ -760,13 +788,11 @@ class fimUser extends \Fim\DynamicObject
 
 
     /**
-     * Returns true if the user is an anonymous user, false otherwise.
-     *
-     * @return bool
+     * @return bool True if the user is an anonymous user, false otherwise.
      */
-    public function isAnonymousUser() : bool
+    public function isAnonymousUser(): bool
     {
-        return ((int) $this->id === self::ANONYMOUS_USER_ID);
+        return ((int)$this->id === self::ANONYMOUS_USER_ID);
     }
 
 
@@ -774,10 +800,11 @@ class fimUser extends \Fim\DynamicObject
      * Makes sure the user has obtained the specified data columns, obtaining them from cache or database, if not already retrieved
      *
      * @param array $columns
+     *
      * @return bool Returns true on success, false on failure.
      * @throws Exception
      */
-    protected function getColumns(array $columns) : bool
+    protected function getColumns(array $columns): bool
     {
         if (count($columns) == 0)
             return true;
@@ -796,7 +823,8 @@ class fimUser extends \Fim\DynamicObject
     /**
      * Resolves all user data from the database.
      */
-    public function resolveAll() {
+    public function resolveAll(): bool
+    {
         return $this->resolve(['id', 'name', 'mainGroupId', 'options', 'joinDate', 'birthDate', 'email', 'lastSync', 'passwordHash', 'passwordFormat', 'passwordResetNow', 'passwordLastReset', 'avatar', 'profile', 'nameFormat', 'defaultRoomId', 'messageFormatting', 'privs', 'fileCount', 'fileSize', 'ownedRooms', 'messageCount', 'favRooms', 'watchRooms', 'ignoredUsers', 'friendedUsers', 'socialGroupIds', 'parentalFlags', 'parentalAge']);
     }
 
@@ -813,7 +841,7 @@ class fimUser extends \Fim\DynamicObject
     {
         if (isset($databaseFields['password'])) {
             require 'PasswordHash.php';
-            $h = new PasswordHash(8, FALSE);
+            $h = new PasswordHash(8, false);
             $databaseFields['passwordHash'] = $h->HashPassword($databaseFields['password']);
             $databaseFields['passwordFormat'] = 'phpass';
 
@@ -827,17 +855,17 @@ class fimUser extends \Fim\DynamicObject
             \Fim\Database::instance()->startTransaction();
 
             if (fim_inArray(array_keys($databaseFields), explode(', ', \Fim\DatabaseInstance::userHistoryColumns))) {
-                if ($existingUserData = \Fim\Database::instance()->getUsers(array(
-                    'userIds' => array($this->id),
+                if ($existingUserData = \Fim\Database::instance()->getUsers([
+                    'userIds' => [$this->id],
                     'columns' => \Fim\DatabaseInstance::userHistoryColumns,
-                ))->getAsArray(false)) {
+                ])->getAsArray(false)) {
                     \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "userHistory", fim_arrayFilterKeys($existingUserData, ['userId', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
                 }
             }
 
-            $return = \Fim\Database::instance()->upsert(\Fim\Database::$sqlPrefix . "users", array(
+            $return = \Fim\Database::instance()->upsert(\Fim\Database::$sqlPrefix . "users", [
                 'id' => $this->id,
-            ), $databaseFields);
+            ], $databaseFields);
 
             \Fim\Database::instance()->endTransaction();
 
@@ -847,9 +875,9 @@ class fimUser extends \Fim\DynamicObject
         }
 
         else {
-            $databaseFields = array_merge(array(
+            $databaseFields = array_merge([
                 'privs' => \Fim\Config::$defaultUserPrivs
-            ), $databaseFields);
+            ], $databaseFields);
 
             $return = \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "users", $databaseFields);
 
@@ -859,4 +887,5 @@ class fimUser extends \Fim\DynamicObject
         }
     }
 }
+
 ?>

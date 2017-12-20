@@ -43,7 +43,7 @@ abstract class DynamicObject extends MagicGettersSetters {
      * Adds properties to list of resolved properties.
      * @see magicGettersSetters::set()
      */
-    public function set($property, $value) {
+    public function set(string $property, $value) {
         parent::set($property, $value);
 
         if (!in_array($property, $this->resolved))
@@ -51,7 +51,7 @@ abstract class DynamicObject extends MagicGettersSetters {
     }
 
 
-    public function get($property) {
+    public function get(string $property) {
         if (!$this->hasGetter($property)
             && !in_array($property, $this->resolved)) {
             $this->resolveFromPullGroup($property);
@@ -87,7 +87,7 @@ abstract class DynamicObject extends MagicGettersSetters {
      *
      * @throws Exception If matching pullgroup not found.
      */
-    public function resolveFromPullGroup($needle) {
+    public function resolveFromPullGroup(string $needle) {
         $groupPointer = [];
 
         foreach (static::$pullGroups AS $group) {
