@@ -41,7 +41,7 @@ else {
                 break;
 
             case 'viewCache':
-                foreach (array('fim_config', 'fim_fimRoom_1', 'fim_fimUser_1') AS $cache) {
+                foreach (array(\Fim\Cache::CONFIG_KEY, \Fim\Cache::EMOTICON_KEY, 'fim_fimRoom_1', 'fim_fimUser_1') AS $cache) {
                     $formattedCache = '';
 
                     foreach ((array) \Cache\CacheFactory::get($cache) AS $key => $value) {

@@ -157,6 +157,7 @@ require('../global.php');
 <body>
 <div class="row">
     <div class="col-sm-3" style="min-width: 250px;">
+        <?php if ($user->isValid()): ?>
         <div class="card">
             <h3 class="card-header">General Information</h3>
             <div class="list-group list-group-flush">
@@ -185,6 +186,7 @@ require('../global.php');
                 </div>
             <?php endif ?>
         </div>
+        <?php endif; ?>
     </div>
 
     <div class="col">
