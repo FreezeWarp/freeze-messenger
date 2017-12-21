@@ -591,18 +591,21 @@ Pending Update
         <div class="card-body">
             <h4 class="card-title"><a href="{{fileData.webLocation}}" target="_blank">{{fileData.name}}</a></h4>
             <h6 class="card-subtitle mb-2 text-muted">{{byte fileData.size}}</h6>
-            <a href="#" class="card-link" onclick="fimApi.editUserOptions('edit', {
-                'avatar': window.serverSettings.installUrl + 'file.php?sha256hash={{fileData.sha256Hash}}&thumbnailWidth=200&thumbnailHeight=200',
-            }, {
-                'end' : function(response) {
-                    if ('avatar' in response) {
-                        dia.error(response.avatar.string);
+
+            {{#if activeLogin.userData.permissions.selfChangeAvatar}}
+                <a href="#" class="card-link" onclick="fimApi.editUserOptions('edit', {
+                    'avatar': window.serverSettings.installUrl + 'file.php?sha256hash={{fileData.sha256Hash}}&thumbnailWidth=200&thumbnailHeight=200',
+                }, {
+                    'end' : function(response) {
+                        if ('avatar' in response) {
+                            dia.error(response.avatar.string);
+                        }
+                        else {
+                            dia.info('{{uploads.actions.setAsAvatar.success}}');
+                        }
                     }
-                    else {
-                        dia.info('{{uploads.actions.setAsAvatar.success}}');
-                    }
-                }
-            });">{{uploads.buttons.setAsAvatar}}</a>
+                });">{{uploads.buttons.setAsAvatar}}</a>
+            {{/if}}
         </div>
     </div>
 </script>
