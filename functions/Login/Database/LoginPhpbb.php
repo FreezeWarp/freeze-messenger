@@ -101,11 +101,50 @@ class LoginPhpbb extends LoginDatabase
                 'nameFormat'        => ($phpbbUser['nameColor'] ? 'color: #' . $phpbbUser['nameColor'] : ''),
             ]);
 
-            /*
-             * TODO:
-             * Create main user group if it doesn't exist.
-             */
 
+
+            /* Get Social Groups The User Belongs To */
+            $phpbbGroupIds = $this->loginFactory->database->select([
+                "{$this->loginFactory->database->sqlPrefix}user_group" => 'user_id, group_id, user_pending'
+            ], [
+                'user_id' => $phpbbUser['id'],
+                'user_pending' => 0,
+            ])->getColumnValues('group_id');
+
+            $phpbbGroups = $this->loginFactory->database->select([
+                "{$this->loginFactory->database->sqlPrefix}groups" => 'group_id, group_name, group_avatar'
+            ], [
+                'group_id' => $this->loginFactory->database->in($phpbbGroupIds)
+            ])->getAsArray(true);
+
+
+            /* Create User Groups
+             * TODO: detect group moves/renames */
+            $groupNames = [];
+
+            \Fim\Database::instance()->autoQueue(true);
+            foreach ($phpbbGroups AS $group) {
+                $groupNames[] = $group['group_name'];
+                @\Fim\Database::instance()->createSocialGroup(
+                    $group['group_name'],
+                    $group['group_avatar']
+                        ? "{$loginConfig['url']}/download/file.php?avatar={$group['group_avatar']}"
+                        : ''
+                );
+            }
+            @\Fim\Database::instance()->autoQueue(false);
+
+
+            /* Join User Groups */
+            $dbGroupIds = \Fim\Database::instance()->select([
+                \Fim\Database::$sqlPrefix . 'socialGroups' => 'id, name'
+            ], ['name' => \Fim\Database::instance()->in($groupNames)])->getColumnValues('id');
+
+            \Fim\Database::instance()->autoQueue(true);
+            foreach ($dbGroupIds AS $groupId) {
+                @\Fim\Database::instance()->enterSocialGroup($groupId, $this->loginFactory->user);
+            }
+            @\Fim\Database::instance()->autoQueue(false);
 
             /*
              * TODO: on timer
