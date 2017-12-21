@@ -37,14 +37,14 @@ class Cache extends \Cache\CacheFactory {
      *
      * @return mixed
      */
-    private static function getGeneric($index, $callbackToCreate) {
+    private static function getGeneric($index, $callbackToCreate, $ttl = 31536000) {
         if (self::exists($index)) {
             return self::get($index);
         }
         else {
             $data = $callbackToCreate();
 
-            self::set($index, $data);
+            self::set($index, $data, $ttl);
             return $data;
         }
     }
@@ -59,7 +59,7 @@ class Cache extends \Cache\CacheFactory {
         if (!$disableConfig) {
             $configData = self::getGeneric(self::CONFIG_KEY, function() {
                 return \Fim\DatabaseSlave::instance()->getConfigurations()->getAsArray(true);
-            });
+            }, \Fim\Config::$configCacheTimeout);
 
             foreach ($configData AS $configDatabaseRow) {
                 if (($value = @unserialize($configDatabaseRow['value'])) !== false || $configDatabaseRow['value'] === serialize(false)) {
@@ -89,7 +89,7 @@ class Cache extends \Cache\CacheFactory {
             return \Fim\DatabaseSlave::instance()->select(array(
                 \Fim\DatabaseSlave::$sqlPrefix . "emoticons" => 'emoticonId, emoticonText, emoticonFile'
             ))->getAsArray('emoticonId');
-        });
+        }, \Fim\Config::$emoticonCacheTimeout);
     }
 
     /**

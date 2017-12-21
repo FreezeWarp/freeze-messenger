@@ -92,10 +92,6 @@ echo new Http\ApiData([
             'bold' => \Fim\Config::$defaultFormattingBold,
         ),
 
-        'cacheDelays' => array(
-            'censorWords' => \Fim\Config::$censorWordsCacheRefresh,
-        ),
-
         'emoticons' => \Fim\Cache::getEmoticons(),
 
         'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk. We will, however, display the base version.

@@ -615,17 +615,23 @@ class Config {
         'µ' => 'mu',
     );
 
-    /** @var int How often a room's applied censor words should be refreshed. The value should be large enough to ensure that messageSend doesn't require rebuilding the cache frequently; but low enough that changes to the active lists doesn't take a long time to refresh. */
-    public static $censorWordsCacheRefresh = 1800;
+
+
 
     /** @var bool If true, permissions will be cached in the roomPermissionsCache table. */
     public static $roomPermissionsCacheEnabled = true;
 
     /** @var int  Time after which a cache entry will no longer be considered valid. A low value will keep the cache table small (which may be required in some installations), while a high value will cause the greatest speed-up. Of-course, the higher the value, the more delay there may be in permission updates; while the system will automatically prune permission cache entries when users are kicked and when room permissions change, the system will *not* prune permission caches when a kick expires; thus, very high values should be avoided if kicks are enabled. */
-    public static $roomPermissionsCacheExpires = 5 * 60;
+    public static $roomPermissionsCacheExpires = 300;
 
-    /** @var int The time in seconds that a user object is considered valid for in the cache. */
+    /** @var int The time in seconds that a user or room object is considered valid for in the cache. */
     public static $cacheDynamicObjectsTimeout = 300;
+
+    /** @var int The time in seconds that a the config cache is considered valid. (Note that the first time the config cache is generated, it will typically use the default value.) */
+    public static $configCacheTimeout = 60 * 60 * 24;
+
+    /** @var int The time in seconds that a the emoticon cache is considered valid. This will typically be automatically cleared when emoticons are added, but if using an emoticon-providing login provider (like vBulletin), you may wish to lower this. */
+    public static $emoticonCacheTimeout = 60 * 60 * 24;
 
     /** @var float Delays all API requests by a fixed amount. Good for preventing overloading in some cases; but in practice better served by limiting number of connections by a single IP. (Which is up to you to do in your webserver configuration.) */
     public static $apiPause = 0.0;
