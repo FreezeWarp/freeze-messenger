@@ -642,11 +642,11 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                             }
                         ">
                             <option value="vanilla">No Integration</option>
-                            <option value="vbulletin3">vBulletin 3.8</option>
-                            <option value="vbulletin4">vBulletin 4.1</option>
+                            <option value="vbulletin3">vBulletin 3.8 or 4.x</option>
+                            <option value="vbulletin5">vBulletin 5.x</option>
                             <option value="phpbb">PHPBB 3</option>
                         </select>
-                        <small class="form-text text-muted">If you have a forum, you can enable more advanced features than without one, and prevent users from having to create more than one account.</small>
+                        <small class="form-text text-muted">If you have a forum, you can enable more advanced features than without one, and avoid making users create more than one account.</small>
                     </td>
                 </tr>
                 <tr class="forumShow" style="display: none;">
@@ -663,14 +663,14 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                         <small class="form-text text-muted">The prefix of all tables the forum uses. You most likely defined this when you installed it. If unsure, check your forum's configuration file.</small>
                     </td>
                 </tr>
-                <tr class="vanillaShow">
+                <tr>
                     <td><strong>Admin Username</strong></td>
                     <td>
                         <input type="text" class="form-control" name="admin_userName" required />
                         <small class="form-text text-muted">The name you wish to login with.</small>
                     </td>
                 </tr>
-                <tr class="vanillaShow">
+                <tr>
                     <td><strong>Admin Password</strong></td>
 
                     <td>

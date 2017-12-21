@@ -24,6 +24,7 @@ require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
 require(__DIR__ . '/../functions/Xml2Array.php'); // For reading the db*.xml files
 require(__DIR__ . '/../functions/fimUser.php'); // Creating Users
 require(__DIR__ . '/../functions/fimRoom.php');
+require(__DIR__ . '/../functions/fimError.php');
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!@ini_get('safe_mode')) {
@@ -250,11 +251,46 @@ switch ($_REQUEST['phase']) {
                     'password' => $adminPassword,
                     'privs' => 0x7FFFFFFF,
                 ))) {
-                    //var_dump(\Fim\Database::instance()->errors);
                     die("Could not create user.");
                 }
             } catch(Exception $ex) {
                 die($ex->getMessage());
+            }
+        }
+        else {
+            /* Prepare Login Runner */
+            $_REQUEST['username'] = $adminUsername;
+            $_REQUEST['password'] = $adminPassword;
+            $loginConfig = [
+                'method' => $forum,
+                'url' => $forumUrl,
+                'adminGroups' => [],
+                'superUsers' => [],
+                'bannedGroups' => [],
+            ];
+
+
+            \Fim\Database::setInstance(new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix));
+            \Fim\DatabaseLogin::setInstance(new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $forumTablePrefix));
+
+
+            require_once('../functions/oauth2-server-php/src/OAuth2/Autoloader.php');
+            OAuth2\Autoloader::register();
+            $oauthStorage = new \Fim\OAuthProvider(\Fim\Database::instance(), 'fimError');
+            $oauthServer = new OAuth2\Server($oauthStorage); // Pass a storage object or array of storage objects to the OAuth2 server class
+            $oauthRequest = OAuth2\Request::createFromGlobals();
+            $loginFactory = new \Login\LoginFactory($oauthRequest, $oauthStorage, $oauthServer, \Fim\DatabaseLogin::instance());
+
+
+            try {
+                $loginFactory->loginRunner->setUser();
+                $user = $loginFactory->user;
+
+                if (!$user->id) {
+                    die('Admin user could not be retrieved.');
+                }
+            } catch(fimErrorThrown $ex) {
+                die($ex->getCode() . ": " . $ex->getString());
             }
         }
 
@@ -311,10 +347,10 @@ switch ($_REQUEST['phase']) {
             '$dbConnect[\'integration\'][\'tablePrefix\'] = \'' . addslashes($forumTablePrefix) . '\';',
             '$loginConfig[\'method\'] = \'' . addslashes($forum) . '\';',
             '$loginConfig[\'url\'] = \'' . addslashes($forumUrl) . '\';',
-            '$loginConfig[\'superUsers\'] = array(' . ($forum == 'phpbb' ? 2 : 1) . ');',
+            '$loginConfig[\'superUsers\'] = array(' . $user->id . ');',
             '$installUrl = \'' . str_replace(array('install/index.php', 'install/'), array('', ''), $_SERVER['HTTP_REFERER']) . '\';',
-            '$loginConfig[\'adminGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin4') ? '6' : '') . ')',
-            '$loginConfig[\'bannedGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin4') ? '4, 8' : '') . ')',
+            '$loginConfig[\'adminGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin5') ? '6' : '') . ')',
+            '$loginConfig[\'bannedGroups\'] = array(' . (($forum === 'vbulletin3' || $forum == 'vbulletin5') ? '4, 8' : '') . ')',
         );
 
 
