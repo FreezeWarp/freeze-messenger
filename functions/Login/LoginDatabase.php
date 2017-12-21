@@ -108,7 +108,7 @@ abstract class LoginDatabase implements LoginRunner
      *
      * @param $emoticons array An array of emoticons, indexed by the 'emoticonText' value, which in turn contains an array with the keys 'emoticonText' and 'emoticonFile'
      */
-    public function syncEmoticons($emoticons)
+    public function syncEmoticons($emoticons, $basePath = '')
     {
         global $loginConfig;
 
@@ -117,9 +117,10 @@ abstract class LoginDatabase implements LoginRunner
 
         // Start by upserting all of the emoticons we fetched
         foreach ($emoticons AS $emoticon) {
-            @\Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . 'emoticons', [
+            @\Fim\Database::instance()->upsert(\Fim\Database::$sqlPrefix . 'emoticons', [
                 'emoticonText' => $emoticon['emoticonText'],
-                'emoticonFile' => $loginConfig['url'] . 'images/smilies/' . $emoticon['emoticonFile']
+            ], [
+                'emoticonFile' => "{$loginConfig['url']}{$basePath}{$emoticon['emoticonFile']}"
             ]);
         }
 

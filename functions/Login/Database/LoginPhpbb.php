@@ -163,7 +163,7 @@ class LoginPhpbb extends LoginDatabase
     {
         $this->syncEmoticons(\Fim\DatabaseLogin::instance()->select([
             \Fim\DatabaseLogin::$sqlPrefix . "smilies" => 'code emoticonText, smiley_url emoticonFile'
-        ])->getAsArray('emoticonText'));
+        ])->getAsArray('emoticonText'), 'images/smilies/');
     }
 
 

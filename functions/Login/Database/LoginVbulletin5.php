@@ -172,7 +172,7 @@ class LoginVbulletin5 extends LoginDatabase
     {
         $this->syncEmoticons($this->loginFactory->database->select([
             "{$this->loginFactory->database->sqlPrefix}smilie" => 'smilietext emoticonText, smiliepath emoticonFile'
-        ])->getAsArray('emoticonText'));
+        ])->getAsArray('emoticonText'), 'core/');
     }
 
 
