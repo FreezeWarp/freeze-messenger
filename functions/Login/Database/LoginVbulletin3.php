@@ -104,7 +104,7 @@ class LoginVbulletin3 extends LoginDatabase
                 'nameFormat'        => $css,
                 'mainGroupId'       => $vbUser['usergroupid'],
                 'joinDate'          => $vbUser['joindate'],
-                'avatar'            => "{$loginConfig['url']}/image.php?u={$vbUser['userid']}", // TODO, I think
+                'avatar'            => "{$loginConfig['url']}/image.php?u={$vbUser['userid']}",
             ]);
 
 
@@ -141,7 +141,7 @@ class LoginVbulletin3 extends LoginDatabase
 
             /* Join User Groups */
             $dbGroupIds = \Fim\Database::instance()->select([
-                'socialGroups' => 'id, name'
+                \Fim\Database::$sqlPrefix . 'socialGroups' => 'id, name'
             ], ['name' => \Fim\Database::instance()->in($groupNames)])->getColumnValues('id');
 
             \Fim\Database::instance()->autoQueue(true);
