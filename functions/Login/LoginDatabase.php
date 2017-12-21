@@ -2,6 +2,9 @@
 
 namespace Login;
 
+/**
+ * This is the broad functionality used by any Database login provider: one that, given a username and password, can look it up in a database, and then fetch additional user data.
+ */
 abstract class LoginDatabase implements LoginRunner
 {
     /**

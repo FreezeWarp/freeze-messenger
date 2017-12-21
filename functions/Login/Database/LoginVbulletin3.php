@@ -5,6 +5,10 @@ namespace Login\Database;
 use Login\LoginDatabase;
 use Login\LoginFactory;
 
+/**
+ * vBulletin 3/4 Login Provider
+ * This uses `md5(md5(password) . salt) == hash` to validate vBulletin-stored logins, and then fetches user group information and smilies.
+ */
 class LoginVbulletin3 extends LoginDatabase
 {
     /**

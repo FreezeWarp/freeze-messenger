@@ -5,6 +5,10 @@ namespace Login\Database;
 use Login\LoginDatabase;
 use Login\LoginFactory;
 
+/**
+ * PHPBB 3 Login Provider
+ * This uses PHPass to validate PHPBB-stored logins, and then fetches user group information and smilies.
+ */
 class LoginPhpbb extends LoginDatabase
 {
     /**

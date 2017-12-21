@@ -5,6 +5,10 @@ namespace Login\Database;
 use Login\LoginDatabase;
 use Login\LoginFactory;
 
+/**
+ * vBulletin 5 Login Provider
+ * This uses `password_verify(md5(password), hash)` to validate vBulletin-stored logins, and then fetches user group information and smilies.
+ */
 class LoginVbulletin5 extends LoginDatabase
 {
     /**
