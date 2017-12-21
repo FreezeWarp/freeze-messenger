@@ -44,14 +44,14 @@ switch ($_REQUEST['phase']) {
         // If tables do not exist, create them from the schema (dbSchema.xml).
         // If tables do exist, recreate if specified or leave alone. (TODO)
 
-        $driver = urldecode($_GET['db_driver']);
-        $host = urldecode($_GET['db_host']);
-        $port = urldecode($_GET['db_port']);
-        $userName = urldecode($_GET['db_userName']);
-        $password = urldecode($_GET['db_password']);
-        $databaseName = urldecode($_GET['db_database']);
+        $driver = $_GET['db_driver'];
+        $host = $_GET['db_host'];
+        $port = $_GET['db_port'];
+        $userName = $_GET['db_userName'];
+        $password = $_GET['db_password'];
+        $databaseName = $_GET['db_database'];
         $createdb = isset($_GET['db_createdb']);
-        $prefix = urldecode($_GET['db_tableprefix']);
+        $prefix = $_GET['db_tableprefix'];
 
 
 
@@ -220,22 +220,30 @@ switch ($_REQUEST['phase']) {
     case 2: // Config File
         require('../functions/fim_general.php');
 
-        $driver = urldecode($_GET['db_driver']);
-        $host = urldecode($_GET['db_host']);
-        $port = urldecode($_GET['db_port']);
-        $userName = urldecode($_GET['db_userName']);
-        $password = urldecode($_GET['db_password']);
-        $databaseName = urldecode($_GET['db_database']);
-        $prefix = urldecode($_GET['db_tableprefix']);
+        $driver = $_GET['db_driver'];
+        $host = $_GET['db_host'];
+        $port = $_GET['db_port'];
+        $userName = $_GET['db_userName'];
+        $password = $_GET['db_password'];
+        $databaseName = $_GET['db_database'];
+        $prefix = $_GET['db_tableprefix'];
 
-        $forum = urldecode($_GET['forum']);
-        $forumUrl = urldecode($_GET['forum_url']);
-        $forumTablePrefix = urldecode($_GET['forum_tableprefix']);
+        $forum = $_GET['forum'];
+        $forumUrl = rtrim($_GET['forum_url'], '/') . '/';
+        $forumTablePrefix = $_GET['forum_tableprefix'];
 
-        $recaptchaKey = urldecode($_GET['recaptcha_key'] ?? '');
+        $recaptchaKey = $_GET['recaptcha_key'] ?? '';
 
-        $adminUsername = urldecode($_GET['admin_userName']);
-        $adminPassword = urldecode($_GET['admin_password']);
+        $adminUsername = $_GET['admin_userName'];
+        $adminPassword = $_GET['admin_password'];
+
+        $loginConfig = [
+            'method' => $forum,
+            'url' => $forumUrl,
+            'adminGroups' => [],
+            'superUsers' => [],
+            'bannedGroups' => [],
+        ];
 
         $base = file_get_contents('config.base.php');
 
@@ -261,13 +269,6 @@ switch ($_REQUEST['phase']) {
             /* Prepare Login Runner */
             $_REQUEST['username'] = $adminUsername;
             $_REQUEST['password'] = $adminPassword;
-            $loginConfig = [
-                'method' => $forum,
-                'url' => $forumUrl,
-                'adminGroups' => [],
-                'superUsers' => [],
-                'bannedGroups' => [],
-            ];
 
 
             \Fim\Database::setInstance(new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix));

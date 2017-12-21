@@ -219,7 +219,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                 <h5 class="modal-title">Installing</h5>
             </div>
             <div class="modal-body">
-                Installing now. Please wait a few moments.<br /><img src="../webpro/images/ajax-loader.gif" />
+                Installing now. Please wait a few moments.<br /><img src="./ajax-loader.gif" />
             </div>
         </div>
     </div>
@@ -504,7 +504,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                     <td><strong>Port</strong></td>
                     <td>
                         <input id="db_port" class="form-control" type="text" name="db_port" value="3306" required />
-                        <small class="form-text text-muted">The port your database server is configured to work on. For MySQL and MySQLi, it is usually 3306. For PostGreSQL, it is usually 5432.</small>
+                        <small class="form-text text-muted">The port your database server is configured to work on. For MySQL, it is usually 3306. For PostGreSQL, it is usually 5432.</small>
                     </td>
                 </tr>
                 <tr>
