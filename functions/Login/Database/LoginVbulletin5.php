@@ -101,14 +101,14 @@ class LoginVbulletin5 extends LoginDatabase
             $this->loginFactory->user->setDatabase([
                 'integrationMethod' => 'vb5',
                 'integrationId'     => $vbUser['userid'],
-                'profile'           => "{$loginConfig['url']}/member/{$vbUser['userid']}",
+                'profile'           => "{$loginConfig['url']}member/{$vbUser['userid']}",
                 'name'              => $vbUser['username'],
                 'email'             => $vbUser['email'],
                 'bio'               => $vbUser['usertitle'],
                 'nameFormat'        => $css,
                 'mainGroupId'       => $vbUser['usergroupid'],
                 'joinDate'          => $vbUser['joindate'],
-                'avatar'            => "{$loginConfig['url']}/core/image.php?userid={$vbUser['userid']}",
+                'avatar'            => "{$loginConfig['url']}core/image.php?userid={$vbUser['userid']}",
             ]);
 
 
@@ -137,7 +137,7 @@ class LoginVbulletin5 extends LoginDatabase
 
             foreach ($vbSocialGroups AS $socialGroup) {
                 $groupNames[] = 'Social Group: ' . $socialGroup['title'];
-                @\Fim\Database::instance()->createSocialGroup('Social Group: ' . $socialGroup['title'], "{$loginConfig['url']}/filedata/fetch?channelid={$socialGroup['nodeid']}&type=medium");
+                @\Fim\Database::instance()->createSocialGroup('Social Group: ' . $socialGroup['title'], "{$loginConfig['url']}filedata/fetch?channelid={$socialGroup['nodeid']}&type=medium");
             }
             @\Fim\Database::instance()->autoQueue(false);
 

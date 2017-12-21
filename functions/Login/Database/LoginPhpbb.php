@@ -97,7 +97,7 @@ class LoginPhpbb extends LoginDatabase
                 'mainGroupId'       => $phpbbUser['mainGroupId'],
                 'joinDate'          => $phpbbUser['joinDate'],
                 'name'              => $phpbbUser['name'],
-                'avatar'            => ($phpbbUser['avatar'] ? "{$loginConfig['url']}/download/file.php?avatar={$phpbbUser['avatar']}" : ''),
+                'avatar'            => ($phpbbUser['avatar'] ? "{$loginConfig['url']}download/file.php?avatar={$phpbbUser['avatar']}" : ''),
                 'nameFormat'        => ($phpbbUser['nameColor'] ? 'color: #' . $phpbbUser['nameColor'] : ''),
             ]);
 
@@ -128,7 +128,7 @@ class LoginPhpbb extends LoginDatabase
                 @\Fim\Database::instance()->createSocialGroup(
                     $group['group_name'],
                     $group['group_avatar']
-                        ? "{$loginConfig['url']}/download/file.php?avatar={$group['group_avatar']}"
+                        ? "{$loginConfig['url']}download/file.php?avatar={$group['group_avatar']}"
                         : ''
                 );
             }

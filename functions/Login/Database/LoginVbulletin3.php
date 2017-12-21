@@ -104,7 +104,7 @@ class LoginVbulletin3 extends LoginDatabase
                 'nameFormat'        => $css,
                 'mainGroupId'       => $vbUser['usergroupid'],
                 'joinDate'          => $vbUser['joindate'],
-                'avatar'            => "{$loginConfig['url']}/image.php?u={$vbUser['userid']}",
+                'avatar'            => "{$loginConfig['url']}image.php?u={$vbUser['userid']}",
             ]);
 
 
@@ -134,7 +134,7 @@ class LoginVbulletin3 extends LoginDatabase
 
             foreach ($vbSocialGroups AS $socialGroup) {
                 $groupNames[] = 'Social Group: ' . $socialGroup['name'];
-                @\Fim\Database::instance()->createSocialGroup('Social Group: ' . $socialGroup['name'], $loginConfig['url'] . '/image.php?groupid=' . $socialGroup['groupid']);
+                @\Fim\Database::instance()->createSocialGroup('Social Group: ' . $socialGroup['name'], "{$loginConfig['url']}image.php?groupid={$socialGroup['groupid']}");
             }
             @\Fim\Database::instance()->autoQueue(false);
 
