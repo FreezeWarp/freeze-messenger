@@ -769,8 +769,7 @@ class fimUser extends \Fim\DynamicObject
     {
         switch ($this->__get('passwordFormat')) {
             case 'phpass':
-                require_once('PasswordHash.php');
-                $h = new PasswordHash(8, false);
+                $h = new \Login\PasswordHash(8, false);
 
                 return $h->CheckPassword($password, $this->__get('passwordHash'));
             break;
@@ -840,8 +839,7 @@ class fimUser extends \Fim\DynamicObject
     public function setDatabase($databaseFields)
     {
         if (isset($databaseFields['password'])) {
-            require 'PasswordHash.php';
-            $h = new PasswordHash(8, false);
+            $h = new \Login\PasswordHash(8, false);
             $databaseFields['passwordHash'] = $h->HashPassword($databaseFields['password']);
             $databaseFields['passwordFormat'] = 'phpass';
 

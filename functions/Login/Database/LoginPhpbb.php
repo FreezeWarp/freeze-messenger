@@ -76,7 +76,7 @@ class LoginPhpbb extends LoginDatabase
         if (!$phpbbUser) {
             new \fimError('usernameInvalid', 'A user by the given name does not exist.');
         }
-        elseif (strlen($phpbbUser['password']) <= 0 || !(new \PasswordHash(8, false))->CheckPassword($_REQUEST['password'], $phpbbUser['password'])) {
+        elseif (strlen($phpbbUser['password']) <= 0 || !(new \Login\PasswordHash(8, false))->CheckPassword($_REQUEST['password'], $phpbbUser['password'])) {
             new \fimError('passwordInvalid', 'A user by the given password does not exist.');
         }
         else {

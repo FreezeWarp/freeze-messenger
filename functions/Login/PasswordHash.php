@@ -1,4 +1,7 @@
 <?php
+
+namespace Login;
+
 #
 # Portable PHP password hashing framework.
 #
