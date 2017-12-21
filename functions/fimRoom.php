@@ -814,32 +814,6 @@ class fimRoom extends DynamicObject
 
 
     /**
-     * Resolves the needle property and all similar properties.
-     *
-     * @param $needle
-     *
-     * @throws Exception If matching pullgroup not found.
-     */
-    public function resolveFromPullGroup(string $needle)
-    {
-        $groupPointer = false;
-
-        foreach (fimRoom::$roomDataPullGroups AS $group) {
-            if (in_array($needle, $group)) {
-                $groupPointer =& $group;
-                break;
-            }
-        }
-
-        if ($groupPointer) {// var_dump(["get", $groupPointer]);
-            $this->resolve($groupPointer);
-        }
-        else
-            throw new Exception("Selection group not found for '$needle'");
-    }
-
-
-    /**
      * Modify or create a room.
      *
      * @param $roomParameters array Data to set. These values will be set both in the fimRoom object and in the database.

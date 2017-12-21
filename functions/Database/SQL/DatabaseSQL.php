@@ -2061,7 +2061,7 @@ class DatabaseSQL extends Database
                         $this->triggerError("Selecting from a hard partitioned table, " . $tableName . ", without the partition column, " . $column . " at the top level is unsupported. It likely won't ever be supported, since any boolean logic is likely to require cross-partition selection, which is far too complicated a feature for this DAL. Use native RDBMS partitioning for that if you can.");
 
                     // I'm not a fan of this hack at all, but I'd really have to rewrite to
-                    $finalQuery['tables'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_NAME_ALIAS, $tableName . "__part" . $found % $partitionCount, $tableName);
+                    $finalQuery['tables'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE_NAME_ALIAS, $tableName . "__part" . ((int) $found % (int) $partitionCount), $tableName);
                 }
                 else {
                     $finalQuery['tables'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $tableName); // Identify the table as [tableName]; note: may be removed if the table is part of a join.
