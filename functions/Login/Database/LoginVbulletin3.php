@@ -52,7 +52,7 @@ class LoginVbulletin3 extends LoginDatabase
         if (!$vbUser) {
             new \fimError('usernameInvalid', 'A user by the given name does not exist.');
         }
-        elseif (strlen($_REQUEST['password']) <= 0 || $vbUser['password'] !== md5(md5($_REQUEST['password']) . $vbUser['salt'])) {
+        elseif (strlen($vbUser['password']) <= 0 || $vbUser['password'] !== md5(md5($_REQUEST['password']) . $vbUser['salt'])) {
             new \fimError('passwordInvalid', 'A user by the given password does not exist.');
         }
         else {
