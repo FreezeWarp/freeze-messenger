@@ -1412,10 +1412,6 @@ class DatabaseInstance extends DatabaseSQL
                 throw new Exception('hasPermission was called without a valid user.'); // Make sure we know the room type and alias in addition to ID.
 
 
-            /* Obtain Data from roomPermissions Table */
-            $permissionsBitfield = $this->getPermissionsField($room->id, $user->id, $user->socialGroupIds);
-
-
             /* Base calculation -- these are what permisions a user is supposed to have, before userPrivs and certain room properties are factored in. */
             // Super moderators have all permissions (and can't be banned).
             if ($user->hasPriv('modRooms'))
@@ -1434,12 +1430,21 @@ class DatabaseInstance extends DatabaseSQL
                 $returnBitfield = 0;
 
             else {
-                if ($permissionsBitfield === -1) // No permissions bitfield was found in the permission's table, use the room's default.
-                    $returnBitfield = $room->defaultPermissions;
+                // Obtain Data from roomPermissions Table
+                $permissionsBitfield = $this->getPermissionsField($room->id, $user->id, $user->socialGroupIds);
+
+                // No permissions bitfield was found in the permission's table, use permissions that both are in the room's default and the user's permissions. (TODO: define better?)
+                if ($permissionsBitfield === -1)
+                    $returnBitfield = $room->defaultPermissions &
+                        (
+                            ($user->hasPriv('view') ? fimRoom::$permArray['view'] : 0)
+                            | ($user->hasPriv('post') ? fimRoom::$permArray['post'] : 0)
+                            | ($user->hasPriv('changeTopic') ? fimRoom::$permArray['changeTopic'] : 0)
+                        );
                 else
                     $returnBitfield = $permissionsBitfield;
 
-                // Kicked users may ONLY view.
+                // Kicked users may ONLY (at most) view.
                 if (Config::$kicksEnabled && ($kicks = $this->getKicks(array(
                         'userIds' => array($user->id),
                         'roomIds' => array($room->id),
@@ -1454,18 +1459,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
             /* Remove priviledges under certain circumstances. */
-            // Remove priviledges that a user does not have for any room.
-            if (!($user->hasPriv('view')))
-                $returnBitfield &= ~fimRoom::ROOM_PERMISSION_VIEW; // If banned, a user can't view anything.
-
-            if (!($user->hasPriv('post')))
-                $returnBitfield &= ~fimRoom::ROOM_PERMISSION_POST; // If silenced, a user can't post anywhere.
-
-            if (!($user->hasPriv('changeTopic')))
-                $returnBitfield &= ~fimRoom::ROOM_PERMISSION_TOPIC;
-
-
-            // Deleted and archived rooms act similarly: no one may post in them, while only admins can view deleted rooms.
+            // Deleted and archived rooms act similarly: no one may post in either, while only admins can view deleted rooms.
             if ($room->deleted || $room->archived) { // that is, check if a room is either deleted or archived.
                 if ($room->deleted && !$user->hasPriv('modRooms')) $returnBitfield &= ~(fimRoom::ROOM_PERMISSION_VIEW); // Only super moderators may view deleted rooms.
 
