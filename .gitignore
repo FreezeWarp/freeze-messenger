@@ -12,3 +12,5 @@ webpro/client/js/fim-dev/*.js
 webpro/client/js/fim-dev/*.js.map
 !webpro/client/js/fim-dev/autoEntry.js
 !webpro/client/js/fim-dev/fim-popup.js
+composer.phar
+composer.lock
