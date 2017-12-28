@@ -6,6 +6,7 @@ Licensed under the GPLv3 (see LICENSE)
 
 ![FreezeMessenger, Development Screenshot](https://raw.githubusercontent.com/FreezeWarp/freeze-messenger/master/artifacts/screenshot1.png "FreezeMessenger, WebPro, Development Screenshot")
 (A screenshot of the WebPro frontend.)
+
 ![FreezeMessenger, Development Screenshot](https://raw.githubusercontent.com/FreezeWarp/freeze-messenger/master/artifacts/admin_screenshot.png "FreezeMessenger, Admin Control Panel, Development Screenshot")
 (A screenshot of the admin control panel.)
 
