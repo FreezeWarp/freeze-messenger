@@ -36,12 +36,12 @@ $requestHead = (array)fim_sanitizeGPC('g', [
     ],
 
     'userId' => [
-        'exclusive' => ['groupId'],
+        'conflict' => ['groupId'],
         'cast' => 'int'
     ],
 
     'groupId' => [
-        'exclusive' => ['userId'],
+        'conflict' => ['userId'],
         'cast' => 'int'
     ],
 ]);
@@ -72,8 +72,8 @@ try {
 /* Perform Updates */
 
 // Get the current permissions field from the database
-if (isset($request['roomId'])) {
-    $param = $request['roomId'];
+if (isset($request['userId'])) {
+    $param = $request['userId'];
     $databasePermissionsField = \Fim\Database::instance()->getPermissionsField($requestHead['roomId'], $param);
     $attribute = 'user';
 }
@@ -117,4 +117,7 @@ switch ($requestHead['_action']) {
         new fimError('invalidRequestMethod', 'An invalid request method was used for this request.',null,false,fimError::HTTP_405_METHOD_NOT_ALLOWED);
     break;
 }
+
+$xmlData = ['roomPermission' => fim_objectArrayFilterKeys($room, ['id', 'name']), 'request' => $request];
+echo new Http\ApiData($xmlData);
 ?>
