@@ -1608,7 +1608,7 @@ class DatabaseSQL extends Database
             elseif (($duringTableCreation && $this->sqlInterface->indexMode === 'useTableAttribute') || $index['type'] === 'primary') {
                 $indexes[] = ($index['type'] === 'primary'
                     ?
-                        "CONSTRAINT "
+                        " CONSTRAINT "
                         . $this->formatValue(DatabaseSQL::FORMAT_VALUE_INDEX, $this->getIndexName($tableName, $indexName))
                         . ' '
                     :

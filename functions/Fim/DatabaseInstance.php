@@ -918,7 +918,7 @@ class DatabaseInstance extends DatabaseSQL
     public function getMessages($options = array(), $sort = array('id' => 'asc'), $limit = 40, $page = 0) : DatabaseResult
     {
         $options = $this->argumentMerge(array(
-            'room'           => false,
+            'room'              => false,
             'messageIds'        => array(),
             'userIds'           => array(),
             'messageTextSearch' => '', // Overwrites messageIds.
