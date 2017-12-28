@@ -458,23 +458,23 @@ Supported Drivers
 
 1.  MySQL
 
-1.  Primarily for testing purposes, the old mysql driver is implemented, though it is not actively supported. It should be avoided as much as possible, in lieu of mysqli or pdoMysql.
+    1.  Primarily for testing purposes, the old mysql driver is implemented, though it is not actively supported. It should be avoided as much as possible, in lieu of mysqli or pdoMysql.
 
-2.  mysqli is the driver used primarily in development, and generally the best supported. In many cases, it is faster than other drivers. Note that it does not use parameterised queries, and relies on escape() to escape inputs.
+    2.  mysqli is the driver used primarily in development, and generally the best supported. In many cases, it is faster than other drivers. Note that it does not use parameterised queries, and relies on escape() to escape inputs.
 
-3.  pdoMysql is the driver recommended for security-conscious individuals; all queries are fully parameterised. In practice, there is no reason to believe there is any injection potential in any driver (as the abstraction layer is itself parameterised), but if the abstraction layer fails to properly escape information, pdoMysql most likely won't. Note that pdoMysql will typically have higher memory usage than other drivers, because it must read in an entire result set before making it available for consumption.
+    3.  pdoMysql is the driver recommended for security-conscious individuals; all queries are fully parameterised. In practice, there is no reason to believe there is any injection potential in any driver (as the abstraction layer is itself parameterised), but if the abstraction layer fails to properly escape information, pdoMysql most likely won't. Note that pdoMysql will typically have higher memory usage than other drivers, because it must read in an entire result set before making it available for consumption.
 
-3.  Postgres
+2.  Postgres
 
-1.  pgsql is a newer driver that supports postgres' LISTEN/NOTIFY functionality. It will typically be somewhat slower than mysql (due to lacking the memory tables used to ensure validation occurs quickly, and requiring certain data to be transformed after retrieval), and older versions (<9.5) will also not ensure full ACIDity, as the abstraction layer will emulate upsert in these versions by executing chained "IF SELECT() THEN UPDATE ELSE INSERT" queries (in the form of three separate queries).
+    1.  pgsql is a newer driver that supports postgres' LISTEN/NOTIFY functionality. It will typically be somewhat slower than mysql (due to lacking the memory tables used to ensure validation occurs quickly, and requiring certain data to be transformed after retrieval), and older versions (<9.5) will also not ensure full ACIDity, as the abstraction layer will emulate upsert in these versions by executing chained "IF SELECT() THEN UPDATE ELSE INSERT" queries (in the form of three separate queries).
 
-2.  pdoPgsql is planned.
+    2.  pdoPgsql is planned.
 
-5.  SqlServer
+3.  SqlServer
 
-1.  sqlsrv is experimentally available, and may work with most functionality at this time. Note, however, that only experienced DBAs should use FreezeMessenger with SqlServer (as many tables may need to be further optimised on a per-installation basis to maintain performance, and a fulltext storage object must first be created prior to using FreezeMessenger), and that, at this time, SqlServer is not guaranteed to be injection proof, due to the SqlServer driver not supporting parameterised queries on CREATE statements, and also not having any escape() function.
+    1.  sqlsrv is experimentally available, and may work with most functionality at this time. Note, however, that only experienced DBAs should use FreezeMessenger with SqlServer (as many tables may need to be further optimised on a per-installation basis to maintain performance, and a fulltext storage object must first be created prior to using FreezeMessenger), and that, at this time, SqlServer is not guaranteed to be injection proof, due to the SqlServer driver not supporting parameterised queries on CREATE statements, and also not having any escape() function.
 
-2.  pdoSqlsrv is planned.
+    2.  pdoSqlsrv is planned.
 
 Language-Specific Notes
 -----------------------
