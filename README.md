@@ -285,6 +285,9 @@ FlexMessenger uses reflection to expose stream methods. New Stream methods can b
 Login Compatibility
 ===================
 
+Supported Login Functionality
+-----------------------------
+
 FreezeMessenger can "borrow" functionality from login servers, though the functionality is currently fairly limited. It is implemented as such:
 
 -   __authentication__ - Will always be provided by the login server.
@@ -299,6 +302,10 @@ In addition, the following site-wide features may be implemented using login sys
 
 -   __emoticons__ - The list of emoticons that are used in messages.
 
+Supported Login Methods
+-----------------------
+
+### Primary Login Methods
 Note that, at present, the following primary login systems are available:
 
 -   __PHPBB 3__, which provides username formatting, email, usergroups, and avatar. It also provides emoticons.
@@ -307,6 +314,7 @@ Note that, at present, the following primary login systems are available:
 
 (If no primary login system is used, FreezeMessenger will handle authentication itself using usernames and passwords, and will provide for setting user avatars and profiles. No other login server functionality is currently implemented by FreezeMessenger.)
 
+### OAuth/OpenID Login Methods
 Additionally, the following OAuth-style login systems can be used in addition to the primary login system, if API keys are available:
 
 -   __Google__, which providers usernames, emails, and avatars.
