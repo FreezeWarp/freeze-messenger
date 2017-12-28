@@ -74,7 +74,7 @@ Common Installation Problems
 
 ### The list of currently active users appears inaccurate.
 
-On MySQL systems, the ping is stored in memory. On default systems, only about 500,000 rows can exist in this table; after this, new records will simply be dropped, and the list of active users could, in theory, stop updating normally. To address this situation, increase the MySQL max_heap_table_size system variable.
+On MySQL systems, the [`ping`](http://josephtparsons.com/messenger/docs/database.htm#ping) table is stored in memory. On default systems, only about 500,000 rows can exist in this table; after this, new records will simply be dropped, and the list of active users could, in theory, stop updating normally. To address this situation, increase the MySQL [max_heap_table_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_heap_table_size) system variable.
 
 ### Getting the list of active users is very slow.
 
@@ -84,19 +84,18 @@ Note that, if streaming is enabled, most user status updates will occur through 
 
 ### Sending and retrieving messages suddenly became quite slow.
 
-Like with the ping table above, the roomPermissionsCache table on MySQL installations is stored in memory.
+Like with the ping table above, the [`roomPermissionsCache`](http://josephtparsons.com/messenger/docs/database.htm#roomPermissionsCache) table on MySQL installations is stored in memory.
 
-While unlikely, the first issue that may happen is that too many rows are in this table for new entries to be added; this will happen after around 1,000,000 rows. Permission calls will instead perform a much slower full-lookup, which can adversely affect the performance of almost all actions. To address this situation, increase the MySQL max_heap_table_size system variable.
+While unlikely, the first issue that may happen is that too many rows are in this table for new entries to be added; this will happen after around 1,000,000 rows. Permission calls will instead perform a much slower full-lookup, which can adversely affect the performance of almost all actions. To address this situation, increase the MySQL [max_heap_table_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_heap_table_size) system variable.
 
-More common is that too many queries are being made to this table at once; due to MySQL limitations, memory tables are not performant on very large installations. In this situation, you can install any supported non-disk cache (APC, Memcached, or Redis) to alleviate this issue, or change the roomPermissionsCache table to a non-memory table.
+More common is that too many queries are being made to this table at once; due to MySQL limitations, memory tables are not performant on very large installations. In this situation, you can install any supported non-disk cache (APC, Memcached, or Redis) to alleviate this issue, or change the [`roomPermissionsCache`](http://josephtparsons.com/messenger/docs/database.htm#roomPermissionsCache) table to a non-memory table.
 
 ### I am unable to login when a lot of other users are logged in.
 
-Like with the ping and roomPermissionsCache tables, the oauth_access_tokens table is stored in memory on MySQL installations. When a user tries to log in, the oauth_access_tokens table will first be pruned of expired sessions, but in theory so many users may be active at once that no new rows can be added to the table.
+Like with the ping and roomPermissionsCache tables, the [`oauth_access_tokens`](http://josephtparsons.com/messenger/docs/database.htm#oauth_access_tokens) table is stored in memory on MySQL installations. When a user tries to log in, the table will first be pruned of expired sessions, but in theory so many users may be active at once that no new rows can be added to the table.
 
-Around 18,000 rows can be stored in this table on a default MySQL installation; this can be increased by changing the oauth_access_tokens table to a non-memory table, or by increasing the MySQL max_heap_table_size system variable.
+Around 18,000 rows can be stored in this table on a default MySQL installation; this can be increased by changing the [`oauth_access_tokens`](http://josephtparsons.com/messenger/docs/database.htm#oauth_access_tokens) table to a non-memory table, or by increasing the MySQL [max_heap_table_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_heap_table_size) system variable.
 
--   Additionally, the list of users who watch any given room is cached. If this cache becomes too large and unwritable, then new messages will trigger large queries on the watch rooms table. Alleviating this can be more difficult than the above problem, as placing a cap on the number of users who can follow any given room is impractical. Increasing the size of the database cache, or installing a supplementary APC/Redis cache, is recommend.
 
 The Validation Bottleneck
 -------------------------
@@ -338,10 +337,20 @@ To this end, FreezeMessenger deploys a number of protection techniques:
 Caching
 =======
 
-Caching is deployed in a number of ways throughout FreezeMessenger.
+Caching is deployed in a number of ways throughout FreezeMessenger. We sort cache methods into three departments:
 
-Object Caches
--------------
+1. __Disk Cache__: A cache that writes to disk. This currently only includes the custom disk-cache implementation included with FreezeMessenger. However, if a memory cache or a distributed cache is available (in that order), they will always be used instead of a disk cache.
+2. __Memory Cache__: A cache that writes to system memory, typically for users that can be "out-of-sync" with users on other servers. This currently only includes [APC](http://php.net/manual/en/book.apc.php) and [APCu](http://php.net/manual/en/book.apcu.php), but any distributed cache may be used instead.
+3. __Distributed Cache__: A cache that is synchronised across servers, typically for data that should be updated for all users simultaneously. This currently includes [Redis](https://github.com/phpredis/phpredis) and [Memcached](http://php.net/manual/en/book.memcached.php), though any available memory cache may be used instead (albeit at the risk of de-syncing data).
+
+Complete Caches (Disk)
+----------------------
+
+The [`emoticons`](http://josephtparsons.com/messenger/docs/database.htm#emoticons) and [`config`](http://josephtparsons.com/messenger/docs/database.htm#configuration) database tables will be cached in their entirety, as they rarely change and are frequently read.
+
+
+Object Caches (Disk)
+--------------------
 
 Room and User objects are cached automatically when they are fetched from the database, and will typically be re-cached whenever they are used to update their database representation.
 
@@ -356,9 +365,9 @@ Result Caches
 
 Some functions query many different tables in order to ascertain relatively little information. We try to cache such function calls in memory tables (if supported), with the table's primary key being the composite of the function's inputs, and its remaining columns being the function's outputs.
 
--   fimDatabase->hasPermission takes two arguments, a fimRoom and a fimUser, and computes the bitfield of the user's permissions in that room. Thus, we cache results in the permissionsCache table, which has the primary key (userId, roomId), and the additional column permissionsField. In order to allow for cache expiration, we add a fourth column, expiration.
+-   __fimDatabase->hasPermission__ takes two arguments, a fimRoom and a fimUser, and computes the bitfield of the user's permissions in that room. If a distributed cache is available, we use it to cache the result; alternatively, we cache the result in the [`roomPermissionsCache`](http://josephtparsons.com/messenger/docs/database.htm#roomPermissionsCache) table.
 
--   The number of queries of a given type a user has made in any given minute is preferentially tracked using a memory cache. If no memory cache is available, it will default to tracking in a table.
+-   __The number of queries of a given type a user has made in any given minute__ is preferentially tracked using a memory cache. If no memory cache is available, it will instead use the [`accessFlood`](http://josephtparsons.com/messenger/docs/database.htm#accessFlood) table.
 
 Memory Table Caches
 -------------------
@@ -367,13 +376,11 @@ Some data is transient in nature, and stored in memory tables as a result. While
 
 As memory tables are very transient in nature, we never rely on a memory table cache; the data is always available through slower alternatives. In general, we try to use them opportunistically:
 
--   The permissionsCache table caches permission calls (see above) only when a call is made. Entries from it are automatically deleted whenever a user logs-in.
+-   If used, the [`roomPermissionsCache`](http://josephtparsons.com/messenger/docs/database.htm#roomPermissionsCache) and [`accessFlood`](http://josephtparsons.com/messenger/docs/database.htm#accessFlood) tables will use memory tables if available.
 
--   If a memory cache isn't available, the table that keeps track of flood activity will preferentially be stored as a memory table.
+-   [The tables used when no other event system is available]("#Simple-Tables") will preferentially be memory tables.
 
--   Events are implemented through the memory table. Config directives specify the maximum number of items in the table, and whenever a new event is added we find its insert ID. We then delete all events with ID < (insert ID - max items). (Events are not implemented through other tables, but most event functionality is possible with occasional queries to the other APIs, like getMessages.)
-
-Note that active users are stored in a memory table as well. If the table reaches capacity, the program will likely stop reporting such users correctly. Each row in the table is actually somewhat large (in MySQL, it will compose a 4-byte integer, a 23-byte
+-   The [`ping`](http://josephtparsons.com/messenger/docs/database.htm#ping) table, which keeps track of active users, will use a memory table if available.
 
 Database Abstraction Layer
 ==========================
@@ -383,25 +390,26 @@ Supported Drivers
 
 1.  MySQL
 
-    1.  Primarily for testing purposes, the old mysql driver is implemented, though it is not actively supported. It should be avoided as much as possible, in lieu of mysqli or pdoMysql.
-    2.  mysqli is the driver used primarily in development, and generally the best supported. In many cases, it is faster than other drivers. Note that it does not use parameterised queries, and relies on escape() to escape inputs.
-    3.  pdoMysql is the driver recommended for security-conscious individuals; all queries are fully parameterised. In practice, there is no reason to believe there is any injection potential in any driver (as the abstraction layer is itself parameterised), but if the abstraction layer fails to properly escape information, pdoMysql most likely won't. Note that pdoMysql will typically have higher memory usage than other drivers, because it must read in an entire result set before making it available for consumption.
+    1.  Primarily for testing purposes, the old __mysql__ driver is implemented, though it is not actively supported. It should be avoided as much as possible, in lieu of mysqli or pdoMysql.
+    2.  __mysqli__ is the driver used primarily in development, and generally the best supported. In many cases, it is faster than other drivers. Note that it does not use parameterised queries, and relies on [`mysqli::real_escape_string`](http://php.net/manual/en/mysqli.real-escape-string.php) to escape inputs.
+    3.  __pdoMysql__ is the driver recommended for security-conscious individuals; all queries are fully parameterised. In practice, there is no reason to believe there is any injection potential in any driver (as the abstraction layer is itself parameterised), but if the abstraction layer fails to properly escape information, pdoMysql most likely won't. Note that pdoMysql will typically have higher memory usage than other drivers, because it must read in an entire result set before making it available for consumption.
 
 2.  Postgres
 
-    1.  pgsql is a newer driver that supports postgres' LISTEN/NOTIFY functionality. It will typically be somewhat slower than mysql (due to lacking the memory tables used to ensure validation occurs quickly, and requiring certain data to be transformed after retrieval), and older versions (<9.5) will also not ensure full ACIDity, as the abstraction layer will emulate upsert in these versions by executing chained "IF SELECT() THEN UPDATE ELSE INSERT" queries (in the form of three separate queries).
-    2.  pdoPgsql is planned.
+    1.  __pgsql__ is a newer driver that supports postgres' [`LISTEN/NOTIFY`](https://www.postgresql.org/docs/current/static/sql-notify.html) functionality. It will typically be somewhat slower than mysql (due to lacking the memory tables used to ensure validation occurs quickly, and requiring certain data to be transformed after retrieval), and older versions (<9.5) will also not ensure full ACIDity, as the abstraction layer will emulate [upsert](https://wiki.postgresql.org/wiki/UPSERT) in these versions by executing chained "IF SELECT() THEN UPDATE ELSE INSERT" queries (in the form of three separate queries).
+    2.  __pdoPgsql__ is planned.
 
 3.  SqlServer
 
-    1.  sqlsrv is experimentally available, and may work with most functionality at this time. Note, however, that only experienced DBAs should use FreezeMessenger with SqlServer (as many tables may need to be further optimised on a per-installation basis to maintain performance, and a fulltext storage object must first be created prior to using FreezeMessenger), and that, at this time, SqlServer is not guaranteed to be injection proof, due to the SqlServer driver not supporting parameterised queries on CREATE statements, and also not having any escape() function.
-    2.  pdoSqlsrv is planned.
+    1.  __sqlsrv__ is experimentally available, and may work with most functionality at this time. Note, however, that only experienced DBAs should use FreezeMessenger with SqlServer (as many tables may need to be further optimised on a per-installation basis to maintain performance, and a [fulltext storage object](https://docs.microsoft.com/en-us/sql/relational-databases/search/full-text-search) must first be created prior to using FreezeMessenger), and that, at this time, SqlServer is not guaranteed to be injection proof, due to the SqlServer driver not supporting parameterised queries on CREATE statements, and also not having any escape() function.
+    2.  __pdoSqlsrv__ is planned.
 
 Language-Specific Notes
 -----------------------
 
 -   At present, MySQL supports both foreign keys and partitions, but not simultaneously (at least in InnoDB). As such, foreign key support is disabled in favour of partitions on MySQL.
--   Only MySQL uses partitioning. Postgres has no partitioning functionality, and SqlServer's is unimplemented. Only MySQL supports database creation. The user must manually create a database prior to using Postgres or SqlServer.
+-   Only MySQL uses partitioning. Postgres has no partitioning functionality, and SqlServer's is unimplemented.
+-   Only MySQL supports database creation. The user must manually create a database prior to using Postgres or SqlServer.
 -   Only MySQL supports automatically setting the table charset to UTF-8. Postgre's charsets are per-database, and thus must be set by the user.
 -   For memory tables, MySQL's MEMORY engine is used, while Postgre's UNLOGGED table attribute is used. While SqlServer supports memory-optimized tables, they are unimplemented.
--   MySQL will use MySIAM on versions < 5.6, as InnoDB did not have FULLTEXT capabilities in these versions. It will use InnoDB on versions >= 5.6.
+-   MySQL will use MySIAM on versions < 5.6, as InnoDB did not have [`FULLTEXT`](https://dev.mysql.com/doc/refman/5.6/en/innodb-fulltext-index.html) capabilities in these versions. It will use InnoDB on versions >= 5.6.
