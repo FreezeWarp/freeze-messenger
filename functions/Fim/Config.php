@@ -660,7 +660,7 @@ class Config {
     public static $logQueries = false;
 
     /** @var string The database will write all queries (and the time they took) to this file, if $logQueries is true. */
-    public static $logQueriesFile = false;
+    public static $logQueriesFile = "/tmp/fim_queryLog";
 
     /** @var bool When true, ALL API accesses will be logged to a table. This table will quickly become VERY large, so such functionality is generally ill-advised unless your server is optimised for it. */
     public static $accessLogEnabled = false;
