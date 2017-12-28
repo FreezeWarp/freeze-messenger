@@ -197,11 +197,11 @@
             <column name="client_id" fkey="oauth_clients.client_id" type="string" maxlen="80" required="true" />
             <column name="user_id" fkey="users.id" type="int" maxlen="8" />
             <column name="expires" type="time" required="true" />
-            <column name="scope" type="string" maxlen="4000" />
+            <column name="scope" type="string" preferAscii="true" maxlen="255" />
 
             <!-- FIM Additions -->
-            <column name="ip_address" type="string" maxlen="128" comment="The user's IP address." />
-            <column name="http_user_agent" type="string" maxlen="1000" comment="The user's browser user agent, if applicable." />
+            <column name="ip_address" type="string" preferAscii="true" maxlen="45" comment="The user's IP address." />
+            <column name="http_user_agent" type="string" preferAscii="true" maxlen="255" comment="The user's browser user agent, if applicable." />
             <column name="anon_id" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
 
             <key name="access_token" type="primary" />
@@ -227,7 +227,7 @@
             <column name="user_id" fkey="users.id" type="int" maxlen="8" />
             <column name="anon_id" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
             <column name="expires" type="time" required="true" />
-            <column name="scope" type="string" maxlen="4000" />
+            <column name="scope" type="string" preferAscii="true" maxlen="255" />
 
             <key name="refresh_token" type="primary" />
             <key name="user_id" type="index" />

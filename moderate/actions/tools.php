@@ -110,6 +110,7 @@ else {
                                 'bits'          => $column['@bits'] ?? false,
                                 'default'       => $column['@default'] ?? null,
                                 'comment'       => $column['@comment'] ?? false,
+                                'preferAscii'   => isset($column['@preferAscii']),
                             ];
 
                             if (isset($column['@fkey'])) {

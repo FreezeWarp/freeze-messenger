@@ -155,15 +155,18 @@ switch ($_REQUEST['phase']) {
 
 
                     foreach ($table['column'] AS $column) {
-                        $tableColumns[$column['@name']] = array(
-                            'type' => $column['@type'],
-                            'autoincrement' => (isset($column['@autoincrement']) ? $column['@autoincrement'] : false),
-                            'restrict' => (isset($column['@restrict']) ? explode(',', $column['@restrict']) : false),
-                            'maxlen' => (isset($column['@maxlen']) ? $column['@maxlen'] : false),
-                            'bits' => (isset($column['@bits']) ? $column['@bits'] : false),
-                            'default' => (isset($column['@default']) ? $column['@default'] : null),
-                            'comment' => (isset($column['@comment']) ? $column['@comment'] : false),
-                        );
+                        $tableColumns[$column['@name']] = [
+                            'type'          => $column['@type'],
+                            'autoincrement' => $column['@autoincrement'] ?? false,
+                            'restrict'      => (isset($column['@restrict'])
+                                ? explode(',', $column['@restrict'])
+                                : false),
+                            'maxlen'        => $column['@maxlen'] ?? false,
+                            'bits'          => $column['@bits'] ?? false,
+                            'default'       => $column['@default'] ?? null,
+                            'comment'       => $column['@comment'] ?? false,
+                            'preferAscii'   => isset($column['@preferAscii']),
+                        ];
 
                         if (isset($column['@fkey'])) {
                             $values = explode('.', $column['@fkey']);

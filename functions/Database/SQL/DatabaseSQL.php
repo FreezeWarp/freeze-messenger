@@ -990,6 +990,7 @@ class DatabaseSQL extends Database
                 'autoincrement' => false,
                 'default' => null,
                 'comment' => '',
+                'preferAscii' => false
             ], $column);
 
             /**
@@ -1091,7 +1092,6 @@ class DatabaseSQL extends Database
                 case DatabaseTypeType::string:
                 case DatabaseTypeType::blob:
                 case DatabaseTypeType::json:
-
                     if ($column['type'] === DatabaseTypeType::json && $this->sqlInterface->dataTypes[DatabaseTypeType::json]) {
                         $typePiece = $this->sqlInterface->dataTypes[DatabaseTypeType::json];
                     }
@@ -1113,8 +1113,14 @@ class DatabaseSQL extends Database
                             }
                         }
 
-                        if (!strlen($typePiece)) { // If no type identifier was found...
+                        // If no type identifier was found...
+                        if (!strlen($typePiece)) {
                             $typePiece = $stringLimits['default']; // Use the default.
+                        }
+
+                        // Use latin1 character set on MySQL if preferAscii is set.
+                        if ($column['preferAscii'] && $this->sqlInterface->getLanguage() === 'mysql') {
+                            $typePiece .= ' CHARACTER SET latin1';
                         }
                     }
                 break;
