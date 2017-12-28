@@ -50,12 +50,12 @@ else {
         echo '<center><a href="./index.php?do=log&log=mod">Mod Log</a> <a href="./index.php?do=log&log=full">Full Log</a> <a href="./index.php?do=log&log=access">Access Log</a> <a href="./index.php?do=log&log=query">Query Log</a></center>'; // TODO 
 
         if ($request['log'] === 'query') {
-            $file = fopen('../querylog', 'r') or die(container("Error", "Could not open query log file."));
+            $file = fopen(\Fim\Config::$logQueriesFile, 'r') or die(container("Error", "Could not open query log file."));
 
             fseek($file, $request['page'] * 50000 - ($request['page'] > 0 ? 2500 : 0));
             echo "<textarea style=\"width: 100%; height: 500px;\"'>" . fread($file, 52500) . "</textarea>";
 
-            $numPages = (int) (filesize('../querylog') / 50000);
+            $numPages = (int) (filesize(\Fim\Config::$logQueriesFile) / 50000);
             if ($request['page'] > 0) echo "<a href=\"./index.php?do=log&log=query&page=" . ($request['page'] - 1) . "\">Previous Page</a> | ";
             if ($request['page'] < $numPages) echo "<a href=\"./index.php?do=log&log=query&page=" . ($request['page'] + 1) . "\">Next Page</a> | ";
             echo "Jump to Page: <form style=\"display: inline\"><select id=\"page\" onchange=\"window.location = './index.php?do=log&log=query&page=' + jQuery('#page option:selected').val();\">";
