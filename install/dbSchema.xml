@@ -570,7 +570,7 @@
 
         <table name="userFavRooms" partitionBy="userId" type="general" comment="A list of starred rooms. Unlike most other lists, this list generally doesn't have any backend effects, but we thought it was too useful not to include. Clients are still encouraged to implement more powerful tagging and lists themselves.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
-            <column name="roomId" type="blob" maxlen="23" comment="The room ID." />
+            <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID." />
 
             <key name="userId,roomId" type="primary" />
         </table>
