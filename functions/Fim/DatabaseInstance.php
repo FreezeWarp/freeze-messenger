@@ -2571,7 +2571,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
             // Error if Flood Weight is Too Great
-            if ($floodCountMinute > Config::${'floodDetectionGlobal_' . $action . '_perMinute'} && !$this->user->hasPriv('modPrivs')) {
+            if ($floodCountMinute > Config::${'floodDetectionGlobal_' . $action . '_perMinute'} && (!$this->user || !$this->user->hasPriv('modPrivs'))) {
                 new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
