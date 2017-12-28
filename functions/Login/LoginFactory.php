@@ -17,6 +17,7 @@
 namespace Login;
 
 use Database\SQL\DatabaseSQL;
+use Login\Database\LoginVanilla;
 
 /**
  * A factory that looks that the $_REQUEST information and initialises an appropriate LoginRunner instance.
@@ -157,8 +158,31 @@ class LoginFactory
      */
     public function getLogin()
     {
+        global $loginConfig;
+
         if ($this->loginRunner->hasLoginCredentials()) {
-            $this->loginRunner->setUser();
+            try {
+                $this->loginRunner->setUser();
+            } catch (\fimErrorThrown $errorThrown) {
+
+                /* This is primarily used for API testing. It is not a secure implementation. */
+                if ($this->loginRunner instanceof LoginDatabase
+                    && !($this->loginRunner instanceof LoginVanilla)
+                    && \Fim\Config::$registrationEnabledIgnoreForums) {
+
+                    $vanillaRunner = new LoginVanilla($this);
+
+                    if ($vanillaRunner->hasLoginCredentials()) {
+                        $vanillaRunner->setUser();
+                        $this->loginRunner = $vanillaRunner;
+                    }
+
+                }
+
+                else {
+                    throw $errorThrown;
+                }
+            }
         }
         else {
             $this->loginRunner->getLoginCredentials();
