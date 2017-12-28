@@ -1538,7 +1538,7 @@ class DatabaseInstance extends DatabaseSQL
                     return (int) $permission['permissions'];
 
                 else // Group permissions, on the other hand, stack. If one group has ['view', 'post'], and another has ['view', 'moderate'], then a user in both groups has all three.
-                    $groupBitfield &= (int) $permission['permissions'];
+                    $groupBitfield |= (int) $permission['permissions'];
             }
 
             return $groupBitfield;
