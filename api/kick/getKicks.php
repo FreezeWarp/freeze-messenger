@@ -46,7 +46,10 @@ $xmlData = [
 
 
 /* Start Processing */
-if (!isset($requestHead['roomId']) && !$user->hasPriv('modRooms'))
+if (!isset($requestHead['roomId']) // Disallow looking at kicks sitewide...
+    && !(isset($requestHead['userId']) && $requestHead['userId'] == $user->id) // Unless just checking the logged in user.
+    && !$user->hasPriv('modRooms') // Or we're a site moderator.
+)
     new fimError('roomIdRequired', 'A roomId must be included unless you are a site administrator.');
 
 else {
