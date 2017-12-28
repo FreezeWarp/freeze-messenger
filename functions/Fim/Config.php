@@ -8,17 +8,16 @@ use \fimUser;
  * The Config class is used to reference all configuration variables.
  */
 class Config {
-    /** @var int A bitfield consisting of some combination of {@see fimUser::USER_PRIV_VIEW}, {@see fimUser::USER_PRIV_POST}, {@see fimUser::USER_PRIV_TOPIC}, {@see fimUser::USER_PRIV_CREATE_ROOMS}, {@see fimUser::USER_PRIV_PRIVATE_FRIENDS}, {@see fimUser::USER_PRIV_PRIVATE_ALL}, {@see fimUser::USER_PRIV_ACTIVE_USERS}. {@see fimUser::USER_PRIV_TOPIC} and {@see fimUser::USER_PRIV_PRIVATE_ALL} are omitted by default. */
+    /* Registration Policies */
+
+    /** @var bool Whether or not registration is enabled. */
+    public static $registrationEnabled = true;
+
+    /** @var bool Whether or not registration is enabled even if a non-vanilla login method is enabled (like PHPBB or vBulletin). */
+    public static $registrationEnabledIgnoreForums = false;
+
+    /** @var int The default permissions newly registered users have. This is a bitfield consisting of some combination of {@see fimUser::USER_PRIV_VIEW}, {@see fimUser::USER_PRIV_POST}, {@see fimUser::USER_PRIV_TOPIC}, {@see fimUser::USER_PRIV_CREATE_ROOMS}, {@see fimUser::USER_PRIV_PRIVATE_FRIENDS}, {@see fimUser::USER_PRIV_PRIVATE_ALL}, {@see fimUser::USER_PRIV_ACTIVE_USERS}. {@see fimUser::USER_PRIV_TOPIC} and {@see fimUser::USER_PRIV_PRIVATE_ALL}. */
     public static $defaultUserPrivs = fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_CREATE_ROOMS | fimUser::USER_PRIV_PRIVATE_FRIENDS | fimUser::USER_PRIV_ACTIVE_USERS;
-
-    /** @var int The minimum ID that can be appended to the anonymous user name to differentiate between anonymous users. */
-    public static $anonymousUserMinId = 1;
-
-    /** @var int The maximum ID that can be appended to the anonymous user name to differentiate between anonymous users. */
-    public static $anonymousUserMaxId = 100000;
-
-    /** @var int The time after which a user's vanilla data is resycned with its integration data, such as adminGroups. The default of 6 hours means that if a user is banned, for instance, in a forum, it may take 6 hours for this to be reflected in the messenger. */
-    public static $userSyncThreshold = 60 * 60 * 24 * 7;
 
     /** @var bool Whether an email is required to sign up. The vanilla subsystem can function without email, and in truth; its not even used for anything in FIMv3 (where Vanilla is very IRC-like)`. Additionally, there are no email registration limits; all limits to having multiple accounts are enforced by IP. */
     public static $emailRequired = false;
@@ -26,6 +25,14 @@ class Config {
     /** @var int (Vanilla logins only.) The minimum number of characters needed in a password for it to be valid. */
     public static $passwordMinimumLength = 4;
 
+    /** @var bool (Vanilla logins only.) Whether a user is required to specify their age in order to sign-up. */
+    public static $ageRequired = false;
+
+    /** @var int (Vanilla logins only.) The minimum allowed age for a user signing up. */
+    public static $ageMinimum = 13;
+
+
+    /* User Settings Policies */
 
     /** @var int The maximum width allowed for a user avatar. (Vanilla logins only.) */
     public static $avatarMaximumWidth = 1000;
@@ -54,6 +61,19 @@ class Config {
 
     /** @var int A regex any user profile must NOT match. (Vanilla logins only.) */
     public static $profileMustNotMatchRegex = false;
+
+
+
+    /* Misc User */
+
+    /** @var int The minimum ID that can be appended to the anonymous user name to differentiate between anonymous users. */
+    public static $anonymousUserMinId = 1;
+
+    /** @var int The maximum ID that can be appended to the anonymous user name to differentiate between anonymous users. */
+    public static $anonymousUserMaxId = 100000;
+
+    /** @var int The time after which a user's vanilla data is resycned with its integration data, such as adminGroups. The default of 6 hours means that if a user is banned, for instance, in a forum, it may take 6 hours for this to be reflected in the messenger. TODO: probably remove. */
+    public static $userSyncThreshold = 60 * 60 * 24 * 7;
 
 
 
@@ -168,10 +188,10 @@ class Config {
     /** @var bool Whether _any_ user can create private rooms, even those with the permission to do so. Setting this false, in effect; disables the entire feature. */
     public static $userPrivateRoomCreation = true;
 
-    /** @var int The maximum number of rooms a single user can create. TODO */
+    /** @var int The maximum number of rooms a single user can create. */
     public static $userRoomMaximum = 1000;
 
-    /** @var int The maximum number of rooms a single user can create times the number of years the user has been registered. TODO */
+    /** @var int The maximum number of rooms a single user can create times the number of years the user has been registered. TODO: Test */
     public static $userRoomMaximumPerYear = 50;
 
     /** @var bool Whether hidden rooms are enabled. Disable this if the functionality is deemed too confusing. */
@@ -182,19 +202,6 @@ class Config {
 
     /** @var int The room that new users will enter by default. */
     public static $defaultRoomId = 1;
-
-
-    /** @var int The maximum number of favourited rooms a user is allowed to have. This can be increased if Redis is available. TODO */
-    public static $userMaxFavRooms = 100;
-
-    /** @var int The maximum number of watched rooms a user is allowed to have. This can be increased if Redis is available, though it shouldn't go too high lest unreadMessages becomes unwieldy/slow. TODO */
-    public static $userMaxWatchRooms = 10;
-
-    /** @var int The maximum number of friends a user is allowed to have. This can be increased if Redis is available. TODO */
-    public static $userMaxFriends = 100;
-
-    /** @var int The maximum number of ignored users a user is allowed to have. This can be increased if Redis is available. TODO */
-    public static $userMaxIgnored = 100;
 
 
 
@@ -564,12 +571,6 @@ class Config {
     /** @var bool Whether or not the parental controls are enabled. */
     public static $parentalEnabled = true;
 
-    /** @var bool (Vanilla logins only.) Whether a user is required to specify their age in order to sign-up. */
-    public static $ageRequired = false;
-
-    /** @var int (Vanilla logins only.) The minimum allowed age for a user signing up. */
-    public static $ageMinimum = 13;
-
     /** @var int Age used in lieu of a birthdate; if the user has not provided one. (see "ageRequired") */
     public static $parentalAgeDefault = 13;
 
@@ -682,13 +683,6 @@ class Config {
 
     /** @var string The user-agent to use in cURL requests. Generally only needed for, e.g., validating URLs. */
     public static $curlUA = 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)';
-
-
-
-    /*** Caching Methods ***/
-
-    /** @var bool When true, database collection caching will be disabled. You should not enable this unless a an alternative collection cache (like Redis) is available, in which case it will perform _all_ collection caches (by default, it only performs collection caches when the database field runs out of space.) */
-    public static $databaseCollectionMaxEntries = false;
 
 
 

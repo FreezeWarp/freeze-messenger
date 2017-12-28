@@ -55,6 +55,10 @@ echo new Http\ApiData([
         ),
 
         'registrationPolicies' => array(
+            'registrationEnabled' => ($loginConfig['method'] === 'vanilla'
+                ? \Fim\Config::$registrationEnabled
+                : \Fim\Config::$registrationEnabledIgnoreForums
+            ),
             'ageRequired' => (bool) \Fim\Config::$ageRequired,
             'ageMinimum' => (int) \Fim\Config::$ageMinimum,
             'emailRequired' => (bool) \Fim\Config::$emailRequired,
@@ -93,8 +97,6 @@ echo new Http\ApiData([
         ),
 
         'emoticons' => \Fim\Cache::getEmoticons(),
-
-        'phpVersion' => (float) phpversion(), // We won't display the full version as it could pose an unneccessary security risk. We will, however, display the base version.
     ),
 ]);
 ?>

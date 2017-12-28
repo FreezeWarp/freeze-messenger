@@ -65,8 +65,11 @@ else
     $age = \Fim\Config::$parentalAgeDefault;
 
 
-if ($loginConfig['method'] != 'vanilla')
-    new fimError('notSupported', 'This script only works for servers using vanilla logins.');
+if ($loginConfig['method'] === 'vanilla' && !\Fim\Config::$registrationEnabled)
+    new fimError('registrationDisabled', 'Registration is disabled on this server.');
+
+elseif ($loginConfig['method'] !== 'vanilla' && !\Fim\Config::$registrationEnabledIgnoreForums)
+    new fimError('registrationDisabled', 'Registration is disabled on this server. Please register on the forum.');
 
 elseif ($user->id && !$user->isAnonymousUser())
     new fimError('loggedIn', 'You are already logged-in.');
