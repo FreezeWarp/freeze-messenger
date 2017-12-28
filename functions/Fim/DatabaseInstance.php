@@ -1679,7 +1679,7 @@ class DatabaseInstance extends DatabaseSQL
             return $this->deleteGroupPermissionsCache($roomId, $param);
 
         elseif ($attribute === false)
-            return; // TODO: delete all entries in the room
+            return $this->deleteRoomPermissionsCache($roomId);
 
         else
             throw new Exception('Unrecognised attribute.');
@@ -1722,6 +1722,20 @@ class DatabaseInstance extends DatabaseSQL
             $this->delete($this->sqlPrefix . 'roomPermissionsCache', [
                 'roomId' => $roomId,
                 'userId' => $this->in($userIds)
+            ]);
+        }
+    }
+
+
+    /**
+     * Deletes all permission cache entries in a given room. Currently does not work with the cache servers (but does work with the database).
+     *
+     * @param int $roomId
+     */
+    public function deleteRoomPermissionsCache($roomId) {
+        if (Config::$roomPermissionsCacheEnabled) {
+            $this->delete($this->sqlPrefix . 'roomPermissionsCache', [
+                'roomId' => $roomId,
             ]);
         }
     }
