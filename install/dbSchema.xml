@@ -633,6 +633,7 @@
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID to be watched." />
 
             <key name="userId,roomId" type="primary" />
+            <key name="roomId" type="index" />
         </table>
     </database>
 
