@@ -42,6 +42,10 @@
             <column name="directive" value="dev" />
             <column name="value" value="b:1;" />
         </table>
+        <table name="configuration" mode="dev">
+            <column name="directive" value="floodDetectionGlobal" />
+            <column name="value" value="b:0;" />
+        </table>
 
 
 
