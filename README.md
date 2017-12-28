@@ -4,7 +4,7 @@ Copyright © 2017 Joseph T. Parsons <josephtparsons@gmail.com>
 
 Licensed under the GPLv3 (see LICENSE)
 
-![FreezeMessenger, Development Screenshot](https://raw.githubusercontent.com/FreezeWarp/freeze-messenger/master/screenshot1.png "FreezeMessenger, Development Screenshot")
+![FreezeMessenger, Development Screenshot](https://raw.githubusercontent.com/FreezeWarp/freeze-messenger/master/artifacts/screenshot1.png "FreezeMessenger, Development Screenshot")
 
 Headline Functionality
 ======================
