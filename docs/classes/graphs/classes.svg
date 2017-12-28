@@ -21,55 +21,92 @@
 <path fill="none" stroke="gray" d="M36,-646C36,-646 993,-646 993,-646 999,-646 1005,-652 1005,-658 1005,-658 1005,-868 1005,-868 1005,-874 999,-880 993,-880 993,-880 36,-880 36,-880 30,-880 24,-874 24,-868 24,-868 24,-658 24,-658 24,-652 30,-646 36,-646"/>
 <text text-anchor="middle" x="514.5" y="-867.2" font-family="Times,serif" font-size="11.00" fill="gray">SQL</text>
 </g>
-<g id="clust4" class="cluster"><title>cluster_\Stream</title>
-<path fill="none" stroke="gray" d="M805.5,-3682C805.5,-3682 1194,-3682 1194,-3682 1200,-3682 1206,-3688 1206,-3694 1206,-3694 1206,-3986 1206,-3986 1206,-3992 1200,-3998 1194,-3998 1194,-3998 805.5,-3998 805.5,-3998 799.5,-3998 793.5,-3992 793.5,-3986 793.5,-3986 793.5,-3694 793.5,-3694 793.5,-3688 799.5,-3682 805.5,-3682"/>
-<text text-anchor="middle" x="999.75" y="-3985.2" font-family="Times,serif" font-size="11.00" fill="gray">Stream</text>
+<g id="clust4" class="cluster"><title>cluster_\Cache</title>
+<path fill="none" stroke="gray" d="M511,-1112C511,-1112 935.5,-1112 935.5,-1112 941.5,-1112 947.5,-1118 947.5,-1124 947.5,-1124 947.5,-1604 947.5,-1604 947.5,-1610 941.5,-1616 935.5,-1616 935.5,-1616 511,-1616 511,-1616 505,-1616 499,-1610 499,-1604 499,-1604 499,-1124 499,-1124 499,-1118 505,-1112 511,-1112"/>
+<text text-anchor="middle" x="723.25" y="-1603.2" font-family="Times,serif" font-size="11.00" fill="gray">Cache</text>
 </g>
-<g id="clust5" class="cluster"><title>cluster_\Stream\Streams</title>
-<path fill="none" stroke="gray" d="M1083,-3736C1083,-3736 1186,-3736 1186,-3736 1192,-3736 1198,-3742 1198,-3748 1198,-3748 1198,-3958 1198,-3958 1198,-3964 1192,-3970 1186,-3970 1186,-3970 1083,-3970 1083,-3970 1077,-3970 1071,-3964 1071,-3958 1071,-3958 1071,-3748 1071,-3748 1071,-3742 1077,-3736 1083,-3736"/>
-<text text-anchor="middle" x="1134.5" y="-3957.2" font-family="Times,serif" font-size="11.00" fill="gray">Streams</text>
+<g id="clust5" class="cluster"><title>cluster_\Login</title>
+<path fill="none" stroke="gray" d="M521,-3224C521,-3224 1197.5,-3224 1197.5,-3224 1203.5,-3224 1209.5,-3230 1209.5,-3236 1209.5,-3236 1209.5,-3986 1209.5,-3986 1209.5,-3992 1203.5,-3998 1197.5,-3998 1197.5,-3998 521,-3998 521,-3998 515,-3998 509,-3992 509,-3986 509,-3986 509,-3236 509,-3236 509,-3230 515,-3224 521,-3224"/>
+<text text-anchor="middle" x="859.25" y="-3985.2" font-family="Times,serif" font-size="11.00" fill="gray">Login</text>
 </g>
-<g id="clust6" class="cluster"><title>cluster_\Http</title>
-<path fill="none" stroke="gray" d="M1073,-3386C1073,-3386 1196,-3386 1196,-3386 1202,-3386 1208,-3392 1208,-3398 1208,-3398 1208,-3662 1208,-3662 1208,-3668 1202,-3674 1196,-3674 1196,-3674 1073,-3674 1073,-3674 1067,-3674 1061,-3668 1061,-3662 1061,-3662 1061,-3398 1061,-3398 1061,-3392 1067,-3386 1073,-3386"/>
-<text text-anchor="middle" x="1134.5" y="-3661.2" font-family="Times,serif" font-size="11.00" fill="gray">Http</text>
+<g id="clust6" class="cluster"><title>cluster_\Login\TwoStep</title>
+<path fill="none" stroke="gray" d="M1083,-3628C1083,-3628 1186,-3628 1186,-3628 1192,-3628 1198,-3634 1198,-3640 1198,-3640 1198,-3958 1198,-3958 1198,-3964 1192,-3970 1186,-3970 1186,-3970 1083,-3970 1083,-3970 1077,-3970 1071,-3964 1071,-3958 1071,-3958 1071,-3640 1071,-3640 1071,-3634 1077,-3628 1083,-3628"/>
+<text text-anchor="middle" x="1134.5" y="-3957.2" font-family="Times,serif" font-size="11.00" fill="gray">TwoStep</text>
 </g>
-<g id="clust7" class="cluster"><title>cluster_\Cache</title>
-<path fill="none" stroke="gray" d="M511,-960C511,-960 935.5,-960 935.5,-960 941.5,-960 947.5,-966 947.5,-972 947.5,-972 947.5,-1452 947.5,-1452 947.5,-1458 941.5,-1464 935.5,-1464 935.5,-1464 511,-1464 511,-1464 505,-1464 499,-1458 499,-1452 499,-1452 499,-972 499,-972 499,-966 505,-960 511,-960"/>
-<text text-anchor="middle" x="723.25" y="-1451.2" font-family="Times,serif" font-size="11.00" fill="gray">Cache</text>
+<g id="clust7" class="cluster"><title>cluster_\Login\Database</title>
+<path fill="none" stroke="gray" d="M1079.5,-3386C1079.5,-3386 1189.5,-3386 1189.5,-3386 1195.5,-3386 1201.5,-3392 1201.5,-3398 1201.5,-3398 1201.5,-3608 1201.5,-3608 1201.5,-3614 1195.5,-3620 1189.5,-3620 1189.5,-3620 1079.5,-3620 1079.5,-3620 1073.5,-3620 1067.5,-3614 1067.5,-3608 1067.5,-3608 1067.5,-3398 1067.5,-3398 1067.5,-3392 1073.5,-3386 1079.5,-3386"/>
+<text text-anchor="middle" x="1134.5" y="-3607.2" font-family="Times,serif" font-size="11.00" fill="gray">Database</text>
 </g>
 <g id="clust8" class="cluster"><title>cluster_\Fim</title>
 <path fill="none" stroke="gray" d="M494,-1668C494,-1668 1186,-1668 1186,-1668 1192,-1668 1198,-1674 1198,-1680 1198,-1680 1198,-2268 1198,-2268 1198,-2274 1192,-2280 1186,-2280 1186,-2280 494,-2280 494,-2280 488,-2280 482,-2274 482,-2268 482,-2268 482,-1680 482,-1680 482,-1674 488,-1668 494,-1668"/>
 <text text-anchor="middle" x="840" y="-2267.2" font-family="Times,serif" font-size="11.00" fill="gray">Fim</text>
 </g>
-<g id="clust9" class="cluster"><title>cluster_\Login</title>
-<path fill="none" stroke="gray" d="M521,-2712C521,-2712 1197.5,-2712 1197.5,-2712 1203.5,-2712 1209.5,-2718 1209.5,-2724 1209.5,-2724 1209.5,-3366 1209.5,-3366 1209.5,-3372 1203.5,-3378 1197.5,-3378 1197.5,-3378 521,-3378 521,-3378 515,-3378 509,-3372 509,-3366 509,-3366 509,-2724 509,-2724 509,-2718 515,-2712 521,-2712"/>
-<text text-anchor="middle" x="859.25" y="-3365.2" font-family="Times,serif" font-size="11.00" fill="gray">Login</text>
+<g id="clust9" class="cluster"><title>cluster_\Stream</title>
+<path fill="none" stroke="gray" d="M805.5,-2900C805.5,-2900 1194,-2900 1194,-2900 1200,-2900 1206,-2906 1206,-2912 1206,-2912 1206,-3204 1206,-3204 1206,-3210 1200,-3216 1194,-3216 1194,-3216 805.5,-3216 805.5,-3216 799.5,-3216 793.5,-3210 793.5,-3204 793.5,-3204 793.5,-2912 793.5,-2912 793.5,-2906 799.5,-2900 805.5,-2900"/>
+<text text-anchor="middle" x="999.75" y="-3203.2" font-family="Times,serif" font-size="11.00" fill="gray">Stream</text>
 </g>
-<g id="clust10" class="cluster"><title>cluster_\Login\Database</title>
-<path fill="none" stroke="gray" d="M1079.5,-2820C1079.5,-2820 1189.5,-2820 1189.5,-2820 1195.5,-2820 1201.5,-2826 1201.5,-2832 1201.5,-2832 1201.5,-2988 1201.5,-2988 1201.5,-2994 1195.5,-3000 1189.5,-3000 1189.5,-3000 1079.5,-3000 1079.5,-3000 1073.5,-3000 1067.5,-2994 1067.5,-2988 1067.5,-2988 1067.5,-2832 1067.5,-2832 1067.5,-2826 1073.5,-2820 1079.5,-2820"/>
-<text text-anchor="middle" x="1134.5" y="-2987.2" font-family="Times,serif" font-size="11.00" fill="gray">Database</text>
+<g id="clust10" class="cluster"><title>cluster_\Stream\Streams</title>
+<path fill="none" stroke="gray" d="M1083,-2954C1083,-2954 1186,-2954 1186,-2954 1192,-2954 1198,-2960 1198,-2966 1198,-2966 1198,-3176 1198,-3176 1198,-3182 1192,-3188 1186,-3188 1186,-3188 1083,-3188 1083,-3188 1077,-3188 1071,-3182 1071,-3176 1071,-3176 1071,-2966 1071,-2966 1071,-2960 1077,-2954 1083,-2954"/>
+<text text-anchor="middle" x="1134.5" y="-3175.2" font-family="Times,serif" font-size="11.00" fill="gray">Streams</text>
 </g>
-<g id="clust11" class="cluster"><title>cluster_\Login\TwoStep</title>
-<path fill="none" stroke="gray" d="M1083,-3008C1083,-3008 1186,-3008 1186,-3008 1192,-3008 1198,-3014 1198,-3020 1198,-3020 1198,-3338 1198,-3338 1198,-3344 1192,-3350 1186,-3350 1186,-3350 1083,-3350 1083,-3350 1077,-3350 1071,-3344 1071,-3338 1071,-3338 1071,-3020 1071,-3020 1071,-3014 1077,-3008 1083,-3008"/>
-<text text-anchor="middle" x="1134.5" y="-3337.2" font-family="Times,serif" font-size="11.00" fill="gray">TwoStep</text>
+<g id="clust11" class="cluster"><title>cluster_\Http</title>
+<path fill="none" stroke="gray" d="M1073,-2604C1073,-2604 1196,-2604 1196,-2604 1202,-2604 1208,-2610 1208,-2616 1208,-2616 1208,-2880 1208,-2880 1208,-2886 1202,-2892 1196,-2892 1196,-2892 1073,-2892 1073,-2892 1067,-2892 1061,-2886 1061,-2880 1061,-2880 1061,-2616 1061,-2616 1061,-2610 1067,-2604 1073,-2604"/>
+<text text-anchor="middle" x="1134.5" y="-2879.2" font-family="Times,serif" font-size="11.00" fill="gray">Http</text>
 </g>
 <g id="clust12" class="cluster"><title>cluster_Global\OAuth2</title>
-<path fill="none" stroke="gray" d="M739.31,-1472C739.31,-1472 981.69,-1472 981.69,-1472 987.69,-1472 993.69,-1478 993.69,-1484 993.69,-1484 993.69,-1604 993.69,-1604 993.69,-1610 987.69,-1616 981.69,-1616 981.69,-1616 739.31,-1616 739.31,-1616 733.31,-1616 727.31,-1610 727.31,-1604 727.31,-1604 727.31,-1484 727.31,-1484 727.31,-1478 733.31,-1472 739.31,-1472"/>
-<text text-anchor="middle" x="860.5" y="-1603.2" font-family="Times,serif" font-size="11.00" fill="gray">OAuth2</text>
+<path fill="none" stroke="gray" d="M739.31,-960C739.31,-960 981.69,-960 981.69,-960 987.69,-960 993.69,-966 993.69,-972 993.69,-972 993.69,-1092 993.69,-1092 993.69,-1098 987.69,-1104 981.69,-1104 981.69,-1104 739.31,-1104 739.31,-1104 733.31,-1104 727.31,-1098 727.31,-1092 727.31,-1092 727.31,-972 727.31,-972 727.31,-966 733.31,-960 739.31,-960"/>
+<text text-anchor="middle" x="860.5" y="-1091.2" font-family="Times,serif" font-size="11.00" fill="gray">OAuth2</text>
 </g>
 <g id="clust13" class="cluster"><title>cluster_Global\OAuth2\OpenID</title>
-<path fill="none" stroke="gray" d="M747.31,-1480C747.31,-1480 973.69,-1480 973.69,-1480 979.69,-1480 985.69,-1486 985.69,-1492 985.69,-1492 985.69,-1576 985.69,-1576 985.69,-1582 979.69,-1588 973.69,-1588 973.69,-1588 747.31,-1588 747.31,-1588 741.31,-1588 735.31,-1582 735.31,-1576 735.31,-1576 735.31,-1492 735.31,-1492 735.31,-1486 741.31,-1480 747.31,-1480"/>
-<text text-anchor="middle" x="860.5" y="-1575.2" font-family="Times,serif" font-size="11.00" fill="gray">OpenID</text>
+<path fill="none" stroke="gray" d="M747.31,-968C747.31,-968 973.69,-968 973.69,-968 979.69,-968 985.69,-974 985.69,-980 985.69,-980 985.69,-1064 985.69,-1064 985.69,-1070 979.69,-1076 973.69,-1076 973.69,-1076 747.31,-1076 747.31,-1076 741.31,-1076 735.31,-1070 735.31,-1064 735.31,-1064 735.31,-980 735.31,-980 735.31,-974 741.31,-968 747.31,-968"/>
+<text text-anchor="middle" x="860.5" y="-1063.2" font-family="Times,serif" font-size="11.00" fill="gray">OpenID</text>
 </g>
 <g id="clust14" class="cluster"><title>cluster_Global\OAuth2\OpenID\Storage</title>
-<path fill="none" stroke="gray" d="M755.31,-1488C755.31,-1488 965.69,-1488 965.69,-1488 971.69,-1488 977.69,-1494 977.69,-1500 977.69,-1500 977.69,-1548 977.69,-1548 977.69,-1554 971.69,-1560 965.69,-1560 965.69,-1560 755.31,-1560 755.31,-1560 749.31,-1560 743.31,-1554 743.31,-1548 743.31,-1548 743.31,-1500 743.31,-1500 743.31,-1494 749.31,-1488 755.31,-1488"/>
-<text text-anchor="middle" x="860.5" y="-1547.2" font-family="Times,serif" font-size="11.00" fill="gray">Storage</text>
+<path fill="none" stroke="gray" d="M755.31,-976C755.31,-976 965.69,-976 965.69,-976 971.69,-976 977.69,-982 977.69,-988 977.69,-988 977.69,-1036 977.69,-1036 977.69,-1042 971.69,-1048 965.69,-1048 965.69,-1048 755.31,-1048 755.31,-1048 749.31,-1048 743.31,-1042 743.31,-1036 743.31,-1036 743.31,-988 743.31,-988 743.31,-982 749.31,-976 755.31,-976"/>
+<text text-anchor="middle" x="860.5" y="-1035.2" font-family="Times,serif" font-size="11.00" fill="gray">Storage</text>
+</g>
+<!-- \\Database\\SQL\\DatabaseDefinitionsMySQL -->
+<g id="node1" class="node"><title>\\Database\\SQL\\DatabaseDefinitionsMySQL</title>
+<polygon fill="none" stroke="black" points="652,-798 473,-798 473,-762 652,-762 652,-798"/>
+<text text-anchor="start" x="528.5" y="-783.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
+<text text-anchor="start" x="481" y="-771.2" font-family="Courier,monospace" font-size="11.00">DatabaseDefinitionsMySQL</text>
 </g>
 <!-- \\Database\\SQL\\DatabaseSQLStandard -->
-<g id="node1" class="node"><title>\\Database\\SQL\\DatabaseSQLStandard</title>
+<g id="node4" class="node"><title>\\Database\\SQL\\DatabaseSQLStandard</title>
 <polygon fill="none" stroke="black" points="401,-798 256,-798 256,-762 401,-762 401,-798"/>
 <text text-anchor="start" x="294.5" y="-783.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
 <text text-anchor="start" x="264" y="-771.2" font-family="Courier,monospace" font-size="11.00">DatabaseSQLStandard</text>
+</g>
+<!-- \\Database\\SQL\\DatabaseDefinitionsMySQL&#45;&gt;\\Database\\SQL\\DatabaseSQLStandard -->
+<g id="edge1" class="edge"><title>\\Database\\SQL\\DatabaseDefinitionsMySQL&#45;&gt;\\Database\\SQL\\DatabaseSQLStandard</title>
+<path fill="none" stroke="black" d="M472.798,-780C452.645,-780 431.328,-780 411.47,-780"/>
+<polygon fill="none" stroke="black" points="411.233,-776.5 401.233,-780 411.233,-783.5 411.233,-776.5"/>
+</g>
+<!-- \\Database\\SQL\\DatabaseSQLPdoMysql -->
+<g id="node2" class="node"><title>\\Database\\SQL\\DatabaseSQLPdoMysql</title>
+<polygon fill="none" stroke="black" points="933,-798 788,-798 788,-762 933,-762 933,-798"/>
+<text text-anchor="middle" x="860.5" y="-777.2" font-family="Courier,monospace" font-size="11.00">DatabaseSQLPdoMysql</text>
+</g>
+<!-- \\Database\\SQL\\DatabaseSQLPdoMysql&#45;&gt;\\Database\\SQL\\DatabaseDefinitionsMySQL -->
+<g id="edge6" class="edge"><title>\\Database\\SQL\\DatabaseSQLPdoMysql&#45;&gt;\\Database\\SQL\\DatabaseDefinitionsMySQL</title>
+<path fill="none" stroke="black" d="M787.847,-780C750.148,-780 703.349,-780 662.263,-780"/>
+<polygon fill="none" stroke="black" points="662.225,-776.5 652.225,-780 662.225,-783.5 662.225,-776.5"/>
+</g>
+<!-- \\Database\\SQL\\DatabaseSQL -->
+<g id="node3" class="node"><title>\\Database\\SQL\\DatabaseSQL</title>
+<polygon fill="none" stroke="black" points="906,-852 815,-852 815,-816 906,-816 906,-852"/>
+<text text-anchor="middle" x="860.5" y="-831.2" font-family="Courier,monospace" font-size="11.00">DatabaseSQL</text>
+</g>
+<!-- \\Database\\Database -->
+<g id="node13" class="node"><title>\\Database\\Database</title>
+<polygon fill="none" stroke="black" points="604.5,-924 520.5,-924 520.5,-888 604.5,-888 604.5,-924"/>
+<text text-anchor="start" x="528.5" y="-909.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
+<text text-anchor="start" x="535" y="-897.2" font-family="Courier,monospace" font-size="11.00">Database</text>
+</g>
+<!-- \\Database\\SQL\\DatabaseSQL&#45;&gt;\\Database\\Database -->
+<g id="edge31" class="edge"><title>\\Database\\SQL\\DatabaseSQL&#45;&gt;\\Database\\Database</title>
+<path fill="none" stroke="black" d="M814.865,-844.857C761.083,-857.939 670.928,-879.869 614.465,-893.603"/>
+<polygon fill="none" stroke="black" points="613.563,-890.22 604.674,-895.985 615.218,-897.022 613.563,-890.22"/>
 </g>
 <!-- \\Database\\SQL\\DatabaseSQLInterface -->
 <g id="node5" class="node"><title>\\Database\\SQL\\DatabaseSQLInterface</title>
@@ -77,46 +114,9 @@
 <text text-anchor="middle" x="108" y="-777.2" font-family="Courier,monospace" font-size="11.00">DatabaseSQLInterface</text>
 </g>
 <!-- \\Database\\SQL\\DatabaseSQLStandard&#45;&gt;\\Database\\SQL\\DatabaseSQLInterface -->
-<g id="edge3" class="edge"><title>\\Database\\SQL\\DatabaseSQLStandard&#45;&gt;\\Database\\SQL\\DatabaseSQLInterface</title>
+<g id="edge45" class="edge"><title>\\Database\\SQL\\DatabaseSQLStandard&#45;&gt;\\Database\\SQL\\DatabaseSQLInterface</title>
 <path fill="none" stroke="black" stroke-dasharray="1,5" d="M255.955,-780C236.258,-780 214.696,-780 194.306,-780"/>
 <polygon fill="none" stroke="black" points="194.085,-776.5 184.085,-780 194.085,-783.5 194.085,-776.5"/>
-</g>
-<!-- \\Database\\SQL\\DatabaseDefinitionsMySQL -->
-<g id="node2" class="node"><title>\\Database\\SQL\\DatabaseDefinitionsMySQL</title>
-<polygon fill="none" stroke="black" points="652,-798 473,-798 473,-762 652,-762 652,-798"/>
-<text text-anchor="start" x="528.5" y="-783.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
-<text text-anchor="start" x="481" y="-771.2" font-family="Courier,monospace" font-size="11.00">DatabaseDefinitionsMySQL</text>
-</g>
-<!-- \\Database\\SQL\\DatabaseDefinitionsMySQL&#45;&gt;\\Database\\SQL\\DatabaseSQLStandard -->
-<g id="edge4" class="edge"><title>\\Database\\SQL\\DatabaseDefinitionsMySQL&#45;&gt;\\Database\\SQL\\DatabaseSQLStandard</title>
-<path fill="none" stroke="black" d="M472.798,-780C452.645,-780 431.328,-780 411.47,-780"/>
-<polygon fill="none" stroke="black" points="411.233,-776.5 401.233,-780 411.233,-783.5 411.233,-776.5"/>
-</g>
-<!-- \\Database\\SQL\\DatabaseSQLPdoMysql -->
-<g id="node3" class="node"><title>\\Database\\SQL\\DatabaseSQLPdoMysql</title>
-<polygon fill="none" stroke="black" points="933,-798 788,-798 788,-762 933,-762 933,-798"/>
-<text text-anchor="middle" x="860.5" y="-777.2" font-family="Courier,monospace" font-size="11.00">DatabaseSQLPdoMysql</text>
-</g>
-<!-- \\Database\\SQL\\DatabaseSQLPdoMysql&#45;&gt;\\Database\\SQL\\DatabaseDefinitionsMySQL -->
-<g id="edge5" class="edge"><title>\\Database\\SQL\\DatabaseSQLPdoMysql&#45;&gt;\\Database\\SQL\\DatabaseDefinitionsMySQL</title>
-<path fill="none" stroke="black" d="M787.847,-780C750.148,-780 703.349,-780 662.263,-780"/>
-<polygon fill="none" stroke="black" points="662.225,-776.5 652.225,-780 662.225,-783.5 662.225,-776.5"/>
-</g>
-<!-- \\Database\\SQL\\DatabaseSQL -->
-<g id="node4" class="node"><title>\\Database\\SQL\\DatabaseSQL</title>
-<polygon fill="none" stroke="black" points="906,-852 815,-852 815,-816 906,-816 906,-852"/>
-<text text-anchor="middle" x="860.5" y="-831.2" font-family="Courier,monospace" font-size="11.00">DatabaseSQL</text>
-</g>
-<!-- \\Database\\Database -->
-<g id="node12" class="node"><title>\\Database\\Database</title>
-<polygon fill="none" stroke="black" points="604.5,-924 520.5,-924 520.5,-888 604.5,-888 604.5,-924"/>
-<text text-anchor="start" x="528.5" y="-909.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
-<text text-anchor="start" x="535" y="-897.2" font-family="Courier,monospace" font-size="11.00">Database</text>
-</g>
-<!-- \\Database\\SQL\\DatabaseSQL&#45;&gt;\\Database\\Database -->
-<g id="edge6" class="edge"><title>\\Database\\SQL\\DatabaseSQL&#45;&gt;\\Database\\Database</title>
-<path fill="none" stroke="black" d="M814.865,-844.857C761.083,-857.939 670.928,-879.869 614.465,-893.603"/>
-<polygon fill="none" stroke="black" points="613.563,-890.22 604.674,-895.985 615.218,-897.022 613.563,-890.22"/>
 </g>
 <!-- \\Database\\SQL\\DatabaseReconnectOnSelectDatabaseTrait -->
 <g id="node6" class="node"><title>\\Database\\SQL\\DatabaseReconnectOnSelectDatabaseTrait</title>
@@ -128,30 +128,30 @@
 <polygon fill="none" stroke="black" points="960,-690 761,-690 761,-654 960,-654 960,-690"/>
 <text text-anchor="middle" x="860.5" y="-669.2" font-family="Courier,monospace" font-size="11.00">DatabaseManualInsertIDTrait</text>
 </g>
-<!-- \\Database\\DatabaseResult -->
-<g id="node8" class="node"><title>\\Database\\DatabaseResult</title>
-<polygon fill="none" stroke="black" points="916,-636 805,-636 805,-600 916,-600 916,-636"/>
-<text text-anchor="middle" x="860.5" y="-615.2" font-family="Courier,monospace" font-size="11.00">DatabaseResult</text>
-</g>
 <!-- \\Database\\DatabaseType -->
-<g id="node9" class="node"><title>\\Database\\DatabaseType</title>
-<polygon fill="none" stroke="black" points="909.5,-582 811.5,-582 811.5,-546 909.5,-546 909.5,-582"/>
-<text text-anchor="middle" x="860.5" y="-561.2" font-family="Courier,monospace" font-size="11.00">DatabaseType</text>
+<g id="node8" class="node"><title>\\Database\\DatabaseType</title>
+<polygon fill="none" stroke="black" points="909.5,-636 811.5,-636 811.5,-600 909.5,-600 909.5,-636"/>
+<text text-anchor="middle" x="860.5" y="-615.2" font-family="Courier,monospace" font-size="11.00">DatabaseType</text>
 </g>
 <!-- \\Database\\DatabaseTypeComparison -->
-<g id="node10" class="node"><title>\\Database\\DatabaseTypeComparison</title>
-<polygon fill="none" stroke="black" points="943,-528 778,-528 778,-492 943,-492 943,-528"/>
-<text text-anchor="middle" x="860.5" y="-507.2" font-family="Courier,monospace" font-size="11.00">DatabaseTypeComparison</text>
-</g>
-<!-- \\Database\\DatabaseEngine -->
-<g id="node11" class="node"><title>\\Database\\DatabaseEngine</title>
-<polygon fill="none" stroke="black" points="916,-474 805,-474 805,-438 916,-438 916,-474"/>
-<text text-anchor="middle" x="860.5" y="-453.2" font-family="Courier,monospace" font-size="11.00">DatabaseEngine</text>
+<g id="node9" class="node"><title>\\Database\\DatabaseTypeComparison</title>
+<polygon fill="none" stroke="black" points="943,-582 778,-582 778,-546 943,-546 943,-582"/>
+<text text-anchor="middle" x="860.5" y="-561.2" font-family="Courier,monospace" font-size="11.00">DatabaseTypeComparison</text>
 </g>
 <!-- \\Database\\DatabaseTypeType -->
-<g id="node13" class="node"><title>\\Database\\DatabaseTypeType</title>
-<polygon fill="none" stroke="black" points="923,-420 798,-420 798,-384 923,-384 923,-420"/>
-<text text-anchor="middle" x="860.5" y="-399.2" font-family="Courier,monospace" font-size="11.00">DatabaseTypeType</text>
+<g id="node10" class="node"><title>\\Database\\DatabaseTypeType</title>
+<polygon fill="none" stroke="black" points="923,-528 798,-528 798,-492 923,-492 923,-528"/>
+<text text-anchor="middle" x="860.5" y="-507.2" font-family="Courier,monospace" font-size="11.00">DatabaseTypeType</text>
+</g>
+<!-- \\Database\\DatabaseResult -->
+<g id="node11" class="node"><title>\\Database\\DatabaseResult</title>
+<polygon fill="none" stroke="black" points="916,-474 805,-474 805,-438 916,-438 916,-474"/>
+<text text-anchor="middle" x="860.5" y="-453.2" font-family="Courier,monospace" font-size="11.00">DatabaseResult</text>
+</g>
+<!-- \\Database\\DatabaseEngine -->
+<g id="node12" class="node"><title>\\Database\\DatabaseEngine</title>
+<polygon fill="none" stroke="black" points="916,-420 805,-420 805,-384 916,-384 916,-420"/>
+<text text-anchor="middle" x="860.5" y="-399.2" font-family="Courier,monospace" font-size="11.00">DatabaseEngine</text>
 </g>
 <!-- \\Database\\DatabaseIndexType -->
 <g id="node14" class="node"><title>\\Database\\DatabaseIndexType</title>
@@ -163,553 +163,563 @@
 <polygon fill="none" stroke="black" points="946.5,-312 774.5,-312 774.5,-276 946.5,-276 946.5,-312"/>
 <text text-anchor="middle" x="860.5" y="-291.2" font-family="Courier,monospace" font-size="11.00">DatabaseResultInterface</text>
 </g>
-<!-- \\Stream\\Streams\\StreamRedis -->
-<g id="node16" class="node"><title>\\Stream\\Streams\\StreamRedis</title>
-<polygon fill="none" stroke="black" points="1180,-3942 1089,-3942 1089,-3906 1180,-3906 1180,-3942"/>
-<text text-anchor="middle" x="1134.5" y="-3921.2" font-family="Courier,monospace" font-size="11.00">StreamRedis</text>
-</g>
-<!-- \\Stream\\StreamInterface -->
-<g id="node21" class="node"><title>\\Stream\\StreamInterface</title>
-<polygon fill="none" stroke="black" points="919.5,-3861 801.5,-3861 801.5,-3825 919.5,-3825 919.5,-3861"/>
-<text text-anchor="middle" x="860.5" y="-3840.2" font-family="Courier,monospace" font-size="11.00">StreamInterface</text>
-</g>
-<!-- \\Stream\\Streams\\StreamRedis&#45;&gt;\\Stream\\StreamInterface -->
-<g id="edge7" class="edge"><title>\\Stream\\Streams\\StreamRedis&#45;&gt;\\Stream\\StreamInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1088.89,-3910.72C1045.65,-3897.84 979.481,-3878.13 929.649,-3863.29"/>
-<polygon fill="none" stroke="black" points="930.495,-3859.89 919.912,-3860.39 928.497,-3866.6 930.495,-3859.89"/>
-</g>
-<!-- \\Stream\\Streams\\StreamKafka -->
-<g id="node17" class="node"><title>\\Stream\\Streams\\StreamKafka</title>
-<polygon fill="none" stroke="black" points="1180,-3888 1089,-3888 1089,-3852 1180,-3852 1180,-3888"/>
-<text text-anchor="middle" x="1134.5" y="-3867.2" font-family="Courier,monospace" font-size="11.00">StreamKafka</text>
-</g>
-<!-- \\Stream\\Streams\\StreamKafka&#45;&gt;\\Stream\\StreamInterface -->
-<g id="edge8" class="edge"><title>\\Stream\\Streams\\StreamKafka&#45;&gt;\\Stream\\StreamInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1088.89,-3865.57C1045.74,-3861.29 979.757,-3854.74 929.961,-3849.8"/>
-<polygon fill="none" stroke="black" points="930.209,-3846.3 919.912,-3848.8 929.517,-3853.27 930.209,-3846.3"/>
-</g>
-<!-- \\Stream\\Streams\\StreamDatabase -->
-<g id="node18" class="node"><title>\\Stream\\Streams\\StreamDatabase</title>
-<polygon fill="none" stroke="black" points="1190,-3834 1079,-3834 1079,-3798 1190,-3798 1190,-3834"/>
-<text text-anchor="middle" x="1134.5" y="-3813.2" font-family="Courier,monospace" font-size="11.00">StreamDatabase</text>
-</g>
-<!-- \\Stream\\Streams\\StreamDatabase&#45;&gt;\\Stream\\StreamInterface -->
-<g id="edge9" class="edge"><title>\\Stream\\Streams\\StreamDatabase&#45;&gt;\\Stream\\StreamInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1078.78,-3821.43C1035.95,-3825.68 976.121,-3831.62 930.087,-3836.19"/>
-<polygon fill="none" stroke="black" points="929.497,-3832.73 919.892,-3837.2 930.189,-3839.7 929.497,-3832.73"/>
-</g>
-<!-- \\Stream\\Streams\\StreamPgSQL -->
-<g id="node19" class="node"><title>\\Stream\\Streams\\StreamPgSQL</title>
-<polygon fill="none" stroke="black" points="1180,-3780 1089,-3780 1089,-3744 1180,-3744 1180,-3780"/>
-<text text-anchor="middle" x="1134.5" y="-3759.2" font-family="Courier,monospace" font-size="11.00">StreamPgSQL</text>
-</g>
-<!-- \\Stream\\Streams\\StreamPgSQL&#45;&gt;\\Stream\\StreamInterface -->
-<g id="edge10" class="edge"><title>\\Stream\\Streams\\StreamPgSQL&#45;&gt;\\Stream\\StreamInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1088.71,-3776.83C1079.38,-3780.43 1069.73,-3784.54 1061,-3789 1038.17,-3800.66 1036.94,-3811.82 1013,-3821 986.814,-3831.04 956.475,-3836.54 929.856,-3839.54"/>
-<polygon fill="none" stroke="black" points="929.442,-3836.06 919.853,-3840.57 930.159,-3843.03 929.442,-3836.06"/>
-</g>
-<!-- \\Stream\\StreamFactory -->
-<g id="node20" class="node"><title>\\Stream\\StreamFactory</title>
-<polygon fill="none" stroke="black" points="1186.5,-3726 1082.5,-3726 1082.5,-3690 1186.5,-3690 1186.5,-3726"/>
-<text text-anchor="middle" x="1134.5" y="-3705.2" font-family="Courier,monospace" font-size="11.00">StreamFactory</text>
-</g>
-<!-- \\Http\\ApiData -->
-<g id="node22" class="node"><title>\\Http\\ApiData</title>
-<polygon fill="none" stroke="black" points="1166.5,-3646 1102.5,-3646 1102.5,-3610 1166.5,-3610 1166.5,-3646"/>
-<text text-anchor="middle" x="1134.5" y="-3625.2" font-family="Courier,monospace" font-size="11.00">ApiData</text>
-</g>
-<!-- ArrayAccess -->
-<g id="node77" class="node"><title>ArrayAccess</title>
-<ellipse fill="none" stroke="black" cx="860.5" cy="-3628" rx="55.7903" ry="18"/>
-<text text-anchor="middle" x="860.5" y="-3624.3" font-family="Times,serif" font-size="14.00" fill="gray">ArrayAccess</text>
-</g>
-<!-- \\Http\\ApiData&#45;&gt;ArrayAccess -->
-<g id="edge12" class="edge"><title>\\Http\\ApiData&#45;&gt;ArrayAccess</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1102.3,-3628C1059.67,-3628 982.187,-3628 926.618,-3628"/>
-<polygon fill="none" stroke="black" points="926.51,-3624.5 916.51,-3628 926.51,-3631.5 926.51,-3624.5"/>
-</g>
-<!-- \\Http\\ApiOutputList -->
-<g id="node23" class="node"><title>\\Http\\ApiOutputList</title>
-<polygon fill="none" stroke="black" points="1186.5,-3592 1082.5,-3592 1082.5,-3556 1186.5,-3556 1186.5,-3592"/>
-<text text-anchor="middle" x="1134.5" y="-3571.2" font-family="Courier,monospace" font-size="11.00">ApiOutputList</text>
-</g>
-<!-- \\Http\\CurlRequestMethod -->
-<g id="node24" class="node"><title>\\Http\\CurlRequestMethod</title>
-<polygon fill="none" stroke="black" points="1200,-3538 1069,-3538 1069,-3502 1200,-3502 1200,-3538"/>
-<text text-anchor="middle" x="1134.5" y="-3517.2" font-family="Courier,monospace" font-size="11.00">CurlRequestMethod</text>
-</g>
-<!-- \\Http\\ApiOutputDict -->
-<g id="node25" class="node"><title>\\Http\\ApiOutputDict</title>
-<polygon fill="none" stroke="black" points="1186.5,-3484 1082.5,-3484 1082.5,-3448 1186.5,-3448 1186.5,-3484"/>
-<text text-anchor="middle" x="1134.5" y="-3463.2" font-family="Courier,monospace" font-size="11.00">ApiOutputDict</text>
-</g>
-<!-- \\Http\\CurlRequest -->
-<g id="node26" class="node"><title>\\Http\\CurlRequest</title>
-<polygon fill="none" stroke="black" points="1180,-3430 1089,-3430 1089,-3394 1180,-3394 1180,-3430"/>
-<text text-anchor="middle" x="1134.5" y="-3409.2" font-family="Courier,monospace" font-size="11.00">CurlRequest</text>
-</g>
 <!-- \\Cache\\FileCache -->
-<g id="node27" class="node"><title>\\Cache\\FileCache</title>
-<polygon fill="none" stroke="black" points="899,-1436 822,-1436 822,-1400 899,-1400 899,-1436"/>
-<text text-anchor="middle" x="860.5" y="-1415.2" font-family="Courier,monospace" font-size="11.00">FileCache</text>
-</g>
-<!-- \\Cache\\CacheApcu -->
-<g id="node28" class="node"><title>\\Cache\\CacheApcu</title>
-<polygon fill="none" stroke="black" points="899,-1220 822,-1220 822,-1184 899,-1184 899,-1220"/>
-<text text-anchor="middle" x="860.5" y="-1199.2" font-family="Courier,monospace" font-size="11.00">CacheApcu</text>
-</g>
-<!-- \\Cache\\CacheInterface -->
-<g id="node34" class="node"><title>\\Cache\\CacheInterface</title>
-<polygon fill="none" stroke="black" points="618,-1274 507,-1274 507,-1238 618,-1238 618,-1274"/>
-<text text-anchor="middle" x="562.5" y="-1253.2" font-family="Courier,monospace" font-size="11.00">CacheInterface</text>
-</g>
-<!-- \\Cache\\CacheApcu&#45;&gt;\\Cache\\CacheInterface -->
-<g id="edge13" class="edge"><title>\\Cache\\CacheApcu&#45;&gt;\\Cache\\CacheInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M821.711,-1208.89C772.944,-1217.79 687.346,-1233.41 628.148,-1244.21"/>
-<polygon fill="none" stroke="black" points="627.361,-1240.79 618.151,-1246.03 628.617,-1247.68 627.361,-1240.79"/>
+<g id="node16" class="node"><title>\\Cache\\FileCache</title>
+<polygon fill="none" stroke="black" points="899,-1588 822,-1588 822,-1552 899,-1552 899,-1588"/>
+<text text-anchor="middle" x="860.5" y="-1567.2" font-family="Courier,monospace" font-size="11.00">FileCache</text>
 </g>
 <!-- \\Cache\\CacheMemcached -->
-<g id="node29" class="node"><title>\\Cache\\CacheMemcached</title>
-<polygon fill="none" stroke="black" points="916,-1166 805,-1166 805,-1130 916,-1130 916,-1166"/>
-<text text-anchor="middle" x="860.5" y="-1145.2" font-family="Courier,monospace" font-size="11.00">CacheMemcached</text>
+<g id="node17" class="node"><title>\\Cache\\CacheMemcached</title>
+<polygon fill="none" stroke="black" points="916,-1264 805,-1264 805,-1228 916,-1228 916,-1264"/>
+<text text-anchor="middle" x="860.5" y="-1243.2" font-family="Courier,monospace" font-size="11.00">CacheMemcached</text>
+</g>
+<!-- \\Cache\\CacheInterface -->
+<g id="node23" class="node"><title>\\Cache\\CacheInterface</title>
+<polygon fill="none" stroke="black" points="618,-1372 507,-1372 507,-1336 618,-1336 618,-1372"/>
+<text text-anchor="middle" x="562.5" y="-1351.2" font-family="Courier,monospace" font-size="11.00">CacheInterface</text>
 </g>
 <!-- \\Cache\\CacheMemcached&#45;&gt;\\Cache\\CacheInterface -->
-<g id="edge14" class="edge"><title>\\Cache\\CacheMemcached&#45;&gt;\\Cache\\CacheInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M804.869,-1155.42C779.81,-1159.7 749.965,-1166.05 724,-1175 680.493,-1190 633.86,-1214.59 602.135,-1232.75"/>
-<polygon fill="none" stroke="black" points="600.095,-1229.89 593.193,-1237.92 603.601,-1235.95 600.095,-1229.89"/>
+<g id="edge9" class="edge"><title>\\Cache\\CacheMemcached&#45;&gt;\\Cache\\CacheInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M804.869,-1253.42C779.81,-1257.7 749.965,-1264.05 724,-1273 680.493,-1288 633.86,-1312.59 602.135,-1330.75"/>
+<polygon fill="none" stroke="black" points="600.095,-1327.89 593.193,-1335.92 603.601,-1333.95 600.095,-1327.89"/>
 </g>
-<!-- \\Cache\\CacheRedis -->
-<g id="node30" class="node"><title>\\Cache\\CacheRedis</title>
-<polygon fill="none" stroke="black" points="902.5,-1382 818.5,-1382 818.5,-1346 902.5,-1346 902.5,-1382"/>
-<text text-anchor="middle" x="860.5" y="-1361.2" font-family="Courier,monospace" font-size="11.00">CacheRedis</text>
+<!-- \\Cache\\CacheApcu -->
+<g id="node18" class="node"><title>\\Cache\\CacheApcu</title>
+<polygon fill="none" stroke="black" points="899,-1372 822,-1372 822,-1336 899,-1336 899,-1372"/>
+<text text-anchor="middle" x="860.5" y="-1351.2" font-family="Courier,monospace" font-size="11.00">CacheApcu</text>
 </g>
-<!-- \\Cache\\CacheRedis&#45;&gt;\\Cache\\CacheInterface -->
-<g id="edge15" class="edge"><title>\\Cache\\CacheRedis&#45;&gt;\\Cache\\CacheInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M818.423,-1358.77C791.154,-1354.59 754.84,-1347.63 724,-1337 680.493,-1322 633.86,-1297.41 602.135,-1279.25"/>
-<polygon fill="none" stroke="black" points="603.601,-1276.05 593.193,-1274.08 600.095,-1282.11 603.601,-1276.05"/>
-</g>
-<!-- \\Cache\\CacheApc -->
-<g id="node31" class="node"><title>\\Cache\\CacheApc</title>
-<polygon fill="none" stroke="black" points="896,-1328 825,-1328 825,-1292 896,-1292 896,-1328"/>
-<text text-anchor="middle" x="860.5" y="-1307.2" font-family="Courier,monospace" font-size="11.00">CacheApc</text>
-</g>
-<!-- \\Cache\\CacheApc&#45;&gt;\\Cache\\CacheInterface -->
-<g id="edge16" class="edge"><title>\\Cache\\CacheApc&#45;&gt;\\Cache\\CacheInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M824.966,-1303.7C776.788,-1294.91 688.52,-1278.81 627.977,-1267.76"/>
-<polygon fill="none" stroke="black" points="628.601,-1264.32 618.135,-1265.97 627.345,-1271.21 628.601,-1264.32"/>
-</g>
-<!-- \\Cache\\CacheDisk -->
-<g id="node32" class="node"><title>\\Cache\\CacheDisk</title>
-<polygon fill="none" stroke="black" points="899,-1274 822,-1274 822,-1238 899,-1238 899,-1274"/>
-<text text-anchor="middle" x="860.5" y="-1253.2" font-family="Courier,monospace" font-size="11.00">CacheDisk</text>
-</g>
-<!-- \\Cache\\CacheDisk&#45;&gt;\\Cache\\CacheInterface -->
-<g id="edge17" class="edge"><title>\\Cache\\CacheDisk&#45;&gt;\\Cache\\CacheInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M821.711,-1256C773.045,-1256 687.7,-1256 628.515,-1256"/>
-<polygon fill="none" stroke="black" points="628.151,-1252.5 618.151,-1256 628.151,-1259.5 628.151,-1252.5"/>
+<!-- \\Cache\\CacheApcu&#45;&gt;\\Cache\\CacheInterface -->
+<g id="edge11" class="edge"><title>\\Cache\\CacheApcu&#45;&gt;\\Cache\\CacheInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M821.711,-1354C773.045,-1354 687.7,-1354 628.515,-1354"/>
+<polygon fill="none" stroke="black" points="628.151,-1350.5 618.151,-1354 628.151,-1357.5 628.151,-1350.5"/>
 </g>
 <!-- \\Cache\\CacheFactory -->
-<g id="node33" class="node"><title>\\Cache\\CacheFactory</title>
-<polygon fill="none" stroke="black" points="909.5,-1112 811.5,-1112 811.5,-1076 909.5,-1076 909.5,-1112"/>
-<text text-anchor="middle" x="860.5" y="-1091.2" font-family="Courier,monospace" font-size="11.00">CacheFactory</text>
+<g id="node19" class="node"><title>\\Cache\\CacheFactory</title>
+<polygon fill="none" stroke="black" points="909.5,-1426 811.5,-1426 811.5,-1390 909.5,-1390 909.5,-1426"/>
+<text text-anchor="middle" x="860.5" y="-1405.2" font-family="Courier,monospace" font-size="11.00">CacheFactory</text>
 </g>
-<!-- \\Cache\\CacheSetFallbackTrait -->
-<g id="node35" class="node"><title>\\Cache\\CacheSetFallbackTrait</title>
-<polygon fill="none" stroke="black" points="939.5,-1058 781.5,-1058 781.5,-1022 939.5,-1022 939.5,-1058"/>
-<text text-anchor="middle" x="860.5" y="-1037.2" font-family="Courier,monospace" font-size="11.00">CacheSetFallbackTrait</text>
+<!-- \\Cache\\CacheDisk -->
+<g id="node20" class="node"><title>\\Cache\\CacheDisk</title>
+<polygon fill="none" stroke="black" points="899,-1534 822,-1534 822,-1498 899,-1498 899,-1534"/>
+<text text-anchor="middle" x="860.5" y="-1513.2" font-family="Courier,monospace" font-size="11.00">CacheDisk</text>
+</g>
+<!-- \\Cache\\CacheDisk&#45;&gt;\\Cache\\CacheInterface -->
+<g id="edge27" class="edge"><title>\\Cache\\CacheDisk&#45;&gt;\\Cache\\CacheInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M821.97,-1513.58C793.843,-1510.59 755.024,-1503.91 724,-1489 667.728,-1461.96 614.833,-1410.57 586.036,-1379.59"/>
+<polygon fill="none" stroke="black" points="588.582,-1377.19 579.246,-1372.18 583.421,-1381.92 588.582,-1377.19"/>
+</g>
+<!-- \\Cache\\CacheRedis -->
+<g id="node21" class="node"><title>\\Cache\\CacheRedis</title>
+<polygon fill="none" stroke="black" points="902.5,-1480 818.5,-1480 818.5,-1444 902.5,-1444 902.5,-1480"/>
+<text text-anchor="middle" x="860.5" y="-1459.2" font-family="Courier,monospace" font-size="11.00">CacheRedis</text>
+</g>
+<!-- \\Cache\\CacheRedis&#45;&gt;\\Cache\\CacheInterface -->
+<g id="edge32" class="edge"><title>\\Cache\\CacheRedis&#45;&gt;\\Cache\\CacheInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M818.423,-1456.77C791.154,-1452.59 754.84,-1445.63 724,-1435 680.493,-1420 633.86,-1395.41 602.135,-1377.25"/>
+<polygon fill="none" stroke="black" points="603.601,-1374.05 593.193,-1372.08 600.095,-1380.11 603.601,-1374.05"/>
+</g>
+<!-- \\Cache\\CacheApc -->
+<g id="node22" class="node"><title>\\Cache\\CacheApc</title>
+<polygon fill="none" stroke="black" points="896,-1318 825,-1318 825,-1282 896,-1282 896,-1318"/>
+<text text-anchor="middle" x="860.5" y="-1297.2" font-family="Courier,monospace" font-size="11.00">CacheApc</text>
+</g>
+<!-- \\Cache\\CacheApc&#45;&gt;\\Cache\\CacheInterface -->
+<g id="edge44" class="edge"><title>\\Cache\\CacheApc&#45;&gt;\\Cache\\CacheInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M824.966,-1306.3C776.788,-1315.09 688.52,-1331.19 627.977,-1342.24"/>
+<polygon fill="none" stroke="black" points="627.345,-1338.79 618.135,-1344.03 628.601,-1345.68 627.345,-1338.79"/>
 </g>
 <!-- \\Cache\\CacheAddFallbackTrait -->
-<g id="node36" class="node"><title>\\Cache\\CacheAddFallbackTrait</title>
-<polygon fill="none" stroke="black" points="939.5,-1004 781.5,-1004 781.5,-968 939.5,-968 939.5,-1004"/>
-<text text-anchor="middle" x="860.5" y="-983.2" font-family="Courier,monospace" font-size="11.00">CacheAddFallbackTrait</text>
+<g id="node24" class="node"><title>\\Cache\\CacheAddFallbackTrait</title>
+<polygon fill="none" stroke="black" points="939.5,-1210 781.5,-1210 781.5,-1174 939.5,-1174 939.5,-1210"/>
+<text text-anchor="middle" x="860.5" y="-1189.2" font-family="Courier,monospace" font-size="11.00">CacheAddFallbackTrait</text>
 </g>
-<!-- \\Fim\\FileThumbnail -->
-<g id="node37" class="node"><title>\\Fim\\FileThumbnail</title>
-<polygon fill="none" stroke="black" points="1186.5,-2252 1082.5,-2252 1082.5,-2216 1186.5,-2216 1186.5,-2252"/>
-<text text-anchor="middle" x="1134.5" y="-2231.2" font-family="Courier,monospace" font-size="11.00">FileThumbnail</text>
+<!-- \\Cache\\CacheSetFallbackTrait -->
+<g id="node25" class="node"><title>\\Cache\\CacheSetFallbackTrait</title>
+<polygon fill="none" stroke="black" points="939.5,-1156 781.5,-1156 781.5,-1120 939.5,-1120 939.5,-1156"/>
+<text text-anchor="middle" x="860.5" y="-1135.2" font-family="Courier,monospace" font-size="11.00">CacheSetFallbackTrait</text>
 </g>
-<!-- \\Fim\\File -->
-<g id="node42" class="node"><title>\\Fim\\File</title>
-<polygon fill="none" stroke="black" points="887.5,-2144 833.5,-2144 833.5,-2108 887.5,-2108 887.5,-2144"/>
-<text text-anchor="middle" x="860.5" y="-2123.2" font-family="Courier,monospace" font-size="11.00">File</text>
+<!-- \\Login\\TwoStep\\LoginMicrosoft -->
+<g id="node26" class="node"><title>\\Login\\TwoStep\\LoginMicrosoft</title>
+<polygon fill="none" stroke="black" points="1190,-3942 1079,-3942 1079,-3906 1190,-3906 1190,-3942"/>
+<text text-anchor="middle" x="1134.5" y="-3921.2" font-family="Courier,monospace" font-size="11.00">LoginMicrosoft</text>
 </g>
-<!-- \\Fim\\FileThumbnail&#45;&gt;\\Fim\\File -->
-<g id="edge18" class="edge"><title>\\Fim\\FileThumbnail&#45;&gt;\\Fim\\File</title>
-<path fill="none" stroke="black" d="M1082.39,-2218.59C1074.91,-2215.32 1067.54,-2211.48 1061,-2207 1034.5,-2188.86 1041.02,-2168.68 1013,-2153 977.288,-2133.01 930.069,-2127.28 897.902,-2125.89"/>
-<polygon fill="none" stroke="black" points="897.711,-2122.39 887.608,-2125.58 897.496,-2129.38 897.711,-2122.39"/>
+<!-- \\Login\\LoginTwoStep -->
+<g id="node36" class="node"><title>\\Login\\LoginTwoStep</title>
+<polygon fill="none" stroke="black" points="909.5,-3780 811.5,-3780 811.5,-3744 909.5,-3744 909.5,-3780"/>
+<text text-anchor="start" x="826.5" y="-3765.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
+<text text-anchor="start" x="819.5" y="-3753.2" font-family="Courier,monospace" font-size="11.00">LoginTwoStep</text>
 </g>
-<!-- \\Fim\\Message -->
-<g id="node38" class="node"><title>\\Fim\\Message</title>
-<polygon fill="none" stroke="black" points="892.5,-2198 828.5,-2198 828.5,-2162 892.5,-2162 892.5,-2198"/>
-<text text-anchor="middle" x="860.5" y="-2177.2" font-family="Courier,monospace" font-size="11.00">Message</text>
+<!-- \\Login\\TwoStep\\LoginMicrosoft&#45;&gt;\\Login\\LoginTwoStep -->
+<g id="edge3" class="edge"><title>\\Login\\TwoStep\\LoginMicrosoft&#45;&gt;\\Login\\LoginTwoStep</title>
+<path fill="none" stroke="black" d="M1080.59,-3905.98C1073.89,-3903.21 1067.21,-3900.2 1061,-3897 997.75,-3864.42 930.457,-3815.52 892.43,-3786.38"/>
+<polygon fill="none" stroke="black" points="894.374,-3783.46 884.318,-3780.12 890.099,-3789 894.374,-3783.46"/>
 </g>
-<!-- \\Fim\\MagicGettersSetters -->
-<g id="node45" class="node"><title>\\Fim\\MagicGettersSetters</title>
-<polygon fill="none" stroke="black" points="635,-2198 490,-2198 490,-2162 635,-2162 635,-2198"/>
-<text text-anchor="middle" x="562.5" y="-2177.2" font-family="Courier,monospace" font-size="11.00">MagicGettersSetters</text>
+<!-- \\Login\\TwoStep\\LoginGoogle -->
+<g id="node27" class="node"><title>\\Login\\TwoStep\\LoginGoogle</title>
+<polygon fill="none" stroke="black" points="1180,-3888 1089,-3888 1089,-3852 1180,-3852 1180,-3888"/>
+<text text-anchor="middle" x="1134.5" y="-3867.2" font-family="Courier,monospace" font-size="11.00">LoginGoogle</text>
 </g>
-<!-- \\Fim\\Message&#45;&gt;\\Fim\\MagicGettersSetters -->
-<g id="edge19" class="edge"><title>\\Fim\\Message&#45;&gt;\\Fim\\MagicGettersSetters</title>
-<path fill="none" stroke="black" d="M828.382,-2180C785.376,-2180 706.219,-2180 645.598,-2180"/>
-<polygon fill="none" stroke="black" points="645.274,-2176.5 635.274,-2180 645.274,-2183.5 645.274,-2176.5"/>
+<!-- \\Login\\TwoStep\\LoginGoogle&#45;&gt;\\Login\\LoginTwoStep -->
+<g id="edge5" class="edge"><title>\\Login\\TwoStep\\LoginGoogle&#45;&gt;\\Login\\LoginTwoStep</title>
+<path fill="none" stroke="black" d="M1088.95,-3853.64C1079.69,-3850.18 1070.01,-3846.51 1061,-3843 1011.01,-3823.55 954.38,-3800.45 914.261,-3783.91"/>
+<polygon fill="none" stroke="black" points="915.521,-3780.64 904.942,-3780.06 912.85,-3787.12 915.521,-3780.64"/>
 </g>
-<!-- \\Fim\\OAuthProvider -->
-<g id="node39" class="node"><title>\\Fim\\OAuthProvider</title>
-<polygon fill="none" stroke="black" points="1186.5,-2090 1082.5,-2090 1082.5,-2054 1186.5,-2054 1186.5,-2090"/>
-<text text-anchor="middle" x="1134.5" y="-2069.2" font-family="Courier,monospace" font-size="11.00">OAuthProvider</text>
+<!-- \\Login\\TwoStep\\LoginFacebook -->
+<g id="node28" class="node"><title>\\Login\\TwoStep\\LoginFacebook</title>
+<polygon fill="none" stroke="black" points="1186.5,-3834 1082.5,-3834 1082.5,-3798 1186.5,-3798 1186.5,-3834"/>
+<text text-anchor="middle" x="1134.5" y="-3813.2" font-family="Courier,monospace" font-size="11.00">LoginFacebook</text>
 </g>
-<!-- AuthorizationCodeInterface -->
-<g id="node66" class="node"><title>AuthorizationCodeInterface</title>
-<ellipse fill="none" stroke="black" cx="860.5" cy="-1514" rx="109.381" ry="18"/>
-<text text-anchor="middle" x="860.5" y="-1510.3" font-family="Times,serif" font-size="14.00" fill="gray">AuthorizationCodeInterface</text>
+<!-- \\Login\\TwoStep\\LoginFacebook&#45;&gt;\\Login\\LoginTwoStep -->
+<g id="edge8" class="edge"><title>\\Login\\TwoStep\\LoginFacebook&#45;&gt;\\Login\\LoginTwoStep</title>
+<path fill="none" stroke="black" d="M1082.34,-3805.84C1036.08,-3796.66 968.008,-3783.15 919.689,-3773.55"/>
+<polygon fill="none" stroke="black" points="920.183,-3770.08 909.692,-3771.57 918.819,-3776.95 920.183,-3770.08"/>
 </g>
-<!-- \\Fim\\OAuthProvider&#45;&gt;AuthorizationCodeInterface -->
-<g id="edge20" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;AuthorizationCodeInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1085.59,-2053.98C1076.12,-2049.77 1067.21,-2044.1 1061,-2036 991.867,-1945.84 1091.3,-1609.33 1013,-1527 991.69,-1504.59 958.457,-1498.01 928.54,-1498.34"/>
-<polygon fill="none" stroke="black" points="928.41,-1494.84 918.544,-1498.7 928.664,-1501.84 928.41,-1494.84"/>
+<!-- \\Login\\TwoStep\\LoginReddit -->
+<g id="node29" class="node"><title>\\Login\\TwoStep\\LoginReddit</title>
+<polygon fill="none" stroke="black" points="1180,-3780 1089,-3780 1089,-3744 1180,-3744 1180,-3780"/>
+<text text-anchor="middle" x="1134.5" y="-3759.2" font-family="Courier,monospace" font-size="11.00">LoginReddit</text>
 </g>
-<!-- \\Fim\\OAuthProvider&#45;&gt;AuthorizationCodeInterface -->
-<g id="edge26" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;AuthorizationCodeInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.25,-2070.1C1074.05,-2066.39 1066.48,-2061.14 1061,-2054 991.867,-1963.84 1091.3,-1627.33 1013,-1545 1002.48,-1533.94 989.061,-1526.74 974.567,-1522.11"/>
-<polygon fill="none" stroke="black" points="975.48,-1518.73 964.908,-1519.43 973.608,-1525.48 975.48,-1518.73"/>
+<!-- \\Login\\TwoStep\\LoginReddit&#45;&gt;\\Login\\LoginTwoStep -->
+<g id="edge15" class="edge"><title>\\Login\\TwoStep\\LoginReddit&#45;&gt;\\Login\\LoginTwoStep</title>
+<path fill="none" stroke="black" d="M1088.89,-3762C1042.78,-3762 970.592,-3762 919.95,-3762"/>
+<polygon fill="none" stroke="black" points="919.806,-3758.5 909.806,-3762 919.806,-3765.5 919.806,-3758.5"/>
 </g>
-<!-- AccessTokenInterface -->
-<g id="node79" class="node"><title>AccessTokenInterface</title>
-<ellipse fill="none" stroke="black" cx="860.5" cy="-234" rx="89.0842" ry="18"/>
-<text text-anchor="middle" x="860.5" y="-230.3" font-family="Times,serif" font-size="14.00">AccessTokenInterface</text>
+<!-- \\Login\\TwoStep\\LoginTwitter -->
+<g id="node30" class="node"><title>\\Login\\TwoStep\\LoginTwitter</title>
+<polygon fill="none" stroke="black" points="1183.5,-3726 1085.5,-3726 1085.5,-3690 1183.5,-3690 1183.5,-3726"/>
+<text text-anchor="middle" x="1134.5" y="-3705.2" font-family="Courier,monospace" font-size="11.00">LoginTwitter</text>
 </g>
-<!-- \\Fim\\OAuthProvider&#45;&gt;AccessTokenInterface -->
-<g id="edge21" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;AccessTokenInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.22,-2061.72C1073.92,-2057.82 1066.31,-2052.43 1061,-2045 945.878,-1883.96 1140.7,-415.265 1013,-264 999.338,-247.816 979.683,-238.764 959.034,-233.982"/>
-<polygon fill="none" stroke="black" points="959.659,-230.538 949.168,-232.02 958.294,-237.404 959.659,-230.538"/>
+<!-- \\Login\\TwoStep\\LoginTwitter&#45;&gt;\\Login\\LoginTwoStep -->
+<g id="edge19" class="edge"><title>\\Login\\TwoStep\\LoginTwitter&#45;&gt;\\Login\\LoginTwoStep</title>
+<path fill="none" stroke="black" d="M1085.5,-3717.53C1039.27,-3726.71 969.268,-3740.6 919.844,-3750.42"/>
+<polygon fill="none" stroke="black" points="919.064,-3747 909.937,-3752.38 920.427,-3753.87 919.064,-3747"/>
 </g>
-<!-- ClientCredentialsInterface -->
-<g id="node80" class="node"><title>ClientCredentialsInterface</title>
-<ellipse fill="none" stroke="black" cx="860.5" cy="-180" rx="103.182" ry="18"/>
-<text text-anchor="middle" x="860.5" y="-176.3" font-family="Times,serif" font-size="14.00">ClientCredentialsInterface</text>
+<!-- \\Login\\TwoStep\\LoginSteam -->
+<g id="node31" class="node"><title>\\Login\\TwoStep\\LoginSteam</title>
+<polygon fill="none" stroke="black" points="1176.5,-3672 1092.5,-3672 1092.5,-3636 1176.5,-3636 1176.5,-3672"/>
+<text text-anchor="middle" x="1134.5" y="-3651.2" font-family="Courier,monospace" font-size="11.00">LoginSteam</text>
 </g>
-<!-- \\Fim\\OAuthProvider&#45;&gt;ClientCredentialsInterface -->
-<g id="edge22" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;ClientCredentialsInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.22,-2061.73C1073.91,-2057.82 1066.31,-2052.43 1061,-2045 942.266,-1878.76 1146.21,-361.891 1013,-207 1002.64,-194.953 988.917,-187.046 973.952,-182.006"/>
-<polygon fill="none" stroke="black" points="974.542,-178.533 963.962,-179.094 972.583,-185.253 974.542,-178.533"/>
+<!-- \\Login\\TwoStep\\LoginSteam&#45;&gt;\\Login\\LoginTwoStep -->
+<g id="edge21" class="edge"><title>\\Login\\TwoStep\\LoginSteam&#45;&gt;\\Login\\LoginTwoStep</title>
+<path fill="none" stroke="black" d="M1092.4,-3669.07C1082.12,-3672.9 1071.14,-3677.05 1061,-3681 1011.01,-3700.45 954.38,-3723.55 914.261,-3740.09"/>
+<polygon fill="none" stroke="black" points="912.85,-3736.88 904.942,-3743.94 915.521,-3743.36 912.85,-3736.88"/>
 </g>
-<!-- UserCredentialsInterface -->
-<g id="node81" class="node"><title>UserCredentialsInterface</title>
-<ellipse fill="none" stroke="black" cx="860.5" cy="-126" rx="98.5829" ry="18"/>
-<text text-anchor="middle" x="860.5" y="-122.3" font-family="Times,serif" font-size="14.00">UserCredentialsInterface</text>
+<!-- \\Login\\Database\\LoginVbulletin3 -->
+<g id="node32" class="node"><title>\\Login\\Database\\LoginVbulletin3</title>
+<polygon fill="none" stroke="black" points="1193.5,-3592 1075.5,-3592 1075.5,-3556 1193.5,-3556 1193.5,-3592"/>
+<text text-anchor="middle" x="1134.5" y="-3571.2" font-family="Courier,monospace" font-size="11.00">LoginVbulletin3</text>
 </g>
-<!-- \\Fim\\OAuthProvider&#45;&gt;UserCredentialsInterface -->
-<g id="edge23" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;UserCredentialsInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.21,-2061.73C1073.91,-2057.82 1066.31,-2052.43 1061,-2045 999.922,-1959.41 1081.53,-232.745 1013,-153 1001.5,-139.619 985.853,-131.345 968.961,-126.433"/>
-<polygon fill="none" stroke="black" points="969.445,-122.946 958.894,-123.917 967.747,-129.737 969.445,-122.946"/>
+<!-- \\Login\\LoginDatabase -->
+<g id="node37" class="node"><title>\\Login\\LoginDatabase</title>
+<polygon fill="none" stroke="black" points="912.5,-3511 808.5,-3511 808.5,-3475 912.5,-3475 912.5,-3511"/>
+<text text-anchor="start" x="826.5" y="-3496.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
+<text text-anchor="start" x="816.5" y="-3484.2" font-family="Courier,monospace" font-size="11.00">LoginDatabase</text>
 </g>
-<!-- RefreshTokenInterface -->
-<g id="node82" class="node"><title>RefreshTokenInterface</title>
-<ellipse fill="none" stroke="black" cx="860.5" cy="-72" rx="91.784" ry="18"/>
-<text text-anchor="middle" x="860.5" y="-68.3" font-family="Times,serif" font-size="14.00">RefreshTokenInterface</text>
+<!-- \\Login\\Database\\LoginVbulletin3&#45;&gt;\\Login\\LoginDatabase -->
+<g id="edge18" class="edge"><title>\\Login\\Database\\LoginVbulletin3&#45;&gt;\\Login\\LoginDatabase</title>
+<path fill="none" stroke="black" d="M1075.48,-3556.72C1030.42,-3543.3 968.111,-3524.75 922.348,-3511.12"/>
+<polygon fill="none" stroke="black" points="923.138,-3507.7 912.555,-3508.2 921.14,-3514.41 923.138,-3507.7"/>
 </g>
-<!-- \\Fim\\OAuthProvider&#45;&gt;RefreshTokenInterface -->
-<g id="edge24" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;RefreshTokenInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.21,-2061.73C1073.9,-2057.83 1066.3,-2052.44 1061,-2045 998.21,-1956.95 1083.45,-181.044 1013,-99 999.538,-83.3234 980.382,-74.6549 960.2,-70.1907"/>
-<polygon fill="none" stroke="black" points="960.705,-66.7244 950.231,-68.3246 959.417,-73.6049 960.705,-66.7244"/>
+<!-- \\Login\\Database\\LoginPhpbb -->
+<g id="node33" class="node"><title>\\Login\\Database\\LoginPhpbb</title>
+<polygon fill="none" stroke="black" points="1176.5,-3538 1092.5,-3538 1092.5,-3502 1176.5,-3502 1176.5,-3538"/>
+<text text-anchor="middle" x="1134.5" y="-3517.2" font-family="Courier,monospace" font-size="11.00">LoginPhpbb</text>
 </g>
-<!-- UserClaimsInterface -->
-<g id="node83" class="node"><title>UserClaimsInterface</title>
-<ellipse fill="none" stroke="black" cx="860.5" cy="-18" rx="83.6854" ry="18"/>
-<text text-anchor="middle" x="860.5" y="-14.3" font-family="Times,serif" font-size="14.00">UserClaimsInterface</text>
+<!-- \\Login\\Database\\LoginPhpbb&#45;&gt;\\Login\\LoginDatabase -->
+<g id="edge20" class="edge"><title>\\Login\\Database\\LoginPhpbb&#45;&gt;\\Login\\LoginDatabase</title>
+<path fill="none" stroke="black" d="M1092.48,-3515.93C1047.4,-3511.45 974.516,-3504.22 922.681,-3499.07"/>
+<polygon fill="none" stroke="black" points="922.906,-3495.58 912.609,-3498.07 922.214,-3502.54 922.906,-3495.58"/>
 </g>
-<!-- \\Fim\\OAuthProvider&#45;&gt;UserClaimsInterface -->
-<g id="edge25" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;UserClaimsInterface</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.2,-2061.74C1073.9,-2057.83 1066.3,-2052.44 1061,-2045 996.499,-1954.49 1085.38,-129.344 1013,-45 997.624,-27.0824 974.809,-18.318 951.524,-14.5224"/>
-<polygon fill="none" stroke="black" points="951.912,-11.0432 941.536,-13.1877 950.984,-17.9815 951.912,-11.0432"/>
+<!-- \\Login\\Database\\LoginVanilla -->
+<g id="node34" class="node"><title>\\Login\\Database\\LoginVanilla</title>
+<polygon fill="none" stroke="black" points="1183.5,-3484 1085.5,-3484 1085.5,-3448 1183.5,-3448 1183.5,-3484"/>
+<text text-anchor="middle" x="1134.5" y="-3463.2" font-family="Courier,monospace" font-size="11.00">LoginVanilla</text>
 </g>
-<!-- \\Fim\\DatabaseResult -->
-<g id="node40" class="node"><title>\\Fim\\DatabaseResult</title>
-<polygon fill="none" stroke="black" points="1190,-2144 1079,-2144 1079,-2108 1190,-2108 1190,-2144"/>
-<text text-anchor="middle" x="1134.5" y="-2123.2" font-family="Courier,monospace" font-size="11.00">DatabaseResult</text>
+<!-- \\Login\\Database\\LoginVanilla&#45;&gt;\\Login\\LoginDatabase -->
+<g id="edge26" class="edge"><title>\\Login\\Database\\LoginVanilla&#45;&gt;\\Login\\LoginDatabase</title>
+<path fill="none" stroke="black" d="M1085.5,-3470.76C1040.22,-3475.26 972.137,-3482.02 922.92,-3486.9"/>
+<polygon fill="none" stroke="black" points="922.324,-3483.45 912.719,-3487.92 923.015,-3490.41 922.324,-3483.45"/>
 </g>
-<!-- \\Fim\\DatabaseResult&#45;&gt;\\Database\\DatabaseResult -->
-<g id="edge27" class="edge"><title>\\Fim\\DatabaseResult&#45;&gt;\\Database\\DatabaseResult</title>
-<path fill="none" stroke="black" d="M1079,-2114.07C1071.97,-2110.33 1065.63,-2105.43 1061,-2099 966.41,-1967.51 1120.21,-763.421 1013,-642 991.86,-618.057 957.273,-611.281 926.48,-610.842"/>
-<polygon fill="none" stroke="black" points="926.18,-607.344 916.207,-610.92 926.233,-614.344 926.18,-607.344"/>
+<!-- \\Login\\Database\\LoginVbulletin5 -->
+<g id="node35" class="node"><title>\\Login\\Database\\LoginVbulletin5</title>
+<polygon fill="none" stroke="black" points="1193.5,-3430 1075.5,-3430 1075.5,-3394 1193.5,-3394 1193.5,-3430"/>
+<text text-anchor="middle" x="1134.5" y="-3409.2" font-family="Courier,monospace" font-size="11.00">LoginVbulletin5</text>
 </g>
-<!-- \\Fim\\Cache -->
-<g id="node41" class="node"><title>\\Fim\\Cache</title>
-<polygon fill="none" stroke="black" points="1161.5,-2198 1107.5,-2198 1107.5,-2162 1161.5,-2162 1161.5,-2198"/>
-<text text-anchor="middle" x="1134.5" y="-2177.2" font-family="Courier,monospace" font-size="11.00">Cache</text>
+<!-- \\Login\\Database\\LoginVbulletin5&#45;&gt;\\Login\\LoginDatabase -->
+<g id="edge46" class="edge"><title>\\Login\\Database\\LoginVbulletin5&#45;&gt;\\Login\\LoginDatabase</title>
+<path fill="none" stroke="black" d="M1075.48,-3429.28C1030.42,-3442.7 968.111,-3461.25 922.348,-3474.88"/>
+<polygon fill="none" stroke="black" points="921.14,-3471.59 912.555,-3477.8 923.138,-3478.3 921.14,-3471.59"/>
 </g>
-<!-- \\Fim\\Cache&#45;&gt;\\Cache\\CacheFactory -->
-<g id="edge28" class="edge"><title>\\Fim\\Cache&#45;&gt;\\Cache\\CacheFactory</title>
-<path fill="none" stroke="black" d="M1107.38,-2177.42C1091.27,-2174.35 1071.69,-2167.65 1061,-2153 993.336,-2060.27 1088.73,-1207.27 1013,-1121 990.336,-1095.18 952.218,-1088.49 919.889,-1088.22"/>
-<polygon fill="none" stroke="black" points="919.58,-1084.72 909.622,-1088.34 919.663,-1091.72 919.58,-1084.72"/>
+<!-- \\Login\\LoginRunner -->
+<g id="node41" class="node"><title>\\Login\\LoginRunner</title>
+<polygon fill="none" stroke="black" points="608,-3645 517,-3645 517,-3609 608,-3609 608,-3645"/>
+<text text-anchor="middle" x="562.5" y="-3624.2" font-family="Courier,monospace" font-size="11.00">LoginRunner</text>
 </g>
-<!-- \\Fim\\File&#45;&gt;\\Fim\\MagicGettersSetters -->
-<g id="edge29" class="edge"><title>\\Fim\\File&#45;&gt;\\Fim\\MagicGettersSetters</title>
-<path fill="none" stroke="black" d="M833.491,-2130.74C791.779,-2138.35 708.2,-2153.6 645.022,-2165.13"/>
-<polygon fill="none" stroke="black" points="644.276,-2161.71 635.067,-2166.94 645.533,-2168.59 644.276,-2161.71"/>
+<!-- \\Login\\LoginTwoStep&#45;&gt;\\Login\\LoginRunner -->
+<g id="edge2" class="edge"><title>\\Login\\LoginTwoStep&#45;&gt;\\Login\\LoginRunner</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M819.887,-3743.93C766.315,-3719.5 670.801,-3675.94 612.694,-3649.44"/>
+<polygon fill="none" stroke="black" points="613.902,-3646.14 603.351,-3645.18 610.997,-3652.51 613.902,-3646.14"/>
+</g>
+<!-- \\Login\\LoginDatabase&#45;&gt;\\Login\\LoginRunner -->
+<g id="edge14" class="edge"><title>\\Login\\LoginDatabase&#45;&gt;\\Login\\LoginRunner</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M819.58,-3511.07C766.066,-3535.3 671.098,-3578.29 613.068,-3604.56"/>
+<polygon fill="none" stroke="black" points="611.399,-3601.47 603.733,-3608.79 614.286,-3607.85 611.399,-3601.47"/>
+</g>
+<!-- \\Login\\LoginFactory -->
+<g id="node38" class="node"><title>\\Login\\LoginFactory</title>
+<polygon fill="none" stroke="black" points="1183.5,-3376 1085.5,-3376 1085.5,-3340 1183.5,-3340 1183.5,-3376"/>
+<text text-anchor="middle" x="1134.5" y="-3355.2" font-family="Courier,monospace" font-size="11.00">LoginFactory</text>
+</g>
+<!-- \\Login\\LoginOAuth -->
+<g id="node39" class="node"><title>\\Login\\LoginOAuth</title>
+<polygon fill="none" stroke="black" points="1176.5,-3322 1092.5,-3322 1092.5,-3286 1176.5,-3286 1176.5,-3322"/>
+<text text-anchor="middle" x="1134.5" y="-3301.2" font-family="Courier,monospace" font-size="11.00">LoginOAuth</text>
+</g>
+<!-- \\Login\\LoginOAuth&#45;&gt;\\Login\\LoginDatabase -->
+<g id="edge17" class="edge"><title>\\Login\\LoginOAuth&#45;&gt;\\Login\\LoginDatabase</title>
+<path fill="none" stroke="black" d="M1092.18,-3316.75C1081.7,-3320.68 1070.68,-3325.47 1061,-3331 992.398,-3370.21 923.233,-3432.7 887.118,-3467.5"/>
+<polygon fill="none" stroke="black" points="884.238,-3465.42 879.505,-3474.89 889.116,-3470.44 884.238,-3465.42"/>
+</g>
+<!-- \\Login\\PasswordHash -->
+<g id="node40" class="node"><title>\\Login\\PasswordHash</title>
+<polygon fill="none" stroke="black" points="1183.5,-3268 1085.5,-3268 1085.5,-3232 1183.5,-3232 1183.5,-3268"/>
+<text text-anchor="middle" x="1134.5" y="-3247.2" font-family="Courier,monospace" font-size="11.00">PasswordHash</text>
+</g>
+<!-- \\Fim\\CensorList -->
+<g id="node42" class="node"><title>\\Fim\\CensorList</title>
+<polygon fill="none" stroke="black" points="1176.5,-2252 1092.5,-2252 1092.5,-2216 1176.5,-2216 1176.5,-2252"/>
+<text text-anchor="middle" x="1134.5" y="-2231.2" font-family="Courier,monospace" font-size="11.00">CensorList</text>
+</g>
+<!-- \\Fim\\DatabaseLogin -->
+<g id="node43" class="node"><title>\\Fim\\DatabaseLogin</title>
+<polygon fill="none" stroke="black" points="1186.5,-2198 1082.5,-2198 1082.5,-2162 1186.5,-2162 1186.5,-2198"/>
+<text text-anchor="middle" x="1134.5" y="-2177.2" font-family="Courier,monospace" font-size="11.00">DatabaseLogin</text>
 </g>
 <!-- \\Fim\\Config -->
-<g id="node43" class="node"><title>\\Fim\\Config</title>
-<polygon fill="none" stroke="black" points="1163,-2036 1106,-2036 1106,-2000 1163,-2000 1163,-2036"/>
-<text text-anchor="middle" x="1134.5" y="-2015.2" font-family="Courier,monospace" font-size="11.00">Config</text>
-</g>
-<!-- \\Fim\\DatabaseSlave -->
-<g id="node44" class="node"><title>\\Fim\\DatabaseSlave</title>
-<polygon fill="none" stroke="black" points="1186.5,-1982 1082.5,-1982 1082.5,-1946 1186.5,-1946 1186.5,-1982"/>
-<text text-anchor="middle" x="1134.5" y="-1961.2" font-family="Courier,monospace" font-size="11.00">DatabaseSlave</text>
+<g id="node44" class="node"><title>\\Fim\\Config</title>
+<polygon fill="none" stroke="black" points="1163,-2144 1106,-2144 1106,-2108 1163,-2108 1163,-2144"/>
+<text text-anchor="middle" x="1134.5" y="-2123.2" font-family="Courier,monospace" font-size="11.00">Config</text>
 </g>
 <!-- \\Fim\\DynamicObject -->
-<g id="node46" class="node"><title>\\Fim\\DynamicObject</title>
+<g id="node45" class="node"><title>\\Fim\\DynamicObject</title>
 <polygon fill="none" stroke="black" points="912.5,-2252 808.5,-2252 808.5,-2216 912.5,-2216 912.5,-2252"/>
 <text text-anchor="start" x="826.5" y="-2237.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
 <text text-anchor="start" x="816.5" y="-2225.2" font-family="Courier,monospace" font-size="11.00">DynamicObject</text>
 </g>
+<!-- \\Fim\\MagicGettersSetters -->
+<g id="node46" class="node"><title>\\Fim\\MagicGettersSetters</title>
+<polygon fill="none" stroke="black" points="635,-2171 490,-2171 490,-2135 635,-2135 635,-2171"/>
+<text text-anchor="middle" x="562.5" y="-2150.2" font-family="Courier,monospace" font-size="11.00">MagicGettersSetters</text>
+</g>
 <!-- \\Fim\\DynamicObject&#45;&gt;\\Fim\\MagicGettersSetters -->
-<g id="edge30" class="edge"><title>\\Fim\\DynamicObject&#45;&gt;\\Fim\\MagicGettersSetters</title>
-<path fill="none" stroke="black" d="M808.279,-2224.66C763.354,-2216.46 697.244,-2204.4 645.05,-2194.88"/>
-<polygon fill="none" stroke="black" points="645.607,-2191.42 635.141,-2193.07 644.35,-2198.31 645.607,-2191.42"/>
+<g id="edge16" class="edge"><title>\\Fim\\DynamicObject&#45;&gt;\\Fim\\MagicGettersSetters</title>
+<path fill="none" stroke="black" d="M808.279,-2219.98C761.625,-2207.22 692.124,-2188.2 639.087,-2173.68"/>
+<polygon fill="none" stroke="black" points="639.954,-2170.29 629.385,-2171.03 638.106,-2177.04 639.954,-2170.29"/>
+</g>
+<!-- \\Fim\\File -->
+<g id="node47" class="node"><title>\\Fim\\File</title>
+<polygon fill="none" stroke="black" points="887.5,-2103 833.5,-2103 833.5,-2067 887.5,-2067 887.5,-2103"/>
+<text text-anchor="middle" x="860.5" y="-2082.2" font-family="Courier,monospace" font-size="11.00">File</text>
+</g>
+<!-- \\Fim\\File&#45;&gt;\\Fim\\MagicGettersSetters -->
+<g id="edge22" class="edge"><title>\\Fim\\File&#45;&gt;\\Fim\\MagicGettersSetters</title>
+<path fill="none" stroke="black" d="M833.491,-2090.97C791.779,-2100.56 708.2,-2119.76 645.022,-2134.27"/>
+<polygon fill="none" stroke="black" points="644.029,-2130.91 635.067,-2136.56 645.597,-2137.73 644.029,-2130.91"/>
+</g>
+<!-- \\Fim\\Message -->
+<g id="node48" class="node"><title>\\Fim\\Message</title>
+<polygon fill="none" stroke="black" points="892.5,-2171 828.5,-2171 828.5,-2135 892.5,-2135 892.5,-2171"/>
+<text text-anchor="middle" x="860.5" y="-2150.2" font-family="Courier,monospace" font-size="11.00">Message</text>
+</g>
+<!-- \\Fim\\Message&#45;&gt;\\Fim\\MagicGettersSetters -->
+<g id="edge23" class="edge"><title>\\Fim\\Message&#45;&gt;\\Fim\\MagicGettersSetters</title>
+<path fill="none" stroke="black" d="M828.382,-2153C785.376,-2153 706.219,-2153 645.598,-2153"/>
+<polygon fill="none" stroke="black" points="645.274,-2149.5 635.274,-2153 645.274,-2156.5 645.274,-2149.5"/>
+</g>
+<!-- \\Fim\\FileThumbnail -->
+<g id="node49" class="node"><title>\\Fim\\FileThumbnail</title>
+<polygon fill="none" stroke="black" points="1186.5,-2090 1082.5,-2090 1082.5,-2054 1186.5,-2054 1186.5,-2090"/>
+<text text-anchor="middle" x="1134.5" y="-2069.2" font-family="Courier,monospace" font-size="11.00">FileThumbnail</text>
+</g>
+<!-- \\Fim\\FileThumbnail&#45;&gt;\\Fim\\File -->
+<g id="edge28" class="edge"><title>\\Fim\\FileThumbnail&#45;&gt;\\Fim\\File</title>
+<path fill="none" stroke="black" d="M1082.34,-2074.45C1028.54,-2077.02 945.265,-2081 897.837,-2083.26"/>
+<polygon fill="none" stroke="black" points="897.541,-2079.77 887.719,-2083.75 897.875,-2086.77 897.541,-2079.77"/>
+</g>
+<!-- \\Fim\\Cache -->
+<g id="node50" class="node"><title>\\Fim\\Cache</title>
+<polygon fill="none" stroke="black" points="1161.5,-2036 1107.5,-2036 1107.5,-2000 1161.5,-2000 1161.5,-2036"/>
+<text text-anchor="middle" x="1134.5" y="-2015.2" font-family="Courier,monospace" font-size="11.00">Cache</text>
+</g>
+<!-- \\Fim\\Cache&#45;&gt;\\Cache\\CacheFactory -->
+<g id="edge29" class="edge"><title>\\Fim\\Cache&#45;&gt;\\Cache\\CacheFactory</title>
+<path fill="none" stroke="black" d="M1107.22,-2015.21C1091.25,-2012.05 1071.9,-2005.33 1061,-1991 985.927,-1892.29 1096.65,-1526.56 1013,-1435 989.91,-1409.73 951.981,-1402.99 919.851,-1402.56"/>
+<polygon fill="none" stroke="black" points="919.625,-1399.06 909.649,-1402.63 919.672,-1406.06 919.625,-1399.06"/>
 </g>
 <!-- \\Fim\\RoomFactory -->
-<g id="node47" class="node"><title>\\Fim\\RoomFactory</title>
-<polygon fill="none" stroke="black" points="1180,-1928 1089,-1928 1089,-1892 1180,-1892 1180,-1928"/>
-<text text-anchor="middle" x="1134.5" y="-1907.2" font-family="Courier,monospace" font-size="11.00">RoomFactory</text>
+<g id="node51" class="node"><title>\\Fim\\RoomFactory</title>
+<polygon fill="none" stroke="black" points="1180,-1982 1089,-1982 1089,-1946 1180,-1946 1180,-1982"/>
+<text text-anchor="middle" x="1134.5" y="-1961.2" font-family="Courier,monospace" font-size="11.00">RoomFactory</text>
 </g>
-<!-- \\Fim\\Database -->
-<g id="node48" class="node"><title>\\Fim\\Database</title>
-<polygon fill="none" stroke="black" points="1170,-1874 1099,-1874 1099,-1838 1170,-1838 1170,-1874"/>
-<text text-anchor="middle" x="1134.5" y="-1853.2" font-family="Courier,monospace" font-size="11.00">Database</text>
+<!-- \\Fim\\DatabaseResult -->
+<g id="node52" class="node"><title>\\Fim\\DatabaseResult</title>
+<polygon fill="none" stroke="black" points="1190,-1928 1079,-1928 1079,-1892 1190,-1892 1190,-1928"/>
+<text text-anchor="middle" x="1134.5" y="-1907.2" font-family="Courier,monospace" font-size="11.00">DatabaseResult</text>
 </g>
-<!-- \\Fim\\CensorList -->
-<g id="node49" class="node"><title>\\Fim\\CensorList</title>
-<polygon fill="none" stroke="black" points="1176.5,-1820 1092.5,-1820 1092.5,-1784 1176.5,-1784 1176.5,-1820"/>
-<text text-anchor="middle" x="1134.5" y="-1799.2" font-family="Courier,monospace" font-size="11.00">CensorList</text>
+<!-- \\Fim\\DatabaseResult&#45;&gt;\\Database\\DatabaseResult -->
+<g id="edge33" class="edge"><title>\\Fim\\DatabaseResult&#45;&gt;\\Database\\DatabaseResult</title>
+<path fill="none" stroke="black" d="M1078.65,-1897.87C1071.77,-1894.16 1065.55,-1889.32 1061,-1883 970.022,-1756.71 1114.97,-600.594 1013,-483 992.007,-458.79 957.429,-451.339 926.604,-450.257"/>
+<polygon fill="none" stroke="black" points="926.366,-446.754 916.32,-450.12 926.272,-453.753 926.366,-446.754"/>
+</g>
+<!-- \\Fim\\OAuthProvider -->
+<g id="node53" class="node"><title>\\Fim\\OAuthProvider</title>
+<polygon fill="none" stroke="black" points="1186.5,-1874 1082.5,-1874 1082.5,-1838 1186.5,-1838 1186.5,-1874"/>
+<text text-anchor="middle" x="1134.5" y="-1853.2" font-family="Courier,monospace" font-size="11.00">OAuthProvider</text>
+</g>
+<!-- AuthorizationCodeInterface -->
+<g id="node68" class="node"><title>AuthorizationCodeInterface</title>
+<ellipse fill="none" stroke="black" cx="860.5" cy="-1002" rx="109.381" ry="18"/>
+<text text-anchor="middle" x="860.5" y="-998.3" font-family="Times,serif" font-size="14.00" fill="gray">AuthorizationCodeInterface</text>
+</g>
+<!-- \\Fim\\OAuthProvider&#45;&gt;AuthorizationCodeInterface -->
+<g id="edge34" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;AuthorizationCodeInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1085.05,-1837.93C1075.73,-1833.74 1067.02,-1828.08 1061,-1820 965.055,-1691.24 1091.86,-1238.88 1013,-1099 993.557,-1064.51 957.687,-1038.66 925.73,-1022.12"/>
+<polygon fill="none" stroke="black" points="926.915,-1018.8 916.401,-1017.5 923.807,-1025.07 926.915,-1018.8"/>
+</g>
+<!-- \\Fim\\OAuthProvider&#45;&gt;AuthorizationCodeInterface -->
+<g id="edge40" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;AuthorizationCodeInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.46,-1854.38C1074.13,-1850.66 1066.46,-1845.32 1061,-1838 965.055,-1709.24 1091.86,-1256.88 1013,-1117 988.035,-1072.72 935.989,-1042.66 899.916,-1024.05"/>
+<polygon fill="none" stroke="black" points="901.158,-1020.75 890.659,-1019.33 897.979,-1026.99 901.158,-1020.75"/>
+</g>
+<!-- AccessTokenInterface -->
+<g id="node80" class="node"><title>AccessTokenInterface</title>
+<ellipse fill="none" stroke="black" cx="860.5" cy="-234" rx="89.0842" ry="18"/>
+<text text-anchor="middle" x="860.5" y="-230.3" font-family="Times,serif" font-size="14.00">AccessTokenInterface</text>
+</g>
+<!-- \\Fim\\OAuthProvider&#45;&gt;AccessTokenInterface -->
+<g id="edge35" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;AccessTokenInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.24,-1845.71C1073.94,-1841.8 1066.33,-1836.42 1061,-1829 959.566,-1687.66 1125.47,-396.725 1013,-264 999.308,-247.842 979.641,-238.799 958.991,-234.019"/>
+<polygon fill="none" stroke="black" points="959.616,-230.574 949.125,-232.057 958.251,-237.44 959.616,-230.574"/>
+</g>
+<!-- ClientCredentialsInterface -->
+<g id="node81" class="node"><title>ClientCredentialsInterface</title>
+<ellipse fill="none" stroke="black" cx="860.5" cy="-180" rx="103.182" ry="18"/>
+<text text-anchor="middle" x="860.5" y="-176.3" font-family="Times,serif" font-size="14.00">ClientCredentialsInterface</text>
+</g>
+<!-- \\Fim\\OAuthProvider&#45;&gt;ClientCredentialsInterface -->
+<g id="edge36" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;ClientCredentialsInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.24,-1845.71C1073.93,-1841.81 1066.32,-1836.42 1061,-1829 955.954,-1682.46 1130.8,-343.497 1013,-207 1002.62,-194.971 988.885,-187.074 973.915,-182.038"/>
+<polygon fill="none" stroke="black" points="974.503,-178.564 963.923,-179.128 972.545,-185.285 974.503,-178.564"/>
+</g>
+<!-- UserCredentialsInterface -->
+<g id="node82" class="node"><title>UserCredentialsInterface</title>
+<ellipse fill="none" stroke="black" cx="860.5" cy="-126" rx="98.5829" ry="18"/>
+<text text-anchor="middle" x="860.5" y="-122.3" font-family="Times,serif" font-size="14.00">UserCredentialsInterface</text>
+</g>
+<!-- \\Fim\\OAuthProvider&#45;&gt;UserCredentialsInterface -->
+<g id="edge37" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;UserCredentialsInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.23,-1845.72C1073.93,-1841.81 1066.32,-1836.43 1061,-1829 952.532,-1677.53 1134.65,-294.096 1013,-153 1001.48,-139.638 985.82,-131.373 968.925,-126.464"/>
+<polygon fill="none" stroke="black" points="969.407,-122.977 958.857,-123.949 967.711,-129.768 969.407,-122.977"/>
+</g>
+<!-- RefreshTokenInterface -->
+<g id="node83" class="node"><title>RefreshTokenInterface</title>
+<ellipse fill="none" stroke="black" cx="860.5" cy="-72" rx="91.784" ry="18"/>
+<text text-anchor="middle" x="860.5" y="-68.3" font-family="Times,serif" font-size="14.00">RefreshTokenInterface</text>
+</g>
+<!-- \\Fim\\OAuthProvider&#45;&gt;RefreshTokenInterface -->
+<g id="edge38" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;RefreshTokenInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.23,-1845.72C1073.92,-1841.81 1066.31,-1836.43 1061,-1829 949.11,-1672.61 1138.5,-244.694 1013,-99 999.589,-83.4311 980.561,-74.7802 960.501,-70.2957"/>
+<polygon fill="none" stroke="black" points="961.068,-66.841 950.591,-68.4169 959.764,-73.7184 961.068,-66.841"/>
+</g>
+<!-- UserClaimsInterface -->
+<g id="node84" class="node"><title>UserClaimsInterface</title>
+<ellipse fill="none" stroke="black" cx="860.5" cy="-18" rx="83.6854" ry="18"/>
+<text text-anchor="middle" x="860.5" y="-14.3" font-family="Times,serif" font-size="14.00">UserClaimsInterface</text>
+</g>
+<!-- \\Fim\\OAuthProvider&#45;&gt;UserClaimsInterface -->
+<g id="edge39" class="edge"><title>\\Fim\\OAuthProvider&#45;&gt;UserClaimsInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1082.22,-1845.72C1073.92,-1841.82 1066.31,-1836.43 1061,-1829 945.688,-1667.68 1142.35,-195.293 1013,-45 997.598,-27.1048 974.775,-18.3473 951.491,-14.5511"/>
+<polygon fill="none" stroke="black" points="951.879,-11.072 941.503,-13.2158 950.951,-18.0103 951.879,-11.072"/>
+</g>
+<!-- \\Fim\\DatabaseSlave -->
+<g id="node54" class="node"><title>\\Fim\\DatabaseSlave</title>
+<polygon fill="none" stroke="black" points="1186.5,-1820 1082.5,-1820 1082.5,-1784 1186.5,-1784 1186.5,-1820"/>
+<text text-anchor="middle" x="1134.5" y="-1799.2" font-family="Courier,monospace" font-size="11.00">DatabaseSlave</text>
 </g>
 <!-- \\Fim\\UserFactory -->
-<g id="node50" class="node"><title>\\Fim\\UserFactory</title>
+<g id="node55" class="node"><title>\\Fim\\UserFactory</title>
 <polygon fill="none" stroke="black" points="1180,-1766 1089,-1766 1089,-1730 1180,-1730 1180,-1766"/>
 <text text-anchor="middle" x="1134.5" y="-1745.2" font-family="Courier,monospace" font-size="11.00">UserFactory</text>
 </g>
-<!-- \\Fim\\DatabaseLogin -->
-<g id="node51" class="node"><title>\\Fim\\DatabaseLogin</title>
-<polygon fill="none" stroke="black" points="1186.5,-1712 1082.5,-1712 1082.5,-1676 1186.5,-1676 1186.5,-1712"/>
-<text text-anchor="middle" x="1134.5" y="-1691.2" font-family="Courier,monospace" font-size="11.00">DatabaseLogin</text>
+<!-- \\Fim\\Database -->
+<g id="node56" class="node"><title>\\Fim\\Database</title>
+<polygon fill="none" stroke="black" points="1170,-1712 1099,-1712 1099,-1676 1170,-1676 1170,-1712"/>
+<text text-anchor="middle" x="1134.5" y="-1691.2" font-family="Courier,monospace" font-size="11.00">Database</text>
 </g>
-<!-- \\Login\\Database\\LoginVbulletin3 -->
-<g id="node52" class="node"><title>\\Login\\Database\\LoginVbulletin3</title>
-<polygon fill="none" stroke="black" points="1193.5,-2972 1075.5,-2972 1075.5,-2936 1193.5,-2936 1193.5,-2972"/>
-<text text-anchor="middle" x="1134.5" y="-2951.2" font-family="Courier,monospace" font-size="11.00">LoginVbulletin3</text>
-</g>
-<!-- \\Login\\LoginDatabase -->
-<g id="node64" class="node"><title>\\Login\\LoginDatabase</title>
-<polygon fill="none" stroke="black" points="912.5,-2918 808.5,-2918 808.5,-2882 912.5,-2882 912.5,-2918"/>
-<text text-anchor="start" x="826.5" y="-2903.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
-<text text-anchor="start" x="816.5" y="-2891.2" font-family="Courier,monospace" font-size="11.00">LoginDatabase</text>
-</g>
-<!-- \\Login\\Database\\LoginVbulletin3&#45;&gt;\\Login\\LoginDatabase -->
-<g id="edge32" class="edge"><title>\\Login\\Database\\LoginVbulletin3&#45;&gt;\\Login\\LoginDatabase</title>
-<path fill="none" stroke="black" d="M1075.48,-2942.48C1030.52,-2933.55 968.372,-2921.22 922.636,-2912.14"/>
-<polygon fill="none" stroke="black" points="923.045,-2908.65 912.555,-2910.14 921.682,-2915.52 923.045,-2908.65"/>
-</g>
-<!-- \\Login\\Database\\LoginVanilla -->
-<g id="node53" class="node"><title>\\Login\\Database\\LoginVanilla</title>
-<polygon fill="none" stroke="black" points="1183.5,-2918 1085.5,-2918 1085.5,-2882 1183.5,-2882 1183.5,-2918"/>
-<text text-anchor="middle" x="1134.5" y="-2897.2" font-family="Courier,monospace" font-size="11.00">LoginVanilla</text>
-</g>
-<!-- \\Login\\Database\\LoginVanilla&#45;&gt;\\Login\\LoginDatabase -->
-<g id="edge33" class="edge"><title>\\Login\\Database\\LoginVanilla&#45;&gt;\\Login\\LoginDatabase</title>
-<path fill="none" stroke="black" d="M1085.5,-2900C1040.22,-2900 972.137,-2900 922.92,-2900"/>
-<polygon fill="none" stroke="black" points="922.719,-2896.5 912.719,-2900 922.718,-2903.5 922.719,-2896.5"/>
-</g>
-<!-- \\Login\\Database\\LoginPhpbb -->
-<g id="node54" class="node"><title>\\Login\\Database\\LoginPhpbb</title>
-<polygon fill="none" stroke="black" points="1176.5,-2864 1092.5,-2864 1092.5,-2828 1176.5,-2828 1176.5,-2864"/>
-<text text-anchor="middle" x="1134.5" y="-2843.2" font-family="Courier,monospace" font-size="11.00">LoginPhpbb</text>
-</g>
-<!-- \\Login\\Database\\LoginPhpbb&#45;&gt;\\Login\\LoginDatabase -->
-<g id="edge34" class="edge"><title>\\Login\\Database\\LoginPhpbb&#45;&gt;\\Login\\LoginDatabase</title>
-<path fill="none" stroke="black" d="M1092.23,-2858.22C1069.09,-2864.76 1039.61,-2872.55 1013,-2878 983.432,-2884.05 950.287,-2889.06 922.555,-2892.77"/>
-<polygon fill="none" stroke="black" points="922.06,-2889.3 912.6,-2894.07 922.97,-2896.24 922.06,-2889.3"/>
-</g>
-<!-- \\Login\\TwoStep\\LoginMicrosoft -->
-<g id="node55" class="node"><title>\\Login\\TwoStep\\LoginMicrosoft</title>
-<polygon fill="none" stroke="black" points="1190,-3322 1079,-3322 1079,-3286 1190,-3286 1190,-3322"/>
-<text text-anchor="middle" x="1134.5" y="-3301.2" font-family="Courier,monospace" font-size="11.00">LoginMicrosoft</text>
-</g>
-<!-- \\Login\\LoginTwoStep -->
-<g id="node63" class="node"><title>\\Login\\LoginTwoStep</title>
-<polygon fill="none" stroke="black" points="909.5,-3160 811.5,-3160 811.5,-3124 909.5,-3124 909.5,-3160"/>
-<text text-anchor="start" x="826.5" y="-3145.2" font-family="Courier,monospace" font-size="11.00">«abstract»</text>
-<text text-anchor="start" x="819.5" y="-3133.2" font-family="Courier,monospace" font-size="11.00">LoginTwoStep</text>
-</g>
-<!-- \\Login\\TwoStep\\LoginMicrosoft&#45;&gt;\\Login\\LoginTwoStep -->
-<g id="edge37" class="edge"><title>\\Login\\TwoStep\\LoginMicrosoft&#45;&gt;\\Login\\LoginTwoStep</title>
-<path fill="none" stroke="black" d="M1078.74,-3289.27C1072.27,-3285.96 1066.15,-3281.92 1061,-3277 1021.55,-3239.3 1056.22,-3197.31 1013,-3164 986.806,-3143.81 950.282,-3138.05 919.659,-3137.46"/>
-<polygon fill="none" stroke="black" points="919.529,-3133.96 909.524,-3137.45 919.519,-3140.96 919.529,-3133.96"/>
-</g>
-<!-- \\Login\\TwoStep\\LoginTwitter -->
-<g id="node56" class="node"><title>\\Login\\TwoStep\\LoginTwitter</title>
-<polygon fill="none" stroke="black" points="1183.5,-3268 1085.5,-3268 1085.5,-3232 1183.5,-3232 1183.5,-3268"/>
-<text text-anchor="middle" x="1134.5" y="-3247.2" font-family="Courier,monospace" font-size="11.00">LoginTwitter</text>
-</g>
-<!-- \\Login\\TwoStep\\LoginTwitter&#45;&gt;\\Login\\LoginTwoStep -->
-<g id="edge38" class="edge"><title>\\Login\\TwoStep\\LoginTwitter&#45;&gt;\\Login\\LoginTwoStep</title>
-<path fill="none" stroke="black" d="M1085.26,-3236.16C1076.76,-3232.59 1068.31,-3228.24 1061,-3223 1033.53,-3203.3 1042.4,-3180.68 1013,-3164 984.98,-3148.1 949.531,-3142.33 919.969,-3140.65"/>
-<polygon fill="none" stroke="black" points="919.919,-3137.15 909.779,-3140.22 919.622,-3144.14 919.919,-3137.15"/>
-</g>
-<!-- \\Login\\TwoStep\\LoginFacebook -->
-<g id="node57" class="node"><title>\\Login\\TwoStep\\LoginFacebook</title>
-<polygon fill="none" stroke="black" points="1186.5,-3214 1082.5,-3214 1082.5,-3178 1186.5,-3178 1186.5,-3214"/>
-<text text-anchor="middle" x="1134.5" y="-3193.2" font-family="Courier,monospace" font-size="11.00">LoginFacebook</text>
-</g>
-<!-- \\Login\\TwoStep\\LoginFacebook&#45;&gt;\\Login\\LoginTwoStep -->
-<g id="edge39" class="edge"><title>\\Login\\TwoStep\\LoginFacebook&#45;&gt;\\Login\\LoginTwoStep</title>
-<path fill="none" stroke="black" d="M1082.21,-3180.98C1060.93,-3175.12 1035.9,-3168.69 1013,-3164 982.389,-3157.73 947.943,-3152.58 919.64,-3148.85"/>
-<polygon fill="none" stroke="black" points="919.875,-3145.35 909.509,-3147.53 918.976,-3152.29 919.875,-3145.35"/>
-</g>
-<!-- \\Login\\TwoStep\\LoginGoogle -->
-<g id="node58" class="node"><title>\\Login\\TwoStep\\LoginGoogle</title>
+<!-- \\Stream\\Streams\\StreamKafka -->
+<g id="node57" class="node"><title>\\Stream\\Streams\\StreamKafka</title>
 <polygon fill="none" stroke="black" points="1180,-3160 1089,-3160 1089,-3124 1180,-3124 1180,-3160"/>
-<text text-anchor="middle" x="1134.5" y="-3139.2" font-family="Courier,monospace" font-size="11.00">LoginGoogle</text>
+<text text-anchor="middle" x="1134.5" y="-3139.2" font-family="Courier,monospace" font-size="11.00">StreamKafka</text>
 </g>
-<!-- \\Login\\TwoStep\\LoginGoogle&#45;&gt;\\Login\\LoginTwoStep -->
-<g id="edge40" class="edge"><title>\\Login\\TwoStep\\LoginGoogle&#45;&gt;\\Login\\LoginTwoStep</title>
-<path fill="none" stroke="black" d="M1088.89,-3142C1042.78,-3142 970.592,-3142 919.95,-3142"/>
-<polygon fill="none" stroke="black" points="919.806,-3138.5 909.806,-3142 919.806,-3145.5 919.806,-3138.5"/>
+<!-- \\Stream\\StreamInterface -->
+<g id="node62" class="node"><title>\\Stream\\StreamInterface</title>
+<polygon fill="none" stroke="black" points="919.5,-3079 801.5,-3079 801.5,-3043 919.5,-3043 919.5,-3079"/>
+<text text-anchor="middle" x="860.5" y="-3058.2" font-family="Courier,monospace" font-size="11.00">StreamInterface</text>
 </g>
-<!-- \\Login\\TwoStep\\LoginReddit -->
-<g id="node59" class="node"><title>\\Login\\TwoStep\\LoginReddit</title>
+<!-- \\Stream\\Streams\\StreamKafka&#45;&gt;\\Stream\\StreamInterface -->
+<g id="edge4" class="edge"><title>\\Stream\\Streams\\StreamKafka&#45;&gt;\\Stream\\StreamInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1088.89,-3128.72C1045.65,-3115.84 979.481,-3096.13 929.649,-3081.29"/>
+<polygon fill="none" stroke="black" points="930.495,-3077.89 919.912,-3078.39 928.497,-3084.6 930.495,-3077.89"/>
+</g>
+<!-- \\Stream\\Streams\\StreamRedis -->
+<g id="node58" class="node"><title>\\Stream\\Streams\\StreamRedis</title>
 <polygon fill="none" stroke="black" points="1180,-3106 1089,-3106 1089,-3070 1180,-3070 1180,-3106"/>
-<text text-anchor="middle" x="1134.5" y="-3085.2" font-family="Courier,monospace" font-size="11.00">LoginReddit</text>
+<text text-anchor="middle" x="1134.5" y="-3085.2" font-family="Courier,monospace" font-size="11.00">StreamRedis</text>
 </g>
-<!-- \\Login\\TwoStep\\LoginReddit&#45;&gt;\\Login\\LoginTwoStep -->
-<g id="edge41" class="edge"><title>\\Login\\TwoStep\\LoginReddit&#45;&gt;\\Login\\LoginTwoStep</title>
-<path fill="none" stroke="black" d="M1088.89,-3096.86C1042.69,-3106.03 970.291,-3120.4 919.633,-3130.46"/>
-<polygon fill="none" stroke="black" points="918.933,-3127.03 909.806,-3132.41 920.296,-3133.9 918.933,-3127.03"/>
+<!-- \\Stream\\Streams\\StreamRedis&#45;&gt;\\Stream\\StreamInterface -->
+<g id="edge7" class="edge"><title>\\Stream\\Streams\\StreamRedis&#45;&gt;\\Stream\\StreamInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1088.89,-3083.57C1045.74,-3079.29 979.757,-3072.74 929.961,-3067.8"/>
+<polygon fill="none" stroke="black" points="930.209,-3064.3 919.912,-3066.8 929.517,-3071.27 930.209,-3064.3"/>
 </g>
-<!-- \\Login\\TwoStep\\LoginSteam -->
-<g id="node60" class="node"><title>\\Login\\TwoStep\\LoginSteam</title>
-<polygon fill="none" stroke="black" points="1176.5,-3052 1092.5,-3052 1092.5,-3016 1176.5,-3016 1176.5,-3052"/>
-<text text-anchor="middle" x="1134.5" y="-3031.2" font-family="Courier,monospace" font-size="11.00">LoginSteam</text>
+<!-- \\Stream\\Streams\\StreamDatabase -->
+<g id="node59" class="node"><title>\\Stream\\Streams\\StreamDatabase</title>
+<polygon fill="none" stroke="black" points="1190,-3052 1079,-3052 1079,-3016 1190,-3016 1190,-3052"/>
+<text text-anchor="middle" x="1134.5" y="-3031.2" font-family="Courier,monospace" font-size="11.00">StreamDatabase</text>
 </g>
-<!-- \\Login\\TwoStep\\LoginSteam&#45;&gt;\\Login\\LoginTwoStep -->
-<g id="edge42" class="edge"><title>\\Login\\TwoStep\\LoginSteam&#45;&gt;\\Login\\LoginTwoStep</title>
-<path fill="none" stroke="black" d="M1092.4,-3049.07C1082.12,-3052.9 1071.14,-3057.05 1061,-3061 1011.01,-3080.45 954.38,-3103.55 914.261,-3120.09"/>
-<polygon fill="none" stroke="black" points="912.85,-3116.88 904.942,-3123.94 915.521,-3123.36 912.85,-3116.88"/>
+<!-- \\Stream\\Streams\\StreamDatabase&#45;&gt;\\Stream\\StreamInterface -->
+<g id="edge10" class="edge"><title>\\Stream\\Streams\\StreamDatabase&#45;&gt;\\Stream\\StreamInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1078.78,-3039.43C1035.95,-3043.68 976.121,-3049.62 930.087,-3054.19"/>
+<polygon fill="none" stroke="black" points="929.497,-3050.73 919.892,-3055.2 930.189,-3057.7 929.497,-3050.73"/>
 </g>
-<!-- \\Login\\LoginOAuth -->
-<g id="node61" class="node"><title>\\Login\\LoginOAuth</title>
-<polygon fill="none" stroke="black" points="1176.5,-2810 1092.5,-2810 1092.5,-2774 1176.5,-2774 1176.5,-2810"/>
-<text text-anchor="middle" x="1134.5" y="-2789.2" font-family="Courier,monospace" font-size="11.00">LoginOAuth</text>
+<!-- \\Stream\\Streams\\StreamPgSQL -->
+<g id="node60" class="node"><title>\\Stream\\Streams\\StreamPgSQL</title>
+<polygon fill="none" stroke="black" points="1180,-2998 1089,-2998 1089,-2962 1180,-2962 1180,-2998"/>
+<text text-anchor="middle" x="1134.5" y="-2977.2" font-family="Courier,monospace" font-size="11.00">StreamPgSQL</text>
 </g>
-<!-- \\Login\\LoginOAuth&#45;&gt;\\Login\\LoginDatabase -->
-<g id="edge35" class="edge"><title>\\Login\\LoginOAuth&#45;&gt;\\Login\\LoginDatabase</title>
-<path fill="none" stroke="black" d="M1092.36,-2800.98C1081.54,-2804.54 1070.31,-2809.41 1061,-2816 1032.55,-2836.13 1043.1,-2860.44 1013,-2878 985.995,-2893.75 951.821,-2899.67 922.767,-2901.47"/>
-<polygon fill="none" stroke="black" points="922.548,-2897.98 912.724,-2901.95 922.877,-2904.97 922.548,-2897.98"/>
+<!-- \\Stream\\Streams\\StreamPgSQL&#45;&gt;\\Stream\\StreamInterface -->
+<g id="edge41" class="edge"><title>\\Stream\\Streams\\StreamPgSQL&#45;&gt;\\Stream\\StreamInterface</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1088.71,-2994.83C1079.38,-2998.43 1069.73,-3002.54 1061,-3007 1038.17,-3018.66 1036.94,-3029.82 1013,-3039 986.814,-3049.04 956.475,-3054.54 929.856,-3057.54"/>
+<polygon fill="none" stroke="black" points="929.442,-3054.06 919.853,-3058.57 930.159,-3061.03 929.442,-3054.06"/>
 </g>
-<!-- \\Login\\LoginFactory -->
-<g id="node62" class="node"><title>\\Login\\LoginFactory</title>
-<polygon fill="none" stroke="black" points="1183.5,-2756 1085.5,-2756 1085.5,-2720 1183.5,-2720 1183.5,-2756"/>
-<text text-anchor="middle" x="1134.5" y="-2735.2" font-family="Courier,monospace" font-size="11.00">LoginFactory</text>
+<!-- \\Stream\\StreamFactory -->
+<g id="node61" class="node"><title>\\Stream\\StreamFactory</title>
+<polygon fill="none" stroke="black" points="1186.5,-2944 1082.5,-2944 1082.5,-2908 1186.5,-2908 1186.5,-2944"/>
+<text text-anchor="middle" x="1134.5" y="-2923.2" font-family="Courier,monospace" font-size="11.00">StreamFactory</text>
 </g>
-<!-- \\Login\\LoginRunner -->
-<g id="node65" class="node"><title>\\Login\\LoginRunner</title>
-<polygon fill="none" stroke="black" points="608,-3039 517,-3039 517,-3003 608,-3003 608,-3039"/>
-<text text-anchor="middle" x="562.5" y="-3018.2" font-family="Courier,monospace" font-size="11.00">LoginRunner</text>
+<!-- \\Http\\ApiOutputDict -->
+<g id="node63" class="node"><title>\\Http\\ApiOutputDict</title>
+<polygon fill="none" stroke="black" points="1186.5,-2864 1082.5,-2864 1082.5,-2828 1186.5,-2828 1186.5,-2864"/>
+<text text-anchor="middle" x="1134.5" y="-2843.2" font-family="Courier,monospace" font-size="11.00">ApiOutputDict</text>
 </g>
-<!-- \\Login\\LoginTwoStep&#45;&gt;\\Login\\LoginRunner -->
-<g id="edge36" class="edge"><title>\\Login\\LoginTwoStep&#45;&gt;\\Login\\LoginRunner</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M815.186,-3123.89C762.283,-3102.26 673.86,-3066.11 617.145,-3042.93"/>
-<polygon fill="none" stroke="black" points="618.214,-3039.59 607.633,-3039.04 615.565,-3046.06 618.214,-3039.59"/>
+<!-- \\Http\\ApiData -->
+<g id="node64" class="node"><title>\\Http\\ApiData</title>
+<polygon fill="none" stroke="black" points="1166.5,-2810 1102.5,-2810 1102.5,-2774 1166.5,-2774 1166.5,-2810"/>
+<text text-anchor="middle" x="1134.5" y="-2789.2" font-family="Courier,monospace" font-size="11.00">ApiData</text>
 </g>
-<!-- \\Login\\LoginDatabase&#45;&gt;\\Login\\LoginRunner -->
-<g id="edge43" class="edge"><title>\\Login\\LoginDatabase&#45;&gt;\\Login\\LoginRunner</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M815.186,-2918.11C762.283,-2939.74 673.86,-2975.89 617.145,-2999.07"/>
-<polygon fill="none" stroke="black" points="615.565,-2995.94 607.633,-3002.96 618.214,-3002.41 615.565,-2995.94"/>
+<!-- ArrayAccess -->
+<g id="node78" class="node"><title>ArrayAccess</title>
+<ellipse fill="none" stroke="black" cx="860.5" cy="-2792" rx="55.7903" ry="18"/>
+<text text-anchor="middle" x="860.5" y="-2788.3" font-family="Times,serif" font-size="14.00" fill="gray">ArrayAccess</text>
 </g>
-<!-- \\databaseSQLTests2 -->
-<g id="node67" class="node"><title>\\databaseSQLTests2</title>
+<!-- \\Http\\ApiData&#45;&gt;ArrayAccess -->
+<g id="edge12" class="edge"><title>\\Http\\ApiData&#45;&gt;ArrayAccess</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M1102.3,-2792C1059.67,-2792 982.187,-2792 926.618,-2792"/>
+<polygon fill="none" stroke="black" points="926.51,-2788.5 916.51,-2792 926.51,-2795.5 926.51,-2788.5"/>
+</g>
+<!-- \\Http\\CurlRequest -->
+<g id="node65" class="node"><title>\\Http\\CurlRequest</title>
+<polygon fill="none" stroke="black" points="1180,-2756 1089,-2756 1089,-2720 1180,-2720 1180,-2756"/>
+<text text-anchor="middle" x="1134.5" y="-2735.2" font-family="Courier,monospace" font-size="11.00">CurlRequest</text>
+</g>
+<!-- \\Http\\CurlRequestMethod -->
+<g id="node66" class="node"><title>\\Http\\CurlRequestMethod</title>
 <polygon fill="none" stroke="black" points="1200,-2702 1069,-2702 1069,-2666 1200,-2666 1200,-2702"/>
-<text text-anchor="middle" x="1134.5" y="-2681.2" font-family="Courier,monospace" font-size="11.00">databaseSQLTests2</text>
+<text text-anchor="middle" x="1134.5" y="-2681.2" font-family="Courier,monospace" font-size="11.00">CurlRequestMethod</text>
 </g>
-<!-- \\databaseSQLTests -->
-<g id="node70" class="node"><title>\\databaseSQLTests</title>
-<polygon fill="none" stroke="black" points="923,-2648 798,-2648 798,-2612 923,-2612 923,-2648"/>
-<text text-anchor="middle" x="860.5" y="-2627.2" font-family="Courier,monospace" font-size="11.00">databaseSQLTests</text>
-</g>
-<!-- \\databaseSQLTests2&#45;&gt;\\databaseSQLTests -->
-<g id="edge1" class="edge"><title>\\databaseSQLTests2&#45;&gt;\\databaseSQLTests</title>
-<path fill="none" stroke="black" d="M1068.69,-2671.13C1027.82,-2663.02 974.99,-2652.53 932.909,-2644.18"/>
-<polygon fill="none" stroke="black" points="933.497,-2640.73 923.007,-2642.21 932.134,-2647.59 933.497,-2640.73"/>
-</g>
-<!-- \\ArrayPosition -->
-<g id="node68" class="node"><title>\\ArrayPosition</title>
+<!-- \\Http\\ApiOutputList -->
+<g id="node67" class="node"><title>\\Http\\ApiOutputList</title>
 <polygon fill="none" stroke="black" points="1186.5,-2648 1082.5,-2648 1082.5,-2612 1186.5,-2612 1186.5,-2648"/>
-<text text-anchor="middle" x="1134.5" y="-2627.2" font-family="Courier,monospace" font-size="11.00">ArrayPosition</text>
-</g>
-<!-- \\databaseSQLTests1 -->
-<g id="node69" class="node"><title>\\databaseSQLTests1</title>
-<polygon fill="none" stroke="black" points="1200,-2594 1069,-2594 1069,-2558 1200,-2558 1200,-2594"/>
-<text text-anchor="middle" x="1134.5" y="-2573.2" font-family="Courier,monospace" font-size="11.00">databaseSQLTests1</text>
-</g>
-<!-- \\databaseSQLTests1&#45;&gt;\\databaseSQLTests -->
-<g id="edge2" class="edge"><title>\\databaseSQLTests1&#45;&gt;\\databaseSQLTests</title>
-<path fill="none" stroke="black" d="M1068.69,-2588.87C1027.82,-2596.98 974.99,-2607.47 932.909,-2615.82"/>
-<polygon fill="none" stroke="black" points="932.134,-2612.41 923.007,-2617.79 933.497,-2619.27 932.134,-2612.41"/>
+<text text-anchor="middle" x="1134.5" y="-2627.2" font-family="Courier,monospace" font-size="11.00">ApiOutputList</text>
 </g>
 <!-- \\fimUser -->
-<g id="node71" class="node"><title>\\fimUser</title>
-<polygon fill="none" stroke="black" points="1166.5,-2540 1102.5,-2540 1102.5,-2504 1166.5,-2504 1166.5,-2540"/>
-<text text-anchor="middle" x="1134.5" y="-2519.2" font-family="Courier,monospace" font-size="11.00">fimUser</text>
+<g id="node69" class="node"><title>\\fimUser</title>
+<polygon fill="none" stroke="black" points="1166.5,-2486 1102.5,-2486 1102.5,-2450 1166.5,-2450 1166.5,-2486"/>
+<text text-anchor="middle" x="1134.5" y="-2465.2" font-family="Courier,monospace" font-size="11.00">fimUser</text>
 </g>
 <!-- \\fimUser&#45;&gt;\\Fim\\DynamicObject -->
-<g id="edge11" class="edge"><title>\\fimUser&#45;&gt;\\Fim\\DynamicObject</title>
-<path fill="none" stroke="black" d="M1102.35,-2517.53C1087.77,-2513.85 1071.37,-2507.16 1061,-2495 990.687,-2412.57 1091.65,-2330.51 1013,-2256 989.425,-2233.66 953.841,-2227.64 923.083,-2227.44"/>
-<polygon fill="none" stroke="black" points="922.812,-2223.94 912.861,-2227.58 922.908,-2230.94 922.812,-2223.94"/>
+<g id="edge13" class="edge"><title>\\fimUser&#45;&gt;\\Fim\\DynamicObject</title>
+<path fill="none" stroke="black" d="M1102.27,-2463.18C1087.85,-2459.42 1071.62,-2452.77 1061,-2441 1004.1,-2377.93 1076.27,-2312.68 1013,-2256 988.902,-2234.41 953.463,-2228.38 922.919,-2227.99"/>
+<polygon fill="none" stroke="black" points="922.747,-2224.49 912.772,-2228.06 922.796,-2231.49 922.747,-2224.49"/>
 </g>
-<!-- \\Xml2Array -->
-<g id="node72" class="node"><title>\\Xml2Array</title>
-<polygon fill="none" stroke="black" points="1173,-2486 1096,-2486 1096,-2450 1173,-2450 1173,-2486"/>
-<text text-anchor="middle" x="1134.5" y="-2465.2" font-family="Courier,monospace" font-size="11.00">Xml2Array</text>
+<!-- \\fimError -->
+<g id="node70" class="node"><title>\\fimError</title>
+<polygon fill="none" stroke="black" points="1170,-2594 1099,-2594 1099,-2558 1170,-2558 1170,-2594"/>
+<text text-anchor="middle" x="1134.5" y="-2573.2" font-family="Courier,monospace" font-size="11.00">fimError</text>
+</g>
+<!-- Exception -->
+<g id="node79" class="node"><title>Exception</title>
+<ellipse fill="none" stroke="black" cx="860.5" cy="-2549" rx="46.2923" ry="18"/>
+<text text-anchor="middle" x="860.5" y="-2545.3" font-family="Times,serif" font-size="14.00" fill="gray">Exception</text>
+</g>
+<!-- \\fimError&#45;&gt;Exception -->
+<g id="edge24" class="edge"><title>\\fimError&#45;&gt;Exception</title>
+<path fill="none" stroke="black" d="M1098.77,-2572.55C1052.49,-2567.96 970.103,-2559.78 915.629,-2554.37"/>
+<polygon fill="none" stroke="black" points="915.758,-2550.87 905.461,-2553.36 915.067,-2557.83 915.758,-2550.87"/>
+</g>
+<!-- \\fimErrorThrown -->
+<g id="node71" class="node"><title>\\fimErrorThrown</title>
+<polygon fill="none" stroke="black" points="1190,-2540 1079,-2540 1079,-2504 1190,-2504 1190,-2540"/>
+<text text-anchor="middle" x="1134.5" y="-2519.2" font-family="Courier,monospace" font-size="11.00">fimErrorThrown</text>
+</g>
+<!-- \\fimErrorThrown&#45;&gt;Exception -->
+<g id="edge25" class="edge"><title>\\fimErrorThrown&#45;&gt;Exception</title>
+<path fill="none" stroke="black" d="M1078.78,-2527.43C1031.23,-2532.15 962.745,-2538.95 915.428,-2543.65"/>
+<polygon fill="none" stroke="black" points="914.976,-2540.17 905.371,-2544.65 915.668,-2547.14 914.976,-2540.17"/>
 </g>
 <!-- \\fimRoom -->
-<g id="node73" class="node"><title>\\fimRoom</title>
+<g id="node72" class="node"><title>\\fimRoom</title>
 <polygon fill="none" stroke="black" points="1166.5,-2432 1102.5,-2432 1102.5,-2396 1166.5,-2396 1166.5,-2432"/>
 <text text-anchor="middle" x="1134.5" y="-2411.2" font-family="Courier,monospace" font-size="11.00">fimRoom</text>
 </g>
 <!-- \\fimRoom&#45;&gt;\\Fim\\DynamicObject -->
-<g id="edge31" class="edge"><title>\\fimRoom&#45;&gt;\\Fim\\DynamicObject</title>
+<g id="edge30" class="edge"><title>\\fimRoom&#45;&gt;\\Fim\\DynamicObject</title>
 <path fill="none" stroke="black" d="M1102.39,-2408.62C1088.18,-2404.74 1072.08,-2398.14 1061,-2387 1017.27,-2343.04 1061.14,-2295.08 1013,-2256 988.065,-2235.76 952.914,-2229.72 922.747,-2228.99"/>
 <polygon fill="none" stroke="black" points="922.75,-2225.49 912.73,-2228.94 922.71,-2232.49 922.75,-2225.49"/>
 </g>
-<!-- \\PasswordHash -->
-<g id="node74" class="node"><title>\\PasswordHash</title>
-<polygon fill="none" stroke="black" points="1183.5,-2324 1085.5,-2324 1085.5,-2288 1183.5,-2288 1183.5,-2324"/>
-<text text-anchor="middle" x="1134.5" y="-2303.2" font-family="Courier,monospace" font-size="11.00">PasswordHash</text>
+<!-- \\ArrayPosition -->
+<g id="node73" class="node"><title>\\ArrayPosition</title>
+<polygon fill="none" stroke="black" points="1186.5,-2324 1082.5,-2324 1082.5,-2288 1186.5,-2288 1186.5,-2324"/>
+<text text-anchor="middle" x="1134.5" y="-2303.2" font-family="Courier,monospace" font-size="11.00">ArrayPosition</text>
 </g>
-<!-- \\fimError -->
-<g id="node75" class="node"><title>\\fimError</title>
-<polygon fill="none" stroke="black" points="1170,-2378 1099,-2378 1099,-2342 1170,-2342 1170,-2378"/>
-<text text-anchor="middle" x="1134.5" y="-2357.2" font-family="Courier,monospace" font-size="11.00">fimError</text>
+<!-- \\databaseSQLTests2 -->
+<g id="node74" class="node"><title>\\databaseSQLTests2</title>
+<polygon fill="none" stroke="black" points="1200,-2378 1069,-2378 1069,-2342 1200,-2342 1200,-2378"/>
+<text text-anchor="middle" x="1134.5" y="-2357.2" font-family="Courier,monospace" font-size="11.00">databaseSQLTests2</text>
 </g>
-<!-- Exception -->
-<g id="node78" class="node"><title>Exception</title>
-<ellipse fill="none" stroke="black" cx="860.5" cy="-1642" rx="46.2923" ry="18"/>
-<text text-anchor="middle" x="860.5" y="-1638.3" font-family="Times,serif" font-size="14.00" fill="gray">Exception</text>
+<!-- \\databaseSQLTests -->
+<g id="node77" class="node"><title>\\databaseSQLTests</title>
+<polygon fill="none" stroke="black" points="923,-1660 798,-1660 798,-1624 923,-1624 923,-1660"/>
+<text text-anchor="middle" x="860.5" y="-1639.2" font-family="Courier,monospace" font-size="11.00">databaseSQLTests</text>
 </g>
-<!-- \\fimError&#45;&gt;Exception -->
-<g id="edge44" class="edge"><title>\\fimError&#45;&gt;Exception</title>
-<path fill="none" stroke="black" d="M1098.67,-2355.31C1084.76,-2351.59 1069.94,-2344.93 1061,-2333 971.635,-2213.71 1114.5,-1773.15 1013,-1664 988.314,-1637.45 946.929,-1632.95 913.646,-1634.54"/>
-<polygon fill="none" stroke="black" points="913.349,-1631.05 903.604,-1635.21 913.815,-1638.03 913.349,-1631.05"/>
+<!-- \\databaseSQLTests2&#45;&gt;\\databaseSQLTests -->
+<g id="edge42" class="edge"><title>\\databaseSQLTests2&#45;&gt;\\databaseSQLTests</title>
+<path fill="none" stroke="black" d="M1069.72,-2341.81C1066.45,-2339.25 1063.5,-2336.33 1061,-2333 971.635,-2213.71 1114.5,-1773.15 1013,-1664 993.005,-1642.5 962.054,-1635.46 933.326,-1634.4"/>
+<polygon fill="none" stroke="black" points="933.326,-1630.9 923.279,-1634.26 933.23,-1637.9 933.326,-1630.9"/>
 </g>
-<!-- \\fimErrorThrown -->
-<g id="node76" class="node"><title>\\fimErrorThrown</title>
-<polygon fill="none" stroke="black" points="1190,-1658 1079,-1658 1079,-1622 1190,-1622 1190,-1658"/>
-<text text-anchor="middle" x="1134.5" y="-1637.2" font-family="Courier,monospace" font-size="11.00">fimErrorThrown</text>
+<!-- \\databaseSQLTests1 -->
+<g id="node75" class="node"><title>\\databaseSQLTests1</title>
+<polygon fill="none" stroke="black" points="1200,-1658 1069,-1658 1069,-1622 1200,-1622 1200,-1658"/>
+<text text-anchor="middle" x="1134.5" y="-1637.2" font-family="Courier,monospace" font-size="11.00">databaseSQLTests1</text>
 </g>
-<!-- \\fimErrorThrown&#45;&gt;Exception -->
-<g id="edge45" class="edge"><title>\\fimErrorThrown&#45;&gt;Exception</title>
-<path fill="none" stroke="black" d="M1078.78,-1640.4C1031.67,-1640.75 963.992,-1641.25 916.728,-1641.59"/>
-<polygon fill="none" stroke="black" points="916.643,-1638.09 906.669,-1641.67 916.695,-1645.09 916.643,-1638.09"/>
+<!-- \\databaseSQLTests1&#45;&gt;\\databaseSQLTests -->
+<g id="edge43" class="edge"><title>\\databaseSQLTests1&#45;&gt;\\databaseSQLTests</title>
+<path fill="none" stroke="black" d="M1068.69,-1640.48C1027.9,-1640.78 975.213,-1641.16 933.175,-1641.47"/>
+<polygon fill="none" stroke="black" points="932.981,-1637.97 923.007,-1641.55 933.032,-1644.97 932.981,-1637.97"/>
+</g>
+<!-- \\Xml2Array -->
+<g id="node76" class="node"><title>\\Xml2Array</title>
+<polygon fill="none" stroke="black" points="1173,-954 1096,-954 1096,-918 1173,-918 1173,-954"/>
+<text text-anchor="middle" x="1134.5" y="-933.2" font-family="Courier,monospace" font-size="11.00">Xml2Array</text>
 </g>
 </g>
 </svg>
