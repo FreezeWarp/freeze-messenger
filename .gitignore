@@ -2,6 +2,7 @@
 */.idea/*
 config.php
 !functions/Fim/Config.php
+!moderate/actions/config.php
 querylog
 *.class
 vendor/google/apiclient-services/src/Google/*
