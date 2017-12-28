@@ -1861,7 +1861,7 @@ class DatabaseInstance extends DatabaseSQL
             $this->sqlPrefix . 'userFriendsList' => 'userId, subjectId, status'
         ], [
             'userId' => $userId,
-            'status' => 'friend',
+            //'status' => 'friend', TODO, for when the friends list functionality is fleshed out
         ])->getColumnValues('subjectId');
     }
 
