@@ -337,8 +337,8 @@ class DatabaseInstance extends DatabaseSQL
 
         $columns = array(
             $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId',
-            $this->sqlPrefix . "rooms" => 'id roomId, idEncoded roomIdEncoded, name roomName, ownerId, defaultPermissions, options',
-            $this->sqlPrefix . "users" => 'id userId, name userName, nameFormat userNameFormat, status, avatar',
+            $this->sqlPrefix . "rooms" => 'id roomId, idEncoded roomIdEncoded, name roomName',
+            $this->sqlPrefix . "users" => 'id userId, name userName, status',
         );
 
 
