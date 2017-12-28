@@ -64,13 +64,23 @@ If you are only running a small chat server, you will not need to edit config.ph
 
 -   __Login Servers__: You will have an opportunity to configure all supported login servers when you first install FreezeMessenger, but you can also update and add Login Server API keys by editing config.php.
 
-Configuration Editor
+Admin Control Panel Configuration Editor
 --------------------
-See below.
+[See below.](#configuration-editor)
 
 
 Common Installation Problems
 ============================
+
+### It takes a very long time to receive messages.
+This is most commonly a problem with message streaming (enabled by default), and has three origins:
+
+1. Certain hosts (like GoDaddy) seem to buffer output, meaning that the server waits to tell clients about new messages until it has received several messages (or after about a minute). We are still looking into the exact cause of this issue, but you can work around it by setting [`$outputFlushPaddingKilobytes`](http://josephtparsons.com/messenger/docs/classes/classes/Fim.Config.html#property_outputFlushPaddingKilobytes) to a high number (around 1,000) in the [admin control panel](#configuration-editor).
+
+2. Secondly, message streaming, while very fast, is not efficient on most hosts. By default, often only around 50 users will be able to connect to the server at once; in some cases, this number can be even lower. We are still looking into ways of addressing this issue; you can try setting [`$serverSentEvents`](http://josephtparsons.com/messenger/docs/classes/classes/Fim.Config.html#property_serverSentEvents) to false in the [admin control panel](#configuration-editor), which will disable streaming entirely.
+
+3. Thirdly, like above, it is possible to run out of memory to start new scripts if many connections currently exist. In gen
+eral, a typical FreezeMessenger API request will require about 1 megabyte of memory; a long-lasting streaming connection may require 2-3 megabytes. In general, you should have around 5 megabytes times the number of maximum concurrent users of memory available available to FreezeMessenger. (This doesn't include overhead introduced by Apache, Nginx, FastCGI, etc.)
 
 ### The list of currently active users appears inaccurate.
 
@@ -95,7 +105,6 @@ More common is that too many queries are being made to this table at once; due t
 Like with the ping and roomPermissionsCache tables, the [`oauth_access_tokens`](http://josephtparsons.com/messenger/docs/database.htm#oauth_access_tokens) table is stored in memory on MySQL installations. When a user tries to log in, the table will first be pruned of expired sessions, but in theory so many users may be active at once that no new rows can be added to the table.
 
 Around 18,000 rows can be stored in this table on a default MySQL installation; this can be increased by changing the [`oauth_access_tokens`](http://josephtparsons.com/messenger/docs/database.htm#oauth_access_tokens) table to a non-memory table, or by increasing the MySQL [max_heap_table_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_heap_table_size) system variable.
-
 
 The Validation Bottleneck
 -------------------------
@@ -230,7 +239,8 @@ At no time are old messages blocked from any room member; while it may make sens
 
 There is, additionally, a third state that private rooms may enter if private rooms are disabled at a site-wide level:
 
-1.  __Disabled__ - Whenever the private room subsystem is disabled, all private rooms are considered invalid, and all participants are neither allowed to receive nor send messages. In the future, such rooms may be considered "read only" instead, but right now they are disabled entirely. Likewise, if the maximum number of allowed users in a private room changes, any rooms with more than that number of users will be considered disabled.
+3.  __Disabled__ - Whenever the private room subsystem is disabled, all private rooms are considered invalid, and all participants are neither allowed to receive nor send messages. In the future, such rooms may be considered "read only" instead, but right now they are disabled entirely. Likewise, if the maximum number of allowed users in a private room changes, any rooms with more than that number of users will be considered disabled.
+
 
 Messaging & Event Systems
 =========================
@@ -282,6 +292,7 @@ Adding Your Own Methods
 
 FlexMessenger uses reflection to expose stream methods. New Stream methods can be placed in the functions/Stream directory, and then named in config.php, like other methods are.
 
+
 Login Compatibility
 ===================
 
@@ -324,10 +335,10 @@ Additionally, the following OAuth-style login systems can be used in addition to
 -   __Reddit__, which provides usernames and usergroups (as the list of subreddits subscribed to by users)
 -   __Steam__, which provides usernames, avatars, and usergroups (as the list of games Steam users play).
 
-Adding New Login Systems
-------------------------
+### Adding New Login Systems
 
 FlexMessenger uses reflection to load its login methods. New primary and secondary login systems can be added by uploading them to the Login/Database and Login/TwoStep directories respectively. Thus, if you have a database with login information, you can write your own login provider and upload it to the Login/Database folder, and then update $loginConfig['method'] in config.php accordingly. Similarly, if you have an OAuth provider you would like to add support for, you can upload new methods to Login/TwoStep.
+
 
 Overload (Flood) Protection
 ===========================
@@ -341,6 +352,7 @@ To this end, FreezeMessenger deploys a number of protection techniques:
 -   We implement file flood detection by limiting both the number of files users can upload and the amount of space those files can occupy.
 -   We implement message flood detection by restricting the number of messages a user can post in a minute. By default, this limits to 30 in a single room, and 60 sitewide. (Detection for this is somewhat involved -- we keep a separate counter for each minute for each user for each room, as well as a counter for each minute for each user over the entire site.)
 -   Finally, we limit the number of API calls a user can invoke in a given 60-second period. Different limits are used for different APIs.
+
 
 Caching
 =======
@@ -389,6 +401,7 @@ As memory tables are very transient in nature, we never rely on a memory table c
 -   [The tables used when no other event system is available](#simple-tables) will preferentially be memory tables.
 
 -   The [`ping`](http://josephtparsons.com/messenger/docs/database.htm#ping) table, which keeps track of active users, will use a memory table if available.
+
 
 Database Abstraction Layer
 ==========================
