@@ -107,6 +107,7 @@ By default, at startup every script invocation performs the following:
 
 In general, most scripts should not be queried by clients frequently, and the above start-up will be fine. However, obtaining messages may be performed quite frequently, especially by clients that do not support interfacing with the event API using server-sent events, and thus it is advised to keep the above in mind. Moreover, if server-sent events are disabled (possibly because your server is unable to run a script for at least 30 seconds), then the above becomes much more of a concern.
 
+
 Administration Tools
 ====================
 
@@ -133,15 +134,10 @@ Administrator Permissions
 Within administrator permissions, you can alter what permissions different administrators have, and add new administrators. Briefly, the permissions are as follows:
 
 -   __Grant Permissions__ - Whether the user can give other users administrator privileges.
-
 -   __Protected__ - Whether the user is protected from permission revocation; when enabled, only "super-administrators" (those defined in config.php) and the user themself may remove their permissions.
-
 -   __Administer Rooms__ - The user will be a moderator in all rooms, site-wide, with the exception of private and off-the-record rooms. If they can administrator users, they will also be able to kick users in rooms.
-
 -   __Administer Users__ - The user will be able to ban users site-wide and, if they have administrator rooms privileges, will be able to kick users in rooms.
-
 -   __Administer Files__ - The user will be able to delete files, and review files flagged for moderation.
-
 -   __Administer Emoticons__ - The user will be able to delete, edit, and add new emoticons. This functionality is automatically disabled for all administrators if emoticons are copied from an installation system.
 
 User Sessions
@@ -175,6 +171,7 @@ PHPInfo
 -------
 
 PHPInfo displays the system information. It is identical to calling phpinfo() in the PHP interpreter.
+
 
 Room Permission Considerations
 ==============================
@@ -210,29 +207,27 @@ FlexMessenger's concept of a private room is a group message between 2 and 10 us
 
 To give users control over private rooms, they have three relevant settings:
 
-1.  Privacy Level - This controls what other users may initiate a private conversation with the user.
+1.  __Privacy Level__ - This controls what other users may initiate a private conversation with the user.
 
     1.  If set to "block all users", the user disables private messages entirely, and will never be able to join a private room.
-
     2.  If set to "allow all users", the user allows private messages from everybody except other users in the user's ignore list.
-
     3.  If set to "only friended users", the user disables private messages from everybody except other users in the user's friends list.
 
-2.  Ignore List - A list of users who are not allowed to message the user regardless of their privacy level.
+2.  __Ignore List__ - A list of users who are not allowed to message the user regardless of their privacy level.
 
-3.  Friends List - A list of users who, if the user has set their privacy level to "only friended users", are the only users allowed to initiate conversion with the user.
+3.  __Friends List__ - A list of users who, if the user has set their privacy level to "only friended users", are the only users allowed to initiate conversion with the user.
 
 Because a user's privacy level, ignore list, and friends list may change at any time, a private room that at one time was allowed to exist may no longer. As a consequence, private rooms are considered to be in one of two states at any time:
 
-1.  Read Only - Whenever any user in a private room is disallowing private communication from any other user in that private room, the room is considered read only. Old messages may still be read by any room participant, but new ones may not be sent.
+1.  __Read Only__ - Whenever any user in a private room is disallowing private communication from any other user in that private room, the room is considered read only. Old messages may still be read by any room participant, but new ones may not be sent.
 
-2.  Normal - Whenever all users in a private room allow communication from all other users, the room behaves normally, allowing messages to be sent and received.
+2.  __Normal__ - Whenever all users in a private room allow communication from all other users, the room behaves normally, allowing messages to be sent and received.
 
 At no time are old messages blocked from any room member; while it may make sense for a user who initiated a privacy restriction to be unable to view previous communications, it arguably makes more sense for them to still be able to view those messages without having to change their privacy controls first.
 
 There is, additionally, a third state that private rooms may enter if private rooms are disabled at a site-wide level:
 
-1.  Disabled - Whenever the private room subsystem is disabled, all private rooms are considered invalid, and all participants are neither allowed to receive nor send messages. In the future, such rooms may be considered "read only" instead, but right now they are disabled entirely. Likewise, if the maximum number of allowed users in a private room changes, any rooms with more than that number of users will be considered disabled.
+1.  __Disabled__ - Whenever the private room subsystem is disabled, all private rooms are considered invalid, and all participants are neither allowed to receive nor send messages. In the future, such rooms may be considered "read only" instead, but right now they are disabled entirely. Likewise, if the maximum number of allowed users in a private room changes, any rooms with more than that number of users will be considered disabled.
 
 Messaging & Event Systems
 =========================
@@ -385,32 +380,24 @@ Supported Drivers
 1.  MySQL
 
     1.  Primarily for testing purposes, the old mysql driver is implemented, though it is not actively supported. It should be avoided as much as possible, in lieu of mysqli or pdoMysql.
-
     2.  mysqli is the driver used primarily in development, and generally the best supported. In many cases, it is faster than other drivers. Note that it does not use parameterised queries, and relies on escape() to escape inputs.
-
     3.  pdoMysql is the driver recommended for security-conscious individuals; all queries are fully parameterised. In practice, there is no reason to believe there is any injection potential in any driver (as the abstraction layer is itself parameterised), but if the abstraction layer fails to properly escape information, pdoMysql most likely won't. Note that pdoMysql will typically have higher memory usage than other drivers, because it must read in an entire result set before making it available for consumption.
 
 2.  Postgres
 
     1.  pgsql is a newer driver that supports postgres' LISTEN/NOTIFY functionality. It will typically be somewhat slower than mysql (due to lacking the memory tables used to ensure validation occurs quickly, and requiring certain data to be transformed after retrieval), and older versions (<9.5) will also not ensure full ACIDity, as the abstraction layer will emulate upsert in these versions by executing chained "IF SELECT() THEN UPDATE ELSE INSERT" queries (in the form of three separate queries).
-
     2.  pdoPgsql is planned.
 
 3.  SqlServer
 
     1.  sqlsrv is experimentally available, and may work with most functionality at this time. Note, however, that only experienced DBAs should use FreezeMessenger with SqlServer (as many tables may need to be further optimised on a per-installation basis to maintain performance, and a fulltext storage object must first be created prior to using FreezeMessenger), and that, at this time, SqlServer is not guaranteed to be injection proof, due to the SqlServer driver not supporting parameterised queries on CREATE statements, and also not having any escape() function.
-
     2.  pdoSqlsrv is planned.
 
 Language-Specific Notes
 -----------------------
 
 -   At present, MySQL supports both foreign keys and partitions, but not simultaneously (at least in InnoDB). As such, foreign key support is disabled in favour of partitions on MySQL.
-
 -   Only MySQL uses partitioning. Postgres has no partitioning functionality, and SqlServer's is unimplemented. Only MySQL supports database creation. The user must manually create a database prior to using Postgres or SqlServer.
-
 -   Only MySQL supports automatically setting the table charset to UTF-8. Postgre's charsets are per-database, and thus must be set by the user.
-
 -   For memory tables, MySQL's MEMORY engine is used, while Postgre's UNLOGGED table attribute is used. While SqlServer supports memory-optimized tables, they are unimplemented.
-
 -   MySQL will use MySIAM on versions < 5.6, as InnoDB did not have FULLTEXT capabilities in these versions. It will use InnoDB on versions >= 5.6.
