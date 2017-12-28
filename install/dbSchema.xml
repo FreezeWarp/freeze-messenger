@@ -365,9 +365,6 @@
             <column name="messageCount" type="int" maxlen="15" default="0" comment="The number of messages in this room." />
             <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
-            <!-- Caches -->
-            <column name="watchedByUsers" type="blob" maxlen="50000" comment="A CSV cache of the users watching this room." />
-
 
             <key name="id" type="primary" />
             <key name="idEncoded" type="unique" />
@@ -547,12 +544,6 @@
             <column name="fileSize" type="int" maxlen="8" default="0" comment="The total size of all files stored on the server by this user." />
             <column name="ownedRooms" type="int" maxlen="6" comment="Total number of rooms owned by this user (may be used to place a limit on room creation.)" />
             <column name="messageCount" type="int" maxlen="8" default="0" comment="The number of messages made by this user." />
-
-            <!-- List Caches -->
-            <column name="favRooms" type="blob" maxlen="10000" comment="A cache of the favRooms table for this user." />
-            <column name="watchRooms" type="blob" maxlen="10000" comment="A cache of the watchRooms table for this user." />
-            <column name="ignoredUsers" type="blob" maxlen="10000" comment="A cache of users ignored by this user." />
-            <column name="friendedUsers" type="blob" maxlen="10000" comment="A cache of users friended by this user." />
 
 
             <!-- Parental Controls -->

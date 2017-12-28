@@ -193,9 +193,9 @@ class fimRoom extends DynamicObject
     protected $encodedId;
 
     /**
-     * @var array A list of users watching this room. TODO: user instances?
+     * @var array A list of users watching this room.
      */
-    protected $watchedByUsers = [];
+    protected $watchedByUsers = null;
 
     /**
      * @var array An array of censor words applied to this room, to aid in caching.
@@ -223,7 +223,6 @@ class fimRoom extends DynamicObject
         ['defaultPermissions', 'options', 'ownerId'],
         ['parentalFlags', 'parentalAge', 'topic'],
         ['lastMessageTime', 'lastMessageId', 'messageCount', 'flags'],
-        ['watchedByUsers']
     ];
 
 
@@ -809,7 +808,7 @@ class fimRoom extends DynamicObject
      */
     public function resolveAll(): bool
     {
-        return $this->resolve(['id', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge', 'lastMessageTime', 'lastMessageId', 'messageCount', 'flags', 'watchedByUsers']);
+        return $this->resolve(['id', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge', 'lastMessageTime', 'lastMessageId', 'messageCount', 'flags']);
     }
 
 
@@ -860,6 +859,12 @@ class fimRoom extends DynamicObject
 
         else {
             \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "rooms", $roomParameters);
+            \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "users", [
+                'ownedRooms' => \Fim\Database::instance()->equation('$ownedRooms + 1'),
+            ], [
+                "id" => $this->ownerId
+            ]);
+
 
             return $this->id = \Fim\Database::instance()->getLastInsertId();
         }

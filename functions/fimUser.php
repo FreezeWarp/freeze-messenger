@@ -345,13 +345,10 @@ class fimUser extends \Fim\DynamicObject
     public static $pullGroups = [
         ['id', 'integrationId', 'integrationMethod', 'name', 'privs'],
         ['mainGroupId', 'socialGroupIds', 'parentalFlags', 'parentalAge', 'birthDate'], // Permission flags.
-        ['joinDate', 'messageFormatting', 'profile', 'avatar', 'nameFormat', 'bio'],
-        ['options', 'defaultRoomId'],
+        ['email', 'joinDate', 'messageFormatting', 'profile', 'avatar', 'nameFormat', 'bio'],
+        ['options', 'defaultRoomId', 'privacyLevel'],
         ['passwordHash', 'passwordFormat'],
         ['fileCount', 'fileSize'],
-        ['favRooms', 'watchRooms'],
-        ['privacyLevel', 'ignoredUsers', 'friendedUsers'],
-        ['email'],
     ];
 
 
@@ -410,7 +407,7 @@ class fimUser extends \Fim\DynamicObject
     {
         return $this->favRooms =
             ($this->favRooms === null
-                ? \Fim\Database::instance()->getUserSocialGroupIds($this->id)
+                ? \Fim\Database::instance()->getUserFavRooms($this->id)
                 : $this->favRooms
             );
     }
@@ -418,7 +415,7 @@ class fimUser extends \Fim\DynamicObject
     /**
      * @return array The list of rooms watched by this user.
      */
-    public function getWatchedRooms(): array
+    public function getWatchRooms(): array
     {
         if (\Fim\Config::$enableWatchRooms) {
             return $this->watchRooms =
@@ -504,10 +501,10 @@ class fimUser extends \Fim\DynamicObject
         if ($action === 'delete') {
             \Fim\Database::instance()->delete($table, [
                 'userId'    => $this->id,
-                $columnName => \Fim\Database::instance()->in($items),
+                $columnName => \Fim\Database::instance()->in($ids),
             ]);
 
-            $this->{$listName} = array_diff($this->{$listName}, $items);
+            $this->{$listName} = array_diff($this->{$listName}, $ids);
         }
 
         // Empty the List Before an Edit
@@ -824,7 +821,7 @@ class fimUser extends \Fim\DynamicObject
      */
     public function resolveAll(): bool
     {
-        return $this->resolve(['id', 'name', 'mainGroupId', 'options', 'joinDate', 'birthDate', 'email', 'lastSync', 'passwordHash', 'passwordFormat', 'passwordResetNow', 'passwordLastReset', 'avatar', 'profile', 'nameFormat', 'defaultRoomId', 'messageFormatting', 'privs', 'fileCount', 'fileSize', 'ownedRooms', 'messageCount', 'favRooms', 'watchRooms', 'ignoredUsers', 'friendedUsers', 'socialGroupIds', 'parentalFlags', 'parentalAge']);
+        return $this->resolve(['id', 'name', 'mainGroupId', 'options', 'joinDate', 'birthDate', 'email', 'lastSync', 'passwordHash', 'passwordFormat', 'passwordResetNow', 'passwordLastReset', 'avatar', 'profile', 'nameFormat', 'defaultRoomId', 'messageFormatting', 'privs', 'fileCount', 'fileSize', 'ownedRooms', 'messageCount', 'parentalFlags', 'parentalAge']);
     }
 
 
