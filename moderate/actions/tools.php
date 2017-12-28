@@ -70,10 +70,10 @@ else {
 
             case 'clearCache':
                 if (\Cache\CacheFactory::clearAll())
-                    echo container('Cache Cleared','The cache has been cleared.<br /><br /><form action="index.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
+                    echo container('Cache Cleared','The cache has been cleared.<br /><br /><form action="index.php?do=tools" method="POST"><button type="submit" class="btn btn-success">Return to Tools</button></form>');
 
                 else
-                    echo container('Failed','The clear was unsuccessful.<form action="index.php?do=tools" method="POST"><button type="submit">Return to Tools</button></form>');
+                    echo container('Failed','The clear was unsuccessful.<form action="index.php?do=tools" method="POST"><button type="submit" class="btn btn-secondary">Return to Tools</button></form>');
                 break;
 
             case 'updateDatabaseSchema':
