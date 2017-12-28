@@ -19,13 +19,13 @@ require('global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', array(
-    'do' => array(
-        'cast' => 'string',
-        'valid' => array('register'),
+$request = fim_sanitizeGPC('g', [
+    'do' => [
+        'cast'    => 'string',
+        'valid'   => ['register'],
         'require' => false,
-    ),
-));
+    ],
+]);
 
 
 $redirectPage = ''; // This will contain the page to redirect to.
@@ -38,19 +38,22 @@ switch ($request['do']) {
         switch ($loginConfig['method']) { // Different methods for each forum system.
             case 'phpbb':
                 $redirectPage = $loginConfig['url'] . 'ucp.php?mode=register';
-                break;
+            break;
 
             case 'vbulletin3':
-            case 'vbulletin4':
                 $redirectPage = $loginConfig['url'] . 'register.php';
-                break;
+            break;
+
+            case 'vbulletin5':
+                $redirectPage = $loginConfig['url'] . 'register';
+            break;
 
             case 'vanilla':
                 $redirectPage = 'register/index.php';
-                break;
+            break;
         }
 
-        break;
+    break;
 
 }
 
