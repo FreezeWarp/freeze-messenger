@@ -50,6 +50,7 @@ class RoomFactory {
             if (!\Fim\Cache::exists('fim_fimRoom_' . $id)) {
                 $instance->resolveAll();
                 $instance->getCensorWords();
+                $instance->getWatchedByUsers();
 
                 \Fim\Cache::add('fim_fimRoom_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
             }
