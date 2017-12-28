@@ -2603,58 +2603,6 @@ class DatabaseInstance extends DatabaseSQL
     }
 
 
-    /****** TRIGGERS ******/
-    public function triggerRoomWatchedByIds($set, $dataChanges) {
-        $this->triggerRoomListCache($set, "watchedByUsers", $dataChanges);
-    }
-
-    public function triggerRoomListCache($roomId, $cacheColumn, $dataChanges) {
-        $room = RoomFactory::getFromId((int) $roomId);
-        $listEntries = $room->{$cacheColumn};
-
-        /*if (count($listEntries) > Config::$databaseCollectionMaxEntries) {
-            $cacheIndex = 'fim_' . $cacheColumn . '_' . $roomId;
-
-            if (!\Fim\Cache::exists($cacheIndex, 'redis')) {
-                \Fim\Cache::setAdd($cacheIndex, $listEntries);
-            }
-
-            foreach ($dataChanges AS $operation => $values) {
-                switch ($operation) {
-                    case 'delete':
-                        if (is_string($values) && $values === '*')
-                            \Fim\Cache::clear($cacheIndex, 'redis');
-
-                        else
-                            \Fim\Cache::setRemove($cacheIndex, $listEntries);
-                    break;
-
-                    case 'insert':
-                        \Fim\Cache::setAdd($cacheIndex, $values);
-                    break;
-                }
-            }
-        }
-
-        else { // Use database*/
-            foreach ($dataChanges AS $operation => $values) {
-                switch ($operation) {
-                    case 'delete':
-                        $listEntries = is_string($values) && $values === '*' ? [] : array_diff($listEntries, $values);
-                    break;
-                    case 'insert':
-                        $listEntries = array_merge($listEntries, $values);
-                    break;
-                }
-            }
-        //}
-
-        $room->setDatabase([
-            $cacheColumn => $listEntries
-        ]);
-    }
-
-
 
 
     /**
