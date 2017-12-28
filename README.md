@@ -378,7 +378,7 @@ As memory tables are very transient in nature, we never rely on a memory table c
 
 -   If used, the [`roomPermissionsCache`](http://josephtparsons.com/messenger/docs/database.htm#roomPermissionsCache) and [`accessFlood`](http://josephtparsons.com/messenger/docs/database.htm#accessFlood) tables will use memory tables if available.
 
--   [The tables used when no other event system is available]("#Simple-Tables") will preferentially be memory tables.
+-   [The tables used when no other event system is available](#Simple-Tables) will preferentially be memory tables.
 
 -   The [`ping`](http://josephtparsons.com/messenger/docs/database.htm#ping) table, which keeps track of active users, will use a memory table if available.
 
