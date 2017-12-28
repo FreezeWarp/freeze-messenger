@@ -105,7 +105,7 @@ class databaseSQLTests1 extends databaseSQLTests {
     public function testInsertBadEnum() {
         $caught = false;
         try {
-            @$this->databaseObj->insert($this->table, [
+            $this->databaseObj->insert($this->table, [
                 "enum" => 'ad',
             ]);
         } catch(Exception $e) {
@@ -118,7 +118,7 @@ class databaseSQLTests1 extends databaseSQLTests {
     public function testInsertBadString() {
         $caught = false;
         try {
-            @$this->databaseObj->insert($this->table, [
+            $this->databaseObj->insert($this->table, [
                 "string" => "12345678901234567890123456789012345678901",
             ]);
         } catch(Exception $e) {
@@ -511,7 +511,7 @@ class databaseSQLTests1 extends databaseSQLTests {
     public function testUpdateBadEnum() {
         $caught = false;
         try {
-            @$this->databaseObj->update($this->table, [
+            $this->databaseObj->update($this->table, [
                 "enum" => 'g',
             ]);
         } catch(Exception $e) {

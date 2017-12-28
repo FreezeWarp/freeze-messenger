@@ -9,7 +9,7 @@ function printHeader($text) {
     echo "<tr><th colspan='3'>$text</th></tr>";
 }
 function printRow($name, $result = false, $other = null) {
-    echo "<tr style='background-color: " . ($result === true ? '#7fff7f' : '#ff4f4f') . "'><td>$name</td><td>" . ($result === true ? 'pass' : print_r($result, true)) . "</td><td>" . print_r($other, true) . "</td></tr>";
+    echo "<tr style='background-color: " . ($result === true ? '#7fff7f' : '#ff4f4f') . "'><td>$name</td><td>" . ($result === true ? 'pass' : var_export($result, true)) . "</td><td>" . print_r($other, true) . "</td></tr>";
 }
 function printCompRow($name, $result, $expectedResult) {
     printRow($name, $result == $expectedResult ? true : $result, $expectedResult);
@@ -51,17 +51,13 @@ require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
 
 require_once('../functions/fimUser.php');
 require_once('../functions/fimRoom.php');
-require_once('../functions/fimDatabase.php');
 
 echo "Requiring Test Suites...<br />";
 require_once('./DatabaseSQL1.php');
 require_once('./DatabaseSQL2.php');
 
-echo "Creating Object...<br />";
-$database = new DatabaseInstance();
-
 echo "Performing Database Connection...<br />";
-$database = new DatabaseInstance($dbConnect['core']['host'],
+$database = new \Fim\DatabaseInstance($dbConnect['core']['host'],
     $dbConnect['core']['port'],
     $dbConnect['core']['username'],
     $dbConnect['core']['password'],

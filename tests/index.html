@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+    <title>Table of Contents - FreezeMessenger Tests</title>
+    <meta name="author" content="Joseph T. Parsons" />
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="icon" id="favicon" type="image/png" href="images/favicon.png" />
+
+    <!-- START Styles -->
+    <link
+            href="https://maxcdn.bootstrapcdn.com/bootswatch/4.0.0-beta.2/simplex/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-ofc00ja/z8wrU97EAHQRb4i4wsa/Zgr9JZll2R3KW33iqhFSfmVz/6xuWFx5pjcn"
+            crossorigin="anonymous">
+</head>
+
+<body>
+<section class="card mx-auto" style="max-width: 1000px;">
+    <header class="card-header">
+        <h1>FreezeMessenger Tests</h1>
+    </header>
+    <nav class="card-body">
+        <h3><a href="DatabaseSQL.php">Database Tests</a></h3>
+        <h3>API Tests</h3>
+        <form action="apiTests1.php" method="get">
+            <div class="row">
+                <label class="input-group col-md-5">
+                    <span class="input-group-addon">Admin Username</span>
+                    <input type="text" name="adminUsername" class="form-control" />
+                </label>
+                <label class="input-group col-md-5">
+                    <span class="input-group-addon">Admin Password</span>
+                    <input type="text" name="adminPassword" class="form-control" />
+                </label>
+                <div class="col-md-2">
+                    <input type="submit" value="Run API Tests" class="form-control btn btn-secondary"/>
+                </div>
+            </div>
+        </form>
+    </nav>
+</body>
+</html>

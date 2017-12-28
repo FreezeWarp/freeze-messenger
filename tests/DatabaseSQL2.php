@@ -12,7 +12,7 @@ class databaseSQLTests2 extends databaseSQLTests {
         $this->databaseObj->setTransformationParameters([
             $table => [
                 'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, [$this, 'passthru']],
-                'list' => ['fimDatabase::packList', DatabaseTypeType::blob, [$this, 'passthru']],
+                'list' => ['\Fim\DatabaseInstance::packList', DatabaseTypeType::blob, [$this, 'passthru']],
             ]
         ], [
             $table => [
@@ -27,7 +27,7 @@ class databaseSQLTests2 extends databaseSQLTests {
         $this->databaseObj->setTransformationParameters([
             $table => [
                 'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId'],
-                'list' => ['fimDatabase::packList', DatabaseTypeType::blob, 'fimDatabase::unpackList'],
+                'list' => ['\Fim\DatabaseInstance::packList', DatabaseTypeType::blob, '\Fim\DatabaseInstance::unpackList'],
             ]
         ], [
             $table => [
