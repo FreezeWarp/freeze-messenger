@@ -84,6 +84,7 @@ foreach ($activeUsers AS $activeUser) {
     if (!isset($xmlData['users']['user ' . $activeUser['userId']])) {
         $xmlData['users']['user ' . $activeUser['userId']] = array(
             'id' => (int) $activeUser['userId'],
+            'name' => (int) $activeUser['userName'],
             'rooms' => array(),
         );
     }
