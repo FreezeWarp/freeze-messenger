@@ -10,25 +10,15 @@ Headline Functionality
 ======================
 
 -   Flexible frontends: all core functionality is implemented through a REST-like API, meaning anyone can write their own FreezeMessenger frontends. FreezeMessenger currently comes with two frontends: the in-browser "WebPro", and the desktop Java client.
-
 -   Event streams provide functionality for getting new messages, being informed of new messages in watched rooms, tracking which users are currently typing a message (and when users go offline), and more. Plus, most of this functionality works if event streams are disabled.
-
 -   Redis and Postgres can be used for the lowest possible event stream latency.
-
 -   Users may, if allowed, create their own rooms and open direct messages with other users.
-
 -   Rooms can permissioned to only allow specific users and specific usergroups.
-
 -   Rooms can be age- and content- restricted. Messages can also be censored on a per-room basis.
-
 -   Files are easily uploaded, and thumbnails are generated for inline message display. In the browser frontend, images can even be pasted from the clipboard. Importantly, the administrator has full control over which files can be uploaded and how much space any user can use.
-
 -   Flood controls limit how many rooms a user can create, how many files a user can upload, how many messages a user can post in a given period, and even how many API calls of different types a user is allowed.
-
 -   Integration with PHPBB and vBulletin is supported, as is single-sign on with Google, Twitter, Facebook, Steam, and Reddit.
-
 -   In addition to fallback disk caching, APC, Memcached, and Redis can all be used for blazing fast cache performance, used to optimise the performance for checking usage rights, flood detection, and more.
-
 -   Compatible with MySQL, PostgreSQL, and SQL Server databases. Supports fulltext message searching with all three.
 
 Requirements
@@ -62,18 +52,18 @@ config.php
 
 If you are only running a small chat server, you will not need to edit config.php. Once your server starts growing, however, you may wish to look at it, and change the following settings to suit your needs:
 
--   Master/Replication Database Settings: If desired, you can set a different set of login information for a replication database server. FreezeMessenger will use the replication server whenever it is retrieving information that can be time delayed. It will only ever write to the master.
+-   __Master/Replication Database Settings__: If desired, you can set a different set of login information for a replication database server. FreezeMessenger will use the replication server whenever it is retrieving information that can be time delayed. It will only ever write to the master.
 
--   Cache Servers: By default, the FreezeMessenger Installer will automatically enable disk caching, as well as either APC or APCu caching if your server supports them. However, Memcached and Redis are also (experimentally) supported, and you can enable them by editing config.php.
+-   __Cache Servers__: By default, the FreezeMessenger Installer will automatically enable disk caching, as well as either APC or APCu caching if your server supports them. However, Memcached and Redis are also (experimentally) supported, and you can enable them by editing config.php.
 
--   Stream Servers: By default, FreezeMessenger will use the PgSQL streaming method (see below) if Postgres is used for its database, but you can manually enable the PgSQL streaming method by editing config.php. Likewise, the Redis streaming method can be enabled by editing config.php.
+-   __Stream Servers__: By default, FreezeMessenger will use the PgSQL streaming method (see below) if Postgres is used for its database, but you can manually enable the PgSQL streaming method by editing config.php. Likewise, the Redis streaming method can be enabled by editing config.php.
 
--   Login Servers: You will have an opportunity to configure all supported login servers when you first install FreezeMessenger, but you can also update and add Login Server API keys by editing config.php.
+-   __Login Servers__: You will have an opportunity to configure all supported login servers when you first install FreezeMessenger, but you can also update and add Login Server API keys by editing config.php.
 
 Configuration Editor
 --------------------
+See below.
 
-[See below.](https://docs.google.com/document/d/16bMdml1F5tToUcgbFWNz3C4FDYuvfa8q4ZbGepdxFsA/edit#heading=h.vbpexcn00usu)
 
 Common Installation Problems
 ============================
@@ -111,9 +101,9 @@ By default, at startup every script invocation performs the following:
 
 1.  Look up the server configuration information. This information will be stored in any available cache, but if one is not available it will query the configuration table for every script execution. Many DBMS software will automatically cache the result, but it is typically advised not to alter many configuration directives if a non-disk cache is not available.
 
-1.  Check to see if a session token is valid by looking it up in the session table. This table will preferentially be stored in memory, and thus could encounter write bottlenecks if validation attempts are not limited.
+2.  Check to see if a session token is valid by looking it up in the session table. This table will preferentially be stored in memory, and thus could encounter write bottlenecks if validation attempts are not limited.
 
-1.  Insert or increment a record of the user's activity in the flood table or cache. This table exists in memory by default, and because writes to it are constant (and memory tables typically prevent simultaneous writes), it may become a bottleneck. Changing it to a non-memory table is often advised on large systems. By default, to spread the writes, the table will be partitioned. Additionally, if available, any available non-disk cache may be used to keep track of the counter instead, obviating write concerns entirely if the cache is in memory, though causing far more activity on the cache servers.
+3.  Insert or increment a record of the user's activity in the flood table or cache. This table exists in memory by default, and because writes to it are constant (and memory tables typically prevent simultaneous writes), it may become a bottleneck. Changing it to a non-memory table is often advised on large systems. By default, to spread the writes, the table will be partitioned. Additionally, if available, any available non-disk cache may be used to keep track of the counter instead, obviating write concerns entirely if the cache is in memory, though causing far more activity on the cache servers.
 
 In general, most scripts should not be queried by clients frequently, and the above start-up will be fine. However, obtaining messages may be performed quite frequently, especially by clients that do not support interfacing with the event API using server-sent events, and thus it is advised to keep the above in mind. Moreover, if server-sent events are disabled (possibly because your server is unable to run a script for at least 30 seconds), then the above becomes much more of a concern.
 
@@ -142,17 +132,17 @@ Administrator Permissions
 
 Within administrator permissions, you can alter what permissions different administrators have, and add new administrators. Briefly, the permissions are as follows:
 
--   Grant Permissions - Whether the user can give other users administrator privileges.
+-   __Grant Permissions__ - Whether the user can give other users administrator privileges.
 
--   Protected - Whether the user is protected from permission revocation; when enabled, only "super-administrators" (those defined in config.php) and the user themself may remove their permissions.
+-   __Protected__ - Whether the user is protected from permission revocation; when enabled, only "super-administrators" (those defined in config.php) and the user themself may remove their permissions.
 
--   Administer Rooms - The user will be a moderator in all rooms, site-wide, with the exception of private and off-the-record rooms. If they can administrator users, they will also be able to kick users in rooms.
+-   __Administer Rooms__ - The user will be a moderator in all rooms, site-wide, with the exception of private and off-the-record rooms. If they can administrator users, they will also be able to kick users in rooms.
 
--   Administer Users - The user will be able to ban users site-wide and, if they have administrator rooms privileges, will be able to kick users in rooms.
+-   __Administer Users__ - The user will be able to ban users site-wide and, if they have administrator rooms privileges, will be able to kick users in rooms.
 
--   Administer Files - The user will be able to delete files, and review files flagged for moderation.
+-   __Administer Files__ - The user will be able to delete files, and review files flagged for moderation.
 
--   Administer Emoticons - The user will be able to delete, edit, and add new emoticons. This functionality is automatically disabled for all administrators if emoticons are copied from an installation system.
+-   __Administer Emoticons__ - The user will be able to delete, edit, and add new emoticons. This functionality is automatically disabled for all administrators if emoticons are copied from an installation system.
 
 User Sessions
 -------------
@@ -222,15 +212,15 @@ To give users control over private rooms, they have three relevant settings:
 
 1.  Privacy Level - This controls what other users may initiate a private conversation with the user.
 
-1.  If set to "block all users", the user disables private messages entirely, and will never be able to join a private room.
+    1.  If set to "block all users", the user disables private messages entirely, and will never be able to join a private room.
 
-2.  If set to "allow all users", the user allows private messages from everybody except other users in the user's ignore list.
+    2.  If set to "allow all users", the user allows private messages from everybody except other users in the user's ignore list.
 
-3.  If set to "only friended users", the user disables private messages from everybody except other users in the user's friends list.
+    3.  If set to "only friended users", the user disables private messages from everybody except other users in the user's friends list.
 
-3.  Ignore List - A list of users who are not allowed to message the user regardless of their privacy level.
+2.  Ignore List - A list of users who are not allowed to message the user regardless of their privacy level.
 
-4.  Friends List - A list of users who, if the user has set their privacy level to "only friended users", are the only users allowed to initiate conversion with the user.
+3.  Friends List - A list of users who, if the user has set their privacy level to "only friended users", are the only users allowed to initiate conversion with the user.
 
 Because a user's privacy level, ignore list, and friends list may change at any time, a private room that at one time was allowed to exist may no longer. As a consequence, private rooms are considered to be in one of two states at any time:
 
@@ -252,20 +242,14 @@ FreezeMessenger has two sets of events -- one for notifications towards users, a
 The currently supported events are:
 
 1.  User Events
+    1.  Missed Message (including if a another user sends a private message)
 
-1.  Missed Message (including if a another user sends a private message)
-
-3.  Room Events
-
-1.  New Message
-
-2.  Edited Message
-
-3.  Deleted Message
-
-4.  Topic Change
-
-5.  User Status Change (including typing)
+2.  Room Events
+    1.  New Message
+    2.  Edited Message
+    3.  Deleted Message
+    4.  Topic Change
+    5.  User Status Change (including typing)
 
 There are four systems FreezeMessenger can use for publishing and receiving events:
 
@@ -305,47 +289,34 @@ Login Compatibility
 
 FreezeMessenger can "borrow" functionality from login servers, though the functionality is currently fairly limited. It is implemented as such:
 
--   authentication - Will always be provided by the login server.
-
--   userName - Will always be provided by the login server, even if only an email address. If a login server does not expose a userId, the userName will be used to make future queries to the login server. (If it does expose a userId, userName may be updated to reflect changes in the login server.)
-
--   userName formatting - May occasionally be provided by the login server. The login connector may be able to interpret this value from, e.g., group membership. Such functionality is not otherwise implemented by FreezeMessenger (i.e. it can be shown, but it can not be changed directly).
-
--   email - May or may not be provided by the login server. If available, may be used to list user contact information and provide email updates to users (though such functionality is unlikely to be implemented anytime soon).
-
--   userGroups - The names of userGroups a user belongs to may be provided by a login server. While FreezeMessenger has plans to support its own userGroups, they will not be implemented until a future release. (Thus, userGroups cannot currently be created through FreezeMessenger under any circumstances, nor can userGroup membership change through FreezeMessenger. However, rooms can be permissioned by usergroups imported through login systems.)
-
--   avatar and/or profile - If available from login server, FreezeMessenger functionality will be disabled entirely (i.e. will only support reads). If not available from login server, will both be readable and writable by FreezeMessenger.
-
--   banned status - In rare cases, a login method may indicate that a user should be considered banned.
+-   __authentication__ - Will always be provided by the login server.
+-   __userName__ - Will always be provided by the login server, even if only an email address. If a login server does not expose a userId, the userName will be used to make future queries to the login server. (If it does expose a userId, userName may be updated to reflect changes in the login server.)
+-   __userName formatting__ - May occasionally be provided by the login server. The login connector may be able to interpret this value from, e.g., group membership. Such functionality is not otherwise implemented by FreezeMessenger (i.e. it can be shown, but it can not be changed directly).
+-   __email__ - May or may not be provided by the login server. If available, may be used to list user contact information and provide email updates to users (though such functionality is unlikely to be implemented anytime soon).
+-   __userGroups__ - The names of userGroups a user belongs to may be provided by a login server. While FreezeMessenger has plans to support its own userGroups, they will not be implemented until a future release. (Thus, userGroups cannot currently be created through FreezeMessenger under any circumstances, nor can userGroup membership change through FreezeMessenger. However, rooms can be permissioned by usergroups imported through login systems.)
+-   __avatar and/or profile__ - If available from login server, FreezeMessenger functionality will be disabled entirely (i.e. will only support reads). If not available from login server, will both be readable and writable by FreezeMessenger.
+-   __banned status__ - In rare cases, a login method may indicate that a user should be considered banned.
 
 In addition, the following site-wide features may be implemented using login system-provided data:
 
--   emoticons - The list of emoticons that are used in messages.
+-   __emoticons__ - The list of emoticons that are used in messages.
 
 Note that, at present, the following primary login systems are available:
 
--   PHPBB 3, which provides username formatting, email, usergroups, and avatar. It also provides emoticons.
-
--   vBulletin 3/4, which provides username formatting, email, usergroups, and avatar. It also provides emoticons. Additionally, if a user's primary usergroup is a banned usergroup, they will be marked as banned.
-
--   vBulletin 5, which provides username formatting, email, usergroups, and avatar. It also provides emoticons. Additionally, if a user's primary usergroup is a banned usergroup, they will be marked as banned.
+-   __PHPBB 3__, which provides username formatting, email, usergroups, and avatar. It also provides emoticons.
+-   __vBulletin 3/4__, which provides username formatting, email, usergroups, and avatar. It also provides emoticons. Additionally, if a user's primary usergroup is a banned usergroup, they will be marked as banned.
+-   __vBulletin 5__, which provides username formatting, email, usergroups, and avatar. It also provides emoticons. Additionally, if a user's primary usergroup is a banned usergroup, they will be marked as banned.
 
 (If no primary login system is used, FreezeMessenger will handle authentication itself using usernames and passwords, and will provide for setting user avatars and profiles. No other login server functionality is currently implemented by FreezeMessenger.)
 
 Additionally, the following OAuth-style login systems can be used in addition to the primary login system, if API keys are available:
 
--   Google, which providers usernames, emails, and avatars.
-
--   Twitter, which provides usernames and avatars.
-
--   Facebook, which provides usernames and avatars.
-
--   Microsoft, which providers usernames and avatars.
-
--   Reddit, which provides usernames and usergroups (as the list of subreddits subscribed to by users)
-
--   Steam, which provides usernames, avatars, and usergroups (as the list of games Steam users play).
+-   __Google__, which providers usernames, emails, and avatars.
+-   __Twitter__, which provides usernames and avatars.
+-   __Facebook__, which provides usernames and avatars.
+-   __Microsoft__, which providers usernames and avatars.
+-   __Reddit__, which provides usernames and usergroups (as the list of subreddits subscribed to by users)
+-   __Steam__, which provides usernames, avatars, and usergroups (as the list of games Steam users play).
 
 Adding New Login Systems
 ------------------------
@@ -360,13 +331,9 @@ As with most software, FreezeMessenger grows slower the more people there are us
 To this end, FreezeMessenger deploys a number of protection techniques:
 
 -   First, we try to limit the number of accounts a single individual may register by limiting the number of accounts created by a single IP address.
-
 -   We also place limits on the number of rooms that can be created by a single user, and allow for a fixed number of additional rooms to be created per year of the account age.
-
 -   We implement file flood detection by limiting both the number of files users can upload and the amount of space those files can occupy.
-
 -   We implement message flood detection by restricting the number of messages a user can post in a minute. By default, this limits to 30 in a single room, and 60 sitewide. (Detection for this is somewhat involved -- we keep a separate counter for each minute for each user for each room, as well as a counter for each minute for each user over the entire site.)
-
 -   Finally, we limit the number of API calls a user can invoke in a given 60-second period. Different limits are used for different APIs.
 
 Caching
@@ -384,8 +351,6 @@ Notably, certain lists are also cached as a part of this:
 -   Users have five: one for watched rooms, one for favourite rooms, one for friended users, one for blocked users, and one for groups the user is a member of [todo]. These will be stored with the rest of the user data where applicable, e.g. in columns on the user table.
 
 -   Rooms have two: a list of users who are watching the room, and a list of censor words applied to that room.
-
--   Groups have one: a list of members.
 
 Result Caches
 -------------
@@ -411,47 +376,8 @@ As memory tables are very transient in nature, we never rely on a memory table c
 
 Note that active users are stored in a memory table as well. If the table reaches capacity, the program will likely stop reporting such users correctly. Each row in the table is actually somewhat large (in MySQL, it will compose a 4-byte integer, a 23-byte
 
-Database Schema
-===============
-
-FreezeMessenger's database schema is fairly ambitious. Data is predominantly normalised, but there exist denormalised summary tables and columns to aid in performance and caching. Several tables exist, where allowable, solely in memory. Options are generally expressed as bitfields. Foreign keys are imposed to maintain data integrity as much as possible.
-
-Almost all data is stored either as integers or strings; both bitfields and dates are designed to use the integer type, and won't deviate from this except where a type difference exists to aid in database performance (e.g. bitfields are often just optimised integers, and we do try to use those when available; in contrast, DATEs have a primarily string representation, and as such we avoid them in favour of storing timestamps in integers).
-
-Integers generally are sized to be appropriate for the datatype:
-
--   time is sized by the database abstraction layer to whatever is most appropriate (we don't specify it explicitly in our schema, instead simply denoting a field as being a time)
-
--   groupIds specify a size of 6 by default
-
--   userIds specify a size of 8 by default
-
--   messageIds specify a size of 9 by default
-
-roomId
-------
-
-The odd exception here is the roomId, which can represent either a normal room (becoming a standard integer), or a private room, which denotes the private room's users directly in the roomId (e.g. if users 1, 6, and 20 have a private room, the roomId is "p1,6,20"). Different options here exist for compression; for instance, we could transmit them as an ASCII string, we could pack the numbers in sequence (prepending a byte for room type), or we could pack the hexadecimal encoding of the numbers, as identified in the "List Cache" section below. As the latter is the most space-efficient, it is the one we use.
-
-However, there is a major exception: not all occurrences of roomId in the database can be used for private rooms. In these cases, roomId is left as a 9-character integer, like userId, to aid in performance. Additionally, if the database backend does not support binary data, we will generally store the values entirely unencoded -- as the original "p1,2,3".
-
-Finally, because roomIds often do not have an entry in the database rooms table, they generally do not have foreign key constraints.
-
 Database Abstraction Layer
 ==========================
-
-Some Database Principles
-------------------------
-
-The database abstraction layer, as well as FreezeMessenger more broadly, follows a handful of basic database principles when making design decisions. These are:
-
--   In most software, data is written far less often than it is read. As a result, it can be tremendously beneficial to perform calculations when data is written, and not when it is read. (For instance, if you calculate slowFunction(columnA, columnB), store the result in columnC instead of calling slowFunction every time data is read.)
-
--   Data is most commonly stored on disk at rest. In order to avoid unnecessary disk arm movements, avoid reading columns from a row that may be stored on a separate disk sector. This includes TEXT and BLOB columns -- these will often be stored in a separate disk location from the main row struct. On the other hand, an aggregation that may span multiple disk sectors could be stored in a TEXT/BLOB column in a single row (e.g. userGroupMembers could be stored as caches both in users.memberOfGroups and groups.members). As this value will only be stored in a single disk location, and will possibly transfer less data, it is often preferable to reading the full aggregation. (In practice, however, most databases will optimise these better themselves, especially if proper indexing is used.)
-
--   Likewise, as data is most commonly stored on disk, avoid reading as much data as possible from the database. Plus, if you only query columns that are part of an index, you may be able to use the indexes alone for the query.
-
--   Memory tables, where supported, can be very, very fast. But be mindful of how memory tables work -- typically, every column will be fixed-length, so a VARCHAR(1000) will always take up 1000 bytes in every row, instead of being flexible.
 
 Supported Drivers
 -----------------
@@ -488,132 +414,3 @@ Language-Specific Notes
 -   For memory tables, MySQL's MEMORY engine is used, while Postgre's UNLOGGED table attribute is used. While SqlServer supports memory-optimized tables, they are unimplemented.
 
 -   MySQL will use MySIAM on versions < 5.6, as InnoDB did not have FULLTEXT capabilities in these versions. It will use InnoDB on versions >= 5.6.
-
-Why?
-----
-
-FreezeMessenger has no SQL-like commands. Every call is implemented with structured arrays that are converted into SQL-like commands. This has various benefits:
-
--   Easy portability between database backends, including those that don't use SQL-like syntax.
-
--   Easy on-demand data conversion: while rare, it is occasionally quite helpful to be able to radically transform data right before it is sent to the database. For instance, the hexadecimal-encoded roomIds (described above) are only converted to this space-saving format by the database access layer, right before it includes the values in INSERT, UPDATE, or WHERE clauses. This can make porting tremendously easier, to, for instance, convert all binary data to base64.
-
--   Type-safety: by simple virtue of delimiting data with an array data structure (instead of composing strings of delimited data), it is much more difficult to accidentally introduce exploits. Similarly, comparisons are fairly explicit; an example WHERE clause of (`userName` = "bob" AND `age` > 50 AND `height` > `weight`) is encoded as ["userName" => "bob", "age" => $db->int(50, "gt"), "height" => $db->column("weight", "gt")]. And modifying a column to include an exploit is essentially impossible here -- say `height` changed to `` AND (DROP TABLE) AND ``. Our database access layer will insist on ensuring that this were encoded as ``` AND (DROP TABLE) AND ```, which would not be valid. (It is, in-fact, more restrictive than this in-practice, forbidding most non-alphanumeric characters entirely, as well as enforcing a maximum column length.) TODO: wait, does it still do that? Make sure it still does that. It's a good idea I may have removed in one of the rewrites.
-
-Type Functions
---------------
-
-The DAL supports types by invoking its member functions:
-
--   int() for integers
-
--   bool() for boolean values
-
--   blob() for binary values
-
--   ts() for timestamp values (and now() to specify the current timestamp)
-
--   str() for strings
-
--   col() for database columns/variables
-
--   in() for any element of an array. For instance, in([1,2,3]) will match 1, 2, or 3.
-
--   search() for any search that includes the passed string. For instance, search("hello") will match "hello, how are you", "3hello52asdx", and so-on.
-
--   type($type, $value, $comparisonOperator) for advanced values and comparison. For instance, type('int', 33, 'gt') specifies any integer greater than 33 -- that is, [33, INF].
-
-These types are used both for insertion and selection, with the obvious exceptions (in, search, etc.).
-
-Arrays are not normally supported in the SQL layer (since SQL doesn't have arrays for storage), but may be used in conjunction with automatic data transformation (see below).
-
-Condition Arrays
-----------------
-
-Condition arrays are specially-formatted arrays that can be passed to upsert(), update(), delete(), and select(). They can be quite simple, for instance:
-
--   ["name" => "Bob"] finds entries where the name column is "Bob."
-
--   ["name" => "Bob", "id" => $db->int(3, 'gt')] finds entries where the name column is "Bob" AND the id column is greater than 3.
-
-They can also be more complicated; for instance:
-
--   ["either" => ["name" => "Bob", "id" => $db->int(3, 'gt')]] finds entries where the name column is "Bob" OR the id column is greater than 3.
-
-Query Joining / Queueing
-------------------------
-
-The DAL is capable of (experimental) query-joining through the queue system: either by invoking autoQueue or using the queueInsert, queueDelete, and queueUpdate, queries can be stored and then executed as a group. When the execution happens, similar queries (e.g. multiple updates to the same row of the same table) will be executed as a single query instead of multiple. Right now, this is limited, and only works in the following situations:
-
-1.  Multiple deletions to the same table with different conditions can be combined into a single query by ORing the list of conditions. For instance, queueDelete("tableName", [id => 3]) and queueDelete("tableName", [name => "Bob"]) will be executed as delete("tableName", ["either" => [[id => 3], [name => "Bob"]]), which is a single SQL query: DELETE FROM tableName WHERE id = 3 OR name = "Bob".
-
-2.  Multiple updates to the same table based on the same selection criteria can be combined into a single criteria by merging the update parameters. For instance
-
-1.  queueUpdate("tableName", [name => Bob], [id => 1]) and
-
-2.  queueUpdate("tableName", [address => "123 Downing St"], [id => 1])
-
-can be combined into
-
-1.  update("tableName", [name => Bob, address => "123 Downing St"], [id => 1]
-
-2.  At present, multiple insertions are not combined in any way, as the SQL backend is currently incapable of inserting multiple rows at once. This may change in the future.
-
-Transactions
-------------
-
-While advanced transactions may or may not fully work (depending on the backend), at least one level of transactions should always be supported. A transaction can be initiated by invoking startTransaction, and it can be finished by invoking endTransaction. The DAL makes no assurances as to what state data is stored in before a transaction is complete, merely that all changes made in a transaction are reversible.
-
-To reverse a transaction, invoke rollbackTransaction. This will be automatically invoked if a query error occurs, however it may not be invoked if the DAL throws an exception. This should be fixed in the future.
-
-Automatic Data Transformation
------------------------------
-
-Data can be automatically encoded for storage, and decoded on retrieval, by configuring the following DAL directives:
-
--   encode - An array of table columns to transform on send and retrieval. Formatted as [tableName => [columnName => [encodeFunction, encodeType, decodeFunction], ...], ...]
-
--   encodeCopy - An array of table columns that should be copied to a secondary column and encoded. No decode will occur. Formatted as [tableName => [columnName => [encodeFunction, encodeType, columnCopyName], ...], ...]
-
--   insertIdColumns - This merely specifies which columns are returned by the insert ID (that is, are autoincremented on insert). It only needs to be specified if it is a column copied in encodeCopy.
-
-Encoding will happen in the following situations:
-
--   Affected columns are updated/upserted.
-
--   Affected columns are inserted/upserted.
-
-Copy-and-encoding will happen in the following situations:
-
--   Affected columns are updated/upserted.
-
--   Affected columns are inserted/upserted.
-
--   Affected columns are automatically generated on insert. (Must specify in insertIdColumns)
-
-Decoding will happen in the following situations:
-
--   Affected columns are retrieved by select()
-
-Performance-wise, automatic data transformation is reasonably quick, as it uses isset to check for the existence of transformation directives. Of-course, it must perform this check for every single column returned, but in general this should not result in an appreciable performance decrease.
-
-Triggers
---------
-
-Most DBMS software supports triggers of some form, but they are generally quite difficult to express in a standardised way, with each implementation suffering from their own limitations. As such, the database access layer implements a very basic, singular trigger for ON CHANGE, which can be registered to any table. When the data in that table changes, this trigger will fire. The trigger is a PHP function, meaning it can execute any PHP code, but is principally used for maintaining list caches in columns.
-
-Triggers should only fire once when operations are correctly queued.
-
-Triggers affecting the row being INSERT/UPDATE/DELETEd are partially possible using data transformation.
-
-Query Logger (SQL Backend)
---------------------------
-
-If a log file is specified to the DatabaseSQL::queryLogToFile property, a log of all queries will be written on termination of the object. This is a good way to profile any application using the DAL, as the full SQL query and the time it took to execute will both be recorded in the log file.
-
-On FreezeMessenger, setting the logQueriesFile directive to a fully-resolved filename (e.g. /var/log/fm-querylog) will activate the DAL log.
-
-Various Future Implementation Notes
-===================================
-
--   File editing is obviously prone to abuse, but the way it is intended to be implemented is pretty clear cut: the image URL will always point to whatever revision was most recent at the time the URL was generated, but clients can show indications that an image has newer versions available, and users can click into them. This functionality could be used, for instance, to allow users to draw on images. While we hope to have the core API editing functionality completed by the v1 stable, any front-end editing will wait.
