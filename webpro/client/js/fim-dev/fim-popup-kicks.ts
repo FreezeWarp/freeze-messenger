@@ -27,7 +27,11 @@ popup.prototype.kicks = function() {
     this.entryTemplate = Handlebars.compile($('#view-kicks-row').html());
 };
 
-popup.prototype.kicks.prototype.init = function() {
+popup.prototype.kicks.prototype.init = function(options) {
+    console.log("init", options);
+    if ((!options.room || options.room == "0") && !window.activeLogin.userData.permissions.modRooms) {
+        this.setUser(window.userId);
+    }
 };
 
 popup.prototype.kicks.prototype.retrieve = function() {
@@ -64,7 +68,7 @@ popup.prototype.kicks.prototype.retrieve = function() {
 };
 
 popup.prototype.kicks.prototype.setRoom = function(room) {
-    if (!room) {
+    if (!room || room == 0) {
         this.options.roomId = null;
     }
     else if (this.options.roomId !== room) {
@@ -73,7 +77,7 @@ popup.prototype.kicks.prototype.setRoom = function(room) {
 };
 
 popup.prototype.kicks.prototype.setUser = function(user) {
-    if (!user) {
+    if (!user || user == 0) {
         this.options.userId = null;
     }
     else if (this.options.roomId !== user) {
