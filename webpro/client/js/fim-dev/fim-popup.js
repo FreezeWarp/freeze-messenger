@@ -801,7 +801,6 @@ popup.prototype.archive = {
         });
 
         $('#active-view-archive form#archiveSearch input[name=searchUser]').unbind('change').bind('change', function() {
-            console.log('search user', $(this).attr('data-id'));
             _this.update('searchUser', $(this).attr('data-id'));
             _this.retrieve();
         }).autocompleteHelper('users');
@@ -901,83 +900,6 @@ popup.prototype.archive = {
 };
 
 /*** END Archive ***/
-
-
-
-/* TODO: Create a seperate call? */
-popup.prototype.exportArchive = function() {
-    dia.full({
-        id : 'exportDia',
-        content : '<form method="post" action="#" onsubmit="return false;" id="exportDiaForm">How would you like to export the data?<br /><br /><table align="center"><tr><td>Format</td><td><select id="exportFormat"><option value="bbcodetable">BBCode Table</option><option value="csv">CSV List (Excel, etc.)</option></select></td></tr><tr><td colspan="2" align="center"><button type="submit">Export</button></td></tr></table></form>',
-        width: 600
-    });
-
-
-    $('#exportDiaForm').submit(function() {
-        switch ($('#exportFormat option:selected').val()) {
-            case 'bbcodetable':
-                var exportData = '';
-
-                $('#archiveMessageList').find('tr').each(function() {
-                    var exportUser = $(this).find('td:eq(0) .userNameTable').text(),
-                        exportTime = $(this).find('td:eq(1)').text(),
-                        exportMessage = $(this).find('td:eq(2)').text();
-
-                    for (i in [0,2]) {
-                        switch (i) {
-                            case 0: var exportItem = exportUser; break;
-                            case 2: var exportItem = exportMessage; break;
-                        }
-
-                        var el = $(this).find('td:eq(' + i + ') > span'),
-                            colour = el.css('color'),
-                            highlight = el.css('backgroundColor'),
-                            font = el.css('fontFamily'),
-                            bold = (el.css('fontWeight') == 'bold' ? true : false),
-                            underline = (el.css('textDecoration') == 'underline' ? true : false),
-                            strikethrough = (el.css('textDecoration') == 'line-through' ? true : false);
-
-                        if (colour || highlight || font) exportUser = '[span="' + (colour ? 'color: ' + colour + ';' : '') + (highlight ? 'background-color: ' + highlight + ';' : '') + (font ? 'font: ' + font + ';' : '') + '"]' + exportUser + '[/span]';
-                        if (bold) { exportUser = '[b]' + exportUser + '[/b]'; }
-                        if (underline) { exportUser = '[u]' + exportUser + '[/u]'; }
-                        if (strikethrough) { exportUser = '[s]' + exportUser + '[/s]'; }
-
-                        switch (i) {
-                            case 1: exportUser = exportItem; break;
-                            case 3: exportMessage = exportItem; break;
-                        }
-                    }
-
-                    exportData += exportUser + "|" + exportTime + "|" + exportMessage + "\n";
-                });
-
-                exportData = "<textarea style=\"width: 100%; height: 1000px;\">[table=head]User|Time|Message\n" + exportData + "[/table]</textarea>";
-                break;
-
-            case 'csv':
-                var exportData = '';
-
-                $('#archiveMessageList').find('tr').each(function() {
-                    var exportUser = $(this).find('td:nth-child(1) .userNameTable').text(),
-                        exportTime = $(this).find('td:nth-child(2)').text(),
-                        exportMessage = $(this).find('td:nth-child(3)').text();
-
-                    exportData += "'" + exportUser + "', '" + exportTime + "', '" + exportMessage + "'\n";
-                });
-
-                exportData = "<textarea style=\"width: 100%; height: 600px;\">" + exportData + "</textarea>";
-                break;
-        }
-
-        dia.full({
-            id : 'exportTable',
-            content : exportData,
-            width : '1000'
-        });
-
-        return false;
-    });
-};
 /*********************************************************
  ************************* END ***************************
  ************** Repeat-Action Popup Methods **************
