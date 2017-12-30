@@ -407,6 +407,7 @@
   "uploadNewFilePreview" : "Preview & Submit",
   "uploadNewFileSubmitButton" : "Upload",
   "uploadNewFileTitle" : "Upload New File",
+
   "kicks" : {
     "userName" : "User",
     "kickedBy" : "Kicked By",
@@ -414,8 +415,13 @@
     "onDate" : "On",
     "untilDate" : "Until",
     "actions" : "Actions",
-    "unkick" : "Unkick"
+    "unkick" : "Unkick",
+    "form" : {
+      "user" : "Username",
+      "room" : "Room"
+    }
   },
+
   "kick" : {
     "title" : "Kick a User",
     "form" : {
@@ -428,6 +434,7 @@
       "cancel" : "Cancel"
     }
   },
+
   "generalDialogues" : {
     "info" : {
       "title" : "Info"
@@ -446,6 +453,7 @@
       }
     }
   },
+
   "login" : {
     "title" : "Login",
     "sections" : {
@@ -462,9 +470,11 @@
       "reddit" : "Sign in with Reddit"
     }
   },
+
   "stats" : {
     "title" : "Room Stats"
   },
+
   "online" : {
     "title" : "Online Users",
     "table" : {
@@ -475,6 +485,7 @@
       "loading" : "Loading..."
     }
   },
+
   "mainMenu" : {
     "home" : "Home",
     "rooms" : {
@@ -496,6 +507,7 @@
       "submit" : "Go"
     }
   },
+
   "room" : {
     "buttons" : {
       "moderate" : "Moderate",
@@ -513,6 +525,7 @@
       "placeholder" : "Enter your text."
     }
   },
+
   "uploads" : {
     "buttons" : {
       "next" : "Next Page",
@@ -529,6 +542,7 @@
       "message" : "Have you uploaded any files yet?"
     }
   },
+
   "units" : {
     "bytes" : {
       "1" : "B",

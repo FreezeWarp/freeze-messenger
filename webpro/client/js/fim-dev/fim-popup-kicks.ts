@@ -8,10 +8,11 @@ declare var dia: any;
 declare var fim_buildUsernameTag : any;
 declare var fim_buildUsernameTagPromise : any;
 declare var fim_getUsernameDeferred : any;
+declare var fim_getRoomNameDeferred : any;
 declare var fim_buildRoomNameTagPromise : any;
 declare var fim_renderHandlebarsInPlace : any;
-declare var fim_debounce: any;
-declare var EventSource : any;
+declare var fim_getHandlebarsPhrases : any;
+declare var Handlebars : any;
 
 interface popup {
     kicks : Object
@@ -19,12 +20,30 @@ interface popup {
 
 popup.prototype.kicks = function() {
     this.options = {
+        userId : null,
+        roomId : null
     };
 
     this.entryTemplate = Handlebars.compile($('#view-kicks-row').html());
 };
 
 popup.prototype.kicks.prototype.init = function() {
+};
+
+popup.prototype.kicks.prototype.retrieve = function() {
+    jQuery.each(['user', 'room'], (index, attr) => {
+        $('#active-view-kicks form#kicksSearch input[name=' + attr + ']')
+            .autocompleteHelper(attr + 's', this.options[attr + "Id"])
+            .off('autocompleteChange')
+            .on('autocompleteChange', function () {
+                console.log('change event');
+                fim_setHashParameter(attr, $(this).attr('data-id'));
+            })
+        ;
+    });
+
+    $('#active-view-kicks table > tbody').html('');
+
     fimApi.getKicks(this.options, {
         'each' : (kick) => {
             var userTag = $('<span>'),
@@ -42,4 +61,22 @@ popup.prototype.kicks.prototype.init = function() {
             });
         }
     });
+};
+
+popup.prototype.kicks.prototype.setRoom = function(room) {
+    if (!room) {
+        this.options.roomId = null;
+    }
+    else if (this.options.roomId !== room) {
+        this.options.roomId = room;
+    }
+};
+
+popup.prototype.kicks.prototype.setUser = function(user) {
+    if (!user) {
+        this.options.userId = null;
+    }
+    else if (this.options.roomId !== user) {
+        this.options.userId = user;
+    }
 };

@@ -1298,25 +1298,46 @@ Pending Update
         </td>
 
         <td>
-            <button class="btn btn-primary" onclick="standard.unkick({{kick.userId}}, {{kick.roomId}})">{{kicks.unkick}}</button>
+            <button class="btn btn-sm btn-primary" onclick="standard.unkick({{kick.userId}}, {{kick.roomId}})">{{kicks.unkick}}</button>
         </td>
     </tr>
 </script>
 
 <script id="view-kicks" type="text/x-handlebars-template">
-<table class="table table-sm table-stripped">
-    <thead>
-    <tr class="hrow">
-        <th>{{kicks.userName}}</th>
-        <th>{{kicks.kickedBy}}</th>
-        <th>{{kicks.inRoom}}</th>
-        <th>{{kicks.onDate}}</th>
-        <th>{{kicks.untilDate}}</th>
-        <th>{{kicks.actions}}</th>
-    </tr>
-    </thead>
-    <tbody id="kickedUsers"></tbody>
-</table>
+
+    <div class="card mx-auto view-thin">
+
+        <form id="kicksSearch" action="#" method="get" style="text-align: center;" class="card-header">
+            <div class="form-row mx-auto view-form-thin">
+                {{#if activeLogin.userData.permissions.modRooms}}
+                    <div class="form-group col-md-6">
+                        <label>{{kicks.form.user}}</label>
+                        <input type="text" name="user" class="form-control" />
+                    </div>
+                {{/if}}
+
+                <div class="form-group col-md-6">
+                    <label>{{kicks.form.room}}</label>
+                    <input type="text" name="room" class="form-control" />
+                </div>
+            </div>
+        </form>
+
+        <table class="table table-sm table-stripped card-body">
+            <thead>
+            <tr class="hrow">
+                <th>{{kicks.userName}}</th>
+                <th>{{kicks.kickedBy}}</th>
+                <th>{{kicks.inRoom}}</th>
+                <th>{{kicks.onDate}}</th>
+                <th>{{kicks.untilDate}}</th>
+                <th>{{kicks.actions}}</th>
+            </tr>
+            </thead>
+            <tbody id="kickedUsers"></tbody>
+        </table>
+    </div>
+
 </script>
 
 </body>
