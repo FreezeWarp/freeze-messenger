@@ -325,7 +325,7 @@ class DatabaseInstance extends DatabaseSQL
      *
      * @return DatabaseResult
      */
-    public function getActiveUsers($options, $sort = array('userName' => 'asc'), $limit = false, $page = false)
+    public function getActiveUsers($options, $sort = array('puserId' => 'asc'), $limit = false, $page = false)
     {
         $options = $this->argumentMerge(array(
             'onlineThreshold' => Config::$defaultOnlineThreshold,
@@ -337,8 +337,18 @@ class DatabaseInstance extends DatabaseSQL
 
         $columns = array(
             $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId',
-            $this->sqlPrefix . "rooms" => 'id roomId, idEncoded roomIdEncoded, name roomName',
-            $this->sqlPrefix . "users" => 'id userId, name userName, status',
+            "join " . $this->sqlPrefix . "users" => [
+                'columns' => 'id userId, name userName, status',
+                'conditions' => [
+                    'userId' => $this->col('puserId')
+                ],
+            ],
+            "join " . $this->sqlPrefix . "rooms" => [
+                'columns' => 'id roomId, idEncoded roomIdEncoded, name roomName',
+                'conditions' => [
+                    'roomIdEncoded' => $this->col('proomId')
+                ],
+            ],
         );
 
 
@@ -350,8 +360,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
         $conditions['both']['ptime'] = $this->int(time() - $options['onlineThreshold'], 'gt');
-        $conditions['both']['proomId 2'] = $this->col('roomIdEncoded');
-        $conditions['both']['puserId 2'] = $this->col('userId');
+        //$conditions['both']['puserId'] = $this->col('userId');
 
 
         return $this->select($columns, $conditions, $sort, $limit, $page);
