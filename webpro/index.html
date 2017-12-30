@@ -1306,22 +1306,21 @@ Pending Update
 <script id="view-kicks" type="text/x-handlebars-template">
 
     <div class="card mx-auto view-thin">
-
-        <form id="kicksSearch" action="#" method="get" style="text-align: center;" class="card-header">
-            <div class="form-row mx-auto view-form-thin">
-                {{#if activeLogin.userData.permissions.modRooms}}
+        {{#if activeLogin.userData.permissions.modRooms}}
+            <form id="kicksSearch" action="#" method="get" style="text-align: center;" class="card-header">
+                <div class="form-row mx-auto view-form-thin">
                     <div class="form-group col-md-6">
                         <label>{{kicks.form.user}}</label>
                         <input type="text" name="user" class="form-control" />
                     </div>
-                {{/if}}
 
-                <div class="form-group col-md-6">
-                    <label>{{kicks.form.room}}</label>
-                    <input type="text" name="room" class="form-control" />
+                    <div class="form-group col-md-6">
+                        <label>{{kicks.form.room}}</label>
+                        <input type="text" name="room" class="form-control" />
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        {{/if}}
 
         <table class="table table-sm table-stripped card-body">
             <thead>
