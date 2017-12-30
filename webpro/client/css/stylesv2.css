@@ -29,6 +29,14 @@ html, body, #content {
     max-height: 100%;
 }
 
+.view-thin {
+    max-width: 1200px;
+}
+
+.view-form-thin {
+    max-width: 800px;
+}
+
 
 /***** Content *****/
 
