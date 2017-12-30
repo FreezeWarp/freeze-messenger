@@ -2122,7 +2122,8 @@ class DatabaseSQL extends Database
         /* Process Joins */
         if (count($joins) > 0) {
             foreach ($joins AS $table => $join) {
-                $finalQuery['join'][] = $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $table)
+                $finalQuery['join'][] = ' LEFT JOIN '
+                    . $this->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $table)
                     . ' ON '
                     . $this->recurseBothEither($join, $reverseAlias);
             }
@@ -2214,8 +2215,7 @@ class DatabaseSQL extends Database
             . ' FROM '
             . implode(', ', $finalQuery['tables'])
             . ($finalQuery['join']
-                ? ' LEFT JOIN '
-                    . implode("\n", $finalQuery['join'])
+                ? implode("\n", $finalQuery['join'])
                 : ''
             ) . ($finalQuery['where']
                 ? ' WHERE '
