@@ -265,7 +265,7 @@
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who made the message." />
             <column name="anonId" type="int" maxlen="6" comment="The anonymous ID of the user who made the message, if applicable." />
-            <column name="text" type="string" maxlen="5000" comment="The text of the message." />
+            <column name="text" type="string" maxlen="10000" comment="The text of the message." />
             <column name="textSha1" type="string" maxlen="40" comment="A SHA1 hash of the text of the message." />
             <column name="messageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
             <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />

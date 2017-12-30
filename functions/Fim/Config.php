@@ -236,8 +236,8 @@ class Config {
 
     /* Message Sending & Formatting */
 
-    /** @var int The maximum length every message must be. This will additionally be limited by the database; right now, increasing it above 1000 will almost certainly cause problems with the event streams. */
-    public static $messageMaxLength = 1000;
+    /** @var int The maximum length every message must be. This will additionally be limited by the database. */
+    public static $messageMaxLength = 5000;
 
     /** @var int The minimum length every message must be. */
     public static $messageMinLength = 1;
