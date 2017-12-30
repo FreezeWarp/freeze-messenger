@@ -1,6 +1,4 @@
-"use strict";
-
-let fimApi = function(directory) {
+let fimApi = function(directory: string) {
     this.directory = directory;
     this.lastSessionHash = '';
 

@@ -21,7 +21,7 @@ popup.prototype.rooms = function() {
     this.entryTemplate = Handlebars.compile($('#view-rooms-row').html());
 
     return;
-}
+};
 
 popup.prototype.rooms.prototype.init = function(options) {
     // Defaults

@@ -14,7 +14,7 @@ declare var EventSource : any;
 
 interface popup {
     room : Object
-};
+}
 
 popup.prototype.room = function() {
     this.options = {
