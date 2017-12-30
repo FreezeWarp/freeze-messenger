@@ -214,7 +214,7 @@ function fim_openView(viewName, options) {
             $('#active-view-' + viewName).addClass('fim-activeView');
 
             // Run init
-            openObjectInstance.init(options); // transitional; TODO: remove
+            openObjectInstance.init(options);
 
             // Run setters
             jQuery.each(options, function(name, value) {
@@ -927,10 +927,6 @@ $.when(
         url: 'client/data/language_enGB.json',
         dataType: 'json',
         success: function(data) { window.phrases = data; }
-    }),
-    $.ajax({
-        url: 'client/js/fim-all.js',
-        dataType: 'script'
     }),
     $.ajax({
         url: window.directory + 'api/serverStatus.php',

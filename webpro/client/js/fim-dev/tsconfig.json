@@ -1,0 +1,23 @@
+/* Note that this is sorta unused right now. We're currently using a filewatcher to output .ts.js files, which works around an IntelliJ bug that prevents us from using the normal .js files with Closure Compiler. */
+
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "module": "commonjs",
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "lib": [
+      "es6", "dom"
+    ]
+  },
+  "files": [
+    "fim-api.ts",
+    "fim-apiHelper.ts",
+    "fim-popup-kicks.ts",
+    "fim-popup-room.ts",
+    "fim-popup-rooms.ts",
+    "fim-popup-uploads.ts",
+    "fim-standard.ts"
+  ]
+}
