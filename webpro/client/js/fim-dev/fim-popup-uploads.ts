@@ -57,7 +57,16 @@ popup.prototype.uploads.prototype.retrieve = function() {
         page : this.options.page
     }, {
         each: (fileData) => {
-            $('#uploadsTableBody').append(this.entryTemplate(fim_getHandlebarsPhrases({fileData : fileData})))
+            console.log("file data", fileData);
+            let userTag = $('<span>'),
+                userTagPromise = fim_buildUsernameTagPromise(userTag, fileData.userId, fim_getUsernameDeferred(fileData.userId)),
+                roomTag = $('<span>'),
+                roomTagPromise = fim_buildRoomNameTagPromise(roomTag, fileData.roomId, fim_getRoomNameDeferred(fileData.roomId));
+
+            $.when(userTagPromise, roomTagPromise).then(() => {
+                $('#uploadsTableBody').append(this.entryTemplate(fim_getHandlebarsPhrases({fileData : fileData, userTag : userTag, roomTag : roomTag})));
+            });
+
         },
         end : (files, metadata) => {
             if (Object.keys(files).length == 0) {

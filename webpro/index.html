@@ -591,7 +591,10 @@ Pending Update
 
         <div class="card-body">
             <h4 class="card-title"><a href="{{fileData.webLocation}}" target="_blank">{{fileData.name}}</a></h4>
-            <h6 class="card-subtitle mb-2 text-muted">{{byte fileData.size}}</h6>
+            <h6 class="card-subtitle mb-2 text-muted">{{byte fileData.size}} • {{render roomTag}}</h6>
+            {{#if activeLogin.userData.permissions.modFiles}}
+                <h6 class="card-subtitle mb-2 text-muted">{{render userTag}}</h6>
+            {{/if}}
 
             {{#if activeLogin.userData.permissions.selfChangeAvatar}}
                 <a href="#" class="card-link" onclick="fimApi.editUserOptions('edit', {
