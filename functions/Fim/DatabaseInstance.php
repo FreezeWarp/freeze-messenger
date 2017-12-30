@@ -2543,16 +2543,16 @@ class DatabaseInstance extends DatabaseSQL
 
 
     /**
-     * Accesslog container.
-     * Accesslog is mainly interested in analytical information about requests -- not about a security log. It can be used to see which users are most active, which clients are most popular, how long a script takes to execute, and where users visit from most.
+     * Log the action in the access log, and increment the access flood ({@see accessFlood}).
+     * The Accesslog is mainly interested in analytical information about requests -- not about a security log. It can be used to see which users are most active, which clients are most popular, how long a script takes to execute, and where users visit from most.
      *
-     * @param string $action
-     * @param array  $data
+     * @param string $action The action taken.
+     * @param array  $data The data to log with the access log.
+     * @param bool   $notLoggedIn Unless this is true, an exception will be thrown if no valid user is registered, as a security precaution.
      *
      * @return bool
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-
     public function accessLog($action, $data, $notLoggedIn = false)
     {
         if (!$this->user && !$notLoggedIn) {
@@ -2560,46 +2560,7 @@ class DatabaseInstance extends DatabaseSQL
         }
 
 
-        // If Flood Detection is Enabled...
-        if (Config::$floodDetectionGlobal) {
-            $time = time();
-            $minute = $time - ($time % 60);
-
-            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) {
-                // Get Current Flood Weight
-                $floodCountMinute = $this->select([
-                      $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
-                ], [
-                    'action' => $action,
-                    'ip' => $_SERVER['REMOTE_ADDR'],
-                    'period' => $this->ts($minute),
-                ])->getColumnValue('count');
-
-                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_{$action}_$minute", $floodCountMinute ?: 0, 60, \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
-            }
-
-
-            // Error if Flood Weight is Too Great
-            if ($floodCountMinute > Config::${'floodDetectionGlobal_' . $action . '_perMinute'} && (!$this->user || !$this->user->hasPriv('modPrivs'))) {
-                new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
-            }
-            else {
-                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
-
-                // Increment the Flood Weight
-                $this->upsert($this->sqlPrefix . "accessFlood", [
-                    'action'  => $action,
-                    'ip'      => $_SERVER['REMOTE_ADDR'],
-                    'period'  => $this->ts($minute),
-                ], [
-                    //'userId' => $notLoggedIn ? null : $this->user->id,
-                    'count'  => $this->equation('$count + 1'),
-                    'expires' => $this->ts($minute + 60),
-                ], [
-                    'count' => 1,
-                ]);
-            }
-        }
+        $this->accessFlood($action, $data, $notLoggedIn);
 
 
         // Insert Access Log, If Enabled
@@ -2623,6 +2584,57 @@ class DatabaseInstance extends DatabaseSQL
         }
 
         return false;
+    }
+
+
+
+    /**
+     * Increment the counter for the number of actions taken by the requesting IP address.
+     *
+     * @param string $action The action taken.
+     *
+     * @throws Exception If the access count exceeds the configured limit.
+     */
+    public function accessFlood($action) {
+        // If Flood Detection is Enabled...
+        if (Config::$floodDetectionGlobal) {
+            $time = time();
+            $minute = $time - ($time % 60);
+
+            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) {
+                // Get Current Flood Weight
+                $floodCountMinute = $this->select([
+                    $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
+                ], [
+                    'action' => $action,
+                    'ip' => $_SERVER['REMOTE_ADDR'],
+                    'period' => $this->ts($minute),
+                ])->getColumnValue('count');
+
+                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_{$action}_$minute", $floodCountMinute ?: 0, 60, \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
+            }
+
+
+            // Error if Flood Weight is Too Great
+            if ($floodCountMinute > Config::${'floodDetectionGlobal_' . $action . '_perMinute'} && (!$this->user || !$this->user->hasPriv('modPrivs'))) {
+                new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
+            }
+            else {
+                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
+
+                // Increment the Flood Weight
+                $this->upsert($this->sqlPrefix . "accessFlood", [
+                    'action'  => $action,
+                    'ip'      => $_SERVER['REMOTE_ADDR'],
+                    'period'  => $this->ts($minute),
+                ], [
+                    'count'  => $this->equation('$count + 1'),
+                    'expires' => $this->ts($minute + 60),
+                ], [
+                    'count' => 1,
+                ]);
+            }
+        }
     }
 
 
