@@ -624,32 +624,39 @@ Pending Update
 </script>
 
 <script id="view-uploads" type="text/x-handlebars-template">
-<div class="card mx-auto view-thin">
-    <div class="card-header" align="center">
-        <div class="row">
-            <div class="col">
-                <button name="prevPage" class="btn btn-primary">{{uploads.buttons.previous}}</button>
+    <div class="card mx-auto view-thin">
+        <div class="card-header" align="center">
+            <div class="row">
+                <div class="col-3 text-left">
+                    <button name="prevPage" class="btn btn-primary">{{uploads.buttons.previous}}</button>
+                </div>
+                <div class="col-6">
+                    {{#if activeLogin.userData.permissions.modFiles}}
+                        <form>
+                            <input type="text" name="user" class="form-control" placeholder="User" />
+                        </form>
+                    {{/if}}
+                </div>
+                <div class="col-3 text-right">
+                    <button name="nextPage" class="btn btn-primary">{{uploads.buttons.next}}</button>
+                </div>
             </div>
-            <div class="col">
-                <button name="nextPage" class="btn btn-primary">{{uploads.buttons.next}}</button>
+        </div>
+
+        <div class="card-body card-columns" id="uploadsTableBody">
+        </div>
+
+        <div class="card-header" align="center">
+            <div class="row">
+                <div class="col">
+                    <button name="prevPage" class="btn btn-primary">{{uploads.buttons.previous}}</button>
+                </div>
+                <div class="col">
+                    <button name="nextPage" class="btn btn-primary">{{uploads.buttons.next}}</button>
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="card-body card-columns" id="uploadsTableBody">
-    </div>
-
-    <div class="card-header" align="center">
-        <div class="row">
-            <div class="col">
-                <button name="prevPage" class="btn btn-primary">{{uploads.buttons.previous}}</button>
-            </div>
-            <div class="col">
-                <button name="nextPage" class="btn btn-primary">{{uploads.buttons.next}}</button>
-            </div>
-        </div>
-    </div>
-</div>
 </script>
 
 

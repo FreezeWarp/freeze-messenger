@@ -13,12 +13,13 @@ declare var popup : any;
 popup.prototype.uploads = function() {
     this.options = {
         page : null,
+        userId : window.userId
     };
 
     this.entryTemplate = Handlebars.compile($('#view-uploads-row').html());
 
     return;
-}
+};
 
 popup.prototype.uploads.prototype.init = function(options) {
     // Defaults
@@ -49,11 +50,28 @@ popup.prototype.uploads.prototype.setPage = function(page) {
     }
 };
 
+popup.prototype.uploads.prototype.setUser = function(user) {
+    if (!user) {
+        this.options.userId = null;
+    }
+    else if (this.options.roomId !== user) {
+        this.options.userId = user;
+    }
+};
+
 popup.prototype.uploads.prototype.retrieve = function() {
+    $('#active-view-uploads input[name=user]')
+        .autocompleteHelper('users', this.options["userId"])
+        .off('autocompleteChange')
+        .on('autocompleteChange', function () {
+            fim_setHashParameter('user', $(this).attr('data-id'));
+        })
+    ;
+
     $('#uploadsTableBody').html('');
 
     fimApi.getFiles({
-        userIds : [window.userId],
+        userIds : [this.options.userId],
         page : this.options.page
     }, {
         each: (fileData) => {
@@ -70,14 +88,14 @@ popup.prototype.uploads.prototype.retrieve = function() {
         },
         end : (files, metadata) => {
             if (Object.keys(files).length == 0) {
-                $('#active-view-uploads button[name=roomListNext]').attr('disabled', true);
+                $('#active-view-uploads button[name=nextPage]').attr('disabled', true);
 
                 $('#uploadsTableBody').html(
                     Handlebars.compile($('#view-uploads-emptyResultSet').html())(fim_getHandlebarsPhrases())
                 );
             }
             else {
-                $('#active-view-uploads button[name=roomListNext]').removeAttr('disabled');
+                $('#active-view-uploads button[name=nextPage]').removeAttr('disabled');
             }
         }
     });
