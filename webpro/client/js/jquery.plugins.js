@@ -21360,22 +21360,100 @@ jQuery.fn.extend({autocompleteHelper : function(resourceName, defaultId) {
             'ui-autocomplete' : 'bg-light'
         },
 
+        focus: function( event, ui ) {
+            return false;
+        },
+
         // Set data-id and data-value whenever a value is selected from the menu
         select: function (event, ui) {
             $(event.target).val(ui.item.label.name);
             $(event.target).attr('data-id', ui.item.value);
             $(event.target).attr('data-value', ui.item.label.name);
+            $(event.target).removeClass('is-invalid');
+
+            $(event.target).trigger('autocompleteChange');
 
             return false;
-        },
-
-        change : function(event) {
-            // Empty data-id and data-value if the user types something
-            if ($(event.target).attr('data-value') != $(event.target).val()) {
-                $(event.target).attr('data-id', '');
-                $(event.target).attr('data-value', '');
-            }
         }
+    });
+
+
+    $(this).off('keyup.autocompleteHelper').on('keyup.autocompleteHelper', function(event) {
+        if ($(event.target).attr('data-value') != $(event.target).val()) {
+            $(event.target).removeClass('is-invalid');
+            $(event.target).attr('data-id', '');
+            $(event.target).attr('data-value', '');
+        }
+    });
+
+
+    function resolveInput(target, callback) {
+        if (!target.val()) {
+            target.attr('data-id', '');
+            target.attr('data-value', '');
+
+            target.removeClass('is-invalid');
+
+            target.trigger('autocompleteChange');
+
+            if (callback) callback();//
+        }
+        else {
+            $.when(Resolver.resolveFromName(resourceName, target.val())).then(function (pairs) {
+                if (pairs[target.val()]) {
+                    target.attr('data-value', pairs[target.val()].name);
+                    target.attr('data-id', pairs[target.val()].id);
+
+                    target.removeClass('is-invalid');
+
+                    target.trigger('autocompleteChange');
+
+                    if (callback) callback();
+                    //target.popover('dispose');
+                }
+                else {
+                    target.attr('data-id', '');
+                    target.attr('data-value', '');
+
+                    target.addClass('is-invalid');
+
+                    if (callback) callback();
+                    //dia.info("No " + resourceName + " found.", "danger");
+                    /*target.popover({
+                        content: "No " + resourceName + " found.",
+                        placement : "bottom",
+                        trigger : "manual"
+                    }).popover('show'); */
+                }
+            });
+        }
+    }
+
+
+    // Catch form submissions in order to resolve manually-inputted data
+    $(this).closest('form').off('submit.autocompleteHelper').on('submit.autocompleteHelper', function(event) {
+
+        if (_this.val() && !(_this.attr('data-id')) && !_this.hasClass('is-invalid')) {
+            console.log("fetcher invalid");
+            event.stopImmediatePropagation();
+
+            // Refire the submit when we've resolved the text.
+            resolveInput(_this, function() {
+                // Re-trigger the event
+                $(event.target).trigger('submit');
+            });
+
+            // Prevent the event from continuing (since we have to wait on a promise before we can finish this callback)
+            return false;
+        }
+
+        return true;
+    });
+
+
+    // Catch change events in order to resolve manually-inputted data
+    $(this).off('change.autocompleteHelper').on('change.autocompleteHelper', function(event) {
+        resolveInput($(event.target));
     });
 
 
