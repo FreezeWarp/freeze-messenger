@@ -208,6 +208,7 @@ standard.prototype.missedMessageHandler = function(message) {
         // we'll eventually probably want to do something fancy here, like offering to scroll to the last-viewed message.
     }
     else {
+        console.log("missed message", message);
         if (!this.notifications["room" + message.roomId]) {
             this.notifications["room" + message.roomId] = $.notify({
                 url : '#room=' + message.roomId,
@@ -234,12 +235,12 @@ standard.prototype.missedMessageHandler = function(message) {
             });
         }
 
-        $('#missedMessage' + message.roomId.replace(',', '\\,')).replaceWith(
+        $('#missedMessage' + message.roomId.toString().replace(',', '\\,')).replaceWith(
             $('<span>').text('New message from ')
                 .append(fim_buildUsernameTag($('<strong>'), message.senderId, fim_getUsernameDeferred(message.senderId)))
                 .append(' has been made in ')
                 .append(fim_buildRoomNameTag($('<strong>'), message.roomId, fim_getRoomNameDeferred(message.roomId)))
-                .append(message.missedMessages ? $('<span>').text('(Total unread messages: ' + message.missedMessages + ')') : '')
+                .append(message.missedMessages ? $('<span>').text('(Other messages: ' + message.otherMessages + ')') : '')
         );
     }
 };
