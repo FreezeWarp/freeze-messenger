@@ -15,37 +15,36 @@
             <column name="clientCode" type="string" maxlen="50" comment="A code the client identifies itself as, aside from the userAgent (really just meant for browsers, since we can't control those)." />
             <column name="ip" type="string" maxlen="100" comment="The Internet Protocol address used to make the request." />
 
-            <key name="id" type="primary" />
-            <key name="userId" type="index" />
-            <key name="action" type="index" />
-            <key name="ip" type="index" />
-            <key name="sessionHash" type="index" />
+            <key name="id"          type="primary" />
+            <key name="userId"      type="index" storage="hash" comment="This is used to view actions belonging to a user." />
+            <key name="action"      type="index" storage="hash" comment="This is used to view specific actions." />
+            <key name="ip"          type="index" storage="hash" comment="this is used to view actions belonging to an IP." />
+            <key name="sessionHash" type="index" storage="hash" comment="This is used to view actions taken by a specific session." />
         </table>
 
 
         <table name="accessFlood" hardPartitions="10" type="memory" comment="Counter of all API calls, meant for flood detection.">
             <!--<column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user." />-->
+            <column name="ip" type="string" maxlen="45" comment="The Internet Protocol address used to make the request." />
             <column name="action" type="string" maxlen="20" comment="The action performed." />
             <column name="period" type="time" comment="The time of accesses modulated as a period." />
             <column name="expires" type="time" comment="The next period, to allow deletion of all expired entries at once." />
-            <column name="ip" type="string" maxlen="45" comment="The Internet Protocol address used to make the request." />
             <column name="count" type="int" maxlen="6" comment="The number of hits in the period." />
 
-            <key name="ip,action,period" type="primary" />
-            <key name="expires" type="index" />
+            <key name="ip,action,period" type="primary" storage="hash"  comment="This is used to quickly query the number of actions taken in a flood period." />
+            <key name="expires"          type="index"   storage="btree" comment="This is used to delete expired entries." />
         </table>
 
 
-        <table name="configuration" type="general" comment="Configuration directives.">
+        <table name="configuration" type="general" comment="Configuration directives. This table will typically only be read in full.">
             <column name="directive" type="string" maxlen="50" comment="The configuration directive." />
             <column name="value" type="string" maxlen="10000" comment="The current value of the configuration directive." />
 
-            <key name="directive" type="primary" />
+            <key name="directive" type="primary" storage="hash" />
         </table>
 
 
         <table name="confirmations" type="memory" comment="Temporary information to store codes for email and other confirmations. (RESERVED)">
-            <!-- General -->
             <column name="action" type="string" maxlen="10" comment="The action being performed." />
             <column name="id" type="int" maxlen="8" comment="The ID of the action being performed." />
             <column name="code" type="int" maxlen="6" default="1" comment="The admin-set usergroup ID of the user." />
@@ -59,7 +58,7 @@
             <column name="counterName" type="string" maxlen="50" comment="The name of the counter." />
             <column name="counterValue" type="int" maxlen="10" default="0" comment="The current value of the counter." />
 
-            <key name="counterName" type="primary" />
+            <key name="counterName" type="primary" storage="hash" comment="This is used to quickly look up a counter value." />
         </table>
 
 
@@ -68,17 +67,17 @@
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID the status is being applied to. Note that this cannot be a private roomId." />
             <column name="status" type="enum" restrict="block,unblock" comment="The status of the list in regards to the room - either explicit block or explicit unblock." />
 
-            <key name="listId,roomId" type="primary" />
+            <key name="roomId,listId" type="primary" storage="btree" comment="This is used to look up the list statuses in a room." />
         </table>
 
 
-        <table name="censorLists" type="general" comment="Admin-defined text censor categories.">
+        <table name="censorLists" type="general" comment="Admin-defined text censor categories. It will typically be read in full, or joined from censorBlackWhiteLists.">
             <column name="listId" type="int" maxlen="6" autoincrement="1" comment="The unique ID of the list." />
             <column name="listName" type="string" maxlen="40" comment="The name of the list. It is only used for user identification." />
             <column name="listType" type="enum" restrict="black,white" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
             <column name="options" type="bitfield" bits="6" default="3" comment="A bitfield of specific options for the list (6 bits are allotted, but only three are used by default)." />
 
-            <key name="listId" type="primary" />
+            <key name="listId" type="primary" storage="hash" comment="This is used to look up data on a specific censor list" />
             <key name="options" type="index" />
         </table>
 
@@ -90,8 +89,8 @@
             <column name="severity" type="enum" restrict="replace,warn,confirm,block" default="replace" comment="The severity/type of word." />
             <column name="param" type="string" default="" maxlen="100" comment="The action data for the word, used in multiple ways based on the word's severity." />
 
-            <key name="wordId" type="primary" />
-            <key name="listId" type="index" />
+			<key name="wordId"        type="primary" />
+            <key name="listId,wordId" type="index" storage="btree" comment="This is used to look up words belonging to a given list." />
         </table>
 
 
@@ -101,8 +100,8 @@
             <column name="emoticonFile" type="string" maxlen="1000" comment="Image source." />
             <column name="context" type="enum" restrict="imageReplace" maxlen="20" default="imageReplace" comment="How to parse emoticon. ('imageReplace' only current option.)" />
 
-            <key name="emoticonId" type="primary" />
-            <key name="emoticonText" type="unique" />
+            <key name="emoticonId"   type="primary" storage="hash" />
+            <key name="emoticonText" type="unique"  storage="hash" />
         </table>
 
 
@@ -119,8 +118,8 @@
             <column name="options" type="bitfield" bits="16" comment="File options." />
             <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
-            <key name="fileId" type="primary" />
-            <key name="userId" type="index" />
+            <key name="fileId" type="primary" storage="hash" comment="This is used to quickly look up file entries." />
+            <key name="userId" type="index"   storage="hash" comment="This is used to look up files belonging to a user." />
         </table>
 
 
@@ -132,19 +131,20 @@
             <column name="sha256hash" type="string" maxlen="64" comment="The SHA256 hash of the file's binary data." />
             <column name="contents" type="blob" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
 
-            <key name="versionId" type="primary" />
-            <key name="fileId" type="index" />
+			<key name="versionId"        type="primary" storage="hash" />
+            <key name="fileId,versionId" type="index"   storage="btree" comment="This is used to look up a specific file version, or versions belonging to a specific file." />
+			<key name="sha256hash"       type="unique"  storage="hash"  comment="This is used to look up file versions from hashes." />
         </table>
 
 
-        <table name="fileVersionThumbnails" type="general" comment="Thumbnails of files. Can be recreated from fileVersions. (TODO/USE)">
+        <table name="fileVersionThumbnails" type="general" comment="Thumbnails of files. Can be recreated from fileVersions.">
             <column name="versionId" fkey="fileVersions.versionId" type="int" maxlen="6" comment="A unique identifier for all file versions, regardless of each file." />
             <column name="scaleFactor" type="float" comment="The size of this thumbnail relative to the full image (e.g. a scale factor of .5 results in an image of half height and width.)" />
             <column name="width" type="int" maxlen="6" comment="The width of the thumbnail." />
             <column name="height" type="int" maxlen="6" comment="The height of the thumbnail." />
             <column name="contents" type="blob" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
 
-            <key name="versionId,scaleFactor" type="primary" />
+            <key name="versionId,scaleFactor" type="primary" storage="btree" comment="This is used to look up and sort thumbnails." />
         </table>
 
 
@@ -159,25 +159,26 @@
             <column name="action" type="string" maxlen="100" comment="The action performed." />
             <column name="data" type="string" maxlen="1024" comment="The associated data of the action, encoded using JSON." />
 
-            <key name="id" type="primary" />
-            <key name="userId" type="index" />
-            <key name="time" type="index" />
-            <key name="action" type="index" />
-            <key name="ip" type="index" />
-            <key name="sessionHash" type="index" />
+            <key name="id"          type="primary" />
+			
+            <key name="userId"      type="index" storage="hash"  comment="This is used to view actions belonging to a user." />
+            <key name="action"      type="index" storage="hash"  comment="This is used to view specific actions." />
+            <key name="ip"          type="index" storage="hash"  comment="this is used to view actions belonging to an IP." />
+            <key name="sessionHash" type="index" storage="hash"  comment="This is used to view actions taken by a specific session." />
+			<key name="time"        type="index" storage="btree" comment="This is used to order events by time." />
         </table>
 
 
         <table name="kicks" type="general" comment="Room-created temporary user bans.">
-            <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who has been kicked." />
-            <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The ID of the room the kick is active in. Note that this cannot be used for private roomIds." />
-            <column name="kickerid" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who made the kick." />
-            <column name="time" type="time" default="__TIME__" comment="The time the kick was made on." />
-            <column name="expires" type="time" comment="When the kick expires." />
+            <column name="userId"   fkey="users.id" type="int"  maxlen="8"         comment="The ID of the user who has been kicked." />
+            <column name="roomId"   fkey="rooms.id" type="int"  maxlen="6"         comment="The ID of the room the kick is active in. Note that this cannot be used for private roomIds." />
+            <column name="kickerid" fkey="users.id" type="int"  maxlen="8"         comment="The ID of the user who made the kick." />
+            <column name="time"                     type="time" default="__TIME__" comment="The time the kick was made on." />
+            <column name="expires"                  type="time"                    comment="When the kick expires." />
 
-            <key name="userId,roomId" type="primary" />
-            <key name="time" type="index" />
-            <key name="expires" type="index" />
+            <key name="userId,roomId" type="primary" storage="btree" comment="This used to query kicks for a given user." />
+            <key name="roomId,time"   type="index"   storage="btree" comment="This used to query kicks for a given room, and sort them by time." />
+            <key name="expires"       type="index"   storage="btree" comment="This is used to delete by expiration." />
         </table>
 
 
@@ -189,7 +190,7 @@
             <column name="scope" type="string" maxlen="4000" />
             <column name="user_id" type="string" maxlen="80" />
 
-            <key name="client_id" type="primary" />
+            <key name="client_id" type="primary" storage="hash" />
         </table>
 
         <table name="oauth_access_tokens" type="memory">
@@ -204,8 +205,8 @@
             <column name="http_user_agent" type="string" preferAscii="true" maxlen="255" comment="The user's browser user agent, if applicable." />
             <column name="anon_id" type="int" maxlen="6" comment="A unique ID that can be used for anonymous users." />
 
-            <key name="access_token" type="primary" />
-            <key name="user_id" type="index" />
+            <key name="access_token" type="primary" storage="hash" />
+            <key name="user_id"      type="index"   storage="hash" />
         </table>
 
         <table name="oauth_authorization_codes">
@@ -217,8 +218,8 @@
             <column name="scope" type="string" maxlen="4000" />
             <column name="id_token" type="string" maxlen="1000" />
 
-            <key name="authorization_code" type="primary" />
-            <key name="user_id" type="index" />
+            <key name="authorization_code" type="primary" storage="hash" />
+            <key name="user_id"            type="index"   storage="hash" />
         </table>
 
         <table name="oauth_refresh_tokens">
@@ -229,8 +230,8 @@
             <column name="expires" type="time" required="true" />
             <column name="scope" type="string" preferAscii="true" maxlen="255" />
 
-            <key name="refresh_token" type="primary" />
-            <key name="user_id" type="index" />
+            <key name="refresh_token" type="primary" storage="hash" />
+            <key name="user_id"       type="index"   storage="hash" />
         </table>
 
         <table name="oauth_scopes">
@@ -261,26 +262,25 @@
 
         <!-- partitionBy="roomId" -->
         <table name="messages" hardPartitions="10" type="general" comment="User-created messages.">
-            <column name="id" type="int" maxlen="9" autoincrement="1" comment="The unique ID of the message." />
-            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room the message was made in." />
-            <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who made the message." />
-            <column name="anonId" type="int" maxlen="6" comment="The anonymous ID of the user who made the message, if applicable." />
-            <column name="text" type="string" maxlen="10000" comment="The text of the message." />
-            <column name="textSha1" type="string" maxlen="40" comment="A SHA1 hash of the text of the message." />
-            <column name="messageFormatting" type="string" maxlen="300" comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
-            <column name="deleted" type="bool" default="0" comment="Whether or not the message has been deleted by an administrator." />
-            <column name="time" type="time" default="__TIME__" comment="The time the message was made on." />
-            <column name="ip" type="string" maxlen="128" comment="The IP of the user who made the message." />
-            <column name="flag" type="enum" restrict="video,audio,image,text,application,archive,html,url,email," maxlen="10" comment="The content-type flag of the message." />
+            <column name="id"  autoincrement="1"  type="int"    maxlen="9"     comment="The unique ID of the message." />
+            <column name="roomId"                 type="blob"   maxlen="23"    comment="The ID of the room the message was made in." />
+            <column name="userId" fkey="users.id" type="int"    maxlen="8"     comment="The ID of the user who made the message." />
+            <column name="anonId"                 type="int"    maxlen="6"     comment="The anonymous ID of the user who made the message, if applicable." />
+            <column name="text"                   type="string" maxlen="10000" comment="The text of the message." />
+            <column name="textSha1"               type="string" maxlen="40"    comment="A SHA1 hash of the text of the message." />
+            <column name="messageFormatting"      type="string" maxlen="300"   comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
+            <column name="deleted"                type="bool"   default="0"    comment="Whether or not the message has been deleted by an administrator." />
+            <column name="time"                   type="time"   ="__TIME__"    comment="The time the message was made on." />
+            <column name="ip"                     type="string" maxlen="128"   comment="The IP of the user who made the message." />
+            <column name="flag"                   type="enum"   maxlen="10"    comment="The content-type flag of the message."
+			        restrict="video,audio,image,text,application,archive,html,url,email," />
 
-            <key name="id" type="primary" />
-            <key name="id,roomId" type="unique" />
-            <key name="text" type="fulltext" />
-            <key name="roomId" type="index" />
-            <key name="deleted" type="index" />
-            <key name="time" type="index" />
-            <key name="roomId" type="index" />
-            <key name="userId" type="index" />
+			<!-- storage TODO -->
+			<key name="id"             type="primary" storage="hash"  comment="This is a dummy index for auto increment." />
+            <key name="roomId,id"      type="index"   storage="btree" comment="This is used to query messages in a room by ID, or sort messages by ID." />
+            <key name="text"           type="fulltext"                comment="This is used to search messages." />
+            <key name="time"           type="index"   storage="btree" command="This is used to sort messages by time." />
+            <key name="roomId,deleted" type="index"   storage="btree" comment="This is used to query messages in a specific room, and to filter out deleted messages." />
         </table>
 
 
@@ -293,7 +293,7 @@
             <column name="time" type="time" default="__TIME__" comment="The time of the change." />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user during the change." />
 
-            <key name="messageId,roomId,time" type="primary" />
+            <key name="roomId,messageId,time" type="primary" storage="btree" comment="This is used for either querying which messages have been edited in a room, or for retrieving the edits belonging to a given messageId, or for retrieving a single edit on a given time." />
         </table>
 
 
@@ -304,7 +304,7 @@
             <column name="messages" type="int" maxlen="4" comment="The number of messages submitted" />
             <column name="ip" type="string" maxlen="128" comment="The IP of the user during their first message." />
 
-            <key name="time,userId,roomId" type="primary" />
+            <key name="time,userId,roomId" type="primary" storage="hash" comment="This is used to quickly query the number of messages a user has posted in a room." />
         </table>
 
 
@@ -319,11 +319,12 @@
             <column name="data" type="string" maxlen="100" comment="The associated data of the action." />
 
             <key name="id" type="primary" />
-            <key name="userId" type="index" />
-            <key name="time" type="index" />
-            <key name="action" type="index" />
-            <key name="ip" type="index" />
-            <key name="sessionHash" type="index" />
+			
+            <key name="userId"      type="index" storage="hash"  comment="This is used to view actions belonging to a user." />
+            <key name="action"      type="index" storage="hash"  comment="This is used to view specific actions." />
+            <key name="ip"          type="index" storage="hash"  comment="this is used to view actions belonging to an IP." />
+            <key name="sessionHash" type="index" storage="hash"  comment="This is used to view actions taken by a specific session." />
+			<key name="time"        type="index" storage="btree" comment="This is used to order events by time." />
         </table>
 
 
@@ -334,10 +335,9 @@
             <column name="status" type="enum" restrict="away,busy,available,invisible,offline," default="available" comment="The user's status." />
             <column name="typing" type="bool" default="0" comment="Whether or not the user is typing." />
 
-            <key name="userId,roomId" type="primary" />
-            <key name="time" type="index" />
-            <key name="userId" type="index" />
-            <key name="roomId" type="index" />
+            <key name="roomId,userId" type="primary" storage="btree" comment="This is used for fetching primarily the users active in a given roomId." /> <!-- TODO: maybe combine with time index? -->
+            <key name="time"          type="index"   storage="btree" comment="This is used to filter out expired pings." />
+            <key name="userId"        type="index"   storage="hash"  comment="This is used for finding the rooms a single user is active in." />
         </table>
 
 
@@ -366,13 +366,12 @@
             <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
 
-            <key name="id" type="primary" />
-            <key name="idEncoded" type="unique" />
-            <key name="nameSearchable" type="index" />
-            <key name="options" type="index" />
-            <key name="ownerId" type="index" />
-            <key name="lastMessageId" type="index" />
-            <key name="lastMessageTime" type="index" />
+            <key name="id"              type="primary" storage="btree" comment="Ideally, this would be hash, since rooms are only ever selected by explicit IDs, but for sorting it is a btree." />
+            <key name="idEncoded"       type="unique"  storage="hash"  comment="This should mainly be used to join on tables with an encoded roomId." />
+            <key name="nameSearchable"  type="index"   storage="btree" comment="This should be used for wildcard room searches." />
+            <key name="options"         type="index" /> <!-- TODO: is there a way of indexing by a specific bit? -->
+            <key name="ownerId"         type="index"   storage="hash"  comment="This is used for selecting/sorting rooms a specific user owns." />
+            <key name="lastMessageTime" type="index"   storage="btree" comment="This is used for sorting by most recently posted-in rooms." />
         </table>
 
 
@@ -395,9 +394,9 @@
 
             <column name="changeTime" type="time" default="__TIME__" comment="The time at which the above information was altered." />
 
-            <key name="id" type="primary" />
-            <key name="roomId" type="index" />
-            <key name="changeTime" type="index" />
+            <key name="id"         type="primary" />
+            <key name="roomId"     type="index" storage="hash"  comment="This should be used to select entries belonging to a specific room." />
+            <key name="changeTime" type="index" storage="btree" comment="This should be used to sort by the most recently changed rooms." />
         </table>
 
 
@@ -407,20 +406,19 @@
             <column name="param" type="int" maxlen="8" comment="The user ID or group ID being affected." />
             <column name="permissions" type="bitfield" bits="24" comment="The permissions granted in the room to the affected user or group." />
 
-            <key name="roomId,attribute,param" type="primary" />
+            <key name="roomId,attribute,param" type="primary" storage="btree" comment="This can be used both to lookup whether a user or group has given permissions in a room, or to fetch such entries for a single room." />
         </table>
 
 
         <table name="roomPermissionsCache" partitionBy="roomId" type="memory" content="A simplified cache of room permissions. This table should be used to determine if a user is known to be allowed access to a room. When a row doesn't exist, it should be tested fully and then inserted here. It does not index private rooms.">
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
-            <column name="permissions" type="bitfield" bits="24" comment="The user's permissions." />
             <column name="expires" type="time" comment="After this time, the entry will no longer be considered valid. May be disabled if this cache is updated automatically." />
+            <column name="permissions" type="bitfield" bits="24" comment="The user's permissions." />
 
-            <!-- todo: maybe enum? -->
-            <column name="isKicked" type="bool" comment="If an access restriction is because of a kick, this should indicate as much. This can be used to tell a user they have been kicked instead of having to query the kicks table to check each time. It is assumed that if true, then expires corresponds with the kick expiration." />
+            <column name="deniedReason" type="enum" restrict="kick" comment="If an access restriction is because of a certain reason, this should indicate as much. This can be used to tell a user they have been kicked instead of having to query the kicks table to check each time. It is assumed that if kicked, then expires corresponds with the kick expiration." />
 
-            <key name="roomId,userId" type="primary" />
+            <key name="roomId,userId" type="primary" storage="hash" />
         </table>
 
 
@@ -429,8 +427,9 @@
             <column name="roomId" type="blob" maxlen="23" comment="The ID of the room." />
             <column name="messages" type="int" default="0" maxlen="8" comment="The number of messages made by the user in the room." />
 
-            <key name="userId,roomId" type="primary" />
-            <key name="roomId" type="index" />
+            <key name="roomId,userId"   type="primary" storage="hash" />
+            <key name="roomId,messages" type="index"   storage="btree" comment="To optimise lookup of the top posters in a room." />
+            <key name="userId,messages" type="index"   storage="btree" comment="To optimise lookup of the rooms a user has made the most posts in." />
         </table>
 
 
@@ -439,7 +438,7 @@
             <column name="attempts" type="int" maxlen="2" comment="Failed login attempts." />
             <column name="expires" type="time" comment="When the entry is considered expired." />
 
-            <key name="ip" type="primary" />
+            <key name="ip" type="primary" storage="hash" />
         </table>
 
 
@@ -467,12 +466,12 @@
         </table>
 
 
-        <table name="streams" type="general" comment="An index tracking all of our streams. In most cases, this table will be unused, but with some stream implementations (for instance, when creating tables for event streams), this will be used to determine old tables in need of dropping.">
+        <table name="streams" type="general" comment="An index tracking all of our database-stored streams.">
             <column name="streamName" type="string" maxlen="100" comment="The ID of the phrase found in the message." />
             <column name="lastEvent" type="time" default="__TIME__" comment="The ID of the message." />
 
-            <key name="streamName" type="primary" />
-            <key name="lastEvent" type="index" />
+            <key name="streamName" type="primary" type="hash"  comment="For quickly querying stream info." />
+            <key name="lastEvent"  type="index"   type="btree" comment="For deleting old streams." />
         </table>
 
 
@@ -484,8 +483,8 @@
             <column name="time" type="time" default="__TIME__" comment="The time the message was made." />
             <column name="otherMessages" type="int" comment="The number of other messages that have been sent since this one." />
 
-            <key name="userId,roomId" type="primary" />
-            <key name="time" type="index" />
+            <key name="userId,roomId" type="primary" storage="btree" />
+            <key name="time"          type="index"   storage="btree" />
         </table>
 
 
@@ -506,7 +505,7 @@
             <column name="email" type="string" maxlen="254" comment="The user's email address. Only used in vanilla logins." />
             <column name="emailVerified" type="bool" default="0" />
 
-            <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." />
+            <column name="lastSync" type="time" default="0" comment="The date the userdata was last synced. This is not applicable for vanilla logins." /> <!-- TODO: probably remove? -->
 
             <column name="privacyLevel" type="enum" restrict="block,friends,allow" default="allow" maxlen="50" comment="The user's name." />
 
@@ -551,20 +550,20 @@
             <column name="parentalAge" type="int" maxlen="2" default="0" comment="Content rated above this rating should be blocked." />
 
 
-            <key name="id" type="primary" />
-            <key name="integrationMethod,integrationId" type="unique" />
+            <key name="id"                              type="primary" storage="hash"  comment="Used for looking up users." />
+            <key name="integrationMethod,integrationId" type="unique"  storage="hash"  comment="Used for looking up a user from integration login." />
 
-            <key name="name" type="index" />
-            <key name="nameSearchable" type="index" />
-            <key name="mainGroupId" type="index" />
-            <key name="lastSync" type="index" />
+            <key name="name"                            type="index"   storage="hash"  comment="Used for looking up a user given their name, esp. with logins." />
+            <key name="nameSearchable"                  type="index"   storage="btree" comment="Used for wildcard searching of user names." />
+            <key name="mainGroupId"                     type="index"   storage="hash"  comment="Used for searching for users based on group." />
+            <!-- <key name="lastSync"                        type="index" /> TODO: probably remove? -->
             <key name="privs" type="index" />
 
-            <key name="options" type="index" />
-            <key name="fileCount" type="index" />
-            <key name="fileSize" type="index" />
-            <key name="messageCount" type="index" />
-            <key name="defaultRoomId" type="index" />
+            <key name="options" type="index" /> <!-- TODO -->
+			
+            <key name="fileSize"      type="index" storage="btree" comment="Used to search for users by file upload size." />
+            <key name="messageCount"  type="index" storage="btree" comment="Used to search for users by posts." />
+            <key name="defaultRoomId" type="index" storage="hash"  comment="Used to search for users with a given default room." />
         </table>
 
 
@@ -572,7 +571,7 @@
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID." />
 
-            <key name="userId,roomId" type="primary" />
+            <key name="userId,roomId" type="primary" storage="btree" />
         </table>
 
 
@@ -581,7 +580,7 @@
             <column name="subjectId" fkey="users.id" type="int" maxlen="8" comment="The user ID friended." />
             <column name="status" type="enum" restrict="friend,request,deny" default="request" comment="Whether the relationship is a friend connection, merely a request, or if the request has been denied permanently." />
 
-            <key name="userId,subjectId" type="primary" />
+            <key name="userId,subjectId" type="primary" storage="btree" />
         </table>
 
 
@@ -589,7 +588,7 @@
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="subjectId" fkey="users.id" type="int" maxlen="8" comment="The user ID ignored." />
 
-            <key name="userId,subjectId" type="primary" />
+            <key name="userId,subjectId" type="primary" storage="btree" />
         </table>
 
 
@@ -622,9 +621,9 @@
 
             <column name="changeTime" type="time" default="__TIME__" comment="The time at which the above information was altered." />
 
-            <key name="id" type="primary" />
-            <key name="userId" type="index" />
-            <key name="changeTime" type="index" />
+            <key name="id"         type="primary" storage="btree" />
+            <key name="userId"     type="index"   storage="hash" />
+            <key name="changeTime" type="index"   storage="btree" />
         </table>
 
 
@@ -632,12 +631,13 @@
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID to be watched." />
 
-            <key name="userId,roomId" type="primary" />
-            <key name="roomId" type="index" />
+            <key name="userId,roomId" type="primary" storage="btree" />
+            <key name="roomId"        type="index"   storage="hash" />
         </table>
     </database>
 
 
+	<!-- TODO: probably remove? -->
     <definitions>
         <bitfield name="options" table="censorLists">
             <def bit="1" comment="If false, the list is considered inactive and is neither used nor shown to users under any circumstances.">Enabled</def>
