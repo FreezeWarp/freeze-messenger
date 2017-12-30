@@ -131,8 +131,6 @@ popup.prototype.room.prototype.insertDoc = function() {
 
 
 popup.prototype.room.prototype.newMessage = function(roomId, messageId, messageText) {
-    console.log("new message", roomId, messageId, messageText);
-
     if ($('#message' + messageId).length > 0) {
         console.log("existing");
         $('#message' + messageId).replaceWith(messageText);
@@ -545,6 +543,8 @@ popup.prototype.room.prototype.close = function() {
 popup.prototype.room.prototype.setRoom = function(roomId) {
     if (this.options.roomId && this.options.roomId != roomId) {
         this.close();
+        this.options.lastEvent = 0;
+        this.options.lastMessage = 0;
         this.options.roomId = roomId;
         this.init();
     }
