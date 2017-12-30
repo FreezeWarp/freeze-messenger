@@ -93,7 +93,7 @@ Handlebars.registerHelper("byte", function(fileSize) {
 
     for (i in window.phrases.units.bytes) {
         if (fileSize > i)
-            fileSize2 = (fileSize / i) + window.phrases.units.bytes[i];
+            fileSize2 = Math.round(fileSize / i) + window.phrases.units.bytes[i];
     }
 
     return fileSize2;
