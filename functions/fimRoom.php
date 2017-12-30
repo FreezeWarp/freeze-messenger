@@ -231,10 +231,7 @@ class fimRoom extends DynamicObject
      */
     function __construct($roomData)
     {
-        if (is_int($roomData))
-            $this->set('id', $roomData);
-
-        elseif (is_string($roomData) && ($this->isPrivateRoomId($roomData) || ctype_digit($roomData)))
+        if (is_int($roomData) || is_string($roomData))
             $this->set('id', $roomData);
 
         elseif (is_array($roomData))
@@ -670,9 +667,11 @@ class fimRoom extends DynamicObject
      */
     protected function setId($id)
     {
-        $this->id = $id;
-
         if (fimRoom::isPrivateRoomId($id)) {
+            $members = explode(',', substr($id, 1));
+            sort($members, SORT_NUMERIC);
+            $this->id = $id[0] . implode(',', $members);
+
             if ($id[0] === 'p')
                 $this->set('type', fimRoom::ROOM_TYPE_PRIVATE);
             elseif ($id[0] === 'o')
@@ -684,9 +683,14 @@ class fimRoom extends DynamicObject
             $this->set('topic', '');
             $this->set('defaultPermissions', 0);
         }
-        else {
+
+        elseif (is_int($id) || ctype_digit($id)) {
+            $this->id = $id;
             $this->set('type', fimRoom::ROOM_TYPE_GENERAL);
         }
+
+        else
+            throw new Exception('Invalid ID passed to fimRoom::setId');
     }
 
     /**

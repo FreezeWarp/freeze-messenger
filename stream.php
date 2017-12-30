@@ -60,7 +60,10 @@ if (!\Fim\Config::$serverSentEvents && !$request['fallback']) {
 }
 
 if ($request['streamType'] === 'room') {
-    if (!(\Fim\Database::instance()->hasPermission($user, new fimRoom($request['queryId'])) & fimRoom::ROOM_PERMISSION_VIEW))
+    $room = new fimRoom($request['queryId']);
+    $request['queryId'] = $room->id;
+
+    if (!(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
         new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
     \Fim\Database::instance()->markMessageRead($request['queryId'], $user->id);
