@@ -161,7 +161,17 @@ do {
     }
 
     $request['page']++;
-    \Fim\Database::instance()->accessLog('getRooms', $request); // We relog so that the next query counts as part of the flood detection. The only big drawback is that we will throw an exception eventually, without properly informing the user of where to resume searching from. (TODO)
+
+
+    // We relog so that the next query counts as part of the flood detection. (If we go over the flood limit, catch the exception and return with where to continue searching from.)
+    try {
+        \Fim\Database::instance()->accessFlood('getRooms');
+    } catch (fimErrorThrown $ex) {
+        // TODO: test
+        $xmlData['metadata']['nextPage'] = $request['page'];
+        echo new Http\ApiData($xmlData);
+    }
+
 } while (isset($roomsQuery) && $roomsQuery->paginated && count($xmlData['rooms']) == 0);
 
 

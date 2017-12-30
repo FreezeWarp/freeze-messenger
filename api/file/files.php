@@ -15,7 +15,9 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 /**
- * Obtains One or More User's Uploads
+ * Obtains One or More User's Uploads.
+ * Uploads posted in a specific room can only be viewed by users with permission to view that room, and admins with modFiles.
+ * Uploads not posted in a specific room can only be viewed by the users themselves, and admins with modFiles.
  *
  * @package fim3
  * @version 3.0
@@ -61,22 +63,37 @@ $xmlData['files'] = array();
 
 
 
-/* Get Uploads from Database */
-$files = \Fim\DatabaseSlave::instance()->getFiles([
-    'fileIds' => $request['fileIds'],
-    'userIds' => $request['userIds']
-], ['id' => 'asc'], 10, $request['page'])->getAsObjects('\\Fim\\File');
-
-
 /* Start Processing */
-foreach ($files AS $file) {
-    // Only show if the user has permission.
-    if ($file->room && $file->user->id != $user->id) { /* TODO: Test */
-        if (!(\Fim\Database::instance()->hasPermission($user, $file->room) & fimRoom::ROOM_PERMISSION_VIEW)) continue;
+do {
+    $filesQuery = \Fim\DatabaseSlave::instance()->getFiles([
+        'fileIds' => $request['fileIds'],
+        'userIds' => $request['userIds']
+    ], ['id' => 'asc'], 10, $request['page']);
+
+    foreach ($filesQuery->getAsObjects('\\Fim\\File') AS $file) {
+        // Files can only be viewed by admins and the user themselves, and users with permission to view the room the file was posted in.
+        if (!$user->hasPriv('modFiles') && $file->user->id != $user->id) {
+            if (!$file->room || (!(\Fim\Database::instance()->hasPermission($user, $file->room) & fimRoom::ROOM_PERMISSION_VIEW)))
+                continue;
+        }
+
+        $xmlData['files']['file ' . $file->id] = array_merge([
+            'userId' => $file->user->id,
+            'roomId' => $file->room->id
+        ], fim_objectArrayFilterKeys($file, ['name', 'size', 'container', 'sha256Hash', 'webLocation']));
     }
 
-    $xmlData['files']['file ' . $file->id] = fim_objectArrayFilterKeys($file, ['name', 'size', 'container', 'sha256Hash', 'webLocation']);
-}
+    $request['page']++;
+
+    // We relog so that the next query counts as part of the flood detection. (If we go over the flood limit, catch the exception and return with where to continue searching from.)
+    try {
+        \Fim\Database::instance()->accessLog('getFiles', $request);
+    } catch (fimErrorThrown $ex) {
+        // TODO: test
+        $xmlData['metadata']['nextPage'] = $request['page'];
+        echo new Http\ApiData($xmlData);
+    }
+} while ($filesQuery->paginated && count($xmlData['rooms']) == 0);
 
 
 
