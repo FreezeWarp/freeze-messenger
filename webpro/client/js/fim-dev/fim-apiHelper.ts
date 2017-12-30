@@ -91,6 +91,10 @@ class Resolver {
                         returnData[item] = Resolver["cached" + type + "Properties"][Resolver["cached" + typeProperty].indexOf(item)];
                         unresolvedItemsWaiting.splice($.inArray(item, unresolvedItemsWaiting),1);
                     }
+                    else if (Resolver["waiting" + typeProperty].indexOf(item) === -1) {
+                        clearInterval(retry);
+                        unresolvedItemsWaiting.splice($.inArray(item, unresolvedItemsWaiting),1);
+                    }
                 }, 100);
 
                 unresolvedItemsWaiting.push(item);
@@ -114,6 +118,10 @@ class Resolver {
                     returnData[entry[property]] = entry;
                 },
                 'end': function() {
+                    jQuery.each(unresolvedItems, function(index, item) {
+                        Resolver["waiting" + typeProperty].splice($.inArray(item, Resolver["waiting" + typeProperty]),1);
+                    });
+
                     unresolvedItems = [];
                 }
             })
