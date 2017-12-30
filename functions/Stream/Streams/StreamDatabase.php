@@ -44,7 +44,7 @@ class StreamDatabase implements StreamInterface {
      */
     private function createStreamIfNotExists($stream) {
         /* Create the Stream Table if it Doesn't Exist */
-        $this->database->createTable($this->database->sqlPrefix . 'stream_' . $stream, '', DatabaseEngine::memory, [
+        @$this->database->createTable($this->database->sqlPrefix . 'stream_' . $stream, '', DatabaseEngine::memory, [
             'id' => [
                 'type' => 'int',
                 'maxlen' => 10,
@@ -54,18 +54,29 @@ class StreamDatabase implements StreamInterface {
                 'type' => 'int',
                 'maxlen' => 3,
             ],
+            'time' => [
+                'type' => 'int',
+                'default' => '__TIME__',
+            ],
             'data' => [
                 'type' => 'json',
-                'maxlen' => 1000, // TODO: support chunking
+                'maxlen' => 100, // TODO: support chunking
             ],
             'eventName' => [
                 'type' => 'string',
                 'maxlen' => 20,
             ]
         ], [
-            'id' => [
+            'id,chunk' => [
                 'type' => DatabaseIndexType::primary
-            ]
+                //'storage' => DatabaseIndexStorage::btree
+            ],
+            /*
+             * 'time' => [
+             *      'type' => DatabaseIndexType::primary
+             *      'storage' => DatabaseIndexStorage::btree
+             * ]
+             */
         ]);
 
         /* Update the Streams Table to Keep This Stream Alive */
@@ -103,33 +114,64 @@ class StreamDatabase implements StreamInterface {
         $this->createStreamIfNotExists($stream);
 
         $output = $this->database->select([
-            $this->database->sqlPrefix . 'stream_' . $stream => 'id, chunk, data, eventName'
+            $this->database->sqlPrefix . 'stream_' . $stream => 'id, time, chunk, data, eventName'
         ], [
-            'id' => $this->database->int($lastId, DatabaseTypeComparison::greaterThan)
+            'id' => $this->database->int($lastId, DatabaseTypeComparison::greaterThan),
+            'time' => $this->database->now(-15, DatabaseTypeComparison::greaterThan)
         ], [
             'id' => 'ASC',
             'chunk' => 'ASC'
-        ])->getAsArray(true);
+        ])->getAsArray('id', true);
 
-        foreach ($output AS &$entry) {
+        $events = [];
+
+        foreach ($output AS $id => $chunks) {
+            $entry = $chunks[0];
+            $entry['data'] = '';
+
+            $this->database->startTransaction();
+            foreach ($chunks AS $chunk) {
+                $entry['data'] .= $chunk['data'];
+            }
+
             $entry['data'] = json_decode($entry['data'], true);
+            $events[] = $entry;
         }
 
-        return $output;
+        return $events;
     }
 
 
     public function publish($stream, $eventName, $data) {
         $this->createStreamIfNotExists($stream);
 
-        $this->database->insert($this->database->sqlPrefix . 'stream_' . $stream, [
-            'chunk' => 1,
-            'eventName' => $eventName,
-            'data' => json_encode($data),
-        ]);
+        // Delete old messages (do so first, just in case we hit the maximum, this ensures that old messages will still be deleted first)
         $this->database->delete($this->database->sqlPrefix . 'stream_' . $stream, [
-            'id' => $this->database->int($this->database->getLastInsertId() - 100, DatabaseTypeComparison::lessThan)
+            'time' => $this->database->now(-15, 'lt')
         ]);
+
+        // Split up the data into chunks
+        $chunks = str_split(json_encode($data), 100);
+
+        // Insert all of the chunks (in a single transaction, ensuring they are all received together)
+        $this->database->startTransaction();
+
+        foreach ($chunks AS $i => $chunk) {
+            $data = [
+                'chunk'     => $i,
+                'eventName' => $eventName,
+                'data'      => $chunk,
+            ];
+
+            // Make sure all messages have the same ID
+            if ($i > 0) {
+                $data['id'] = $this->database->getLastInsertId();
+            }
+
+            $this->database->insert($this->database->sqlPrefix . 'stream_' . $stream, $data);
+        }
+
+        $this->database->endTransaction();
     }
 
 
