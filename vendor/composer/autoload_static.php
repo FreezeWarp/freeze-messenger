@@ -173,6 +173,13 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
     );
 
     public static $prefixesPsr0 = array (
+        'O' => 
+        array (
+            'OAuth2' => 
+            array (
+                0 => __DIR__ . '/..' . '/bshaffer/oauth2-server-php/src',
+            ),
+        ),
         'G' => 
         array (
             'Google_Service_' => 
