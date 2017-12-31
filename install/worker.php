@@ -278,7 +278,6 @@ switch ($_REQUEST['phase']) {
             \Fim\DatabaseLogin::setInstance(new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $forumTablePrefix));
 
 
-            require_once('../functions/oauth2-server-php/src/OAuth2/Autoloader.php');
             OAuth2\Autoloader::register();
             $oauthStorage = new \Fim\OAuthProvider(\Fim\Database::instance(), 'fimError');
             $oauthServer = new OAuth2\Server($oauthStorage); // Pass a storage object or array of storage objects to the OAuth2 server class

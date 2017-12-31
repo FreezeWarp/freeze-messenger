@@ -98,7 +98,6 @@ if (!$ignoreLogin) {
      * Begin OAuth Server
      * We have not yet added any Grant Types. We add these instead in the next section.
      */
-    require_once('functions/oauth2-server-php/src/OAuth2/Autoloader.php');
     OAuth2\Autoloader::register();
 
     /**
