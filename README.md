@@ -58,9 +58,9 @@ If you are only running a small chat server, you will not need to edit config.ph
 
 -   __Master/Replication Database Settings__: If desired, you can set a different set of login information for a replication database server. FreezeMessenger will use the replication server whenever it is retrieving information that can be time delayed. It will only ever write to the master.
 
--   __Cache Servers__: By default, the FreezeMessenger Installer will automatically enable disk caching, as well as either APC or APCu caching if your server supports them. However, Memcached and Redis are also (experimentally) supported, and you can enable them by editing config.php.
+-   __Cache Servers__: By default, the FreezeMessenger Installer will automatically enable disk caching, as well as either APC or APCu caching if your server supports them. However, Memcached and Redis are also supported, and you can enable them by editing config.php.
 
--   __Stream Servers__: By default, FreezeMessenger will use the PgSQL streaming method (see below) if Postgres is used for its database, but you can manually enable the PgSQL streaming method by editing config.php. Likewise, the Redis streaming method can be enabled by editing config.php.
+-   __Stream Servers__: By default, FreezeMessenger will use the PgSQL streaming method (see below) if Postgres is used for its database, but you can manually enable the PgSQL streaming method by editing config.php. Likewise, the Redis and Kafka streaming methods can be enabled by editing config.php.
 
 -   __Login Servers__: You will have an opportunity to configure all supported login servers when you first install FreezeMessenger, but you can also update and add Login Server API keys by editing config.php.
 
