@@ -1,7 +1,7 @@
 <?php
 namespace Cache;
 
-interface CacheInterface {
+interface DriverInterface {
     /**
      * A cache that will be synced across all server instances.
      */
@@ -47,7 +47,7 @@ interface CacheInterface {
      *
      * @return mixed
      */
-    public function set($index, $value, $ttl);
+    public function set($index, $value, $ttl = 3600);
 
     /**
      * Set a cache entry at $index with $value, which shouldn't be valid for more than $ttl. Do nothing if $index already exists.
@@ -58,7 +58,7 @@ interface CacheInterface {
      *
      * @return mixed
      */
-    public function add($index, $value, $ttl);
+    public function add($index, $value, $ttl = 3600);
 
     /**
      * @param $index
@@ -76,7 +76,7 @@ interface CacheInterface {
      *
      * @return mixed
      */
-    public function inc($index, $value);
+    public function inc($index, int $value = 1);
 
 
     /**

@@ -1,13 +1,14 @@
 <?php
-namespace Cache;
+namespace Cache\Driver;
 
-use Memcached;
+use Cache\DriverInterface;
+use Cache\CacheSetFallbackTrait;
 
-class CacheMemcached implements CacheInterface {
+class Memcached implements DriverInterface {
     use CacheSetFallbackTrait;
 
     /**
-     * @var Memcached
+     * @var \Memcached
      */
     private $instance;
 
@@ -17,12 +18,12 @@ class CacheMemcached implements CacheInterface {
     }
 
     public static function getCacheType(): string {
-        return CacheInterface::CACHE_TYPE_DISTRIBUTED;
+        return DriverInterface::CACHE_TYPE_DISTRIBUTED;
     }
 
 
     public function __construct($servers = [[]]) {
-        $this->instance = new Memcached();
+        $this->instance = new \Memcached();
 
         $memcachedServers = [];
         foreach ($servers AS $server) {
@@ -55,8 +56,8 @@ class CacheMemcached implements CacheInterface {
         return $this->instance->getResultCode() != Memcached::RES_NOTFOUND;
     }
 
-    public function inc($index, $amt) {
-        return $this->instance->increment($index, $amt);
+    public function inc($index, int $amt = 1) {
+        return $this->instance->increment($index, $amt) !== false;
     }
 
     public function clear($index) {

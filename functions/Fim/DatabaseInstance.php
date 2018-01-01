@@ -1629,7 +1629,7 @@ class DatabaseInstance extends DatabaseSQL
         if (!Config::$roomPermissionsCacheEnabled)
             return -1;
 
-        elseif (($permissionsCache = \Cache\CacheFactory::get("permission_{$userId}_{$roomId}", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) !== false)
+        elseif (($permissionsCache = \Cache\CacheFactory::get("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) !== false)
             return $permissionsCache;
 
         else {
@@ -1658,7 +1658,7 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function updatePermissionsCache($roomId, $userId, $permissions, $reason = '') {
         if (Config::$roomPermissionsCacheEnabled) {
-            if (!\Cache\CacheFactory::set("permission_{$userId}_{$roomId}", $permissions, Config::$roomPermissionsCacheExpires, \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) {
+            if (!\Cache\CacheFactory::set("permission_{$userId}_{$roomId}", $permissions, Config::$roomPermissionsCacheExpires, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
                 $this->upsert($this->sqlPrefix . 'roomPermissionsCache', [
                     'roomId' => $roomId,
                     'userId' => $userId,
@@ -1703,7 +1703,7 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function deleteUserPermissionsCache($roomId, $userId) {
         if (Config::$roomPermissionsCacheEnabled) {
-            \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
+            \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
 
             $this->delete($this->sqlPrefix . 'roomPermissionsCache', [
                 'roomId' => $roomId,
@@ -1725,7 +1725,7 @@ class DatabaseInstance extends DatabaseSQL
             $userIds = $this->getSocialGroupMembers($groupId);
 
             foreach ($userIds AS $userId) {
-                \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
+                \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
             }
 
             $this->delete($this->sqlPrefix . 'roomPermissionsCache', [
@@ -2609,7 +2609,7 @@ class DatabaseInstance extends DatabaseSQL
             $time = time();
             $minute = $time - ($time % 60);
 
-            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) {
+            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
                 // Get Current Flood Weight
                 $floodCountMinute = $this->select([
                     $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
@@ -2619,7 +2619,7 @@ class DatabaseInstance extends DatabaseSQL
                     'period' => $this->ts($minute),
                 ])->getColumnValue('count');
 
-                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_{$action}_$minute", $floodCountMinute ?: 0, 60, \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
+                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_{$action}_$minute", $floodCountMinute ?: 0, 60, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
             }
 
 
@@ -2628,7 +2628,7 @@ class DatabaseInstance extends DatabaseSQL
                 new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
-                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED);
+                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
 
                 // Increment the Flood Weight
                 $this->upsert($this->sqlPrefix . "accessFlood", [

@@ -1,7 +1,10 @@
 <?php
-namespace Cache;
+namespace Cache\Driver;
 
-class CacheApcu implements CacheInterface {
+use Cache\DriverInterface;
+use Cache\CacheSetFallbackTrait;
+
+class Apcu implements DriverInterface {
     use CacheSetFallbackTrait;
 
 
@@ -10,7 +13,7 @@ class CacheApcu implements CacheInterface {
     }
 
     public static function getCacheType(): string {
-        return CacheInterface::CACHE_TYPE_MEMORY;
+        return DriverInterface::CACHE_TYPE_MEMORY;
     }
 
 
@@ -26,7 +29,7 @@ class CacheApcu implements CacheInterface {
         return apcu_add($index, $value, $ttl);
     }
 
-    public function inc($index, $amt) : bool {
+    public function inc($index, int $amt = 1) : bool {
         return apcu_inc($index, (int) $amt) !== false;
     }
 

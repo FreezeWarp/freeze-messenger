@@ -1,7 +1,10 @@
 <?php
-namespace Cache;
+namespace Cache\Driver;
 
-class CacheApc implements CacheInterface {
+use Cache\DriverInterface;
+use Cache\CacheSetFallbackTrait;
+
+class Apc implements DriverInterface {
     use CacheSetFallbackTrait;
 
 
@@ -10,7 +13,7 @@ class CacheApc implements CacheInterface {
     }
 
     public static function getCacheType(): string {
-        return CacheInterface::CACHE_TYPE_MEMORY;
+        return DriverInterface::CACHE_TYPE_MEMORY;
     }
 
 
@@ -30,7 +33,7 @@ class CacheApc implements CacheInterface {
         return apc_exists($index);
     }
 
-    public function inc($index, $value) : bool {
+    public function inc($index, int $value = 1) : bool {
         return apc_inc($index, $value) !== false;
     }
 
@@ -39,9 +42,7 @@ class CacheApc implements CacheInterface {
     }
 
     public function clearAll() {
-        return (apc_clear_cache()
-            && apc_clear_cache('user')
-            && apc_clear_cache('opcode'));
+        return apc_clear_cache('user');
     }
 
     public function dump() {

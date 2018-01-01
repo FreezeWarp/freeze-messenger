@@ -33,31 +33,22 @@ class CacheFactory {
 
 
     public static function addMethod($method, $servers) {
-        $className = 'Cache' . ucfirst($method);
-        $classNameSpaced = "\\Cache\\$className";
-        $includePath = __DIR__ . "/{$className}.php";
+        $classNameSpaced = '\Cache\Driver\\' . ucfirst($method);
 
-        if (!file_exists($includePath)) {
-            new \fimError('cacheMisconfigured', "Caches are currently misconfigured: a cache method, $method, has been specified without a corresponding cache class being available.");
+        if (!class_exists($classNameSpaced)) {
+            new \fimError('cacheMisconfigured', "Caches are currently misconfigured: A cache method, $method, is installed on this server, but appears to be named incorrectly.");
         }
         else {
-            require($includePath);
+            /**
+             * @var DriverInterface
+             */
+            $methodObject = new $classNameSpaced($servers);
 
-            if (!class_exists($classNameSpaced)) {
-                new \fimError('cacheMisconfigured', "Caches are currently misconfigured: A cache method, $method, is installed on this server, but appears to be named incorrectly.");
+            if (!$methodObject::available()) {
+                throw new \Exception("The cache method '$method' cannot be loaded, as the system does not support it.");
             }
-            else {
-                /**
-                 * @var CacheInterface
-                 */
-                $methodObject = new $classNameSpaced($servers);
 
-                if (!$methodObject::available()) {
-                    throw new \Exception("The cache method '$method' cannot be loaded, as the system does not support it.");
-                }
-
-                self::$methods[$methodObject->getCacheType()] = $methodObject;
-            }
+            self::$methods[$methodObject->getCacheType()] = $methodObject;
         }
     }
 
@@ -66,26 +57,26 @@ class CacheFactory {
         switch ($preferredMethod) {
             case 'memcached': // TODO: remove
             case 'redis':
-            case CacheInterface::CACHE_TYPE_DISTRIBUTED:
-                return self::$methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
-                    ?? self::$methods[CacheInterface::CACHE_TYPE_MEMORY]
+            case DriverInterface::CACHE_TYPE_DISTRIBUTED:
+                return self::$methods[DriverInterface::CACHE_TYPE_DISTRIBUTED]
+                    ?? self::$methods[DriverInterface::CACHE_TYPE_MEMORY]
                     ?? null;
                 break;
 
             case 'apc':
             case 'apcu':
-            case CacheInterface::CACHE_TYPE_MEMORY:
-                return self::$methods[CacheInterface::CACHE_TYPE_MEMORY]
-                    ?? self::$methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
+            case DriverInterface::CACHE_TYPE_MEMORY:
+                return self::$methods[DriverInterface::CACHE_TYPE_MEMORY]
+                    ?? self::$methods[DriverInterface::CACHE_TYPE_DISTRIBUTED]
                     ?? null;
 
 
             case 'disk':
-            case CacheInterface::CACHE_TYPE_DISK:
+            case DriverInterface::CACHE_TYPE_DISK:
             default:
-                return self::$methods[CacheInterface::CACHE_TYPE_MEMORY]
-                    ?? self::$methods[CacheInterface::CACHE_TYPE_DISTRIBUTED]
-                    ?? self::$methods[CacheInterface::CACHE_TYPE_DISK]
+                return self::$methods[DriverInterface::CACHE_TYPE_MEMORY]
+                    ?? self::$methods[DriverInterface::CACHE_TYPE_DISTRIBUTED]
+                    ?? self::$methods[DriverInterface::CACHE_TYPE_DISK]
                     ?? null;
         }
     }

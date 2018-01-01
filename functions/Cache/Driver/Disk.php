@@ -1,9 +1,12 @@
 <?php
-namespace Cache;
+namespace Cache\Driver;
 
-use Cache\FileCache;
+use Cache\CacheAddFallbackTrait;
+use Cache\DriverInterface;
+use Cache\CacheSetFallbackTrait;
+use \Cache\FileCache;
 
-class CacheDisk implements CacheInterface {
+class Disk implements DriverInterface {
     use CacheSetFallbackTrait;
 
     /**
@@ -15,17 +18,15 @@ class CacheDisk implements CacheInterface {
 
 
     public static function available() : bool {
-        return file_exists(__DIR__ . '/FileCache.php');
+        return class_exists('\\Cache\\FileCache');
     }
 
     public static function getCacheType(): string {
-        return CacheInterface::CACHE_TYPE_DISK;
+        return DriverInterface::CACHE_TYPE_DISK;
     }
 
 
     public function __construct($servers) {
-        require_once(__DIR__ . '/FileCache.php');
-
         $directory = (isset($servers['directory']) ? $servers['directory'] : realpath(sys_get_temp_dir()));
 
         if (is_writable($directory)) {
@@ -49,7 +50,7 @@ class CacheDisk implements CacheInterface {
         return $this->instance->exists($index);
     }
 
-    public function inc($index, $amt) {
+    public function inc($index, int $amt = 1) {
         return $this->instance->inc($index, $amt);
     }
 

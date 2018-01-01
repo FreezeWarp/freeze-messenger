@@ -1,11 +1,18 @@
 <?php
-namespace Cache;
+namespace Cache\Driver;
 
-use Redis;
+use Cache\CacheAddFallbackTrait;
+use Cache\DriverInterface;
 
-class CacheRedis implements CacheInterface {
+/**
+ * A standard cache driver for Redis.
+ * Note that {@see Redis::inc()} only works with values stored as integers.
+ *
+ * @package Cache\Driver
+ */
+class Redis implements DriverInterface {
     /**
-     * @var Redis
+     * @var \Redis
      */
     private $instance;
 
@@ -18,7 +25,7 @@ class CacheRedis implements CacheInterface {
     }
 
     public static function getCacheType(): string {
-        return CacheInterface::CACHE_TYPE_DISTRIBUTED;
+        return DriverInterface::CACHE_TYPE_DISTRIBUTED;
     }
 
 
@@ -31,19 +38,23 @@ class CacheRedis implements CacheInterface {
             'password' => false
         ], $servers);
 
-        $this->instance = new Redis();
+        $this->instance = new \Redis();
         $this->instance->pconnect($servers['host'], $servers['port'], $servers['timeout'], $servers['persistentId']);
         if ($servers['password'])
             $this->instance->auth($servers['password']);
-        $this->instance->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP); // TODO: igBinary?
     }
 
 
     public function get($index) {
-        return $this->instance->get($index);
+        return ctype_digit($value = $this->instance->get($index))
+            ? (int) $value
+            : unserialize($value);
     }
 
     public function set($index, $value, $ttl = 3600) {
+        if (!is_int($value))
+            $value = serialize($value);
+
         return $this->instance->set($index, $value, $ttl);
     }
 
@@ -51,8 +62,8 @@ class CacheRedis implements CacheInterface {
         return $this->instance->exists($index);
     }
 
-    public function inc($index, $amt) {
-        return $this->instance->incrBy($index, $amt);
+    public function inc($index, int $amt = 1) {
+        return $this->instance->incrBy($index, $amt) !== false;
     }
 
 
@@ -74,7 +85,7 @@ class CacheRedis implements CacheInterface {
 
 
     public function clear($index) {
-        $this->instance->delete($index);
+        return $this->instance->delete($index) === 1;
     }
 
     public function clearAll() {
