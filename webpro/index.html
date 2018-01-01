@@ -722,6 +722,9 @@ Pending Update
         <td class="d-none d-sm-table-cell">
             {{topic}}
         </td>
+        <td class="d-none d-sm-table-cell">
+            {{date lastMessageTime}}
+        </td>
         <td>
             <div>
                 {{#if permissions.properties}}
@@ -772,71 +775,72 @@ Pending Update
 </script>
 
 <script id="view-rooms" type="text/x-handlebars-template">
-<form id="roomSearch" action="#" method="get" style="text-align: center;">
-    <table style="text-align: center;" class="mx-auto">
-        <thead>
-        <tr>
-            <th align="center">
-                <small>{{selectRoomSearchTextLabel}}</small>
-            </th>
-            <th>
-                <small>{{selectRoomPermissionLevelLabel}}</small>
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>
-                <input type="text" name="roomNameSearch" class="form-control" />
-            </td>
-            <td>
-                <select name="permFilter" class="form-control">
-                    <option value="view">{{selectRoomPermissionLevel.view}}</option>
-                    <option value="post">{{selectRoomPermissionLevel.post}}</option>
-                    <option value="moderate">{{selectRoomPermissionLevel.moderate}}</option>
-                    <option value="own">{{selectRoomPermissionLevel.own}}</option>
-                </select>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</form><br/>
+    <form id="roomSearch" action="#" method="get" style="text-align: center;">
+        <table style="text-align: center;" class="mx-auto">
+            <thead>
+            <tr>
+                <th align="center">
+                    <small>{{selectRoomSearchTextLabel}}</small>
+                </th>
+                <th>
+                    <small>{{selectRoomPermissionLevelLabel}}</small>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    <input type="text" name="roomNameSearch" class="form-control" />
+                </td>
+                <td>
+                    <select name="permFilter" class="form-control">
+                        <option value="view">{{selectRoomPermissionLevel.view}}</option>
+                        <option value="post">{{selectRoomPermissionLevel.post}}</option>
+                        <option value="moderate">{{selectRoomPermissionLevel.moderate}}</option>
+                        <option value="own">{{selectRoomPermissionLevel.own}}</option>
+                    </select>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form><br/>
 
-<div class="card mx-auto view-thin">
-    <div class="card-header" align="center">
-        <div class="row">
-            <div class="col">
-                <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
+    <div class="card mx-auto view-thin">
+        <div class="card-header" align="center">
+            <div class="row">
+                <div class="col">
+                    <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
+                </div>
+                <div class="col">
+                    <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
+                </div>
             </div>
-            <div class="col">
-                <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
+        </div>
+
+        <table class="table card-body table-sm table-striped center mb-0">
+            <thead class="table-primary">
+            <tr>
+                <th>{{selectRoom.table.header.name}}</th>
+                <th class="d-none d-sm-table-cell">{{selectRoom.table.header.topic}}</th>
+                <th>{{selectRoom.table.header.lastMessageTime}}</th>
+                <th>{{selectRoom.table.header.actions}}</th>
+            </tr>
+            </thead>
+            <tbody id="roomTableHtml">
+            </tbody>
+        </table>
+
+        <div class="card-footer" align="center">
+            <div class="row">
+                <div class="col">
+                    <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
+                </div>
+                <div class="col">
+                    <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
+                </div>
             </div>
         </div>
     </div>
-
-    <table class="table card-body table-sm table-striped center mb-0">
-        <thead class="table-primary">
-        <tr>
-            <th>{{selectRoomHeaderName}}</th>
-            <th class="d-none d-sm-table-cell">{{selectRoomHeaderTopic}}</th>
-            <th>{{selectRoomHeaderActions}}</th>
-        </tr>
-        </thead>
-        <tbody id="roomTableHtml">
-        </tbody>
-    </table>
-
-    <div class="card-footer" align="center">
-        <div class="row">
-            <div class="col">
-                <button name="roomListPrev" class="btn btn-primary">{{selectRoomPreviousButton}}</button>
-            </div>
-            <div class="col">
-                <button name="roomListNext" class="btn btn-primary">{{selectRoomNextButton}}</button>
-            </div>
-        </div>
-    </div>
-</div>
 </script>
 
 <script id="view-settings" type="text/x-handlebars-template">

@@ -58,8 +58,8 @@ $request = fim_sanitizeGPC('g', [
     ],
 
     'sort' => [
-        'valid'   => ['id', 'name'],
-        'default' => 'id',
+        'valid'   => ['id', 'name', 'lastMessageTime'],
+        'default' => 'lastMessageTime',
     ],
 
     'showDeleted' => [
@@ -117,7 +117,7 @@ do {
                 ['ownerIds' => ($request['permFilter'] === 'own' ? [$user->id] : [])]
             ), [
                 'id 1' => \Fim\Database::instance()->in($user->favRooms),
-                $request['sort'] => 'asc'
+                $request['sort'] => ($request['sort'] === 'lastMessageTime' ? 'desc' : 'asc')
             ], \Fim\Config::$defaultRoomLimit, $request['page']);
 
             $rooms = $roomsQuery->getAsRooms();

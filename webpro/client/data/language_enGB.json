@@ -218,10 +218,16 @@
     "violence" : "Violence",
     "weapons" : "Weapons"
   },
-  "roomListNames" : { "favRooms" : "Favourite Rooms" },
-  "selectRoomHeaderActions" : "Actions",
-  "selectRoomHeaderName" : "Name",
-  "selectRoomHeaderTopic" : "Topic",
+  "selectRoom" : {
+    "table" : {
+      "header" : {
+        "name" : "Name",
+        "topic" : "Topic",
+        "lastMessageTime" : "Last Message Time",
+        "actions" : "Actions"
+      }
+    }
+  },
   "selectRoomNextButton" : "Next >>",
   "selectRoomPermissionLevel" : { "moderate" : "Moderate",
     "own" : "Own",
