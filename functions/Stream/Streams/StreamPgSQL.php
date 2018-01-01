@@ -16,7 +16,7 @@
 namespace Stream\Streams;
 
 use Database\SQL\DatabaseSQL;
-use Database\DatabaseTypeType;
+use Database\Type\Type;
 
 use Stream\StreamInterface;
 use Stream\StreamFactory;
@@ -48,7 +48,7 @@ class StreamPgSQL implements StreamInterface {
             'data' => $data
         ]);
 
-        $this->database->rawQuery('NOTIFY ' . $this->database->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $stream) . ', ' . $this->database->formatValue(DatabaseTypeType::string, $json));
+        $this->database->rawQuery('NOTIFY ' . $this->database->formatValue(DatabaseSQL::FORMAT_VALUE_TABLE, $stream) . ', ' . $this->database->formatValue(Type::string, $json));
     }
 
     public function subscribe($stream, $lastId, $callback) {

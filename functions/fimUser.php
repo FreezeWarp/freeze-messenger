@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-use Database\DatabaseTypeType;
+use Database\Type\Type;
 
 /**
  * Class fimUser
@@ -844,7 +844,7 @@ class fimUser extends \Fim\DynamicObject
         }
 
         $this->populateFromArray($databaseFields, true);
-        $databaseFields = fim_dbCastArrayEntry($databaseFields, 'privs', DatabaseTypeType::bitfield);
+        $databaseFields = fim_dbCastArrayEntry($databaseFields, 'privs', Type::bitfield);
 
         if ($this->id) {
             \Fim\Database::instance()->startTransaction();

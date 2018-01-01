@@ -262,17 +262,17 @@
 
         <!-- partitionBy="roomId" -->
         <table name="messages" hardPartitions="10" type="general" comment="User-created messages.">
-            <column name="id"  autoincrement="1"  type="int"    maxlen="9"     comment="The unique ID of the message." />
-            <column name="roomId"                 type="blob"   maxlen="23"    comment="The ID of the room the message was made in." />
-            <column name="userId" fkey="users.id" type="int"    maxlen="8"     comment="The ID of the user who made the message." />
-            <column name="anonId"                 type="int"    maxlen="6"     comment="The anonymous ID of the user who made the message, if applicable." />
-            <column name="text"                   type="string" maxlen="10000" comment="The text of the message." />
-            <column name="textSha1"               type="string" maxlen="40"    comment="A SHA1 hash of the text of the message." />
-            <column name="messageFormatting"      type="string" maxlen="300"   comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
-            <column name="deleted"                type="bool"   default="0"    comment="Whether or not the message has been deleted by an administrator." />
-            <column name="time"                   type="time"   ="__TIME__"    comment="The time the message was made on." />
-            <column name="ip"                     type="string" maxlen="128"   comment="The IP of the user who made the message." />
-            <column name="flag"                   type="enum"   maxlen="10"    comment="The content-type flag of the message."
+            <column name="id"  autoincrement="1"  type="int"    maxlen="9"         comment="The unique ID of the message." />
+            <column name="roomId"                 type="blob"   maxlen="23"        comment="The ID of the room the message was made in." />
+            <column name="userId" fkey="users.id" type="int"    maxlen="8"         comment="The ID of the user who made the message." />
+            <column name="anonId"                 type="int"    maxlen="6"         comment="The anonymous ID of the user who made the message, if applicable." />
+            <column name="text"                   type="string" maxlen="10000"     comment="The text of the message." />
+            <column name="textSha1"               type="string" maxlen="40"        comment="A SHA1 hash of the text of the message." />
+            <column name="messageFormatting"      type="string" maxlen="300"       comment="CSS-formatting that should be applied to all of the user's messages. This will generally be restricted to what the API allows -- by default, just fontface, colour, highlight, and bold/italics." />
+            <column name="deleted"                type="bool"   default="0"        comment="Whether or not the message has been deleted by an administrator." />
+            <column name="time"                   type="time"   default="__TIME__" comment="The time the message was made on." />
+            <column name="ip"                     type="string" maxlen="128"       comment="The IP of the user who made the message." />
+            <column name="flag"                   type="enum"   maxlen="10"        comment="The content-type flag of the message."
 			        restrict="video,audio,image,text,application,archive,html,url,email," />
 
 			<!-- storage TODO -->
@@ -416,7 +416,7 @@
             <column name="expires" type="time" comment="After this time, the entry will no longer be considered valid. May be disabled if this cache is updated automatically." />
             <column name="permissions" type="bitfield" bits="24" comment="The user's permissions." />
 
-            <column name="deniedReason" type="enum" restrict="kick" comment="If an access restriction is because of a certain reason, this should indicate as much. This can be used to tell a user they have been kicked instead of having to query the kicks table to check each time. It is assumed that if kicked, then expires corresponds with the kick expiration." />
+            <column name="deniedReason" type="enum" restrict="kick," comment="If an access restriction is because of a certain reason, this should indicate as much. This can be used to tell a user they have been kicked instead of having to query the kicks table to check each time. It is assumed that if kicked, then expires corresponds with the kick expiration." />
 
             <key name="roomId,userId" type="primary" storage="hash" />
         </table>
@@ -470,8 +470,8 @@
             <column name="streamName" type="string" maxlen="100" comment="The ID of the phrase found in the message." />
             <column name="lastEvent" type="time" default="__TIME__" comment="The ID of the message." />
 
-            <key name="streamName" type="primary" type="hash"  comment="For quickly querying stream info." />
-            <key name="lastEvent"  type="index"   type="btree" comment="For deleting old streams." />
+            <key name="streamName" type="primary" storage="hash"  comment="For quickly querying stream info." />
+            <key name="lastEvent"  type="index"   storage="btree" comment="For deleting old streams." />
         </table>
 
 

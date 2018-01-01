@@ -1,7 +1,7 @@
 <?php
 // todo: upsert
 use Database\DatabaseEngine;
-use Database\DatabaseTypeComparison;
+use Database\Type\Comparison;
 
 class databaseSQLTests1 extends databaseSQLTests {
     private $table = "test_1";
@@ -315,10 +315,10 @@ class databaseSQLTests1 extends databaseSQLTests {
             ["integerNormal" => $this->databaseObj->in([5, 7, 19])],
 
             ["integerNormal" => $this->databaseObj->in([5, 12])],
-            ["integerNormal" => $this->databaseObj->int(10, DatabaseTypeComparison::greaterThan)],
-            ["integerNormal" => $this->databaseObj->int(10, DatabaseTypeComparison::greaterThanEquals)],
-            ["integerNormal" => $this->databaseObj->int(10, DatabaseTypeComparison::lessThanEquals)],
-            ["integerNormal" => $this->databaseObj->int(10, DatabaseTypeComparison::lessThan)],
+            ["integerNormal" => $this->databaseObj->int(10, Comparison::greaterThan)],
+            ["integerNormal" => $this->databaseObj->int(10, Comparison::greaterThanEquals)],
+            ["integerNormal" => $this->databaseObj->int(10, Comparison::lessThanEquals)],
+            ["integerNormal" => $this->databaseObj->int(10, Comparison::lessThan)],
 
             ["string" => 12],
             ["string" => "hello"],
@@ -327,21 +327,21 @@ class databaseSQLTests1 extends databaseSQLTests {
             ["string" => $this->databaseObj->search("hell")],
 
             ["string" => $this->databaseObj->in(["hell", "are you sure?", $this->databaseObj->str(12)])],
-            ["bitfield" => $this->databaseObj->bit(1, DatabaseTypeComparison::binaryAnd)],
-            ["bitfield" => $this->databaseObj->bit(5, DatabaseTypeComparison::binaryAnd)],
-            ["bitfield" => $this->databaseObj->bit(8, DatabaseTypeComparison::binaryAnd)],
-            ["bitfield" => $this->databaseObj->bit(16, DatabaseTypeComparison::binaryAnd)],
+            ["bitfield" => $this->databaseObj->bit(1, Comparison::binaryAnd)],
+            ["bitfield" => $this->databaseObj->bit(5, Comparison::binaryAnd)],
+            ["bitfield" => $this->databaseObj->bit(8, Comparison::binaryAnd)],
+            ["bitfield" => $this->databaseObj->bit(16, Comparison::binaryAnd)],
 
             ['either' => [
-                ["bitfield" => $this->databaseObj->bit(4, DatabaseTypeComparison::binaryAnd)],
-                ["bitfield" => $this->databaseObj->bit(1, DatabaseTypeComparison::binaryAnd)],
+                ["bitfield" => $this->databaseObj->bit(4, Comparison::binaryAnd)],
+                ["bitfield" => $this->databaseObj->bit(1, Comparison::binaryAnd)],
             ]],
             ['both' => [
-                ["bitfield" => $this->databaseObj->bit(4, DatabaseTypeComparison::binaryAnd)],
-                ["bitfield" => $this->databaseObj->bit(1, DatabaseTypeComparison::binaryAnd)],
+                ["bitfield" => $this->databaseObj->bit(4, Comparison::binaryAnd)],
+                ["bitfield" => $this->databaseObj->bit(1, Comparison::binaryAnd)],
             ]],
             ["bitfield" => $this->databaseObj->bit(5)],
-            ["bitfield" => $this->databaseObj->bit(5, DatabaseTypeComparison::greaterThan)],
+            ["bitfield" => $this->databaseObj->bit(5, Comparison::greaterThan)],
             
             ['either' => [
                 "integerNormal" => $this->databaseObj->int(12),
@@ -465,7 +465,7 @@ class databaseSQLTests1 extends databaseSQLTests {
         $testCases = [
             ["integerNormal" => $this->databaseObj->in([3, 5, 7])],
             ["string" => $this->databaseObj->search('e')],
-            ["bitfield" => $this->databaseObj->bit(8, DatabaseTypeComparison::binaryAnd)],
+            ["bitfield" => $this->databaseObj->bit(8, Comparison::binaryAnd)],
         ];
 
         $testCaseExpectedRows = [
@@ -492,8 +492,8 @@ class databaseSQLTests1 extends databaseSQLTests {
 
         $this->testInsertSelect3SortTest("Select Descending (15-114)", null, ["integerNormal" => "desc"], 114);
         $this->testInsertSelect3SortTest("Select Ascending (15-114)", null, ["integerNormal" => "asc"], 15);
-        $this->testInsertSelect3SortTest("Select Ascending (15-114, >55)", ["integerNormal" => $this->databaseObj->int(55, DatabaseTypeComparison::greaterThan)], ["integerNormal" => "asc"], 56);
-        $this->testInsertSelect3SortTest("Select Ascending (15-114, <=45)", ["integerNormal" => $this->databaseObj->int(45, DatabaseTypeComparison::lessThanEquals)], ["integerNormal" => "desc"], 45);
+        $this->testInsertSelect3SortTest("Select Ascending (15-114, >55)", ["integerNormal" => $this->databaseObj->int(55, Comparison::greaterThan)], ["integerNormal" => "asc"], 56);
+        $this->testInsertSelect3SortTest("Select Ascending (15-114, <=45)", ["integerNormal" => $this->databaseObj->int(45, Comparison::lessThanEquals)], ["integerNormal" => "desc"], 45);
 
         $value = $this->databaseObj->select([$this->table => "integerNormal"], null, ["integerNormal" => "asc"], 11)->getCount();
         printRow("Select Limit 11", $value == 11, $value);

@@ -21,7 +21,7 @@
 
 namespace Fim;
 
-use Database\DatabaseTypeType;
+use Database\Type\Type;
 use Database\SQL\DatabaseSQL;
 
 use \fimUser;
@@ -1476,7 +1476,7 @@ class DatabaseInstance extends DatabaseSQL
             }
 
             /* Update cache and return. */
-            $this->updatePermissionsCache($room->id, $user->id, $returnBitfield, (isset($kicks) && $kicks > 0 ? true : false));
+            $this->updatePermissionsCache($room->id, $user->id, $returnBitfield, (isset($kicks) && $kicks > 0 ? 'kick' : ''));
 
             return $returnBitfield;
         }
@@ -1572,12 +1572,12 @@ class DatabaseInstance extends DatabaseSQL
 
         /* Insert or Replace The Old Permission Setting */
         $this->upsert($this->sqlPrefix . 'roomPermissions', array(
-            'permissions' => $this->type(DatabaseTypeType::bitfield, $permissionsMask)
+            'permissions' => $this->type(Type::bitfield, $permissionsMask)
         ), array(
             'roomId' => $roomId,
             'attribute' => $attribute,
             'param' => $param,
-            'permissions' => $this->type(DatabaseTypeType::bitfield, $permissionsMask)
+            'permissions' => $this->type(Type::bitfield, $permissionsMask)
         ));
 
         /* Delete Permissions Cache */
@@ -1654,9 +1654,9 @@ class DatabaseInstance extends DatabaseSQL
      * @param int $roomId The room ID a permission change has occured in.
      * @param int $userId The user ID for whom a permission has changed.
      * @param int $permissions The new permissions bitfield.
-     * @param bool $isKicked Whether the permission cache is because of a kick (this is not generally used internally, but can be used to indicate to a user that they have been denied permission because of a kick)
+     * @param string $reason If the user was denied for a specific reason, indicate it here.
      */
-    public function updatePermissionsCache($roomId, $userId, $permissions, $isKicked = false) {
+    public function updatePermissionsCache($roomId, $userId, $permissions, $reason = '') {
         if (Config::$roomPermissionsCacheEnabled) {
             if (!\Cache\CacheFactory::set("permission_{$userId}_{$roomId}", $permissions, Config::$roomPermissionsCacheExpires, \Cache\CacheInterface::CACHE_TYPE_DISTRIBUTED)) {
                 $this->upsert($this->sqlPrefix . 'roomPermissionsCache', [
@@ -1665,7 +1665,7 @@ class DatabaseInstance extends DatabaseSQL
                 ], [
                     'permissions' => $permissions,
                     'expires'     => $this->now(Config::$roomPermissionsCacheExpires),
-                    'isKicked'    => $this->bool($isKicked),
+                    'deniedReason'=> $reason,
                 ]);
             }
         }
@@ -2087,6 +2087,14 @@ class DatabaseInstance extends DatabaseSQL
 
 
 
+    /**
+     * Mark a given room read by a given user.
+     *
+     * @param $roomId The ID of the room to mark read.
+     * @param $userId The ID of the user marking read.
+     *
+     * @return bool
+     */
     public function markMessageRead($roomId, $userId)
     {
         if (Config::$enableUnreadMessages) {

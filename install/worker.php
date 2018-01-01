@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-use Database\DatabaseType;
+use Database\Type;
 
 error_reporting(E_ALL); // Report All Potential Errors
 ini_set('display_errors', 1);
@@ -73,7 +73,6 @@ switch ($_REQUEST['phase']) {
         }
         else {
             \Fim\Database::setInstance($databaseInstance);
-            require('../databaseParameters.php');
 
 
             // Check Version Issues
@@ -171,7 +170,7 @@ switch ($_REQUEST['phase']) {
                         if (isset($column['@fkey'])) {
                             $values = explode('.', $column['@fkey']);
                             $values[0] = $prefix . $values[0];
-                            $tableColumns[$column['@name']]['restrict'] = new \Database\DatabaseType(\Database\DatabaseTypeType::tableColumn, $values);
+                            $tableColumns[$column['@name']]['restrict'] = new \Database\Type(\Database\Type\Type::tableColumn, $values);
                         }
                     }
 
@@ -179,7 +178,8 @@ switch ($_REQUEST['phase']) {
                     if (isset($table['key'])) {
                         foreach ($table['key'] AS $key) {
                             $tableIndexes[$key['@name']] = array(
-                                'type' => $key['@type'],
+                                'type'    => $key['@type'],
+                                'storage' => $key['@storage'] ?? '',
                             );
                         }
                     }
@@ -203,7 +203,7 @@ switch ($_REQUEST['phase']) {
                     $insertData = array();
 
                     foreach ($table['column'] AS $column) {
-                        $insertData[$column['@name']] = (isset($column['@type']) ? new DatabaseType($column['@type'], $column['@value']) : \Fim\Database::instance()->auto($column['@value']));
+                        $insertData[$column['@name']] = (isset($column['@type']) ? new Type($column['@type'], $column['@value']) : \Fim\Database::instance()->auto($column['@value']));
                     }
 
                     if (!\Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . $table['@name'], $insertData)) {
@@ -253,7 +253,6 @@ switch ($_REQUEST['phase']) {
         if ($forum == 'vanilla') {
             try {
                 \Fim\Database::setInstance(new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix));
-                require('../databaseParameters.php');
                 \Fim\Config::$displayBacktrace = true;
 
                 $user = new fimUser(false);

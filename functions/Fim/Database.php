@@ -33,6 +33,7 @@ class Database {
      */
     public static function setInstance(DatabaseInstance $instance) {
         self::$sqlPrefix = $instance->sqlPrefix;
+        DatabaseParameters::execute($instance);
 
         return self::$instance = $instance;
     }

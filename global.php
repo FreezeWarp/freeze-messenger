@@ -80,9 +80,6 @@ if (!\Fim\Database::connect(
 )) {
     die('Could not connect to the database: ' . \Fim\Database::instance()->getLastError() . '; the application has exitted.'); // Die to prevent further execution.
 }
-else {
-    require('databaseParameters.php');
-}
 
 
 /* Connect to the Integration DB  */

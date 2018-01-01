@@ -115,7 +115,7 @@ else {
 
                             if (isset($column['@fkey'])) {
                                 $values = explode('.', $column['@fkey']);
-                                $tableColumns[$column['@name']]['restrict'] = new \Database\DatabaseType(\Database\DatabaseTypeType::tableColumn, $values);
+                                $tableColumns[$column['@name']]['restrict'] = new \Database\Type(\Database\Type\Type::tableColumn, $values);
                             }
                         }
 
@@ -123,7 +123,8 @@ else {
                         if (isset($table['key'])) {
                             foreach ($table['key'] AS $key) {
                                 $tableIndexes[$key['@name']] = [
-                                    'type' => $key['@type'],
+                                    'type'    => $key['@type'],
+                                    'storage' => $key['@storage'] ?? '',
                                 ];
                             }
                         }

@@ -629,7 +629,7 @@ function fim_arrayFilterKeys(array $array, array $keys) : array {
 function fim_dbCastArrayEntry(array &$array, $keys, $cast) {
     foreach ((array) $keys AS $key) {
         if (isset($array[$key]))
-           $array[$key] = new \Database\DatabaseType($cast, $array[$key]);
+           $array[$key] = new \Database\Type($cast, $array[$key]);
     }
 
     return $array;

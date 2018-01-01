@@ -1,7 +1,7 @@
 <?php
 
 use Database\DatabaseEngine;
-use Database\DatabaseTypeType;
+use Database\Type\Type;
 
 class databaseSQLTests2 extends databaseSQLTests {
     public function passthru($value) {
@@ -11,8 +11,8 @@ class databaseSQLTests2 extends databaseSQLTests {
     public function enableEncodeOnly($table) {
         $this->databaseObj->setTransformationParameters([
             $table => [
-                'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, [$this, 'passthru']],
-                'list' => ['\Fim\DatabaseInstance::packList', DatabaseTypeType::blob, [$this, 'passthru']],
+                'roomId' => ['fimRoom::encodeId', Type::blob, [$this, 'passthru']],
+                'list' => ['\Fim\DatabaseInstance::packList', Type::blob, [$this, 'passthru']],
             ]
         ], [
             $table => [
@@ -26,8 +26,8 @@ class databaseSQLTests2 extends databaseSQLTests {
     public function enableEncodeDecode($table) {
         $this->databaseObj->setTransformationParameters([
             $table => [
-                'roomId' => ['fimRoom::encodeId', DatabaseTypeType::blob, 'fimRoom::decodeId'],
-                'list' => ['\Fim\DatabaseInstance::packList', DatabaseTypeType::blob, '\Fim\DatabaseInstance::unpackList'],
+                'roomId' => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId'],
+                'list' => ['\Fim\DatabaseInstance::packList', Type::blob, '\Fim\DatabaseInstance::unpackList'],
             ]
         ], [
             $table => [

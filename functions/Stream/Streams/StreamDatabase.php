@@ -17,8 +17,8 @@ namespace Stream\Streams;
 
 use Database\Database;
 use Database\DatabaseEngine;
-use Database\DatabaseIndexType;
-use Database\DatabaseTypeComparison;
+use Database\Index\Type;
+use Database\Type\Comparison;
 
 use Stream\StreamInterface;
 
@@ -68,7 +68,7 @@ class StreamDatabase implements StreamInterface {
             ]
         ], [
             'id,chunk' => [
-                'type' => DatabaseIndexType::primary
+                'type' => Type::primary
                 //'storage' => DatabaseIndexStorage::btree
             ],
             /*
@@ -87,7 +87,7 @@ class StreamDatabase implements StreamInterface {
         ]);
 
         /* Delete All Channels That Are More Than 5 Minutes Old */
-        $condition = ['lastEvent' => $this->database->now(-60 * 5, DatabaseTypeComparison::lessThan)];
+        $condition = ['lastEvent' => $this->database->now(-60 * 5, Comparison::lessThan)];
         foreach ($this->database->select([$this->database->sqlPrefix . 'streams' => 'lastEvent, streamName'], $condition)->getColumnValues('streamName') AS $oldStream) {
             $this->database->deleteTable($this->database->sqlPrefix . 'stream_' . $oldStream);
             $this->database->delete($this->database->sqlPrefix . 'streams', ['streamName' => $oldStream]);
@@ -116,8 +116,8 @@ class StreamDatabase implements StreamInterface {
         $output = $this->database->select([
             $this->database->sqlPrefix . 'stream_' . $stream => 'id, time, chunk, data, eventName'
         ], [
-            'id' => $this->database->int($lastId, DatabaseTypeComparison::greaterThan),
-            'time' => $this->database->now(-15, DatabaseTypeComparison::greaterThan)
+            'id' => $this->database->int($lastId, Comparison::greaterThan),
+            'time' => $this->database->now(-15, Comparison::greaterThan)
         ], [
             'id' => 'ASC',
             'chunk' => 'ASC'
