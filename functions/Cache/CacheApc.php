@@ -18,12 +18,12 @@ class CacheApc implements CacheInterface {
         return apc_fetch($index);
     }
 
-    public function set($index, $value, $ttl) {
-        apc_store($index, $value, $ttl);
+    public function set($index, $value, $ttl = 3600) {
+        return apc_store($index, $value, $ttl);
     }
 
-    public function add($index, $value, $ttl) {
-        apc_add($index, $value, $ttl);
+    public function add($index, $value, $ttl = 3600) {
+        return apc_add($index, $value, $ttl);
     }
 
     public function exists($index) : bool {
@@ -39,13 +39,9 @@ class CacheApc implements CacheInterface {
     }
 
     public function clearAll() {
-        if (apc_clear_cache()
+        return (apc_clear_cache()
             && apc_clear_cache('user')
-            && apc_clear_cache('opcode'))
-            return true;
-
-        else
-            return false;
+            && apc_clear_cache('opcode'));
     }
 
     public function dump() {

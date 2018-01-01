@@ -23,6 +23,14 @@ class CacheRedis implements CacheInterface {
 
 
     public function __construct($servers) {
+        $servers = array_merge([
+            'host' => 'localhost',
+            'port' => 6379,
+            'timeout' => 1000,
+            'persistentId' => false,
+            'password' => false
+        ], $servers);
+
         $this->instance = new Redis();
         $this->instance->pconnect($servers['host'], $servers['port'], $servers['timeout'], $servers['persistentId']);
         if ($servers['password'])
@@ -35,7 +43,7 @@ class CacheRedis implements CacheInterface {
         return $this->instance->get($index);
     }
 
-    public function set($index, $value, $ttl) {
+    public function set($index, $value, $ttl = 3600) {
         return $this->instance->set($index, $value, $ttl);
     }
 
