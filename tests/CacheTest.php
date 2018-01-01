@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Tests the core cache functionality of all five cache providers.
  */
-class CacheDiskTest extends TestCase
+class CacheTest extends TestCase
 {
 
     public static function cacheMethodProvider() {
