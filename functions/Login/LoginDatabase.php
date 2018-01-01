@@ -80,6 +80,11 @@ abstract class LoginDatabase implements LoginRunner
             // Set the anonymous user ID, if applicable
             if ($user->isAnonymousUser()) {
                 global $anonId;
+
+                if ($this->oauthGrantType instanceof \Fim\RefreshTokenGrantType) {
+                    $anonId = $this->oauthGrantType->getAnonId();
+                }
+                
                 $user->setAnonId($anonId);
             }
 

@@ -39,6 +39,11 @@ class Message extends \Fim\MagicGettersSetters
     public $user;
 
     /**
+     * @var int The anonymous ID the message was sent with, if any.
+     */
+    public $anonId;
+
+    /**
      * @var string The message's text.
      */
     public $text;
@@ -90,6 +95,7 @@ class Message extends \Fim\MagicGettersSetters
             $this->text = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have text column.');
             $this->flag = $messageData['flag'] ?? '';
             $this->time = $messageData['time'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');
+            $this->anonId = $messageData['anonId'] ?? false;
         }
 
         // When creating a new message.
@@ -171,10 +177,6 @@ class Message extends \Fim\MagicGettersSetters
 
     public function getUserId() {
         return $this->user->id;
-    }
-
-    public function getAnonId() {
-        return $this->user->anonId;
     }
 }
 ?>

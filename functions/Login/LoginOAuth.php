@@ -20,7 +20,7 @@ class LoginOAuth extends LoginDatabase {
         /* Depending on which grant_type is set, we interact with the OAuth layer a little bit differently. */
         switch ($_REQUEST['grant_type']) {
             case 'anonymous':
-                $this->oauthGrantType = new \OAuth2\GrantType\Anonymous($this->loginFactory->oauthStorage);
+                $this->oauthGrantType = new \Fim\AnonymousGrantType($this->loginFactory->oauthStorage);
             break;
 
             case 'access_token':
@@ -28,7 +28,7 @@ class LoginOAuth extends LoginDatabase {
             break;
 
             case 'refresh_token':
-                $this->oauthGrantType = new \OAuth2\GrantType\RefreshToken($this->loginFactory->oauthStorage, [
+                $this->oauthGrantType = new \Fim\RefreshTokenGrantType($this->loginFactory->oauthStorage, [
                     'always_issue_new_refresh_token' => true
                 ]);
             break;
