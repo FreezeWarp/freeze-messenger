@@ -1,6 +1,6 @@
 <?php
 
-use Database\DatabaseEngine;
+use Database\Engine;
 use Database\Type\Type;
 
 class databaseSQLTests2 extends databaseSQLTests {
@@ -133,7 +133,7 @@ class databaseSQLTests2 extends databaseSQLTests {
 
 
     public function testCreateTable1($table) {
-        $this->databaseObj->createTable($table, "", DatabaseEngine::general, array(
+        $this->databaseObj->createTable($table, "", Engine::general, array(
             'id' => [
                 'type' => 'int',
                 'maxlen' => 2,

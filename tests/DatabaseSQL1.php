@@ -1,6 +1,6 @@
 <?php
 // todo: upsert
-use Database\DatabaseEngine;
+use Database\Engine;
 use Database\Type\Comparison;
 
 class databaseSQLTests1 extends databaseSQLTests {
@@ -68,7 +68,7 @@ class databaseSQLTests1 extends databaseSQLTests {
 
 
     public function testCreateTable1() {
-        $this->databaseObj->createTable($this->table, "Used for unit testing.", DatabaseEngine::general, array(
+        $this->databaseObj->createTable($this->table, "Used for unit testing.", Engine::general, array(
             'integerNormal' => [
                 'type' => 'int',
             ],

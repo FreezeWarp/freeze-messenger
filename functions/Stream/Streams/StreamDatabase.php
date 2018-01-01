@@ -16,7 +16,7 @@
 namespace Stream\Streams;
 
 use Database\Database;
-use Database\DatabaseEngine;
+use Database\Engine;
 use Database\Index\Type;
 use Database\Type\Comparison;
 
@@ -44,7 +44,7 @@ class StreamDatabase implements StreamInterface {
      */
     private function createStreamIfNotExists($stream) {
         /* Create the Stream Table if it Doesn't Exist */
-        @$this->database->createTable($this->database->sqlPrefix . 'stream_' . $stream, '', DatabaseEngine::memory, [
+        @$this->database->createTable($this->database->sqlPrefix . 'stream_' . $stream, '', Engine::memory, [
             'id' => [
                 'type' => 'int',
                 'maxlen' => 10,

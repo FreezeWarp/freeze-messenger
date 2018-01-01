@@ -180,6 +180,7 @@ switch ($_REQUEST['phase']) {
                             $tableIndexes[$key['@name']] = array(
                                 'type'    => $key['@type'],
                                 'storage' => $key['@storage'] ?? '',
+                                'comment' => $key['@comment'] ?? '',
                             );
                         }
                     }

@@ -125,6 +125,7 @@ else {
                                 $tableIndexes[$key['@name']] = [
                                     'type'    => $key['@type'],
                                     'storage' => $key['@storage'] ?? '',
+                                    'comment' => $key['@comment'] ?? '',
                                 ];
                             }
                         }

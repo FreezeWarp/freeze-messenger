@@ -5,7 +5,7 @@ namespace Fim;
 use \fimRoom;
 use \fimUser;
 
-class DatabaseResult extends \Database\DatabaseResult {
+class DatabaseResult extends \Database\Result {
     /**
      * @return fimRoom[]
      *

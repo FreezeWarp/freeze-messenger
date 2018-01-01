@@ -80,7 +80,7 @@ class File extends MagicGettersSetters {
 
     public function __construct($fileData) {
         // When working with an existing file row, we require that all (almost) indexes be present.
-        if ($fileData instanceof \Database\DatabaseResult) {
+        if ($fileData instanceof \Database\Result) {
             $fileData = $fileData->getAsArray(false);
         }
 
