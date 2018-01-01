@@ -12,38 +12,51 @@ class CacheDiskTest extends TestCase
         self::$cache = new \Cache\CacheDisk([]);
     }
 
+    public static function cacheMethodProvider() {
+        return [
+            [new \Cache\CacheDisk([])],
+            [new \Cache\CacheApc()], // requires apc.enable_cli=1
+            [new \Cache\CacheApcu()], // requires apcu.enable_cli=1
+            [new \Cache\CacheRedis([])],
+            [new \Cache\CacheMemcached()],
+        ];
+    }
+
     /**
      * Tests whether a value can be set and retrieved. Tests several value types.
+     * @dataProvider cacheMethodProvider
      */
-    public function testGetSet()
+
+    public function testGetSet($cache)
     {
-        $this->assertTrue(self::$cache->set("diskTestInt", 1));
-        $this->assertSame(1, self::$cache->get("diskTestInt"));
+        $this->assertTrue($cache->set("diskTestInt", 1));
+        $this->assertSame(1, $cache->get("diskTestInt"));
 
-        $this->assertTrue(self::$cache->set("diskTestString", "hello"));
-        $this->assertSame("hello", self::$cache->get("diskTestString"));
+        $this->assertTrue($cache->set("diskTestString", "hello"));
+        $this->assertSame("hello", $cache->get("diskTestString"));
 
-        $this->assertTrue(self::$cache->set("diskTestArray", "how are you?"));
-        $this->assertSame("how are you?", self::$cache->get("diskTestArray"));
+        $this->assertTrue($cache->set("diskTestArray", "how are you?"));
+        $this->assertSame("how are you?", $cache->get("diskTestArray"));
 
         $object = new stdClass();
         $object->property = 'Here we go';
 
-        $this->assertTrue(self::$cache->set("diskTestObject", $object));
+        $this->assertTrue($cache->set("diskTestObject", $object));
 
-        $this->assertSame(var_export($object, true), var_export(self::$cache->get("diskTestObject"), true));
+        $this->assertSame(var_export($object, true), var_export($cache->get("diskTestObject"), true));
 
         $object->property = 'Here we go again.';
-        $this->assertNotEquals($object, self::$cache->get("diskTestObject"));
+        $this->assertNotEquals($object, $cache->get("diskTestObject"));
 
-        self::$cache->clear('diskTestInt');
-        self::$cache->clear('diskTestString');
-        self::$cache->clear('diskTestArray');
-        self::$cache->clear('diskTestObject');
+        $cache->clear('diskTestInt');
+        $cache->clear('diskTestString');
+        $cache->clear('diskTestArray');
+        $cache->clear('diskTestObject');
     }
 
     /**
      * Tests whether a value can be overwritten with set.
+     * @dataProvider cacheMethodProvider
      */
     public function testGetSetOverwrite()
     {
@@ -57,6 +70,7 @@ class CacheDiskTest extends TestCase
 
     /**
      * Tests whether a value can't be overwritten with add.
+     * @dataProvider cacheMethodProvider
      */
     public function testAdd()
     {
@@ -74,12 +88,29 @@ class CacheDiskTest extends TestCase
 
     /**
      * Tests whether a value isn't gettable after deletion.
+     * @dataProvider cacheMethodProvider
      */
-    public function testclear() {
+    public function testClear() {
         $this->assertTrue(self::$cache->set("diskTestDelete", "not deleted"));
         $this->assertSame("not deleted", self::$cache->get("diskTestDelete"));
 
         $this->assertTrue(self::$cache->clear("diskTestDelete"));
         $this->assertSame(false, self::$cache->get("diskTestDelete"));
+    }
+
+    /**
+     * Tests whether a value isn't gettable after clearAll.
+     * @dataProvider cacheMethodProvider
+     */
+    public function testClearAll() {
+        $this->assertTrue(self::$cache->set("diskTestClearAll1", "not deleted"));
+        $this->assertTrue(self::$cache->set("diskTestClearAll2", "not deleted"));
+        $this->assertTrue(self::$cache->set("diskTestClearAll3", "not deleted"));
+
+        $this->assertTrue(self::$cache->clearAll());
+
+        $this->assertSame(false, self::$cache->get("diskTestClearAll1"));
+        $this->assertSame(false, self::$cache->get("diskTestClearAll2"));
+        $this->assertSame(false, self::$cache->get("diskTestClearAll3"));
     }
 }
