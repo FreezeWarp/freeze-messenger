@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <meta charset="utf-8"/>
+    <title>API Documentation</title>
+    <meta name="author" content=""/>
+    <meta name="description" content=""/>
+
+    <link href="../css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/prism.css" rel="stylesheet" media="all"/>
+    <link href="../css/template.css" rel="stylesheet" media="all"/>
+    
+    <!--[if lt IE 9]>
+    <script src="../js/html5.js"></script>
+    <![endif]-->
+    <script src="../js/jquery-1.11.0.min.js"></script>
+    <script src="../js/ui/1.10.4/jquery-ui.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.smooth-scroll.js"></script>
+    <script src="../js/prism.min.js"></script>
+    <!-- TODO: Add http://jscrollpane.kelvinluck.com/ to style the scrollbars for browsers not using webkit-->
+    <script type="text/javascript">
+    function loadExternalCodeSnippets() {
+        Array.prototype.slice.call(document.querySelectorAll('pre[data-src]')).forEach(function (pre) {
+            var src = pre.getAttribute('data-src').replace( /\\/g, '/');
+            var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
+            var language = 'php';
+
+            var code = document.createElement('code');
+            code.className = 'language-' + language;
+
+            pre.textContent = '';
+
+            code.textContent = 'Loading…';
+
+            pre.appendChild(code);
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.open('GET', src, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+
+                    if (xhr.status < 400 && xhr.responseText) {
+                        code.textContent = xhr.responseText;
+
+                        Prism.highlightElement(code);
+                    }
+                    else if (xhr.status >= 400) {
+                        code.textContent = '✖ Error ' + xhr.status + ' while fetching file: ' + xhr.statusText;
+                    }
+                    else {
+                        code.textContent = '✖ Error: File does not exist or is empty';
+                    }
+                }
+            };
+
+            xhr.send(null);
+        });
+    }
+
+    $(document).ready(function(){
+        loadExternalCodeSnippets();
+    });
+    $('#source-view').on('shown', function () {
+        loadExternalCodeSnippets();
+    })
+</script>
+
+    <link rel="shortcut icon" href="../images/favicon.ico"/>
+    <link rel="apple-touch-icon" href="../images/apple-touch-icon.png"/>
+    <link rel="apple-touch-icon" sizes="72x72" href="../images/apple-touch-icon-72x72.png"/>
+    <link rel="apple-touch-icon" sizes="114x114" href="../images/apple-touch-icon-114x114.png"/>
+</head>
+<body>
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <i class="icon-ellipsis-vertical"></i>
+            </a>
+            <a class="brand" href="../index.html">API Documentation</a>
+
+            <div class="nav-collapse">
+                <ul class="nav pull-right">
+                                        <li class="dropdown">
+                        <a href="../index.html" class="dropdown-toggle" data-toggle="dropdown">
+                            API Documentation <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                                                        <li><a href="../namespaces/Cache.html">\Cache</a></li>
+                                                        <li><a href="../namespaces/Database.html">\Database</a></li>
+                                                        <li><a href="../namespaces/Fim.html">\Fim</a></li>
+                                                        <li><a href="../namespaces/Http.html">\Http</a></li>
+                                                        <li><a href="../namespaces/Login.html">\Login</a></li>
+                                                        <li><a href="../namespaces/Stream.html">\Stream</a></li>
+                                                    </ul>
+                    </li>
+                                        <li class="dropdown" id="charts-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Charts <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../graphs/class.html">
+                                    <i class="icon-list-alt"></i>&#160;Class hierarchy diagram
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown" id="reports-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Reports <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../reports/errors.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">1113</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/markers.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">43</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/deprecated.html">
+                                                                                                            <i class="icon-list-alt"></i>&#160;Deprecated <span class="label label-info pull-right">0</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--<div class="go_to_top">-->
+    <!--<a href="#___" style="color: inherit">Back to top&#160;&#160;<i class="icon-upload icon-white"></i></a>-->
+    <!--</div>-->
+</div>
+
+<div id="___" class="container-fluid">
+        <section class="row-fluid">
+        <div class="span2 sidebar">
+                                <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-1509167563"></a>
+                                <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
+            </div>
+            <div id="namespace-1509167563" class="accordion-body collapse in">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1330611994"></a>
+                                <a href="../namespaces/Cache.html" style="margin-left: 30px; padding-left: 0">Cache</a>
+            </div>
+            <div id="namespace-1330611994" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-115228248"></a>
+                                <a href="../namespaces/Cache.Driver.html" style="margin-left: 30px; padding-left: 0">Driver</a>
+            </div>
+            <div id="namespace-115228248" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Cache.Driver.Apc.html">Apc</a></li>
+                                                    <li class="class"><a href="../classes/Cache.Driver.Apcu.html">Apcu</a></li>
+                                                    <li class="class"><a href="../classes/Cache.Driver.Disk.html">Disk</a></li>
+                                                    <li class="class"><a href="../classes/Cache.Driver.Memcached.html">Memcached</a></li>
+                                                    <li class="class"><a href="../classes/Cache.Driver.Redis.html">Redis</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Cache.DriverInterface.html">DriverInterface</a></li>
+                                                                            <li class="trait"><a href="../classes/Cache.CacheAddFallbackTrait.html">CacheAddFallbackTrait</a></li>
+                                                    <li class="trait"><a href="../classes/Cache.CacheSetFallbackTrait.html">CacheSetFallbackTrait</a></li>
+                                                                            <li class="class"><a href="../classes/Cache.CacheFactory.html">CacheFactory</a></li>
+                                                    <li class="class"><a href="../classes/Cache.FileCache.html">FileCache</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-619875304"></a>
+                                <a href="../namespaces/Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
+            </div>
+            <div id="namespace-619875304" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-839199020"></a>
+                                <a href="../namespaces/Database.Index.html" style="margin-left: 30px; padding-left: 0">Index</a>
+            </div>
+            <div id="namespace-839199020" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Database.Index.Storage.html">Storage</a></li>
+                                                    <li class="class"><a href="../classes/Database.Index.Type.html">Type</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2022441548"></a>
+                                <a href="../namespaces/Database.SQL.html" style="margin-left: 30px; padding-left: 0">SQL</a>
+            </div>
+            <div id="namespace-2022441548" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1816760131"></a>
+                                <a href="../namespaces/Database.SQL.Drivers.html" style="margin-left: 30px; padding-left: 0">Drivers</a>
+            </div>
+            <div id="namespace-1816760131" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoMysql.html">PdoMysql</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Database.SQL.DriverInterface.html">DriverInterface</a></li>
+                                                                            <li class="trait"><a href="../classes/Database.SQL.ManualInsertID_Trait.html">ManualInsertID_Trait</a></li>
+                                                    <li class="trait"><a href="../classes/Database.SQL.ReconnectOnSelectDatabase_Trait.html">ReconnectOnSelectDatabase_Trait</a></li>
+                                                                            <li class="class"><a href="../classes/Database.SQL.DatabaseSQL.html">DatabaseSQL</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.MySQL_Definitions.html">MySQL_Definitions</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.SQL_Definitions.html">SQL_Definitions</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-123416935"></a>
+                                <a href="../namespaces/Database.Type.html" style="margin-left: 30px; padding-left: 0">Type</a>
+            </div>
+            <div id="namespace-123416935" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Database.Type.Comparison.html">Comparison</a></li>
+                                                    <li class="class"><a href="../classes/Database.Type.Type.html">Type</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Database.ResultInterface.html">ResultInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/Database.Database.html">Database</a></li>
+                                                    <li class="class"><a href="../classes/Database.Engine.html">Engine</a></li>
+                                                    <li class="class"><a href="../classes/Database.Result.html">Result</a></li>
+                                                    <li class="class"><a href="../classes/Database.Type.html">Type</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-916092907"></a>
+                                <a href="../namespaces/Fim.html" style="margin-left: 30px; padding-left: 0">Fim</a>
+            </div>
+            <div id="namespace-916092907" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Fim.Cache.html">Cache</a></li>
+                                                    <li class="class"><a href="../classes/Fim.CensorList.html">CensorList</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Config.html">Config</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Database.html">Database</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseLogin.html">DatabaseLogin</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseParameters.html">DatabaseParameters</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseResult.html">DatabaseResult</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseSlave.html">DatabaseSlave</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DynamicObject.html">DynamicObject</a></li>
+                                                    <li class="class"><a href="../classes/Fim.File.html">File</a></li>
+                                                    <li class="class"><a href="../classes/Fim.FileThumbnail.html">FileThumbnail</a></li>
+                                                    <li class="class"><a href="../classes/Fim.MagicGettersSetters.html">MagicGettersSetters</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Message.html">Message</a></li>
+                                                    <li class="class"><a href="../classes/Fim.OAuthProvider.html">OAuthProvider</a></li>
+                                                    <li class="class"><a href="../classes/Fim.RoomFactory.html">RoomFactory</a></li>
+                                                    <li class="class"><a href="../classes/Fim.UserFactory.html">UserFactory</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1658601791"></a>
+                                <a href="../namespaces/Http.html" style="margin-left: 30px; padding-left: 0">Http</a>
+            </div>
+            <div id="namespace-1658601791" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Http.ApiData.html">ApiData</a></li>
+                                                    <li class="class"><a href="../classes/Http.ApiOutputDict.html">ApiOutputDict</a></li>
+                                                    <li class="class"><a href="../classes/Http.ApiOutputList.html">ApiOutputList</a></li>
+                                                    <li class="class"><a href="../classes/Http.CurlRequest.html">CurlRequest</a></li>
+                                                    <li class="class"><a href="../classes/Http.CurlRequestMethod.html">CurlRequestMethod</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1791779911"></a>
+                                <a href="../namespaces/Login.html" style="margin-left: 30px; padding-left: 0">Login</a>
+            </div>
+            <div id="namespace-1791779911" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1617125466"></a>
+                                <a href="../namespaces/Login.Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
+            </div>
+            <div id="namespace-1617125466" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Login.Database.LoginPhpbb.html">LoginPhpbb</a></li>
+                                                    <li class="class"><a href="../classes/Login.Database.LoginVanilla.html">LoginVanilla</a></li>
+                                                    <li class="class"><a href="../classes/Login.Database.LoginVbulletin3.html">LoginVbulletin3</a></li>
+                                                    <li class="class"><a href="../classes/Login.Database.LoginVbulletin5.html">LoginVbulletin5</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-178970215"></a>
+                                <a href="../namespaces/Login.TwoStep.html" style="margin-left: 30px; padding-left: 0">TwoStep</a>
+            </div>
+            <div id="namespace-178970215" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginFacebook.html">LoginFacebook</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginGoogle.html">LoginGoogle</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginMicrosoft.html">LoginMicrosoft</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginReddit.html">LoginReddit</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginSteam.html">LoginSteam</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginTwitter.html">LoginTwitter</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Login.LoginRunner.html">LoginRunner</a></li>
+                                                                                                    <li class="class"><a href="../classes/Login.LoginDatabase.html">LoginDatabase</a></li>
+                                                    <li class="class"><a href="../classes/Login.LoginFactory.html">LoginFactory</a></li>
+                                                    <li class="class"><a href="../classes/Login.LoginOAuth.html">LoginOAuth</a></li>
+                                                    <li class="class"><a href="../classes/Login.LoginTwoStep.html">LoginTwoStep</a></li>
+                                                    <li class="class"><a href="../classes/Login.PasswordHash.html">PasswordHash</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1541748030"></a>
+                                <a href="../namespaces/Stream.html" style="margin-left: 30px; padding-left: 0">Stream</a>
+            </div>
+            <div id="namespace-1541748030" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1245332693"></a>
+                                <a href="../namespaces/Stream.Streams.html" style="margin-left: 30px; padding-left: 0">Streams</a>
+            </div>
+            <div id="namespace-1245332693" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Stream.Streams.StreamDatabase.html">StreamDatabase</a></li>
+                                                    <li class="class"><a href="../classes/Stream.Streams.StreamKafka.html">StreamKafka</a></li>
+                                                    <li class="class"><a href="../classes/Stream.Streams.StreamPgSQL.html">StreamPgSQL</a></li>
+                                                    <li class="class"><a href="../classes/Stream.Streams.StreamRedis.html">StreamRedis</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Stream.StreamInterface.html">StreamInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/Stream.StreamFactory.html">StreamFactory</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/ArrayPosition.html">ArrayPosition</a></li>
+                                                    <li class="class"><a href="../classes/CacheTest.html">CacheTest</a></li>
+                                                    <li class="class"><a href="../classes/databaseSQLTests.html">databaseSQLTests</a></li>
+                                                    <li class="class"><a href="../classes/databaseSQLTests1.html">databaseSQLTests1</a></li>
+                                                    <li class="class"><a href="../classes/databaseSQLTests2.html">databaseSQLTests2</a></li>
+                                                    <li class="class"><a href="../classes/fimError.html">fimError</a></li>
+                                                    <li class="class"><a href="../classes/fimErrorThrown.html">fimErrorThrown</a></li>
+                                                    <li class="class"><a href="../classes/fimRoom.html">fimRoom</a></li>
+                                                    <li class="class"><a href="../classes/fimUser.html">fimUser</a></li>
+                                                    <li class="class"><a href="../classes/Xml2Array.html">Xml2Array</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </div>
+    </section>
+    <section class="row-fluid">
+        <div class="span10 offset2">
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <nav>
+                                                <a href="../namespaces/Database.SQL.html">\Database\SQL</a> <i class="icon-level-up"></i>
+                                            </nav>
+                    <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal"><i class="icon-code"></i></a>
+
+                    <h1><small>\Database\SQL</small>ReconnectOnSelectDatabase_Trait</h1>
+                    <p><em>The conventions of any driver that doesn&#039;t have the ability to set the active database after especially a connection.</em></p>
+                    
+                    
+                                        
+                    <section id="summary">
+                        <h2>Summary</h2>
+                        <section class="row-fluid heading">
+                            <section class="span4">
+                                <a href="#methods">Methods</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#properties">Properties</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#constants">Constants</a>
+                            </section>
+                        </section>
+                        <section class="row-fluid public">
+                            <section class="span4">
+                                                                    <a href="../classes/Database.SQL.ReconnectOnSelectDatabase_Trait.html#method_registerConnection" class="">registerConnection()</a><br />
+                                                                    <a href="../classes/Database.SQL.ReconnectOnSelectDatabase_Trait.html#method_selectDatabase" class="">selectDatabase()</a><br />
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No public properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No constants found</em>
+                                                            </section>
+                        </section>
+                        <section class="row-fluid protected">
+                            <section class="span4">
+                                                                    <em>No protected methods found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <a href="../classes/Database.SQL.ReconnectOnSelectDatabase_Trait.html#property_connectionUser" class="">$connectionUser</a><br />
+                                                                    <a href="../classes/Database.SQL.ReconnectOnSelectDatabase_Trait.html#property_connectionPassword" class="">$connectionPassword</a><br />
+                                                                    <a href="../classes/Database.SQL.ReconnectOnSelectDatabase_Trait.html#property_connectionHost" class="">$connectionHost</a><br />
+                                                                    <a href="../classes/Database.SQL.ReconnectOnSelectDatabase_Trait.html#property_connectionPort" class="">$connectionPort</a><br />
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                        <section class="row-fluid private">
+                            <section class="span4">
+                                                                    <em>No private methods found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No private properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                    </section>
+                </div>
+                <aside class="span4 detailsbar">
+                                        
+                    
+                    <dl>
+                        <dt>File</dt>
+                            <dd><a href="../files/functions.Database.SQL.ReconnectOnSelectDatabase_Trait.html"><div class="path-wrapper">functions/Database/SQL/ReconnectOnSelectDatabase_Trait.php</div></a></dd>
+                                                <dt>Package</dt>
+                            <dd><div class="namespace-wrapper">Default</div></dd>
+                                                <dt>Class hierarchy</dt>
+                            <dd class="hierarchy">
+                                                                                                                                                                    <div class="namespace-wrapper">\Database\SQL\ReconnectOnSelectDatabase_Trait</div>
+                            </dd>
+
+                        
+                        
+                        
+                                                
+                                                                        </dl>
+                    <h2>Tags</h2>
+                    <table class="table table-condensed">
+                                            <tr><td colspan="2"><em>None found</em></td></tr>
+                                        </table>
+                </aside>
+            </div>
+
+                        
+                                    <a id="properties" name="properties"></a>
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <h2>Properties</h2>
+                </div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_connectionUser" name="property_connectionUser" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$connectionUser</h3>
+                <pre class="signature">$connectionUser : </pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                
+                                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_connectionPassword" name="property_connectionPassword" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$connectionPassword</h3>
+                <pre class="signature">$connectionPassword : </pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                
+                                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_connectionHost" name="property_connectionHost" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$connectionHost</h3>
+                <pre class="signature">$connectionHost : </pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                
+                                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_connectionPort" name="property_connectionPort" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$connectionPort</h3>
+                <pre class="signature">$connectionPort : </pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                
+                                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                            
+                                    <a id="methods" name="methods"></a>
+            <div class="row-fluid">
+                <div class="span8 content class"><h2>Methods</h2></div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_registerConnection" name="method_registerConnection" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">registerConnection()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">registerConnection(  <span class="argument">$host</span>,   <span class="argument">$port</span>,   <span class="argument">$user</span>,   <span class="argument">$password</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$host </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$port </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$user </td>
+                                <td></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$password </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Database.SQL.ReconnectOnSelectDatabase_Trait.html"><div class="path-wrapper">\Database\SQL\ReconnectOnSelectDatabase_Trait</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_selectDatabase" name="method_selectDatabase" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">selectDatabase()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">selectDatabase(  <span class="argument">$database</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$database </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Database.SQL.ReconnectOnSelectDatabase_Trait.html"><div class="path-wrapper">\Database\SQL\ReconnectOnSelectDatabase_Trait</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                                                    </div>
+    </section>
+
+    <div id="source-view" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="source-view-label" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="source-view-label">ReconnectOnSelectDatabase_Trait.php</h3>
+        </div>
+        <div class="modal-body">
+            <pre data-src="../files/functions/Database/SQL/ReconnectOnSelectDatabase_Trait.php.txt" class="language-php line-numbers"></pre>
+        </div>
+    </div>
+
+    <footer class="row-fluid">
+        <section class="span10 offset2">
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <section class="row-fluid footer-sections">
+                        <section class="span4">
+                                                        <h1><i class="icon-code"></i></h1>
+                            <div>
+                                <ul>
+                                                                            <li><a href="../namespaces/Cache.html">\Cache</a></li>
+                                                                            <li><a href="../namespaces/Database.html">\Database</a></li>
+                                                                            <li><a href="../namespaces/Fim.html">\Fim</a></li>
+                                                                            <li><a href="../namespaces/Http.html">\Http</a></li>
+                                                                            <li><a href="../namespaces/Login.html">\Login</a></li>
+                                                                            <li><a href="../namespaces/Stream.html">\Stream</a></li>
+                                                                    </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-bar-chart"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../graphs/class.html">Class Hierarchy Diagram</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-pushpin"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../reports/errors.html">Errors</a></li>
+                                    <li><a href="../reports/markers.html">Markers</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                    </section>
+                </section>
+            </section>
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <hr />
+                    Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
+                    on January 1st, 2018 at 05:38.
+                </section>
+            </section>
+        </section>
+    </footer>
+</div>
+
+</body>
+</html>
