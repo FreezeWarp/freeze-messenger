@@ -95,7 +95,7 @@ popup.prototype.viewStats = function() {
             jQuery.each(room.users, function(userId, user) {
                 $('table#viewStats > tbody > tr').eq(i).append(
                     $('<td>').append(
-                        fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id)),
+                        fim_buildUsernameTag($('<span>'), user.id),
                         $('<span>').text('(' + user.messageCount + ')')
                     )
                 );
@@ -698,12 +698,12 @@ popup.prototype.online = function() {
             jQuery.each(user.rooms, function(roomId, room) {
                 if (roomData.length) roomData.push($('<span>').text(', '));
 
-                roomData.push(fim_buildRoomNameTag($('<span>'), room.id, fim_getRoomNameDeferred(room.id)));
+                roomData.push(fim_buildRoomNameTag($('<span>'), room.id));
             });
 
             $('#onlineUsers').append($('<tr>').append(
                 $('<td>').append(
-                    fim_buildUsernameTag($('<span>'), user.id, fim_getUsernameDeferred(user.id), true)
+                    fim_buildUsernameTag($('<span>'), user.id)
                 )
             ).append($('<td>').append(roomData)));
         }

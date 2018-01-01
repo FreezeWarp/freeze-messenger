@@ -458,7 +458,6 @@ function fim_formatAsUrl(url) {
  */
 function fim_messageFormat(json, format) {
 
-
     var data,
         text = json.text,
         messageTime = json.time,
@@ -466,8 +465,8 @@ function fim_messageFormat(json, format) {
         roomId = json.roomId,
         flag = json.flag,
         userId = Number(json.userId),
+        anonId = Number(json.anonId),
         userNameDeferred = fim_getUsernameDeferred(userId);
-
 
     text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
 
@@ -479,7 +478,7 @@ function fim_messageFormat(json, format) {
         case 'audio': text = fim_formatAsAudio(text); break; // Audio
         case 'email': text = fim_formatAsEmail(text); break; // Email Link
         case 'url': case 'text': case 'html': case 'archive': case 'application': case 'other': // Various Files and URLs
-        text = fim_formatAsUrl(text);
+            text = fim_formatAsUrl(text);
         break;
 
         // Unspecified
@@ -545,7 +544,7 @@ function fim_messageFormat(json, format) {
                 'id': "archiveMessage' + messageId + '"
             }).append(
                 $('<td>').append(
-                    fim_buildUsernameTag($('<span class="userName userNameTable">'), userId, userNameDeferred)
+                    fim_buildUsernameTag($('<span class="userName userNameTable"></span>'), userId, userNameDeferred, anonId)
                 )
             ).append(
                 $('<td class="d-none d-sm-table-cell">').text(fim_dateFormat(messageTime))
@@ -574,7 +573,7 @@ function fim_messageFormat(json, format) {
                 'class': 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
             }).append(
                 $('<span class="usernameDate">').append(
-                    fim_buildUsernameTag($('<span>'), userId, userNameDeferred, settings.showAvatars, !settings.showAvatars)
+                    fim_buildUsernameTag($('<span>'), userId, userNameDeferred, anonId, settings.showAvatars, !settings.showAvatars)
                 ).append(
                     !settings.showAvatars ?
                         $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(fim_dateFormat(messageTime)))
@@ -589,23 +588,30 @@ function fim_messageFormat(json, format) {
     return data;
 }
 
-function fim_buildUsernameTag(tag, userId, deferred, includeAvatar, includeUsername) {
-    fim_buildUsernameTagPromise(tag, userId, deferred, includeAvatar, includeUsername);
+function fim_buildUsernameTag(tag, userId, deferred, anonId, includeAvatar, includeUsername) {
+    if (!deferred)
+        deferred = fim_getUsernameDeferred(userId);
+
+    fim_buildUsernameTagPromise(tag, userId, deferred, anonId, includeAvatar, includeUsername);
 
     return tag;
 }
 
 
-function fim_buildUsernameTagPromise(tag, userId, userDeferred, includeAvatar, includeUsername) {
+function fim_buildUsernameTagPromise(tag, userId, userDeferred, anonId, includeAvatar, includeUsername) {
     var deferred = $.Deferred();
 
     if (includeAvatar == undefined)
         includeAvatar = true;
     if (includeUsername == undefined)
-        includeUsername = true;//
+        includeUsername = true;
+
+    console.log("aid", anonId);
+    if (!anonId)
+        anonId = "";
 
     $.when(userDeferred).then(function(pairs) {
-        var userName = pairs[userId].name,
+        var userName = pairs[userId].name + anonId,
             userNameFormat = pairs[userId].nameFormat,
             avatar = pairs[userId].avatar ? pairs[userId].avatar : 'images/blankperson.png',
             style = settings.disableFormatting ? '' : pairs[userId].messageFormatting;
@@ -641,6 +647,9 @@ function fim_buildUsernameTagPromise(tag, userId, userDeferred, includeAvatar, i
 }
 
 function fim_buildRoomNameTag(tag, roomId, deferred) {
+    if (!deferred)
+        deferred = fim_getRoomNameDeferred(roomId);
+
     fim_buildRoomNameTagPromise(tag, roomId, deferred);
 
     return tag;

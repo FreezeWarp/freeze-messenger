@@ -139,9 +139,11 @@ autoEntry.prototype = {
             }
 
             else {
+                let usernameDeferred = fim_getUsernameDeferred(id);
+
                 let nameTag = $('<span>');
                 if (this.options.list === "users") {
-                    nameTag = fim_buildUsernameTag(nameTag, id, fim_getUsernameDeferred(id), false, true);
+                    nameTag = fim_buildUsernameTag(nameTag, id, usernameDeferred, false, false, true);
                 }
                 else {
                     nameTag.text(name);
@@ -150,7 +152,7 @@ autoEntry.prototype = {
                 let avatarTag = false;
                 if (this.options.list === "users") {
                     avatarTag = $('<span>');
-                    avatarTag = fim_buildUsernameTag(avatarTag, id, fim_getUsernameDeferred(id), true, false);
+                    avatarTag = fim_buildUsernameTag(avatarTag, id, usernameDeferred, false, true, false);
                 }
 
                 this.autocompleteValue.val(this.autocompleteValue.val() + "," + id);

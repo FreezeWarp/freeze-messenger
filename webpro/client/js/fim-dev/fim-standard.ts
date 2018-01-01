@@ -237,9 +237,9 @@ standard.prototype.missedMessageHandler = function(message) {
 
         $('#missedMessage' + message.roomId.toString().replace(',', '\\,')).replaceWith(
             $('<span>').text('New message from ')
-                .append(fim_buildUsernameTag($('<strong>'), message.senderId, fim_getUsernameDeferred(message.senderId)))
+                .append(fim_buildUsernameTag($('<strong>'), message.senderId))
                 .append(' has been made in ')
-                .append(fim_buildRoomNameTag($('<strong>'), message.roomId, fim_getRoomNameDeferred(message.roomId)))
+                .append(fim_buildRoomNameTag($('<strong>'), message.roomId))
                 .append(message.missedMessages ? $('<span>').text('(Other messages: ' + message.otherMessages + ')') : '')
         );
     }

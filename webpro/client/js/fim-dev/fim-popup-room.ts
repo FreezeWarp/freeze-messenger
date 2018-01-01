@@ -609,7 +609,7 @@ popup.prototype.room.prototype.editedMessageHandler = function(active) {
 popup.prototype.room.prototype.userStatusChangeHandler = function(active) {
     let existingRow = $('ul#activeUsers > li[data-userId=' + active.userId + ']');
     let newRow = $('<li>').attr('class', 'list-group-item').attr('data-userId', active.userId)
-        .append(fim_buildUsernameTag($('<span>'), active.userId, fim_getUsernameDeferred(active.userId)))
+        .append(fim_buildUsernameTag($('<span>'), active.userId))
         .append(active.typing ? $('<i class="fa fa-keyboard-o" style="vertical-align: middle; margin-left: 10px;"></i>') : $(''));
 
     if (existingRow.length > 0) {
