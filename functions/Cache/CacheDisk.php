@@ -41,7 +41,7 @@ class CacheDisk implements CacheInterface {
         return $this->instance->get($index);
     }
 
-    public function set($index, $value, $ttl) {
+    public function set($index, $value, $ttl = 3600) {
         return $this->instance->set($index, $value, $ttl);
     }
 

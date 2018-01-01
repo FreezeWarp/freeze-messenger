@@ -77,7 +77,7 @@ class FileCache {
         flock($fh, LOCK_EX); // Lock the file.
         ftruncate($fh, 0); // Empty the file.
         if (!fwrite($fh, serialize($store))) { // Rewrite the file with the new contents.
-            throw new \Exception('Could not write cache.');
+            return false;
         }
         flock($fh, LOCK_UN); // Remove the lock on the file.
         fclose($fh); // Close the file from memory.
@@ -126,25 +126,18 @@ class FileCache {
 
 
         // Get the data from the file
-        $fh = @fopen($key, "r");
+        $file_content = @file_get_contents($key);
 
-        if ($fh !== false) {
-            flock($fh, LOCK_SH); // Lock the file for reading.
-            $file_content = @fread($fh, filesize($key)); // Get contents.
-            fclose($fh); // Close the file from memory.
+        if ($file_content !== false) {
+            $store = @unserialize($file_content);
 
-            // Assuming we got something back...
-            if ($file_content) {
-                $store = @unserialize($file_content);
+            if(!isset($store['ttl']) || $store['ttl'] < time()) { // If the cache has expired.
+                @unlink($key); // remove the file
 
-                if(!isset($store['ttl']) || $store['ttl'] < time()) { // If the cache has expired.
-                    @unlink($key); // remove the file
-
-                    return false;
-                }
-
-                return $store['data'];
+                return false;
             }
+
+            return $store['data'];
         }
 
         return false;
@@ -156,14 +149,7 @@ class FileCache {
      * @param string $key An identifier for the data
      */
     public function delete($key) {
-        $key = $this->_make_file_key($key);
-
-        if (!unlink($key)) { // Remove the file.
-            throw new \Exception('Could not delete cache.');
-        }
-        else {
-            return true;
-        }
+        return @unlink($this->_make_file_key($key));
     }
 
     /**
