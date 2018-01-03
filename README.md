@@ -40,8 +40,15 @@ Requirements
 Installation
 ============
 
-1.   To upload, use FTP or another means of uploading the files here.
-2.   To install, navigate to the directory install/ and proceed from there.
+### From Releases
+1.   [Download the latest release.](https://github.com/FreezeWarp/freeze-messenger/releases/tag/v1.0-beta.1)
+2.   Unzip the latest release into `[messengerDirectory]`, which is whatever directory FreezeMessenger should be accessible from.
+3.   To install, navigate to the `https://yoursite.com/[messengerDirectory]/install/` and proceed from there.
+
+### From Git
+1.   Clone the Git repository: `git clone https://github.com/FreezeWarp/freeze-messenger.git [messengerDirectory]`, where `[messengerDirectory]` is where you want FreezeMessenger to be accessible from.
+2.   Initiate the Git submodules: run `git submodule init` followed by `git submodule update` from inside `[messengerDirectory]`
+3.   To install, navigate to the directory `https://yoursite.com/[messengerDirectory]/install/` and proceed from there.
 
 
 Configuration
@@ -406,31 +413,4 @@ As memory tables are very transient in nature, we never rely on a memory table c
 Database Abstraction Layer
 ==========================
 
-Supported Drivers
------------------
-
-1.  MySQL
-
-    1.  Primarily for testing purposes, the old __mysql__ driver is implemented, though it is not actively supported. It should be avoided as much as possible, in lieu of mysqli or pdoMysql.
-    2.  __mysqli__ is the driver used primarily in development, and generally the best supported. In many cases, it is faster than other drivers. Note that it does not use parameterised queries, and relies on [`mysqli::real_escape_string`](http://php.net/manual/en/mysqli.real-escape-string.php) to escape inputs.
-    3.  __pdoMysql__ is the driver recommended for security-conscious individuals; all queries are fully parameterised. In practice, there is no reason to believe there is any injection potential in any driver (as the abstraction layer is itself parameterised), but if the abstraction layer fails to properly escape information, pdoMysql most likely won't. Note that pdoMysql will typically have higher memory usage than other drivers, because it must read in an entire result set before making it available for consumption.
-
-2.  Postgres
-
-    1.  __pgsql__ is a newer driver that supports postgres' [`LISTEN/NOTIFY`](https://www.postgresql.org/docs/current/static/sql-notify.html) functionality. It will typically be somewhat slower than mysql (due to lacking the memory tables used to ensure validation occurs quickly, and requiring certain data to be transformed after retrieval), and older versions (<9.5) will also not ensure full ACIDity, as the abstraction layer will emulate [upsert](https://wiki.postgresql.org/wiki/UPSERT) in these versions by executing chained "IF SELECT() THEN UPDATE ELSE INSERT" queries (in the form of three separate queries).
-    2.  __pdoPgsql__ is planned.
-
-3.  SqlServer
-
-    1.  __sqlsrv__ is experimentally available, and may work with most functionality at this time. Note, however, that only experienced DBAs should use FreezeMessenger with SqlServer (as many tables may need to be further optimised on a per-installation basis to maintain performance, and a [fulltext storage object](https://docs.microsoft.com/en-us/sql/relational-databases/search/full-text-search) must first be created prior to using FreezeMessenger), and that, at this time, SqlServer is not guaranteed to be injection proof, due to the SqlServer driver not supporting parameterised queries on CREATE statements, and also not having any escape() function.
-    2.  __pdoSqlsrv__ is planned.
-
-Language-Specific Notes
------------------------
-
--   At present, MySQL supports both foreign keys and partitions, but not simultaneously (at least in InnoDB). As such, foreign key support is disabled in favour of partitions on MySQL.
--   Only MySQL uses partitioning. Postgres has no partitioning functionality, and SqlServer's is unimplemented.
--   Only MySQL supports database creation. The user must manually create a database prior to using Postgres or SqlServer.
--   Only MySQL supports automatically setting the table charset to UTF-8. Postgre's charsets are per-database, and thus must be set by the user.
--   For memory tables, MySQL's MEMORY engine is used, while Postgre's UNLOGGED table attribute is used. While SqlServer supports memory-optimized tables, they are unimplemented.
--   MySQL will use MySIAM on versions < 5.6, as InnoDB did not have [`FULLTEXT`](https://dev.mysql.com/doc/refman/5.6/en/innodb-fulltext-index.html) capabilities in these versions. It will use InnoDB on versions >= 5.6.
+[For information about the database abstraction layer FreezeMessenger uses, refer to its Git page.](https://github.com/FreezeWarp/freeze-db-abstraction)
