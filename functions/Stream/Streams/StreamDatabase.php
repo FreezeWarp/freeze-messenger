@@ -60,7 +60,7 @@ class StreamDatabase implements StreamInterface {
             ],
             'data' => [
                 'type' => 'json',
-                'maxlen' => 100, // TODO: support chunking
+                'maxlen' => 100,
             ],
             'eventName' => [
                 'type' => 'string',
@@ -68,15 +68,13 @@ class StreamDatabase implements StreamInterface {
             ]
         ], [
             'id,chunk' => [
-                'type' => Type::primary
-                //'storage' => DatabaseIndexStorage::btree
+                'type' => \Database\Index\Type::primary,
+                'storage' => \Database\Index\Storage::btree
             ],
-            /*
-             * 'time' => [
-             *      'type' => DatabaseIndexType::primary
-             *      'storage' => DatabaseIndexStorage::btree
-             * ]
-             */
+            'time' => [
+                'type' => \Database\Index\Type::index,
+                'storage' => \Database\Index\Storage::btree
+            ]
         ]);
 
         /* Update the Streams Table to Keep This Stream Alive */
@@ -96,8 +94,10 @@ class StreamDatabase implements StreamInterface {
 
 
     public function subscribe($stream, $lastId, $callback) {
+        $this->createStreamIfNotExists($stream);
+
         while ($this->retries++ < \Fim\Config::$serverSentMaxRetries) {
-            foreach ($this->subscribeOnce($stream, $lastId) AS $event) {
+            foreach ($this->subscribeOnce($stream, $lastId, false) AS $event) {
                 if ($event['id'] > $lastId) $lastId = $event['id'];
 
                 call_user_func($callback, $event);
@@ -110,8 +110,9 @@ class StreamDatabase implements StreamInterface {
     }
 
 
-    public function subscribeOnce($stream, $lastId) {
-        $this->createStreamIfNotExists($stream);
+    public function subscribeOnce($stream, $lastId, $createStream = true) {
+        if ($createStream)
+            $this->createStreamIfNotExists($stream);
 
         $output = $this->database->select([
             $this->database->sqlPrefix . 'stream_' . $stream => 'id, time, chunk, data, eventName'
