@@ -24,7 +24,7 @@ class LoginOAuth extends LoginDatabase {
             break;
 
             case 'access_token':
-                $this->oauthGrantType = new \OAuth2\GrantType\AccessToken($this->loginFactory->oauthStorage);
+                $this->oauthGrantType = new \Fim\AccessTokenGrantType($this->loginFactory->oauthStorage);
             break;
 
             case 'refresh_token':

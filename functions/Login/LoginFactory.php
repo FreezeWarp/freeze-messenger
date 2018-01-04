@@ -202,7 +202,7 @@ class LoginFactory
     /**
      * Get an IntegrationLogin GrantType instance from the current {LoginFactory::$user} object and set the appropriate request parameters to use it.
      *
-     * @return \OAuth2\GrantType\IntegrationLogin
+     * @return \Fim\IntegrationLoginGrantType
      */
     public function oauthGetIntegrationLogin()
     {
@@ -212,6 +212,6 @@ class LoginFactory
         $this->oauthRequest->request['grant_type'] = 'integrationLogin'; // Pretend we have this. It isn't used for verification.
         $this->oauthRequest->server['REQUEST_METHOD'] = 'POST'; // Pretend we're a POST request for the OAuth library. A better solution would be to forward, but honestly, it's hard to see the point.
 
-        return new \OAuth2\GrantType\IntegrationLogin($this->user);
+        return new \Fim\IntegrationLoginGrantType($this->user);
     }
 }
