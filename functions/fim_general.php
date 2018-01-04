@@ -760,10 +760,10 @@ function fim_exceptionHandler($exception) {
  * Flushes The Output Buffer
  */
 function fim_flush() {
-    echo str_repeat(' ', 1024 * \Fim\Config::$outputFlushPaddingKilobytes);
+    echo str_repeat(' ', 1024 * \Fim\Config::$outputFlushPaddingKilobytes); // Send padding, to make sure browsers receive stuff
 
-    @ob_flush();
-    flush();
+    @ob_flush(); // Flush PHP output buffer
+    flush(); // Flush webserver write buffers
 
 }
 

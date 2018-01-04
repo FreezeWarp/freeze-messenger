@@ -17,10 +17,10 @@
 $apiRequest = true;
 require('global.php');
 
-/* Possibly Helpful:
-ini_set('output_buffering', 'off');
+/* Disable output buffering and compression */
+ini_set('output_buffering', 'off'); // This one probably won't work, but eh.
 ini_set('zlib.output_compression', false);
-while (@ob_end_flush()); */
+while (@ob_end_flush());
 
 /* Send Proper Headers */
 header('Content-Type: text/event-stream');
