@@ -17,7 +17,6 @@ namespace Stream\Streams;
 
 use Database\Database;
 use Database\Engine;
-use Database\Index\Type;
 use Database\Type\Comparison;
 
 use Stream\StreamInterface;
@@ -44,7 +43,7 @@ class StreamDatabase implements StreamInterface {
      */
     private function createStreamIfNotExists($stream) {
         /* Create the Stream Table if it Doesn't Exist */
-        @$this->database->createTable($this->database->sqlPrefix . 'stream_' . $stream, '', Engine::memory, [
+        @$this->database->createTable( $this->database->sqlPrefix . 'stream_' . $stream, '', Engine::memory, [
             'id' => [
                 'type' => 'int',
                 'maxlen' => 10,
@@ -76,26 +75,10 @@ class StreamDatabase implements StreamInterface {
                 'storage' => \Database\Index\Storage::btree
             ]
         ]);
-
-        /* Update the Streams Table to Keep This Stream Alive */
-        $this->database->upsert($this->database->sqlPrefix . 'streams', [
-            'streamName' => $stream,
-        ], [
-            'lastEvent' => $this->database->now()
-        ]);
-
-        /* Delete All Channels That Are More Than 5 Minutes Old */
-        $condition = ['lastEvent' => $this->database->now(-60 * 5, Comparison::lessThan)];
-        foreach ($this->database->select([$this->database->sqlPrefix . 'streams' => 'lastEvent, streamName'], $condition)->getColumnValues('streamName') AS $oldStream) {
-            $this->database->deleteTable($this->database->sqlPrefix . 'stream_' . $oldStream);
-            $this->database->delete($this->database->sqlPrefix . 'streams', ['streamName' => $oldStream]);
-        }
     }
 
 
     public function subscribe($stream, $lastId, $callback) {
-        $this->createStreamIfNotExists($stream);
-
         while ($this->retries++ < \Fim\Config::$serverSentMaxRetries) {
             foreach ($this->subscribeOnce($stream, $lastId, false) AS $event) {
                 if ($event['id'] > $lastId) $lastId = $event['id'];
@@ -111,18 +94,23 @@ class StreamDatabase implements StreamInterface {
 
 
     public function subscribeOnce($stream, $lastId, $createStream = true) {
-        if ($createStream)
-            $this->createStreamIfNotExists($stream);
 
-        $output = $this->database->select([
-            $this->database->sqlPrefix . 'stream_' . $stream => 'id, time, chunk, data, eventName'
-        ], [
-            'id' => $this->database->int($lastId, Comparison::greaterThan),
-            'time' => $this->database->now(-15, Comparison::greaterThan)
-        ], [
-            'id' => 'ASC',
-            'chunk' => 'ASC'
-        ])->getAsArray('id', true);
+        try {
+            $output = $this->database->select([
+                $this->database->sqlPrefix . 'stream_' . $stream => 'id, time, chunk, data, eventName'
+            ], [
+                'id'   => $this->database->int($lastId, Comparison::greaterThan),
+                'time' => $this->database->now(-15, Comparison::greaterThan)
+            ], [
+                'id'    => 'ASC',
+                'chunk' => 'ASC'
+            ])->getAsArray('id', true);
+        } catch (\Exception $ex) {
+
+            $this->createStreamIfNotExists($stream);
+            return $this->subscribeOnce($stream, $lastId);
+
+        }
 
         $events = [];
 
@@ -144,12 +132,15 @@ class StreamDatabase implements StreamInterface {
 
 
     public function publish($stream, $eventName, $data) {
-        $this->createStreamIfNotExists($stream);
-
         // Delete old messages (do so first, just in case we hit the maximum, this ensures that old messages will still be deleted first)
-        $this->database->delete($this->database->sqlPrefix . 'stream_' . $stream, [
-            'time' => $this->database->now(-15, 'lt')
-        ]);
+        try {
+            $this->database->delete($this->database->sqlPrefix . 'stream_' . $stream, [
+                'time' => $this->database->now(-15, 'lt')
+            ]);
+        } catch (\Exception $ex) {
+            $this->createStreamIfNotExists($stream);
+            return $this->publish($stream, $eventName, $data);
+        }
 
         // Split up the data into chunks
         $chunks = str_split(json_encode($data), 100);
@@ -173,6 +164,21 @@ class StreamDatabase implements StreamInterface {
         }
 
         $this->database->endTransaction();
+
+
+        /* Update the Streams Table to Keep This Stream Alive */
+        $this->database->upsert($this->database->sqlPrefix . 'streams', [
+            'streamName' => $stream,
+        ], [
+            'lastEvent' => $this->database->now()
+        ]);
+
+        /* Delete All Channels That Are More Than 5 Minutes Old */
+        $condition = ['lastEvent' => $this->database->now(-60 * 5, Comparison::lessThan)];
+        foreach ($this->database->select([$this->database->sqlPrefix . 'streams' => 'lastEvent, streamName'], $condition)->getColumnValues('streamName') AS $oldStream) {
+            $this->database->deleteTable($this->database->sqlPrefix . 'stream_' . $oldStream);
+            $this->database->delete($this->database->sqlPrefix . 'streams', ['streamName' => $oldStream]);
+        }
     }
 
 
