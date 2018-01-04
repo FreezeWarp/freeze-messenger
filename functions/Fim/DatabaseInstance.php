@@ -2628,7 +2628,7 @@ class DatabaseInstance extends DatabaseSQL
                 new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
-                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute", 1, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
 
                 // Increment the Flood Weight
                 $this->upsert($this->sqlPrefix . "accessFlood", [
