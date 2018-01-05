@@ -28,13 +28,14 @@ Headline Functionality
 Requirements
 ============
 ### Minimum
-  * PHP 5.6 (PHP 7 is required in the nightlies; beginning with Release Candidate 1, a transpiler will be used to support PHP 5.6 in releases)
+  * PHP 5.6 (PHP 7 is required in the current betas; beginning with Release Candidate 1, a transpiler will be used to support PHP 5.6 in releases)
   * MySQL, PostgreSQL, **or** SQL Server
   * PHP's [DOM](http://php.net/manual/en/book.dom.php) library
   
 ### Recommended
   * APC, APCu, Memcached, or Redis for optimal caching.
   * Redis or Kafka, for optimal message streaming. (If using SQL Server, this is especially helpful.)
+  * Apache is currently the best supported server, though Nginx and Windows should also work. MySQL and PostgreSQL are both performant, but SQL Server is still generally on the slow side.
 
   
 Installation
