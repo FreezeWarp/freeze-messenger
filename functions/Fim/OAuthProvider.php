@@ -3,7 +3,7 @@ namespace Fim;
 
 use OAuth2\OpenID\Storage\UserClaimsInterface;
 use OAuth2\OpenID\Storage\AuthorizationCodeInterface as OpenIDAuthorizationCodeInterface;
-use Fim\AnonymousGrantType as Anonymous;
+use Fim\OAuthGrantTypes\AnonymousGrantType as Anonymous;
 use OAuth2\Storage\AccessTokenInterface;
 use OAuth2\Storage\AuthorizationCodeInterface;
 use OAuth2\Storage\ClientCredentialsInterface;

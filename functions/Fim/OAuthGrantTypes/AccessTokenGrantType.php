@@ -1,5 +1,5 @@
 <?php
-namespace Fim;
+namespace Fim\OAuthGrantTypes;
 
 use OAuth2\GrantType\GrantTypeInterface;
 use OAuth2\Storage\UserCredentialsInterface;
