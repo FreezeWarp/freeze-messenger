@@ -489,8 +489,8 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                             if ($installStatusDB & INSTALL_DB_PDO_MYSQL) echo '<option value="pdoMysql">MySQL, PDO Driver</option>';
                             if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="pgsql">PostGreSQL, PostGreSQL Driver</option>';
                             if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdoPgsql">PostGreSQL, PDO Driver</option>';
-                            if ($installStatusDB & INSTALL_DB_SQLSERVER) echo '<option value="sqlsrv">SqlServer (Currently Unsupported)</option>';
-                            if ($installStatusDB & INSTALL_DB_PDO_SQLSERVER) echo '<option value="pdoSqlsrv">SqlServer, PDO Driver (Currently Unsupported)</option>';
+                            if ($installStatusDB & INSTALL_DB_SQLSERVER) echo '<option value="sqlsrv">SqlServer, Sqlsrv Driver</option>';
+                            //if ($installStatusDB & INSTALL_DB_PDO_SQLSERVER) echo '<option value="pdoSqlsrv">SqlServer, PDO Driver</option>'; TODO: the PDO driver is not yet supported, because it is incompatible with the version of unixODBC installed on the FreezeMessenger test environment.
                             ?>
                         </select>
                         <small class="form-text text-muted">The driver to use to connect to your form. In general, it is fine to use any driver that supports your forum's database system.</small>
