@@ -79,6 +79,9 @@ Admin Control Panel Configuration Editor
 Frequently Asked Questions
 ==========================
 
+SQL Server
+----------
+
 ### How do I install FreezeMessenger using SQL Server?
 First, create a database. Next, create a fulltext catalog in that database. You should now be able to install FreezeMessenger using that database.
 
@@ -93,8 +96,22 @@ If you are connected to SQL Server via the command line, you can do the above wi
 ### Is SQL Server supported on Linux?
 Yes, though it can be difficult to compile the [Linux driver](https://github.com/Microsoft/msphpsql), and you may need to install the development 5.2.0 driver instead of the currently stable version, 4.3.0.
 
+### How well does SQL Server work with FreezeMessenger?
+For small installations, SQL Server generally works quite well. For larger installations, 
+
+
+Login Methods
+------------
+
+### Do I need to install FreezeMessenger on the same domain as my forum, or in the same database my forum uses?
+No; FreezeMessenger can be installed entirely seperately from your forum. It is generally somewhat faster on smaller installations if it is installed in the same database as your forum, but for medium-sized installations you should try to keep the two seperate for security reasons. (Note that FreezeMessenger only queries the forum database when a user logs in.)
+
+### The Microsoft login method doesn't work.
+Microsoft restricts logins to HTTPS domains; make sure you are using FreezeMessenger on an HTTPS domain in order to use Microsoft logins.
+
+
 Common Installation Problems
-============================
+----------------------------
 
 ### It takes a very long time to receive messages.
 This is most commonly a problem with message streaming (enabled by default), and has three origins:
@@ -129,19 +146,6 @@ More common is that too many queries are being made to this table at once; due t
 Like with the ping and roomPermissionsCache tables, the [`oauth_access_tokens`](http://josephtparsons.com/messenger/docs/database.htm#oauth_access_tokens) table is stored in memory on MySQL installations. When a user tries to log in, the table will first be pruned of expired sessions, but in theory so many users may be active at once that no new rows can be added to the table.
 
 Around 18,000 rows can be stored in this table on a default MySQL installation; this can be increased by changing the [`oauth_access_tokens`](http://josephtparsons.com/messenger/docs/database.htm#oauth_access_tokens) table to a non-memory table, or by increasing the MySQL [max_heap_table_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_heap_table_size) system variable.
-
-The Validation Bottleneck
--------------------------
-
-By default, at startup every script invocation performs the following:
-
-1.  Look up the server configuration information. This information will be stored in any available cache, but if one is not available it will query the configuration table for every script execution. Many DBMS software will automatically cache the result, but it is typically advised not to alter many configuration directives if a non-disk cache is not available.
-
-2.  Check to see if a session token is valid by looking it up in the session table. This table will preferentially be stored in memory, and thus could encounter write bottlenecks if validation attempts are not limited.
-
-3.  Insert or increment a record of the user's activity in the flood table or cache. This table exists in memory by default, and because writes to it are constant (and memory tables typically prevent simultaneous writes), it may become a bottleneck. Changing it to a non-memory table is often advised on large systems. By default, to spread the writes, the table will be partitioned. Additionally, if available, any available non-disk cache may be used to keep track of the counter instead, obviating write concerns entirely if the cache is in memory, though causing far more activity on the cache servers.
-
-In general, most scripts should not be queried by clients frequently, and the above start-up will be fine. However, obtaining messages may be performed quite frequently, especially by clients that do not support interfacing with the event API using server-sent events, and thus it is advised to keep the above in mind. Moreover, if server-sent events are disabled (possibly because your server is unable to run a script for at least 30 seconds), then the above becomes much more of a concern.
 
 
 Administration Tools
@@ -319,6 +323,19 @@ FlexMessenger uses reflection to expose stream methods. New Stream methods can b
 
 Login Compatibility
 ===================
+
+The Validation Bottleneck
+-------------------------
+
+By default, at startup every script invocation performs the following:
+
+1.  Look up the server configuration information. This information will be stored in any available cache, but if one is not available it will query the configuration table for every script execution. Many DBMS software will automatically cache the result, but it is typically advised not to alter many configuration directives if a non-disk cache is not available.
+
+2.  Check to see if a session token is valid by looking it up in the session table. This table will preferentially be stored in memory, and thus could encounter write bottlenecks if validation attempts are not limited.
+
+3.  Insert or increment a record of the user's activity in the flood table or cache. This table exists in memory by default, and because writes to it are constant (and memory tables typically prevent simultaneous writes), it may become a bottleneck. Changing it to a non-memory table is often advised on large systems. By default, to spread the writes, the table will be partitioned. Additionally, if available, any available non-disk cache may be used to keep track of the counter instead, obviating write concerns entirely if the cache is in memory, though causing far more activity on the cache servers.
+
+In general, most scripts should not be queried by clients frequently, and the above start-up will be fine. However, obtaining messages may be performed quite frequently, especially by clients that do not support interfacing with the event API using server-sent events, and thus it is advised to keep the above in mind. Moreover, if server-sent events are disabled (possibly because your server is unable to run a script for at least 30 seconds), then the above becomes much more of a concern.
 
 Supported Login Functionality
 -----------------------------
