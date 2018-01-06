@@ -172,7 +172,7 @@
         <table name="kicks" type="general" comment="Room-created temporary user bans.">
             <column name="userId"   fkey="users.id" type="int"  maxlen="8"         comment="The ID of the user who has been kicked." />
             <column name="roomId"   fkey="rooms.id" type="int"  maxlen="6"         comment="The ID of the room the kick is active in. Note that this cannot be used for private roomIds." />
-            <column name="kickerid" fkey="users.id" type="int"  maxlen="8"         comment="The ID of the user who made the kick." />
+            <column name="kickerId" fkey="users.id" type="int"  maxlen="8"         comment="The ID of the user who made the kick." />
             <column name="time"                     type="time" default="__TIME__" comment="The time the kick was made on." />
             <column name="expires"                  type="time"                    comment="When the kick expires." />
 
@@ -498,7 +498,6 @@
             <column name="name" type="string" maxlen="50" comment="The user's name." />
             <column name="nameSearchable" type="string" maxlen="50" comment="The user's name, made more easily searchable." />
             <column name="mainGroupId" type="int" maxlen="6" default="1" comment="The admin-set socialGroup ID of the user." />
-            <column name="socialGroupIds" type="blob" maxlen="10000" comment="A cache of the IDs of all groups the user has joined." />
             <column name="options" type="bitfield" bits="16" comment="A bitfield corrosponding to the user's settings." />
             <column name="joinDate" type="time" default="__TIME__" comment="The date the user joined." />
             <column name="birthDate" type="time" default="0" comment="The date of the user's birth, used for parental control settings." />
