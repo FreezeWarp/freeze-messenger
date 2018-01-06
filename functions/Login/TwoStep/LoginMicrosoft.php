@@ -54,7 +54,7 @@ class LoginMicrosoft extends LoginTwoStep {
      */
     public function getLoginCredentials() {
         $url = $this->client->getAuthorizationUrl([
-            'scope' => ['wl.basic', 'wl.signin', 'wl.offline_access']
+            'scope' => ['wl.basic']
         ]);
 
         if (!session_id())
@@ -78,10 +78,10 @@ class LoginMicrosoft extends LoginTwoStep {
             session_start();
 
         if (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
-            var_dump($_SESSION); die();
             session_unset();
-            new fimError('microsoftLoginFailed', 'Invalid state.');
+            new \fimError('microsoftLoginFailed', 'Invalid state.');
         }
+
         session_unset();
 
         // Try to get an access token (using the authorization code grant)
@@ -96,7 +96,7 @@ class LoginMicrosoft extends LoginTwoStep {
             new \fimError('microsoftLoginFailed', 'Could not get token: ' . $e);
         }
 
-        /*$picture = new Http\CurlRequest('https://apis.live.net/v5.0/' . $userInfo['id'] . '/picture');
+        $picture = new \Http\CurlRequest('https://apis.live.net/v5.0/' . $userInfo['id'] . '/picture');
         $picture->executeGET();
 
         if ($picture->redirectLocation === 'https://js.live.net/static/img/DefaultUserPicture.png') {
@@ -104,7 +104,7 @@ class LoginMicrosoft extends LoginTwoStep {
         }
         else {
             $pictureUrl = $picture->redirectLocation;
-        }*/
+        }
 
         // store user info...
         $this->loginFactory->user = new \fimUser([
@@ -113,11 +113,11 @@ class LoginMicrosoft extends LoginTwoStep {
         ]);
         $this->loginFactory->user->resolveAll(); // This will resolve the ID if the user exists.
         $this->loginFactory->user->setDatabase([
-            'integrationMethod' => 'twitter',
+            'integrationMethod' => 'microsoft',
             'integrationId' => $userInfo['id'],
             'name' => $userInfo['name'],
             'email' => $userInfo['emails']['preferred'] ?: $userInfo['emails']['account'],
-            //'avatar' => $pictureUrl,
+            'avatar' => $pictureUrl,
             //language (e.g. en_US) $userInfo['locale']
         ]);
     }
