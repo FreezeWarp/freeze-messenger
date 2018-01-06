@@ -45,11 +45,7 @@ else {
                     $formattedCache = '';
 
                     foreach ((array) \Cache\CacheFactory::get($cache) AS $key => $value) {
-                        if (is_array($value)) {
-                            $value = print_r($value, true);
-                        }
-
-                        $formattedCache .= '<tr><td>' . $key . '</td><td><pre>' . $value . '</pre></td></tr>';
+                        $formattedCache .= '<tr><td>' . $key . '</td><td><pre>' . var_export($value, true) . '</pre></td></tr>';
                     }
 
                     echo container('Cache Entries: ' . $cache, '<table class="table table-bordered table-striped table-sm">' . $formattedCache . '</table>');
