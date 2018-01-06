@@ -91,7 +91,7 @@ If you are connected to SQL Server via the command line, you can do the above wi
 6. `GO`
 
 ### Is SQL Server supported on Linux?
-Yes, though it can be difficult to compile the (Linux driver)[https://github.com/Microsoft/msphpsql], and you may need to install the development 5.2.0 driver instead of the currently stable version, 4.3.0.
+Yes, though it can be difficult to compile the [Linux driver](https://github.com/Microsoft/msphpsql), and you may need to install the development 5.2.0 driver instead of the currently stable version, 4.3.0.
 
 Common Installation Problems
 ============================
