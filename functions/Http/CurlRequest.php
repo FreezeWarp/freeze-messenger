@@ -34,6 +34,11 @@ class CurlRequest {
     public $responseHeader;
 
     /**
+     * @var string The final canonical location of the request, after redirects.
+     */
+    public $redirectLocation;
+
+    /**
      * @var string The file to request. Includes domain.
      */
     public $requestFile = '';
