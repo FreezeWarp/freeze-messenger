@@ -17,6 +17,7 @@ namespace Stream\Streams;
 
 use Database\Database;
 use Database\Engine;
+use Database\SQL\DatabaseSQL;
 use Database\Type\Comparison;
 
 use Stream\StreamInterface;
@@ -27,23 +28,39 @@ use Stream\StreamInterface;
  */
 class StreamDatabase implements StreamInterface {
     /**
-     * @var Database
+     * @var DatabaseSQL
      */
     private $database;
     private $retries = 0;
 
-    public function __construct(Database $database) {
+    public function __construct(DatabaseSQL $database) {
         $this->database = $database;
     }
 
     /**
-     * Ensures that the stream named $stream exists, and also performances maintence, deleting old streams, etc.
+     * Get the name of the table corresponding with a given stream name.
+     *
+     * @param $stream string The stream name.
+     * @return string
+     */
+    public function getStreamTableName($stream) : string {
+        return $this->database->sqlPrefix . 'stream_' . $stream;
+    }
+
+    /**
+     * @return bool True if chunking should be used with the current database, false otherwise.
+     */
+    public function chunkingEnabled() {
+        return $this->database->sqlInterface->getLanguage() !== 'pgsql';
+    }
+
+    /**
+     * Ensures that the stream named $stream exists. This will surpress errors that may otherwise exist with the create table, in order to suopress any table-already-exists errors.
      *
      * @param $stream string StreamInterface to create.
      */
     private function createStreamIfNotExists($stream) {
-        /* Create the Stream Table if it Doesn't Exist */
-        @$this->database->createTable( $this->database->sqlPrefix . 'stream_' . $stream, '', Engine::memory, [
+        @$this->database->createTable($this->getStreamTableName($stream), '', Engine::memory, [
             'id' => [
                 'type' => 'int',
                 'maxlen' => 10,
@@ -59,7 +76,7 @@ class StreamDatabase implements StreamInterface {
             ],
             'data' => [
                 'type' => 'json',
-                'maxlen' => 100,
+                'maxlen' => $this->chunkingEnabled() ? 100 : 8000,
             ],
             'eventName' => [
                 'type' => 'string',
@@ -97,7 +114,7 @@ class StreamDatabase implements StreamInterface {
 
         try {
             $output = $this->database->select([
-                $this->database->sqlPrefix . 'stream_' . $stream => 'id, time, chunk, data, eventName'
+                $this->getStreamTableName($stream) => 'id, time, chunk, data, eventName'
             ], [
                 'id'   => $this->database->int($lastId, Comparison::greaterThan),
                 'time' => $this->database->now(-15, Comparison::greaterThan)
@@ -128,13 +145,19 @@ class StreamDatabase implements StreamInterface {
         }
 
         return $events;
+
     }
 
 
     public function publish($stream, $eventName, $data) {
-        // Delete old messages (do so first, just in case we hit the maximum, this ensures that old messages will still be deleted first)
+        // Make sure the DBAL is aware that the stream table has ID as an insert ID column
+        $this->database->setInsertIdColumn($this->getStreamTableName($stream), 'id');
+
+
+        /* Delete old messages
+         * (do so first, just in case we hit the maximum, this ensures that old messages will still be deleted first) */
         try {
-            $this->database->delete($this->database->sqlPrefix . 'stream_' . $stream, [
+            $this->database->delete($this->getStreamTableName($stream), [
                 'time' => $this->database->now(-15, 'lt')
             ]);
         } catch (\Exception $ex) {
@@ -142,28 +165,42 @@ class StreamDatabase implements StreamInterface {
             return $this->publish($stream, $eventName, $data);
         }
 
-        // Split up the data into chunks
-        $chunks = str_split(json_encode($data), 100);
 
-        // Insert all of the chunks (in a single transaction, ensuring they are all received together)
-        $this->database->startTransaction();
+        /* Insert Stream Data */
+        // Use Chunking if Enabled
+        if ($this->chunkingEnabled()) {
+            // Split up the data into chunks
+            $chunks = str_split(json_encode($data), 100);
 
-        foreach ($chunks AS $i => $chunk) {
-            $data = [
-                'chunk'     => $i,
-                'eventName' => $eventName,
-                'data'      => $chunk,
-            ];
+            // Insert all of the chunks (in a single transaction, ensuring they are all received together)
+            $this->database->startTransaction();
 
-            // Make sure all messages have the same ID
-            if ($i > 0) {
-                $data['id'] = $this->database->getLastInsertId();
+            foreach ($chunks AS $i => $chunk) {
+                $data = [
+                    'chunk'     => $i,
+                    'eventName' => $eventName,
+                    'data'      => $chunk,
+                ];
+
+                // Make sure all messages have the same ID
+                if ($i > 0) {
+                    $data['id'] = $this->database->getLastInsertId();
+                }
+
+                $this->database->insert($this->getStreamTableName($stream), $data);
             }
 
-            $this->database->insert($this->database->sqlPrefix . 'stream_' . $stream, $data);
+            $this->database->endTransaction();
         }
 
-        $this->database->endTransaction();
+        // Normal, Non-Chunking Insert
+        else {
+            $this->database->insert($this->getStreamTableName($stream), [
+                'chunk'     => 0,
+                'eventName' => $eventName,
+                'data'      => json_encode($data),
+            ]);
+        }
 
 
         /* Update the Streams Table to Keep This Stream Alive */
@@ -172,6 +209,7 @@ class StreamDatabase implements StreamInterface {
         ], [
             'lastEvent' => $this->database->now()
         ]);
+
 
         /* Delete All Channels That Are More Than 5 Minutes Old */
         $condition = ['lastEvent' => $this->database->now(-60 * 5, Comparison::lessThan)];
