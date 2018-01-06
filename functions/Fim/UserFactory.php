@@ -41,17 +41,11 @@ class UserFactory {
 
     public static function cacheInstances() {
         foreach (UserFactory::$instances AS $id => $instance) {
-            if (!\Fim\Cache::exists('fim_fimUser_' . $id)) {
+            if (!\Fim\Cache::exists('fim_fimUser_' . $id) || $instance->doCache) {
                 $instance->resolveAll();
                 $instance->doCache = false;
 
                 \Fim\Cache::add('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
-            }
-            elseif ($instance->doCache) {
-                $instance->resolveAll();
-                $instance->doCache = false;
-
-                \Fim\Cache::set('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
             }
         }
     }

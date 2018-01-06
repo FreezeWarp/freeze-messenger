@@ -47,7 +47,7 @@ class RoomFactory {
         // todo: docache
 
         foreach (RoomFactory::$instances AS $id => $instance) {
-            if (!\Fim\Cache::exists('fim_fimRoom_' . $id)) {
+            if (!\Fim\Cache::exists('fim_fimRoom_' . $id) || $instance->doCache) {
                 $instance->resolveAll();
                 $instance->getCensorWords();
                 $instance->getWatchedByUsers();
