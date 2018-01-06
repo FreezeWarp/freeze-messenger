@@ -2442,8 +2442,8 @@ class DatabaseInstance extends DatabaseSQL
                         throw new fimError('badServerConfigImageThumbnails', 'The server is configured with an incorrect thumbnail factor, ' . $resizeFactor . '. Image file uploads will be disabled until this issue is rectified.');
                     }
 
-                    $newWidth = $resizeFactor * $width;
-                    $newHeight = $resizeFactor * $height;
+                    $newWidth = (int) ($resizeFactor * $width);
+                    $newHeight = (int) ($resizeFactor * $height);
 
                     $imageThumb = imagecreatetruecolor($newWidth, $newHeight);
                     //imagealphablending($imageThumb,false);
@@ -2461,7 +2461,7 @@ class DatabaseInstance extends DatabaseSQL
                         'scaleFactor' => $this->float($resizeFactor),
                         'width' => $newWidth,
                         'height' => $newHeight,
-                        'contents' => $thumbnail
+                        'contents' => $this->blob($thumbnail)
                     ));
                 }
             }
