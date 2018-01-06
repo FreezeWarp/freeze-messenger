@@ -77,32 +77,42 @@ switch ($_REQUEST['phase']) {
 
             // Check Version Issues
             \Fim\Database::instance()->loadVersion();
-            if ($driver === 'mysql' || $driver === 'mysqli') {
-                if (\Fim\Database::instance()->versionPrimary <= 4) { // MySQL 4 is a no-go.
-                    die('You have attempted to connect to a MySQL version ' . \Fim\Database::instance()->versionString . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
-                }
-                elseif (\Fim\Database::instance()->versionPrimary == 5 && \Fim\Database::instance()->versionSecondary == 0 && \Fim\Database::instance()->versionTertiary <= 4) { // MySQL 5.0.0-5.0.4 is also a no-g	o (we require the BIT type, even though in theory we could work without it)
-                    die('You have attempted to connect to a MySQL version ' . \Fim\Database::instance()->versionString . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
-                }
-                elseif (\Fim\Database::instance()->versionPrimary > 5) { // Note: I figure this might be best for now. Note that the code should still run for any version of MySQL 5.x.
-                    die ('You have attempted to connect to a MySQL version greater than 5. Such a thing did not exist when I was writing this code, and there is a good chance it won\'t work as expected. Either download a newer version of FreezeMessenger, or, if one does not yet exist, you can try to modify the source code of the installer script to remove this restriction. If you\'re lucky, things will still work.');
-                }
-            }
-            elseif ($driver === 'pgsql') {
-                if (\Fim\Database::instance()->versionPrimary <= 8) { // PostGreSQL 8 is a no-go.
-                    die('You have attempted to connect to a PostGreSQL version 8 database. PostGreSQL 8.2+ is required for FreezeMessenger.');
-                }
-                elseif (\Fim\Database::instance()->versionPrimary == 9 && \Fim\Database::instance()->versionSecondary <= 2) { // PostGreSQL 9.0-9.2 is also a no-go.
-                    die('You have attempted to connect to an out-of-date version of a PostGreSQL 9 database (PostGreSQL 9.0-9.2). PostGreSQL 9.3+ is required for FreezeMessenger.');
-                }
-            }
-            elseif ($driver === 'sqlsrv') {
-                if (\Fim\Database::instance()->versionPrimary <= 12) {
-                    die('SqlServer 13+ is required for FreezeMessenger.');
-                }
-            }
-             else {
-                die('Unknown driver selected.');
+
+            switch ($driver) {
+                case 'mysql':
+                case 'mysqli':
+                case 'pdoMysql':
+                    if (\Fim\Database::instance()->versionPrimary <= 4) { // MySQL 4 is a no-go.
+                        die('You have attempted to connect to a MySQL version ' . \Fim\Database::instance()->versionString . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
+                    }
+                    elseif (\Fim\Database::instance()->versionPrimary == 5 && \Fim\Database::instance()->versionSecondary == 0 && \Fim\Database::instance()->versionTertiary <= 4) { // MySQL 5.0.0-5.0.4 is also a no-g	o (we require the BIT type, even though in theory we could work without it)
+                        die('You have attempted to connect to a MySQL version ' . \Fim\Database::instance()->versionString . ' database. MySQL 5.0.5+ is required for FreezeMessenger.');
+                    }
+                    elseif (\Fim\Database::instance()->versionPrimary > 5) { // Note: I figure this might be best for now. Note that the code should still run for any version of MySQL 5.x.
+                        die ('You have attempted to connect to a MySQL version greater than 5. Such a thing did not exist when I was writing this code, and there is a good chance it won\'t work as expected. Either download a newer version of FreezeMessenger, or, if one does not yet exist, you can try to modify the source code of the installer script to remove this restriction. If you\'re lucky, things will still work.');
+                    }
+                break;
+
+                case 'pgsql':
+                case 'pdoPgsql':
+                    if (\Fim\Database::instance()->versionPrimary <= 8) { // PostGreSQL 8 is a no-go.
+                        die('You have attempted to connect to a PostGreSQL version 8 or older database. PostGreSQL 9.3+ is required for FreezeMessenger.');
+                    }
+                    elseif (\Fim\Database::instance()->versionPrimary == 9 && \Fim\Database::instance()->versionSecondary <= 2) { // PostGreSQL 9.0-9.2 is also a no-go.
+                        die('You have attempted to connect to an out-of-date version of a PostGreSQL 9 database (PostGreSQL 9.0-9.2). PostGreSQL 9.3+ is required for FreezeMessenger.');
+                    }
+                break;
+
+                case 'sqlsrv':
+                case 'pdoSqlsrv':
+                    if (\Fim\Database::instance()->versionPrimary <= 12) {
+                        die('SqlServer 13+ is required for FreezeMessenger.');
+                    }
+                break;
+
+                default:
+                    die('Unknown driver selected.');
+                break;
             }
 
 
@@ -119,7 +129,7 @@ switch ($_REQUEST['phase']) {
 
 
             // Get Pre-Existing Tables So We Don't Overwrite Any of Them Later
-            $showTables = array_map('strtolower', (array) \Fim\Database::instance()->getTablesAsArray()); // ...In Windows, table names may not be returned as entered (uppercase letters usually become lowercase), so this is the most efficient work-around I could come up with.
+            $showTables = \Fim\Database::instance()->getTablesAsArray();
 
             // Read the various XML files.
             $xmlData = new Xml2Array(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
@@ -224,19 +234,10 @@ switch ($_REQUEST['phase']) {
     case 2: // Config File
         require('../functions/fim_general.php');
 
-        $driver = $_GET['db_driver'];
-        $host = $_GET['db_host'];
-        $port = $_GET['db_port'];
-        $userName = $_GET['db_userName'];
-        $password = $_GET['db_password'];
-        $databaseName = $_GET['db_database'];
-        $prefix = $_GET['db_tableprefix'];
-
         $forum = $_GET['forum'];
         $forumUrl = rtrim($_GET['forum_url'], '/') . '/';
-        $forumTablePrefix = $_GET['forum_tableprefix'];
 
-        $recaptchaKey = $_GET['recaptcha_key'] ?? '';
+        // $recaptchaKey = $_GET['recaptcha_key'] ?? ''; TODO
 
         $adminUsername = $_GET['admin_userName'];
         $adminPassword = $_GET['admin_password'];
@@ -253,7 +254,7 @@ switch ($_REQUEST['phase']) {
 
         if ($forum == 'vanilla') {
             try {
-                \Fim\Database::setInstance(new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix));
+                \Fim\Database::setInstance(new \Fim\DatabaseInstance($_GET['db_host'], $_GET['db_port'], $_GET['db_userName'], $_GET['db_password'], $_GET['db_database'], $_GET['db_driver'], $_GET['db_tableprefix']));
                 \Fim\Config::$displayBacktrace = true;
 
                 $user = new fimUser(false);
@@ -274,8 +275,8 @@ switch ($_REQUEST['phase']) {
             $_REQUEST['password'] = $adminPassword;
 
 
-            \Fim\Database::setInstance(new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $prefix));
-            \Fim\DatabaseLogin::setInstance(new \Fim\DatabaseInstance($host, $port, $userName, $password, $databaseName, $driver, $forumTablePrefix));
+            \Fim\Database::setInstance(new \Fim\DatabaseInstance($_GET['db_host'], $_GET['db_port'], $_GET['db_userName'], $_GET['db_password'], $_GET['db_database'], $_GET['db_driver'], $_GET['db_tableprefix']));
+            \Fim\DatabaseLogin::setInstance(new \Fim\DatabaseInstance($_GET['forum_db_host'], $_GET['forum_db_port'], $_GET['forum_db_userName'], $_GET['forum_db_password'], $_GET['forum_db_database'], $_GET['forum_db_driver'], $_GET['forum_db_tableprefix']));
 
 
             OAuth2\Autoloader::register();
@@ -328,26 +329,26 @@ switch ($_REQUEST['phase']) {
         );
 
         $replace = array(
-            "\$dbConnect['core']['driver'] = '" . addslashes($driver) . "';
-\$dbConnect['slave']['driver'] = '" . addslashes($driver) . "';
-\$dbConnect['integration']['driver'] = '" . addslashes($driver) . "';",
-            "\$dbConnect['core']['host'] = '" . addslashes($host) . "';
-\$dbConnect['slave']['host'] = '" . addslashes($host) . "';
-\$dbConnect['integration']['host'] = '" . addslashes($host) . "';",
-            "\$dbConnect['core']['port'] = '" . addslashes($port) . "';
-\$dbConnect['slave']['port'] = '" . addslashes($port) . "';
-\$dbConnect['integration']['port'] = '" . addslashes($port) . "';",
-            "\$dbConnect['core']['username'] = '" . addslashes($userName) . "';
-\$dbConnect['slave']['username'] = '" . addslashes($userName) . "';
-\$dbConnect['integration']['username'] = '" . addslashes($userName) . "';",
-            "\$dbConnect['core']['password'] = '" . addslashes($password) . "';
-\$dbConnect['slave']['password'] = '" . addslashes($password) . "';
-\$dbConnect['integration']['password'] = '" . addslashes($password) . "';",
-            "\$dbConnect['core']['database'] = '" . addslashes($databaseName) . "';
-\$dbConnect['slave']['database'] = '" . addslashes($databaseName) . "';
-\$dbConnect['integration']['database'] = '" . addslashes($databaseName) . "';",
-            '$dbConnect[\'vanilla\'][\'tablePrefix\'] = \'' . addslashes($prefix) . '\';',
-            '$dbConnect[\'integration\'][\'tablePrefix\'] = \'' . addslashes($forumTablePrefix) . '\';',
+            "\$dbConnect['core']['driver'] = '" . addslashes($_GET['db_driver']) . "';
+\$dbConnect['slave']['driver'] = '" . addslashes($_GET['db_driver']) . "';
+\$dbConnect['integration']['driver'] = '" . addslashes($_GET['forum_db_driver']) . "';",
+            "\$dbConnect['core']['host'] = '" . addslashes($_GET['db_host']) . "';
+\$dbConnect['slave']['host'] = '" . addslashes($_GET['db_host']) . "';
+\$dbConnect['integration']['host'] = '" . addslashes($_GET['forum_db_host']) . "';",
+            "\$dbConnect['core']['port'] = '" . addslashes($_GET['db_port']) . "';
+\$dbConnect['slave']['port'] = '" . addslashes($_GET['db_port']) . "';
+\$dbConnect['integration']['port'] = '" . addslashes($_GET['forum_db_port']) . "';",
+            "\$dbConnect['core']['username'] = '" . addslashes($_GET['db_userName']) . "';
+\$dbConnect['slave']['username'] = '" . addslashes($_GET['db_userName']) . "';
+\$dbConnect['integration']['username'] = '" . addslashes($_GET['forum_db_userName']) . "';",
+            "\$dbConnect['core']['password'] = '" . addslashes($_GET['db_password']) . "';
+\$dbConnect['slave']['password'] = '" . addslashes($_GET['db_password']) . "';
+\$dbConnect['integration']['password'] = '" . addslashes($_GET['forum_db_password']) . "';",
+            "\$dbConnect['core']['database'] = '" . addslashes($_GET['db_database']) . "';
+\$dbConnect['slave']['database'] = '" . addslashes($_GET['db_database']) . "';
+\$dbConnect['integration']['database'] = '" . addslashes($_GET['forum_db_database']) . "';",
+            '$dbConnect[\'vanilla\'][\'tablePrefix\'] = \'' . addslashes($_GET['db_tableprefix']) . '\';',
+            '$dbConnect[\'integration\'][\'tablePrefix\'] = \'' . addslashes($_GET['forum_db_tableprefix']) . '\';',
             '$loginConfig[\'method\'] = \'' . addslashes($forum) . '\';',
             '$loginConfig[\'url\'] = \'' . addslashes($forumUrl) . '\';',
             '$loginConfig[\'superUsers\'] = array(' . $user->id . ');',

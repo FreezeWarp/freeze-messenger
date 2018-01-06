@@ -22,7 +22,6 @@ $installFlags = 0; // Create an integer (bitfield) that will store all install f
 $optionalInstallFlags = 0; // ""
 $installStatusDB = 0; // And one for supported DBs.
 
-
 // Define CONSTANTS (it's a bit excessive here, but...)
 define('INSTALL_ISSUE_PHP_VERSION', 1);
 define('INSTALL_ISSUE_DB', 16);
@@ -43,7 +42,7 @@ define('INSTALL_DB_PDO_MYSQL', 4);
 define('INSTALL_DB_POSTGRESQL', 8);
 define('INSTALL_DB_PDO_POSTGRESQL', 16);
 define('INSTALL_DB_SQLSERVER', 32);
-
+define('INSTALL_DB_PDO_SQLSERVER', 64);
 
 
 // Install Status - DB
@@ -59,6 +58,8 @@ if (extension_loaded('pgsql'))
     $installStatusDB += INSTALL_DB_POSTGRESQL;
 if (extension_loaded('sqlsrv'))
     $installStatusDB += INSTALL_DB_SQLSERVER;
+if (extension_loaded('pdo_sqlsrv'))
+    $installStatusDB += INSTALL_DB_PDO_SQLSERVER;
 
 
 // PHP Issues
@@ -112,12 +113,6 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
           href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
           integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
           crossorigin="anonymous">
-
-
-    <!-- START Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js"
-            integrity="sha256-0JaDbGZRXlzkFbV8Xi8ZhH/zZ6QQM0Y3dCkYZ7JYq34="
-            crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"
             integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
             crossorigin="anonymous"></script>
@@ -151,7 +146,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
             display: inline;
         }
 
-        #part2, #part3, #part4 {
+        #part2, #part3, #part4, .forumShow {
             display: none;
         }
 
@@ -438,6 +433,13 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
         if (data == 'success') {
             $('#part2').slideUp();
             $('#part3').slideDown();
+
+            jQuery.each(['db_host', 'db_userName', 'db_password', 'db_port', 'db_database'], function(index, value) {
+                $('#part3 input[name=forum_' + value + ']').val($('#part2 input[name=' + value + ']').val());
+            });
+
+            $('#part3 select[name=forum_db_driver] option[value=\'' + $('#part2 select[name=db_driver] option:selected').attr('value') + '\']').prop('selected', true);
+            $('#part3 select[name=forum_db_driver]').trigger('change');
         }
         else {
             $('#modal-error .modal-body').text(data)
@@ -448,9 +450,9 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
     return false;
 " name="db_connect_form" id="db_connect_form">
     <div id="part2" class="card">
-        <h1 class="card-header">FlexChat Installation: MySQL Setup</h1>
+        <h1 class="card-header">FlexChat Installation: Database Setup</h1>
         <div class="card-body">
-            <p>First things first, please enter your MySQL connection details below, as well as a database (we can try to create the database ourselves, as well). If you are unable to proceed, try contacting your web host, or anyone who has helped you set up other things like this before.</p>
+            <p>First things first, please enter your database connection details below. If you are unable to proceed, try contacting your web host, or anyone who has helped you set up other things like this before.</p>
 
             <table class="table">
                 <thead class="thead-dark">
@@ -463,54 +465,55 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                     <td><strong>Database & Driver</strong></td>
                     <td>
                         <select name="db_driver" class="form-control" onchange="
-                        $('#db_port').closest('tr').show();
-                        $('#db_createdb').prop({'disabled' : false});
+                        $('#part2 input[name=db_port]').closest('tr').show();
+                        $('#part2 input[name=db_createdb]').prop({'disabled' : false});
 
                         switch (this.value) {
-                            case 'mysql': case 'mysqli': case 'pdo-mysql':
-                                $('#db_port').val('3306');
+                            case 'mysql': case 'mysqli': case 'pdoMysql':
+                                $('#part2 input[name=db_port]').val('3306');
                                 break;
 
-                            case 'pgsql': case 'pdo-pgsql':
-                                $('#db_port').val('5432');
-                                $('#db_createdb').prop({'disabled' : true, 'checked' : false});
+                            case 'pgsql': case 'pdoPgsql':
+                                $('#part2 input[name=db_port]').val('5432');
+                                $('#part2 input[name=db_createdb]').prop({'disabled' : true, 'checked' : false});
                                 break;
 
-                            case 'sqlsrv':
-                                $('#db_port').closest('tr').hide();
-                                $('#db_createdb').prop({'disabled' : true, 'checked' : false});
+                            case 'sqlsrv': case 'pdoSqlsrv':
+                                $('#part2 input[name=db_port]').closest('tr').hide();
+                                $('#part2 input[name=db_createdb]').prop({'disabled' : true, 'checked' : false});
                                 break;
                         }">
                             <?php
                             if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL, MySQL Driver (Discouraged)</option>';
                             if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysqli">MySQL, MySQLi Driver (Recommended for MySQL)</option>';
-                            if ($installStatusDB & INSTALL_DB_PDO_MYSQL) echo '<option value="pdo-mysql">MySQL, PDO Driver</option>';
+                            if ($installStatusDB & INSTALL_DB_PDO_MYSQL) echo '<option value="pdoMysql">MySQL, PDO Driver</option>';
                             if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="pgsql">PostGreSQL, PostGreSQL Driver</option>';
-                            //if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdo-pgsql">PostGreSQL, PDO Driver (Currently Unsupported/Broken)</option>';
+                            if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdoPgsql">PostGreSQL, PDO Driver</option>';
                             if ($installStatusDB & INSTALL_DB_SQLSERVER) echo '<option value="sqlsrv">SqlServer (Currently Unsupported)</option>';
+                            if ($installStatusDB & INSTALL_DB_PDO_SQLSERVER) echo '<option value="pdoSqlsrv">SqlServer, PDO Driver (Currently Unsupported)</option>';
                             ?>
                         </select>
-                        <small class="form-text text-muted">The database and corresponding driver. If you are integrating with a forum, choose the database (either MySQL or PostgreSQL) that your forum uses. Otherwise PostgreSQL, with the PostgreSQL driver, is best if available.</small>
+                        <small class="form-text text-muted">The driver to use to connect to your form. In general, it is fine to use any driver that supports your forum's database system.</small>
                     </td>
                 </tr>
                 <tr>
                     <td><strong>Host</strong></td>
                     <td>
-                        <input id="db_host" class="form-control" type="text" name="db_host" value="localhost" required />
+                        <input class="form-control" type="text" name="db_host" value="localhost" required />
                         <small class="form-text text-muted">The host of the SQL server. In most cases, the default shown here <em>should</em> work.</small>
                     </td>
                 </tr>
                 <tr>
                     <td><strong>Port</strong></td>
                     <td>
-                        <input id="db_port" class="form-control" type="text" name="db_port" value="3306" required />
+                        <input class="form-control" type="text" name="db_port" value="3306" required />
                         <small class="form-text text-muted">The port your database server is configured to work on. For MySQL, it is usually 3306. For PostGreSQL, it is usually 5432.</small>
                     </td>
                 </tr>
                 <tr>
                     <td><strong>Username</strong></td>
                     <td>
-                        <input id="db_userName" class="form-control" type="text" name="db_userName" required />
+                        <input class="form-control" type="text" name="db_userName" required />
                         <small class="form-text text-muted">The username of the user you will be connecting to the database with.</small>
                     </td>
                 </tr>
@@ -539,7 +542,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                 <tr>
                     <td><strong>Database Name</strong></td>
                     <td>
-                        <input id="db_database" class="form-control" type="text" name="db_database" required />
+                        <input class="form-control" type="text" name="db_database" required />
                         <small class="form-text text-muted">The name of the database FlexChat's data will be stored in. <strong>If you are integrating with a forum, this must be the same database the forum uses.</strong></small>
                     </td>
                 </tr>
@@ -656,13 +659,6 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                         <small class="form-text text-muted">The URL your forum is installed on.</small>
                     </td>
                 </tr>
-                <tr class="forumShow" style="display: none;">
-                    <td><strong>Forum Table Prefix</strong></td>
-                    <td>
-                        <input type="text" class="form-control" name="forum_tableprefix" />
-                        <small class="form-text text-muted">The prefix of all tables the forum uses. You most likely defined this when you installed it. If unsure, check your forum's configuration file.</small>
-                    </td>
-                </tr>
                 <tr>
                     <td><strong>Admin Username</strong></td>
                     <td>
@@ -686,6 +682,93 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                         <small class="form-text text-muted">The password you wish to login with.</small>
                     </td>
                 </tr>
+                </tbody>
+                <thead class="thead-light forumShow">
+                    <th colspan="2">Forum Database Connection</th>
+                </thead>
+                <tbody class="forumShow">
+                    <tr>
+                        <td><strong>Driver</strong></td>
+                        <td>
+                            <select name="forum_db_driver" class="form-control" onchange="
+                            $('#part3 input[name=forum_db_port]').closest('tr').show();
+
+                            switch (this.value) {
+                                case 'mysql': case 'mysqli': case 'pdoMysql':
+                                    $('#part3 input[name=forum_db_port]').val('3306');
+                                    break;
+
+                                case 'pgsql': case 'pdoPgsql':
+                                    $('#part3 input[name=forum_db_port]').val('5432');
+                                    break;
+
+                                case 'sqlsrv': case 'pdoSqlsrv':
+                                    $('#part3 input[name=forum_db_port]').closest('tr').hide();
+                                    break;
+                            }">
+                                <?php
+                                if ($installStatusDB & INSTALL_DB_MYSQL) echo '<option value="mysql">MySQL, MySQL Driver (Discouraged)</option>';
+                                if ($installStatusDB & INSTALL_DB_MYSQLI) echo '<option value="mysqli">MySQL, MySQLi Driver</option>';
+                                if ($installStatusDB & INSTALL_DB_PDO_MYSQL) echo '<option value="pdoMysql">MySQL, PDO Driver</option>';
+                                if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="pgsql">PostGreSQL, PostGreSQL Driver</option>';
+                                if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdoPgsql">PostGreSQL, PDO Driver</option>';
+                                if ($installStatusDB & INSTALL_DB_SQLSERVER) echo '<option value="sqlsrv">SqlServer</option>';
+                                if ($installStatusDB & INSTALL_DB_PDO_SQLSERVER) echo '<option value="pdoSqlsrv">SqlServer, PDO Driver</option>';
+                                ?>
+                            </select>
+                            <small class="form-text text-muted">The driver. If you are integrating with a forum, choose the database (either MySQL or PostgreSQL) that your forum uses. Otherwise PostgreSQL, with the PostgreSQL driver, is best if available.</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Database Name</strong></td>
+                        <td>
+                            <input class="form-control" type="text" name="forum_db_database" required />
+                            <small class="form-text text-muted">The name of the database used by your forum.</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Table Prefix</strong></td>
+                        <td>
+                            <input type="text" class="form-control" name="forum_db_tableprefix" />
+                            <small class="form-text text-muted">The prefix of all tables the forum uses. You most likely defined this when you installed it. If unsure, check your forum's configuration file.</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Host</strong></td>
+                        <td>
+                            <input class="form-control" type="text" name="forum_db_host" value="localhost" required />
+                            <small class="form-text text-muted">The host of the SQL server used for your forum.</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Port</strong></td>
+                        <td>
+                            <input class="form-control" type="text" name="forum_db_port" value="3306" required />
+                            <small class="form-text text-muted">The port your forum's database server is configured to work on. For MySQL, it is usually 3306. For PostGreSQL, it is usually 5432.</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Username</strong></td>
+                        <td>
+                            <input class="form-control" type="text" name="forum_db_userName" required />
+                            <small class="form-text text-muted">The username of the user you will be connecting to the forum database with.</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Password</strong></td>
+                        <td>
+                            <label class="input-group">
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-secondary" onclick="
+                                        $('input[name=db_password]').attr('type', 'text');
+                                        $(this).parent().remove();
+                                    ">Show</button>
+                                </span>
+                                <input class="form-control" type="password" name="forum_db_password" />
+                            </label>
+                            <small class="form-text text-muted">The password of the user you will be connecting to the forum database with.</small>
+                        </td>
+                    </tr>
                 </tbody>
                 <thead>
                 <tr class="thead-dark">
