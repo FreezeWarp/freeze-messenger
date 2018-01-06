@@ -76,6 +76,22 @@ Admin Control Panel Configuration Editor
 --------------------
 [See below.](#configuration-editor)
 
+Frequently Asked Questions
+==========================
+
+### How do I install FreezeMessenger using SQL Server?
+First, create a database. Next, create a fulltext catalog in that database. You should now be able to install FreezeMessenger using that database.
+
+If you are connected to SQL Server via the command line, you can do the above with the following commands:
+1. `CREATE DATABASE messenger;`
+2. `GO`
+3. `USE messenger;`
+4. `GO`
+5. `CREATE FULLTEXT CATALOG ftCatalog AS DEFAULT;`
+6. `GO`
+
+### Is SQL Server supported on Linux?
+Yes, though it can be difficult to compile the (Linux driver)[https://github.com/Microsoft/msphpsql], and you may need to install the development 5.2.0 driver instead of the currently stable version, 4.3.0.
 
 Common Installation Problems
 ============================
