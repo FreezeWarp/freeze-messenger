@@ -42,7 +42,7 @@ class DatabaseInstance extends DatabaseSQL
     /**
      * @var string The columns containing all user data.
      */
-    const userColumns = 'id, name, nameSearchable, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, defaultRoomId, parentalAge, parentalFlags, privs, lastSync, bio, privacyLevel';
+    const userColumns = 'id, name, nameSearchable, nameFormat, profile, avatar, mainGroupId, messageFormatting, options, defaultRoomId, parentalAge, parentalFlags, privs, lastSync, bio, privacyLevel';
 
     /**
      * @var string The columns containing all user login data.
@@ -52,7 +52,7 @@ class DatabaseInstance extends DatabaseSQL
     /**
      * @var string The columns containing all user data that is recorded in the user history.
      */
-    const userHistoryColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, socialGroupIds, messageFormatting, options, parentalAge, parentalFlags, privs';
+    const userHistoryColumns = 'id, name, nameFormat, profile, avatar, mainGroupId, messageFormatting, options, parentalAge, parentalFlags, privs';
 
     /**
      * @var string The columns containing all room data that is recorded in the room history.
@@ -1417,7 +1417,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
             /* Resolve Needed User Parameters */
-            if (!$user->resolve(array('socialGroupIds', 'parentalAge', 'parentalFlags')))
+            if (!$user->resolve(array('parentalAge', 'parentalFlags')))
                 throw new Exception('hasPermission was called without a valid user.'); // Make sure we know the room type and alias in addition to ID.
 
 

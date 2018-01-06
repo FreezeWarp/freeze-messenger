@@ -344,7 +344,7 @@ class fimUser extends \Fim\DynamicObject
      */
     public static $pullGroups = [
         ['id', 'integrationId', 'integrationMethod', 'name', 'privs'],
-        ['mainGroupId', 'socialGroupIds', 'parentalFlags', 'parentalAge', 'birthDate'], // Permission flags.
+        ['mainGroupId', 'parentalFlags', 'parentalAge', 'birthDate'], // Permission flags.
         ['email', 'joinDate', 'messageFormatting', 'profile', 'avatar', 'nameFormat', 'bio'],
         ['options', 'defaultRoomId', 'privacyLevel'],
         ['passwordHash', 'passwordFormat'],
