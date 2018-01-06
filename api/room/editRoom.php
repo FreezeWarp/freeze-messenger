@@ -17,13 +17,15 @@
 /**
  * Creates, Edits, or Deletes a Room
  *
- * @global    $room fimRoom
+ * @global    $room Room
  * @package   fim3
  * @version   3.0
  * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
  * @copyright Joseph T. Parsons 2017
  */
 
+
+use Fim\Room;
 
 if (!defined('API_INROOM'))
     die();
@@ -39,7 +41,7 @@ $request = fim_sanitizeGPC('p', [
     'defaultPermissions' => [
         'cast'      => 'list',
         'transform' => 'bitfield',
-        'bitTable'  => fimRoom::$permArray
+        'bitTable'  => Room::$permArray
     ],
 
     'censorLists' => [
@@ -93,7 +95,7 @@ switch ($requestHead['_action']) {
                 new fimError('nameTaken', 'A room with the name specified already exists.');
 
             else
-                $room = new fimRoom(false);
+                $room = new Room(false);
         }
 
 
@@ -123,8 +125,8 @@ switch ($requestHead['_action']) {
                     'cast'      => 'bitfieldShift',
                     'source'    => $room->options,
                     'flipTable' => [
-                        fimRoom::ROOM_HIDDEN   => 'hidden',
-                        fimRoom::ROOM_OFFICIAL => 'official',
+                        Room::ROOM_HIDDEN   => 'hidden',
+                        Room::ROOM_OFFICIAL => 'official',
                     ]
                 ]
             ]));
@@ -133,7 +135,7 @@ switch ($requestHead['_action']) {
 
         // Handle Room Properties
         if ($requestHead['_action'] === 'create' ||
-            (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_PROPERTIES)) {
+            (\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_PROPERTIES)) {
             $room->setDatabase(array_merge(
                 fim_arrayFilterKeys($request, ['name', 'parentalFlags', 'parentalAge', 'defaultPermissions', 'options'])
             ));

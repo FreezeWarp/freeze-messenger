@@ -15,15 +15,14 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 use Database\Type;
+use Fim\User;
+use Fim\Xml2Array;
 
 error_reporting(E_ALL); // Report All Potential Errors
 ini_set('display_errors', 1);
 
 require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
 
-require(__DIR__ . '/../functions/Xml2Array.php'); // For reading the db*.xml files
-require(__DIR__ . '/../functions/fimUser.php'); // Creating Users
-require(__DIR__ . '/../functions/fimRoom.php');
 require(__DIR__ . '/../functions/fimError.php');
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
@@ -132,11 +131,11 @@ switch ($_REQUEST['phase']) {
             $showTables = \Fim\Database::instance()->getTablesAsArray();
 
             // Read the various XML files.
-            $xmlData = new Xml2Array(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
+            $xmlData = new Xml2Array(file_get_contents('dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Fim\Xml2Array class
             $xmlData = $xmlData->getAsArray(); // Get the XML data as an array
             $xmlData = $xmlData['dbSchema']; // Get the contents of the root node
 
-            $xmlData2 = new Xml2Array(file_get_contents('dbData.xml')); // Get the XML Data from the dbData.xml file, and feed it to the Xml2Array class
+            $xmlData2 = new Xml2Array(file_get_contents('dbData.xml')); // Get the XML Data from the dbData.xml file, and feed it to the Fim\Xml2Array class
             $xmlData2 = $xmlData2->getAsArray(); // Get the XML data as an array
             $xmlData2 = $xmlData2['dbData']; // Get the contents of the root node
 
@@ -257,7 +256,7 @@ switch ($_REQUEST['phase']) {
                 \Fim\Database::setInstance(new \Fim\DatabaseInstance($_GET['db_host'], $_GET['db_port'], $_GET['db_userName'], $_GET['db_password'], $_GET['db_database'], $_GET['db_driver'], $_GET['db_tableprefix']));
                 \Fim\Config::$displayBacktrace = true;
 
-                $user = new fimUser(false);
+                $user = new User(false);
                 if (!$user->setDatabase(array(
                     'name' => $adminUsername,
                     'password' => $adminPassword,

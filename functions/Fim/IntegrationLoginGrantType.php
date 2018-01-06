@@ -15,15 +15,15 @@ class IntegrationLoginGrantType implements GrantTypeInterface
 {
 
     /**
-     * @var \fimUser
+     * @var \Fim\User
      */
     private $userInfo;
 
 
     /**
-     * @param \fimUser $user
+     * @param \Fim\User $user
      */
-    public function __construct(\fimUser $user)
+    public function __construct(\Fim\User $user)
     {
         $this->userInfo = $user;
     }

@@ -132,7 +132,7 @@ class OAuthProvider implements
             'scope' => $scope,
             'http_user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''  ,
             'ip_address' => $_SERVER['REMOTE_ADDR'],
-            'anon_id' => ($user_id === \fimUser::ANONYMOUS_USER_ID ? $anonId : 0),
+            'anon_id' => ($user_id === \Fim\User::ANONYMOUS_USER_ID ? $anonId : 0),
         ));
     }
 
@@ -293,10 +293,8 @@ class OAuthProvider implements
     {
         // if(integration) {
         //   $userArray = integration->select()
-        //   if (fimUser($userArray['userId'])) update name, etc.
+        //   if (Fim\fimUser($userArray['userId'])) update name, etc.
         //   else create user w/ name
-
-        require_once(__DIR__ . '/../fimUser.php');
 
         $userData = $this->db->getUsers(array(
             'userNames' => array($username),

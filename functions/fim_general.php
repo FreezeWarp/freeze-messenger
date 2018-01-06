@@ -20,6 +20,8 @@
  *********************** Wrappers ************************
  *********************************************************/
 
+use Fim\Room;
+
 
 
 /**
@@ -551,7 +553,7 @@ function fim_cast($cast, $value, $default = null) {
         case 'roomId':
             if (ctype_digit($value))
                 $value = (int) $value;
-            elseif (!fimRoom::isPrivateRoomId($value))
+            elseif (!Room::isPrivateRoomId($value))
                 $value = null;
         break;
 

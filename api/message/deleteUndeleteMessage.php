@@ -26,12 +26,15 @@
 
 
 /* Prevent Direct Access of File */
+
+use Fim\Room;
+
 if (!defined('API_INMESSAGE'))
     die();
 
 
 if (($message->user->id = $user->id && $user->hasPriv('editOwnPosts'))
-    || (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE)) {
+    || (\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_MODERATE)) {
 
     if ($requestHead['_action'] == 'delete')
         $message->setDeleted(true);

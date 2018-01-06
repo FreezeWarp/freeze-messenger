@@ -1,4 +1,11 @@
 <?php
+
+namespace Fim;
+use DOMDocument;
+use DOMNode;
+use Exception;
+use XML;
+
 /**
  * xml2array Class
  * Converts XML Data to an array representation using the PHP5 DOMDocument.
@@ -6,13 +13,13 @@
  * Origin:
  * @source http://www.phpclasses.org/package/5065-PHP-Parse-XML-documents-into-arrays.html
  * @license http://www.opensource.org/licenses/gpl-license.html
- * @author Vineet Sethi
+ * @author  Vineet Sethi
  * Note: If you are the creator of this package, and do not feel like you have been properly attributed, please contact me at josephtparsons@gmail.com.
  *
  *
  * Modifications:
  * @license http://www.opensource.org/licenses/gpl-license.html
- * @author Joseph T. Parsons <josephtparsons@gmail.com>
+ * @author  Joseph T. Parsons <josephtparsons@gmail.com>
  * -- Force subarrays on all but root element.
  * -- Use camelCase for properties and functions.
  * -- Replace htmlentitydecode with private function "decodeEntities"
@@ -21,7 +28,8 @@
  * -- Throw exception instead of echoing for invalid XML
  */
 
-class Xml2Array {
+class Xml2Array
+{
     /**
      * XML Dom instance
      *
@@ -50,9 +58,11 @@ class Xml2Array {
      * Construct
      *
      * @param string xml
+     *
      * @return void
      */
-    public function __construct($xml = '') {
+    public function __construct($xml = '')
+    {
         $this->xml = $xml;
     }
 
@@ -61,9 +71,11 @@ class Xml2Array {
      * Set the XML Data
      *
      * @param string xml
+     *
      * @return void
      */
-    public function setXml($xml) {
+    public function setXml($xml)
+    {
         if (!empty($xml)) {
             $this->xml = $xml;
         }
@@ -74,12 +86,13 @@ class Xml2Array {
      *
      * @return Array
      */
-    public function getAsArray() {
+    public function getAsArray()
+    {
         if ($this->getDom() === false) {
             return false;
         }
 
-        $this->xmlArray = array();
+        $this->xmlArray = [];
         $root_element = $this->xmlDom->firstChild;
         $this->xmlArray[$root_element->tagName] = $this->node2Array($root_element);
 
@@ -91,9 +104,11 @@ class Xml2Array {
      * Converts a node to an array
      *
      * @param DOMNode dom_element
+     *
      * @return array
      */
-    private function node2Array($dom_element) {
+    private function node2Array($dom_element)
+    {
         if ($dom_element->nodeType != XML_ELEMENT_NODE) {
             return false;
         }
@@ -135,9 +150,10 @@ class Xml2Array {
      * Decode entities
      * @author Joseph T. Parsons <josephtparsons@gmail.com>
      */
-    private function decodeEntities($value) {
-        $value = str_replace(array('&amp', '&lt;', '&gt;', '&quot;', '&apos;'),
-            array('&', '<', '>', '"', '\''),
+    private function decodeEntities($value)
+    {
+        $value = str_replace(['&amp', '&lt;', '&gt;', '&quot;', '&apos;'],
+            ['&', '<', '>', '"', '\''],
             $value);
 
         return $value;
@@ -148,7 +164,8 @@ class Xml2Array {
      * Generated XML Dom
      *
      */
-    private function getDom() {
+    private function getDom()
+    {
         $this->xmlDom = @DOMDocument::loadXML($this->xml);
 
         if ($this->xmlDom) {
@@ -159,4 +176,5 @@ class Xml2Array {
         }
     }
 }
+
 ?>

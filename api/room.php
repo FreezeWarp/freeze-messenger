@@ -89,6 +89,9 @@
  */
 
 /* Common Resources */
+
+use Fim\Room;
+
 $apiRequest = true;
 require(__DIR__ . '/../global.php');
 define('API_INROOM', true);
@@ -114,7 +117,7 @@ if (isset($requestHead['id'])) {
     try {
         $room = \Fim\Database::instance()->getRoom($requestHead['id']);
 
-        if (!(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)) {
+        if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW)) {
             new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.');
         }
     } catch (Exception $ex) {

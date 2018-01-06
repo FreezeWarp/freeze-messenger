@@ -133,15 +133,20 @@ class CurlRequest {
     public function guzzle($method) {
         $client = new GuzzleHttp\Client([
             'http_errors' => false,
+            'verify' => \Fim\Config::$sslVerify
         ]);
 
         $effectiveUrl = '';
 
         $queryParams = [
+            'headers' => [
+                'User-Agent' => \Fim\Config::$curlUA,
+            ],
             'on_stats' => function (GuzzleHttp\TransferStats $stats) use (&$effectiveUrl) {
                 $effectiveUrl = $stats->getEffectiveUri();
             }
         ];
+
         if ($this->requestData) {
             $queryParams['form_params'] = $this->requestData;
         }
@@ -181,22 +186,15 @@ class CurlRequest {
      * Verify whether a given resource exists or not.
      */
     public static function exists($file) {
-        if (function_exists('curl_init')) {
-            $ch = curl_init($file); // $installUrl is automatically generated at installation (if the doamin changes, it will need to be updated).
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); /* obey redirects */
-            curl_setopt($ch, CURLOPT_USERAGENT, \Fim\Config::$curlUA);
-            curl_setopt($ch, CURLOPT_NOBODY, true);
-            curl_exec($ch);
+        $client = new GuzzleHttp\Client([
+            'verify' => \Fim\Config::$sslVerify
+        ]);
 
-            $retcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            return $retcode === 200;
-        }
-        else {
-            /* TODO: redirect handling (borrow from MirrorReader) */
-            $file_headers = @get_headers($file);
-            return ($file_headers && $file_headers[0] !== 'HTTP/1.1 404 Not Found');
+        try {
+            $client->head($file);
+            return true;
+        } catch (GuzzleHttp\Exception\ClientException $e) {
+            return false;
         }
     }
 

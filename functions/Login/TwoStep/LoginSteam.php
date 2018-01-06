@@ -79,7 +79,7 @@ class LoginSteam extends LoginTwoStep {
 
 
                 /* Set User Info */
-                $this->loginFactory->user = new \fimUser([
+                $this->loginFactory->user = new \Fim\User([
                     'integrationMethod' => 'steam',
                     'integrationId' => (int) $userInfo['steamid'],
                 ]);

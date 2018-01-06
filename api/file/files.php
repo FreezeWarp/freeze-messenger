@@ -26,6 +26,8 @@
  */
 
 
+use Fim\Room;
+
 if (!defined('API_INFILE'))
     die();
 
@@ -73,7 +75,7 @@ do {
     foreach ($filesQuery->getAsObjects('\\Fim\\File') AS $file) {
         // Files can only be viewed by admins and the user themselves, and users with permission to view the room the file was posted in.
         if (!$user->hasPriv('modFiles') && $file->user->id != $user->id) {
-            if (!$file->room || (!(\Fim\Database::instance()->hasPermission($user, $file->room) & fimRoom::ROOM_PERMISSION_VIEW)))
+            if (!$file->room || (!(\Fim\Database::instance()->hasPermission($user, $file->room) & Room::ROOM_PERMISSION_VIEW)))
                 continue;
         }
 

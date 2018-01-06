@@ -37,7 +37,7 @@ class AnonymousGrantType implements GrantTypeInterface
         $anonId = rand(1000, 9999);
 
         $this->userInfo = [
-            'user_id' => \fimUser::ANONYMOUS_USER_ID,
+            'user_id' => \Fim\User::ANONYMOUS_USER_ID,
         ];
 
         return true;

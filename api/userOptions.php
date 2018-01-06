@@ -97,6 +97,9 @@ These parameters are, where applicable, documented in the SQL documentation.
  * DELETE userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == removes rooms 1, 2, and 3 from the watch rooms list
  */
 
+use Fim\Room;
+use Fim\User;
+
 $apiRequest = true;
 
 require('../global.php');
@@ -171,7 +174,7 @@ $request = fim_sanitizeGPC('p', array(
     ),
 
     'privacyLevel' => array(
-        'valid' => [fimUser::USER_PRIVACY_ALLOWALL, fimUser::USER_PRIVACY_BLOCKALL, fimUser::USER_PRIVACY_FRIENDSONLY],
+        'valid' => [User::USER_PRIVACY_ALLOWALL, User::USER_PRIVACY_BLOCKALL, User::USER_PRIVACY_FRIENDSONLY],
     )
 ));
 \Fim\Database::instance()->accessLog('editUserOptions', $request);
@@ -285,12 +288,12 @@ if ($requestHead['_action'] === 'edit') {
      *********** Default Room ID ********
      ************************************/
     if (isset($request['defaultRoomId'])) {
-        $defaultRoom = new fimRoom($request['defaultRoomId']);
+        $defaultRoom = new Room($request['defaultRoomId']);
 
         if (!$defaultRoom->exists())
             $xmlData['editUserOptions']['defaultRoom'] = (new fimError('invalidRoom', 'The room specified does not exist.', null, true))->getArray();
 
-        elseif (!(\Fim\Database::instance()->hasPermission($user, $defaultRoom) & fimRoom::ROOM_PERMISSION_VIEW))
+        elseif (!(\Fim\Database::instance()->hasPermission($user, $defaultRoom) & Room::ROOM_PERMISSION_VIEW))
             $xmlData['editUserOptions']['defaultRoom'] = (new fimError('noPerm', 'You do not have permission to view the room you are trying to default to.', null, true))->getArray();
 
         else

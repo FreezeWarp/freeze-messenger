@@ -30,6 +30,9 @@
 
 
 /* Prevent Direct Access of File */
+
+use Fim\User;
+
 if (!defined('API_INUSER'))
     die();
 
@@ -90,7 +93,7 @@ elseif (\Fim\Database::instance()->getUsers(['userNames' => [$request['name']]])
     new fimError('nameTaken', 'That user specified already exists.');
 
 else {
-    $newUser = new fimUser(0);
+    $newUser = new User(0);
     if (!$newUser->setDatabase(array_merge(
         fim_arrayFilterKeys($request, ['name', 'password', 'birthDate', 'email']),
         ['parentalAge' => fim_nearestAge($age)]

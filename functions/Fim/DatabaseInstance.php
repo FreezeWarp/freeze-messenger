@@ -24,8 +24,8 @@ namespace Fim;
 use Database\Type\Type;
 use Database\SQL\DatabaseSQL;
 
-use \fimUser;
-use \fimRoom;
+use Fim\User;
+use Fim\Room;
 use \fimError;
 
 use \Exception;
@@ -65,7 +65,7 @@ class DatabaseInstance extends DatabaseSQL
     public $errorFormatFunction = 'fimError';
 
     /**
-     * @var fimUser A pointer to the logged-in user.
+     * @var User A pointer to the logged-in user.
      */
     protected $user;
 
@@ -281,9 +281,9 @@ class DatabaseInstance extends DatabaseSQL
         /**
      * Associates $user with the database instance, such as for auditing.
      *
-     * @param fimUser $user
+     * @param User $user
      */
-    public function registerUser(fimUser $user) {
+    public function registerUser(User $user) {
         $this->user = $user;
     }
 
@@ -906,7 +906,7 @@ class DatabaseInstance extends DatabaseSQL
      * @param array $options {
      *      An array of options to filter by.
      *
-     *      @param fimRoom ['room']            The room to filter by. Required.
+     *      @param Room ['room']            The room to filter by. Required.
      *      @param array ['messageIds']        An array of messageIds to filter by. Overrides other message ID filter parameters.
      *      @param array ['userIds']           An array of sender userIds to filter the messages by.
      *      @param array ['messageTextSearch'] Filter results by searching for this string in messageText.
@@ -939,8 +939,8 @@ class DatabaseInstance extends DatabaseSQL
         ), $options);
 
 
-        if (!($options['room'] instanceof fimRoom))
-            throw new Exception('fim_database->getMessages requires the \'room\' option to be an instance of fimRoom.');
+        if (!($options['room'] instanceof Room))
+            throw new Exception('fim_database->getMessages requires the \'room\' option to be an instance of Fim\fimRoom.');
 
 
         /* Query via the Archive */
@@ -996,12 +996,12 @@ class DatabaseInstance extends DatabaseSQL
     /**
      * Gets a single message, identified by messageId, in the specified room.
      *
-     * @param fimRoom $room      The room the message was made in.
-     * @param int     $messageId The ID given to the message.
+     * @param Room $room      The room the message was made in.
+     * @param int  $messageId The ID given to the message.
      *
      * @return DatabaseResult
      */
-    public function getMessage(fimRoom $room, $messageId) : Message {
+    public function getMessage(Room $room, $messageId) : Message {
         return $this->getMessages(array(
             'room'     => $room,
             'messageIds'  => array($messageId),
@@ -1163,12 +1163,12 @@ class DatabaseInstance extends DatabaseSQL
 
         // Modify Query Data for Directives
       	if (!$options['showDeleted'])
-      	    $conditions['both']['!options'] = $this->int(fimRoom::ROOM_DELETED, 'bAnd');
+      	    $conditions['both']['!options'] = $this->int(Room::ROOM_DELETED, 'bAnd');
         if (!$options['showHidden'])
-            $conditions['both']['!options'] = $this->int(fimRoom::ROOM_HIDDEN, 'bAnd');
+            $conditions['both']['!options'] = $this->int(Room::ROOM_HIDDEN, 'bAnd');
 
         if ($options['onlyOfficial'])
-            $conditions['both']['options'] = $this->int(fimRoom::ROOM_OFFICIAL, 'bAnd');
+            $conditions['both']['options'] = $this->int(Room::ROOM_OFFICIAL, 'bAnd');
 
         if (count($options['roomIds']) > 0)
             $conditions['both']['either']['id'] = $this->in($options['roomIds']);
@@ -1203,18 +1203,18 @@ class DatabaseInstance extends DatabaseSQL
 
 
     /**
-     * Obtain the fimRoom object with a given ID from the database.
+     * Obtain the Fim\fimRoom object with a given ID from the database.
      *
      * @see RoomFactory::getFromId() for resolving a room from an ID using the cache.
      *
      * @param mixed $roomId The ID of the room to get.
      *
-     * @return fimRoom
+     * @return Room
      */
-    public function getRoom($roomId) : fimRoom
+    public function getRoom($roomId) : Room
     {
-        if (fimRoom::isPrivateRoomId($roomId)) {
-            return new fimRoom($roomId);
+        if (Room::isPrivateRoomId($roomId)) {
+            return new Room($roomId);
         }
         else {
             return $this->getRooms(array(
@@ -1235,7 +1235,7 @@ class DatabaseInstance extends DatabaseSQL
      *      @param array  ['userNameSearch']    Filter results by searching for this string in the userName.
      *
      *      @param string ['bannedStatus']      Either 'banned' or 'unbanned'; if included, only such users will be returned.
-     *      @param string ['hasPrivs']          Filter by a list of named priviledges; see the keys of {@see fimUser::$permArray} for valid options.
+     *      @param string ['hasPrivs']          Filter by a list of named priviledges; see the keys of {@see Fim\fimUser::$permArray} for valid options.
      *
      *      @param mixed  ['columns']           An override for which columsn to include in the result.
      *      @param bool   ['includePasswords']  Shorthand to include password fields along with any other specified columns.
@@ -1293,15 +1293,15 @@ class DatabaseInstance extends DatabaseSQL
 
 
     /**
-     * Obtain the fimUser object with a given ID from the database.
+     * Obtain the Fim\fimUser object with a given ID from the database.
      *
      * @see UserFactory::getFromId() for resolving a user from an ID using the cache.
      *
      * @param mixed $userId The ID of the user to get.
      *
-     * @return fimUser
+     * @return User
      */
-    public function getUser($userId) : fimUser
+    public function getUser($userId) : User
     {
         return $this->getUsers(array(
             'userIds' => array($userId)
@@ -1364,14 +1364,14 @@ class DatabaseInstance extends DatabaseSQL
     /**
      * Determines if a given user has certain permissions in a given room.
      *
-     * @param fimUser $user
-     * @param fimRoom $room
+     * @param User $user
+     * @param Room $room
      *
      * @return int A bitfield corresponding with roomPermissions.
      *
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function hasPermission(fimUser $user, fimRoom $room) {
+    public function hasPermission(User $user, Room $room) {
         /* Private Room Have Their Own, Fairly Involved Permission Logic */
         if ($room->isPrivateRoom()) {
             $userIds = $room->getPrivateRoomMemberIds();
@@ -1382,15 +1382,15 @@ class DatabaseInstance extends DatabaseSQL
 
             else {
                 switch ($room->getPrivateRoomState()) {
-                    case fimRoom::PRIVATE_ROOM_STATE_NORMAL:
-                        return fimRoom::ROOM_PERMISSION_VIEW | fimRoom::ROOM_PERMISSION_POST;
+                    case Room::PRIVATE_ROOM_STATE_NORMAL:
+                        return Room::ROOM_PERMISSION_VIEW | Room::ROOM_PERMISSION_POST;
                         break;
 
-                    case fimRoom::PRIVATE_ROOM_STATE_READONLY:
-                        return fimRoom::ROOM_PERMISSION_VIEW;
+                    case Room::PRIVATE_ROOM_STATE_READONLY:
+                        return Room::ROOM_PERMISSION_VIEW;
                         break;
 
-                    case fimRoom::PRIVATE_ROOM_STATE_DISABLED:
+                    case Room::PRIVATE_ROOM_STATE_DISABLED:
                         return 0;
                         break;
 
@@ -1446,9 +1446,9 @@ class DatabaseInstance extends DatabaseSQL
                 if ($permissionsBitfield === -1)
                     $returnBitfield = $room->defaultPermissions &
                         (
-                            ($user->hasPriv('view') ? fimRoom::$permArray['view'] : 0)
-                            | ($user->hasPriv('post') ? fimRoom::$permArray['post'] : 0)
-                            | ($user->hasPriv('changeTopic') ? fimRoom::$permArray['changeTopic'] : 0)
+                            ($user->hasPriv('view') ? Room::$permArray['view'] : 0)
+                            | ($user->hasPriv('post') ? Room::$permArray['post'] : 0)
+                            | ($user->hasPriv('changeTopic') ? Room::$permArray['changeTopic'] : 0)
                         );
                 else
                     $returnBitfield = $permissionsBitfield;
@@ -1462,7 +1462,7 @@ class DatabaseInstance extends DatabaseSQL
                         'includeRoomData' => false,
                         'expires' => $this->now(0, 'gt')
                     )))->getCount() > 0) {
-                    $returnBitfield &= fimRoom::ROOM_PERMISSION_VIEW;
+                    $returnBitfield &= Room::ROOM_PERMISSION_VIEW;
                 }
             }
 
@@ -1470,9 +1470,9 @@ class DatabaseInstance extends DatabaseSQL
             /* Remove priviledges under certain circumstances. */
             // Deleted and archived rooms act similarly: no one may post in either, while only admins can view deleted rooms.
             if ($room->deleted || $room->archived) { // that is, check if a room is either deleted or archived.
-                if ($room->deleted && !$user->hasPriv('modRooms')) $returnBitfield &= ~(fimRoom::ROOM_PERMISSION_VIEW); // Only super moderators may view deleted rooms.
+                if ($room->deleted && !$user->hasPriv('modRooms')) $returnBitfield &= ~(Room::ROOM_PERMISSION_VIEW); // Only super moderators may view deleted rooms.
 
-                $returnBitfield &= ~(fimRoom::ROOM_PERMISSION_POST | fimRoom::ROOM_PERMISSION_TOPIC); // And no one can post in them - a rare case where even admins are denied certain abilities.
+                $returnBitfield &= ~(Room::ROOM_PERMISSION_POST | Room::ROOM_PERMISSION_TOPIC); // And no one can post in them - a rare case where even admins are denied certain abilities.
             }
 
             /* Update cache and return. */
@@ -1561,7 +1561,7 @@ class DatabaseInstance extends DatabaseSQL
      * @param int $roomId The room ID corresponding with the room whose permission entry will be removed.
      * @param string $attribute The attribute type of the permission entry, either 'user' or 'group'.
      * @param int $param The userId or groupId (depending on $attribute) of the permission entry to delete.
-     * @param int $permissionMask The new permissions to set, as a bitfield generated using {@see fimUser::$permArray}.
+     * @param int $permissionMask The new permissions to set, as a bitfield generated using {@see Fim\fimUser::$permArray}.
      */
     public function setPermission($roomId, $attribute, $param, $permissionsMask) {
         /* Start Transaction */
@@ -1997,12 +1997,12 @@ class DatabaseInstance extends DatabaseSQL
     /**
      * User joins group with ID.
      *
-     * @param int     $groupId Group to join.
-     * @param fimUser $user    User joining the group.
+     * @param int  $groupId Group to join.
+     * @param User $user    User joining the group.
      *
      * @return bool|void
      */
-    public function enterSocialGroup($groupId, fimUser $user) {
+    public function enterSocialGroup($groupId, User $user) {
         return $this->insert($this->sqlPrefix . 'socialGroupMembers', [
             'groupId' => $groupId,
             'userId' => $user->id,
@@ -2012,7 +2012,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
     /**
-     * Gets the entries from the watchRooms table corresponding with a single roomId. fimRoom($roomId)->watchRooms should generally be used instead, since it implements additional caching.
+     * Gets the entries from the watchRooms table corresponding with a single roomId. Fim\fimRoom($roomId)->watchRooms should generally be used instead, since it implements additional caching.
      *
      * @param $roomId
      * @return mixed
@@ -2388,7 +2388,7 @@ class DatabaseInstance extends DatabaseSQL
     }
 
 
-    public function storeFile(\Fim\File $file, fimUser $user, fimRoom $room) {
+    public function storeFile(\Fim\File $file, User $user, Room $room) {
         $this->startTransaction();
 
         $this->insert($this->sqlPrefix . "files", array(

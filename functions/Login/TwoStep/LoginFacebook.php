@@ -135,7 +135,7 @@ class LoginFacebook extends LoginTwoStep
 
         if (isset($user) && $user['id']) {
             // store user info...
-            $this->loginFactory->user = new \fimUser([
+            $this->loginFactory->user = new \Fim\User([
                 'integrationMethod' => 'facebook',
                 'integrationId'     => $user['id'],
             ]);

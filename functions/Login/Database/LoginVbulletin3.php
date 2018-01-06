@@ -93,7 +93,7 @@ class LoginVbulletin3 extends LoginDatabase
 
 
             /* Create User */
-            $this->loginFactory->user = new \fimUser([
+            $this->loginFactory->user = new \Fim\User([
                 'integrationMethod' => 'vb34',
                 'integrationId'     => $vbUser['userid'],
             ]);

@@ -28,6 +28,8 @@
  * @param string fim3_sessionHash
  */
 
+use Fim\User;
+
 
 /******
  * Require base files.
@@ -74,7 +76,7 @@ $request = fim_sanitizeGPC('r', array(
 
 /* Default user object.
  * Note: As of now, this object should never be used. In all cases the script either quits or the user object is filled with anonymous information or information corresponding with a real user. However, this object is useful for dev purposes, and if a script wants to use $ignoreLogin. */
-$user = new fimUser(0);
+$user = new User(0);
 
 
 

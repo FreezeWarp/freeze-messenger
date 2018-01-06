@@ -2,12 +2,12 @@
 
 namespace Fim;
 
-use \fimRoom;
+use Fim\Room;
 use \Exception;
 
 class RoomFactory {
     /**
-     * @var fimRoom[]
+     * @var Room[]
      */
     static $instances = [];
 
@@ -20,10 +20,10 @@ class RoomFactory {
             return RoomFactory::$instances[$roomId] = $room;
 
         else
-            return RoomFactory::$instances[$roomId] = new fimRoom($roomId);
+            return RoomFactory::$instances[$roomId] = new Room($roomId);
     }
 
-    public static function getFromData(array $roomData) : fimRoom {
+    public static function getFromData(array $roomData) : Room {
         if (!isset($roomData['id']))
             throw new Exception('Roomdata must contain id');
 
@@ -39,7 +39,7 @@ class RoomFactory {
         }
 
         else {
-            return RoomFactory::$instances[$roomData['id']] = new fimRoom($roomData);
+            return RoomFactory::$instances[$roomData['id']] = new Room($roomData);
         }
     }
 
@@ -52,7 +52,12 @@ class RoomFactory {
                 $instance->getCensorWords();
                 $instance->getWatchedByUsers();
 
-                \Fim\Cache::add('fim_fimRoom_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
+                if ($instance->doCache)
+                    \Fim\Cache::set('fim_fimRoom_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
+                else
+                    \Fim\Cache::add('fim_fimRoom_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
+
+                $instance->doCache = false;
             }
         }
     }

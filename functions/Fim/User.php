@@ -14,13 +14,17 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+namespace Fim;
+
 use Database\Type\Type;
+use Exception;
+use fimError;
 
 /**
- * Class fimUser
+ * Class Fim\fimUser
  * Stores user data.
  */
-class fimUser extends \Fim\DynamicObject
+class User extends DynamicObject
 {
     /**
      * The user does not wish to enable private messages.
@@ -113,20 +117,20 @@ class fimUser extends \Fim\DynamicObject
      * @var array A map of string permissions to their bits in a bitfield.
      */
     public static $permArray = [
-        'view'           => fimUser::USER_PRIV_VIEW,
-        'post'           => fimUser::USER_PRIV_POST,
-        'changeTopic'    => fimUser::USER_PRIV_TOPIC,
-        'createRooms'    => fimUser::USER_PRIV_CREATE_ROOMS,
-        'privateFriends' => fimUser::USER_PRIV_PRIVATE_FRIENDS,
-        'privateAll'     => fimUser::USER_PRIV_PRIVATE_ALL,
-        'roomsOnline'    => fimUser::USER_PRIV_ACTIVE_USERS,
-        'modPrivs'       => fimUser::ADMIN_GRANT,
-        'protected'      => fimUser::ADMIN_PROTECTED,
-        'modRooms'       => fimUser::ADMIN_ROOMS,
-        'modUsers'       => fimUser::ADMIN_USERS,
-        'modFiles'       => fimUser::ADMIN_FILES,
-        'modCensor'      => fimUser::ADMIN_CENSOR,
-        'modEmoticons'   => fimUser::ADMIN_EMOTICONS,
+        'view'           => User::USER_PRIV_VIEW,
+        'post'           => User::USER_PRIV_POST,
+        'changeTopic'    => User::USER_PRIV_TOPIC,
+        'createRooms'    => User::USER_PRIV_CREATE_ROOMS,
+        'privateFriends' => User::USER_PRIV_PRIVATE_FRIENDS,
+        'privateAll'     => User::USER_PRIV_PRIVATE_ALL,
+        'roomsOnline'    => User::USER_PRIV_ACTIVE_USERS,
+        'modPrivs'       => User::ADMIN_GRANT,
+        'protected'      => User::ADMIN_PROTECTED,
+        'modRooms'       => User::ADMIN_ROOMS,
+        'modUsers'       => User::ADMIN_USERS,
+        'modFiles'       => User::ADMIN_FILES,
+        'modCensor'      => User::ADMIN_CENSOR,
+        'modEmoticons'   => User::ADMIN_EMOTICONS,
     ];
 
 
@@ -521,7 +525,7 @@ class fimUser extends \Fim\DynamicObject
             foreach ($items AS $item) {
                 // Skip Rooms That The User Doesn't Have Permission To
                 if ($listName === 'favRooms' || $listName === 'watchRooms') {
-                    if (!(\Fim\Database::instance()->hasPermission($this, $item) & fimRoom::ROOM_PERMISSION_VIEW)) {
+                    if (!(\Fim\Database::instance()->hasPermission($this, $item) & Room::ROOM_PERMISSION_VIEW)) {
                         continue;
                     }
                 }
@@ -558,37 +562,37 @@ class fimUser extends \Fim\DynamicObject
 
         // If certain features are disabled, remove user privileges. The bitfields should be maintained, however, for when a feature is reenabled.
         if (!\Fim\Config::$userRoomCreation)
-            $this->privs &= ~fimUser::USER_PRIV_CREATE_ROOMS;
+            $this->privs &= ~User::USER_PRIV_CREATE_ROOMS;
 
 
         // Superuser override (note that any user with GRANT or in the $config superuser array is automatically given all permissions, and is marked as protected. The only way, normally, to remove a user's GRANT status, because they are automatically protected, is to do so directly in the database.)
         // LoginConfig is not guranteed to be set here (e.g. during installation), which is why we cast.
         if (in_array($this->id, (array)$loginConfig['superUsers'])
             || in_array($this->mainGroupId, (array)$loginConfig['adminGroups'])
-            || ($this->privs & fimUser::ADMIN_GRANT))
+            || ($this->privs & User::ADMIN_GRANT))
             $this->privs = 0x7FFFFFFF;
 
-        elseif ($this->privs & fimUser::ADMIN_ROOMS)
-            $this->privs |= (fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
+        elseif ($this->privs & User::ADMIN_ROOMS)
+            $this->privs |= (User::USER_PRIV_VIEW | User::USER_PRIV_POST | User::USER_PRIV_TOPIC); // Being a super-moderator grants a user the ability to view, post, and make topic changes in all rooms.
 
 
         // Note that we set these after setting admin privs, becuase we don't want admins using these functionalities when they are disabled.
         if (!\Fim\Config::$userPrivateRoomCreation)
-            $this->privs &= ~(fimUser::USER_PRIV_PRIVATE_ALL | fimUser::USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
+            $this->privs &= ~(User::USER_PRIV_PRIVATE_ALL | User::USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
 
         if (\Fim\Config::$disableTopic)
-            $this->privs &= ~fimUser::USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
+            $this->privs &= ~User::USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
 
 
         // Certain bits imply other bits. Make sure that these are consistent.
-        if ($this->privs & fimUser::USER_PRIV_PRIVATE_ALL)
-            $this->privs |= fimUser::USER_PRIV_PRIVATE_FRIENDS;
+        if ($this->privs & User::USER_PRIV_PRIVATE_ALL)
+            $this->privs |= User::USER_PRIV_PRIVATE_FRIENDS;
 
 
         // Disable bits based on login-provider disabled features
         $loginRunner = \Login\LoginFactory::getLoginRunnerFromName($loginConfig['method']);
         if (!$loginRunner::isSiteFeatureDisabled('emoticons')) {
-            $this->privs &= ~fimUser::ADMIN_EMOTICONS;
+            $this->privs &= ~User::ADMIN_EMOTICONS;
         }
 
     }
@@ -651,7 +655,7 @@ class fimUser extends \Fim\DynamicObject
     }
 
     /**
-     * Check if this fimUser object theoretically corresponds with a valid user; use {@see exists()} to determine if a user actually exists.
+     * Check if this Fim\fimUser object theoretically corresponds with a valid user; use {@see exists()} to determine if a user actually exists.
      *
      * @return bool True if the user is a valid user, false otherwise.
      */
@@ -722,13 +726,13 @@ class fimUser extends \Fim\DynamicObject
     /**
      * Gets a displayable array of permsisions based on the current user's {@see $privs} field.
      *
-     * @return array An associative array corresponding to the permissions user has based on their bitfield. Keys are the keys of {@see fimUser::$permArray}.
+     * @return array An associative array corresponding to the permissions user has based on their bitfield. Keys are the keys of {@see Fim\fimUser::$permArray}.
      */
     public function getPermissionsArray(): array
     {
         $returnArray = [];
 
-        foreach (array_keys(fimUser::$permArray) AS $perm) {
+        foreach (array_keys(User::$permArray) AS $perm) {
             $returnArray[$perm] = $this->hasPriv($perm);
         }
 
@@ -812,7 +816,7 @@ class fimUser extends \Fim\DynamicObject
             return $this->populateFromArray(\Fim\Database::instance()->where(['integrationMethod' => $this->integrationMethod, 'integrationId' => $this->integrationId])->select([\Fim\Database::$sqlPrefix . 'users' => array_merge(['integrationId', 'integrationMethod'], $columns)])->getAsArray(false));
 
         else
-            throw new Exception('fimUser does not have uniquely identifying information required to perform database retrieval.');
+            throw new Exception('Fim\fimUser does not have uniquely identifying information required to perform database retrieval.');
     }
 
 

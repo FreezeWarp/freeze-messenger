@@ -51,7 +51,7 @@ class LoginFactory
     public $database;
 
     /**
-     * @var \fimUser The user object created from a successful login.
+     * @var \Fim\User The user object created from a successful login.
      */
     public $user;
 

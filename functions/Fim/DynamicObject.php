@@ -3,7 +3,7 @@ namespace Fim;
 
 abstract class DynamicObject extends MagicGettersSetters {
     /**
-     * @var array The parameters that have been resolved for this instance of fimRoom. If an unresolved parameter is accessed, it will be resolved.
+     * @var array The parameters that have been resolved for this instance of Fim\fimRoom. If an unresolved parameter is accessed, it will be resolved.
      */
     protected $resolved = array();
 

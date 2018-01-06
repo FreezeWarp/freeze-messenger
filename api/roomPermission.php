@@ -21,6 +21,9 @@
 
 
 /* Common Resources */
+
+use Fim\Room;
+
 $apiRequest = true;
 require(__DIR__ . '/../global.php');
 
@@ -50,7 +53,7 @@ $requestBody = fim_sanitizeGPC('p', [
     'permissions' => [
         'cast'      => 'list',
         'transform' => 'bitfield',
-        'bitTable'  => fimRoom::$permArray
+        'bitTable'  => Room::$permArray
     ]
 ]);
 
@@ -60,7 +63,7 @@ $requestBody = fim_sanitizeGPC('p', [
 try {
     $room = \Fim\Database::instance()->getRoom($requestHead['roomId']);
 
-    if (!(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)) {
+    if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW)) {
         new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.');
     }
 } catch (Exception $ex) {

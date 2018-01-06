@@ -74,7 +74,7 @@ class LoginTwitter extends LoginTwoStep {
         $userInfo = $this->client->get("account/verify_credentials");
 
         // store user info...
-        $this->loginFactory->user = new \fimUser([
+        $this->loginFactory->user = new \Fim\User([
             'integrationMethod' => 'twitter',
             'integrationId' => (int) $userInfo->id,
         ]);

@@ -2,12 +2,12 @@
 
 namespace Fim;
 
-use \fimRoom;
-use \fimUser;
+use Fim\Room;
+use Fim\User;
 
 class DatabaseResult extends \Database\Result {
     /**
-     * @return fimRoom[]
+     * @return Room[]
      *
      * @internal This function may use too much memory. I'm not... exactly sure how to fix this.
      */
@@ -23,15 +23,15 @@ class DatabaseResult extends \Database\Result {
     }
 
     /**
-     * @return fimRoom
+     * @return Room
      */
-    function getAsRoom() : fimRoom {
+    function getAsRoom() : Room {
         return RoomFactory::getFromData($this->getAsArray(false));
     }
 
 
     /**
-     * @return fimUser[]
+     * @return User[]
      *
      * @internal This function may use too much memory. I'm not... exactly sure how to fix this.
      */
@@ -47,9 +47,9 @@ class DatabaseResult extends \Database\Result {
     }
 
     /**
-     * @return fimUser
+     * @return User
      */
-    function getAsUser() : fimUser {
+    function getAsUser() : User {
         return UserFactory::getFromData($this->getAsArray(false));
     }
 

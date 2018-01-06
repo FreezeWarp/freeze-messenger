@@ -98,7 +98,7 @@ class LoginReddit extends LoginTwoStep {
 
 
         /* Store User Info */
-        $this->loginFactory->user = new \fimUser([
+        $this->loginFactory->user = new \Fim\User([
             'integrationMethod' => 'reddit',
             'integrationId' => $userInfo['id'],
         ]);

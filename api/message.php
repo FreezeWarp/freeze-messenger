@@ -71,6 +71,8 @@
  * @throws messageDateMaxMessageDateMinMessageIdEndConflictMessageIdStart More than one message constraint (messageDateMin, messageDateMax, messageIdStart, messageIdEnd) was used.
  */
 
+use Fim\Room;
+
 $apiRequest = true;
 require(__DIR__ . '/../global.php');
 define('API_INMESSAGE', true);
@@ -85,7 +87,7 @@ $requestHead = fim_sanitizeGPC('g', [
 
 
 /* Early Validation */
-if (!($room = new fimRoom($requestHead['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
+if (!($room = new Room($requestHead['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW))
     new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.'); // Make sure we have a valid room.
 
 if (isset($requestHead['id'])) {

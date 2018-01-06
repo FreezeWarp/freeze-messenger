@@ -27,6 +27,8 @@
  * @param int [number = 10] - The number of top posters to obtain.
  */
 
+use Fim\Room;
+
 $apiRequest = true;
 
 require('../global.php');
@@ -65,7 +67,7 @@ $xmlData = array(
 
 /* Start Processing */
 
-if (!($room = \Fim\RoomFactory::getFromId($request['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)) {
+if (!($room = \Fim\RoomFactory::getFromId($request['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW)) {
     new fimError('roomIdNoExist', 'The given "roomId" parameter does not correspond with a real room.');
 }
 

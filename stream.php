@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+use Fim\Room;
+
 $apiRequest = true;
 require('global.php');
 
@@ -60,10 +62,10 @@ if (!\Fim\Config::$serverSentEvents && !$request['fallback']) {
 }
 
 if ($request['streamType'] === 'room') {
-    $room = new fimRoom($request['queryId']);
+    $room = new Room($request['queryId']);
     $request['queryId'] = $room->id;
 
-    if (!(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
+    if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW))
         new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
     \Fim\Database::instance()->markMessageRead($request['queryId'], $user->id);

@@ -97,7 +97,7 @@ class LoginVbulletin5 extends LoginDatabase
 
 
             /* Create User */
-            $this->loginFactory->user = new \fimUser([
+            $this->loginFactory->user = new \Fim\User([
                 'integrationMethod' => 'vb5',
                 'integrationId'     => $vbUser['userid'],
             ]);

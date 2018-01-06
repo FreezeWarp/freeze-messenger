@@ -2,7 +2,7 @@
 
 namespace Fim;
 
-use \fimUser;
+use Fim\User;
 
 /**
  * The Config class is used to reference all configuration variables.
@@ -16,8 +16,8 @@ class Config {
     /** @var bool Whether or not registration is enabled even if a non-vanilla login method is enabled (like PHPBB or vBulletin). */
     public static $registrationEnabledIgnoreForums = false;
 
-    /** @var int The default permissions newly registered users have. This is a bitfield consisting of some combination of {@see fimUser::USER_PRIV_VIEW}, {@see fimUser::USER_PRIV_POST}, {@see fimUser::USER_PRIV_TOPIC}, {@see fimUser::USER_PRIV_CREATE_ROOMS}, {@see fimUser::USER_PRIV_PRIVATE_FRIENDS}, {@see fimUser::USER_PRIV_PRIVATE_ALL}, {@see fimUser::USER_PRIV_ACTIVE_USERS}. {@see fimUser::USER_PRIV_TOPIC} and {@see fimUser::USER_PRIV_PRIVATE_ALL}. */
-    public static $defaultUserPrivs = fimUser::USER_PRIV_VIEW | fimUser::USER_PRIV_POST | fimUser::USER_PRIV_CREATE_ROOMS | fimUser::USER_PRIV_PRIVATE_FRIENDS | fimUser::USER_PRIV_ACTIVE_USERS;
+    /** @var int The default permissions newly registered users have. This is a bitfield consisting of some combination of {@see Fim\fimUser::USER_PRIV_VIEW}, {@see Fim\fimUser::USER_PRIV_POST}, {@see Fim\fimUser::USER_PRIV_TOPIC}, {@see Fim\fimUser::USER_PRIV_CREATE_ROOMS}, {@see Fim\fimUser::USER_PRIV_PRIVATE_FRIENDS}, {@see Fim\fimUser::USER_PRIV_PRIVATE_ALL}, {@see Fim\fimUser::USER_PRIV_ACTIVE_USERS}. {@see Fim\fimUser::USER_PRIV_TOPIC} and {@see Fim\fimUser::USER_PRIV_PRIVATE_ALL}. */
+    public static $defaultUserPrivs = User::USER_PRIV_VIEW | User::USER_PRIV_POST | User::USER_PRIV_CREATE_ROOMS | User::USER_PRIV_PRIVATE_FRIENDS | User::USER_PRIV_ACTIVE_USERS;
 
     /** @var bool Whether an email is required to sign up. The vanilla subsystem can function without email, and in truth; its not even used for anything in FIMv3 (where Vanilla is very IRC-like)`. Additionally, there are no email registration limits; all limits to having multiple accounts are enforced by IP. */
     public static $emailRequired = false;
@@ -696,6 +696,9 @@ class Config {
 
     /** @var int The number of kilobytes to send when flushing the output buffer. On most hosts, 4 is more than sufficient. However, values as high as 100 have been observed helpful. */
     public static $outputFlushPaddingKilobytes = 4;
+
+    /** @var bool Whether or not SSL requests should be verified by the Guzzle library. This should generally be left on, and is included primarily for testing purposes. */
+    public static $sslVerify = true;
 
     public static $recaptchaPublicKey = '';
 

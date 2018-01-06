@@ -25,6 +25,9 @@
 
 
 /* Prevent Direct Access of File */
+
+use Fim\Room;
+
 if (!defined('API_INUSERSTATUS'))
     die();
 
@@ -48,9 +51,9 @@ $request = fim_sanitizeGPC('p', array(
 
 /* Get Room Data */
 foreach ($requestHead['roomIds'] AS $roomId) {
-    $room = new fimRoom($roomId);
+    $room = new Room($roomId);
 
-    if (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW)
+    if (\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW)
         \Fim\Database::instance()->setUserStatus($room->id, $request['status'],  $request['typing']);
 }
 

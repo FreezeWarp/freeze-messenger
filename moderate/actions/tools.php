@@ -73,12 +73,11 @@ else {
                 break;
 
             case 'updateDatabaseSchema':
-                require(__DIR__ . '/../../functions/Xml2Array.php');
                 $showTables = \Fim\Database::instance()->getTablesAsArray();
                 $showColumns = \Fim\Database::instance()->getTableColumnsAsArray();
                 set_time_limit(0);
 
-                $xmlData = new Xml2Array(file_get_contents('../install/dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Xml2Array class
+                $xmlData = new \Fim\Xml2Array(file_get_contents('../install/dbSchema.xml')); // Get the XML Data from the dbSchema.xml file, and feed it to the Fim\Xml2Array class
                 $xmlData = $xmlData->getAsArray(); // Get the XML data as an array
                 $xmlData = $xmlData['dbSchema']; // Get the contents of the root node
 

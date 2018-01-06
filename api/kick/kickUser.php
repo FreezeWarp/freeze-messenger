@@ -1,14 +1,18 @@
 <?php
 /**
- * @global \Fim\Config        $config
+ * @global \Fim\Config      $config
  * @global DatabaseInstance $database
- * @global fimUser          $user
- * @global fimUser          $kickUser
- * @global fimRoom          $room
+ * @global User             $user
+ * @global User             $kickUser
+ * @global Room             $room
  * @global int              $permission
 */
 
 /* Prevent Direct Access to Script */
+
+use Fim\Room;
+use Fim\User;
+
 if (!defined('API_INKICK'))
     die();
 
@@ -34,11 +38,11 @@ $xmlData = array(
 
 
 /* Script */
-if (!($permission & fimRoom::ROOM_PERMISSION_MODERATE))
+if (!($permission & Room::ROOM_PERMISSION_MODERATE))
     new fimError('noPerm', 'You do not have permission to moderate this room.');
 
 elseif ($requestHead['_action'] === 'create') {
-    if (\Fim\Database::instance()->hasPermission($kickUser, $room) & fimRoom::ROOM_PERMISSION_MODERATE)
+    if (\Fim\Database::instance()->hasPermission($kickUser, $room) & Room::ROOM_PERMISSION_MODERATE)
         throw new fimError('unkickableUser', 'Other room moderators may not be kicked.');
 
     else {

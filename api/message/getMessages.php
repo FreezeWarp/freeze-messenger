@@ -26,6 +26,9 @@
 
 
 /* Prevent Direct Access of File */
+
+use Fim\Room;
+
 if (!defined('API_INMESSAGE'))
     die();
 
@@ -92,7 +95,7 @@ $xmlData = [
     'messages' => [],
 ];
 
-if (!(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_VIEW))
+if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW))
     new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
 else {

@@ -37,8 +37,6 @@ elseif ($phpVersion < 7) {
 require_once(__DIR__ . '/vendor/autoload.php'); // Various Functions
 
 require_once(__DIR__ . '/config.php'); // Configuration Variables
-require_once(__DIR__ . '/functions/fimUser.php'); // FIM-specific Extensions
-require_once(__DIR__ . '/functions/fimRoom.php'); // FIM-specific Extensions
 require_once(__DIR__ . '/functions/fimError.php'); // FIM Custom Error Class
 require_once(__DIR__ . '/functions/fim_general.php'); // Various Functions
 

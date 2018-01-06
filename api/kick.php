@@ -50,6 +50,9 @@
 
 
 /* Common Resources */
+
+use Fim\Room;
+
 $apiRequest = true;
 require('../global.php');
 define('API_INKICK', true);
@@ -78,10 +81,10 @@ if (!\Fim\Config::$kicksEnabled) {
 
 if (isset($requestHead['roomId'])) {
     if (!($room = \Fim\RoomFactory::getFromId($requestHead['roomId']))->exists()
-        || !(($permission = \Fim\Database::instance()->hasPermission($user, $room)) & fimRoom::ROOM_PERMISSION_VIEW))
+        || !(($permission = \Fim\Database::instance()->hasPermission($user, $room)) & Room::ROOM_PERMISSION_VIEW))
         new fimError('roomIdNoExist', 'The given "roomId" parameter does not correspond with a real room.');
 
-    elseif (!(($permission & fimRoom::ROOM_PERMISSION_MODERATE) || (isset($requestHead['userId']) && $requestHead['userId'] === $user->id)))
+    elseif (!(($permission & Room::ROOM_PERMISSION_MODERATE) || (isset($requestHead['userId']) && $requestHead['userId'] === $user->id)))
         new fimError('noPerm', 'You do not have permission to moderate this room.');
 }
 

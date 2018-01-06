@@ -18,7 +18,7 @@
  * Send or update a message.
  *
  * @global    $message \Fim\Message
- * @global    $room    fimRoom
+ * @global    $room    Room
  * @package   fim3
  * @version   3.0
  * @author    Jospeph T. Parsons <josephtparsons@gmail.com>
@@ -27,6 +27,9 @@
 
 
 /* Prevent Direct Access of File */
+
+use Fim\Room;
+
 if (!defined('API_INMESSAGE'))
     die();
 
@@ -63,7 +66,7 @@ if (strlen($request['message']) < \Fim\Config::$messageMinLength || strlen($requ
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))
     new fimError('spaceMessage', 'The sent message is all whitespace.'); // All spaces. TODO: MB Support
 
-elseif (!(\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_POST))
+elseif (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_POST))
     new fimError('noPerm', 'You may not post in this room.');
 
 elseif (in_array($request['flag'], ['image', 'video', 'url', 'html', 'audio'])
@@ -95,7 +98,7 @@ else {
         case 'create':
             // if /kick starts the message, the user is using a shorthand to kick a user. We don't actually create a new message, but we do attempt to kick the user given.
             if (strpos($request['message'], '/kick') === 0
-                && (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_MODERATE)) {
+                && (\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_MODERATE)) {
                 $kickData = preg_replace('/^\/kick (.+?)(| ([0-9]+?))$/i', '$1,$2', $request['message']);
                 $kickData = explode(',', $kickData);
 
@@ -121,7 +124,7 @@ else {
 
                 // if /topic starts the message, the user is trying to change the topic.
                 if (strpos($message->text, '/topic') === 0) {
-                    if (\Fim\Database::instance()->hasPermission($user, $room) & fimRoom::ROOM_PERMISSION_TOPIC)
+                    if (\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_TOPIC)
                         $room->setDatabaseTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $message->text));
                     else
                         new fimError('noPerm', 'You do not have permission to change the topic.');

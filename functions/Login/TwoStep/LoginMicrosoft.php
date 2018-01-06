@@ -107,7 +107,7 @@ class LoginMicrosoft extends LoginTwoStep {
         }
 
         // store user info...
-        $this->loginFactory->user = new \fimUser([
+        $this->loginFactory->user = new \Fim\User([
             'integrationMethod' => 'microsoft',
             'integrationId' => (int) $userInfo['id'],
         ]);

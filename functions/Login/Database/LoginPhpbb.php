@@ -88,7 +88,7 @@ class LoginPhpbb extends LoginDatabase
                 $phpbbUser['nameColor'] = '';
             }
 
-            $this->loginFactory->user = new \fimUser([
+            $this->loginFactory->user = new \Fim\User([
                 'integrationMethod' => 'phpbb',
                 'integrationId'     => $phpbbUser['id'],
             ]);

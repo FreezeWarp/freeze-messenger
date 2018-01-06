@@ -98,7 +98,7 @@ class LoginGoogle extends LoginTwoStep {
             new \fimError('invalidIntegrationName', 'The Google server did not respond with a valid user name. Login cannot continue.');
 
         // store user info...
-        $this->loginFactory->user = new \fimUser([
+        $this->loginFactory->user = new \Fim\User([
             'integrationMethod' => 'google',
             'integrationId' => $userInfo->getId(),
         ]);

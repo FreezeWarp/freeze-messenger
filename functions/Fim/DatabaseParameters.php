@@ -9,29 +9,29 @@ class DatabaseParameters
     public static function execute(DatabaseInstance $instance)
     {
         $instance->setTransformationParameters([
-            \Fim\Database::$sqlPrefix . 'files'              => ['roomIdLink' => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId']],
-            \Fim\Database::$sqlPrefix . 'messages'           => ['roomId' => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId']],
-            \Fim\Database::$sqlPrefix . 'messageFlood'       => ['roomId' => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId']],
-            \Fim\Database::$sqlPrefix . 'messageEditHistory' => ['roomId' => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId']],
-            \Fim\Database::$sqlPrefix . 'ping'               => ['roomId' => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId']],
+            \Fim\Database::$sqlPrefix . 'files'              => ['roomIdLink' => ['Fim\fimRoom::encodeId', Type::blob, 'Fim\fimRoom::decodeId']],
+            \Fim\Database::$sqlPrefix . 'messages'           => ['roomId' => ['Fim\fimRoom::encodeId', Type::blob, 'Fim\fimRoom::decodeId']],
+            \Fim\Database::$sqlPrefix . 'messageFlood'       => ['roomId' => ['Fim\fimRoom::encodeId', Type::blob, 'Fim\fimRoom::decodeId']],
+            \Fim\Database::$sqlPrefix . 'messageEditHistory' => ['roomId' => ['Fim\fimRoom::encodeId', Type::blob, 'Fim\fimRoom::decodeId']],
+            \Fim\Database::$sqlPrefix . 'ping'               => ['roomId' => ['Fim\fimRoom::encodeId', Type::blob, 'Fim\fimRoom::decodeId']],
             \Fim\Database::$sqlPrefix . 'rooms'              => [
                 'nameSearchable' => ['\Fim\DatabaseInstance::makeSearchable', Type::string, null],
             ],
-            \Fim\Database::$sqlPrefix . 'roomStats'          => ['roomId' => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId']],
+            \Fim\Database::$sqlPrefix . 'roomStats'          => ['roomId' => ['Fim\fimRoom::encodeId', Type::blob, 'Fim\fimRoom::decodeId']],
             \Fim\Database::$sqlPrefix . 'socialGroups'       => [
                 'memberUserIds' => ['\Fim\DatabaseInstance::packListCache', Type::blob, '\Fim\DatabaseInstance::unpackListCache']
             ],
-            \Fim\Database::$sqlPrefix . 'searchMessages'     => ['roomId' => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId']],
-            \Fim\Database::$sqlPrefix . 'searchCache'        => ['roomId' => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId']],
-            \Fim\Database::$sqlPrefix . 'unreadMessages'     => ['roomId' => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId']],
+            \Fim\Database::$sqlPrefix . 'searchMessages'     => ['roomId' => ['Fim\fimRoom::encodeId', Type::blob, 'Fim\fimRoom::decodeId']],
+            \Fim\Database::$sqlPrefix . 'searchCache'        => ['roomId' => ['Fim\fimRoom::encodeId', Type::blob, 'Fim\fimRoom::decodeId']],
+            \Fim\Database::$sqlPrefix . 'unreadMessages'     => ['roomId' => ['Fim\fimRoom::encodeId', Type::blob, 'Fim\fimRoom::decodeId']],
             \Fim\Database::$sqlPrefix . 'users'              => [
                 'nameSearchable' => ['\Fim\DatabaseInstance::makeSearchable', Type::string, null],
-                'defaultRoomId'  => ['fimRoom::encodeId', Type::blob, 'fimRoom::decodeId'],
+                'defaultRoomId'  => ['Fim\fimRoom::encodeId', Type::blob, 'Fim\fimRoom::decodeId'],
             ],
         ], [
             \Fim\Database::$sqlPrefix . 'rooms' => [
                 'name' => ['\Fim\DatabaseInstance::makeSearchable', Type::string, 'nameSearchable'],
-                'id'   => ['fimRoom::encodeId', Type::blob, 'idEncoded'],
+                'id'   => ['Fim\fimRoom::encodeId', Type::blob, 'idEncoded'],
             ],
             \Fim\Database::$sqlPrefix . 'users' => [
                 'name' => ['\Fim\DatabaseInstance::makeSearchable', Type::string, 'nameSearchable'],

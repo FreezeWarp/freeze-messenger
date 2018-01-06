@@ -24,6 +24,8 @@
  */
 
 
+use Fim\Room;
+
 if (!defined('API_INROOM'))
     die();
 
@@ -33,7 +35,7 @@ $request = fim_sanitizeGPC('g', [
     // No matter what, the user will not be able to see rooms that he is unable to view.
     'permFilter' => [
         'default' => 'view',
-        'valid'   => array_merge(array_keys(fimRoom::$permArray), ['own']),
+        'valid'   => array_merge(array_keys(Room::$permArray), ['own']),
     ],
 
     'roomIds' => [
@@ -104,7 +106,7 @@ do {
         $privateRoomIds = [];
         if (isset($request['roomIds'])) {
             foreach ($request['roomIds'] AS $index => $roomId) {
-                if (fimRoom::isPrivateRoomId($roomId)) {
+                if (Room::isPrivateRoomId($roomId)) {
                     unset($request['roomIds'][$index]);
                     $privateRoomIds[] = $roomId;
                 }
@@ -127,14 +129,14 @@ do {
         }
 
         foreach ($privateRoomIds AS $privateRoomId)
-            $rooms[] = new fimRoom($privateRoomId);
+            $rooms[] = new Room($privateRoomId);
     }
 
     foreach ($rooms AS $number => &$roomLocal) {
         $permission = \Fim\Database::instance()->hasPermission($user, $roomLocal);
 
         if ($request['permFilter'] != 'own'
-            && ($permission & fimRoom::$permArray[$request['permFilter']]) != fimRoom::$permArray[$request['permFilter']]) {
+            && ($permission & Room::$permArray[$request['permFilter']]) != Room::$permArray[$request['permFilter']]) {
             continue;
         }
 
@@ -147,7 +149,7 @@ do {
             ]
         );
 
-        if ($permission & fimRoom::ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
+        if ($permission & Room::ROOM_PERMISSION_MODERATE) { // Fetch the allowed users and allowed groups if the user is able to moderate the room.
             $xmlData['rooms']["room {$roomLocal->id}"]['userPermissions'] = [];
             foreach (\Fim\Database::instance()->getRoomPermissions([$roomLocal->id], 'user')->getAsArray() AS $row) {
                 $xmlData['rooms']["room {$roomLocal->id}"]['userPermissions'][$row['param']] = $roomLocal->getPermissionsArray($row['permissions']);

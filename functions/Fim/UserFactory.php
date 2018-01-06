@@ -2,7 +2,7 @@
 
 namespace Fim;
 
-use \fimUser;
+use Fim\User;
 use \Exception;
 
 class UserFactory {
@@ -17,10 +17,10 @@ class UserFactory {
             return UserFactory::$instances[$userId] = $user;
 
         else
-            return UserFactory::$instances[$userId] = new fimUser($userId);
+            return UserFactory::$instances[$userId] = new User($userId);
     }
 
-    public static function getFromData(array $userData) : fimUser {
+    public static function getFromData(array $userData) : User {
         if (!isset($userData['id']))
             throw new Exception('Userdata must contain id');
 
@@ -35,7 +35,7 @@ class UserFactory {
         }
 
         else {
-            return UserFactory::$instances[$userData['id']] = new fimUser($userData);
+            return UserFactory::$instances[$userData['id']] = new User($userData);
         }
     }
 
@@ -43,9 +43,13 @@ class UserFactory {
         foreach (UserFactory::$instances AS $id => $instance) {
             if (!\Fim\Cache::exists('fim_fimUser_' . $id) || $instance->doCache) {
                 $instance->resolveAll();
-                $instance->doCache = false;
 
-                \Fim\Cache::add('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
+                if ($instance->doCache)
+                    \Fim\Cache::set('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
+                else
+                    \Fim\Cache::add('fim_fimUser_' . $id, $instance, \Fim\Config::$cacheDynamicObjectsTimeout);
+
+                $instance->doCache = false;
             }
         }
     }

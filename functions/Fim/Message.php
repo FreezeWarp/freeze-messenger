@@ -16,15 +16,15 @@
 
 namespace Fim;
 
-use \fimRoom;
-use \fimUser;
+use Fim\Room;
+use Fim\User;
 use \fimError;
 use \Exception;
 
 class Message extends \Fim\MagicGettersSetters
 {
     /**
-     * @var fimRoom The room the message is in.
+     * @var Room The room the message is in.
      */
     public $room = false;
 
@@ -34,7 +34,7 @@ class Message extends \Fim\MagicGettersSetters
     public $id = false;
 
     /**
-     * @var fimUser The user who posted the message.
+     * @var User The user who posted the message.
      */
     public $user;
 
@@ -76,8 +76,8 @@ class Message extends \Fim\MagicGettersSetters
 
     /**
      * @param $messageData mixed The source of message data. Should be a fimDatabaseResult if from the database, or an associative array with the following indexes:
-     * @param fimRoom ['room']             The room of the message.
-     * @param fimUser ['user']             The user of the message.
+     * @param Room ['room']             The room of the message.
+     * @param User ['user']             The user of the message.
      * @param string ['text']              An array of messageIds to filter by. Overrides other message ID filter parameters.
      * @param string ['flag']              A valid message flag, see fimMessage::flag.
      * @param bool ['ignoreBlock']         Whether to ignore censor prompts. Defaults false.
@@ -91,7 +91,7 @@ class Message extends \Fim\MagicGettersSetters
 
             $this->id = (int) $messageData['id'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have id column.');
             $this->user = UserFactory::getFromId((int)($messageData['userId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have userId column.')));
-            $this->room = new fimRoom(($messageData['roomId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have roomId column.')));
+            $this->room = new Room(($messageData['roomId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have roomId column.')));
             $this->text = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have text column.');
             $this->flag = $messageData['flag'] ?? '';
             $this->time = $messageData['time'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');

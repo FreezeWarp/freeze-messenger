@@ -21,6 +21,8 @@
  * @todo modPrivs only for admin priviledges; modUsers for everything else.
  */
 
+use Fim\User;
+
 if (!defined('WEBPRO_INMOD')) {
     die();
 }
@@ -152,15 +154,15 @@ else {
                     'privs' => [
                         'cast'      => 'list',
                         'transform' => 'bitfield',
-                        'bitTable'  =>  fimUser::$permArray
+                        'bitTable'  =>  User::$permArray
                     ]
                 ]));
 
                 // Get the user from the database
                 $editUser = \Fim\UserFactory::getFromId($request['userId']);
-                // Use the fimUser setPrivs method to set the priviledges (which may be adjusted from what we received)
+                // Use the Fim\fimUser setPrivs method to set the priviledges (which may be adjusted from what we received)
                 $editUser->set('privs', $request['privs']);
-                // Update the fimUser entry in the database
+                // Update the Fim\fimUser entry in the database
                 $editUser->setDatabase(['privs' => $editUser->privs]);
 
                 echo container('User Updated','The user has been updated.<br /><br /><a class="btn btn-success" href="index.php?do=users">Return to Viewing Users</a>');

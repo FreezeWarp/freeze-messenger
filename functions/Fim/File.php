@@ -16,8 +16,8 @@
 
 namespace Fim;
 
-use \fimUser;
-use \fimRoom;
+use Fim\User;
+use Fim\Room;
 use \fimError;
 use \Exception;
 
@@ -73,7 +73,7 @@ class File extends MagicGettersSetters {
     protected $user;
 
     /**
-     * @var fimRoom The room this image was posted in (if any).
+     * @var Room The room this image was posted in (if any).
      */
     protected $room;
 
@@ -110,7 +110,7 @@ class File extends MagicGettersSetters {
 
         $this->user = UserFactory::getFromId($userId);
         $this->room = $roomIdLink
-            ? new fimRoom($fileData['roomIdLink'])
+            ? new Room($fileData['roomIdLink'])
             : null;
     }
 

@@ -24,11 +24,14 @@
  * @copyright Joseph T. Parsons 2017
  *
  * @global DatabaseInstance $database
- * @global fimUser          $user
- * @global fimUser          $kickUser
- * @global fimRoom          $room
+ * @global User             $user
+ * @global User             $kickUser
+ * @global Room             $room
  * @global int              $permission
  */
+
+use Fim\Room;
+use Fim\User;
 
 if (!defined('API_INKICK'))
     die();
