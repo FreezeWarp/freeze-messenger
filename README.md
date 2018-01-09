@@ -97,8 +97,10 @@ If you are connected to SQL Server via the command line, you can do the above wi
 Yes, though it can be difficult to compile the [Linux driver](https://github.com/Microsoft/msphpsql), and you may need to install the development 5.2.0 driver instead of the currently stable version, 4.3.0.
 
 ### How well does SQL Server work with FreezeMessenger?
-For small installations, SQL Server generally works quite well. For larger installations, 
+For small installations, SQL Server generally works quite well. For larger installations, it may not perform as well, but should still generally run smoothly.
 
+### Why should I use Redis or Kafka with SQL Server?
+MySQL and PostgreSQL both have ways of allowing for fast event streaming -- that is, it is very quick on these systems to check if new events have occured. SQL Server, however, does not have such capabilities, and thus using a dedicated event service, such as Redis or Kafka, can aid in FreezeMessenger's performance.
 
 Login Methods
 ------------
