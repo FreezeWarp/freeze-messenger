@@ -214,7 +214,7 @@ class StreamDatabase implements StreamInterface {
         /* Delete All Channels That Are More Than 5 Minutes Old */
         $condition = ['lastEvent' => $this->database->now(-60 * 5, Comparison::lessThan)];
         foreach ($this->database->select([$this->database->sqlPrefix . 'streams' => 'lastEvent, streamName'], $condition)->getColumnValues('streamName') AS $oldStream) {
-            $this->database->deleteTable($this->database->sqlPrefix . 'stream_' . $oldStream);
+            @$this->database->deleteTable($this->database->sqlPrefix . 'stream_' . $oldStream);
             $this->database->delete($this->database->sqlPrefix . 'streams', ['streamName' => $oldStream]);
         }
     }
