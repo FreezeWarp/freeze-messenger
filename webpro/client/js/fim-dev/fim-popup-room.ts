@@ -9,7 +9,7 @@ declare var fim_buildUsernameTag : any;
 declare var fim_getUsernameDeferred : any;
 declare var fim_messageFormat : any;
 declare var fim_renderHandlebarsInPlace : any;
-declare var fim_debounce: any;
+declare var Debounce: any;
 declare var EventSource : any;
 
 interface popup {
@@ -36,6 +36,8 @@ popup.prototype.room = function() {
     this.focusListener = false;
     this.blurListener = false;
     this.visibilitychangeListener = false;
+
+    this.debounce = new Debounce();
 
     return;
 };
@@ -272,6 +274,17 @@ popup.prototype.room.prototype.onWindowResize = function() {
     );
 };
 
+popup.prototype.room.prototype.isNeutralKeyCode = function(keyCode) {
+    return (keyCode == 9 // Tab
+        || (keyCode >= 16 && keyCode <= 18) // Shift, Control, Alt
+        || keyCode == 27 // Escape
+        || (keyCode >= 33 && keyCode <= 40) // Arrow Keys, Home, End, Page Up/Down
+        || keyCode == 44 // Print Screen
+        || keyCode == 45 // Insert
+        || (keyCode >= 91 && keyCode <= 93) // OS/Meta Keys
+    );
+};
+
 popup.prototype.room.prototype.init = function(options) {
     for (var i in options)
         this.options[i] = options[i];
@@ -436,19 +449,41 @@ popup.prototype.room.prototype.init = function(options) {
                         status : "",
                         typing : this.typing
                     });
-                }), 5 * 60 * 1000);
+                }), 60 * 1000);
 
 
                 // Detect form typing
-                $('textarea#messageInput').on('keyup', fim_debounce(() => {
-                    fimApi.stoppedTyping(this.options.roomId);
-                    this.isTyping = false;
-                }, 2000)).on('keydown', (e) => {
+                $('textarea#messageInput').on('keyup', (e) => {
+                    if (!this.isNeutralKeyCode(e.keyCode)) {
+                        return this.debounce.invoke(() => {
+                            if (this.isTyping) {
+                                this.isTyping = false;
+                                fimApi.stoppedTyping(this.options.roomId);
+                            }
+                        }, 2000);
+                    }
+                }).on('keydown', (e) => {
+                    // Enter
                     if (e.keyCode == 13 && !e.shiftKey) {
                         $('#sendForm').submit();
                         e.preventDefault();
+
+                        if (this.isTyping) {
+                            this.isTyping = false;
+                            fimApi.stoppedTyping(this.options.roomId);
+                        }
                     }
-                    else if (!this.isTyping) {
+
+                    // Backspace or Delete
+                    else if (e.keyCode == 8 || e.keyCode == 46) {
+                        if (this.isTyping) {
+                            this.isTyping = false;
+                            fimApi.stoppedTyping(this.options.roomId);
+                        }
+                    }
+
+                    // Special Keys
+                    else if (!this.isNeutralKeyCode(e.keyCode) && !this.isTyping) {
                         this.isTyping = true;
                         fimApi.startedTyping(this.options.roomId);
                     }

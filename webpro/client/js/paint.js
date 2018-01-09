@@ -314,21 +314,6 @@ function fim_atomicRemoveHashParameterSetHashParameter(removeName, setName, setV
     window.location.hash = hash;
 }
 
-function fim_debounce(func, wait, immediate) {
-    var timeout;
-    return function() {
-        var context = this, args = arguments;
-        var later = function() {
-            timeout = null;
-            if (!immediate) func.apply(context, args);
-        };
-        var callNow = immediate && !timeout;
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-        if (callNow) func.apply(context, args);
-    };
-}
-
 function fim_showLoader() {
     $('<div class="ui-widget-overlay" id="waitOverlay"></div>').appendTo('body').width($(document).width()).height($(document).height());
     $('<img src="images/ajax-loader.gif" id="waitThrobber" />').appendTo('body').css('position', 'absolute').offset({ left : (($(window).width() - 220) / 2), top : (($(window).height() - 19) / 2)});
@@ -606,7 +591,6 @@ function fim_buildUsernameTagPromise(tag, userId, userDeferred, anonId, includeA
     if (includeUsername == undefined)
         includeUsername = true;
 
-    console.log("aid", anonId);
     if (!anonId)
         anonId = "";
 
