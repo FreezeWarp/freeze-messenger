@@ -727,11 +727,13 @@ popup.prototype.room.prototype.sendMessage = function(message, ignoreBlock, flag
 
             error : ((request) => {
                 if (window.settings.reversePostOrder)
-                    $('#messageList').append('Your message, "' + message + '", could not be sent and will be retried.');
+                    $('#messageList').append($('<div>').text('Your message, "' + message + '", could not be sent and will be retried.'));
                 else
-                    $('#messageList').prepend('Your message, "' + message + '", could not be sent and will be retried.');
+                    $('#messageList').prepend($('<div>').text('Your message, "' + message + '", could not be sent and will be retried.'));
 
-                window.setTimeout(function() { this.sendMessage(message) }, 5000);
+                window.setTimeout(() => {
+                    this.sendMessage(message)
+                }, 5000);
 
                 return false;
             })
