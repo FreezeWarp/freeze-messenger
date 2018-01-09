@@ -123,7 +123,10 @@ switch ($requestHead['_action']) {
             $request = array_merge($request, fim_sanitizeGPC('p', [
                 'options' => [
                     'cast'      => 'bitfieldShift',
-                    'source'    => $room->options,
+                    'source'    => ($request['_action'] === 'edit'
+                        ? $room->options
+                        : 0
+                    ),
                     'flipTable' => [
                         Room::ROOM_HIDDEN   => 'hidden',
                         Room::ROOM_OFFICIAL => 'official',
@@ -132,12 +135,17 @@ switch ($requestHead['_action']) {
             ]));
         }
 
+        // Handle ownerId when create a room
+        if ($requestHead['_action'] === 'create') {
+            $request['ownerId'] = $user->id;
+        }
+
 
         // Handle Room Properties
         if ($requestHead['_action'] === 'create' ||
             (\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_PROPERTIES)) {
             $room->setDatabase(array_merge(
-                fim_arrayFilterKeys($request, ['name', 'parentalFlags', 'parentalAge', 'defaultPermissions', 'options'])
+                fim_arrayFilterKeys($request, ['name', 'parentalFlags', 'parentalAge', 'defaultPermissions', 'options', 'ownerId'])
             ));
 
             if (isset($request['censorLists']))
