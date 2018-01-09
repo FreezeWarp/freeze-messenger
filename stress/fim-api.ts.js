@@ -40,7 +40,7 @@ var fimApi = function (directory) {
                 requestSettings.end(firstElement, json.metadata);
             }
             catch (e) {
-                console.log("Failed to parse information: " + json);
+                console.log("Failed to parse information: ", json, e);
             }
         };
     };
@@ -96,10 +96,41 @@ var fimApi = function (directory) {
     this.getDefaultExceptionHandler = function () {
         return this.requestDefaults.exception;
     };
+    this.mergeDefaults = function (object, defaults) {
+        var returnObject = {};
+        for (var i in object) {
+            if (!(i in defaults)) {
+                throw 'Invalid data in object call: ' + i;
+            }
+            if (object[i] !== null && object[i] !== undefined)
+                returnObject[i] = object[i];
+        }
+        for (var i in defaults) {
+            if (!(i in returnObject) && defaults[i] !== null)
+                returnObject[i] = defaults[i];
+        }
+        /* Debug Data */
+        /*    console.log("===BEGIN AJAX QUERY===");
+            console.log("Original Object: ");
+            console.log(object);
+            console.log("New Object: ");
+            console.log(returnObject);*/
+        /*** END STRICT CODE ***/
+        return returnObject;
+    };
+    this.jsonify = function (object, properties) {
+        var returnObject = (object === undefined ? {} : Object.create(object));
+        for (var i in properties) {
+            if (properties[i] in returnObject)
+                returnObject[properties[i]] = JSON.stringify(returnObject[properties[i]]);
+        }
+        return returnObject;
+    };
     return;
 };
 fimApi.prototype.login = function (params, requestSettings) {
-    var params = this.mergeDefaults(params, {
+    var _this = this;
+    params = this.mergeDefaults(params, {
         'grant_type': 'password',
         'username': null,
         'password': null,
@@ -107,7 +138,7 @@ fimApi.prototype.login = function (params, requestSettings) {
         'refresh_token': null,
         'client_id': ''
     });
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     return $.ajax({
         url: this.directory + 'validate.php',
         type: 'POST',
@@ -115,6 +146,9 @@ fimApi.prototype.login = function (params, requestSettings) {
         timeout: requestSettings.timeout,
         cache: requestSettings.cache
     }).done(function (json) {
+        if (json.login.access_token) {
+            _this.lastSessionHash = json.login.access_token;
+        }
         requestSettings.end(json.login);
     }).fail(function (response) {
         requestSettings.error(response.responseJSON.exception);
@@ -124,7 +158,8 @@ fimApi.prototype.login = function (params, requestSettings) {
  * Obtains one or more users.
  */
 fimApi.prototype.getUsers = function (params, requestSettings) {
-    var params = this.mergeDefaults(params, {
+    var _this = this;
+    params = this.mergeDefaults(params, {
         'info': ['self', 'groups', 'profile'],
         'access_token': this.lastSessionHash,
         'id': null,
@@ -132,25 +167,20 @@ fimApi.prototype.getUsers = function (params, requestSettings) {
         'userNames': null,
         'userNameSearch': null
     });
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
-    function getUsers_query() {
-        var _this = this;
-        $.ajax({
-            //            'async' : false,
-            type: 'get',
-            url: this.directory + 'api/user.php',
-            data: params,
-            timeout: requestSettings.timeout,
-            cache: requestSettings.cache
-        }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
-            _this.getUsers(params, requestSettings);
-        })));
-    }
-    getUsers_query();
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    $.ajax({
+        type: 'get',
+        url: this.directory + 'api/user.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
+        _this.getUsers(params, requestSettings);
+    })));
 };
 fimApi.prototype.createUser = function (params, requestSettings) {
     var _this = this;
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     return $.ajax({
         type: 'post',
         url: this.directory + 'api/user.php',
@@ -167,7 +197,8 @@ fimApi.prototype.createUser = function (params, requestSettings) {
     })));
 };
 fimApi.prototype.getRooms = function (params, requestSettings) {
-    var params = this.mergeDefaults(params, {
+    var _this = this;
+    params = this.mergeDefaults(params, {
         'access_token': this.lastSessionHash,
         'id': null,
         'roomIds': null,
@@ -176,24 +207,20 @@ fimApi.prototype.getRooms = function (params, requestSettings) {
         'permFilter': null,
         'page': null
     });
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
-    function getRooms_query() {
-        var _this = this;
-        $.ajax({
-            type: 'get',
-            url: this.directory + 'api/room.php',
-            data: params,
-            timeout: requestSettings.timeout,
-            cache: requestSettings.cache
-        }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
-            _this.getRooms(params, requestSettings);
-        })));
-    }
-    getRooms_query();
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    $.ajax({
+        type: 'get',
+        url: this.directory + 'api/room.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
+        _this.getRooms(params, requestSettings);
+    })));
 };
 fimApi.prototype.getEventsFallback = function (params, requestSettings) {
     var _this = this;
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     this.timer(requestSettings, "getEventsFallback", (function (requestSettings) {
         $.ajax({
             type: 'get',
@@ -222,43 +249,38 @@ fimApi.prototype.getEventsFallback = function (params, requestSettings) {
 };
 /* Messages */
 fimApi.prototype.getMessages = function (params, requestSettings) {
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
-    function getMessages_query(requestSettings) {
+    var _this = this;
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    var getMessages_query = function (requestSettings) {
         $.ajax({
             type: 'get',
-            url: this.directory + 'api/message.php',
-            data: this.mergeDefaults(params, {
-                'access_token': this.lastSessionHash,
+            url: _this.directory + 'api/message.php',
+            data: _this.mergeDefaults(params, {
+                'access_token': _this.lastSessionHash,
                 'roomId': null,
                 'userIds': null,
                 'messageIdEnd': null,
                 'messageIdStart': null,
                 'page': null,
-                'messageTextSearch': null,
-                'archive': false
+                'messageTextSearch': null
             }),
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
-        }).done(function (response) {
-            this.done(requestSettings)(response);
-        }).fail(function (response) {
-            var _this = this;
-            this.fail(requestSettings, (function () {
-                _this.getMessages(params, requestSettings);
-            }))(response);
-        });
-    }
+        }).done(_this.done(requestSettings)).fail(_this.fail(requestSettings, (function () {
+            _this.getMessages(params, requestSettings);
+        })));
+    };
     this.timer(requestSettings, "getMessages", getMessages_query);
 };
 fimApi.prototype.sendMessage = function (roomId, params, requestSettings) {
     var _this = this;
-    var params = this.mergeDefaults(params, {
+    params = this.mergeDefaults(params, {
         'access_token': this.lastSessionHash,
         'ignoreBlock': false,
         'message': null,
         'flag': null
     });
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         url: this.directory + 'api/message.php?' + $.param({
             'roomId': roomId
@@ -273,12 +295,12 @@ fimApi.prototype.sendMessage = function (roomId, params, requestSettings) {
 };
 fimApi.prototype.editMessage = function (roomId, messageId, params, requestSettings) {
     var _this = this;
-    var params = this.mergeDefaults(params, {
+    params = this.mergeDefaults(params, {
         'ignoreBlock': false,
         'message': null,
         'flag': null
     });
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         url: this.directory + 'api/message.php?' + $.param({
             '_action': 'edit',
@@ -296,7 +318,7 @@ fimApi.prototype.editMessage = function (roomId, messageId, params, requestSetti
 };
 fimApi.prototype.deleteMessage = function (roomId, messageId, requestSettings) {
     var _this = this;
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         url: this.directory + 'api/message.php?' + $.param({
             '_action': 'delete',
@@ -313,21 +335,21 @@ fimApi.prototype.deleteMessage = function (roomId, messageId, requestSettings) {
 };
 /* Unread Messages */
 fimApi.prototype.getUnreadMessages = function (params, requestSettings) {
-    var requestSettings = this.mergeDefaults(requestSettings, this.mergeDefaults({
+    var _this = this;
+    requestSettings = this.mergeDefaults(requestSettings, this.mergeDefaults({
         'timeout': 30000,
         'refresh': 30000
     }, this.requestDefaults));
-    function getUnreadMessages_query(requestSettings) {
-        var _this = this;
+    var getUnreadMessages_query = function (requestSettings) {
         $.ajax({
             type: 'get',
-            url: this.directory + 'api/unreadMessages.php',
-            data: this.mergeDefaults(params, {
-                'access_token': this.lastSessionHash
+            url: _this.directory + 'api/unreadMessages.php',
+            data: _this.mergeDefaults(params, {
+                'access_token': _this.lastSessionHash
             }),
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
-        }).done(this.done(requestSettings)).fail((function (response) {
+        }).done(_this.done(requestSettings)).fail((function (response) {
             if (requestSettings.refresh) {
                 _this.getUnreadMessages(null, { close: true });
             }
@@ -335,35 +357,31 @@ fimApi.prototype.getUnreadMessages = function (params, requestSettings) {
                 _this.getUnreadMessages(params, requestSettings);
             }))(response);
         }));
-    }
+    };
     fimApi.timer(requestSettings, "getUnreadMessages", getUnreadMessages_query);
 };
 fimApi.prototype.getFiles = function (params, requestSettings) {
-    var params = this.mergeDefaults(params, {
-        'access_token': this.lastSessionHash,
-        'userIds': '',
-        'fileIds': ''
+    var _this = this;
+    params = this.mergeDefaults(params, {
+        access_token: this.lastSessionHash,
+        userIds: [],
+        fileIds: [],
+        page: 0
     });
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
-    function getFiles_query() {
-        var _this = this;
-        $.ajax({
-            type: 'get',
-            url: this.directory + 'api/files.php',
-            data: params,
-            timeout: requestSettings.timeout,
-            cache: requestSettings.cache
-        }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
-            _this.getFiles(params.requestSettings);
-        })));
-    }
-    if (requestSettings.close)
-        clearInterval(this.timers['getFiles_' + requestSettings.timerId]);
-    getFiles_query();
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    $.ajax({
+        type: 'get',
+        url: this.directory + 'api/file.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
+        _this.getFiles(params.requestSettings);
+    })));
 };
 fimApi.prototype.getStats = function (params, requestSettings) {
     var _this = this;
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         type: 'get',
         url: this.directory + 'api/stats.php',
@@ -379,63 +397,57 @@ fimApi.prototype.getStats = function (params, requestSettings) {
     })));
 };
 fimApi.prototype.getKicks = function (params, requestSettings) {
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
-    function getKicks_query() {
-        var _this = this;
-        $.ajax({
-            type: 'get',
-            url: this.directory + 'api/kick.php',
-            data: this.mergeDefaults(params, {
-                'access_token': this.lastSessionHash,
-                'roomId': null,
-                'userId': null
-            }),
-            timeout: requestSettings.timeout,
-            cache: requestSettings.cache
-        }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
-            _this.getKicks(params, requestSettings);
-        })));
-    }
-    getKicks_query();
+    var _this = this;
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    $.ajax({
+        type: 'get',
+        url: this.directory + 'api/kick.php',
+        data: this.mergeDefaults(params, {
+            'access_token': this.lastSessionHash,
+            'roomId': null,
+            'userId': null
+        }),
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
+        _this.getKicks(params, requestSettings);
+    })));
 };
 fimApi.prototype.getCensorLists = function (params, requestSettings) {
-    var params = this.mergeDefaults(params, {
+    var _this = this;
+    params = this.mergeDefaults(params, {
         'access_token': this.lastSessionHash,
         'roomId': null,
         'listIds': null,
         'includeWords': 1 // true
     });
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
-    function getCensorLists_query() {
-        var _this = this;
-        $.ajax({
-            type: 'get',
-            url: this.directory + 'api/getCensorLists.php',
-            data: params,
-            timeout: requestSettings.timeout,
-            cache: requestSettings.cache
-        }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
-            _this.getCensorLists(params, requestSettings);
-        })));
-    }
-    getCensorLists_query();
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    $.ajax({
+        type: 'get',
+        url: this.directory + 'api/getCensorLists.php',
+        data: params,
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
+        _this.getCensorLists(params, requestSettings);
+    })));
 };
 fimApi.prototype.getActiveUsers = function (params, requestSettings) {
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
-    function getActiveUsers_query(requestSettings) {
-        var _this = this;
+    var _this = this;
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    var getActiveUsers_query = function (requestSettings) {
         $.ajax({
             type: 'get',
-            url: this.directory + 'api/userStatus.php',
-            data: this.mergeDefaults(params, {
-                'access_token': this.lastSessionHash,
+            url: _this.directory + 'api/userStatus.php',
+            data: _this.mergeDefaults(params, {
+                'access_token': _this.lastSessionHash,
                 'roomIds': null,
                 'userIds': null,
                 'onlineThreshold': null
             }),
             timeout: requestSettings.timeout,
             cache: requestSettings.cache
-        }).done(this.done(requestSettings, 'users')).fail((function (response) {
+        }).done(_this.done(requestSettings, 'users')).fail((function (response) {
             if (requestSettings.refresh) {
                 _this.getActiveUsers(null, { close: true });
             }
@@ -443,12 +455,12 @@ fimApi.prototype.getActiveUsers = function (params, requestSettings) {
                 _this.getActiveUsers(params, requestSettings);
             }))(response);
         }));
-    }
+    };
     fimApi.timer(requestSettings, "getActiveUsers", getActiveUsers_query);
 };
 fimApi.prototype.getGroups = function (params, requestSettings) {
     var _this = this;
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         type: 'get',
         url: this.directory + 'api/group.php',
@@ -465,12 +477,13 @@ fimApi.prototype.getGroups = function (params, requestSettings) {
     })));
 };
 fimApi.prototype.acHelper = function (list) {
-    return function acHelper_query(search, callback) {
+    var _this = this;
+    return function (search, callback) {
         $.ajax({
             type: 'get',
-            url: this.directory + 'api/acHelper.php',
+            url: _this.directory + 'api/acHelper.php',
             data: {
-                'access_token': this.lastSessionHash,
+                'access_token': _this.lastSessionHash,
                 'list': list,
                 'search': search.term
             },
@@ -487,7 +500,7 @@ fimApi.prototype.acHelper = function (list) {
 };
 fimApi.prototype.kickUser = function (userId, roomId, length, requestSettings) {
     var _this = this;
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         url: this.directory + 'api/kick.php?' + $.param({
             'access_token': this.lastSessionHash,
@@ -506,7 +519,7 @@ fimApi.prototype.kickUser = function (userId, roomId, length, requestSettings) {
 };
 fimApi.prototype.unkickUser = function (userId, roomId, requestSettings) {
     var _this = this;
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         url: this.directory + 'api/kick.php?' + $.param({
             'access_token': this.lastSessionHash,
@@ -527,7 +540,7 @@ fimApi.prototype.markMessageRead = function (roomId, requestSettings) {
         'access_token': this.lastSessionHash,
         'roomId': roomId
     };
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         url: this.directory + 'api/markMessageRead.php',
         type: 'POST',
@@ -540,7 +553,7 @@ fimApi.prototype.markMessageRead = function (roomId, requestSettings) {
 };
 fimApi.prototype.editUserOptions = function (action, params, requestSettings) {
     var _this = this;
-    var params = this.mergeDefaults(params, {
+    params = this.mergeDefaults(params, {
         'defaultFormatting': null,
         'defaultColor': null,
         'defaultHighlight': null,
@@ -556,7 +569,7 @@ fimApi.prototype.editUserOptions = function (action, params, requestSettings) {
         'avatar': null,
         'privacyLevel': null
     });
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         url: this.directory + 'api/userOptions.php?' + $.param({
             'access_token': this.lastSessionHash,
@@ -592,7 +605,7 @@ fimApi.prototype.unwatchRoom = function (roomId) {
 };
 fimApi.prototype.editRoom = function (id, action, params, requestSettings) {
     var _this = this;
-    var params = this.mergeDefaults(params, {
+    params = this.mergeDefaults(params, {
         'access_token': this.lastSessionHash,
         'name': null,
         'defaultPermissions': null,
@@ -604,7 +617,7 @@ fimApi.prototype.editRoom = function (id, action, params, requestSettings) {
         'hidden': null,
         'official': null
     });
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         url: this.directory + 'api/room.php?' + $.param(this.mergeDefaults({}, {
             'id': id,
@@ -627,26 +640,52 @@ fimApi.prototype.deleteRoom = function (id, requestSettings) {
 fimApi.prototype.undeleteRoom = function (id, requestSettings) {
     this.editRoom(id, 'undelete', {}, requestSettings);
 };
-fimApi.prototype.editRoomPermissionUser = function (roomId, userId, permissionsArray) {
-    var permissionsObj = {};
-    permissionsObj['*' + userId] = permissionsArray;
-    this.editRoom(roomId, 'edit', {
-        'userPermissions': permissionsObj
-    });
+fimApi.prototype.editRoomPermission = function (action, param, roomId, paramId, permissionsArray, requestSettings) {
+    var _this = this;
+    var requestHead = {
+        '_action': action,
+        'access_token': this.lastSessionHash,
+        'roomId': roomId
+    };
+    requestHead[param + 'Id'] = paramId;
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    $.ajax({
+        url: this.directory + 'api/roomPermission.php?' + $.param(requestHead),
+        method: 'POST',
+        data: {
+            'permissions': permissionsArray
+        },
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (function () {
+        _this.editRoomPermission(action, param, roomId, paramId, permissionsArray, requestSettings);
+    })));
 };
-fimApi.prototype.editRoomPermissionGroup = function (roomId, groupId, permissionsArray) {
-    var permissionsObj = {};
-    permissionsObj['*' + groupId] = permissionsArray;
-    this.editRoom(roomId, 'edit', {
-        'groupPermissions': permissionsObj
-    });
+fimApi.prototype.editRoomPermissionUser = function (roomId, userId, permissionsArray, requestSettings) {
+    this.editRoomPermission('edit', 'user', roomId, userId, permissionsArray, requestSettings);
+};
+fimApi.prototype.editRoomPermissionGroup = function (roomId, groupId, permissionsArray, requestSettings) {
+    this.editRoomPermission('edit', 'group', roomId, groupId, permissionsArray, requestSettings);
+};
+fimApi.prototype.deleteRoomPermissionUser = function (roomId, userId, permissionsArray, requestSettings) {
+    this.deleteRoomPermission('delete', 'user', roomId, userId, permissionsArray, requestSettings);
+};
+fimApi.prototype.deleteRoomPermissionGroup = function (roomId, groupId, permissionsArray, requestSettings) {
+    this.deleteRoomPermission('delete', 'group', roomId, groupId, permissionsArray, requestSettings);
+};
+fimApi.prototype.createRoomPermissionUser = function (roomId, userId, permissionsArray, requestSettings) {
+    this.createRoomPermission('create', 'user', roomId, userId, permissionsArray, requestSettings);
+};
+fimApi.prototype.createRoomPermissionGroup = function (roomId, groupId, permissionsArray, requestSettings) {
+    this.createRoomPermission('create', 'group', roomId, groupId, permissionsArray, requestSettings);
 };
 fimApi.prototype.editUserStatus = function (roomId, params, requestSettings) {
-    var params = this.mergeDefaults(params, {
+    var _this = this;
+    params = this.mergeDefaults(params, {
         'status': null,
         'typing': null
     });
-    var requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
     $.ajax({
         url: this.directory + 'api/userStatus.php?' + $.param({
             '_action': 'edit',
@@ -658,11 +697,14 @@ fimApi.prototype.editUserStatus = function (roomId, params, requestSettings) {
         timeout: requestSettings.timeout,
         cache: requestSettings.cache
     }).done(this.done(requestSettings)).fail(this.fail(requestSettings, function () {
-        this.editUserStatus(roomId, params, requestSettings);
+        _this.editUserStatus(roomId, params, requestSettings);
     }));
 };
 fimApi.prototype.ping = function (roomId, requestSettings) {
-    this.editUserStatus(roomId, {}, requestSettings);
+    this.editUserStatus(roomId, { "status": "" }, requestSettings);
+};
+fimApi.prototype.exitRoom = function (roomId, requestSettings) {
+    this.editUserStatus(roomId, { "status": "offline" }, requestSettings);
 };
 fimApi.prototype.startedTyping = function (roomId, requestSettings) {
     this.editUserStatus(roomId, { "typing": true }, requestSettings);
@@ -675,37 +717,6 @@ fimApi.prototype.changeAvatar = function (avatarHash, requestSettings) {
         'avatarHash': avatarHash
     }, requestSettings);
 };
-fimApi.prototype.mergeDefaults = function (object, defaults) {
-    var returnObject = {};
-    for (var i in object) {
-        if (!(i in defaults)) {
-            throw 'Invalid data in object call: ' + i;
-        }
-        if (object[i] !== null && object[i] !== undefined)
-            returnObject[i] = object[i];
-    }
-    for (var i in defaults) {
-        if (!(i in returnObject) && defaults[i] !== null)
-            returnObject[i] = defaults[i];
-    }
-    /* Debug Data */
-    /*    console.log("===BEGIN AJAX QUERY===");
-        console.log("Original Object: ");
-        console.log(object);
-        console.log("New Object: ");
-        console.log(returnObject);*/
-    /*** END STRICT CODE ***/
-    return returnObject;
-};
-fimApi.prototype.jsonify = function (object, properties) {
-    var returnObject = (object === undefined ? {} : Object.create(object));
-    for (var i in properties) {
-        if (properties[i] in returnObject)
-            returnObject[properties[i]] = JSON.stringify(returnObject[properties[i]]);
-    }
-    return returnObject;
-};
 module.exports.fimApi = function (directory) {
     return new fimApi(directory);
 };
-//# sourceMappingURL=fim-api.js.map

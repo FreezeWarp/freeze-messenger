@@ -15,7 +15,7 @@ let usersToCreate = numRooms * numUniqueUsers // This is the calculation of how 
 
 let adminSessionToken = "";
 
-let fimApi = require('./fim-api.js').fimApi("http://localhost/messenger/");
+let fimApi = require('./fim-api.ts.js').fimApi("http://localhost/messenger/");
 
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -103,7 +103,7 @@ io.on('connection', function (s) {
     // Create users objects.
     let users: User[] = [];
     for (let i = 0; i < usersToCreate; i++) {
-        users.push(new User(Math.random().toString(36).slice(20), 'password'));
+        users.push(new User((Math.random() + 1).toString(36).substring(2), 'password'));
     }
 
 // Create & Login Users
@@ -191,7 +191,7 @@ io.on('connection', function (s) {
                             setInterval(function() {
                                 fimApi.sendMessage(room.id, {
                                     'access_token' : user.sessionToken,
-                                    'message' : 'Hello',
+                                    'message' : 'The Current Time is ' + (new Date()),
                                 }, {
                                     error : function() {
                                         socket.emit("command", "$('table#room" + room.id + "').append($('<tr>').append('<td>').text('" + user.username + " failed to send message').css('background-color', 'red'));");

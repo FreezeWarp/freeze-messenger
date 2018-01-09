@@ -8,7 +8,7 @@ var numCommonUsers = numUsersPerRoom * percentUsersReuse;
 var usersToCreate = numRooms * numUniqueUsers // This is the calculation of how many unique users there are per room, times the number of rooms.
     + numCommonUsers; // This is the calculation of how many reused users there are.
 var adminSessionToken = "";
-var fimApi = require('./fim-api.js').fimApi("http://localhost/messenger/");
+var fimApi = require('./fim-api.ts.js').fimApi("http://localhost/messenger/");
 var jsdom = require("jsdom");
 var JSDOM = jsdom.JSDOM;
 var window = new JSDOM("").window;
@@ -86,7 +86,7 @@ io.on('connection', function (s) {
     // Create users objects.
     var users = [];
     for (var i = 0; i < usersToCreate; i++) {
-        users.push(new User(Math.random().toString(36).slice(20), 'password'));
+        users.push(new User((Math.random() + 1).toString(36).substring(2), 'password'));
     }
     // Create & Login Users
     var userCreationQueries = [];
@@ -166,7 +166,7 @@ io.on('connection', function (s) {
                             setInterval(function () {
                                 fimApi.sendMessage(room.id, {
                                     'access_token': user.sessionToken,
-                                    'message': 'Hello'
+                                    'message': 'The Current Time is ' + (new Date())
                                 }, {
                                     error: function () {
                                         socket.emit("command", "$('table#room" + room.id + "').append($('<tr>').append('<td>').text('" + user.username + " failed to send message').css('background-color', 'red'));");
@@ -193,4 +193,3 @@ io.on('connection', function (s) {
         });
     });
 });
-//# sourceMappingURL=stress.js.map
