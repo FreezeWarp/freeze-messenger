@@ -626,6 +626,19 @@ popup.prototype.editRoom = {
             if ($('#editRoomForm input[name=allowPosting]').is(':checked'))
                 defaultPermissions.push("post");
 
+            var censorLists = {};
+            jQuery.each($('#editRoomForm input[name=censorLists]:checked').map(function(){
+                return $(this).attr('value');
+            }).get(), function(index, value) {
+                censorLists[value] = 1;
+            });
+
+            jQuery.each($('#editRoomForm input[name=censorLists]:not(:checked)').map(function(){
+                return $(this).attr('value');
+            }).get(), function(index, value) {
+                censorLists[value] = 0;
+            });
+
             // Do Edit
             fimApi.editRoom(_this.options.roomId, action, {
                 "name" : $('#editRoomForm input[name=name]').val(),
@@ -634,9 +647,7 @@ popup.prototype.editRoom = {
                 "parentalFlags" : $('#editRoomForm input[name=parentalFlags]:checked').map(function(){
                     return $(this).attr('value');
                 }).get(),
-                "censorLists" : $('#editRoomForm input[name=censorLists]:checked').map(function(){
-                    return $(this).attr('value');
-                }).get(),
+                "censorLists" : censorLists,
                 "official" : $("#editRoomForm input[name=official]").is(":checked"),
                 "hidden" : $("#editRoomForm input[name=hidden]").is(":checked")
             }, {
