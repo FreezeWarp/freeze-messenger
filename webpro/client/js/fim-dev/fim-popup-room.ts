@@ -220,7 +220,9 @@ popup.prototype.room.prototype.faviconFlashOnce = function() { // Changes the st
 };
 
 popup.prototype.room.prototype.faviconFlashStart = function() {
-    this.faviconFlashTimer = window.setInterval(this.faviconFlashOnce, 1000);
+    if (!this.faviconFlashTimer) {
+        this.faviconFlashTimer = window.setInterval(this.faviconFlashOnce, 1000);
+    }
 };
 
 popup.prototype.room.prototype.faviconFlashStop = function() {
