@@ -594,14 +594,14 @@ popup.prototype.room.prototype.beforeUnload = function(roomId) {
 
 popup.prototype.room.prototype.eventListener = function() {
     this.roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
-    /*this.roomSource.onerror = ((e) => {
-        console.log("event source error", e);
-        if (this.roomSource) {
-            this.roomSource.close();
+
+    // If we get an error that causes the browser to close the connection, open a fallback connection instead
+    this.roomSource.onerror = ((e) => {
+        if (this.roomSource.readyState === 2) {
             this.roomSource = false;
+            this.getMessagesFromFallback();
         }
-        this.getMessagesFromFallback();
-    });*/
+    });
 
     let eventHandler = ((callback) => {
         return ((event) => {
