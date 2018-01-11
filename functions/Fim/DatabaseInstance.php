@@ -2190,25 +2190,14 @@ class DatabaseInstance extends DatabaseSQL
         }
 
 
-
-        // Enter message into stream
-        \Stream\StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
-            'id' => $message->id,
-            'text' => $message->text,
-            'time' => $now->value,
-            'flag' => $message->flag,
-            'anonId' => $message->user->anonId,
-            'userId' => $message->user->id,
-            'roomId' => $message->room->id,
-        ]);
+        // Get the current time for all inserts, for consistency
+        $now = $this->now();
 
 
 
         $this->startTransaction();
-
         /* Insert Message Data */
         // Insert into permanent datastore, unless it's an off-the-record room (since that's the only way it's different from a normal private room), in which case we just try to get an autoincremented messageId, storing nothing else.
-        $now = $this->now();
         if ($message->room->type === 'otr') {
             $this->insert($this->sqlPrefix . "messages", array(
                 'roomId'   => $message->room->id,
@@ -2228,6 +2217,18 @@ class DatabaseInstance extends DatabaseSQL
             ));
             $message->id = $this->getLastInsertId();
         }
+
+
+        // Enter message into stream
+        \Stream\StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
+            'id' => $message->id,
+            'text' => $message->text,
+            'time' => $now->value,
+            'flag' => $message->flag,
+            'anonId' => $message->user->anonId,
+            'userId' => $message->user->id,
+            'roomId' => $message->room->id,
+        ]);
 
 
         /* Update the Various Caches */
