@@ -13,8 +13,8 @@
 
     <link rel="icon" id="favicon" type="image/x-icon" href="images/favicon.ico"/>
     <link rel="stylesheet"
-          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
-          integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
+          integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy"
           crossorigin="anonymous">
 
 
@@ -25,11 +25,11 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"
             integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
             crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
-            integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
             crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
-            integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js"
+            integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
             crossorigin="anonymous"></script>
 
 
@@ -720,8 +720,8 @@ Pending Update
 
 <script id="view-rooms-row" type="text/x-handlebars-template">
     <tr id="room{{id}}">
-        <td>
-            <a class="roomName" data-roomId="{{id}}" data-roomName="{{name}}" href="#room={{id}}">{{name}}</a>
+        <td class="text-nowrap">
+            <a class="roomName" data-roomId="{{id}}" data-roomName="{{name}}" href="#room={{id}}">{{name}}</a>{{#if official}} <i class="fa fa-star text-success" title="Official Room"></i>{{/if}}
         </td>
         <td class="d-none d-sm-table-cell">
             {{topic}}
@@ -732,24 +732,24 @@ Pending Update
         <td>
             <div>
                 {{#if permissions.properties}}
-                <button class="btn btn-secondary m-1" onclick="window.location.hash = '#editRoom#room={{id}}'">
+                <button class="btn btn-secondary btn-sm m-1" onclick="window.location.hash = '#editRoom#room={{id}}'">
                     <i class="fa fa-sliders"></i> Edit
                 </button>
 
-                <button class="btn btn-danger m-1" onclick="if (dia.confirm('Are you sure you want to delete this room?')) {
+                <button class="btn btn-danger btn-sm m-1" onclick="if (dia.confirm('Are you sure you want to delete this room?')) {
                                     standard.deleteRoom('{{id}}');
                                 }">
                     <i class="fa fa-trash"></i> Delete
                 </button>
                 {{/if}}
 
-                <button class="btn btn-secondary m-1" onclick="window.location.hash = '#archive#room={{id}}'">
+                <button class="btn btn-secondary btn-sm m-1" onclick="window.location.hash = '#archive#room={{id}}'">
                     <i class="fa fa-history"></i> Archive</a>
                 </button>
 
                 {{#unless activeLogin.userData.anonId}}
-                    <span class="btn-group d-inline d-sm-inline-flex" data-toggle="buttons">
-                        <label class="btn btn-secondary m-1 {{#contains id activeLogin.userData.favRooms}} active{{/contains}}">
+                    <div class="btn-group btn-group-toggle m-1" data-toggle="buttons">
+                        <label class="btn btn-secondary btn-sm {{#contains id activeLogin.userData.favRooms}} active{{/contains}}">
                             <i class="fa fa-star"></i> Fav
                             <input type="checkbox" onchange="if ($(this).prop('checked')) {
                                 window.activeLogin.userData.favRooms.push('{{id}}');
@@ -760,10 +760,10 @@ Pending Update
                             }" {{#contains id activeLogin.userData.favRooms}} checked {{/contains}} />
                         </label>
 
-                        <label class="btn btn-secondary m-1 {{#contains id activeLogin.userData.watchRooms}} active{{/contains}}">
+                        <label class="btn btn-secondary btn-sm {{#contains id activeLogin.userData.watchRooms}} active{{/contains}}">
                             <i class="fa fa-eye"></i> Watch
                             <input type="checkbox" onchange="if ($(this).prop('checked')) {
-                                dia.info('You will now be notified of new messages made in this room.', 'Now Watching');
+                                dia.info('You will now be notified of new messages made in this room.', 'success');
                                 window.activeLogin.userData.watchRooms.push('{{id}}');
                                 fimApi.watchRoom('{{id}}');
                             } else {
