@@ -119,6 +119,7 @@ do {
                 ['ownerIds' => ($request['permFilter'] === 'own' ? [$user->id] : [])]
             ), [
                 'id 1' => \Fim\Database::instance()->in($user->favRooms),
+                'options' => \Fim\DatabaseSlave::instance()->int(\Fim\Room::ROOM_OFFICIAL, 'bAnd'),
                 $request['sort'] => ($request['sort'] === 'lastMessageTime' ? 'desc' : 'asc')
             ], \Fim\Config::$defaultRoomLimit, $request['page']);
 
