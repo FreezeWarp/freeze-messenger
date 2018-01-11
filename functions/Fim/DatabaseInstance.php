@@ -2191,14 +2191,20 @@ class DatabaseInstance extends DatabaseSQL
 
 
 
-        /* Preemptively resolve all needed $user properties */
-        // $message->user->resolve(array("messageFormatting"));
+        // Enter message into stream
+        \Stream\StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
+            'id' => $message->id,
+            'text' => $message->text,
+            'time' => $now->value,
+            'flag' => $message->flag,
+            'anonId' => $message->user->anonId,
+            'userId' => $message->user->id,
+            'roomId' => $message->room->id,
+        ]);
 
 
 
         $this->startTransaction();
-
-
 
         /* Insert Message Data */
         // Insert into permanent datastore, unless it's an off-the-record room (since that's the only way it's different from a normal private room), in which case we just try to get an autoincremented messageId, storing nothing else.
@@ -2224,32 +2230,16 @@ class DatabaseInstance extends DatabaseSQL
         }
 
 
-        // Enter message into stream
-        \Stream\StreamFactory::publish('room_' . $message->room->id, 'newMessage', [
-            'id' => $message->id,
-            'text' => $message->text,
-            'time' => $now->value,
-            'flag' => $message->flag,
-            'anonId' => $message->user->anonId,
-            'userId' => $message->user->id,
-            'roomId' => $message->room->id,
-        ]);
-
-
-
         /* Update the Various Caches */
         // Update room caches.
-        $this->update($this->sqlPrefix . "rooms", array(
-            'lastMessageTime' => $this->now(),
-            'lastMessageId'   => $message->id,
-            'messageCount'    => $this->equation('$messageCount + 1')
-        ), array(
-            'id' => $message->room->id,
-        ));
-
-
         if (!$message->room->isPrivateRoom()) {
-            $room = $this->getRoom($message->room->id); // Get the new room data. (TODO: UPDATE ... RETURNING for PostGreSQL)
+            $this->update($this->sqlPrefix . "rooms", [
+                'lastMessageTime' => $this->now(),
+                'lastMessageId'   => $message->id,
+                'messageCount'    => $this->equation('$messageCount + 1')
+            ], [
+                'id' => $message->room->id,
+            ]);
         }
 
 
@@ -2293,6 +2283,8 @@ class DatabaseInstance extends DatabaseSQL
         $this->incrementCounter('messages');
 
 
+        $this->endTransaction();
+
 
         // If the contact is a private communication, create an event and add to the message unread table.
         if ($message->room->isPrivateRoom()) {
@@ -2308,9 +2300,6 @@ class DatabaseInstance extends DatabaseSQL
                 $this->createUnreadMessage($sendToUserId, $message);
             }
         }
-
-
-        $this->endTransaction();
 
 
         // Return the ID of the inserted message.
