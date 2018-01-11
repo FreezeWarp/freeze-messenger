@@ -1895,8 +1895,8 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
             'stream.php',
             ['access_token' => $testUserToken, 'fallback' => true, 'streamType' => 'room', 'queryId' => "p$testUserId,$testUser2Id"],
             [
-                ['events', 'data', new ArrayPosition(1), 'text'],
-                ['events', 'data', new ArrayPosition(3), 'text']
+                ['events', new ArrayPosition(1), 'data', 'text'],
+                ['events', new ArrayPosition(3), 'data', 'text']
             ],
             [
                 'Hi!',
@@ -1909,8 +1909,8 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
             'stream.php',
             ['access_token' => $testUserToken, 'fallback' => true, 'streamType' => 'room', 'queryId' => "p$testUser2Id,$testUserId"],
             [
-                ['events', 'data', new ArrayPosition(1), 'text'],
-                ['events', 'data', new ArrayPosition(3), 'text']
+                ['events', new ArrayPosition(1), 'data', 'text'],
+                ['events', new ArrayPosition(3), 'data', 'text']
             ],
             [
                 'Hi!',
