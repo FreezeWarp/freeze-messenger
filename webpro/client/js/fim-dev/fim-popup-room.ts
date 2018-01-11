@@ -132,7 +132,11 @@ popup.prototype.room.prototype.insertDoc = function() {
 };
 
 
-popup.prototype.room.prototype.newMessage = function(roomId, messageId, messageText) {
+popup.prototype.room.prototype.newMessage = function(messageData) {
+    let messageText = fim_messageFormat(messageData, 'list'),
+        messageId = messageData.id;
+
+
     if ($('#message' + messageId).length > 0) {
         console.log("existing");
         $('#message' + messageId).replaceWith(messageText);
@@ -205,7 +209,9 @@ popup.prototype.room.prototype.newMessage = function(roomId, messageId, messageT
 
         // HTML5 Notification
         if (window.notify.webkitNotifySupported() && window.settings.webkitNotifications) {
-            window.notify.webkitNotify("images/favicon.ico", "New Message [" + $('#roomName').text() + "]", $(messageText).text());
+            $.when(fim_getUsernameDeferred(messageData.userId)).then(function(matches) {
+                window.notify.webkitNotify("images/favicon.ico", $('#roomName').text() + "[" + matches[messageData.userId].name + "]", messageData.text);
+            })
         }
     }
 };
@@ -516,7 +522,7 @@ popup.prototype.room.prototype.init = function(options) {
                     'roomId': this.options.roomId,
                 }, {
                     each: ((messageData) => {
-                        this.newMessage(Number(this.options.roomId), Number(messageData.id), fim_messageFormat(messageData, 'list'));
+                        this.newMessage(messageData);
                     }),
                     end: (() => {
                         if (window.requestSettings.serverSentEvents) {
@@ -622,7 +628,7 @@ popup.prototype.room.prototype.eventListener = function() {
 popup.prototype.room.prototype.newMessageHandler = function(active) {
     this.options.lastMessage = Math.max(this.options.lastMessage, active.id);
 
-    this.newMessage(this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
+    this.newMessage(active);
 };
 
 popup.prototype.room.prototype.deletedMessageHandler = function(active) {
@@ -639,7 +645,7 @@ popup.prototype.room.prototype.editedMessageHandler = function(active) {
         active.userId = active.senderId;
         active.time = $('#message' + active.id + ' .messageText').attr('data-time');
 
-        this.newMessage(this.options.roomId, Number(active.id), fim_messageFormat(active, 'list'));
+        this.newMessage(active);
     }
 };
 
