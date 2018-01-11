@@ -431,6 +431,28 @@ function fim_formatAsUrl(url) {
         return $('<span>').text('[Broken Link: ' + url + ']');
 }
 
+function fim_regexTokenizer(regexp, text, callback, newText) {
+    if (!newText)
+        newText = $('<span>'); // This will be our holder for everything we tokenise
+
+    prevIndex = 0; // This is the last ending point of a processed regex token
+
+    while ((result = regexp.exec(text)) !== null) {
+        // Append everything before the regex match (as a text node)
+        newText.append(document.createTextNode(text.substring(prevIndex, result.index)));
+
+        // Append the processed regex match (as a node)
+        newText.append(callback(result));
+
+        // Keep track of the next index
+        prevIndex = regexp.lastIndex;
+    }
+
+    // Append everything after the last regex match.
+    newText.append(document.createTextNode(text.substring(prevIndex)));
+
+    return newText;
+}
 
 /**
  * Formats received message data for display in either the message list or message table.
@@ -453,8 +475,7 @@ function fim_messageFormat(json, format) {
         anonId = Number(json.anonId),
         userNameDeferred = fim_getUsernameDeferred(userId);
 
-    text = text.replace(/\</g, '&lt;').replace(/\>/g, '&gt;').replace(/\n/g, '<br />');
-
+    //text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     switch (flag) {
         case 'source': text = fim_youtubeParse(text); break; // Youtube, etc.
@@ -468,31 +489,10 @@ function fim_messageFormat(json, format) {
 
         // Unspecified
         default:
-            // URL Autoparse (will also detect youtube & image)
+
             text = $('<span>').text(text);
-
-            text.html(text.text().replace(regexs.url, function($1) {
-                if ($1.match(regexs.url2)) {
-                    var $2 = $1.replace(regexs.url2, "$2");
-                    $1 = $1.replace(regexs.url2, "$1"); // By doing this one second we don't have to worry about storing the variable first to get $2
-                }
-                else {
-                    var $2 = '';
-                }
-
-                /* Youtube, Image, URL Parsing */
-                if ($1.match(regexs.youtubeFull) || $1.match(regexs.youtubeShort)) // Youtube Autoparse
-                    return fim_youtubeParse($1).prop('outerHTML') + $2;
-
-                else if ($1.match(regexs.image)) // Image Autoparse
-                    return fim_formatAsImage($1).prop('outerHTML') + $2;
-
-                else // Normal URL
-                    return fim_formatAsUrl($1).prop('outerHTML') + $2;
-            }));
-
             // "/me" parse
-            if (/^\/me/.test(text.text())) {
+/*            if (/^\/me/.test(text.text())) {
                 text.text(text.text().replace(/^\/me/,''));
 
                 $.when(userNameDeferred).then(function(pairs) {
@@ -507,17 +507,97 @@ function fim_messageFormat(json, format) {
                 $.when(userNameDeferred).then(function(pairs) {
                     text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' changed the topic to "' + text.text().trim() + '".').prop('outerHTML'));
                 });
-            }
+            }*/
 
+            // Parse basic markdown
+            jQuery.each({
+                '`' : 'code',
+                //'*' : 'strong',
+                //'_' : 'em'
+            }, function(delimiter, tag) {
+                text.contents()
+                    .filter(function () {
+                        return this.nodeType === 3; //Node.TEXT_NODE
+                    }).each(function () {
+                        return $(this).replaceWith(fim_regexTokenizer(new RegExp('\\' + delimiter + '([\\s\\S]+?)\\' + delimiter, 'g'), $(this).text(), function (result) {
+                            return $('<' + tag + '>').text(result[1]);
+                        }).html());
+                    });
+            });
+
+            // URL Autoparse (will also detect youtube & image)
+
+            text.find('*:not(:has("*"))').add(text.contents().add(text)
+                .filter(function() {
+                    return this.nodeType === 3; //Node.TEXT_NODE
+                })).each(function() {
+                    var result = fim_regexTokenizer(regexs.url, $(this).text(), function(match) {
+                        var suffix = "";
+
+                        if (match[0].match(regexs.url2)) {
+                            suffix = match[0].replace(regexs.url2, "$2");
+                            match[0] = match[0].replace(regexs.url2, "$1");
+                        }
+
+                        /* Youtube, Image, URL Parsing */
+                        if (match[0].match(regexs.youtubeFull) || match[0].match(regexs.youtubeShort)) // Youtube Autoparse
+                            return fim_youtubeParse(match[0]).append(document.createTextNode(suffix));
+
+                        else if (match[0].match(regexs.image)) // Image Autoparse
+                            return fim_formatAsImage(match[0]).append(document.createTextNode(suffix));
+
+                        else // Normal URL
+                            return fim_formatAsUrl(match[0]).append(document.createTextNode(suffix));
+                    }, this.nodeType !== 3 ? $(this).text('') : null);
+
+                    if (this.nodeType === 3)
+                        $(this).replaceWith(result.html());
+                });
+
+            // Parse basic markdown
+            jQuery.each({
+                //'`' : 'code',
+                '*' : 'strong',
+                '_' : 'em'
+            }, function(delimiter, tag) {
+                text.contents()
+                    .filter(function () {
+                        return this.nodeType === 3; //Node.TEXT_NODE
+                    }).each(function () {
+                    return $(this).replaceWith(fim_regexTokenizer(new RegExp('\\' + delimiter + '([\\s\\S]+?)\\' + delimiter, 'g'), $(this).text(), function (result) {
+                        console.log("match", delimiter, tag, result);
+                        return $('<' + tag + '>').text(result[1]);
+                    }).html());
+                });
+            });
+
+            // Parse the emoticons
             jQuery.each(serverSettings.emoticons, function(index, emoticon) {
                 text.contents()
                     .filter(function() {
                         return this.nodeType === 3; //Node.TEXT_NODE
                     }).each(function() {
-                    $(this).replaceWith($(this).text().replace(new RegExp(emoticon.emoticonText.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), "gi"), function() {
-                        return $('<img>').attr('src', emoticon.emoticonFile).prop('outerHTML')
+                        return $(this).replaceWith(fim_regexTokenizer(new RegExp(emoticon.emoticonText.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), "gi"), $(this).text(), function() {
+                            return $('<img>').attr('src', emoticon.emoticonFile);
+                        }).html());
+                    });
+            });
+
+            // Find only innermost nodes, and process newlines for them
+            text.find('*').contents()
+                .filter(function() {
+                    return this.nodeType === 3; //Node.TEXT_NODE
+                })
+                .each(function() {
+                    $(this).replaceWith(fim_regexTokenizer(new RegExp(/\n/g, "g"), $(this).text(), function() {
+                        return $('<br>');
                     }));
                 });
+
+            text.find('*:not(:has("*"))').each(function() {
+                fim_regexTokenizer(new RegExp(/\n/g, "g"), $(this).text(), function() {
+                    return $('<br>');
+                }, $(this).text(''));
             });
             break;
     }
@@ -793,7 +873,7 @@ var regexs = {
         ")" +
         ")", "g"), // Nor the BBCode or HTML symbols.
 
-    url2 : new RegExp("^(.+)([\\\"\\?\\!\\.])$"),
+    url2 : new RegExp("^(.+)([\\\"\\?\\!\\.\\)])$"),
 
     image : new RegExp("^(.+)\\.(jpg|jpeg|gif|png|svg|svgz|bmp|ico)$"),
 
