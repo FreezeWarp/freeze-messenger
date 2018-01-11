@@ -616,14 +616,14 @@ fimApi.prototype.unkickUser = function(userId, roomId, requestSettings) {
 fimApi.prototype.markMessageRead = function(roomId, requestSettings) {
     let params = {
         'access_token' : this.lastSessionHash,
+        '_action' : 'delete',
         'roomId' : roomId,
     };
 
     requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
 
     $.ajax({
-        url: this.directory + 'api/markMessageRead.php',
-        type: 'POST',
+        url: this.directory + 'api/unreadMessages.php',
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,

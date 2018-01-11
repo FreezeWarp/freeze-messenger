@@ -18,9 +18,6 @@
  * Get the Active User's Unread Messages.
  * An "unread message" is created whenever a message is inserted into a room watched by a user, or a private room that that user is a part of, and the user does not appear to be online (according to the ping table/database->getActiveUsers()).
  *
- * Future-proofing note (this behaviour is planned but not yet implemented):
- * If a user is online, new messages in *private* rooms will instead be sent to the user's event stream. Due to possible backend limitations, messages in *watched* rooms that the user is not in (but is online) will still be recorded here. As a result, having a poll of unreadMessages.php, and a stream from events.php?user=x is recommended; the two attempt to be mutually exclusive. If the client does not support event streaming, there will be no way to query new messages to private rooms; they are not logged here, to avoid concerns with managing duplication.
- *
  * @package fim3
  * @version 3.0
  * @author Jospeph T. Parsons <josephtparsons@gmail.com>
@@ -30,25 +27,47 @@
 $apiRequest = true;
 
 require('../global.php');
-\Fim\Database::instance()->accessLog('getUnreadMessages', []);
 
 
+/* Get Request */
+$requestHead = fim_sanitizeGPC('g', [
+    '_action' => [],
+]);
+
+if ($requestHead['_action'] === 'delete') {
+    $requestHead = array_merge($requestHead, fim_sanitizeGPC('g', [
+        'roomId' => [
+            'cast'    => 'roomId',
+            'require' => true
+        ]
+    ]));
+}
 
 
-
-/* Data Predefine */
-$xmlData = array(
-    'unreadMessages' => array(),
-);
-
-
-
-/* Get Unread Messages from Database */
+/* Make Sure the User is Valid */
 if (!$user->isValid() || $user->isAnonymousUser())
     throw new fimError('loginRequired', 'You must be logged in to get your unread messages.');
 
 
-$xmlData['unreadMessages'] = \Fim\Database::instance()->getUnreadMessages()->getAsArray(true);
+/* Perform Action */
+switch ($requestHead['_action']) {
+    case 'get':
+        \Fim\Database::instance()->accessLog('getUnreadMessages', []);
+
+        $xmlData = [
+            'unreadMessages' => \Fim\Database::instance()->getUnreadMessages()->getAsArray(true)
+        ];
+    break;
+
+    case 'delete':
+        \Fim\Database::instance()->accessLog('markMessageRead', $requestHead);
+        \Fim\Database::instance()->markMessageRead($requestHead['roomId'], $user->id);
+
+        $xmlData = [
+            'markMessageRead' => []
+        ];
+    break;
+}
 
 
 /* Output Data */
