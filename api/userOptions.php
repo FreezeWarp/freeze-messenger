@@ -195,8 +195,7 @@ if ($user->isAnonymousUser())
 /************************************
  **** Editable Only Properties ******
  ************************************/
-if ($requestHead['_action'] === 'edit') {
-
+if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') {
 
     /************************************
      ***** Vanilla Only Properties ******
@@ -320,34 +319,48 @@ if ($requestHead['_action'] === 'edit') {
      ************************************/
     foreach (array('defaultHighlight', 'defaultColor') AS $value) {
         if (isset($request[$value])) {
-            $rgb = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
+            $rgb[$value] = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
 
             if (!\Fim\Config::${'defaultFormatting' . substr($value, 7)})
                 $xmlData['editUserOptions'][$value] = (new fimError('disabled', $value . ' is disabled on this server.', null, true))->getArray();
 
-            elseif (count($rgb) !== 3) // Too many entries.
+            elseif (count($rgb[$value]) !== 3) // Too many entries.
                 $xmlData['editUserOptions'][$value] = (new fimError('badFormat', 'The ' . $value . ' value was not properly formatted.', null, true))->getArray();
 
-            elseif ($rgb[0] < 0 || $rgb[0] > 255) // First val out of range.
+            elseif ($rgb[$value][0] < 0 || $rgb[$value][0] > 255) // First val out of range.
                 $xmlData['editUserOptions'][$value] = (new fimError('outOfRange1', 'The first value ("red") was out of range.', null, true))->getArray();
 
-            elseif ($rgb[1] < 0 || $rgb[1] > 255) // Second val out of range.
+            elseif ($rgb[$value][1] < 0 || $rgb[$value][1] > 255) // Second val out of range.
                 $xmlData['editUserOptions'][$value] = (new fimError('outOfRange2', 'The first value ("green") was out of range.', null, true))->getArray();
 
-            elseif ($rgb[2] < 0 || $rgb[2] > 255) // Third val out of range.
+            elseif ($rgb[$value][2] < 0 || $rgb[$value][2] > 255) // Third val out of range.
                 $xmlData['editUserOptions'][$value] = (new fimError('outOfRange3', 'The first value ("blue") was out of range.', null, true))->getArray();
 
             else {
                 switch ($value) {
                     case 'defaultHighlight':
-                        $updateArray['messageFormatting'][] = 'background-color:rgb(' . implode(',', $rgb) . ')';
+                        $updateArray['messageFormatting']['background-color'] = 'background-color:rgb(' . implode(',', $rgb[$value]) . ')';
                     break;
                     case 'defaultColor':
-                        $updateArray['messageFormatting'][] = 'color:rgb(' . implode(',', $rgb) . ')';
+                        $updateArray['messageFormatting']['color'] = 'color:rgb(' . implode(',', $rgb[$value]) . ')';
                     break;
                 }
             }
         }
+    }
+
+    if (isset($rgb['defaultHighlight'], $rgb['defaultColor'])) {
+        if (\Fim\Utilities::contrast($rgb['defaultHighlight'], $rgb['defaultColor']) < \Fim\Config::$defaultFormattingMinimumContrast) {
+            $xmlData['editUserOptions']['defaultHighlight'] = (new fimError('lowContrast', 'The chosen highlight and font color have too low of a contrast. The calculated contrast was ' . round(\Fim\Utilities::contrast($rgb['defaultHighlight'], $rgb['defaultColor']), 2) . '; please use a constrast of at least ' . \Fim\Config::$defaultFormattingMinimumContrast . '.', null, true))->getArray();
+            unset($updateArray['messageFormatting']['background-color']);
+            unset($updateArray['messageFormatting']['color']);
+        }
+    }
+    elseif (isset($rgb['defaultHighlight']) && $rgb['defaultHighlight'] > 127) {
+        $updateArray['messageFormatting'][] = 'color:rgb(25,25,25)';
+    }
+    elseif (isset($rgb['defaultColor']) && $rgb['defaultColor'] < 127) {
+        $updateArray['messageFormatting'][] = 'background-color:rgb(225,225,255)';
     }
 
 

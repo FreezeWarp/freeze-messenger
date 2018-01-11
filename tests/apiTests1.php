@@ -792,6 +792,103 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+
+
+
+    /*******************************
+     ***** MESSAGE FORMATTING ******
+     *******************************/
+
+    echo '<thead><tr class="ui-widget-header"><th colspan="4">Default Formatting Tests</th></tr></thead>';
+
+    echo "<tr><td>'$testUserName' Changes Default Formatting to Bold</td>";
+    curlTestPOSTEquals(
+        'api/userOptions.php',
+        ['access_token' => $testUserToken],
+        ['defaultFormatting' => ['bold']],
+        ['editUserOptions'],
+        []
+    );
+
+    echo "<tr><td>Get $testUserName as admin</td>";
+    curlTestGETEqualsMulti(
+        'api/user.php',
+        ['access_token' => $accessToken, 'id' => $testUserId],
+        [
+            ['users', $testUserId, 'name'],
+            ['users', $testUserId, 'messageFormatting'],
+        ],
+        [
+            $testUserName,
+            'font-weight:bold',
+        ]
+    );
+
+    echo "<tr><td>'$testUserName' Changes Default Formatting to Italic, Blue</td>";
+    curlTestPOSTEquals(
+        'api/userOptions.php',
+        ['access_token' => $testUserToken],
+        ['defaultFormatting' => ['italic'], 'defaultHighlight' => '0,0,255'],
+        ['editUserOptions'],
+        []
+    );
+
+    echo "<tr><td>Get $testUserName as admin</td>";
+    curlTestGETEqualsMulti(
+        'api/user.php',
+        ['access_token' => $accessToken, 'id' => $testUserId],
+        [
+            ['users', $testUserId, 'name'],
+            ['users', $testUserId, 'messageFormatting'],
+        ],
+        [
+            $testUserName,
+            'ont-style:italic;background-color:rgb(0,0,255);color:rgb(25,25,25)',
+        ]
+    );
+
+    echo "<tr><td>'$testUserName' Changes Default Formatting to Italic, Bold, Blue Background, Green Foreground</td>";
+    curlTestPOSTEquals(
+        'api/userOptions.php',
+        ['access_token' => $testUserToken],
+        ['defaultFormatting' => ['italic', 'bold'], 'defaultHighlight' => '0,0,255', 'defaultColor' => '0,255,0'],
+        ['editUserOptions'],
+        []
+    );
+
+    echo "<tr><td>Get $testUserName as admin</td>";
+    curlTestGETEqualsMulti(
+        'api/user.php',
+        ['access_token' => $accessToken, 'id' => $testUserId],
+        [
+            ['users', $testUserId, 'name'],
+            ['users', $testUserId, 'messageFormatting'],
+        ],
+        [
+            $testUserName,
+            'font-weight:bold;font-style:italic;background-color:rgb(0,0,255);color:rgb(0,255,0)',
+        ]
+    );
+
+    echo "<tr><td>'$testUserName' Changes Default Formatting to Blue Background, Light Blue Foreground</td>";
+    curlTestPOSTEquals(
+        'api/userOptions.php',
+        ['access_token' => $testUserToken],
+        ['defaultHighlight' => '0,0,255', 'defaultColor' => '0,127,255'],
+        ['editUserOptions', 'defaultHighlight', 'string'],
+        'lowContrast'
+    );
+
+
+
+
+
+    /*******************************
+     ***** NEW ROOM ****************
+     *******************************/
+
+    echo '<thead><tr class="ui-widget-header"><th colspan="4">New Room Tests</th></tr></thead>';
+
     $testRoom2Name = 'Test Unit ' . substr(uniqid(), -10, 10);
     $testRoom2Id;
     echo "<tr><td>Create Room '$testRoom2Name'</td>";
@@ -983,10 +1080,11 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
 
 
 
-
     /*******************************
      ***** ACTIVE USERS ************
      *******************************/
+
+    echo '<thead><tr class="ui-widget-header"><th colspan="4">Active Users Test</th></tr></thead>';
 
     echo "<tr><td>Get Rooms '$testUser2Name' is Active In</td>";
     curlTestGETEqualsMulti(
@@ -1172,7 +1270,7 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
      ***** FAV ROOMS ***************
      *******************************/
 
-    echo '<thead><tr class="ui-widget-header"><th colspan="4">Fav Rooms Test</th></th></tr></thead>';
+    echo '<thead><tr class="ui-widget-header"><th colspan="4">Fav Rooms Test</th></tr></thead>';
 
     /*
      * Fav Room
@@ -2158,13 +2256,11 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
 
     // todo: message edits work for private rooms
 
-    // todo: message/room text search
-
+    // todo: message edits
+    // todo: message/room/user text search
     // todo: user message formatting
     // todo: file uploads and enumerations (esp. whether a user should/shouldn't be allowed to see files)
-
     // todo: age content restrictions on rooms
-
     // todo: censor
 }
 else {

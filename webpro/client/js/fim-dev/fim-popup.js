@@ -231,8 +231,6 @@ popup.prototype.settings = {
 
                 $('#defaultColour').ColorPicker({
                     color: defaultColourHash,
-                    onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
-                    onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
                     onChange: function(hsb, hex, rgb) {
                         defaultColour = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
 
@@ -256,9 +254,7 @@ popup.prototype.settings = {
                 }
 
                 $('#defaultHighlight').ColorPicker({
-                    color: defaultHighlightHash,
-                    onShow: function (colpkr) { $(colpkr).fadeIn(500); }, // Fadein
-                    onHide: function (colpkr) { $(colpkr).fadeOut(500); }, // Fadeout
+                    //color: defaultHighlightHash,
                     onChange: function(hsb, hex, rgb) {
                         defaultHighlight = rgb['r'] + ',' + rgb['g'] + ',' + rgb['b'];
 
@@ -430,23 +426,26 @@ popup.prototype.settings = {
                 'each' : function(value) {
                     console.log(value);
                 },
-                'end' : function() {
-                    dia.info('Your settings have been updated successfully.');
-
-                    $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-                    $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-                },
-                'error' : function(errors) {
+                'end' : function(data) {
                     errorsList = [];
 
-                    for (var i = 0; i < errors.responseJSON.editUserOptions.length; i++) {
-                        errorsList.push("<li>" + i + ": " + errors.responseJSON.editUserOptions[i].exception.details + "</li>")
-                    }
-                    dia.error('Some of your settings have been updated. However, the following values were unable to be processed:<ul>' + errorsList.join() + '</ul>')
-                }
-            });
+                    jQuery.each(data, function(param, error) {
+                        errorsList.push("<li>" + param + ": " + error.details + "</li>");
+                    });
 
-            window.history.back();
+                    if (errorsList.length) {
+                        dia.error('Some of your settings have been updated. However, the following values were unable to be processed:<br /><ul>' + errorsList.join('') + '</ul>')
+                    }
+                    else {
+                        dia.info('Your settings have been updated successfully.');
+
+                        $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+                        $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
+
+                        window.location.hash = '#';
+                    }
+                },
+            });
 
             return false; // Don't submit the form.
         });

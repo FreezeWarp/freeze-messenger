@@ -249,6 +249,8 @@ class Config {
     /** @var bool Whether to allow users to set a default foreground formatting color. */
     public static $defaultFormattingColor = true;
 
+    /** @var bool The minimum contrast (between 1 and 21) that a message's colours must have. 3 is generally the absolute minimum for a good experience, and 4.5 is recommended. */
+    public static $defaultFormattingMinimumContrast = 4.5;
     /** @var bool Whether to allow users to set default formatting using italics. */
     public static $defaultFormattingItalics = true;
 
