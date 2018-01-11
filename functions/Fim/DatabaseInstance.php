@@ -1593,11 +1593,10 @@ class DatabaseInstance extends DatabaseSQL
 
         /* Insert or Replace The Old Permission Setting */
         $this->upsert($this->sqlPrefix . 'roomPermissions', array(
-            'permissions' => $this->type(Type::bitfield, $permissionsMask)
-        ), array(
             'roomId' => $roomId,
             'attribute' => $attribute,
             'param' => $param,
+        ), array(
             'permissions' => $this->type(Type::bitfield, $permissionsMask)
         ));
 
