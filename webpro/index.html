@@ -295,7 +295,7 @@
                     </li>
 
                     <li class="nav-item dropdown dropdown-primary">
-                        <a class="nav-link dropdown-toggle" href="#" accesskey="r" id="navbarRooms" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle text-nowrap" href="#" accesskey="r" id="navbarRooms" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             {{mainMenu.rooms.title}}
                         </a>
                         <div class="dropdown-menu" name="roomMenu" aria-labelledby="navbarRooms">
@@ -320,7 +320,7 @@
                     </li>
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle text-nowrap" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             {{mainMenu.more.title}}
                         </a>
                         <div class="dropdown-menu" name="otherMenu" aria-labelledby="navbarDropdown">
@@ -331,6 +331,10 @@
                                 {{#unless activeLogin.userData.anonId}}
                                     <a class="dropdown-item" name="logout" href="javascript:standard.logout()">Logout</a>
                                 {{/unless}}
+                            {{/if}}
+
+                            {{#if activeLogin.userData.permissions.modPrivs}}
+                                <a class="dropdown-item d-none d-md-block d-lg-none" name="login" href="../moderate/" target="_blank">Admin Control Panel</a>
                             {{/if}}
                         </div>
                     </li>
@@ -348,14 +352,14 @@
                     {{/unless}}
 
                     {{#if activeLogin.userData.permissions.modPrivs}}
-                    <li class="nav-item">
+                    <li class="nav-item d-md-none d-lg-inline">
                         <a class="nav-link" name="login" href="../moderate/" target="_blank">Admin Control Panel</a>
                     </li>
                     {{/if}}
                 </ul>
 
                 {{#if activeLogin.userData.permissions.privateFriends}}
-                    <form class="form-inline my-2 my-lg-0" id="privateRoomForm">
+                    <form class="form-inline my-2 my-lg-0 d-flex flex-nowrap" id="privateRoomForm">
                         <input class="form-control mr-sm-2" name="userName" type="search" placeholder="{{mainMenu.private.label}}" aria-label="{{mainMenu.private.label}}">
                         <button class="btn btn-outline-light my-2 my-sm-0" type="submit">{{mainMenu.private.submit}}</button>
                     </form>
