@@ -421,13 +421,18 @@ class DatabaseInstance extends DatabaseSQL
         );
 
         if ($options['includeStatus']) {
-            $columns['join ' . $this->sqlPrefix . "censorBlackWhiteLists"] = [
-                'columns' => 'listId bwlistId, roomId, status',
-                'conditions' => [
-                    'roomId' => $options['includeStatus'],
-                    'bwlistId' => $this->col('listId')
-                ]
-            ];
+            if (\Fim\Room::isPrivateRoomId($options['includeStatus'])) {
+                $conditions['both']['!options'] = $this->int(CensorList::CENSORLIST_PRIVATE_DISABLED, 'bAnd');
+            }
+            else {
+                $columns['join ' . $this->sqlPrefix . "censorBlackWhiteLists"] = [
+                    'columns'    => 'listId bwlistId, roomId, status',
+                    'conditions' => [
+                        'roomId'   => $options['includeStatus'],
+                        'bwlistId' => $this->col('listId')
+                    ]
+                ];
+            }
         }
 
 
@@ -436,17 +441,27 @@ class DatabaseInstance extends DatabaseSQL
             'both' => [],
         ];
 
-        if (count($options['listIds']) > 0) $conditions['both']['listId'] = $this->in((array) $options['listIds']);
-        if ($options['listNameSearch']) $conditions['both']['listName'] = $this->type('string', $options['listNameSearch'], 'search');
+        if (count($options['listIds']) > 0)
+            $conditions['both']['listId'] = $this->in((array) $options['listIds']);
 
-        if ($options['activeStatus'] === 'active') $conditions['both']['options'] = $this->int(CensorList::CENSORLIST_ENABLED, 'bAnd'); // TODO: Test!
-        elseif ($options['activeStatus'] === 'inactive') $conditions['both']['!options'] = $this->int(CensorList::CENSORLIST_ENABLED, 'bAnd'); // TODO: Test!
+        if ($options['listNameSearch'])
+            $conditions['both']['listName'] = $this->type('string', $options['listNameSearch'], 'search');
 
-        if ($options['forcedStatus'] === 'forced') $conditions['both']['!options'] = $this->int(CensorList::CENSORLIST_DISABLEABLE, 'bAnd'); // TODO: Test!
-        elseif ($options['forcedStatus'] === 'unforced') $conditions['both']['options'] = $this->int(CensorList::CENSORLIST_DISABLEABLE, 'bAnd'); // TODO: Test!
+        if ($options['activeStatus'] === 'active')
+            $conditions['both']['options'] = $this->int(CensorList::CENSORLIST_ENABLED, 'bAnd'); // TODO: Test!
+        elseif ($options['activeStatus'] === 'inactive')
+            $conditions['both']['!options'] = $this->int(CensorList::CENSORLIST_ENABLED, 'bAnd'); // TODO: Test!
 
-        if ($options['hiddenStatus'] === 'hidden') $conditions['both']['options'] = $this->int(CensorList::CENSORLIST_HIDDEN, 'bAnd'); // TODO: Test!
-        elseif ($options['hiddenStatus'] === 'unhidden') $conditions['both']['!options'] = $this->int(CensorList::CENSORLIST_HIDDEN, 'bAnd'); // TODO: Test!
+        if ($options['forcedStatus'] === 'forced')
+            $conditions['both']['!options'] = $this->int(CensorList::CENSORLIST_DISABLEABLE, 'bAnd'); // TODO: Test!
+        elseif ($options['forcedStatus'] === 'unforced')
+            $conditions['both']['options'] = $this->int(CensorList::CENSORLIST_DISABLEABLE, 'bAnd'); // TODO: Test!
+
+        if ($options['hiddenStatus'] === 'hidden')
+            $conditions['both']['options'] = $this->int(CensorList::CENSORLIST_HIDDEN, 'bAnd'); // TODO: Test!
+        elseif ($options['hiddenStatus'] === 'unhidden')
+            $conditions['both']['!options'] = $this->int(CensorList::CENSORLIST_HIDDEN, 'bAnd'); // TODO: Test!
+
 
         return $this->select($columns, $conditions, $sort, $limit, $page);
     }
@@ -482,7 +497,13 @@ class DatabaseInstance extends DatabaseSQL
         ))->getAsArray(array('listId'));
 
         foreach ($censorLists AS $listId => $list) { // Run through each censor list retrieved.
-            if ($list['status'] === 'unblock' || ($list['listType'] === 'black' && $list['status'] !== 'block')) continue;
+            if (isset($list['status']) && (
+                $list['status'] === 'unblock'
+                || (
+                    $list['listType'] === 'black'
+                    && $list['status'] !== 'block'
+                )
+            )) continue;
 
             $censorListsReturn[$list['listId']] = $list;
         }
