@@ -135,7 +135,6 @@ class StreamDatabase implements StreamInterface {
             $entry = $chunks[0];
             $entry['data'] = '';
 
-            $this->database->startTransaction();
             foreach ($chunks AS $chunk) {
                 $entry['data'] .= $chunk['data'];
             }
