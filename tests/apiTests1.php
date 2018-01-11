@@ -429,7 +429,7 @@ curlTestGETEquals(
     'Hi'
 );
 
-echo '<tr><td>Get Messages Since Message 1</td>';
+echo '<tr><td>Get Messages Since Message 1 (Fresh Install Only)</td>';
 curlTestGETEquals(
     'api/message.php',
     ['access_token' => $accessToken, 'roomId' => $testRoomId, 'messageIdStart' => 2],
@@ -980,6 +980,14 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         (string) $testRoom2Id
     );
 
+
+
+
+
+    /*******************************
+     ***** ACTIVE USERS ************
+     *******************************/
+
     echo "<tr><td>Get Rooms '$testUser2Name' is Active In</td>";
     curlTestGETEqualsMulti(
         'api/userStatus.php',
@@ -1112,8 +1120,63 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ]
     );
 
+    echo "<tr><td>Go Offline in '$testRoomName' as '$testUser2Name'</td>";
+    curlTestPOSTEquals(
+        'api/userStatus.php',
+        ['_action' => 'edit', 'access_token' => $testUser2Token, 'roomIds' => [$testRoomId]],
+        ['status' => 'offline'],
+        ['response'],
+        []
+    );
+
+    echo "<tr><td>Get Rooms '$testUser2Name' is Active In</td>";
+    curlTestGETEqualsMulti(
+        'api/userStatus.php',
+        ['access_token' => $testUserToken, 'userIds' => [$testUser2Id]],
+        [
+            ['users', 'user ' . $testUser2Id, 'name'],
+            ['users', 'user ' . $testUser2Id, 'rooms', 'room 1'],
+            ['users', 'user ' . $testUser2Id, 'rooms', 'room ' . $testRoomId],
+            ['users', 'user ' . $testUser2Id, 'rooms', 'room ' . $testRoom2Id, 'name'],
+        ],
+        [
+            $testUser2Name,
+            null,
+            null,
+            $testRoom2Name,
+        ]
+    );
+
+    echo "<tr><td>Get Active Users in '$testRoomName'</td>";
+
+    curlTestGETEqualsMulti(
+        'api/userStatus.php',
+        ['access_token' => $testUserToken, 'roomIds' => [$testRoomId]],
+        [
+            ['users', 'user 1', 'name'],
+            ['users', 'user ' . $testUserId, 'name'],
+            ['users', 'user ' . $testUser2Id],
+        ],
+        [
+            $adminUsername,
+            $testUserName,
+            null
+        ]
+    );
+
+
+
+
+
+    /*******************************
+     ***** FAV ROOMS ***************
+     *******************************/
 
     echo '<thead><tr class="ui-widget-header"><th colspan="4">Fav Rooms Test</th></th></tr></thead>';
+
+    /*
+     * Fav Room
+     */
     echo "<tr><td>'$testUserName' Favs Room '$testRoomName'</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
@@ -1123,6 +1186,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Check if room was successfully faved
+     */
     echo "<tr><td>Get Rooms, Checking for '$testRoomName' at Top</td>";
     curlTestGETEquals(
         'api/room.php',
@@ -1131,6 +1197,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         $testRoomName
     );
 
+    /*
+     * Replace fav room list
+     */
     echo "<tr><td>'$testUserName' Replaces Fav Rooms With 'Another Room!', '$testRoom2Name'</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
@@ -1140,6 +1209,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Check if rooms are sorted correctly with new fav list
+     */
     echo "<tr><td>Get Rooms, Checking for 'Another Room!', '$testRoom2Name', 'Your Room!' at Top</td>";
     curlTestGETEqualsMulti(
         'api/room.php',
@@ -1156,6 +1228,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ]
     );
 
+    /*
+     * Unfav room
+     */
     echo "<tr><td>'$testUserName' Unfavs Room '$testRoom2Name'</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
@@ -1165,6 +1240,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Check if rooms are successfully sorted with unfav
+     */
     echo "<tr><td>Get Rooms, Checking for 'Another Room!', 'Your Room!' at Top</td>";
     curlTestGETEqualsMulti(
         'api/room.php',
@@ -1179,8 +1257,20 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ]
     );
 
+
+
+
+
+    /*******************************
+     ***** HIDDEN ROOMS ************
+     *******************************/
+
     echo '<thead><tr class="ui-widget-header"><th colspan="4">Hidden Rooms Test</th></tr></thead>';
 
+    /*
+     * Edit room to make hidden
+     * TODO: moderator can't set hidden, official flags
+     */
     echo "<tr><td>Edit Room '$testRoom2Name' to Make Hidden</td>";
     curlTestPOSTEquals(
         'api/room.php',
@@ -1190,8 +1280,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         (string) $testRoom2Id
     );
 
-// TODO: moderator can't set hidden, official flags
-
+    /*
+     * See if room has hidden flag
+     */
     echo "<tr><td>Get Room '$testRoom2Name', testing for changes</td>";
     curlTestGETEqualsMulti(
         'api/room.php',
@@ -1206,6 +1297,10 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ]
     );
 
+    /*
+     * See if room omitted from room list
+     * TODO: don't include hidden rooms in active users
+     */
     echo "<tr><td>Get All Rooms, Testing for Rooms '$testRoomName', '$testRoom2Name' (Only At Installation)</td>";
     curlTestGETEqualsMulti(
         'api/room.php',
@@ -1220,10 +1315,19 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ]
     );
 
-// TODO: don't include hidden rooms in active users
+
+
+
+
+    /*******************************
+     ***** WATCH ROOMS *************
+     *******************************/
 
     echo '<thead><tr class="ui-widget-header"><th colspan="4">Watch Rooms Test</th></tr></thead>';
 
+    /*
+     * No unread messages by default?
+     */
     echo "<tr><td>Get Unread Messages for '$testUserName'</td>";
     curlTestGETEquals(
         'api/unreadMessages.php',
@@ -1232,6 +1336,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Watch the room.
+     */
     echo "<tr><td>'$testUserName' Watches Room '$testRoomName'</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
@@ -1241,6 +1348,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Still no unread messages?
+     */
     echo "<tr><td>Get Unread Messages for '$testUserName'</td>";
     curlTestGETEquals(
         'api/unreadMessages.php',
@@ -1249,6 +1359,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Send a message in the watched room (as other user)
+     */
     echo "<tr><td>Send Message 'Hello' in '$testRoomName' as '$testUser2Name'</td>";
     curlTestPOSTEquals(
         'api/message.php',
@@ -1258,6 +1371,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Send a message in a different room (as other user)
+     */
     echo "<tr><td>Send Message 'Goodbye' in '$testRoom2Name' as '$testUser2Name'</td>";
     curlTestPOSTEquals(
         'api/message.php',
@@ -1267,6 +1383,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Get unread messages twice (make sure they persist between attempts)
+     */
     for ($i = 0; $i < 2; $i++) {
         echo "<tr><td>Get Unread Messages for '$testUserName'</td>";
         curlTestGETEqualsMulti(
@@ -1285,6 +1404,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         );
     }
 
+    /*
+     * No unread messages for second user?
+     */
     echo "<tr><td>Get Unread Messages for '$testUser2Name'</td>";
     curlTestGETEquals(
         'api/unreadMessages.php',
@@ -1293,16 +1415,21 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Mark the message read.
+     * todo: make delete
+     */
     echo "<tr><td>'$testUserName' Marks Message Read</td>";
-// todo: make delete
-    curlTestPOSTEquals(
-        'api/markMessageRead.php',
-        ['access_token' => $testUserToken],
-        ['roomId' => $testRoomId],
+    curlTestGETEquals(
+        'api/unreadMessages.php',
+        ['access_token' => $testUserToken, '_action' => 'delete', 'roomId' => $testRoomId],
         ['markMessageRead'],
         []
     );
 
+    /*
+     * Are unread messages now empty?
+     */
     echo "<tr><td>Get Unread Messages for '$testUserName'</td>";
     curlTestGETEquals(
         'api/unreadMessages.php',
@@ -1311,6 +1438,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Stop watching the room.
+     */
     echo "<tr><td>'$testUserName' Stops Watching Room '$testRoomName'</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
@@ -1320,6 +1450,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Send message as other user.
+     */
     echo "<tr><td>Send Message 'Goodbye' in '$testRoomName' as '$testUser2Name'</td>";
     curlTestPOSTEquals(
         'api/message.php',
@@ -1329,6 +1462,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * No new unread messages?
+     */
     echo "<tr><td>Get Unread Messages for '$testUserName'</td>";
     curlTestGETEquals(
         'api/unreadMessages.php',
@@ -1338,8 +1474,18 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
     );
 
 
+
+
+    /*******************************
+     * KICKS
+     * todo: test kick natural expiration
+     *******************************/
+
     echo '<thead><tr class="ui-widget-header"><th colspan="4">Kicks</th></tr></thead>';
 
+    /*
+     * Test whether no kicks by default.
+     */
     echo "<tr><td>Get Kicks as '$adminUsername', Checking for '$testUserName', '$testUser2Name'</td>";
     curlTestGETEqualsMulti(
         'api/kick.php',
@@ -1354,6 +1500,10 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ]
     );
 
+    /*
+     * Can the admin not be kicked?
+     * TODO: can all moderators not be kicked?
+     */
     echo "<tr><td>Kick '$adminUsername' as '$adminUsername'</td>";
     curlTestPOSTEquals(
         'api/kick.php',
@@ -1363,6 +1513,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         'unkickableUser'
     );
 
+    /*
+     * Can the user get messages initially?
+     */
     echo "<tr><td>Get Messages in '$testRoomName' as '$testUserName'</td>";
     curlTestGETEquals(
         'api/message.php',
@@ -1371,6 +1524,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         true
     );
 
+    /*
+     * Is the allowed to post messages initially?
+     */
     echo "<tr><td>Send Message 'Hello' in '$testRoomName' as '$testUserName'</td>";
     curlTestPOSTEquals(
         'api/message.php',
@@ -1380,6 +1536,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Does kicking without length cause an exception:?
+     */
     echo "<tr><td>Kick '$testUserName' without length as '$adminUsername' in '$testRoomName'</td>";
     curlTestPOSTEquals(
         'api/kick.php',
@@ -1389,6 +1548,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         'lengthRequired'
     );
 
+    /*
+     * Does normal kick work?
+     */
     echo "<tr><td>Kick '$testUserName' as '$adminUsername' in '$testRoomName'</td>";
     curlTestPOSTEquals(
         'api/kick.php',
@@ -1398,6 +1560,10 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Is kick reflected in kicks list?
+     * TODO: new length
+     */
     echo "<tr><td>Get All Kicks as '$adminUsername'</td>";
     curlTestGETEqualsMulti(
         'api/kick.php',
@@ -1422,6 +1588,10 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ]
     );
 
+
+    /*
+     * Did kick message appear? (And can the kicked user still get messages?)
+     */
     echo "<tr><td>Get Messages in '$testRoomName' as '$testUserName'</td>";
     curlTestGETEquals(
         'api/message.php',
@@ -1430,6 +1600,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         "/me kicked $testUserName"
     );
 
+    /*
+     * Is the kicked user disallowed from sending messages?
+     */
     echo "<tr><td>Send Message 'Hello' in '$testRoomName' as '$testUserName'</td>";
     curlTestPOSTEquals(
         'api/message.php',
@@ -1439,7 +1612,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         'noPerm'
     );
 
-
+    /*
+     * Is the second user allowed to send messages?
+     */
     echo "<tr><td>Send Message 'Hello' in 'Your Room!' as '$testUser2Name'</td>";
     curlTestPOSTEquals(
         'api/message.php',
@@ -1449,6 +1624,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Kick the second user.
+     */
     echo "<tr><td>Kick '$testUser2Name' as '$adminUsername' in 'Your Room!'</td>";
     curlTestPOSTEquals(
         'api/kick.php',
@@ -1458,6 +1636,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Is the kick reflected in the kick list?
+     */
     echo "<tr><td>Get All Kicks as '$adminUsername'</td>";
     curlTestGETEqualsMulti(
         'api/kick.php',
@@ -1484,6 +1665,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ]
     );
 
+    /*
+     * Is the second user disallowed from sending messages?
+     */
     echo "<tr><td>Send Message 'Hello' in 'Your Room!' as '$testUser2Name'</td>";
     curlTestPOSTEquals(
         'api/message.php',
@@ -1493,6 +1677,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         'noPerm'
     );
 
+    /*
+     * Is the user disallowed from viewing all kicks?
+     */
     echo "<tr><td>Get All Kicks as '$testUser2Name'</td>";
     curlTestGETEquals(
         'api/kick.php',
@@ -1501,6 +1688,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         'roomIdRequired'
     );
 
+    /*
+     * Is the user disallowed from viewing room kicks?
+     */
     echo "<tr><td>Get Room '$testRoomName' kicks as '$testUser2Name'</td>";
     curlTestGETEquals(
         'api/kick.php',
@@ -1509,6 +1699,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         'noPerm'
     );
 
+    /*
+     * Is a user disallowed from viewing another user's kicks, sans room?
+     */
     echo "<tr><td>Get '$testUserName's kicks as '$testUser2Name'</td>";
     curlTestGETEquals(
         'api/kick.php',
@@ -1517,6 +1710,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         'roomIdRequired'
     );
 
+    /*
+     * Is a user disallowed from viewing another user's kicks, with room?
+     */
     echo "<tr><td>Get '$testUserName's kicks in '$testRoomName' as '$testUser2Name'</td>";
     curlTestGETEquals(
         'api/kick.php',
@@ -1525,6 +1721,10 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         'noPerm'
     );
 
+    /*
+     * Is a user allowed to see their own kicks?
+     * TODO: multiple rooms
+     */
     echo "<tr><td>Get '$testUserName's kicks as '$testUserName'</td>";
     curlTestGETEqualsMulti(
         'api/kick.php',
@@ -1545,19 +1745,45 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ]
     );
 
+    /*
+     * Is a user allowed to see their own kicks in the room?
+     */
+    echo "<tr><td>Get '$testUserName's kicks as '$testUserName'</td>";
+    curlTestGETEqualsMulti(
+        'api/kick.php',
+        ['access_token' => $testUserToken, 'userId' => $testUserId, 'roomId' => $testRoomId],
+        [
+            ['kicks', 'user ' . $testUser2Id],
+            ['kicks', 'user ' . $testUserId, 'userName'],
+            ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'roomName'],
+            ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'kickerName'],
+//            ['kicks', 'user ' . $testUserId, 'kicks', 'room ' . $testRoomId, 'length'],
+        ],
+        [
+            null,
+            $testUserName,
+            $testRoomName,
+            $adminUsername,
+//            60,
+        ]
+    );
+
+    /*
+     * Is a user allowed to see their own kicks?
+     */
     echo "<tr><td>Get '$testUser2Name's kicks as '$testUser2Name'</td>";
     curlTestGETEqualsMulti(
         'api/kick.php',
         ['access_token' => $testUser2Token, 'userId' => $testUser2Id],
         [
-            //['kicks', 'user ' . $testUserId],
+            ['kicks', 'user ' . $testUserId],
             ['kicks', 'user ' . $testUser2Id, 'userName'],
             ['kicks', 'user ' . $testUser2Id, 'kicks', 'room ' . 1, 'roomName'],
             ['kicks', 'user ' . $testUser2Id, 'kicks', 'room ' . 1, 'kickerName'],
 //            ['kicks', 'user ' . $testUser2Id, 'kicks', 'room ' . 1, 'length'],
         ],
         [
-            //null,
+            null,
             $testUser2Name,
             'Your Room!',
             $adminUsername,
@@ -1565,6 +1791,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ]
     );
 
+    /*
+     * Can the users not be unkicked by themselves?
+     */
     echo "<tr><td>Unkick '$testUser2Name' as '$testUserName' in 'Your Room!'</td>";
     curlTestPOSTEquals(
         'api/kick.php',
@@ -1573,7 +1802,6 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ['exception', 'string'],
         'noPerm'
     );
-
     echo "<tr><td>Unkick '$testUser2Name' as '$testUser2Name' in 'Your Room!'</td>";
     curlTestPOSTEquals(
         'api/kick.php',
@@ -1583,6 +1811,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         'noPerm'
     );
 
+    /*
+     * Can the users be unkicked by the admin?
+     */
     echo "<tr><td>Unkick '$testUser2Name' as '$adminUsername' in 'Your Room!'</td>";
     curlTestPOSTEquals(
         'api/kick.php',
@@ -1592,6 +1823,9 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
+    /*
+     * Can the users be send messages after being unkicked?
+     */
     echo "<tr><td>Send Message 'Hello' in 'Your Room!' as '$testUser2Name'</td>";
     curlTestPOSTEquals(
         'api/message.php',
@@ -1601,11 +1835,21 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         []
     );
 
-// todo: test kick natural expiration
 
+
+
+
+    /*******************************
+     * PRIVATE ROOMS
+     *******************************/
 
     echo '<thead><tr class="ui-widget-header"><th colspan="4">Private Rooms</th></tr></thead>';
 
+
+    /*
+     * Test Whether Messages Can Be Sent in Private Room
+     * TODO: send flipped room ID
+     */
     foreach (["", "2"] AS $testUserX) {
         echo "<tr><td>Send Message 'Hi!$testUserX' in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Name'} . "</td>";
         curlTestPOSTEquals(
@@ -1623,8 +1867,50 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
             'api/message.php',
             ['access_token' => $testUserToken, 'roomId' => "p$testUserId,$testUser2Id"],
             [
-                ['messages', 1, 'text'],
-                ['messages', 0, 'text']
+                ['messages', new ArrayPosition(1), 'text'],
+                ['messages', new ArrayPosition(0), 'text']
+            ],
+            [
+                'Hi!',
+                'Hi!2'
+            ]
+        );
+
+        echo "<tr><td>Get Messages in 'p$testUser2Id,$testUserId' as " . ${'testUser' . $testUserX . 'Name'} . "</td>";
+        curlTestGETEqualsMulti(
+            'api/message.php',
+            ['access_token' => $testUserToken, 'roomId' => "p$testUser2Id,$testUserId"],
+            [
+                ['messages', new ArrayPosition(1), 'text'],
+                ['messages', new ArrayPosition(0), 'text']
+            ],
+            [
+                'Hi!',
+                'Hi!2'
+            ]
+        );
+
+        echo "<tr><td>Get Fallback Stream in 'p$testUserId,$testUser2Id' as " . ${'testUser' . $testUserX . 'Name'} . "</td>";
+        curlTestGETEqualsMulti(
+            'stream.php',
+            ['access_token' => $testUserToken, 'fallback' => true, 'streamType' => 'room', 'queryId' => "p$testUserId,$testUser2Id"],
+            [
+                ['events', 'data', new ArrayPosition(1), 'text'],
+                ['events', 'data', new ArrayPosition(3), 'text']
+            ],
+            [
+                'Hi!',
+                'Hi!2'
+            ]
+        );
+
+        echo "<tr><td>Get Fallback Stream in 'p$testUser2Id,$testUserId' as " . ${'testUser' . $testUserX . 'Name'} . "</td>";
+        curlTestGETEqualsMulti(
+            'stream.php',
+            ['access_token' => $testUserToken, 'fallback' => true, 'streamType' => 'room', 'queryId' => "p$testUser2Id,$testUserId"],
+            [
+                ['events', 'data', new ArrayPosition(1), 'text'],
+                ['events', 'data', new ArrayPosition(3), 'text']
             ],
             [
                 'Hi!',
@@ -1633,6 +1919,31 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         );
     }
 
+
+    /*
+     * Are kicks disallowed?
+     */
+    echo "<tr><td>Kick '$testUserName' as '$adminUsername' in 'p$testUserId,$testUser2Id'</td>";
+    curlTestPOSTEquals(
+        'api/kick.php',
+        ['access_token' => $accessToken, 'userId' => $testUserId, 'roomId' => "p$testUserId,$testUser2Id"],
+        ['length' => 60],
+        ['exception', 'string'],
+        'roomIdNoExist'
+    );
+    echo "<tr><td>Kick '$testUserName' as '$testUserName' in 'p$testUserId,$testUser2Id'</td>";
+    curlTestPOSTEquals(
+        'api/kick.php',
+        ['access_token' => $testUserToken, 'userId' => $testUserId, 'roomId' => "p$testUserId,$testUser2Id"],
+        ['length' => 60],
+        ['exception', 'string'],
+        'noPerm'
+    );
+
+
+    /*
+     * Test Whether Admin Can't Read Private Room
+     */
     echo "<tr><td>Get Messages in 'p$testUserId,$testUser2Id' as '$adminUsername'</td>";
     curlTestGETEquals(
         'api/message.php',
@@ -1641,6 +1952,10 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         'idNoExist'
     );
 
+
+    /*
+     * Test Whether Messages Can't Be Sent w/ Ignore List
+     */
     echo "<tr><td>'$testUserId' Adds '$testUser2Id' to Ignore List</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
@@ -1675,6 +1990,10 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         );
     }
 
+
+    /*
+     * Test Whether Messages Can Be Sent After Ignore List Removal
+     */
     echo "<tr><td>'$testUserId' Removes '$testUser2Id' From Ignore List</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
@@ -1711,6 +2030,10 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         );
     }
 
+
+    /*
+     * Test Whether Messages Can't Be Sent w/ Private Room Friends-Only
+     */
     echo "<tr><td>'$testUserId' Changes Privacy Setting to Friends-Only</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
@@ -1745,6 +2068,10 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         );
     }
 
+
+    /*
+     * Test Whether Messages Can Be Sent w/ Private Room Friends-Only, On Friends List
+     */
     echo "<tr><td>'$testUserId' Adds '$testUser2Id' to Friends List</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
@@ -1781,6 +2108,10 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         );
     }
 
+
+    /*
+     * Test Whether Messages Can't Be Sent w/ Private Room Block-All
+     */
     echo "<tr><td>'$testUserId' Changes Privacy Setting to Block-All</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
@@ -1811,7 +2142,7 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
                 ['messages', 3, 'text'],
                 ['messages', 4, 'text'],
                 ['messages', 5, 'text'],
-                ['messages', 6, 'text']
+                ['messages', 6]
             ],
             [
                 'Hi Again!2',
@@ -1825,15 +2156,14 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         );
     }
 
-    // todo: kicks disabled for private rooms
     // todo: message edits work for private rooms
 
     // todo: message/room text search
 
     // todo: user message formatting
-    // todo: file uploads and enumerations
+    // todo: file uploads and enumerations (esp. whether a user should/shouldn't be allowed to see files)
 
-    // todo: age content restrictions on rooms, files
+    // todo: age content restrictions on rooms
 
     // todo: censor
 }
