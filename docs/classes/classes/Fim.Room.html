@@ -1,0 +1,3156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <meta charset="utf-8"/>
+    <title>API Documentation</title>
+    <meta name="author" content=""/>
+    <meta name="description" content=""/>
+
+    <link href="../css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/prism.css" rel="stylesheet" media="all"/>
+    <link href="../css/template.css" rel="stylesheet" media="all"/>
+    
+    <!--[if lt IE 9]>
+    <script src="../js/html5.js"></script>
+    <![endif]-->
+    <script src="../js/jquery-1.11.0.min.js"></script>
+    <script src="../js/ui/1.10.4/jquery-ui.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.smooth-scroll.js"></script>
+    <script src="../js/prism.min.js"></script>
+    <!-- TODO: Add http://jscrollpane.kelvinluck.com/ to style the scrollbars for browsers not using webkit-->
+    <script type="text/javascript">
+    function loadExternalCodeSnippets() {
+        Array.prototype.slice.call(document.querySelectorAll('pre[data-src]')).forEach(function (pre) {
+            var src = pre.getAttribute('data-src').replace( /\\/g, '/');
+            var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
+            var language = 'php';
+
+            var code = document.createElement('code');
+            code.className = 'language-' + language;
+
+            pre.textContent = '';
+
+            code.textContent = 'Loading…';
+
+            pre.appendChild(code);
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.open('GET', src, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+
+                    if (xhr.status < 400 && xhr.responseText) {
+                        code.textContent = xhr.responseText;
+
+                        Prism.highlightElement(code);
+                    }
+                    else if (xhr.status >= 400) {
+                        code.textContent = '✖ Error ' + xhr.status + ' while fetching file: ' + xhr.statusText;
+                    }
+                    else {
+                        code.textContent = '✖ Error: File does not exist or is empty';
+                    }
+                }
+            };
+
+            xhr.send(null);
+        });
+    }
+
+    $(document).ready(function(){
+        loadExternalCodeSnippets();
+    });
+    $('#source-view').on('shown', function () {
+        loadExternalCodeSnippets();
+    })
+</script>
+
+    <link rel="shortcut icon" href="../images/favicon.ico"/>
+    <link rel="apple-touch-icon" href="../images/apple-touch-icon.png"/>
+    <link rel="apple-touch-icon" sizes="72x72" href="../images/apple-touch-icon-72x72.png"/>
+    <link rel="apple-touch-icon" sizes="114x114" href="../images/apple-touch-icon-114x114.png"/>
+</head>
+<body>
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <i class="icon-ellipsis-vertical"></i>
+            </a>
+            <a class="brand" href="../index.html">API Documentation</a>
+
+            <div class="nav-collapse">
+                <ul class="nav pull-right">
+                                        <li class="dropdown">
+                        <a href="../index.html" class="dropdown-toggle" data-toggle="dropdown">
+                            API Documentation <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                                                        <li><a href="../namespaces/Cache.html">\Cache</a></li>
+                                                        <li><a href="../namespaces/Database.html">\Database</a></li>
+                                                        <li><a href="../namespaces/Fim.html">\Fim</a></li>
+                                                        <li><a href="../namespaces/Http.html">\Http</a></li>
+                                                        <li><a href="../namespaces/Login.html">\Login</a></li>
+                                                        <li><a href="../namespaces/Stream.html">\Stream</a></li>
+                                                    </ul>
+                    </li>
+                                        <li class="dropdown" id="charts-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Charts <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../graphs/class.html">
+                                    <i class="icon-list-alt"></i>&#160;Class hierarchy diagram
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="dropdown" id="reports-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Reports <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="../reports/errors.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">1179</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/markers.html">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">41</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../reports/deprecated.html">
+                                                                                                            <i class="icon-list-alt"></i>&#160;Deprecated <span class="label label-info pull-right">0</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--<div class="go_to_top">-->
+    <!--<a href="#___" style="color: inherit">Back to top&#160;&#160;<i class="icon-upload icon-white"></i></a>-->
+    <!--</div>-->
+</div>
+
+<div id="___" class="container-fluid">
+        <section class="row-fluid">
+        <div class="span2 sidebar">
+                                <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-2100896617"></a>
+                                <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
+            </div>
+            <div id="namespace-2100896617" class="accordion-body collapse in">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-460565759"></a>
+                                <a href="../namespaces/Cache.html" style="margin-left: 30px; padding-left: 0">Cache</a>
+            </div>
+            <div id="namespace-460565759" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-753653989"></a>
+                                <a href="../namespaces/Cache.Driver.html" style="margin-left: 30px; padding-left: 0">Driver</a>
+            </div>
+            <div id="namespace-753653989" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Cache.Driver.Apc.html">Apc</a></li>
+                                                    <li class="class"><a href="../classes/Cache.Driver.Apcu.html">Apcu</a></li>
+                                                    <li class="class"><a href="../classes/Cache.Driver.Disk.html">Disk</a></li>
+                                                    <li class="class"><a href="../classes/Cache.Driver.Memcached.html">Memcached</a></li>
+                                                    <li class="class"><a href="../classes/Cache.Driver.Redis.html">Redis</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Cache.DriverInterface.html">DriverInterface</a></li>
+                                                                            <li class="trait"><a href="../classes/Cache.CacheAddFallbackTrait.html">CacheAddFallbackTrait</a></li>
+                                                    <li class="trait"><a href="../classes/Cache.CacheSetFallbackTrait.html">CacheSetFallbackTrait</a></li>
+                                                                            <li class="class"><a href="../classes/Cache.CacheFactory.html">CacheFactory</a></li>
+                                                    <li class="class"><a href="../classes/Cache.FileCache.html">FileCache</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1316270663"></a>
+                                <a href="../namespaces/Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
+            </div>
+            <div id="namespace-1316270663" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1859455689"></a>
+                                <a href="../namespaces/Database.Index.html" style="margin-left: 30px; padding-left: 0">Index</a>
+            </div>
+            <div id="namespace-1859455689" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Database.Index.Storage.html">Storage</a></li>
+                                                    <li class="class"><a href="../classes/Database.Index.Type.html">Type</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-431237345"></a>
+                                <a href="../namespaces/Database.SQL.html" style="margin-left: 30px; padding-left: 0">SQL</a>
+            </div>
+            <div id="namespace-431237345" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1586447044"></a>
+                                <a href="../namespaces/Database.SQL.Drivers.html" style="margin-left: 30px; padding-left: 0">Drivers</a>
+            </div>
+            <div id="namespace-1586447044" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoMysql.html">PdoMysql</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoPgsql.html">PdoPgsql</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoSqlsrv.html">PdoSqlsrv</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Database.SQL.DriverInterface.html">DriverInterface</a></li>
+                                                                            <li class="trait"><a href="../classes/Database.SQL.ManualInsertID_Trait.html">ManualInsertID_Trait</a></li>
+                                                    <li class="trait"><a href="../classes/Database.SQL.ReconnectOnSelectDatabase_Trait.html">ReconnectOnSelectDatabase_Trait</a></li>
+                                                                            <li class="class"><a href="../classes/Database.SQL.DatabaseSQL.html">DatabaseSQL</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.MySQL_Definitions.html">MySQL_Definitions</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.Pgsql_Definitions.html">Pgsql_Definitions</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.SQL_Definitions.html">SQL_Definitions</a></li>
+                                                    <li class="class"><a href="../classes/Database.SQL.SQLSrv_Definitions.html">SQLSrv_Definitions</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-949233122"></a>
+                                <a href="../namespaces/Database.Type.html" style="margin-left: 30px; padding-left: 0">Type</a>
+            </div>
+            <div id="namespace-949233122" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Database.Type.Comparison.html">Comparison</a></li>
+                                                    <li class="class"><a href="../classes/Database.Type.Type.html">Type</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Database.ResultInterface.html">ResultInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/Database.Database.html">Database</a></li>
+                                                    <li class="class"><a href="../classes/Database.Engine.html">Engine</a></li>
+                                                    <li class="class"><a href="../classes/Database.Result.html">Result</a></li>
+                                                    <li class="class"><a href="../classes/Database.Type.html">Type</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1171419445"></a>
+                                <a href="../namespaces/Fim.html" style="margin-left: 30px; padding-left: 0">Fim</a>
+            </div>
+            <div id="namespace-1171419445" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-867481363"></a>
+                                <a href="../namespaces/Fim.OAuthGrantTypes.html" style="margin-left: 30px; padding-left: 0">OAuthGrantTypes</a>
+            </div>
+            <div id="namespace-867481363" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Fim.OAuthGrantTypes.AccessTokenGrantType.html">AccessTokenGrantType</a></li>
+                                                    <li class="class"><a href="../classes/Fim.OAuthGrantTypes.AnonymousGrantType.html">AnonymousGrantType</a></li>
+                                                    <li class="class"><a href="../classes/Fim.OAuthGrantTypes.IntegrationLoginGrantType.html">IntegrationLoginGrantType</a></li>
+                                                    <li class="class"><a href="../classes/Fim.OAuthGrantTypes.RefreshTokenGrantType.html">RefreshTokenGrantType</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Fim.Cache.html">Cache</a></li>
+                                                    <li class="class"><a href="../classes/Fim.CensorList.html">CensorList</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Config.html">Config</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Database.html">Database</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseLogin.html">DatabaseLogin</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseParameters.html">DatabaseParameters</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseResult.html">DatabaseResult</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DatabaseSlave.html">DatabaseSlave</a></li>
+                                                    <li class="class"><a href="../classes/Fim.DynamicObject.html">DynamicObject</a></li>
+                                                    <li class="class"><a href="../classes/Fim.File.html">File</a></li>
+                                                    <li class="class"><a href="../classes/Fim.FileThumbnail.html">FileThumbnail</a></li>
+                                                    <li class="class"><a href="../classes/Fim.MagicGettersSetters.html">MagicGettersSetters</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Message.html">Message</a></li>
+                                                    <li class="class"><a href="../classes/Fim.OAuthProvider.html">OAuthProvider</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Room.html">Room</a></li>
+                                                    <li class="class"><a href="../classes/Fim.RoomFactory.html">RoomFactory</a></li>
+                                                    <li class="class"><a href="../classes/Fim.User.html">User</a></li>
+                                                    <li class="class"><a href="../classes/Fim.UserFactory.html">UserFactory</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Xml2Array.html">Xml2Array</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-877984751"></a>
+                                <a href="../namespaces/Http.html" style="margin-left: 30px; padding-left: 0">Http</a>
+            </div>
+            <div id="namespace-877984751" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Http.ApiData.html">ApiData</a></li>
+                                                    <li class="class"><a href="../classes/Http.ApiOutputDict.html">ApiOutputDict</a></li>
+                                                    <li class="class"><a href="../classes/Http.ApiOutputList.html">ApiOutputList</a></li>
+                                                    <li class="class"><a href="../classes/Http.CurlRequest.html">CurlRequest</a></li>
+                                                    <li class="class"><a href="../classes/Http.CurlRequestMethod.html">CurlRequestMethod</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-859239293"></a>
+                                <a href="../namespaces/Login.html" style="margin-left: 30px; padding-left: 0">Login</a>
+            </div>
+            <div id="namespace-859239293" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-438184629"></a>
+                                <a href="../namespaces/Login.Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
+            </div>
+            <div id="namespace-438184629" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Login.Database.LoginPhpbb.html">LoginPhpbb</a></li>
+                                                    <li class="class"><a href="../classes/Login.Database.LoginVanilla.html">LoginVanilla</a></li>
+                                                    <li class="class"><a href="../classes/Login.Database.LoginVbulletin3.html">LoginVbulletin3</a></li>
+                                                    <li class="class"><a href="../classes/Login.Database.LoginVbulletin5.html">LoginVbulletin5</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-180733309"></a>
+                                <a href="../namespaces/Login.TwoStep.html" style="margin-left: 30px; padding-left: 0">TwoStep</a>
+            </div>
+            <div id="namespace-180733309" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginFacebook.html">LoginFacebook</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginGoogle.html">LoginGoogle</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginMicrosoft.html">LoginMicrosoft</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginReddit.html">LoginReddit</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginSteam.html">LoginSteam</a></li>
+                                                    <li class="class"><a href="../classes/Login.TwoStep.LoginTwitter.html">LoginTwitter</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Login.LoginRunner.html">LoginRunner</a></li>
+                                                                                                    <li class="class"><a href="../classes/Login.LoginDatabase.html">LoginDatabase</a></li>
+                                                    <li class="class"><a href="../classes/Login.LoginFactory.html">LoginFactory</a></li>
+                                                    <li class="class"><a href="../classes/Login.LoginOAuth.html">LoginOAuth</a></li>
+                                                    <li class="class"><a href="../classes/Login.LoginTwoStep.html">LoginTwoStep</a></li>
+                                                    <li class="class"><a href="../classes/Login.PasswordHash.html">PasswordHash</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2099141973"></a>
+                                <a href="../namespaces/Stream.html" style="margin-left: 30px; padding-left: 0">Stream</a>
+            </div>
+            <div id="namespace-2099141973" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                                                    <div class="accordion" style="margin-bottom: 0">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1030725415"></a>
+                                <a href="../namespaces/Stream.Streams.html" style="margin-left: 30px; padding-left: 0">Streams</a>
+            </div>
+            <div id="namespace-1030725415" class="accordion-body collapse ">
+                <div class="accordion-inner">
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/Stream.Streams.StreamDatabase.html">StreamDatabase</a></li>
+                                                    <li class="class"><a href="../classes/Stream.Streams.StreamKafka.html">StreamKafka</a></li>
+                                                    <li class="class"><a href="../classes/Stream.Streams.StreamPgSQL.html">StreamPgSQL</a></li>
+                                                    <li class="class"><a href="../classes/Stream.Streams.StreamRedis.html">StreamRedis</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                    <li class="interface"><a href="../classes/Stream.StreamInterface.html">StreamInterface</a></li>
+                                                                                                    <li class="class"><a href="../classes/Stream.StreamFactory.html">StreamFactory</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    
+                    <ul>
+                                                                                                    <li class="class"><a href="../classes/ArrayPosition.html">ArrayPosition</a></li>
+                                                    <li class="class"><a href="../classes/CacheTest.html">CacheTest</a></li>
+                                                    <li class="class"><a href="../classes/databaseSQLTests.html">databaseSQLTests</a></li>
+                                                    <li class="class"><a href="../classes/databaseSQLTests1.html">databaseSQLTests1</a></li>
+                                                    <li class="class"><a href="../classes/databaseSQLTests2.html">databaseSQLTests2</a></li>
+                                                    <li class="class"><a href="../classes/fimError.html">fimError</a></li>
+                                                    <li class="class"><a href="../classes/fimErrorThrown.html">fimErrorThrown</a></li>
+                                            </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </div>
+    </section>
+    <section class="row-fluid">
+        <div class="span10 offset2">
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <nav>
+                                                <a href="../namespaces/Fim.html">\Fim</a> <i class="icon-level-up"></i>
+                                            </nav>
+                    <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal"><i class="icon-code"></i></a>
+
+                    <h1><small>\Fim</small>Room</h1>
+                    <p><em>Class Fim\fimRoom
+The data for a room object.</em></p>
+                    
+                    
+                                        
+                    <section id="summary">
+                        <h2>Summary</h2>
+                        <section class="row-fluid heading">
+                            <section class="span4">
+                                <a href="#methods">Methods</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#properties">Properties</a>
+                            </section>
+                            <section class="span4">
+                                <a href="#constants">Constants</a>
+                            </section>
+                        </section>
+                        <section class="row-fluid public">
+                            <section class="span4">
+                                                                    <a href="../classes/Fim.DynamicObject.html#method_populateFromArray" class="">populateFromArray()</a><br />
+                                                                    <a href="../classes/Fim.MagicGettersSetters.html#method_set" class="">set()</a><br />
+                                                                    <a href="../classes/Fim.MagicGettersSetters.html#method_get" class="">get()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_resolve" class="">resolve()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_resolveAll" class="">resolveAll()</a><br />
+                                                                    <a href="../classes/Fim.DynamicObject.html#method_resolveFromPullGroup" class="">resolveFromPullGroup()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_exists" class="">exists()</a><br />
+                                                                    <a href="../classes/Fim.MagicGettersSetters.html#method_getterName" class="">getterName()</a><br />
+                                                                    <a href="../classes/Fim.MagicGettersSetters.html#method_hasGetter" class="">hasGetter()</a><br />
+                                                                    <a href="../classes/Fim.MagicGettersSetters.html#method_setterName" class="">setterName()</a><br />
+                                                                    <a href="../classes/Fim.MagicGettersSetters.html#method_hasSetter" class="">hasSetter()</a><br />
+                                                                    <a href="../classes/Fim.MagicGettersSetters.html#method_propertyExists" class="">propertyExists()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method___construct" class="">__construct()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_isPrivateRoomId" class="">isPrivateRoomId()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_encodeId" class="">encodeId()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_decodeId" class="">decodeId()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getPermissionsArray" class="">getPermissionsArray()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getPermissionsField" class="">getPermissionsField()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method___get" class="">__get()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getName" class="">getName()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getWatchedByUsers" class="">getWatchedByUsers()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getDeleted" class="">getDeleted()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getArchived" class="">getArchived()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getOfficial" class="">getOfficial()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getHidden" class="">getHidden()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_isGeneralRoom" class="">isGeneralRoom()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_isPrivateRoom" class="">isPrivateRoom()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getPrivateRoomMemberIds" class="">getPrivateRoomMemberIds()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getPrivateRoomMembers" class="">getPrivateRoomMembers()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_arePrivateRoomMembersValid" class="">arePrivateRoomMembersValid()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getPrivateRoomState" class="">getPrivateRoomState()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getEncodedId" class="">getEncodedId()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_getCensorWords" class="">getCensorWords()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_censorScan" class="">censorScan()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_setDatabase" class="">setDatabase()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_setDatabaseTopic" class="">setDatabaseTopic()</a><br />
+                                                            </section>
+                            <section class="span4">
+                                                                    <a href="../classes/Fim.DynamicObject.html#property_doCache" class="">$doCache</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_id" class="">$id</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_permArray" class="">$permArray</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_pullGroups" class="">$pullGroups</a><br />
+                                                            </section>
+                            <section class="span4">
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_OFFICIAL" class="">ROOM_OFFICIAL</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_DELETED" class="">ROOM_DELETED</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_HIDDEN" class="">ROOM_HIDDEN</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_ARCHIVED" class="">ROOM_ARCHIVED</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_PERMISSION_VIEW" class="">ROOM_PERMISSION_VIEW</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_PERMISSION_POST" class="">ROOM_PERMISSION_POST</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_PERMISSION_TOPIC" class="">ROOM_PERMISSION_TOPIC</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_PERMISSION_MODERATE" class="">ROOM_PERMISSION_MODERATE</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_PERMISSION_PROPERTIES" class="">ROOM_PERMISSION_PROPERTIES</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_PERMISSION_GRANT" class="">ROOM_PERMISSION_GRANT</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_TYPE_PRIVATE" class="">ROOM_TYPE_PRIVATE</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_TYPE_OTR" class="">ROOM_TYPE_OTR</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_ROOM_TYPE_GENERAL" class="">ROOM_TYPE_GENERAL</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_PRIVATE_ROOM_STATE_NORMAL" class="">PRIVATE_ROOM_STATE_NORMAL</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_PRIVATE_ROOM_STATE_READONLY" class="">PRIVATE_ROOM_STATE_READONLY</a><br />
+                                                                    <a href="../classes/Fim.Room.html#constant_PRIVATE_ROOM_STATE_DISABLED" class="">PRIVATE_ROOM_STATE_DISABLED</a><br />
+                                                            </section>
+                        </section>
+                        <section class="row-fluid protected">
+                            <section class="span4">
+                                                                    <a href="../classes/Fim.Room.html#method_getColumns" class="">getColumns()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_setId" class="">setId()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_setTopic" class="">setTopic()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_setParentalAge" class="">setParentalAge()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_setParentalFlags" class="">setParentalFlags()</a><br />
+                                                            </section>
+                            <section class="span4">
+                                                                    <a href="../classes/Fim.DynamicObject.html#property_resolved" class="">$resolved</a><br />
+                                                                    <a href="../classes/Fim.DynamicObject.html#property_exists" class="">$exists</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_name" class="">$name</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_nameSearchable" class="">$nameSearchable</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_options" class="">$options</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_ownerId" class="">$ownerId</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_topic" class="">$topic</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_type" class="">$type</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_privateRoomState" class="">$privateRoomState</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_parentalFlags" class="">$parentalFlags</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_parentalAge" class="">$parentalAge</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_defaultPermissions" class="">$defaultPermissions</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_lastMessageId" class="">$lastMessageId</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_lastMessageTime" class="">$lastMessageTime</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_messageCount" class="">$messageCount</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_flags" class="">$flags</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_encodedId" class="">$encodedId</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_watchedByUsers" class="">$watchedByUsers</a><br />
+                                                                    <a href="../classes/Fim.Room.html#property_censorWordsArray" class="">$censorWordsArray</a><br />
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                        <section class="row-fluid private">
+                            <section class="span4">
+                                                                    <em>No private methods found</em>
+                                                            </section>
+                            <section class="span4">
+                                                                    <em>No private properties found</em>
+                                                            </section>
+                            <section class="span4">
+                                <em>N/A</em>
+                            </section>
+                        </section>
+                    </section>
+                </div>
+                <aside class="span4 detailsbar">
+                                        
+                    
+                    <dl>
+                        <dt>File</dt>
+                            <dd><a href="../files/functions.Fim.Room.html"><div class="path-wrapper">functions/Fim/Room.php</div></a></dd>
+                                                <dt>Package</dt>
+                            <dd><div class="namespace-wrapper">Default</div></dd>
+                                                <dt>Class hierarchy</dt>
+                            <dd class="hierarchy">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+                                        <div class="namespace-wrapper"><a href="../classes/Fim.MagicGettersSetters.html">\Fim\MagicGettersSetters</a></div>
+                                                                    
+                                        <div class="namespace-wrapper"><a href="../classes/Fim.DynamicObject.html">\Fim\DynamicObject</a></div>
+                                                                                                    <div class="namespace-wrapper">\Fim\Room</div>
+                            </dd>
+
+                        
+                        
+                        
+                                                
+                                                                        </dl>
+                    <h2>Tags</h2>
+                    <table class="table table-condensed">
+                                            <tr><td colspan="2"><em>None found</em></td></tr>
+                                        </table>
+                </aside>
+            </div>
+
+                                    <a id="constants" name="constants"></a>
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <h2>Constants</h2>
+                </div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_OFFICIAL" name="constant_ROOM_OFFICIAL" class="anchor"></a>
+            <article id="constant_ROOM_OFFICIAL" class="constant">
+                <h3 class="">ROOM_OFFICIAL</h3>
+                <pre class="signature">ROOM_OFFICIAL = 1</pre>
+                <p><em>The room is official, and will receive special prominence in room searches.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_DELETED" name="constant_ROOM_DELETED" class="anchor"></a>
+            <article id="constant_ROOM_DELETED" class="constant">
+                <h3 class="">ROOM_DELETED</h3>
+                <pre class="signature">ROOM_DELETED = 4</pre>
+                <p><em>The room is deleted, and cannot be viewed (except by admins) or posted in.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_HIDDEN" name="constant_ROOM_HIDDEN" class="anchor"></a>
+            <article id="constant_ROOM_HIDDEN" class="constant">
+                <h3 class="">ROOM_HIDDEN</h3>
+                <pre class="signature">ROOM_HIDDEN = 8</pre>
+                <p><em>The room is hidden, and will not be shown in room searches.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_ARCHIVED" name="constant_ROOM_ARCHIVED" class="anchor"></a>
+            <article id="constant_ROOM_ARCHIVED" class="constant">
+                <h3 class="">ROOM_ARCHIVED</h3>
+                <pre class="signature">ROOM_ARCHIVED = 16</pre>
+                <p><em>The room is archived, and cannot be posted in, but can still be viewed.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_PERMISSION_VIEW" name="constant_ROOM_PERMISSION_VIEW" class="anchor"></a>
+            <article id="constant_ROOM_PERMISSION_VIEW" class="constant">
+                <h3 class="">ROOM_PERMISSION_VIEW</h3>
+                <pre class="signature">ROOM_PERMISSION_VIEW = 1</pre>
+                <p><em>The room can be viewed by the user.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_PERMISSION_POST" name="constant_ROOM_PERMISSION_POST" class="anchor"></a>
+            <article id="constant_ROOM_PERMISSION_POST" class="constant">
+                <h3 class="">ROOM_PERMISSION_POST</h3>
+                <pre class="signature">ROOM_PERMISSION_POST = 2</pre>
+                <p><em>The room can be posted in by the user.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_PERMISSION_TOPIC" name="constant_ROOM_PERMISSION_TOPIC" class="anchor"></a>
+            <article id="constant_ROOM_PERMISSION_TOPIC" class="constant">
+                <h3 class="">ROOM_PERMISSION_TOPIC</h3>
+                <pre class="signature">ROOM_PERMISSION_TOPIC = 4</pre>
+                <p><em>The room&#039;s topic can be changed by the user.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_PERMISSION_MODERATE" name="constant_ROOM_PERMISSION_MODERATE" class="anchor"></a>
+            <article id="constant_ROOM_PERMISSION_MODERATE" class="constant">
+                <h3 class="">ROOM_PERMISSION_MODERATE</h3>
+                <pre class="signature">ROOM_PERMISSION_MODERATE = 8</pre>
+                <p><em>The room can be moderated by the user, e.g. posts can be deleted.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_PERMISSION_PROPERTIES" name="constant_ROOM_PERMISSION_PROPERTIES" class="anchor"></a>
+            <article id="constant_ROOM_PERMISSION_PROPERTIES" class="constant">
+                <h3 class="">ROOM_PERMISSION_PROPERTIES</h3>
+                <pre class="signature">ROOM_PERMISSION_PROPERTIES = 16</pre>
+                <p><em>The room&#039;s properties can be altered by the user, e.g. the room&#039;s censors can be changed.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_PERMISSION_GRANT" name="constant_ROOM_PERMISSION_GRANT" class="anchor"></a>
+            <article id="constant_ROOM_PERMISSION_GRANT" class="constant">
+                <h3 class="">ROOM_PERMISSION_GRANT</h3>
+                <pre class="signature">ROOM_PERMISSION_GRANT = 128</pre>
+                <p><em>The room&#039;s permissions for users and groups can be changed by the user. This includes, for instance, making other users moderators.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_TYPE_PRIVATE" name="constant_ROOM_TYPE_PRIVATE" class="anchor"></a>
+            <article id="constant_ROOM_TYPE_PRIVATE" class="constant">
+                <h3 class="">ROOM_TYPE_PRIVATE</h3>
+                <pre class="signature">ROOM_TYPE_PRIVATE = &#039;private&#039;</pre>
+                <p><em>The room is private between two or more people.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_TYPE_OTR" name="constant_ROOM_TYPE_OTR" class="anchor"></a>
+            <article id="constant_ROOM_TYPE_OTR" class="constant">
+                <h3 class="">ROOM_TYPE_OTR</h3>
+                <pre class="signature">ROOM_TYPE_OTR = &#039;otr&#039;</pre>
+                <p><em>The room is off-the-record between two or more people.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_ROOM_TYPE_GENERAL" name="constant_ROOM_TYPE_GENERAL" class="anchor"></a>
+            <article id="constant_ROOM_TYPE_GENERAL" class="constant">
+                <h3 class="">ROOM_TYPE_GENERAL</h3>
+                <pre class="signature">ROOM_TYPE_GENERAL = &#039;general&#039;</pre>
+                <p><em></em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_PRIVATE_ROOM_STATE_NORMAL" name="constant_PRIVATE_ROOM_STATE_NORMAL" class="anchor"></a>
+            <article id="constant_PRIVATE_ROOM_STATE_NORMAL" class="constant">
+                <h3 class="">PRIVATE_ROOM_STATE_NORMAL</h3>
+                <pre class="signature">PRIVATE_ROOM_STATE_NORMAL = &#039;normal&#039;</pre>
+                <p><em>When a private room behaves normally.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_PRIVATE_ROOM_STATE_READONLY" name="constant_PRIVATE_ROOM_STATE_READONLY" class="anchor"></a>
+            <article id="constant_PRIVATE_ROOM_STATE_READONLY" class="constant">
+                <h3 class="">PRIVATE_ROOM_STATE_READONLY</h3>
+                <pre class="signature">PRIVATE_ROOM_STATE_READONLY = &#039;readOnly&#039;</pre>
+                <p><em>When a private room has members who are not allowed to private message eachother.</em></p>
+                
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="constant_PRIVATE_ROOM_STATE_DISABLED" name="constant_PRIVATE_ROOM_STATE_DISABLED" class="anchor"></a>
+            <article id="constant_PRIVATE_ROOM_STATE_DISABLED" class="constant">
+                <h3 class="">PRIVATE_ROOM_STATE_DISABLED</h3>
+                <pre class="signature">PRIVATE_ROOM_STATE_DISABLED = &#039;disabled&#039;</pre>
+                <p><em>When a private room is outright disabled, and should not be readable even by its member users.</em></p>
+                <p>This is typically the state of the room when one member does not exist, or private rooms are disabled entirely.</p>
+            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                            
+                                    <a id="properties" name="properties"></a>
+            <div class="row-fluid">
+                <div class="span8 content class">
+                    <h2>Properties</h2>
+                </div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_doCache" name="property_doCache" class="anchor"></a>
+            <article class="property">
+                <h3 class="public ">$doCache</h3>
+                <pre class="signature">$doCache : boolean</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                boolean
+                &mdash; If this instance should be recached (because some major change has occurred).                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.DynamicObject.html"><div class="path-wrapper">\Fim\DynamicObject</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_id" name="property_id" class="anchor"></a>
+            <article class="property">
+                <h3 class="public ">$id</h3>
+                <pre class="signature">$id : mixed</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                mixed
+                &mdash; The ID of the room.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_permArray" name="property_permArray" class="anchor"></a>
+            <article class="property">
+                <h3 class="public ">$permArray</h3>
+                <pre class="signature">$permArray : array</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                array
+                &mdash; A map of string permissions to their bits in a bitfield.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_pullGroups" name="property_pullGroups" class="anchor"></a>
+            <article class="property">
+                <h3 class="public ">$pullGroups</h3>
+                <pre class="signature">$pullGroups : array</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                array
+                &mdash; When one column in one of these arrays is resolved, the rest will be as well.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_resolved" name="property_resolved" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$resolved</h3>
+                <pre class="signature">$resolved : array</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                array
+                &mdash; The parameters that have been resolved for this instance of Fim\fimRoom. If an unresolved parameter is accessed, it will be resolved.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.DynamicObject.html"><div class="path-wrapper">\Fim\DynamicObject</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_exists" name="property_exists" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$exists</h3>
+                <pre class="signature">$exists : integer</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                integer
+                &mdash; Whether or not the object is known to have a corresponding entry in the database. (For now, true means it does, false either means we&#039;re not sure or it doesn&#039;t.)                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.DynamicObject.html"><div class="path-wrapper">\Fim\DynamicObject</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_name" name="property_name" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$name</h3>
+                <pre class="signature">$name : string</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                string
+                &mdash; The name of the room.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_nameSearchable" name="property_nameSearchable" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$nameSearchable</h3>
+                <pre class="signature">$nameSearchable : string</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                string
+                &mdash; The name of the room, transformed for searchability.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_options" name="property_options" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$options</h3>
+                <pre class="signature">$options : integer</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                integer
+                &mdash; A bitfield containing options for delete, official, hidden, and archive.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_ownerId" name="property_ownerId" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$ownerId</h3>
+                <pre class="signature">$ownerId : boolean</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                boolean
+                &mdash; The ID of the owner of the room. TODO: make user object?                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_topic" name="property_topic" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$topic</h3>
+                <pre class="signature">$topic : string</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                string
+                &mdash; The topic of the room.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_type" name="property_type" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$type</h3>
+                <pre class="signature">$type : string</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                string
+                &mdash; The room&#039;s type, e.g. &quot;private&quot;                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_privateRoomState" name="property_privateRoomState" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$privateRoomState</h3>
+                <pre class="signature">$privateRoomState : boolean</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                boolean
+                &mdash; The state of the private room, based on its members and global configuration. (Basically, we&#039;re caching it, since it&#039;s an O(n^3) operation to check, and requires finding all allowed users.)                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_parentalFlags" name="property_parentalFlags" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$parentalFlags</h3>
+                <pre class="signature">$parentalFlags : array</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                array
+                &mdash; An array of parental flags applied to the room.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_parentalAge" name="property_parentalAge" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$parentalAge</h3>
+                <pre class="signature">$parentalAge : integer</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                integer
+                &mdash; The room&#039;s parental age (that is, the age a user should be to participate in a room).                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_defaultPermissions" name="property_defaultPermissions" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$defaultPermissions</h3>
+                <pre class="signature">$defaultPermissions : integer</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                integer
+                &mdash; The default permission bitfield for the room.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_lastMessageId" name="property_lastMessageId" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$lastMessageId</h3>
+                <pre class="signature">$lastMessageId : integer</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                integer
+                &mdash; The ID of the last message that was posted in this room.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_lastMessageTime" name="property_lastMessageTime" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$lastMessageTime</h3>
+                <pre class="signature">$lastMessageTime : integer</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                integer
+                &mdash; The time of the last message that was posted in this room.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_messageCount" name="property_messageCount" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$messageCount</h3>
+                <pre class="signature">$messageCount : integer</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                integer
+                &mdash; The number of messages that have been posted in this room.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_flags" name="property_flags" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$flags</h3>
+                <pre class="signature">$flags : array</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                array
+                &mdash; A list of flags for this room. TODO: what are they for?                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_encodedId" name="property_encodedId" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$encodedId</h3>
+                <pre class="signature">$encodedId : string</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                string
+                &mdash; The room&#039;s ID encoded for binary storage.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_watchedByUsers" name="property_watchedByUsers" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$watchedByUsers</h3>
+                <pre class="signature">$watchedByUsers : array</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                array
+                &mdash; A list of users watching this room.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="property_censorWordsArray" name="property_censorWordsArray" class="anchor"></a>
+            <article class="property">
+                <h3 class="protected ">$censorWordsArray</h3>
+                <pre class="signature">$censorWordsArray : array</pre>
+                <p><em></em></p>
+                
+
+                                <h4>Type</h4>
+                array
+                &mdash; An array of censor words applied to this room, to aid in caching.                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                        <dl>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                            
+                                    <a id="methods" name="methods"></a>
+            <div class="row-fluid">
+                <div class="span8 content class"><h2>Methods</h2></div>
+                <aside class="span4 detailsbar"></aside>
+            </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_populateFromArray" name="method_populateFromArray" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">populateFromArray()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">populateFromArray(array  <span class="argument">$data</span>) : boolean</pre>
+                <p><em>Populates the object&#039;s parameters based on an associative array.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>array</td>
+                                <td>$data </td>
+                                <td><p>An array of object data.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                            &mdash; <p>Returns false if object data is empty, true otherwise.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.DynamicObject.html"><div class="path-wrapper">\Fim\DynamicObject</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_set" name="method_set" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">set()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">set(  <span class="argument">$property</span>,   <span class="argument">$value</span>) </pre>
+                <p><em>Invokes setters, or sets by property.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$property </td>
+                                <td><p>string The property to set.</p></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$value </td>
+                                <td><p>mixed The value to set the property to.</p></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Exception</dt>
+                            <dd><p>If a property doesn't exist.</p></dd>
+                                                                    </dl>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.MagicGettersSetters.html"><div class="path-wrapper">\Fim\MagicGettersSetters</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_get" name="method_get" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">get()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">get(  <span class="argument">$property</span>) </pre>
+                <p><em>Invokes getters, or gets by property.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$property </td>
+                                <td><p>string The property to get.</p></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Exception</dt>
+                            <dd><p>If a property doesn't exist.</p></dd>
+                                                                    </dl>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.MagicGettersSetters.html"><div class="path-wrapper">\Fim\MagicGettersSetters</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_resolve" name="method_resolve" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">resolve()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">resolve(array  <span class="argument">$properties</span>) </pre>
+                <p><em>Resolves the list of properties from the database. Previously resolved properties are left alone.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>array</td>
+                                <td>$properties </td>
+                                <td><p>array list of properties ot resolve</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                                            <dt>See also</dt>
+                                                                <dd><a href="fimDynamicObject::resolve"><span class="namespace-wrapper">fimDynamicObject::resolve</span></a></dd>
+                                                                </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_resolveAll" name="method_resolveAll" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">resolveAll()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">resolveAll() : boolean</pre>
+                <p><em>Resolves the entirety of the Fim\fimRoom object. It will not resolve already-resolved properties.</em></p>
+                
+
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Exception</dt>
+                            <dd></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_resolveFromPullGroup" name="method_resolveFromPullGroup" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">resolveFromPullGroup()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">resolveFromPullGroup(  <span class="argument">$needle</span>) </pre>
+                <p><em>Resolves the needle property and all similar properties.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$needle </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Fim\Exception</dt>
+                            <dd><p>If matching pullgroup not found.</p></dd>
+                                                                    </dl>
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.DynamicObject.html"><div class="path-wrapper">\Fim\DynamicObject</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_exists" name="method_exists" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">exists()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">exists() : boolean</pre>
+                <p><em></em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                            &mdash; <p>true when the object has a corresponding entry in the database, false otherwise</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                                            <dt>See also</dt>
+                                                                <dd><a href=""><span class="namespace-wrapper">\Fim\dynamicObject::exists()</span></a></dd>
+                                                                </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getterName" name="method_getterName" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getterName()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getterName(\Fim\string  <span class="argument">$property</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>\Fim\string</td>
+                                <td>$property </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.MagicGettersSetters.html"><div class="path-wrapper">\Fim\MagicGettersSetters</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_hasGetter" name="method_hasGetter" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">hasGetter()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">hasGetter(\Fim\string  <span class="argument">$property</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>\Fim\string</td>
+                                <td>$property </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.MagicGettersSetters.html"><div class="path-wrapper">\Fim\MagicGettersSetters</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setterName" name="method_setterName" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">setterName()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setterName(\Fim\string  <span class="argument">$property</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>\Fim\string</td>
+                                <td>$property </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.MagicGettersSetters.html"><div class="path-wrapper">\Fim\MagicGettersSetters</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_hasSetter" name="method_hasSetter" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">hasSetter()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">hasSetter(\Fim\string  <span class="argument">$property</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>\Fim\string</td>
+                                <td>$property </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.MagicGettersSetters.html"><div class="path-wrapper">\Fim\MagicGettersSetters</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_propertyExists" name="method_propertyExists" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">propertyExists()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">propertyExists(\Fim\string  <span class="argument">$property</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>\Fim\string</td>
+                                <td>$property </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.MagicGettersSetters.html"><div class="path-wrapper">\Fim\MagicGettersSetters</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method___construct" name="method___construct" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">__construct()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">__construct(  <span class="argument">$roomData</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$roomData </td>
+                                <td><p>mixed Should either be an array or an integer (other values will simply fail to populate the object's data). If an array, should correspond with a row obtained from the <code>rooms</code> database, if an integer should correspond with the room ID.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_isPrivateRoomId" name="method_isPrivateRoomId" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">isPrivateRoomId()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">isPrivateRoomId(string  <span class="argument">$id</span>) : boolean</pre>
+                <p><em>Returns true iif $id is a private or off-the-record room ID string, e.g. &quot;o1,2&quot; or &quot;p5,60&quot;. The user IDs must be greater than 0 for this to return true. Duplicates are not checked for, though they will be flagged by hasPermission _and_ will be removed by Fim\fimRoom-&gt;getPrivateRoomMembers(). (Well, almost: the first two entries are checked for duplication. If they are duplicates, the string is rejected. This ensures that at least two non-duplicate IDs exist.)</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>string</td>
+                                <td>$id </td>
+                                <td><p>The ID string to check.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                            &mdash; <p>True if the ID string can be evaluated as a private room ID string, false otherwise.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_encodeId" name="method_encodeId" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">encodeId()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">encodeId(  <span class="argument">$id</span>) : string</pre>
+                <p><em>Packs the ID into hexadecimal, using the following scheme:
+- if multiple &quot;userIds&quot; in the ID, convert them all into a series of base-15 numbers. If only a single roomId, convert it into base-15.</em></p>
+                <ul>
+<li>if private room, prepend &quot;f&quot;. If off-the-record room, prepend &quot;ff&quot;.</li>
+<li>append each of our ids in turn, with 'f' appended at the end.</li>
+</ul>
+<p>For instance, &quot;p1,2,100&quot; is encoded at 0xF1F2F6AF. &quot;o1,2,100&quot; is encoded as 0xFF1F2F6AF. &quot;100&quot; is encoded as 0x6AF.</p>
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$id </td>
+                                <td><p>string The roomId to encode.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    string
+                                            &mdash; <p>The roomId encoded.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_decodeId" name="method_decodeId" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">decodeId()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">decodeId(  <span class="argument">$id</span>) : string</pre>
+                <p><em>Decodes a packed roomId into its string representation by {@link Fim\fimRoom::encodeId()}.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$id </td>
+                                <td><p>string The roomId encoded.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    string
+                                            &mdash; <p>The roomId decoded, e.g. &quot;12&quot; or &quot;p1,3&quot;</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getPermissionsArray" name="method_getPermissionsArray" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getPermissionsArray()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getPermissionsArray(  <span class="argument">$field</span>) : array</pre>
+                <p><em>Gets a displayable array of permsisions based on a permissions bitfield.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$field </td>
+                                <td><p>int The bitfield storing the permissions.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    array
+                                            &mdash; <p>An associative array corresponding to the permissions user has based on their bitfield. Keys are &quot;view&quot;, &quot;post&quot;, &quot;moderate&quot;, etc., and values are true if the user has the given permission, false otherwise.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getPermissionsField" name="method_getPermissionsField" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getPermissionsField()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getPermissionsField(  <span class="argument">$permissionsArray</span>) </pre>
+                <p><em>Generates a permissions bitfield from a list of permission strings.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$permissionsArray </td>
+                                <td><p>array List of strings corresponding with permissions in {@link Fim\fimRoom::$permArray}.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                            <span class="label label-info">static</span>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method___get" name="method___get" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">__get()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">__get(  <span class="argument">$property</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$property </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getName" name="method_getName" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getName()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getName() : array</pre>
+                <p><em></em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    array
+                                            &mdash; <p>The name of this room, which will be automatically generated if it is a private room.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getWatchedByUsers" name="method_getWatchedByUsers" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getWatchedByUsers()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getWatchedByUsers() : array</pre>
+                <p><em></em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    array
+                                            &mdash; <p>The list of users watching this room for new messages.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getDeleted" name="method_getDeleted" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getDeleted()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getDeleted() : boolean</pre>
+                <p><em></em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                            &mdash; <p>If the room is currently deleted (and will only be readable by administrators).</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getArchived" name="method_getArchived" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getArchived()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getArchived() : boolean</pre>
+                <p><em></em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                            &mdash; <p>If the room is currently in archived mode (and will only be readable).</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getOfficial" name="method_getOfficial" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getOfficial()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getOfficial() : boolean</pre>
+                <p><em></em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                            &mdash; <p>If the room is currently in official mode (and will be prioritised when getting the list of rooms).</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getHidden" name="method_getHidden" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getHidden()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getHidden() : boolean</pre>
+                <p><em></em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                            &mdash; <p>If the room is currently in hidden mode (and won't be shown when getting the list of rooms).</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_isGeneralRoom" name="method_isGeneralRoom" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">isGeneralRoom()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">isGeneralRoom() : boolean</pre>
+                <p><em>Returns true if the room type is a general room, or false otherwise.</em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_isPrivateRoom" name="method_isPrivateRoom" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">isPrivateRoom()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">isPrivateRoom() : boolean</pre>
+                <p><em>Returns true if the room type is a private or OTR room, or false otherwise.</em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getPrivateRoomMemberIds" name="method_getPrivateRoomMemberIds" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getPrivateRoomMemberIds()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getPrivateRoomMemberIds() : array</pre>
+                <p><em>Returns an array of the user IDs who are part of the private/otr room. It does not check to see if they exist.</em></p>
+                
+
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Exception</dt>
+                            <dd><p>TODO: move into fimRoomPrivate class</p></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    array
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getPrivateRoomMembers" name="method_getPrivateRoomMembers" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getPrivateRoomMembers()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getPrivateRoomMembers() : array&lt;mixed,\Fim\User&gt;</pre>
+                <p><em>Returns an array of Fim\fimUser objects corresponding with those returned by getPrivateRoomMemberIds(), though only valid members (those that exist in the database) will be returned. Thus, the count of this may differ from the count of getPrivateRoomMemberIds(), and this fact can be used to check if the room exists solely of valid members.</em></p>
+                
+
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Exception</dt>
+                            <dd><p>TODO: move into fimRoomPrivate class</p></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    array&lt;mixed,<a href="../classes/Fim.User.html">\Fim\User</a>&gt;
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_arePrivateRoomMembersValid" name="method_arePrivateRoomMembersValid" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">arePrivateRoomMembersValid()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">arePrivateRoomMembersValid() : boolean</pre>
+                <p><em></em></p>
+                
+
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Exception</dt>
+                            <dd><p>If the room is not a private room.
+TODO: move into fimRoomPrivate class</p></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getPrivateRoomState" name="method_getPrivateRoomState" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getPrivateRoomState()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getPrivateRoomState() : boolean</pre>
+                <p><em>Determines whether all private room members are allowed to private message all other members, based on ignore/friends lists and each user&#039;s privacy settings.</em></p>
+                <p>Performance wise, this is typically O(n^3), although:</p>
+<ul>
+<li>the first two ns will be fairly small (10 is max) -- this is the two foreach loops.</li>
+<li>the third n may be bigger -- this is the in_array(, friended/ignoredUsers)</li>
+</ul>
+
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Exception</dt>
+                            <dd><p>If the room is not a private room.</p></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                            &mdash; <p>True if all private room members are allowed to private message all other private room members, false otherwise.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getEncodedId" name="method_getEncodedId" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getEncodedId()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getEncodedId() : string</pre>
+                <p><em></em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    string
+                                            &mdash; <p>The current room ID encoded for compact storage.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getCensorWords" name="method_getCensorWords" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">getCensorWords()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getCensorWords() : array</pre>
+                <p><em></em></p>
+                
+
+                
+                
+                                    <h4>Returns</h4>
+                    array
+                                            &mdash; <p>The list of censor words applied to this room.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_censorScan" name="method_censorScan" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">censorScan()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">censorScan(  <span class="argument">$text</span>, boolean  <span class="argument">$dontAsk = false</span>,   <span class="argument">$matches</span>) : string</pre>
+                <p><em>Scan a string for words to censor, based on the censor lists active for this room.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$text </td>
+                                <td><ul>
+<li>The text to censor</li>
+</ul></td>
+                            </tr>
+                                                    <tr>
+                                <td>boolean</td>
+                                <td>$dontAsk </td>
+                                <td><ul>
+<li>If true, we won't stop for words that merely trigger confirms</li>
+</ul></td>
+                            </tr>
+                                                    <tr>
+                                <td></td>
+                                <td>$matches </td>
+                                <td><ul>
+<li>This array will fill with all matched words.</li>
+</ul></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    string
+                                            &mdash; <p>text with substitutions made.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setDatabase" name="method_setDatabase" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">setDatabase()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setDatabase(  <span class="argument">$roomParameters</span>) : mixed</pre>
+                <p><em>Modify or create a room.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$roomParameters </td>
+                                <td><p>array Data to set. These values will be set both in the Fim\fimRoom object and in the database.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                                    <h4>Returns</h4>
+                    mixed
+                                            &mdash; <p>The room's ID if inserted, otherwise true if success/false if failure.</p>
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setDatabaseTopic" name="method_setDatabaseTopic" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">setDatabaseTopic()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setDatabaseTopic(  <span class="argument">$topic</span>) </pre>
+                <p><em>Set the topic for the room.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$topic </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_getColumns" name="method_getColumns" class="anchor"></a>
+            <article class="method">
+                <h3 class="protected ">getColumns()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">getColumns(array  <span class="argument">$columns</span>) : boolean</pre>
+                <p><em>Resolves an array of database columns. This can be called preemptively to prevent Fim\fimRoom from making multiple database calls to resolve itself.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td>array</td>
+                                <td>$columns </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                                    <h4>Throws</h4>
+                    <dl>
+                                                    <dt>\Exception</dt>
+                            <dd></dd>
+                                                                    </dl>
+                
+                                    <h4>Returns</h4>
+                    boolean
+                                    
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setId" name="method_setId" class="anchor"></a>
+            <article class="method">
+                <h3 class="protected ">setId()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setId(  <span class="argument">$id</span>) </pre>
+                <p><em>Set this room&#039;s ID. This will also set most other properties if this is a private room ID.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$id </td>
+                                <td><p>string The new room ID.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setTopic" name="method_setTopic" class="anchor"></a>
+            <article class="method">
+                <h3 class="protected ">setTopic()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setTopic(  <span class="argument">$topic</span>) </pre>
+                <p><em>Set this to the room&#039;s topic only if topic functionality is enabled.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$topic </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setParentalAge" name="method_setParentalAge" class="anchor"></a>
+            <article class="method">
+                <h3 class="protected ">setParentalAge()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setParentalAge(  <span class="argument">$parentalAge</span>) </pre>
+                <p><em>Set this to the room&#039;s parental age only if parental function is enabled.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$parentalAge </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setParentalFlags" name="method_setParentalFlags" class="anchor"></a>
+            <article class="method">
+                <h3 class="protected ">setParentalFlags()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setParentalFlags(  <span class="argument">$parentalFlags</span>) </pre>
+                <p><em>Set this to the room&#039;s parental flags only if parental function is enabled.</em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$parentalFlags </td>
+                                <td><p>string A comma-separated list of parental flags from the database.</p></td>
+                            </tr>
+                                            </table>
+                
+                
+                
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                    <dt>Inherited from</dt>
+                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
+                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                                    </div>
+    </section>
+
+    <div id="source-view" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="source-view-label" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="source-view-label">Room.php</h3>
+        </div>
+        <div class="modal-body">
+            <pre data-src="../files/functions/Fim/Room.php.txt" class="language-php line-numbers"></pre>
+        </div>
+    </div>
+
+    <footer class="row-fluid">
+        <section class="span10 offset2">
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <section class="row-fluid footer-sections">
+                        <section class="span4">
+                                                        <h1><i class="icon-code"></i></h1>
+                            <div>
+                                <ul>
+                                                                            <li><a href="../namespaces/Cache.html">\Cache</a></li>
+                                                                            <li><a href="../namespaces/Database.html">\Database</a></li>
+                                                                            <li><a href="../namespaces/Fim.html">\Fim</a></li>
+                                                                            <li><a href="../namespaces/Http.html">\Http</a></li>
+                                                                            <li><a href="../namespaces/Login.html">\Login</a></li>
+                                                                            <li><a href="../namespaces/Stream.html">\Stream</a></li>
+                                                                    </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-bar-chart"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../graphs/class.html">Class Hierarchy Diagram</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                        <section class="span4">
+                                                        <h1><i class="icon-pushpin"></i></h1>
+                            <div>
+                                <ul>
+                                    <li><a href="../reports/errors.html">Errors</a></li>
+                                    <li><a href="../reports/markers.html">Markers</a></li>
+                                </ul>
+                            </div>
+                        </section>
+                    </section>
+                </section>
+            </section>
+            <section class="row-fluid">
+                <section class="span10 offset1">
+                    <hr />
+                    Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
+                    on January 11th, 2018 at 00:50.
+                </section>
+            </section>
+        </section>
+    </footer>
+</div>
+
+</body>
+</html>
