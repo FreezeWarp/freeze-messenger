@@ -52,6 +52,9 @@ class Config {
     /** @var int A regex any avatar path must NOT match. (Vanilla logins only.) */
     public static $avatarMustNotMatchRegex = false;
 
+    /** @var bool Whether or not a user-set avatar must exist (it will be checked by making an HTTP request). */
+    public static $avatarMustExist = true;
+
     /** @var int An avatar to be used if a user has not specified one. */
     public static $avatarDefault = '';
 
@@ -61,6 +64,9 @@ class Config {
 
     /** @var int A regex any user profile must NOT match. (Vanilla logins only.) */
     public static $profileMustNotMatchRegex = false;
+
+    /** @var bool Whether or not a user-set profile must exist (it will be checked by making an HTTP request). */
+    public static $profileMustExist = true;
 
 
 

@@ -198,88 +198,67 @@ if ($user->isAnonymousUser())
 if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') {
 
     /************************************
-     ***** Vanilla Only Properties ******
+     ************ Avatar ****************
      ************************************/
-    if ($loginConfig['method'] === 'vanilla') { // TODO: move into rest now that we have permissions for these
+    if (isset($request['avatar'])) {
+        if (!$user->hasPriv('selfChangeAvatar'))
+            $xmlData['editUserOptions']['avatar'] = (new fimError('noPerm', 'You cannot change your avatar.', null, true))->getArray();
 
-        /************************************
-         ************ Avatar ****************
-         ************************************/
-        if (isset($request['avatar'])) {
-            if (!$user->hasPriv('selfChangeAvatar'))
-                $xmlData['editUserOptions']['avatar'] = (new fimError('noPerm', 'You cannot change your avatar.', null, true))->getArray();
+        elseif ($request['avatar'] === '')
+            $updateArray['avatar'] = $request['avatar'];
 
-            elseif ($request['avatar'] === '')
-                $updateArray['avatar'] = $request['avatar'];
+        elseif ((\Fim\Config::$avatarMustMatchRegex && !preg_match(\Fim\Config::$avatarMustMatchRegex, $request['avatar']))
+            || (\Fim\Config::$avatarMustNotMatchRegex && preg_match(\Fim\Config::$avatarMustNotMatchRegex, $request['avatar'])))
+            $xmlData['editUserOptions']['avatar'] = (new fimError('bannedFile', 'The avatar specified is not allowed.', null, true))->getArray();
 
-            elseif ((\Fim\Config::$avatarMustMatchRegex && !preg_match(\Fim\Config::$avatarMustMatchRegex, $request['avatar']))
-                || (\Fim\Config::$avatarMustNotMatchRegex && preg_match(\Fim\Config::$avatarMustNotMatchRegex, $request['avatar'])))
-                $xmlData['editUserOptions']['avatar'] = (new fimError('bannedFile', 'The avatar specified is not allowed.', null, true))->getArray();
+        elseif (filter_var($request['avatar'], FILTER_VALIDATE_URL) === FALSE)
+            $xmlData['editUserOptions']['avatar'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->getArray();
 
-            elseif (filter_var($request['avatar'], FILTER_VALIDATE_URL) === FALSE)
-                $xmlData['editUserOptions']['avatar'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->getArray();
+        elseif (\Fim\Config::$avatarMustExist && !Http\CurlRequest::exists($request['avatar']))
+            $xmlData['editUserOptions']['avatar'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->getArray();
 
-            elseif (!Http\CurlRequest::exists($request['avatar']))
-                $xmlData['editUserOptions']['avatar'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->getArray();
+        else {
+            $imageData = getimagesize($request['avatar']);
 
-            else {
-                $imageData = getimagesize($request['avatar']);
+            if ($imageData[0] <= \Fim\Config::$avatarMinimumWidth || $imageData[1] <= \Fim\Config::$avatarMinimumHeight)
+                $xmlData['editUserOptions']['avatar'] = (new fimError('smallSize', 'The avatar specified is too small.', null, true))->getArray();
 
-                if ($imageData[0] <= \Fim\Config::$avatarMinimumWidth || $imageData[1] <= \Fim\Config::$avatarMinimumHeight)
-                    $xmlData['editUserOptions']['avatar'] = (new fimError('smallSize', 'The avatar specified is too small.', null, true))->getArray();
+            elseif ($imageData[0] >= \Fim\Config::$avatarMaximumWidth || $imageData[1] >= \Fim\Config::$avatarMaximumHeight)
+                $xmlData['editUserOptions']['avatar'] = (new fimError('bigSize', 'The avatar specified is too large.', null, true))->getArray();
 
-                elseif ($imageData[0] >= \Fim\Config::$avatarMaximumWidth || $imageData[1] >= \Fim\Config::$avatarMaximumHeight)
-                    $xmlData['editUserOptions']['avatar'] = (new fimError('bigSize', 'The avatar specified is too large.', null, true))->getArray();
-
-                elseif (!in_array($imageData[2], \Fim\Config::$imageTypesAvatar))
-                    $xmlData['editUserOptions']['avatar'] = (new fimError('badType', 'The avatar is not a valid image type.', null, true))->getArray();
-
-                else
-                    $updateArray['avatar'] = $request['avatar'];
-            }
-        }
-
-
-
-        /************************************
-         ************** Profile *************
-         ************************************/
-        if (isset($request['profile'])) {
-            // TODO: Add/test regex policy.
-            if (!$user->hasPriv('selfChangeProfile'))
-                $xmlData['editUserOptions']['profile'] = (new fimError('noPerm', 'You cannot change your profile.', null, true))->getArray();
-
-            elseif ($request['profile'] === '')
-                $updateArray['profile'] = $request['profile'];
-
-            elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === false)
-                $xmlData['editUserOptions']['profile'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->getArray();
-
-            elseif ((\Fim\Config::$profileMustMatchRegex && !preg_match(\Fim\Config::$profileMustMatchRegex, $request['profile']))
-                || (\Fim\Config::$profileMustNotMatchRegex && preg_match(\Fim\Config::$profileMustNotMatchRegex, $request['profile'])))
-                $xmlData['editUserOptions']['profile'] = (new fimError('bannedUrl', 'The URL specified is not allowed.', null, true))->getArray();
-
-//            elseif (!Http\CurlRequest::exists($request['profile']))
-//                $xmlData['editUserOptions']['profile'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->getArray();
+            elseif (!in_array($imageData[2], \Fim\Config::$imageTypesAvatar))
+                $xmlData['editUserOptions']['avatar'] = (new fimError('badType', 'The avatar is not a valid image type.', null, true))->getArray();
 
             else
-                $updateArray['profile'] = $request['profile'];
+                $updateArray['avatar'] = $request['avatar'];
         }
-
     }
+
+
 
     /************************************
-     * Error for Vanilla Only Properties*
+     ************** Profile *************
      ************************************/
-    else {
-        if (isset($request['avatar']))
-            $xmlData['editUserOptions']['avatar'] = (new fimError('avatarDisabled', 'The avatar can not be changed through this API.', null, true))->getArray();
+    if (isset($request['profile'])) {
+        if (!$user->hasPriv('selfChangeProfile'))
+            $xmlData['editUserOptions']['profile'] = (new fimError('noPerm', 'You cannot change your profile.', null, true))->getArray();
 
-        if (isset($request['profile']))
-            $xmlData['editUserOptions']['profile'] = (new fimError('profileDisabled', 'The profile can not be changed through this API.', null, true))->getArray();
+        elseif ($request['profile'] === '')
+            $updateArray['profile'] = $request['profile'];
+
+        elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === false)
+            $xmlData['editUserOptions']['profile'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->getArray();
+
+        elseif ((\Fim\Config::$profileMustMatchRegex && !preg_match(\Fim\Config::$profileMustMatchRegex, $request['profile']))
+            || (\Fim\Config::$profileMustNotMatchRegex && preg_match(\Fim\Config::$profileMustNotMatchRegex, $request['profile'])))
+            $xmlData['editUserOptions']['profile'] = (new fimError('bannedUrl', 'The URL specified is not allowed.', null, true))->getArray();
+
+        elseif (\Fim\Config::$profileMustExist && !Http\CurlRequest::exists($request['profile']))
+            $xmlData['editUserOptions']['profile'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->getArray();
+
+        else
+            $updateArray['profile'] = $request['profile'];
     }
-
-    /*** END: Vanilla-Only Properties ***/
 
 
 
