@@ -81,7 +81,9 @@ popup.prototype.rooms.prototype.retrieve = function() {
             if (Object.keys(rooms).length == 0) {
                 $('#active-view-rooms button[name=roomListNext]').attr('disabled', true);
 
-                $('#roomTableHtml').append('<tr><td colspan="3">No Results Found</td></tr>');
+                $('#roomTableHtml').html(
+                    Handlebars.compile($('#view-rooms-emptyResultSet').html())(fim_getHandlebarsPhrases())
+                );
             }
             else {
                 $('#active-view-rooms button[name=roomListNext]').removeAttr('disabled');
