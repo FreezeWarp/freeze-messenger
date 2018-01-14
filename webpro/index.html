@@ -12,10 +12,7 @@
     <meta name="keywords" content="im, instant messenger"/>
 
     <link rel="icon" id="favicon" type="image/x-icon" href="images/favicon.ico"/>
-    <link rel="stylesheet"
-          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
-          integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy"
-          crossorigin="anonymous">
+
 
 
     <!-- START Scripts -->
@@ -880,48 +877,33 @@ Pending Update
         <div class="card-body">
             <div class="tab-content p-0 p-md-4" id="settingsTabsContent">
                 <div class="tab-pane fade" role="tabpanel" id="settings1">
-                    <!--
-                    <div id="settings1theme">
-                        <label for="theme">{{settingsThemeLabel}}</label>
-                        <select name="theme" id="theme">
-                            <option value="high-contrast">{{settingsThemeHighContrast}}</option>
-                            <option value="absolution">{{settingsThemeAbsolution}}</option>
-                            <option value="cupertino">{{settingsThemeCupertino}}</option>
-                            <option value="dark-hive">{{settingsThemeDarkhive}}</option>
-                            <option value="humanity">{{settingsThemeHumanity}}</option>
-                            <option value="ui-darkness">{{settingsThemejQueryUIDarkness}}</option>
-                            <option value="ui-lightness">{{settingsThemejQueryUILightness}}</option>
-                            <option value="memetically-pink">{{settingsThemeMemeticallyPink}}</option>
-                            <option value="metro">{{settingsThemeMetro}}</option>
-                            <option value="start">{{settingsThemeStart}}</option>
-                            <option value="trontastic">{{settingsThemeTrontastic}}</option>
-                            <option value="vader">{{settingsThemeVader}}</option>
-                        </select><br/>
-                        <small><span style="margin-left: 10px;">{{settingsThemeBlurb}}</span></small>
-                        <br/><br/>
-                    </div>
-                    -->
-
                     <div class="pb-3">
                         <div class="input-group">
-                            <span class="input-group-addon">{{settingsFontsizeLabel}}</span>
-                            <select name="fontsize" id="fontsize" class="form-control">
-                                <option value=".7">{{settingsFontsize50}}</option>
-                                <option value=".8">{{settingsFontsize60}}</option>
-                                <option value=".9">{{settingsFontsize75}}</option>
-                                <option value="1">{{settingsFontsize100}}</option>
-                                <option value="1.2">{{settingsFontsize125}}</option>
-                                <option value="1.4">{{settingsFontsize140}}</option>
-                                <option value="1.5">{{settingsFontsize150}}</option>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{settingsThemeLabel}}</span>
+                            </div>
+                            <select name="theme" class="form-control" onchange="
+                                fim_loadTheme(this.value);
+                                $.cookie('webpro_theme', this.value, { expires : 14 });
+                                window.settings.theme = this.value;
+                            ">
+                                {{#select settings.theme}}
+                                <option value="css">Default</option>
+                                <option value="darkly">Darkly (Experimental)</option>
+                                <option value="materia">Materia (Experimental)</option>
+                                <option value="simplex">Simplex</option>
+                                <option value="united">United</option>
+                                <option value="cerulean">Cerulean</option>
+                                {{/select}}
                             </select>
                         </div>
-                        <small class="form-text text-muted">{{settingsFontsizeBlurb}}</small>
+                        <small class="form-text text-muted">{{settingsThemeBlurb}}</small>
                     </div>
 
                     <div class="pb-3">
                         <label>
                             <span class="btn btn-primary">
-                                <input type="checkbox" name="showAvatars" />
+                                <input type="checkbox" name="showAvatars" {{#if settings.showAvatars}} checked="checked" {{/if}} />
                                 <strong>{{settingsShowAvatarsLabel}}</strong>
                             </span><br />
                             <small class="form-text text-muted">{{settingsShowAvatarsBlurb}}</small>
@@ -931,7 +913,7 @@ Pending Update
                     <div class="pb-3">
                         <label>
                             <span class="btn btn-primary">
-                                <input type="checkbox" name="reversePostOrder" />
+                                <input type="checkbox" name="reversePostOrder" {{#if settings.reversePostOrder}} checked="checked" {{/if}} />
                                 <strong>{{settingsReversePostOrderLabel}}</strong>
                             </span><br />
                             <small class="form-text text-muted">{{settingsReversePostOrderBlurb}}</small>
@@ -941,7 +923,7 @@ Pending Update
                     <div class="pb-2">
                         <label>
                             <span class="btn btn-primary">
-                                <input type="checkbox" name="audioDing" />
+                                <input type="checkbox" name="audioDing" {{#if settings.audioDing}} checked="checked" {{/if}} />
                                 <strong>{{settingsAudioDingLabel}}</strong>
                             </span><br />
                             <small class="form-text text-muted">{{settingsAudioDingBlurb}}</small>
@@ -950,8 +932,14 @@ Pending Update
 
                     <div class="pb-4">
                         <div class="input-group">
-                            <span class="input-group-addon">{{settingsAudioVolumeLabel}}</span>
-                            <input type="range" min="0" max="1" name="audioVolume" value=".5" step=".01"/>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{settingsAudioVolumeLabel}}</span>
+                            </div>
+                            <input type="range" min="0" max="1" name="audioVolume" value=".5" step=".01"
+                                onchange="
+                                    $.cookie('webpro_audioVolume', this.value, { expires : 14 });
+                                    window.snd.volume = this.value / 100;
+                                " />
                         </div>
                         <small class="form-text text-muted">{{settingsAudioVolumeBlurb}}</small>
                     </div>
@@ -959,7 +947,7 @@ Pending Update
                     <div>
                         <label>
                             <span class="btn btn-primary">
-                                <input type="checkbox" name="webkitNotifications" />
+                                <input type="checkbox" name="webkitNotifications" {{#if settings.webkitNotifications}} checked="checked" {{/if}} />
                                 <strong>{{settingsWebkitNotificationsLabel}}</strong>
                             </span><br />
                             <small class="form-text text-muted">{{settingsWebkitNotificationsBlurb}}</small>
@@ -983,17 +971,17 @@ Pending Update
                 <div class="tab-pane fade" role="tabpanel" id="settings6">
                     <!-- todo: global disable, login method disable -->
                     {{#unless activeLogin.userData.anonId}}
-                    <div class="pb-3">
-                        <span>{{settingsIgnoreListLabel}}</span>
-                        <div name="ignoreListContainer"></div>
-                        <small class="form-text text-muted">{{settingsIgnoreListBlurb}}</small>
-                    </div>
+                        <div class="pb-3">
+                            <span>{{settingsIgnoreListLabel}}</span>
+                            <div name="ignoreListContainer"></div>
+                            <small class="form-text text-muted">{{settingsIgnoreListBlurb}}</small>
+                        </div>
 
-                    <div class="pb-4">
-                        <span>{{settingsFriendsListLabel}}</span>
-                        <div name="friendsListContainer"></div>
-                        <small class="form-text text-muted">{{settingsFriendsListBlurb}}</small>
-                    </div>
+                        <div class="pb-4">
+                            <span>{{settingsFriendsListLabel}}</span>
+                            <div name="friendsListContainer"></div>
+                            <small class="form-text text-muted">{{settingsFriendsListBlurb}}</small>
+                        </div>
                     {{/unless}}
 
                     {{#unless activeLogin.userData.anonId}}
@@ -1024,40 +1012,70 @@ Pending Update
                     <h4>{{settingsDefaultFormattingLabel}}</h4>
                     <div id="settings4defaultFont">
                         <div class="row mb-2">
-                            <div class="input-group col">
-                                <span class="input-group-addon">Colour</span>
-                                <input class="form-control" id="defaultColour" name="defaultColour"/>
-                            </div>
+                            {{#if serverSettings.formatting.color}}
+                                <div class="input-group col">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Colour</span>
+                                    </div>
+                                    <input class="form-control" id="defaultColour" name="defaultColour"/>
+                                </div>
+                            {{/if}}
 
-                            <div class="input-group col">
-                                <span class="input-group-addon">Highlight</span>
-                                <input class="form-control" id="defaultHighlight" name="defaultHighlight"/>
-                            </div>
+                            {{#if serverSettings.formatting.highlight}}
+                                <div class="input-group col">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">Highlight</span>
+                                    </div>
+                                    <input class="form-control" id="defaultHighlight" name="defaultHighlight"/>
+                                </div>
+                            {{/if}}
                         </div>
 
-                        <div class="input-group mb-2">
-                            <span class="input-group-addon">Face</span>
-                            <select name="defaultFace" id="defaultFace" class="form-control"></select>
-                        </div>
+                        {{#if serverSettings.formatting.fonts}}
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Face</span>
+                                </div>
+                                <select name="defaultFace" id="defaultFace" class="form-control" onchange="$('#fontPreview').css('fontFamily', serverSettings.formatting.fonts[this.value])">
+                                    {{#each serverSettings.formatting.fonts}}
+                                        <option value="{{@key}}" style="font-family: {{this}}" {{#ifCond this '==' (lookup @root.activeLogin.userData.messageFormattingObj 'font-family')}} selected="selected" {{/ifCond}}>{{@key}}</option>
+                                    {{/each}}
+                                </select>
+                            </div>
+                        {{/if}}
 
                         <div id="defaultBoldItalics">
-                            <label>
-                                        <span class="btn btn-secondary">
-                                            <input type="checkbox" name="defaultBold" id="defaultBold" />
-                                            <strong>{{settingsDefaultFormattingBoldLabel}}</strong>
-                                        </span>
-                            </label>
+                            {{#if serverSettings.formatting.bold}}
+                                <label>
+                                    <span class="btn btn-secondary">
+                                        <input type="checkbox" name="defaultBold" id="defaultBold"
+                                            {{#ifCond (lookup activeLogin.userData.messageFormattingObj 'font-weight') '==' 'bold'}}
+                                                checked="checked"
+                                            {{/ifCond}}
+                                            onchange="$('#fontPreview').css('font-weight', $(this).is(':checked') ? 'bold' : 'normal'); "
+                                        />
+                                        <strong>{{settingsDefaultFormattingBoldLabel}}</strong>
+                                    </span>
+                                </label>
+                            {{/if}}
 
-                            <label>
-                                        <span class="btn btn-secondary">
-                                            <input type="checkbox" name="defaultItalics" id="defaultItalics" />
-                                            <strong>{{settingsDefaultFormattingItalicsLabel}}</strong>
-                                        </span>
-                            </label>
+                            {{#if serverSettings.formatting.italics}}
+                                <label>
+                                    <span class="btn btn-secondary">
+                                        <input type="checkbox" name="defaultItalics" id="defaultItalics"
+                                            {{#ifCond (lookup activeLogin.userData.messageFormattingObj 'font-style') '==' 'italic'}}
+                                                checked="checked"
+                                            {{/ifCond}}
+                                            onchange="$('#fontPreview').css('font-style', $(this).is(':checked') ? 'italic' : 'normal'); "
+                                        />
+                                        <strong>{{settingsDefaultFormattingItalicsLabel}}</strong>
+                                    </span>
+                                </label>
+                            {{/if}}
                         </div>
 
                         <small>
-                            <span style="margin-left: 10px;" id="fontPreview">{{settingsDefaultFormattingPreview}}</span>
+                            <span style="margin-left: 10px; {{activeLogin.userData.messageFormatting}}" id="fontPreview">{{settingsDefaultFormattingPreview}}</span>
                         </small><br/><br/>
                     </div>
 
@@ -1065,7 +1083,7 @@ Pending Update
                     <div class="pb-3">
                         <label>
                                     <span class="btn btn-primary">
-                                        <input type="checkbox" name="disableFormatting" />
+                                        <input type="checkbox" name="disableFormatting" {{#if settings.disableFormatting}} checked="checked" {{/if}} />
                                         <strong>{{settingsDisableFormattingLabel}}</strong>
                                     </span><br />
                             <small class="form-text text-muted">{{settingsDisableFormattingBlurb}}</small>
@@ -1075,7 +1093,7 @@ Pending Update
                     <div class="pb-3">
                         <label>
                                     <span class="btn btn-primary">
-                                        <input type="checkbox" name="disableVideo" />
+                                        <input type="checkbox" name="disableVideo" {{#if settings.disableVideo}} checked="checked" {{/if}} />
                                         <strong>{{settingsDisableVideoLabel}}</strong>
                                     </span><br />
                             <small class="form-text text-muted">{{settingsDisableVideoBlurb}}</small>
@@ -1085,7 +1103,7 @@ Pending Update
                     <div class="pb-3">
                         <label>
                                     <span class="btn btn-primary">
-                                        <input type="checkbox" name="disableImage" />
+                                        <input type="checkbox" name="disableImage" {{#if settings.disableImage}} checked="checked" {{/if}} />
                                         <strong>{{settingsDisableImageLabel}}</strong>
                                     </span><br />
                             <small class="form-text text-muted">{{settingsDisableImageBlurb}}</small>
@@ -1095,7 +1113,9 @@ Pending Update
 
                 <div class="tab-pane fade show active" role="tabpanel" id="settings5">
                     <div class="input-group">
-                        <span class="input-group-addon">{{settingsLanguageLabel}}</span>
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">{{settingsLanguageLabel}}</span>
+                        </div>
                         <select class="form-control" name="language" id="language">
                             <option value="enGB">English (United Kingdom)</option>
                             <option value="enUS">English (United States)</option>
@@ -1107,10 +1127,12 @@ Pending Update
                         {{#if serverSettings.parentalControls.parentalEnabled}}
                         <div>
                             <div class="input-group">
-                                <span class="input-group-addon">{{settingsParentalAgeLabel}}</span>
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">{{settingsParentalAgeLabel}}</span>
+                                </div>
                                 <select class="form-control" name="parentalAge">
                                     {{#each serverSettings.parentalControls.parentalAges}}
-                                    <option value="{{this}}">{{lookup ../parentalAges this}}</option>
+                                        <option value="{{this}}" {{#ifCond this '==' @root.activeLogin.userData.parentalAge}} selected {{/ifCond}}>{{lookup ../parentalAges this}}</option>
                                     {{/each}}
                                 </select>
                             </div>
@@ -1122,7 +1144,8 @@ Pending Update
                             <div name="parentalFlagsList">
                                 {{#each serverSettings.parentalControls.parentalFlags}}
                                 <label class="btn btn-secondary m-1">
-                                    <input type="checkbox" name="parentalFlags" value="{{this}}" />
+                                    <input type="checkbox" name="parentalFlags" value="{{this}}"
+                                           {{#contains this @root.activeLogin.userData.parentalFlags}} checked="checked" {{/contains}} />
                                     {{lookup ../parentalFlags this}}
                                 </label>
                                 {{/each}}
@@ -1135,8 +1158,11 @@ Pending Update
 
                     <div>
                         <div class="input-group">
-                            <span class="input-group-addon">{{settingsProfileLabel}}</span>
-                            <input class="form-control" type="text" name="profile" id="profile"
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{settingsProfileLabel}}</span>
+                            </div>
+                            <input class="form-control" type="text" name="profile"
+                                   value="{{activeLogin.userData.profile}}"
                                    {{#unless activeLogin.userData.permissions.selfChangeProfile}} disabled {{/unless}}
                             /><br/>
                         </div>
@@ -1146,8 +1172,10 @@ Pending Update
                     {{#unless activeLogin.userData.anonId}}
                     <div>
                         <div class="input-group">
-                            <span class="input-group-addon">{{settingsDefaultRoomLabel}}</span>
-                            <input class="form-control" type="text" name="defaultRoom" id="defaultRoom"/><br/>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{settingsDefaultRoomLabel}}</span>
+                            </div>
+                            <input class="form-control" type="text" name="defaultRoom" /><br/>
                         </div>
                         <small class="form-text text-muted">{{settingsDefaultRoomBlurb}}</small><br/>
                     </div>
@@ -1161,7 +1189,7 @@ Pending Update
                     </div>
                     {{/unless}}
 
-                    <input type="hidden" name="watchRooms" id="watchRooms"/>
+                    <input type="hidden" name="watchRooms" />
                 </div>
             </div>
         </div>
@@ -1169,7 +1197,6 @@ Pending Update
         <div class="card-footer text-center">
             <button class="btn btn-primary" type="submit">{{settingsSave}}</button>
             <button class="btn btn-secondary" type="reset">{{settingsReset}}</button>
-            <input type="hidden" name="settingsOfficialAjax" value="true"/>
         </div>
     </div>
 </form>

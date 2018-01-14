@@ -18799,7 +18799,7 @@ jQuery.cookie = function (name, value, options) {
 jQuery.getCookie = function (name, ifNull) {
     var cookie = $.cookie(name);
 
-    if (cookie === null || cookie === undefined || isNaN(cookie)) return ifNull;
+    if (cookie === null || cookie === undefined) return ifNull;
     else return cookie;
 };
 

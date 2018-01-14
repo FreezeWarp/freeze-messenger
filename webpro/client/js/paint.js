@@ -140,6 +140,12 @@ Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
     }
 });
 
+Handlebars.registerHelper('select', function( value, options ){
+    var $el = $('<select />').html( options.fn(this) );
+    $el.find('[value="' + value + '"]').attr({'selected':'selected'});
+    return $el.html();
+});
+
 function fim_renderHandlebarsInPlace(tag, extra) {
     var id       = tag.attr('id');
     var source   = tag.html();
@@ -163,7 +169,7 @@ function fim_renderHandlebars(tag, target) {
 function fim_getHandlebarsPhrases(extra) {
     if (!extra) extra = {};
 
-    return Object.assign({}, window.phrases, {serverSettings : window.serverSettings, activeLogin : window.activeLogin, hash : fim_hashToMap()[1]}, extra);
+    return Object.assign({}, window.phrases, {settings : settings, serverSettings : window.serverSettings, activeLogin : window.activeLogin, hash : fim_hashToMap()[1]}, extra);
 }
 
 var openObjectInstance;
@@ -680,8 +686,7 @@ function fim_buildUsernameTagPromise(tag, userId, userDeferred, anonId, includeA
             avatar = pairs[userId].avatar ? pairs[userId].avatar : 'images/blankperson.png',
             style = settings.disableFormatting ? '' : pairs[userId].messageFormatting;
 
-        tag.attr({
-            'class': 'userName' + (includeAvatar ? ' userNameAvatar' : ''),
+        tag.addClass('userName').addClass(includeAvatar ? ' userNameAvatar' : '').attr({
             'style': (includeUsername ? userNameFormat : ''),
             'data-style' : userNameFormat,
             'data-userId': userId,
@@ -785,6 +790,27 @@ function fim_getUsernameDeferred(userId) {
 
 function fim_getRoomNameDeferred(roomId) {
     return $.when(Resolver.resolveRoomsFromIds([roomId]));
+}
+
+function fim_loadTheme(themeName) {
+    var themePath = (themeName === "css"
+        ? "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
+        : "https://maxcdn.bootstrapcdn.com/bootswatch/4.0.0-beta.3/" + themeName + "/bootstrap.min.css");
+
+    var tag = $('#bootstrapTheme');
+
+    if (!tag.length) {
+        tag = $("<link/>", {
+            id: "bootstrapTheme",
+            rel: "stylesheet",
+            type: "text/css",
+            crossorigin: "anonymous",
+            href: themePath
+        }).appendTo("head");
+    }
+    else {
+        tag.attr('href', themePath);
+    }
 }
 
 
@@ -913,43 +939,35 @@ var favicon = $('#favicon').attr('href'),
 
 
 /* Get Cookies */
-window.webproDisplay = {
-    'theme' : $.getCookie('webpro_theme', 'absolution'), // Theme (goes into effect in document.ready)
-    'fontSize' : $.getCookie('webpro_fontSize', 1), // Font Size (goes into effect in document.ready)
-    'settingsBitfield' : $.getCookie('webpro_settings', 2048 + 8192 + 16777216 + 33554432), // Settings Bitfield (goes into effect all over the place); defaults with show avatars, US Time, 12-Hour Format,    Audio Ding
-    'audioVolume' : $.getCookie('webpro_audioVolume', .5)
-};
+var settingsBitfield = $.getCookie('webpro_settings', 2048 + 8192 + 16777216 + 33554432);
+window.settings = {
+    theme : $.getCookie('webpro_theme', 'css'), // Theme (goes into effect in document.ready)
+    audioVolume : $.getCookie('webpro_audioVolume', .5),
 
-var settings = {
     // Formatting
-    disableFormatting : !!(window.webproDisplay.settingsBitfield & 16),
-    disableImage : !!(window.webproDisplay.settingsBitfield & 32),
-    disableVideos : !!(window.webproDisplay.settingsBitfield & 64),
+    disableFormatting : !!(settingsBitfield & 16),
+    disableImage : !!(settingsBitfield & 32),
+    disableVideos : !!(settingsBitfield & 64),
 
     // Fun Stuff
-    reversePostOrder : !!(window.webproDisplay.settingsBitfield & 1024), // Show posts in reverse?
-    showAvatars : !!(window.webproDisplay.settingsBitfield & 2048), // Use the complex document style?
-    audioDing : !!(window.webproDisplay.settingsBitfield & 8192), // Fire an HTML5 audio ding during each unread message?
+    reversePostOrder : !!(settingsBitfield & 1024), // Show posts in reverse?
+    showAvatars : !!(settingsBitfield & 2048), // Use the complex document style?
+    audioDing : !!(settingsBitfield & 8192), // Fire an HTML5 audio ding during each unread message?
 
     // Accessibility
-    disableFx : !!(window.webproDisplay.settingsBitfield & 262144), // Disable jQuery Effects?
-    disableRightClick : !!(window.webproDisplay.settingsBitfield & 1048576),
-
-    // Localisation
-    usTime : !!(window.webproDisplay.settingsBitfield & 16777216),
-    twelveHourTime : !!(window.webproDisplay.settingsBitfield & 33554432),
+    disableRightClick : !!(settingsBitfield & 1048576),
 
     // Experimental Features
-    webkitNotifications : !!(window.webproDisplay.settingsBitfield & 536870912)
+    webkitNotifications : !!(settingsBitfield & 536870912)
 };
 
 
 
 /* Sanity Checks */
-if (window.webproDisplay.audioVolume > 1 || window.webproDisplay.audioVolume < 0) {
-    console.error("audioVolume was " + window.webproDisplay.audioVolume + "; set to .5");
+if (window.settings.audioVolume > 1 || window.settings.audioVolume < 0) {
+    console.error("audioVolume was " + window.settings.audioVolume + "; set to .5");
 
-    window.webproDisplay.audioVolume = .5;
+    window.settings.audioVolume = .5;
 }
 
 
@@ -972,7 +990,7 @@ if (typeof Audio !== 'undefined') {
     }
 
     snd.setAttribute('src', audioFile);
-    snd.volume = window.webproDisplay.audioVolume; // Audio Volume
+    snd.volume = window.settings.audioVolume; // Audio Volume
 }
 else {
     var snd = {
@@ -987,8 +1005,7 @@ else {
 var directory = window.location.pathname.split('/').splice(0, window.location.pathname.split('/').length - 2).join('/') + '/', // splice returns the elements removed (and modifies the original array), in this case the first two; the rest should be self-explanatory
     currentLocation = window.location.protocol + '//' + window.location.host + directory + 'webpro/';
 
-
-
+fim_loadTheme(settings.theme);
 
 $.when(
     $.ajax({ // TODO?
@@ -1377,11 +1394,6 @@ $.when(
                 }
             }
         });
-
-
-
-        if (window.webproDisplay.fontSize) $('body').css('font-size', window.webproDisplay.fontSize + 'em');
-        if (settings.disableFx) jQuery.fx.off = true;
 
 
         /*** Window Manipulation (see below) ***/

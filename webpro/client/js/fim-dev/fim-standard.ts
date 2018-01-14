@@ -61,7 +61,17 @@ standard.prototype.login = function(options) {
         'client_id' : 'WebPro'
     }, {
         end : (activeLogin) => {
-            if ('userData' in activeLogin) { // A new set of user information is available.
+            if ('userData' in activeLogin) {
+                // Message Formatting Parse
+                let defaultFormatting = activeLogin.userData.messageFormatting.split(';');
+
+                activeLogin.userData.messageFormattingObj = {};
+                jQuery.each(defaultFormatting, function(index, value) {
+                    let pair = value.split(':');
+                    activeLogin.userData.messageFormattingObj[pair[0]] = pair[1];
+                });
+
+                // Set Core Data
                 this.activeLogin = window.activeLogin = activeLogin;
                 this.userId = window.userId = activeLogin.userData.id;
                 this.anonId = window.anonId = activeLogin.userData.anonId;
