@@ -1210,7 +1210,7 @@ Pending Update
 
 <script id="view-editRoom" type="text/x-handlebars-template">
 <form action="#" method="post" id="editRoomForm">
-    <div class="card">
+    <div class="card mx-auto view-thin">
         <div class="card-header p-0">
             <ul class="nav nav-tabs justify-content-center bg-light" role="tablist" id="editRoomTabs">
                 <li class="nav-item">
@@ -1309,7 +1309,14 @@ Pending Update
                         <fieldset class="p-3 border border-dark rounded">
                             <legend style="display: inline; width: auto;" class="m-0">
                                 <label class="btn btn-secondary m-0">
-                                    <input type="checkbox" name="allowPosting"/>
+                                    <input type="checkbox" name="allowPosting" onchange="
+                                        if ($(this).is(':checked')) {
+                                            $(this).closest('fieldset').attr('disabled', 'disabled');
+                                        }
+                                        else {
+                                            $(this).closest('fieldset').removeAttr('disabled', 'disabled');
+                                        }"
+                                    />
                                     {{editRoom.allowAll}}
                                 </label>
                             </legend>
