@@ -390,13 +390,13 @@ function fim_youtubeParse($1) {
             'target' : '_BLANK'
         }).text('[Youtube Video]');
 
-        else return $('<iframe>').attr({
+        else return $('<div class="video-container">').append($('<iframe>').attr({
             'width' : 560,
             'height' : 315,
             'src' : 'https://www.youtube.com/embed/' + code + '?rel=0',
             'frameborder' : 0,
             'allowfullscreen' : true
-        });
+        }));
     }
 
     else {
@@ -498,7 +498,7 @@ function fim_messageFormat(json, format) {
 
             text = $('<span>').text(text);
             // "/me" parse
-/*            if (/^\/me/.test(text.text())) {
+            if (/^\/me/.test(text.text())) {
                 text.text(text.text().replace(/^\/me/,''));
 
                 $.when(userNameDeferred).then(function(pairs) {
@@ -513,7 +513,7 @@ function fim_messageFormat(json, format) {
                 $.when(userNameDeferred).then(function(pairs) {
                     text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' changed the topic to "' + text.text().trim() + '".').prop('outerHTML'));
                 });
-            }*/
+            }
 
             // Parse basic markdown
             jQuery.each({
@@ -590,7 +590,7 @@ function fim_messageFormat(json, format) {
             });
 
             // Find all descendant text nodes, and parse new lines
-            text.find('*').contents()
+            text.find('*').add(text).contents()
                 .filter(function() {
                     return this.nodeType === 3; //Node.TEXT_NODE
                 }).each(function() {
@@ -622,6 +622,10 @@ function fim_messageFormat(json, format) {
         case 'list':
             var messageLine = fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred);
 
+            if ($('iframe', messageLine).length) {
+                messageLine.css('width', '400px');
+            }
+
             if (settings.showAvatars) {
                 messageLine.popover({
                     content : function() {
@@ -632,18 +636,30 @@ function fim_messageFormat(json, format) {
                     placement : 'bottom'
                 });
             }
-            data = $('<span>').attr({
+
+            var date = !settings.showAvatars
+                ? $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(fim_dateFormat(messageTime)))
+                : '';
+
+            var avatar = $('<span class="usernameDate">').append(
+                fim_buildUsernameTag($('<span>'), userId, userNameDeferred, anonId, settings.showAvatars, !settings.showAvatars)
+            );
+
+            var data = $('<span>').attr({
                 'id': 'message' + messageId,
-                'class': 'messageLine' + (settings.showAvatars ? ' messageLineAvatar' : '')
-            }).append(
-                $('<span class="usernameDate">').append(
-                    fim_buildUsernameTag($('<span>'), userId, userNameDeferred, anonId, settings.showAvatars, !settings.showAvatars)
-                ).append(
-                    !settings.showAvatars ?
-                        $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(fim_dateFormat(messageTime)))
-                        : ''
-                )
-            ).append(messageLine);
+                'class': 'messageLine'
+            });
+
+            if (settings.showAvatars) {
+                data.addClass('messageLineAvatar');
+            }
+
+            if (settings.showAvatars && userId == window.activeLogin.userData.id) {
+                data.addClass('messageLineReverse').append(messageLine).append(avatar.append(date));
+            }
+            else {
+                data.append(avatar.append(date)).append(messageLine);
+            }
             break;
     }
 
@@ -676,8 +692,7 @@ function fim_buildUsernameTagPromise(tag, userId, userDeferred, anonId, includeA
     $.when(userDeferred).then(function(pairs) {
         var userName = pairs[userId].name + anonId,
             userNameFormat = pairs[userId].nameFormat,
-            avatar = pairs[userId].avatar ? pairs[userId].avatar : 'images/blankperson.png',
-            style = settings.disableFormatting ? '' : pairs[userId].messageFormatting;
+            avatar = pairs[userId].avatar ? pairs[userId].avatar : 'images/blankperson.png';
 
         tag.addClass('userName').addClass(includeAvatar ? ' userNameAvatar' : '').attr({
             'style': (includeUsername ? userNameFormat : ''),
@@ -785,7 +800,8 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
     }
 
     $.when(userNameDeferred).then(function(pairs) {
-        tag.attr("style", pairs[userId].messageFormatting);
+        if (!settings.disableFormatting && settings.showAvatars && pairs[userId].messageFormatting)
+            tag.attr("style", tag.attr("style") + ";" + pairs[userId].messageFormatting).addClass('messageTextFormatted');
     });
 
     return tag;
