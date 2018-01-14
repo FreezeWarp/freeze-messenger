@@ -517,9 +517,8 @@ function fim_messageFormat(json, format) {
 
             // Parse basic markdown
             jQuery.each({
-                '`' : 'code',
-                //'*' : 'strong',
-                //'_' : 'em'
+                '```' : 'pre',
+                '`' : 'code'
             }, function(delimiter, tag) {
                 text.contents()
                     .filter(function () {
@@ -532,7 +531,6 @@ function fim_messageFormat(json, format) {
             });
 
             // URL Autoparse (will also detect youtube & image)
-
             text.find('*:not(:has("*"))').add(text.contents().add(text)
                 .filter(function() {
                     return this.nodeType === 3; //Node.TEXT_NODE
@@ -560,9 +558,9 @@ function fim_messageFormat(json, format) {
                         $(this).replaceWith(result.html());
                 });
 
-            // Parse basic markdown
+            // Parse basic markdown for del, strong, and em inside any text node
             jQuery.each({
-                //'`' : 'code',
+                '~~' : 'del',
                 '*' : 'strong',
                 '_' : 'em'
             }, function(delimiter, tag) {
@@ -577,33 +575,32 @@ function fim_messageFormat(json, format) {
                 });
             });
 
-            // Parse the emoticons
+            // Parse the emoticons inside any text, strong, em, or del node
             jQuery.each(serverSettings.emoticons, function(index, emoticon) {
-                text.contents()
+                text.find('strong, em, del').add(text.contents().add(text)
                     .filter(function() {
                         return this.nodeType === 3; //Node.TEXT_NODE
-                    }).each(function() {
-                        return $(this).replaceWith(fim_regexTokenizer(new RegExp(emoticon.emoticonText.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), "gi"), $(this).text(), function() {
+                    })).each(function() {
+                        var result = fim_regexTokenizer(new RegExp(emoticon.emoticonText.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), "gi"), $(this).text(), function() {
                             return $('<img>').attr('src', emoticon.emoticonFile);
-                        }).html());
+                        }, this.nodeType !== 3 ? $(this).text('') : null);
+
+                        if (this.nodeType === 3)
+                            $(this).replaceWith(result.html());
                     });
             });
 
-            // Find only innermost nodes, and process newlines for them
-            text.find('*').contents()
+            // Find only innermost and text nodes, and process newlines for them
+            text.find('*:not(:has("*"))').add(text.contents().add(text)
                 .filter(function() {
                     return this.nodeType === 3; //Node.TEXT_NODE
-                })
-                .each(function() {
-                    $(this).replaceWith(fim_regexTokenizer(new RegExp(/\n/g, "g"), $(this).text(), function() {
-                        return $('<br>');
-                    }));
-                });
-
-            text.find('*:not(:has("*"))').each(function() {
-                fim_regexTokenizer(new RegExp(/\n/g, "g"), $(this).text(), function() {
+                })).each(function() {
+                var result =fim_regexTokenizer(new RegExp(/\n/g, "g"), $(this).text(), function() {
                     return $('<br>');
-                }, $(this).text(''));
+                }, this.nodeType !== 3 ? $(this).text('') : null);
+
+                if (this.nodeType === 3)
+                    $(this).replaceWith(result.html());
             });
             break;
     }
