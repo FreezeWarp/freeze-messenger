@@ -162,7 +162,7 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
 
         if (!foundMatch) {
             if (window.settings.reversePostOrder) {
-                $('#messageList').prepend(messageText);
+                $('#messageList').append(messageText);
             }
             else {
                 $('#messageList').append(messageText);
@@ -179,13 +179,11 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
 
 
     // Scroll Down
-    if (!window.settings.reversePostOrder) {
-        $('#message' + messageId + ' img').on('load', (() => {
-            this.toBottom();
-        }));
+    $('#message' + messageId + ' img').on('load', (() => {
+        this.scrollBack();
+    }));
 
-        this.toBottom();
-    }
+    this.scrollBack();
 
 
     // Blur Events
@@ -216,8 +214,11 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
     }
 };
 
-popup.prototype.room.prototype.toBottom = function() { // Scrolls the message list to the bottom.
-    $('#messageListContainer').scrollTop($('#messageListContainer')[0].scrollHeight);
+popup.prototype.room.prototype.scrollBack = function() { // Scrolls the message list to the bottom.
+    if (window.settings.reversePostOrder)
+        $('#messageListContainer').scrollTop(0);
+    else
+        $('#messageListContainer').scrollTop($('#messageListContainer')[0].scrollHeight);
 };
 
 popup.prototype.room.prototype.faviconFlashOnce = function() { // Changes the state of the favicon from opaque to transparent or similar.
