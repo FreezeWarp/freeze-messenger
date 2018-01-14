@@ -234,7 +234,8 @@ autoEntry.prototype = {
 
         $.when(this.options.resolveFromIds(entryList)).then((entries) => {
             for (let i = 0; i < entryList.length; i++) {
-                this.addEntry(entryList[i], entries[entryList[i]].name, true);
+                if (entries[entryList[i]])
+                    this.addEntry(entryList[i], entries[entryList[i]].name, true);
             }
         });
     },
