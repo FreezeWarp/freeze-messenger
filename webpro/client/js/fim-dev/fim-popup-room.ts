@@ -309,6 +309,7 @@ popup.prototype.room.prototype.init = function(options) {
 
     // Process Resizes
     $(window).on('resize', null, this.onWindowResize);
+    $('#navbarSupportedContent').on('shown.bs.collapse', () => { this.onWindowResize() }).on('hidden.bs.collapse', () => { this.onWindowResize() });
 
 
     // Set up file upload handler, used for drag/drop, pasting, and insertDoc method.
