@@ -38,7 +38,7 @@ popup.prototype.settings = {
 
         let friendsList = new autoEntry($("#changeSettingsForm [name=friendsListContainer]"), {
             'name' : 'friendsList',
-            'default' : window.activeLogin.userData.ignoredUsers,
+            'default' : window.activeLogin.userData.friendedUsers,
             'list' : 'users',
             'resolveFromIds' : Resolver.resolveUsersFromIds,
             'resolveFromNames' : Resolver.resolveUsersFromNames
@@ -184,18 +184,20 @@ popup.prototype.settings = {
                     }
                     else {
                         dia.info('Your settings have been updated successfully.');
-
-                        $("#changeSettingsDialogue").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-                        $(".colorpicker").empty().remove(); // Housecleaning, needed if we want the colorpicker to work in another changesettings dialogue.
-
                         window.location.hash = '#';
+
+                        fimApi.getUsers({
+                            'id' : window.activeLogin.userData.id,
+                        }, {
+                            'each' : function(userData) {
+                                window.standard.setUserData(userData);
+                            }
+                        })
                     }
                 },
             });
 
             return false; // Don't submit the form.
         });
-
-        return false;
     }
 };

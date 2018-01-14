@@ -48,6 +48,28 @@ standard.prototype.initialLogin = function(options) {
 };
 
 
+standard.prototype.setUserData = function(userData) {
+    // Message Formatting Parse
+    let defaultFormatting = userData.messageFormatting.split(';');
+
+    userData.messageFormattingObj = {};
+    jQuery.each(defaultFormatting, function(index, value) {
+        let pair = value.split(':');
+        userData.messageFormattingObj[pair[0]] = pair[1];
+    });
+
+    // Set Core Data
+    this.activeLogin.userData = window.activeLogin.userData = userData;
+    this.userId = window.userId = userData.id;
+    this.anonId = window.anonId = userData.anonId;
+};
+
+standard.prototype.setActiveLogin = function(activeLogin) {
+    this.activeLogin = window.activeLogin = activeLogin;
+    this.setUserData(activeLogin.userData);
+}
+
+
 /* Trigger a login using provided data. This will open a login form if necessary. */
 standard.prototype.login = function(options) {
     if (options.start) options.start();
@@ -62,19 +84,7 @@ standard.prototype.login = function(options) {
     }, {
         end : (activeLogin) => {
             if ('userData' in activeLogin) {
-                // Message Formatting Parse
-                let defaultFormatting = activeLogin.userData.messageFormatting.split(';');
-
-                activeLogin.userData.messageFormattingObj = {};
-                jQuery.each(defaultFormatting, function(index, value) {
-                    let pair = value.split(':');
-                    activeLogin.userData.messageFormattingObj[pair[0]] = pair[1];
-                });
-
-                // Set Core Data
-                this.activeLogin = window.activeLogin = activeLogin;
-                this.userId = window.userId = activeLogin.userData.id;
-                this.anonId = window.anonId = activeLogin.userData.anonId;
+                this.setActiveLogin(activeLogin);
             }
             else if (!this.activeLogin) { // If we already have an activeLogin, we can continue to use it. Otherwise, we must error.
                 dia.error("The login did not return proper information. The page will reload in 3 seconds...");
