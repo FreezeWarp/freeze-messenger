@@ -76,12 +76,16 @@
                           style="text-align: center; display: block;">
 
                         <div class="input-group mb-2">
-                            <span class="input-group-addon">{{loginUsername}}</span>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{loginUsername}}</span>
+                            </div>
                             <input type="text" class="form-control" name="userName" />
                         </div>
 
                         <div class="input-group my-2">
-                            <span class="input-group-addon">{{loginPassword}}</span>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{loginPassword}}</span>
+                            </div>
                             <input type="password" class="form-control" name="password" id="password"/>
                         </div>
 
@@ -208,21 +212,29 @@
                 <form action="#" id="kickUserForm" method="post">
                     <div class="modal-body">
                         <label class="input-group">
-                            <span class="input-group-addon">{{kick.form.username}}</span>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{kick.form.username}}</span>
+                            </div>
                             <input type="text" name="userName" class="form-control" required/>
                         </label>
                         <label class="input-group">
-                            <span class="input-group-addon">{{kick.form.room}}</span>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{kick.form.room}}</span>
+                            </div>
                             <input type="text" name="roomName" class="form-control" required/>
                         </label>
                         <label class="input-group">
-                            <span class="input-group-addon">{{kick.form.time}}</span>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{kick.form.time}}</span>
+                            </div>
                             <input type="text" name="time" class="form-control" required/>
-                            <select name="interval" class="input-group-addon">
-                                {{#each units.time}}
-                                <option value="{{@key}}">{{this}}</option>
-                                {{/each}}
-                            </select>
+                            <div class="input-group-append">
+                                <select name="interval" class="input-group-text custom-select">
+                                    {{#each units.time}}
+                                    <option value="{{@key}}">{{this}}</option>
+                                    {{/each}}
+                                </select>
+                            </div>
                         </label>
                     </div>
                     <div class="modal-footer">
@@ -390,7 +402,9 @@
                         <div class="col">
                             <div id="uploadFile">
                                 <div class="input-group">
-                                    <span class="input-group-addon">{{fileUploadFileLabel}}</span>
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">{{fileUploadFileLabel}}</span>
+                                    </div>
                                     <input
                                             name="fileUpload"
                                             id="fileUpload"
@@ -506,7 +520,7 @@
                             <div class="row">
                                 <div class="col">
                                     <button type="button"
-                                            class="btn btn-primary"
+                                            class="btn btn-success"
                                             id="icon_url"
                                             title="Upload File"
                                             onclick="window.openObjectInstance.insertDoc();"
@@ -516,7 +530,7 @@
                                 </div>
                                 <div class="col" style="text-align: right;">
                                     <button type="submit"
-                                            class="btn btn-primary"
+                                            class="btn btn-success"
                                             id="icon_submit"
                                             title="Submit Message">
                                         <i class="fa fa-paper-plane" aria-hidden="true"></i> {{room.messageBox.buttons.send}}
@@ -771,7 +785,7 @@ Pending Update
                                 fimApi.unwatchRoom('{{id}}');
                             }" {{#contains id activeLogin.userData.watchRooms}} checked {{/contains}} />
                         </label>
-                    </span>
+                    </div>
                 {{/unless}}
             </div>
         </td>
@@ -1180,7 +1194,9 @@ Pending Update
                 <div class="tab-pane fade show active" role="tabpanel" id="editRoom1">
                     <div id="editRoom1Name" class="mb-3">
                         <div class="input-group">
-                            <span class="input-group-addon">{{editRoom.nameLabel}}</span>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{editRoom.nameLabel}}</span>
+                            </div>
                             <input type="text" class="form-control" name="name"/>
                         </div>
                         <small class="form-text text-muted">{{editRoom.nameBlurb}}</small>
@@ -1189,7 +1205,9 @@ Pending Update
                     {{#if serverSettings.parentalControls.parentalEnabled}}
                     <div class="mb-4">
                         <div class="input-group">
-                            <span class="input-group-addon">{{editRoom.parentalAgeLabel}}</span>
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">{{editRoom.parentalAgeLabel}}</span>
+                            </div>
                             <select class="form-control" name="parentalAge">
                                 {{#each serverSettings.parentalControls.parentalAges}}
                                 <option value="{{this}}">{{lookup ../parentalAges this}}</option>

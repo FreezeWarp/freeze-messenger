@@ -154,6 +154,9 @@ table#fileUploadInfo td {
 .userName.userNameAvatar > span {
     vertical-align: middle;
 }
+/*.input-group-prepend > .userName.userNameAvatar > span, .input-group-append > .userName.userNameAvatar > span  {
+    vertical-align: baseline;
+}*/
 .userNameAvatar > img {
   min-width: 12px;
   max-width: 24px;
@@ -161,17 +164,22 @@ table#fileUploadInfo td {
   margin-right: 4px;
 }
 
-.form-control-sm, .input-group-sm>.form-control, .input-group-sm>.input-group-addon, .input-group-sm>.input-group-btn>.btn {
-    line-height: 1.5rem;
+.form-control-sm,
+.input-group-sm > .form-control,
+.input-group-sm > .input-group-prepend > .input-group-text,
+.input-group-sm > .input-group-append > .input-group-text,
+.input-group-sm > .input-group-prepend > .btn,
+.input-group-sm > .input-group-append > .btn {
+    line-height: 1.5rem !important;
 }
-.input-group-addon.input-group-addon-img {
+.input-group-prepend.input-group-addon-img, .input-group-append.input-group-addon-img {
     border: 0;
     height: auto;
     vertical-align: top;
     padding: 0;
 }
-.input-group-addon > .userNameAvatar > img {
-    border-radius: .125rem;
+.input-group-prepend > .userNameAvatar > img, .input-group-append > .userNameAvatar > img {
+    border-radius: .25rem;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 

@@ -37,7 +37,7 @@ let autoEntry = function(target, options) {
 
     // Create the form containing the entry list
     this.autocompleteForm = $('<form>').attr('class', 'input-group').append(
-        $('<span>').attr('class', 'input-group-btn').append(this.autocompleteSubmit),
+        $('<span>').attr('class', 'input-group-prepend').append(this.autocompleteSubmit),
         this.autocompleteInput
     );
 
@@ -141,7 +141,7 @@ autoEntry.prototype = {
             else {
                 let usernameDeferred = fim_getUsernameDeferred(id);
 
-                let nameTag = $('<span>');
+                let nameTag = $('<span class="input-group-text">');
                 if (this.options.list === "users") {
                     nameTag = fim_buildUsernameTag(nameTag, id, usernameDeferred, false, false, true);
                 }
@@ -161,10 +161,10 @@ autoEntry.prototype = {
                     $("<div>").attr({
                         'id' : this.options.name + "SubList" + id,
                         'class' : 'input-group input-group-sm m-1',
-                        'style' : 'display: inline-block; width: auto; white-space: nowrap'
+                        'style' : 'width: auto; white-space: nowrap'
                     }).append(
                         $('<span>').attr({
-                            'class' : 'input-group-btn',
+                            'class' : 'input-group-prepend',
                             'style' : 'display: inline-block; vertical-align: top'
                         }).append(
                             $('<button>').attr({
@@ -176,14 +176,12 @@ autoEntry.prototype = {
                         ),
 
                         $('<span>').attr({
-                            'class' : 'input-group-addon',
-                            'style' : 'display: inline-block'
+                            'class' : 'input-group-append',
                         }).append(nameTag),
 
                         (avatarTag
                                 ? $('<span>').attr({
-                                    'class' : 'input-group-addon input-group-addon-img',
-                                    'style' : 'display: inline-block'
+                                    'class' : 'input-group-append input-group-addon-img'
                                 }).append(avatarTag)
                                 : ''
                         )
