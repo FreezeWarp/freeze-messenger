@@ -151,8 +151,7 @@ autoEntry.prototype = {
 
                 let avatarTag = false;
                 if (this.options.list === "users") {
-                    avatarTag = $('<span>');
-                    avatarTag = fim_buildUsernameTag(avatarTag, id, usernameDeferred, false, true, false);
+                    avatarTag = fim_buildUsernameTag($('<span class="input-group-text">'), id, usernameDeferred, false, true, false);
                 }
 
                 this.autocompleteValue.val(this.autocompleteValue.val() + "," + id);
