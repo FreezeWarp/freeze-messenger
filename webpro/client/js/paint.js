@@ -531,10 +531,10 @@ function fim_messageFormat(json, format) {
             });
 
             // URL Autoparse (will also detect youtube & image)
-            text.find('*:not(:has("*"))').add(text.contents().add(text)
+            text.find('*').add(text).contents()
                 .filter(function() {
                     return this.nodeType === 3; //Node.TEXT_NODE
-                })).each(function() {
+                }).each(function() {
                     var result = fim_regexTokenizer(regexs.url, $(this).text(), function(match) {
                         var suffix = "";
 
@@ -569,7 +569,6 @@ function fim_messageFormat(json, format) {
                         return this.nodeType === 3; //Node.TEXT_NODE
                     }).each(function () {
                     return $(this).replaceWith(fim_regexTokenizer(new RegExp('\\' + delimiter + '([\\s\\S]+?)\\' + delimiter, 'g'), $(this).text(), function (result) {
-                        console.log("match", delimiter, tag, result);
                         return $('<' + tag + '>').text(result[1]);
                     }).html());
                 });
@@ -590,17 +589,14 @@ function fim_messageFormat(json, format) {
                     });
             });
 
-            // Find only innermost and text nodes, and process newlines for them
-            text.find('*:not(:has("*"))').add(text.contents().add(text)
+            // Find all descendant text nodes, and parse new lines
+            text.find('*').contents()
                 .filter(function() {
                     return this.nodeType === 3; //Node.TEXT_NODE
-                })).each(function() {
-                var result =fim_regexTokenizer(new RegExp(/\n/g, "g"), $(this).text(), function() {
+                }).each(function() {
+                $(this).replaceWith(fim_regexTokenizer(new RegExp(/\n/g, "g"), $(this).text(), function() {
                     return $('<br>');
-                }, this.nodeType !== 3 ? $(this).text('') : null);
-
-                if (this.nodeType === 3)
-                    $(this).replaceWith(result.html());
+                }));
             });
             break;
     }
