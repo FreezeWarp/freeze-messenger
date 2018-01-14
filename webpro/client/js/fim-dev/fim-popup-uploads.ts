@@ -75,7 +75,6 @@ popup.prototype.uploads.prototype.retrieve = function() {
         page : this.options.page
     }, {
         each: (fileData) => {
-            console.log("file data", fileData);
             let userTag = $('<span>'),
                 userTagPromise = fim_buildUsernameTagPromise(userTag, fileData.userId, fim_getUsernameDeferred(fileData.userId)),
                 roomTag = $('<span>'),

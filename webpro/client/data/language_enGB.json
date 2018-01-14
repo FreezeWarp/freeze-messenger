@@ -423,7 +423,7 @@
     "actions" : "Actions",
     "unkick" : "Unkick",
     "form" : {
-      "user" : "Username",
+      "user" : "User",
       "room" : "Room"
     }
   },

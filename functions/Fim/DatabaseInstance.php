@@ -2110,8 +2110,8 @@ class DatabaseInstance extends DatabaseSQL
     /**
      * Mark a given room read by a given user.
      *
-     * @param $roomId The ID of the room to mark read.
-     * @param $userId The ID of the user marking read.
+     * @param $roomId int The ID of the room to mark read.
+     * @param $userId int The ID of the user marking read.
      *
      * @return bool
      */

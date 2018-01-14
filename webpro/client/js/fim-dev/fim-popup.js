@@ -396,7 +396,7 @@ popup.prototype.kick = function(userId, roomId) {
 
 
     // Process Submit
-    $("#kickUserForm").submit(function() {
+    $("#kickUserForm").off('submit').on('submit', function() {
         var userId = $("#kickUserForm input[name=userName]").attr('data-id'),
             roomId = $("#kickUserForm input[name=roomName]").attr('data-id'),
             length = Math.floor(
