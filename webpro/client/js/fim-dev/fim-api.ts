@@ -289,6 +289,7 @@ fimApi.prototype.getMessages = function(params, requestSettings) {
             data: this.mergeDefaults(params, {
                 'access_token' : this.lastSessionHash,
                 'roomId' : null,
+                'id' : null,
                 'userIds' : null,
                 'messageIdEnd' : null,
                 'messageIdStart' : null,

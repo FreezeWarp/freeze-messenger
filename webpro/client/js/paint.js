@@ -758,7 +758,7 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
 
     if (window.userId == userId && window.activeLogin.userData.permissions.editOwnPosts) {
         tag.on('dblclick', function() {
-            var textarea = $('<textarea>').text($(this).text()).on('keydown', function(e) {
+            var textarea = $('<textarea>').on('keydown', function(e) {
                 if (e.keyCode == 13 && !e.shiftKey) {
                     fimApi.editMessage(roomId, messageId, {
                         'message' : textarea.val()
@@ -767,11 +767,25 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
                     $(this).replaceWith(fim_buildMessageLine(textarea.val(), messageId, userId, roomId, messageTime, userNameDeferred))
                     e.preventDefault();
                 }
+                else if (e.keyCode == 27) {// TODO
+                    $(this).replaceWith(fim_buildMessageLine(fim_messageFormat(textarea.text(), 'list'), messageId, userId, roomId, messageTime, userNameDeferred))
+                    e.preventDefault();
+                }
+            });
+
+            fimApi.getMessages({
+                'roomId' : roomId,
+                'id' : messageId
+            }, {
+                'end' : function(messageData) {
+                    textarea.text(messageData[0].text);
+                }
             });
 
             $.each(this.attributes, function() {
                 textarea.attr(this.name, this.value);
             });
+            textarea.css('width', '100%');
 
             $(this).replaceWith(textarea);
         });
