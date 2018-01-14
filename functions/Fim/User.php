@@ -732,7 +732,7 @@ class User extends DynamicObject
     {
         $returnArray = [];
 
-        foreach (array_keys(User::$permArray) AS $perm) {
+        foreach (array_merge(array_keys(User::$permArray), ['editOwnPosts', 'deleteOwnPosts', 'selfChangeProfile', 'selfChangeAvatar', 'selfChangeParentalAge', 'selfChangeParentalFlags', 'selfChangeFriends', 'selfChangeIgnore']) AS $perm) {
             $returnArray[$perm] = $this->hasPriv($perm);
         }
 
