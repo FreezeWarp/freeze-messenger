@@ -73,7 +73,7 @@ let autoEntry = function(target, options) {
     this.autocompleteValue.insertAfter(target);
 
     // Add the "list" div, which will display each list element
-    this.autocompleteDiv = $('<div>').attr('id', this.options.name + 'List');
+    this.autocompleteDiv = $('<div class="d-flex flex-wrap">').attr('id', this.options.name + 'List');
     this.autocompleteDiv.insertAfter(target);
 
     // Display the default entries, if available
@@ -106,7 +106,7 @@ autoEntry.prototype = {
      */
     addEntry : function(id : Number, name : String, suppressEvents = false) {
 
-        let resolver;
+        let resolver = true;
         if (!id && name) {
             resolver = $.when(this.options.resolveFromNames([name])).then(function(data) {
                 id = data[name].id;
@@ -115,13 +115,13 @@ autoEntry.prototype = {
 
         else if (!name && id) {
             resolver = $.when(this.options.resolveFromIds([id]).then(function(data) {
-                name = data[id].name;//
+                name = data[id].name;
             }));
         }
 
         $.when(resolver).then(() => {
             if (!id) {
-                dia.error("Invalid entry.");//
+                dia.error("Invalid entry.");
             }
 
             else if ($("#" + this.options.name + "SubList" + id).length) {
