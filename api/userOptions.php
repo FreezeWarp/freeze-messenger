@@ -289,11 +289,9 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
     if (isset($request['defaultRoomId'])) {
         $defaultRoom = new Room($request['defaultRoomId']);
 
-        if (!$defaultRoom->exists())
+        if (!$defaultRoom->exists()
+            || !(\Fim\Database::instance()->hasPermission($user, $defaultRoom) & Room::ROOM_PERMISSION_VIEW))
             $xmlData['editUserOptions']['defaultRoom'] = (new fimError('invalidRoom', 'The room specified does not exist.', null, true))->getArray();
-
-        elseif (!(\Fim\Database::instance()->hasPermission($user, $defaultRoom) & Room::ROOM_PERMISSION_VIEW))
-            $xmlData['editUserOptions']['defaultRoom'] = (new fimError('noPerm', 'You do not have permission to view the room you are trying to default to.', null, true))->getArray();
 
         else
             $updateArray['defaultRoomId'] = $defaultRoom->id;
