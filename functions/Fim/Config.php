@@ -257,14 +257,15 @@ class Config {
 
     /** @var bool The minimum contrast (between 1 and 21) that a message's colours must have. 3 is generally the absolute minimum for a good experience, and 4.5 is recommended. */
     public static $defaultFormattingMinimumContrast = 4.5;
+
     /** @var bool Whether to allow users to set default formatting using italics. */
-    public static $defaultFormattingItalics = true;
+    public static $defaultFormattingItalics = false;
 
     /** @var bool Whether to allow users to set default formatting using bolded text. */
-    public static $defaultFormattingBold = true;
+    public static $defaultFormattingBold = false;
 
     /** @var bool Whether to allow users to set default formatting font. */
-    public static $defaultFormattingFont = true;
+    public static $defaultFormattingFont = false;
 
 
     /** @var array The list of fonts (and corresponding font-families) available for message formatting. */
