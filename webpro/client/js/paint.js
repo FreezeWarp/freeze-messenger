@@ -390,13 +390,13 @@ function fim_youtubeParse($1) {
             'target' : '_BLANK'
         }).text('[Youtube Video]');
 
-        else return $('<div class="video-container">').append($('<iframe>').attr({
+        else return $('<div class="video-container-container">').append($('<div class="video-container">').append($('<iframe>').attr({
             'width' : 560,
             'height' : 315,
             'src' : 'https://www.youtube.com/embed/' + code + '?rel=0',
             'frameborder' : 0,
             'allowfullscreen' : true
-        }));
+        })));
     }
 
     else {

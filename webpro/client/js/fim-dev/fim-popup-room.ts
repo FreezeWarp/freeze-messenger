@@ -138,10 +138,6 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
     let usernameDeferred = fim_getUsernameDeferred(messageData.userId);
     let messageText = fim_buildMessageLine(messageData.text, messageData.flag, messageData.id, messageData.userId, messageData.roomId, messageData.time, usernameDeferred);
 
-    if ($('iframe', messageText).length) {
-        messageText.css('min-width', '400px');
-    }
-
     if (window.settings.showAvatars) {
         messageText.popover({
             content : function() {

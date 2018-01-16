@@ -142,6 +142,12 @@ table#fileUploadInfo td {
 
 /***** Other Crap *****/
 
+.video-container-container {
+    width: 600px;
+    max-width: 100%;
+    display: inline-block;
+}
+
 .video-container {
     float: none;
     clear: both;
