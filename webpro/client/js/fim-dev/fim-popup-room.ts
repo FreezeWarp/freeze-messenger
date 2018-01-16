@@ -138,7 +138,15 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
     let usernameDeferred = fim_getUsernameDeferred(messageData.userId);
     let messageText = fim_buildMessageLine(messageData.text, messageData.flag, messageData.id, messageData.userId, messageData.roomId, messageData.time, usernameDeferred);
 
-    if (window.settings.showAvatars) {
+
+    /* Avatars */
+    let avatar = $('<span class="userNameDate">').append(
+        fim_buildUsernameTag($('<span>'), messageData.userId, usernameDeferred, messageData.anonId, window.settings.showAvatars, !window.settings.showAvatars)
+    );
+
+
+    /* Dates */
+    if (window.settings.hideTimes) {
         messageText.popover({
             content : function() {
                 return fim_dateFormat($(this).attr('data-time'))
@@ -149,35 +157,36 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
         });
     }
 
-    let date = $('<span class="date">').text(
-        (window.settings.showAvatars
-            ? ''
-            : ' @ ')
-        + fim_dateFormat(messageData.time)
-    );
+    else {
+        let date = $('<span class="date">').text(
+            (window.settings.showAvatars
+                ? ''
+                : ' @ ')
+            + fim_dateFormat(messageData.time)
+        );
 
-    if (window.settings.showAvatars) {
-        date.addClass('text-muted');
+        if (window.settings.showAvatars) {
+            date.addClass('text-muted');
+        }
+
+        if (!window.settings.showAvatars) {
+            avatar.append(date);
+        }
+        else {
+            messageText.append(date);
+        }
     }
 
-    let avatar = $('<span class="usernameDate">').append(
-        fim_buildUsernameTag($('<span>'), messageData.userId, usernameDeferred, messageData.anonId, window.settings.showAvatars, !window.settings.showAvatars)
-    );
 
+    /* Build Message Line */
     let messageLine = $('<span>').attr({
         'id': 'message' + messageData.id,
         'class': 'messageLine'
+
     });
 
     if (window.settings.showAvatars) {
         messageLine.addClass('messageLineAvatar');
-    }
-
-    if (!window.settings.showAvatars) {
-        avatar.append(date);
-    }
-    else {
-        messageText.append(date);
     }
 
     if (window.settings.showAvatars && messageData.userId == window.activeLogin.userData.id) {
@@ -188,6 +197,7 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
     }
 
 
+    /* Insert Message Line */
     if ($('#message' + messageData.id).length > 0) {
         console.log("existing");
         $('#message' + messageData.id).replaceWith(messageLine);
@@ -229,7 +239,7 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
     }
 
 
-    // Scroll Down
+    /* Auto Scroll */
     $('#message' + messageData.id + ' img').on('load', (() => {
         this.scrollBack();
     }));
@@ -237,7 +247,7 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
     this.scrollBack();
 
 
-    // Blur Events
+    /* Blur Events (Notifications */
     if (this.windowBlurred) {
         // Play Sound
         if (window.settings.audioDing)

@@ -271,16 +271,16 @@ table.page {
     line-height: 1.3rem;
 }
 
-.messageLine .usernameDate {
+.messageLine:not(.messageLineAvatar) .userNameDate {
     text-decoration: underline;
     margin-right: 10px;
 }
 
-.usernameDate .userName {
+.messageLine:not(.messageLineAvatar) .userNameDate .userName {
     font-weight: bold;
 }
 
-.usernameDate .date {
+.messageLine:not(.messageLineAvatar) .userNameDate .date {
     letter-spacing: -1px;
     font-style: italic;
 }
@@ -438,7 +438,7 @@ button.small.ui-widget .ui-icon {
 
 @media screen and (max-width: 400px) {
 
-    .usernameDate {
+    .userNameDate {
         display: block;
         font-weight: bold;
     }
@@ -456,7 +456,7 @@ button.small.ui-widget .ui-icon {
 }
 
 @media screen and (max-width: 800px) and (min-width: 600px) {
-    /*.usernameDate {
+    /*.userNameDate {
         display: block;
         font-weight: bold;
     }

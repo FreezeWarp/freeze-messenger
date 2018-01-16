@@ -910,9 +910,19 @@ Pending Update
                         <label>
                             <span class="btn btn-primary">
                                 <input type="checkbox" name="showAvatars" {{#if settings.showAvatars}} checked="checked" {{/if}} />
-                                <strong>{{settingsShowAvatarsLabel}}</strong>
+                                <strong>{{settingsView.showAvatars.label}}</strong>
                             </span><br />
-                            <small class="form-text text-muted">{{settingsShowAvatarsBlurb}}</small>
+                            <small class="form-text text-muted">{{settingsView.showAvatars.blurb}}</small>
+                        </label>
+                    </div>
+
+                    <div class="pb-3">
+                        <label>
+                            <span class="btn btn-primary">
+                                <input type="checkbox" name="hideTimes" {{#if settings.hideTimes}} checked="checked" {{/if}} />
+                                <strong>{{settingsView.hideTimes.label}}</strong>
+                            </span><br />
+                            <small class="form-text text-muted">{{settingsView.hideTimes.blurb}}</small>
                         </label>
                     </div>
 
@@ -953,7 +963,15 @@ Pending Update
                     <div>
                         <label>
                             <span class="btn btn-primary">
-                                <input type="checkbox" name="webkitNotifications" {{#if settings.webkitNotifications}} checked="checked" {{/if}} />
+                                <input type="checkbox" name="webkitNotifications" {{#if settings.webkitNotifications}} checked="checked" {{/if}}
+                                    onchange="if ($(this).is(':checked')) {
+                                        if (notify.webkitNotifySupported())
+                                            notify.webkitNotifyRequest();  // Ask client permission for webkit notifications
+
+                                        else
+                                            dia.error('Notifications are not supported on your browser.');
+                                    }
+                                " />
                                 <strong>{{settingsWebkitNotificationsLabel}}</strong>
                             </span><br />
                             <small class="form-text text-muted">{{settingsWebkitNotificationsBlurb}}</small>
@@ -1050,11 +1068,11 @@ Pending Update
                             </div>
                         {{/if}}
 
-                        <div id="defaultBoldItalics">
+                        <div>
                             {{#if serverSettings.formatting.bold}}
                                 <label>
                                     <span class="btn btn-secondary">
-                                        <input type="checkbox" name="defaultBold" id="defaultBold"
+                                        <input type="checkbox" name="defaultFormatting[]" value="bold"
                                             {{#ifCond (lookup activeLogin.userData.messageFormattingObj 'font-weight') '==' 'bold'}}
                                                 checked="checked"
                                             {{/ifCond}}
@@ -1068,7 +1086,7 @@ Pending Update
                             {{#if serverSettings.formatting.italics}}
                                 <label>
                                     <span class="btn btn-secondary">
-                                        <input type="checkbox" name="defaultItalics" id="defaultItalics"
+                                        <input type="checkbox" name="defaultFormatting[]" value="italic"
                                             {{#ifCond (lookup activeLogin.userData.messageFormattingObj 'font-style') '==' 'italic'}}
                                                 checked="checked"
                                             {{/ifCond}}
@@ -1099,7 +1117,7 @@ Pending Update
                     <div class="pb-3">
                         <label>
                                     <span class="btn btn-primary">
-                                        <input type="checkbox" name="disableVideo" {{#if settings.disableVideo}} checked="checked" {{/if}} />
+                                        <input type="checkbox" name="disableVideos" {{#if settings.disableVideos}} checked="checked" {{/if}} />
                                         <strong>{{settingsDisableVideoLabel}}</strong>
                                     </span><br />
                             <small class="form-text text-muted">{{settingsDisableVideoBlurb}}</small>
@@ -1109,7 +1127,7 @@ Pending Update
                     <div class="pb-3">
                         <label>
                                     <span class="btn btn-primary">
-                                        <input type="checkbox" name="disableImage" {{#if settings.disableImage}} checked="checked" {{/if}} />
+                                        <input type="checkbox" name="disableImages" {{#if settings.disableImages}} checked="checked" {{/if}} />
                                         <strong>{{settingsDisableImageLabel}}</strong>
                                     </span><br />
                             <small class="form-text text-muted">{{settingsDisableImageBlurb}}</small>

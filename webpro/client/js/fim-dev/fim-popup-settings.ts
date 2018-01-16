@@ -12,12 +12,6 @@ declare var popup : any;
 
 popup.prototype.settings = {
     init : function() { /* TODO: Handle reset properly, and refresh the entire application when settings are changed. It used to make some sense not to, but not any more. */
-        // TODO: move
-        let idMap = {
-            disableFormatting : 16, disableImage : 32, disableVideos : 64, reversePostOrder : 1024,
-            showAvatars : 2048, audioDing : 8192, disableFx : 262144, disableRightClick : 1048576,
-            usTime : 16777216, twelveHourTime : 33554432, webkitNotifications : 536870912
-        };
 
         /**************************
          ***** Server Settings ****
@@ -102,41 +96,16 @@ popup.prototype.settings = {
 
 
         /* Various Settings onChange */
-        $('input[name=showAvatars], input[name=reversePostOrder], input[name=disableFormatting], input[name=disableVideo], input[name=disableImage]').change(function() {
-            var localId = $(this).attr('name');
+        $('input[name=showAvatars], input[name=reversePostOrder], input[name=disableFormatting], input[name=disableVideos], input[name=disableImages], input[name=audioDing], input[name=webkitNotifications], input[name=hideTimes]').change(function() {
+            let localId = $(this).attr('name');
 
             if ($(this).is(':checked') && !window.settings[localId]) {
                 window.settings[localId] = true;
-                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() | idMap[localId], { expires : 14 });
+                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() | window.settingNames[localId], { expires : 14 });
             }
             else if (!$(this).is(':checked') && window.settings[localId]) {
                 window.settings[localId] = false;
-                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() & ~idMap[localId], { expires : 14 });
-            }
-        });
-
-
-        $('input[name=audioDing], input[name=webkitNotifications]').change(function() {
-            var localId = $(this).attr('name');
-
-            if ($(this).is(':checked') && !settings[localId]) {
-                settings[localId] = true;
-                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() | idMap[localId], { expires : 14 });
-
-                // Notifications
-                if (localId === 'webkitNotifications') {
-                    if (notify.webkitNotifySupported()) {
-                        notify.webkitNotifyRequest();  // Ask client permission for webkit notifications
-                    }
-                    else {
-                        dia.error("Notifications are not supported on your browser.");
-                    }
-                }
-            }
-
-            else if (!$(this).is(':checked') && settings[localId]) {
-                settings[localId] = false;
-                $.cookie('webpro_settings', Number($.cookie('webpro_settings')) & ~idMap[localId], { expires : 14 });
+                $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() & ~window.settingNames[localId], { expires : 14 });
             }
         });
 
@@ -147,15 +116,18 @@ popup.prototype.settings = {
          **************************/
 
         $("#changeSettingsForm").submit(function() {
-            var defaultFormatting = [],
-                parentalFlags = [];
+            let defaultFormatting = [];
 
-            if ($('#defaultBold').is(':checked')) defaultFormatting.push("bold");
-            if ($('#defaultItalics').is(':checked')) defaultFormatting.push("italic");
+            if ($('#defaultBold').is(':checked'))
+                defaultFormatting.push("bold");
+            if ($('#defaultItalics').is(':checked'))
+                defaultFormatting.push("italic");
 
             fimApi.editUserOptions('edit', {
                 "defaultFontface" : $('#defaultFace option:selected').val(),
-                "defaultFormatting" : defaultFormatting,
+                "defaultFormatting" : $('form#changeSettingsForm input[name="defaultFormatting[]"]:checked').map(function(){
+                    return $(this).attr('value');
+                }).get(),
                 "defaultHighlight" : ($('#fontPreview').css('background-color') === 'rgba(0, 0, 0, 0)' ? null : $('#fontPreview').css('background-color').slice(4,-1)),
                 "defaultColor" : $('#fontPreview').css('color').slice(4,-1),
                 "defaultRoomId" : $('#changeSettingsForm input[name=defaultRoom]').attr('data-id'),

@@ -408,7 +408,7 @@ function fim_youtubeParse($1) {
 
 function fim_formatAsImage(imageUrl) {
     return $('<a target="_BLANK" class="imglink">').attr('href', imageUrl).append(
-        settings.disableImage ? $('<span>').text('[IMAGE]')
+        settings.disableImages ? $('<span>').text('[IMAGE]')
             : $('<img class="inlineImage" />').attr('src', imageUrl + (imageUrl.slice(0, window.serverSettings.installUrl.length) === window.serverSettings.installUrl ? "&" + $.param({
                 'thumbnailWidth' : 400,
                 'thumbnailHeight' : 400
@@ -876,26 +876,39 @@ var favicon = $('#favicon').attr('href'),
 
 
 /* Get Cookies */
-var settingsBitfield = $.getCookie('webpro_settings', 2048 + 8192 + 16777216 + 33554432);
+var settingNames = {
+    // Formatting Disables
+    disableFormatting : 16, // Don't show custom user formatting
+    disableImages : 32, // Don't embed images (use a link instead)
+    disableVideos : 64, // Don't embed videos (use a link instead)
+
+    // Chat Display
+    reversePostOrder : 1024,
+    showAvatars : 2048,
+    hideTimes : 4096,
+
+    // Other Options
+    audioDing : 8192,
+    disableRightClick : 1048576,
+    webkitNotifications : 536870912
+};
+
+var settingsBitfield = $.getCookie('webpro_settings', settingNames.showAvatars + settingNames.audioDing);
 window.settings = {
     theme : $.getCookie('webpro_theme', 'css'), // Theme (goes into effect in document.ready)
     audioVolume : $.getCookie('webpro_audioVolume', .5),
 
-    // Formatting
-    disableFormatting : !!(settingsBitfield & 16),
-    disableImage : !!(settingsBitfield & 32),
-    disableVideos : !!(settingsBitfield & 64),
+    disableFormatting : !!(settingsBitfield & settingNames.disableFormatting),
+    disableImages : !!(settingsBitfield & settingNames.disableImages),
+    disableVideos : !!(settingsBitfield & settingNames.disableVideos),
 
-    // Fun Stuff
-    reversePostOrder : !!(settingsBitfield & 1024), // Show posts in reverse?
-    showAvatars : !!(settingsBitfield & 2048), // Use the complex document style?
-    audioDing : !!(settingsBitfield & 8192), // Fire an HTML5 audio ding during each unread message?
+    reversePostOrder : !!(settingsBitfield & settingNames.reversePostOrder),
+    showAvatars : !!(settingsBitfield & settingNames.showAvatars),
+    hideTimes : !!(settingsBitfield & settingNames.hideTimes),
 
-    // Accessibility
-    disableRightClick : !!(settingsBitfield & 1048576),
-
-    // Experimental Features
-    webkitNotifications : !!(settingsBitfield & 536870912)
+    audioDing : !!(settingsBitfield & settingNames.audioDing),
+    disableRightClick : !!(settingsBitfield & settingNames.disableRightClick),
+    webkitNotifications : !!(settingsBitfield & settingNames.webkitNotifications)
 };
 
 

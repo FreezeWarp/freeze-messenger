@@ -299,8 +299,6 @@
   "settingsReversePostOrderBlurb" : "This will show newer posts at the top instead of the bottom.",
   "settingsReversePostOrderLabel" : "Show New Posts First",
   "settingsSave" : "Save Settings",
-  "settingsShowAvatarsBlurb" : "Showing avatars will reduce the overall amount of text by hiding post times and userNames with a small avatar to represent users. Times can be viewed by moving the mouse over each message.",
-  "settingsShowAvatarsLabel" : "Show Avatars",
   "settingsTabDisplay" : "Chat Display",
   "settingsTabFormatting" : "Message Formatting",
   "settingsTabGeneral" : "General",
@@ -413,6 +411,17 @@
   "uploadNewFilePreview" : "Preview & Submit",
   "uploadNewFileSubmitButton" : "Upload",
   "uploadNewFileTitle" : "Upload New File",
+
+  "settingsView" : {
+    "showAvatars" : {
+      "blurb": "Showing avatars will reduce the overall amount of text by hiding userNames with a small avatar to represent users.",
+      "label": "Show Avatars"
+    },
+    "hideTimes" : {
+      "blurb": "Hiding post times will reduce the overall amount of text by hiding post times. Times can be viewed by moving the mouse over each message.",
+      "label": "Hide Message Times"
+    }
+  },
 
   "kicks" : {
     "userName" : "User",
