@@ -21581,7 +21581,8 @@ var dia = {
         $('#modal-dynamicFull .modal-body').html(options.content);
 
         $('#modal-dynamicFull').modal();
-        
+
+        $('#modal-dynamicFull .modal-footer').html('');
         jQuery.each(options.buttons, function(buttonName, buttonAction) {
             $('#modal-dynamicFull .modal-footer').append($('<button>').attr('class', 'btn btn-secondary').text(buttonName).click(function() {
                 buttonAction();
