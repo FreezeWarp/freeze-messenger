@@ -771,19 +771,19 @@ fimApi.prototype.editRoomPermissionGroup = function(roomId, groupId, permissions
 };
 
 fimApi.prototype.deleteRoomPermissionUser = function(roomId, userId, permissionsArray, requestSettings) {
-    this.deleteRoomPermission('delete', 'user', roomId, userId, permissionsArray, requestSettings);
+    this.editRoomPermission('delete', 'user', roomId, userId, permissionsArray, requestSettings);
 };
 
 fimApi.prototype.deleteRoomPermissionGroup = function(roomId, groupId, permissionsArray, requestSettings) {
-    this.deleteRoomPermission('delete', 'group', roomId, groupId, permissionsArray, requestSettings);
+    this.editRoomPermission('delete', 'group', roomId, groupId, permissionsArray, requestSettings);
 };
 
 fimApi.prototype.createRoomPermissionUser = function(roomId, userId, permissionsArray, requestSettings) {
-    this.createRoomPermission('create', 'user', roomId, userId, permissionsArray, requestSettings);
+    this.editRoomPermission('create', 'user', roomId, userId, permissionsArray, requestSettings);
 };
 
 fimApi.prototype.createRoomPermissionGroup = function(roomId, groupId, permissionsArray, requestSettings) {
-    this.createRoomPermission('create', 'group', roomId, groupId, permissionsArray, requestSettings);
+    this.editRoomPermission('create', 'group', roomId, groupId, permissionsArray, requestSettings);
 };
 
 

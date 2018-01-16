@@ -20,10 +20,15 @@ popup.prototype.editRoom = {
     },
 
     init : function() {
-
     },
 
     retrieve : function() {
+        $('#editRoomForm [name=censorLists]').html('');
+        $('#moderatorsContainer').html('');
+        $('#allowedUsersContainer').html('');
+        $('#allowedGroupsContainer').html('');
+
+        
         let action;
         if (this.options.roomId != null)
             action = 'edit';
@@ -154,7 +159,7 @@ popup.prototype.editRoom = {
 
 
         /* Submit */
-        $("#editRoomForm").submit(function() {
+        $("#editRoomForm").submit(() => {
             // Parse Default Permissions
             let defaultPermissions = [];
             if ($('#editRoomForm input[name=allowViewing]').is(':checked'))
@@ -176,7 +181,7 @@ popup.prototype.editRoom = {
             });
 
             // Do Edit
-            fimApi.editRoom(_this.options.roomId, action, {
+            fimApi.editRoom(this.options.roomId, action, {
                 "name" : $('#editRoomForm input[name=name]').val(),
                 "defaultPermissions" : defaultPermissions,
                 "parentalAge" : $('#editRoomForm select[name=parentalAge] option:selected').val(),
