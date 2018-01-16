@@ -2,7 +2,7 @@
  * Note that: WebPro is not optimised for large sets of rooms. It can handle around 1,000 "normal" rooms. */
 
 
-var originalLeave = $.fn.popover.Constructor.prototype._leave;
+/*var originalLeave = $.fn.popover.Constructor.prototype._leave;
 $.fn.popover.Constructor.prototype._leave = function(obj, context){
     var  dataKey = this.constructor.DATA_KEY;
     var  context = context || $(obj.currentTarget).data(dataKey);
@@ -26,7 +26,7 @@ $.fn.popover.Constructor.prototype._leave = function(obj, context){
             });
         })
     }
-};
+};*/
 
 //$q($l('errorQuitMessage', 'errorGenericQuit'));
 function $q(message, error) {
@@ -1041,14 +1041,13 @@ $.when(
         /* Draw Template */
         fim_renderHandlebarsInPlace($("#entry-template"));
 
-
         /*** Popovers ***/
         $('body').popover({
             selector : '.userName',
             content : function() {
                 var el = $('<div class="row no-gutters">');
                 var data = $('<div class="col">').append(
-                    $('<div class="userName">').attr({
+                    $('<h4 class="userName">').attr({
                         'data-userId' : userId,
                         'style' : $(this).attr('data-style')
                     }).css('font-weight', 'bold').text($(this).attr('data-userName')),
@@ -1074,7 +1073,7 @@ $.when(
                 return el.prop('outerHTML');
             },
             html : true,
-            trigger : 'hover',
+            trigger : 'focus',
             placement : 'auto',
             delay: {show: 50, hide: 100}
         });
