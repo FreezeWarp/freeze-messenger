@@ -26,7 +26,7 @@ use Database\SQL\DatabaseSQL;
 
 use Fim\User;
 use Fim\Room;
-use \fimError;
+use Fim\Error;
 
 use \Exception;
 
@@ -62,7 +62,7 @@ class DatabaseInstance extends DatabaseSQL
     /**
      * @var string An error format function to be used when errors are encountered. Overrides {@link database:errorFormatFunction}
      */
-    public $errorFormatFunction = 'fimError';
+    public $errorFormatFunction = 'Fim\Error';
 
     /**
      * @var User A pointer to the logged-in user.
@@ -2182,11 +2182,11 @@ class DatabaseInstance extends DatabaseSQL
 
             if (isset($messageFlood[$message->room->id])
                 && $messageFlood[$message->room->id]['messages'] >= Config::$floodRoomLimitPerMinute)
-                new fimError('roomFlood', 'Room flood limit breached.');
+                new \Fim\Error('roomFlood', 'Room flood limit breached.');
 
             if (isset($messageFlood[0])
                 && $messageFlood[0]['messages'] >= Config::$floodSiteLimitPerMinute)
-                new fimError('siteFlood', 'Site flood limit breached.');
+                new \Fim\Error('siteFlood', 'Site flood limit breached.');
         }
 
 
@@ -2315,7 +2315,7 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function updateMessage(Message $message) {
         if (!$message->id)
-            new fimError('badUpdateMessage', 'Update message must operate on a message with a valid ID.');
+            new \Fim\Error('badUpdateMessage', 'Update message must operate on a message with a valid ID.');
 
         $this->startTransaction();
 
@@ -2443,13 +2443,13 @@ class DatabaseInstance extends DatabaseSQL
 
             }
             elseif (!$imageOriginal = imagecreatefromstring($file->contents)) {
-                throw new fimError('resizeFailed', 'The image could not be thumbnailed. The file was still uploaded.');
+                new \Fim\Error('resizeFailed', 'The image could not be thumbnailed. The file was still uploaded.');
             }
             else {
                 foreach (Config::$imageThumbnails AS $resizeFactor) {
                     if ($resizeFactor < 0 || $resizeFactor > 1) {
                         $this->rollbackTransaction();
-                        throw new fimError('badServerConfigImageThumbnails', 'The server is configured with an incorrect thumbnail factor, ' . $resizeFactor . '. Image file uploads will be disabled until this issue is rectified.');
+                        new \Fim\Error('badServerConfigImageThumbnails', 'The server is configured with an incorrect thumbnail factor, ' . $resizeFactor . '. Image file uploads will be disabled until this issue is rectified.');
                     }
 
                     $newWidth = (int) ($resizeFactor * $width);
@@ -2635,7 +2635,7 @@ class DatabaseInstance extends DatabaseSQL
 
             // Error if Flood Weight is Too Great
             if ($floodCountMinute > Config::${'floodDetectionGlobal_' . $action . '_perMinute'} && (!$this->user || !$this->user->hasPriv('modPrivs'))) {
-                new fimError("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
+                new \Fim\Error("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
                 \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute", 1, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);

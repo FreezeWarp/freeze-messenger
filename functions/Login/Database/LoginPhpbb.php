@@ -78,10 +78,10 @@ class LoginPhpbb extends LoginDatabase
         ])->getAsArray(false);
 
         if (!$phpbbUser) {
-            new \fimError('usernameInvalid', 'A user by the given name does not exist.');
+            new \Fim\Error('usernameInvalid', 'A user by the given name does not exist.');
         }
         elseif (strlen($phpbbUser['password']) <= 0 || !(new \Login\PasswordHash(8, false))->CheckPassword($_REQUEST['password'], $phpbbUser['password'])) {
-            new \fimError('passwordInvalid', 'A user by the given password does not exist.');
+            new \Fim\Error('passwordInvalid', 'A user by the given password does not exist.');
         }
         else {
             if (!preg_match('/^[0-9A-Fa-f]+$/', $phpbbUser['nameColor'])) {

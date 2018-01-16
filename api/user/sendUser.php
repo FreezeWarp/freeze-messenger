@@ -31,6 +31,7 @@
 
 /* Prevent Direct Access of File */
 
+use Fim\Error;
 use Fim\User;
 
 if (!defined('API_INUSER'))
@@ -69,28 +70,28 @@ else
 
 
 if ($loginConfig['method'] === 'vanilla' && !\Fim\Config::$registrationEnabled)
-    new fimError('registrationDisabled', 'Registration is disabled on this server.');
+    new \Fim\Error('registrationDisabled', 'Registration is disabled on this server.');
 
 elseif ($loginConfig['method'] !== 'vanilla' && !\Fim\Config::$registrationEnabledIgnoreForums)
-    new fimError('registrationDisabled', 'Registration is disabled on this server. Please register on the forum.');
+    new \Fim\Error('registrationDisabled', 'Registration is disabled on this server. Please register on the forum.');
 
 elseif ($user->id && !$user->isAnonymousUser())
-    new fimError('loggedIn', 'You are already logged-in.');
+    new \Fim\Error('loggedIn', 'You are already logged-in.');
 
 elseif ($request['email'] && (!filter_var($request['email'], FILTER_VALIDATE_EMAIL)))
-    new fimError('emailInvalid', 'The email specified is not allowed.');
+    new \Fim\Error('emailInvalid', 'The email specified is not allowed.');
 
 elseif (strlen($request['password']) < \Fim\Config::$passwordMinimumLength)
-    new fimError('passwordMinimumLength', 'The password provided is too short.');
+    new \Fim\Error('passwordMinimumLength', 'The password provided is too short.');
 
 elseif (isset($request['birthDate']) && ($age < \Fim\Config::$ageMinimum))
-    new fimError('ageMinimum', 'The age specified is below the minimum age allowed by the server.', [
+    new \Fim\Error('ageMinimum', 'The age specified is below the minimum age allowed by the server.', [
         'ageDetected' => $age,
         'ageMinimum'  => \Fim\Config::$ageMinimum
     ]);
 
 elseif (\Fim\Database::instance()->getUsers(['userNames' => [$request['name']]])->getCount() > 0)
-    new fimError('nameTaken', 'That user specified already exists.');
+    new \Fim\Error('nameTaken', 'That user specified already exists.');
 
 else {
     $newUser = new User(0);
@@ -98,7 +99,7 @@ else {
         fim_arrayFilterKeys($request, ['name', 'password', 'birthDate', 'email']),
         ['parentalAge' => fim_nearestAge($age)]
     ))) {
-        new fimError("userCreationFailed", "Could not create user.");
+        new \Fim\Error("userCreationFailed", "Could not create user.");
     }
 }
 

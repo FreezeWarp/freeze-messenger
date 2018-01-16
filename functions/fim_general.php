@@ -20,6 +20,8 @@
  *********************** Wrappers ************************
  *********************************************************/
 
+use Fim\Error;
+use Fim\ErrorThrown;
 use Fim\Room;
 
 
@@ -271,7 +273,7 @@ function fim_sanitizeGPC($type, $data) {
                     foreach ($indexMetaData['conflict'] AS $conflict) {
                         if (isset($activeGlobal[$conflict])) {
                             $conflictArray = [$conflict, $indexName];
-                            new fimError(fim_arrayOfPropertiesImplode($conflictArray) . 'Conflict');
+                            new \Fim\Error(fim_arrayOfPropertiesImplode($conflictArray) . 'Conflict');
                         }
                     }
                 }
@@ -288,7 +290,7 @@ function fim_sanitizeGPC($type, $data) {
                 if (isset($activeGlobal[$indexName], $indexMetaData['valid'])) {
                     if (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'list') {
                         if (count(array_diff($activeGlobal[$indexName], $indexMetaData['valid'])) > 0)
-                            new fimError("{$indexName}InvalidValues", "Invalid value(s) for API parameter '$indexName': " . implode(', ', array_diff($activeGlobal[$indexName], $indexMetaData['valid'])));
+                            new \Fim\Error("{$indexName}InvalidValues", "Invalid value(s) for API parameter '$indexName': " . implode(', ', array_diff($activeGlobal[$indexName], $indexMetaData['valid'])));
                     }
 
                     elseif (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'dict')
@@ -299,7 +301,7 @@ function fim_sanitizeGPC($type, $data) {
                             $activeGlobal[$indexName] = $indexMetaData['default'];
 
                         else
-                            new fimError("{$indexName}InvalidValue", "'{$activeGlobal[$indexName]}' is an invalid value for API parameter '$indexName'.");
+                            new \Fim\Error("{$indexName}InvalidValue", "'{$activeGlobal[$indexName]}' is an invalid value for API parameter '$indexName'.");
                     }
                 }
 
@@ -312,7 +314,7 @@ function fim_sanitizeGPC($type, $data) {
                 // Finally, if the global is thus-far unprovided...
                 if (!isset($activeGlobal[$indexName])) {
                     if ($indexMetaData['require']) // And required, throw an exception.
-                        new fimError("{$indexName}Required", "API parameter '$indexName' is required but was not provided.");
+                        new \Fim\Error("{$indexName}Required", "API parameter '$indexName' is required but was not provided.");
                     else // And not required, just ignore this global and move on to the next one.
                         continue;
                 }
@@ -345,7 +347,7 @@ function fim_sanitizeGPC($type, $data) {
                 case 'dict':
                     // Make sure the passed element is an array -- we don't do any conversion to make it one.
                     if (!is_array($activeGlobal[$indexName]))
-                        throw new fimError("{$indexName}NotArray", "API parameter '$indexName' must be an array.");
+                        throw new \Fim\Error("{$indexName}NotArray", "API parameter '$indexName' must be an array.");
 
                     $arrayFromGlobal = $activeGlobal[$indexName];
 
@@ -367,7 +369,7 @@ function fim_sanitizeGPC($type, $data) {
                 case 'list':
                     // Make sure the passed element is an array -- we don't do any conversion to make it an array.
                     if (!is_array($activeGlobal[$indexName]))
-                        new fimError("{$indexName}NotArray",  "{$indexName} must be an array.");
+                        new \Fim\Error("{$indexName}NotArray",  "{$indexName} must be an array.");
 
                     // Remove any array keys.
                     $arrayFromGlobal = array_values(
@@ -389,7 +391,7 @@ function fim_sanitizeGPC($type, $data) {
 
                     // Detect maximum length
                     if (isset($indexMetaData['max']) && count($newData[$indexName]) > $indexMetaData['max'])
-                        new fimError("{$indexName}MaxValues", "You have passed too many values for $indexName; most allowed is {$indexMetaData['max']}.");
+                        new \Fim\Error("{$indexName}MaxValues", "You have passed too many values for $indexName; most allowed is {$indexMetaData['max']}.");
 
                     // Transform the list into a single, non-list datatype
                     if (isset($indexMetaData['transform'])) {
@@ -401,7 +403,7 @@ function fim_sanitizeGPC($type, $data) {
                                     if (!$name)
                                         continue; // Allow empty values.
                                     elseif (!isset($indexMetaData['bitTable'][$name]))
-                                        new fimError("{$indexName}UnknownValue", "'$name' is not a recognized value for API parameter '$indexName'");
+                                        new \Fim\Error("{$indexName}UnknownValue", "'$name' is not a recognized value for API parameter '$indexName'");
                                     else
                                         $bitfield |= $indexMetaData['bitTable'][$name];
                                 }
@@ -500,7 +502,7 @@ function fim_sanitizeGPC($type, $data) {
                     $newData[$indexName] = @fim_cast('roomId', $activeGlobal[$indexName]);
 
                     if (!$newData[$indexName]) {
-                        new fimError('roomIdInvalid', 'The room ID is not valid.');
+                        new \Fim\Error('roomIdInvalid', 'The room ID is not valid.');
                     }
                 break;
 
@@ -517,7 +519,7 @@ function fim_sanitizeGPC($type, $data) {
 
         /* If a required value was previously set, but was then unset by the above casts, we through an error. */
         if (!isset($newData[$indexName]) && $indexMetaData['require'])
-            new fimError("{$indexName}Invalid", "API parameter '{$indexName}' is required, but the passed value is not valid."); // And required, throw an exception.
+            new \Fim\Error("{$indexName}Invalid", "API parameter '{$indexName}' is required, but the passed value is not valid."); // And required, throw an exception.
     }
 
     return $newData;
@@ -708,7 +710,7 @@ function fim_emptyExplode(string $separator, $list) {
 
 /**
  * Custom exception handler. In general, all classes and functions are going to use exceptions so that they can be caught. But, the lazy coder that I am, I don't normally bother catching them -- these errors will hopefully give a user enough information if I can't be bothered.
- * TODO: allow arrays from fimError
+ * TODO: allow arrays from Fim\fimError
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
@@ -719,7 +721,7 @@ function fim_exceptionHandler($exception) {
     );
     //ob_end_clean(); // Clean the output buffer and end it. This means that when we show the error in a second, there won't be anything else with it.
 
-    if ($exception instanceof fimErrorThrown) {
+    if ($exception instanceof ErrorThrown) {
         header($exception->getHttpError()); // FimError is invoked when the user did something wrong, not us. (At least, it should be. I've been a little inconsistent.)
 
         $errorData['string'] = $exception->getCode();
@@ -728,7 +730,7 @@ function fim_exceptionHandler($exception) {
 
         if (\Fim\Config::$displayBacktrace) {
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT);
-            //array_shift($backtrace); // Omits this function, fimError->trigger, from the backtrace.
+            //array_shift($backtrace); // Omits this function, Fim\fimError->trigger, from the backtrace.
 
             $errorData['file'] = ($backtrace[1] ?? $backtrace[0])['file'] ?? '';
             $errorData['line'] = ($backtrace[1] ?? $backtrace[0])['line'] ?? '';
@@ -736,7 +738,7 @@ function fim_exceptionHandler($exception) {
         }
     }
     else {
-        header(fimError::HTTP_500_INTERNAL); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
+        header(\Fim\Error::HTTP_500_INTERNAL); // When an exception is encountered, we throw an error to tell the server that the software effectively is broken.
 
         $errorData = array_merge($errorData, array(
             'string' => $exception->getMessage(),

@@ -12,7 +12,6 @@
     "eventsource" : "latest",
     "jsdom" : "latest",
     "jquery" : "latest"
-
   },
   "author": "Joseph T. Parsons"
 }

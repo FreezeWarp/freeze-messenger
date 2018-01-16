@@ -66,7 +66,7 @@ abstract class LoginDatabase implements LoginRunner
 
         // Error, if needed
         if ($oauthResponse->getStatusCode() !== 200) {
-            new \fimError($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
+            new \Fim\Error($oauthResponse->getParameters()['error'], $oauthResponse->getParameters()['error_description']);
         }
         else {
             // Clean Our Database

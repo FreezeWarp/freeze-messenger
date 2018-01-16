@@ -87,7 +87,7 @@ class LoginSteam extends LoginTwoStep {
                 $this->loginFactory->user->setDatabase([
                     'integrationMethod' => 'steam',
                     'integrationId' => (int) $userInfo['steamid'],
-                    'name' => ($userInfo['realname'] ?? $userInfo['personaName']) ?: new \fimError('steamApiNoName', 'No name found in Steam API response.'),
+                    'name' => ($userInfo['realname'] ?? $userInfo['personaName']) ?: new \Fim\Error('steamApiNoName', 'No name found in Steam API response.'),
                     'avatar' => $userInfo['avatarfull'],
                     'profile' => $userInfo['profileurl']
                     //bio $userInfo->description

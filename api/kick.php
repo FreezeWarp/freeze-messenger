@@ -51,6 +51,7 @@
 
 /* Common Resources */
 
+use Fim\Error;
 use Fim\Room;
 
 $apiRequest = true;
@@ -76,21 +77,21 @@ $requestHead = array_merge($requestHead, fim_sanitizeGPC('g', [
 
 /* Early Validation */
 if (!\Fim\Config::$kicksEnabled) {
-    new fimError('kicksDisabled', 'Kicks are disabled on this server.');
+    new \Fim\Error('kicksDisabled', 'Kicks are disabled on this server.');
 }
 
 if (isset($requestHead['roomId'])) {
     if (!($room = \Fim\RoomFactory::getFromId($requestHead['roomId']))->exists()
         || !(($permission = \Fim\Database::instance()->hasPermission($user, $room)) & Room::ROOM_PERMISSION_VIEW))
-        new fimError('roomIdNoExist', 'The given "roomId" parameter does not correspond with a real room.');
+        new \Fim\Error('roomIdNoExist', 'The given "roomId" parameter does not correspond with a real room.');
 
     elseif (!(($permission & Room::ROOM_PERMISSION_MODERATE) || (isset($requestHead['userId']) && $requestHead['userId'] === $user->id)))
-        new fimError('noPerm', 'You do not have permission to moderate this room.');
+        new \Fim\Error('noPerm', 'You do not have permission to moderate this room.');
 }
 
 if (isset($requestHead['userId'])) {
     if (!($kickUser = \Fim\UserFactory::getFromId($requestHead['userId']))->exists())
-        new fimError('userIdNoExist', 'The given "userId" parameter does not correspond with a real user.');
+        new \Fim\Error('userIdNoExist', 'The given "userId" parameter does not correspond with a real user.');
 }
 
 

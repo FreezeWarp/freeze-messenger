@@ -52,6 +52,9 @@
  */
 
 /* Common Resources */
+
+use Fim\Error;
+
 $apiRequest = true;
 require(__DIR__ . '/../global.php');
 define('API_INFILE', true);
@@ -72,12 +75,12 @@ $requestHead = array_merge($requestHead, (array)fim_sanitizeGPC('g', [
 /* Early Validation */
 if (isset($requestHead['id'])) {
     if ($requestHead['_action'] === 'create') // ID shouldn't be used here.
-        new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
+        new \Fim\Error('idExtra', 'Parameter ID should not be used with PUT requests.');
 
     try {
         $file = \Fim\Database::instance()->getFiles(['fileIds' => $requestHead['id']])->getAsObject('\\Fim\\File');
     } catch (Exception $ex) {
-        new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.');
+        new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
     }
 }
 

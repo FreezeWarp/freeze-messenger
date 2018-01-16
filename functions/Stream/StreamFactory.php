@@ -73,7 +73,7 @@ class StreamFactory {
                         false,
                         'pgsql'
                     )) {
-                        new \fimError('pgsqlConnectionFailure', 'Could not connect to the PgSQL server for Streaming.');
+                        new \Fim\Error('pgsqlConnectionFailure', 'Could not connect to the PgSQL server for Streaming.');
                     }
                 }
 

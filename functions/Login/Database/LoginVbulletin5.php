@@ -54,14 +54,14 @@ class LoginVbulletin5 extends LoginDatabase
         ])->getAsArray(false);
 
         if (!$vbUser || strlen($vbUser['token']) <= 0) {
-            new \fimError('usernameInvalid', 'A user by the given name does not exist.');
+            new \Fim\Error('usernameInvalid', 'A user by the given name does not exist.');
         }
         elseif ($vbUser['scheme'] === 'legacy') {
-            new \fimError('passwordUnsupported', 'Users imported from vBulletin 3/4 systems are not supported. Please change your password in vBulletin 5 and then login again.');
+            new \Fim\Error('passwordUnsupported', 'Users imported from vBulletin 3/4 systems are not supported. Please change your password in vBulletin 5 and then login again.');
         }
         // This isn't quite one-to-one (we could technically be allowing users that vB5 would reject), but is close enough
         elseif (!password_verify(md5($_REQUEST['password']), $vbUser['token'])) {
-            new \fimError('passwordInvalid', 'A user by the given password does not exist.');
+            new \Fim\Error('passwordInvalid', 'A user by the given password does not exist.');
         }
         else {
             /* TODO: all of the fancy stuff here (querying the group tables) should be put on a timer, and only done once every so often. */

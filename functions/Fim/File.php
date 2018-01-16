@@ -18,7 +18,7 @@ namespace Fim;
 
 use Fim\User;
 use Fim\Room;
-use \fimError;
+use Fim\Error;
 use \Exception;
 
 class File extends MagicGettersSetters {
@@ -91,7 +91,7 @@ class File extends MagicGettersSetters {
 
 
         // Required Fields
-        $this->name = $fileData['name'] ?? new fimError('badfimFile', 'fimFile must be invoked with a name.');
+        $this->name = $fileData['name'] ?? new \Fim\Error('badfimFile', 'fimFile must be invoked with a name.');
 
         // Not Entirely Required Fields
         $this->id = $fileData['id'] ?? 0;
@@ -105,8 +105,8 @@ class File extends MagicGettersSetters {
         $this->flags = $fileData['flags'] ?? 0;
 
         // Users and Rooms
-        $userId = $fileData['userId'] ?? new fimError('badfimFile', 'fimFile must be invoked with userId.');
-        $roomIdLink = $fileData['roomIdLink'] ?? new fimError('badfimFile', 'fimFile must be invoked with roomIdLink.');
+        $userId = $fileData['userId'] ?? new \Fim\Error('badfimFile', 'fimFile must be invoked with userId.');
+        $roomIdLink = $fileData['roomIdLink'] ?? new \Fim\Error('badfimFile', 'fimFile must be invoked with roomIdLink.');
 
         $this->user = UserFactory::getFromId($userId);
         $this->room = $roomIdLink

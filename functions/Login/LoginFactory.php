@@ -72,18 +72,18 @@ class LoginFactory
             $includePath = __DIR__ . "/TwoStep/{$className}.php";
 
             if (!isset($loginConfig['extraMethods'][$loginName]['clientId'], $loginConfig['extraMethods'][$loginName]['clientSecret'])) {
-                new \fimError('disabledLogin', 'The attempted login method is disabled on this server.');
+                new \Fim\Error('disabledLogin', 'The attempted login method is disabled on this server.');
             }
 
             elseif (!file_exists($includePath)) {
-                new \fimError('uninstalledLogin', 'The attempted login method is enabled, but not installed, on this server.');
+                new \Fim\Error('uninstalledLogin', 'The attempted login method is enabled, but not installed, on this server.');
             }
 
             else {
                 require($includePath);
 
                 if (!class_exists($classNameSpaced)) {
-                    new \fimError('brokenLogin', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
+                    new \Fim\Error('brokenLogin', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
                 }
                 else {
                     $this->loginRunner = new $classNameSpaced(
@@ -101,13 +101,13 @@ class LoginFactory
             $includePath = __DIR__ . "/Database/{$className}.php";
 
             if (!file_exists($includePath)) {
-                new \fimError('loginMisconfigured', 'Logins are currently misconfigured: a login method has been specified without a corresponding login class being available.');
+                new \Fim\Error('loginMisconfigured', 'Logins are currently misconfigured: a login method has been specified without a corresponding login class being available.');
             }
             else {
                 require($includePath);
 
                 if (!class_exists($classNameSpaced)) {
-                    new \fimError('loginMisconfigured', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
+                    new \Fim\Error('loginMisconfigured', 'The attempted login method is installed on this server, but appears to be named incorrectly.');
                 }
                 else {
                     $this->loginRunner = new $classNameSpaced($this);
@@ -163,7 +163,7 @@ class LoginFactory
         if ($this->loginRunner->hasLoginCredentials()) {
             try {
                 $this->loginRunner->setUser();
-            } catch (\fimErrorThrown $errorThrown) {
+            } catch (\Fim\ErrorThrown $errorThrown) {
 
                 /* This is primarily used for API testing. It is not a secure implementation. */
                 if ($this->loginRunner instanceof LoginDatabase

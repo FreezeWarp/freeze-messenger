@@ -71,6 +71,8 @@
  * @throws messageDateMaxMessageDateMinMessageIdEndConflictMessageIdStart More than one message constraint (messageDateMin, messageDateMax, messageIdStart, messageIdEnd) was used.
  */
 
+use Fim\Error;
+use Fim\ErrorThrown;
 use Fim\Room;
 
 $apiRequest = true;
@@ -88,21 +90,21 @@ $requestHead = fim_sanitizeGPC('g', [
 
 /* Early Validation */
 if (!($room = new Room($requestHead['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW))
-    new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.'); // Make sure we have a valid room.
+    new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.'); // Make sure we have a valid room.
 
 if (isset($requestHead['id'])) {
     if ($requestHead['_action'] == 'create') // ID shouldn't be used here.
-        new fimError('idExtra', 'Parameter ID should not be used with POST/create requests.');
+        new \Fim\Error('idExtra', 'Parameter ID should not be used with POST/create requests.');
 
     try {
         $message = \Fim\Database::instance()->getMessage($room, $requestHead['id']); // Get message object.
-    } catch (fimErrorThrown $ex) { // If getMessage() fails, it usually indicates in invalid ID.
-        new fimError('idNoExist', 'The given "id" parameter does not correspond with a real message.');
+    } catch (ErrorThrown $ex) { // If getMessage() fails, it usually indicates in invalid ID.
+        new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real message.');
     }
 }
 
 else if ($requestHead['_action'] != 'get' && $requestHead['_action'] != 'create')
-    new fimError('idRequired', 'Parameter "ID" must be passed unless POSTing or  GETing.');
+    new \Fim\Error('idRequired', 'Parameter "ID" must be passed unless POSTing or  GETing.');
 
 
 /* Load the correct file to perform the action */

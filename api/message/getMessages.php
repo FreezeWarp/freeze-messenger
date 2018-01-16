@@ -27,6 +27,7 @@
 
 /* Prevent Direct Access of File */
 
+use Fim\Error;
 use Fim\Room;
 
 if (!defined('API_INMESSAGE'))
@@ -96,7 +97,7 @@ $xmlData = [
 ];
 
 if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW))
-    new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
+    new \Fim\Error('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
 else {
     /* Process Ping */

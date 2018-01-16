@@ -18,7 +18,7 @@ namespace Fim;
 
 use Database\Type\Type;
 use Exception;
-use fimError;
+use Fim\Error;
 
 /**
  * Class Fim\fimUser
@@ -750,7 +750,7 @@ class User extends DynamicObject
     public function checkPasswordAndLockout($password): bool
     {
         if (\Fim\Database::instance()->lockoutActive()) {
-            new fimError('lockoutActive', 'You have attempted to login too many times. Please wait a while and then try again.');
+            new \Fim\Error('lockoutActive', 'You have attempted to login too many times. Please wait a while and then try again.');
 
             return false;
         }

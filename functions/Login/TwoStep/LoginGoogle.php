@@ -85,17 +85,17 @@ class LoginGoogle extends LoginTwoStep {
         $access_token = $this->client->getAccessToken();
 
         if (!$access_token)
-            new \fimError('failedLogin', 'We were unable to login to the Google server.');
+            new \Fim\Error('failedLogin', 'We were unable to login to the Google server.');
 
         // get user info
         $googleUser = new Google_Service_Oauth2($this->client);
         $userInfo = $googleUser->userinfo->get();
 
         if (!$userInfo->getId())
-            new \fimError('invalidIntegrationId', 'The Google server did not respond with a valid user ID. Login cannot continue.');
+            new \Fim\Error('invalidIntegrationId', 'The Google server did not respond with a valid user ID. Login cannot continue.');
 
         elseif (!$userInfo->getName())
-            new \fimError('invalidIntegrationName', 'The Google server did not respond with a valid user name. Login cannot continue.');
+            new \Fim\Error('invalidIntegrationName', 'The Google server did not respond with a valid user name. Login cannot continue.');
 
         // store user info...
         $this->loginFactory->user = new \Fim\User([

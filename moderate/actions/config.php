@@ -144,7 +144,7 @@ else {
 
                 \Fim\Cache::clearConfig();
 
-                echo container('Configuration Updated','The configuration has been updated. Note that certain settings do not take effect retroactively (e.g. "userRoomCreation" does not change the setting for existing users). <br /><br /><form method="post" action="index.php?do=config"><button type="submit" class="btn btn-success">Return to Viewing Lists</button></form>');
+                echo container('Configuration Updated','The configuration has been updated. Note that certain settings do not take effect retroactively (e.g. "userRoomCreation" does not change the setting for existing users). <br /><br /><form method="post" action="index.php?do=config"><button type="submit" class="btn btn-success">Return to Viewing Configuration</button></form>');
             break;
 
             /* TODO: delete DB added directives */

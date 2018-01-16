@@ -97,6 +97,7 @@ These parameters are, where applicable, documented in the SQL documentation.
  * DELETE userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == removes rooms 1, 2, and 3 from the watch rooms list
  */
 
+use Fim\Error;
 use Fim\Room;
 use Fim\User;
 
@@ -189,7 +190,7 @@ $updateArray = [];
 
 
 if ($user->isAnonymousUser())
-    new fimError('anonymousUser', 'Anonymous users cannot change their settings.');
+    new \Fim\Error('anonymousUser', 'Anonymous users cannot change their settings.');
 
 
 /************************************
@@ -202,32 +203,32 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
      ************************************/
     if (isset($request['avatar'])) {
         if (!$user->hasPriv('selfChangeAvatar'))
-            $xmlData['editUserOptions']['avatar'] = (new fimError('noPerm', 'You cannot change your avatar.', null, true))->getArray();
+            $xmlData['editUserOptions']['avatar'] = (new \Fim\Error('noPerm', 'You cannot change your avatar.', null, true))->getArray();
 
         elseif ($request['avatar'] === '')
             $updateArray['avatar'] = $request['avatar'];
 
         elseif ((\Fim\Config::$avatarMustMatchRegex && !preg_match(\Fim\Config::$avatarMustMatchRegex, $request['avatar']))
             || (\Fim\Config::$avatarMustNotMatchRegex && preg_match(\Fim\Config::$avatarMustNotMatchRegex, $request['avatar'])))
-            $xmlData['editUserOptions']['avatar'] = (new fimError('bannedFile', 'The avatar specified is not allowed.', null, true))->getArray();
+            $xmlData['editUserOptions']['avatar'] = (new \Fim\Error('bannedFile', 'The avatar specified is not allowed.', null, true))->getArray();
 
         elseif (filter_var($request['avatar'], FILTER_VALIDATE_URL) === FALSE)
-            $xmlData['editUserOptions']['avatar'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->getArray();
+            $xmlData['editUserOptions']['avatar'] = (new \Fim\Error('noUrl', 'The URL is not a URL.', null, true))->getArray();
 
         elseif (\Fim\Config::$avatarMustExist && !Http\CurlRequest::exists($request['avatar']))
-            $xmlData['editUserOptions']['avatar'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->getArray();
+            $xmlData['editUserOptions']['avatar'] = (new \Fim\Error('badUrl', 'The URL does not exist.', null, true))->getArray();
 
         else {
             $imageData = getimagesize($request['avatar']);
 
             if ($imageData[0] <= \Fim\Config::$avatarMinimumWidth || $imageData[1] <= \Fim\Config::$avatarMinimumHeight)
-                $xmlData['editUserOptions']['avatar'] = (new fimError('smallSize', 'The avatar specified is too small.', null, true))->getArray();
+                $xmlData['editUserOptions']['avatar'] = (new \Fim\Error('smallSize', 'The avatar specified is too small.', null, true))->getArray();
 
             elseif ($imageData[0] >= \Fim\Config::$avatarMaximumWidth || $imageData[1] >= \Fim\Config::$avatarMaximumHeight)
-                $xmlData['editUserOptions']['avatar'] = (new fimError('bigSize', 'The avatar specified is too large.', null, true))->getArray();
+                $xmlData['editUserOptions']['avatar'] = (new \Fim\Error('bigSize', 'The avatar specified is too large.', null, true))->getArray();
 
             elseif (!in_array($imageData[2], \Fim\Config::$imageTypesAvatar))
-                $xmlData['editUserOptions']['avatar'] = (new fimError('badType', 'The avatar is not a valid image type.', null, true))->getArray();
+                $xmlData['editUserOptions']['avatar'] = (new \Fim\Error('badType', 'The avatar is not a valid image type.', null, true))->getArray();
 
             else
                 $updateArray['avatar'] = $request['avatar'];
@@ -241,20 +242,20 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
      ************************************/
     if (isset($request['profile'])) {
         if (!$user->hasPriv('selfChangeProfile'))
-            $xmlData['editUserOptions']['profile'] = (new fimError('noPerm', 'You cannot change your profile.', null, true))->getArray();
+            $xmlData['editUserOptions']['profile'] = (new \Fim\Error('noPerm', 'You cannot change your profile.', null, true))->getArray();
 
         elseif ($request['profile'] === '')
             $updateArray['profile'] = $request['profile'];
 
         elseif (filter_var($request['profile'], FILTER_VALIDATE_URL) === false)
-            $xmlData['editUserOptions']['profile'] = (new fimError('noUrl', 'The URL is not a URL.', null, true))->getArray();
+            $xmlData['editUserOptions']['profile'] = (new \Fim\Error('noUrl', 'The URL is not a URL.', null, true))->getArray();
 
         elseif ((\Fim\Config::$profileMustMatchRegex && !preg_match(\Fim\Config::$profileMustMatchRegex, $request['profile']))
             || (\Fim\Config::$profileMustNotMatchRegex && preg_match(\Fim\Config::$profileMustNotMatchRegex, $request['profile'])))
-            $xmlData['editUserOptions']['profile'] = (new fimError('bannedUrl', 'The URL specified is not allowed.', null, true))->getArray();
+            $xmlData['editUserOptions']['profile'] = (new \Fim\Error('bannedUrl', 'The URL specified is not allowed.', null, true))->getArray();
 
         elseif (\Fim\Config::$profileMustExist && !Http\CurlRequest::exists($request['profile']))
-            $xmlData['editUserOptions']['profile'] = (new fimError('badUrl', 'The URL does not exist.', null, true))->getArray();
+            $xmlData['editUserOptions']['profile'] = (new \Fim\Error('badUrl', 'The URL does not exist.', null, true))->getArray();
 
         else
             $updateArray['profile'] = $request['profile'];
@@ -270,7 +271,7 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
 
         if (!$defaultRoom->exists()
             || !(\Fim\Database::instance()->hasPermission($user, $defaultRoom) & Room::ROOM_PERMISSION_VIEW))
-            $xmlData['editUserOptions']['defaultRoom'] = (new fimError('invalidRoom', 'The room specified does not exist.', null, true))->getArray();
+            $xmlData['editUserOptions']['defaultRoom'] = (new \Fim\Error('invalidRoom', 'The room specified does not exist.', null, true))->getArray();
 
         else
             $updateArray['defaultRoomId'] = $defaultRoom->id;
@@ -299,19 +300,19 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
             $rgb[$value] = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
 
             if (!\Fim\Config::${'defaultFormatting' . substr($value, 7)})
-                $xmlData['editUserOptions'][$value] = (new fimError('disabled', $value . ' is disabled on this server.', null, true))->getArray();
+                $xmlData['editUserOptions'][$value] = (new \Fim\Error('disabled', $value . ' is disabled on this server.', null, true))->getArray();
 
             elseif (count($rgb[$value]) !== 3) // Too many entries.
-                $xmlData['editUserOptions'][$value] = (new fimError('badFormat', 'The ' . $value . ' value was not properly formatted.', null, true))->getArray();
+                $xmlData['editUserOptions'][$value] = (new \Fim\Error('badFormat', 'The ' . $value . ' value was not properly formatted.', null, true))->getArray();
 
             elseif ($rgb[$value][0] < 0 || $rgb[$value][0] > 255) // First val out of range.
-                $xmlData['editUserOptions'][$value] = (new fimError('outOfRange1', 'The first value ("red") was out of range.', null, true))->getArray();
+                $xmlData['editUserOptions'][$value] = (new \Fim\Error('outOfRange1', 'The first value ("red") was out of range.', null, true))->getArray();
 
             elseif ($rgb[$value][1] < 0 || $rgb[$value][1] > 255) // Second val out of range.
-                $xmlData['editUserOptions'][$value] = (new fimError('outOfRange2', 'The first value ("green") was out of range.', null, true))->getArray();
+                $xmlData['editUserOptions'][$value] = (new \Fim\Error('outOfRange2', 'The first value ("green") was out of range.', null, true))->getArray();
 
             elseif ($rgb[$value][2] < 0 || $rgb[$value][2] > 255) // Third val out of range.
-                $xmlData['editUserOptions'][$value] = (new fimError('outOfRange3', 'The first value ("blue") was out of range.', null, true))->getArray();
+                $xmlData['editUserOptions'][$value] = (new \Fim\Error('outOfRange3', 'The first value ("blue") was out of range.', null, true))->getArray();
 
             else {
                 switch ($value) {
@@ -328,7 +329,7 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
 
     if (isset($rgb['defaultHighlight'], $rgb['defaultColor'])) {
         if (\Fim\Utilities::contrast($rgb['defaultHighlight'], $rgb['defaultColor']) < \Fim\Config::$defaultFormattingMinimumContrast) {
-            $xmlData['editUserOptions']['defaultHighlight'] = (new fimError('lowContrast', 'The chosen highlight and font color have too low of a contrast. The calculated contrast was ' . round(\Fim\Utilities::contrast($rgb['defaultHighlight'], $rgb['defaultColor']), 2) . '; please use a constrast of at least ' . \Fim\Config::$defaultFormattingMinimumContrast . '.', null, true))->getArray();
+            $xmlData['editUserOptions']['defaultHighlight'] = (new \Fim\Error('lowContrast', 'The chosen highlight and font color have too low of a contrast. The calculated contrast was ' . round(\Fim\Utilities::contrast($rgb['defaultHighlight'], $rgb['defaultColor']), 2) . '; please use a constrast of at least ' . \Fim\Config::$defaultFormattingMinimumContrast . '.', null, true))->getArray();
             unset($updateArray['messageFormatting']['background-color']);
             unset($updateArray['messageFormatting']['color']);
         }
@@ -347,10 +348,10 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
      ************************************/
     if (isset($request['defaultFontface'])) {
         if (!\Fim\Config::$defaultFormattingFont)
-            $xmlData['editUserOptions']['defaultFontface'] = (new fimError('disabled', 'Defaults fonts are disabled on this server.', null, true))->getArray();
+            $xmlData['editUserOptions']['defaultFontface'] = (new \Fim\Error('disabled', 'Defaults fonts are disabled on this server.', null, true))->getArray();
 
         else if (!isset(\Fim\Config::$fonts[$request['defaultFontface']]))
-            $xmlData['editUserOptions']['defaultFontface'] = (new fimError('noFont', 'The specified font is not recognised. A list of recognised fonts can be obtained through the getServerStatus API.', null, true))->getArray();
+            $xmlData['editUserOptions']['defaultFontface'] = (new \Fim\Error('noFont', 'The specified font is not recognised. A list of recognised fonts can be obtained through the getServerStatus API.', null, true))->getArray();
 
         else
             $updateArray['messageFormatting'][] = 'font-family:' . \Fim\Config::$fonts[$request['defaultFontface']];
@@ -363,7 +364,7 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
      ************************************/
     if (isset($request['parentalAge'])) {
         if (!in_array($request['parentalAge'], \Fim\Config::$parentalAges, true))
-            $xmlData['editUserOptions']['parentalAge'] = (new fimError('badAge', 'The parental age specified is invalid. A list of valid parental ages can be obtained from the getServerStatus API.', null, true))->getArray();
+            $xmlData['editUserOptions']['parentalAge'] = (new \Fim\Error('badAge', 'The parental age specified is invalid. A list of valid parental ages can be obtained from the getServerStatus API.', null, true))->getArray();
 
         else
             $updateArray['parentalAge'] = $request['parentalAge'];

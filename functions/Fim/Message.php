@@ -18,7 +18,7 @@ namespace Fim;
 
 use Fim\Room;
 use Fim\User;
-use \fimError;
+use Fim\Error;
 use \Exception;
 
 class Message extends \Fim\MagicGettersSetters
@@ -89,24 +89,24 @@ class Message extends \Fim\MagicGettersSetters
         if ($messageData instanceof \Database\Result) {
             $messageData = $messageData->getAsArray(false);
 
-            $this->id = (int) $messageData['id'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have id column.');
-            $this->user = UserFactory::getFromId((int)($messageData['userId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have userId column.')));
-            $this->room = new Room(($messageData['roomId'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have roomId column.')));
-            $this->text = $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have text column.');
+            $this->id = (int) $messageData['id'] ?? new \Fim\Error('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have id column.');
+            $this->user = UserFactory::getFromId((int)($messageData['userId'] ?? new \Fim\Error('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have userId column.')));
+            $this->room = new Room(($messageData['roomId'] ?? new \Fim\Error('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have roomId column.')));
+            $this->text = $messageData['text'] ?? new \Fim\Error('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have text column.');
             $this->flag = $messageData['flag'] ?? '';
-            $this->time = $messageData['time'] ?? new fimError('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');
+            $this->time = $messageData['time'] ?? new \Fim\Error('badFimMessage', 'fimMessage when invoked with a fimDatabaseResult must have time column.');
             $this->anonId = $messageData['anonId'] ?? false;
         }
 
         // When creating a new message.
         else if (is_array($messageData)) {
-            $this->user = $messageData['user'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain user.');
-            $this->room = $messageData['room'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain room.');
+            $this->user = $messageData['user'] ?? new \Fim\Error('badFimMessage', 'fimMessage when invoked with an associative array must contain user.');
+            $this->room = $messageData['room'] ?? new \Fim\Error('badFimMessage', 'fimMessage when invoked with an associative array must contain room.');
             $this->flag = $messageData['flag'] ?? '';
             $this->time = time();
 
             $this->setText(
-                $messageData['text'] ?? new fimError('badFimMessage', 'fimMessage when invoked with an associative array must contain text.'),
+                $messageData['text'] ?? new \Fim\Error('badFimMessage', 'fimMessage when invoked with an associative array must contain text.'),
                 $messageData['ignoreBlock'] ?? false
             );
         }

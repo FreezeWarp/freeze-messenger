@@ -28,6 +28,7 @@
  * @param string fim3_sessionHash
  */
 
+use Fim\Error;
 use Fim\User;
 
 
@@ -105,7 +106,7 @@ if (!$ignoreLogin) {
     /**
      * How our OAuth data is stored.
      */
-    $oauthStorage = new \Fim\OAuthProvider(\Fim\Database::instance(), 'fimError');
+    $oauthStorage = new \Fim\OAuthProvider(\Fim\Database::instance(), 'Fim\Error');
 
     /**
      * How our OAuth processes requests.
@@ -150,7 +151,7 @@ if (!$ignoreLogin) {
 
         // Error on Failure
         else {
-            new fimError($oauthServer->getResponse()->getParameter('error'), $oauthServer->getResponse()->getParameter('error_description'));
+            new \Fim\Error($oauthServer->getResponse()->getParameter('error'), $oauthServer->getResponse()->getParameter('error_description'));
             die();
         }
     }
@@ -160,7 +161,7 @@ if (!$ignoreLogin) {
      * No verification method found.
      */
     else {
-        new fimError('noLogin', 'Please specify login credentials.');
+        new \Fim\Error('noLogin', 'Please specify login credentials.');
     }
 
 

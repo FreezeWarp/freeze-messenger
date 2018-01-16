@@ -27,6 +27,7 @@
 
 /* Prevent Direct Access of File */
 
+use Fim\Error;
 use Fim\Room;
 
 if (!defined('API_INMESSAGE'))
@@ -45,7 +46,7 @@ if (($message->user->id = $user->id && $user->hasPriv('editOwnPosts'))
 }
 
 else
-    new fimError('noPerm', 'You are not allowed to delete this message.');
+    new \Fim\Error('noPerm', 'You are not allowed to delete this message.');
 
 echo new Http\ApiData([
     'message' => [

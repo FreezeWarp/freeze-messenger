@@ -54,10 +54,10 @@ class LoginVbulletin3 extends LoginDatabase
         ])->getAsArray(false);
 
         if (!$vbUser) {
-            new \fimError('usernameInvalid', 'A user by the given name does not exist.');
+            new \Fim\Error('usernameInvalid', 'A user by the given name does not exist.');
         }
         elseif (strlen($vbUser['password']) <= 0 || $vbUser['password'] !== md5(md5($_REQUEST['password']) . $vbUser['salt'])) {
-            new \fimError('passwordInvalid', 'A user by the given password does not exist.');
+            new \Fim\Error('passwordInvalid', 'A user by the given password does not exist.');
         }
         else {
             /* TODO: all of the fancy stuff here (querying the group tables) should be put on a timer, and only done once every so often. */

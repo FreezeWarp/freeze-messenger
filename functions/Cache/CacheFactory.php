@@ -36,7 +36,7 @@ class CacheFactory {
         $classNameSpaced = '\Cache\Driver\\' . ucfirst($method);
 
         if (!class_exists($classNameSpaced)) {
-            new \fimError('cacheMisconfigured', "Caches are currently misconfigured: A cache method, $method, is installed on this server, but appears to be named incorrectly.");
+            new \Fim\Error('cacheMisconfigured', "Caches are currently misconfigured: A cache method, $method, is installed on this server, but appears to be named incorrectly.");
         }
         else {
             /**

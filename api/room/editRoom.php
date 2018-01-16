@@ -25,6 +25,7 @@
  */
 
 
+use Fim\Error;
 use Fim\Room;
 
 if (!defined('API_INROOM'))
@@ -77,22 +78,22 @@ switch ($requestHead['_action']) {
         // Handle Room Creation Exceptions
         if ($requestHead['_action'] === 'create') {
             if (strlen($request['name']) < \Fim\Config::$roomLengthMinimum)
-                new fimError('nameMinimumLength', 'The room name specified is too short. It should be at least ' . \Fim\Config::$roomLengthMinimum . ' characters.');
+                new \Fim\Error('nameMinimumLength', 'The room name specified is too short. It should be at least ' . \Fim\Config::$roomLengthMinimum . ' characters.');
 
             elseif (strlen($request['name']) > \Fim\Config::$roomLengthMaximum)
-                new fimError('nameMaximumLength', 'The room name specified is too short. It should be at most ' . \Fim\Config::$roomLengthMaximum . ' characters.');
+                new \Fim\Error('nameMaximumLength', 'The room name specified is too short. It should be at most ' . \Fim\Config::$roomLengthMaximum . ' characters.');
 
             elseif (!$user->hasPriv('createRooms'))
-                new fimError('noPerm', 'You do not have permission to create rooms.');
+                new \Fim\Error('noPerm', 'You do not have permission to create rooms.');
 
             elseif (!$user->hasPriv('modRooms') && $user->ownedRooms >= \Fim\Config::$userRoomMaximum)
-                new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for a single user.');
+                new \Fim\Error('maximumRooms', 'You have created the maximum number of rooms allowed for a single user.');
 
             elseif (!$user->hasPriv('modRooms') && ((time() - $user->joinDate / (60 * 60 * 24 * 365)) * $user->ownedRooms) >= \Fim\Config::$userRoomMaximumPerYear)
-                new fimError('maximumRooms', 'You have created the maximum number of rooms allowed for the age of your account. You may eventually be allowed to create additional rooms.');
+                new \Fim\Error('maximumRooms', 'You have created the maximum number of rooms allowed for the age of your account. You may eventually be allowed to create additional rooms.');
 
             elseif (\Fim\DatabaseSlave::instance()->getRooms(['roomNames' => [$request['name']]])->getCount() > 0)
-                new fimError('nameTaken', 'A room with the name specified already exists.');
+                new \Fim\Error('nameTaken', 'A room with the name specified already exists.');
 
             else
                 $room = new Room(false);
@@ -103,18 +104,18 @@ switch ($requestHead['_action']) {
         elseif ($requestHead['_action'] === 'edit') {
             if (isset($request['name'])) {
                 if (!$user->hasPriv('modRooms'))
-                    new fimError('nameExtra', 'The room\'s name cannot be edited except by administrators.');
+                    new \Fim\Error('nameExtra', 'The room\'s name cannot be edited except by administrators.');
 
                 elseif ($request['name'] != $room->name
                     && \Fim\DatabaseSlave::instance()->getRooms(['roomNames' => [$request['name']]])->getCount() > 0)
-                    new fimError('nameTaken', 'The room name specified already belongs to another room.');
+                    new \Fim\Error('nameTaken', 'The room name specified already belongs to another room.');
             }
 
             elseif ($room->type !== 'general')
-                new fimError('specialRoom', 'You are trying to edit a special room, which cannot be altered.');
+                new \Fim\Error('specialRoom', 'You are trying to edit a special room, which cannot be altered.');
 
             elseif ($room->deleted) // Make sure the room hasn't been deleted.
-                new fimError('deletedRoom', 'The room has been deleted - it can not be edited.');
+                new \Fim\Error('deletedRoom', 'The room has been deleted - it can not be edited.');
         }
 
 
@@ -155,12 +156,12 @@ switch ($requestHead['_action']) {
 
 
     case 'delete':
-        if ($room->deleted) new fimError('nothingToDo', 'The room is already deleted.');
+        if ($room->deleted) new \Fim\Error('nothingToDo', 'The room is already deleted.');
         else $room->setDatabase(['deleted' => true]);
     break;
 
     case 'undelete':
-        if (!$room->deleted) new fimError('nothingToDo', 'The room isn\'t deleted.');
+        if (!$room->deleted) new \Fim\Error('nothingToDo', 'The room isn\'t deleted.');
         else $room->setDatabase(['deleted' => false]);
     break;
 }

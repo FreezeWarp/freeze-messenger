@@ -22,6 +22,7 @@
 
 /* Common Resources */
 
+use Fim\Error;
 use Fim\Room;
 
 $apiRequest = true;
@@ -64,10 +65,10 @@ try {
     $room = \Fim\Database::instance()->getRoom($requestHead['roomId']);
 
     if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW)) {
-        new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.');
+        new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
     }
 } catch (Exception $ex) {
-    new fimError('idNoExist', 'The given "id" parameter does not correspond with a real room.');
+    new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
 }
 
 
@@ -86,7 +87,7 @@ elseif (isset($request['groupId'])) {
     $attribute = 'group';
 }
 else
-    new fimError('roomIdOrGroupIdRequired', 'You must pass either a room ID or a group ID.');
+    new \Fim\Error('roomIdOrGroupIdRequired', 'You must pass either a room ID or a group ID.');
 
 
 // If the received permission field is -1, it is invalid; default to 0.
@@ -117,7 +118,7 @@ switch ($requestHead['_action']) {
     break;
 
     default:
-        new fimError('invalidRequestMethod', 'An invalid request method was used for this request.',null,false,fimError::HTTP_405_METHOD_NOT_ALLOWED);
+        new \Fim\Error('invalidRequestMethod', 'An invalid request method was used for this request.',null,false,Error::HTTP_405_METHOD_NOT_ALLOWED);
     break;
 }
 

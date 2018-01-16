@@ -28,6 +28,7 @@
 
 /* Prevent Direct Access of File */
 
+use Fim\Error;
 use Fim\Room;
 
 if (!defined('API_INMESSAGE'))
@@ -58,24 +59,24 @@ $request = fim_sanitizeGPC('p', [
 
 /* Start Processing */
 if (strlen($request['message']) < \Fim\Config::$messageMinLength || strlen($request['message']) > \Fim\Config::$messageMaxLength)
-    new fimError('messageLength', "The message is too long/too short.", [
+    new \Fim\Error('messageLength', "The message is too long/too short.", [
         "minLength" => \Fim\Config::$messageMinLength,
         "maxLength" => \Fim\Config::$messageMaxLength
     ]); // Too short/long.
 
 elseif (preg_match('/^(\ |\n|\r)*$/', $request['message']))
-    new fimError('spaceMessage', 'The sent message is all whitespace.'); // All spaces. TODO: MB Support
+    new \Fim\Error('spaceMessage', 'The sent message is all whitespace.'); // All spaces. TODO: MB Support
 
 elseif (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_POST))
-    new fimError('noPerm', 'You may not post in this room.');
+    new \Fim\Error('noPerm', 'You may not post in this room.');
 
 elseif (in_array($request['flag'], ['image', 'video', 'url', 'html', 'audio'])
     && !filter_var($request['message'], FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED))
-    new fimError('badUrl', 'The sent URL is invalid.'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+    new \Fim\Error('badUrl', 'The sent URL is invalid.'); // If the message is supposed to be a URI, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 
 elseif ($request['flag'] === 'email'
     && !filter_var($request['message'], FILTER_VALIDATE_EMAIL))
-    new fimError('badEmail', 'The sent email is invalid.'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
+    new \Fim\Error('badEmail', 'The sent email is invalid.'); // If the message is suppoed to be an email, make sure it is. (We do this here and not at the function level to allow for plugins to override such a check).
 
 else {
     \Fim\Database::instance()->setUserStatus($room->id); // The user seems active to me...
@@ -83,10 +84,10 @@ else {
     switch ($requestHead['_action']) {
         case 'edit':
             if ($message->text == $request['message'] && $message->flag == $request['flag'])
-                new fimError('noChange', 'Your edited message is unchanged.');
+                new \Fim\Error('noChange', 'Your edited message is unchanged.');
 
             elseif ($message->user->id != $user->id || !$user->hasPriv('editOwnPosts'))
-                new fimError('noPerm', 'You are not allowed to edit this message.');
+                new \Fim\Error('noPerm', 'You are not allowed to edit this message.');
 
             else {
                 $message->setText($request['message'], $request['ignoreBlock']);
@@ -107,7 +108,7 @@ else {
                 ])->getAsUser();
 
                 if ($userData)
-                    new fimError('kickUserNameInvalid', 'That username does not exist.');
+                    new \Fim\Error('kickUserNameInvalid', 'That username does not exist.');
                 else
                     \Fim\Database::instance()->kickUser($userData->id, $room->id, $kickData[1] ?: 600);
             }
@@ -127,7 +128,7 @@ else {
                     if (\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_TOPIC)
                         $room->setDatabaseTopic(preg_replace('/^\/topic( |)(.+?)$/i', '$2', $message->text));
                     else
-                        new fimError('noPerm', 'You do not have permission to change the topic.');
+                        new \Fim\Error('noPerm', 'You do not have permission to change the topic.');
                 }
                 else {
                     \Fim\Database::instance()->storeMessage($message);

@@ -24,6 +24,7 @@
  */
 
 
+use Fim\ErrorThrown;
 use Fim\Room;
 
 if (!defined('API_INROOM'))
@@ -169,7 +170,7 @@ do {
     // We relog so that the next query counts as part of the flood detection. (If we go over the flood limit, catch the exception and return with where to continue searching from.)
     try {
         \Fim\Database::instance()->accessFlood('getRooms');
-    } catch (fimErrorThrown $ex) {
+    } catch (ErrorThrown $ex) {
         // TODO: test
         $xmlData['metadata']['nextPage'] = $request['page'];
         echo new Http\ApiData($xmlData);

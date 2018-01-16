@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
+use Fim\Error;
 use Fim\Room;
 
 $apiRequest = true;
@@ -58,7 +59,7 @@ $request = fim_sanitizeGPC('g', array(
 ));
 
 if (!\Fim\Config::$serverSentEvents && !$request['fallback']) {
-    new fimError('fallbackMandatory', 'Fallback mode is required on this server.');
+    new \Fim\Error('fallbackMandatory', 'Fallback mode is required on this server.');
 }
 
 if ($request['streamType'] === 'room') {
@@ -66,7 +67,7 @@ if ($request['streamType'] === 'room') {
     $request['queryId'] = $room->id;
 
     if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW))
-        new fimError('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
+        new \Fim\Error('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
     \Fim\Database::instance()->markMessageRead($request['queryId'], $user->id);
 }
@@ -76,7 +77,7 @@ elseif ($request['streamType'] === 'user') {
 
 
 if (!$request['queryId']) {
-    new fimError('queryIdRequired', 'You must specify a query ID.');
+    new \Fim\Error('queryIdRequired', 'You must specify a query ID.');
 }
 
 

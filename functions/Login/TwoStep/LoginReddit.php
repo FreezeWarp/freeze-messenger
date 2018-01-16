@@ -77,7 +77,7 @@ class LoginReddit extends LoginTwoStep {
         if (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
             var_dump($_SESSION); die();
             session_unset();
-            new \fimError('redditLoginFailed', 'Invalid state.');
+            new \Fim\Error('redditLoginFailed', 'Invalid state.');
         }
         session_unset();
 
@@ -93,7 +93,7 @@ class LoginReddit extends LoginTwoStep {
             // We got an access token, let's now get the user's details
             $userInfo = $this->client->getResourceOwner($token);
         } catch (\Exception $e) {
-            new \fimError('redditLoginFailed', 'Could not get token: ' . $e);
+            new \Fim\Error('redditLoginFailed', 'Could not get token: ' . $e);
         }
 
 

@@ -10,6 +10,7 @@
 
 /* Prevent Direct Access to Script */
 
+use Fim\Error;
 use Fim\Room;
 use Fim\User;
 
@@ -39,11 +40,11 @@ $xmlData = array(
 
 /* Script */
 if (!($permission & Room::ROOM_PERMISSION_MODERATE))
-    new fimError('noPerm', 'You do not have permission to moderate this room.');
+    new \Fim\Error('noPerm', 'You do not have permission to moderate this room.');
 
 elseif ($requestHead['_action'] === 'create') {
     if (\Fim\Database::instance()->hasPermission($kickUser, $room) & Room::ROOM_PERMISSION_MODERATE)
-        throw new fimError('unkickableUser', 'Other room moderators may not be kicked.');
+        throw new \Fim\Error('unkickableUser', 'Other room moderators may not be kicked.');
 
     else {
         \Fim\Database::instance()->kickUser($kickUser->id, $room->id, $request['length']);

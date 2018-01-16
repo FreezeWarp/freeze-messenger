@@ -79,7 +79,7 @@ class LoginMicrosoft extends LoginTwoStep {
 
         if (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
             session_unset();
-            new \fimError('microsoftLoginFailed', 'Invalid state.');
+            new \Fim\Error('microsoftLoginFailed', 'Invalid state.');
         }
 
         session_unset();
@@ -93,7 +93,7 @@ class LoginMicrosoft extends LoginTwoStep {
             // We got an access token, let's now get the user's details
             $userInfo = $this->client->getResourceOwner($token)->toArray();
         } catch (\Exception $e) {
-            new \fimError('microsoftLoginFailed', 'Could not get token: ' . $e);
+            new \Fim\Error('microsoftLoginFailed', 'Could not get token: ' . $e);
         }
 
         $picture = new \Http\CurlRequest('https://apis.live.net/v5.0/' . $userInfo['id'] . '/picture');

@@ -30,6 +30,7 @@
  * @global int              $permission
  */
 
+use Fim\Error;
 use Fim\Room;
 use Fim\User;
 
@@ -53,7 +54,7 @@ if (!isset($requestHead['roomId']) // Disallow looking at kicks sitewide...
     && !(isset($requestHead['userId']) && $requestHead['userId'] == $user->id) // Unless just checking the logged in user.
     && !$user->hasPriv('modRooms') // Or we're a site moderator.
 )
-    new fimError('roomIdRequired', 'A roomId must be included unless you are a site administrator.');
+    new \Fim\Error('roomIdRequired', 'A roomId must be included unless you are a site administrator.');
 
 else {
     /* Get Kicks from Database */

@@ -15,6 +15,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 use Database\Type;
+use Fim\ErrorThrown;
 use Fim\User;
 use Fim\Xml2Array;
 
@@ -22,8 +23,6 @@ error_reporting(E_ALL); // Report All Potential Errors
 ini_set('display_errors', 1);
 
 require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
-
-require(__DIR__ . '/../functions/fimError.php');
 
 // If possible, remove the execution time limits (often requires ~40-60 seconds). TODO: Long term, the install script should be split up into seperate HTTP requests.
 if(!@ini_get('safe_mode')) {
@@ -279,7 +278,7 @@ switch ($_REQUEST['phase']) {
 
 
             OAuth2\Autoloader::register();
-            $oauthStorage = new \Fim\OAuthProvider(\Fim\Database::instance(), 'fimError');
+            $oauthStorage = new \Fim\OAuthProvider(\Fim\Database::instance(), 'Fim\Error');
             $oauthServer = new OAuth2\Server($oauthStorage); // Pass a storage object or array of storage objects to the OAuth2 server class
             $oauthRequest = OAuth2\Request::createFromGlobals();
             $loginFactory = new \Login\LoginFactory($oauthRequest, $oauthStorage, $oauthServer, \Fim\DatabaseLogin::instance());
@@ -292,7 +291,7 @@ switch ($_REQUEST['phase']) {
                 if (!$user->id) {
                     die('Admin user could not be retrieved.');
                 }
-            } catch(fimErrorThrown $ex) {
+            } catch(ErrorThrown $ex) {
                 die($ex->getCode() . ": " . $ex->getString());
             }
         }

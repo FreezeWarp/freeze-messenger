@@ -34,7 +34,7 @@ class LoginOAuth extends LoginDatabase {
             break;
 
             default:
-                new \fimError('invalidGrantType', 'The grant type specified is invalid or unsupported.');
+                new \Fim\Error('invalidGrantType', 'The grant type specified is invalid or unsupported.');
         }
     }
 }

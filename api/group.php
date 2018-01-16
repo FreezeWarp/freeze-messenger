@@ -20,6 +20,9 @@
  */
 
 /* Common Resources */
+
+use Fim\Error;
+
 $apiRequest = true;
 require('../global.php');
 define('API_INGROUP', true);
@@ -39,7 +42,7 @@ switch ($requestHead['_action']) {
     case 'edit':
     case 'delete':
     case 'undelete':
-        new fimError('unimplemented', 'This functionality is not implemented in this release.');
+        new \Fim\Error('unimplemented', 'This functionality is not implemented in this release.');
         break;
 
     case 'get':

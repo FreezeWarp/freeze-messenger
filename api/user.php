@@ -27,6 +27,9 @@
 
 
 /* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
+
+use Fim\Error;
+
 require(__DIR__ . '/../functions/fim_general.php');
 $requestHead = fim_sanitizeGPC('g', [
     'id'      => ['cast' => 'int'],
@@ -48,12 +51,12 @@ define('API_INUSER', true);
 /* Early Validation */
 if (isset($requestHead['id'])) {
     if ($requestHead['_action'] === 'create') // ID shouldn't be used here.
-        new fimError('idExtra', 'Parameter ID should not be used with PUT requests.');
+        new \Fim\Error('idExtra', 'Parameter ID should not be used with PUT requests.');
 
     try {
         $userData = \Fim\Database::instance()->getUser($requestHead['id']);
     } catch (Exception $ex) {
-        new fimError('idNoExist', 'The given "id" parameter does not correspond with a real user.');
+        new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real user.');
     }
 }
 

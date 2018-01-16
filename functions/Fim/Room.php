@@ -17,7 +17,7 @@
 namespace Fim;
 
 use Exception;
-use fimError;
+use Fim\Error;
 
 /**
  * Class Fim\fimRoom
@@ -759,12 +759,12 @@ class Room extends DynamicObject
 
                     // Blocks the word, throwing an exception
                     case 'block':
-                        new fimError('blockCensor', "The message can not be sent: '{$word['word']}' is not allowed.");
+                        new \Fim\Error('blockCensor', "The message can not be sent: '{$word['word']}' is not allowed.");
                     break;
 
                     // Blocks the word, throwing an exception, but can be overwridden with $dontAsk
                     case 'confirm':
-                        new fimError('confirmCensor', "The message must be resent because a word may not be allowed: {$word['word']} is discouraged: {$word['param']}.");
+                        new \Fim\Error('confirmCensor', "The message must be resent because a word may not be allowed: {$word['word']} is discouraged: {$word['param']}.");
                     break;
                 }
             }
@@ -887,7 +887,7 @@ class Room extends DynamicObject
             throw new Exception('Can\'t call Fim\fimRoom->changeTopic on private room.');
 
         elseif (\Fim\Config::$disableTopic)
-            throw new fimError('topicsDisabled', 'Topics are disabled on this server.');
+            throw new \Fim\Error('topicsDisabled', 'Topics are disabled on this server.');
 
         else {
             $this->setDatabase(['topic' => $topic]);
