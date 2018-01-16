@@ -9,6 +9,8 @@ declare var fim_buildUsernameTag : any;
 declare var fim_getUsernameDeferred : any;
 declare var fim_messageFormat : any;
 declare var fim_renderHandlebarsInPlace : any;
+declare var fim_buildMessageLine : any;
+declare var fim_dateFormat : any;
 declare var Debounce: any;
 declare var EventSource : any;
 
@@ -133,27 +135,74 @@ popup.prototype.room.prototype.insertDoc = function() {
 
 
 popup.prototype.room.prototype.newMessage = function(messageData) {
-    let messageText = fim_messageFormat(messageData, 'list'),
-        messageId = messageData.id;
+    let usernameDeferred = fim_getUsernameDeferred(messageData.userId);
+    let messageText = fim_buildMessageLine(messageData.text, messageData.flag, messageData.id, messageData.userId, messageData.roomId, messageData.time, usernameDeferred);
+
+    if ($('iframe', messageText).length) {
+        messageText.css('min-width', '400px');
+    }
+
+    if (window.settings.showAvatars) {
+        messageText.popover({
+            content : function() {
+                return fim_dateFormat($(this).attr('data-time'))
+            },
+            html : false,
+            trigger : 'hover',
+            placement : 'bottom'
+        });
+    }
+
+    let date = $('<span class="date">').text(
+        (window.settings.showAvatars
+            ? ''
+            : ' @ ')
+        + fim_dateFormat(messageData.time)
+    );
 
 
-    if ($('#message' + messageId).length > 0) {
+    let avatar = $('<span class="usernameDate">').append(
+        fim_buildUsernameTag($('<span>'), messageData.userId, usernameDeferred, messageData.anonId, window.settings.showAvatars, !window.settings.showAvatars)
+    );
+
+    let messageLine = $('<span>').attr({
+        'id': 'message' + messageData.id,
+        'class': 'messageLine'
+    });
+
+
+    if (!window.settings.showAvatars) {
+        avatar.append(date);
+    }
+    else {
+        messageText.append(date);
+    }
+
+    if (window.settings.showAvatars && messageData.userId == window.activeLogin.userData.id) {
+        messageLine.addClass('messageLineReverse').append(messageText).append(avatar);
+    }
+    else {
+        messageLine.append(avatar).append(messageText);
+    }
+
+
+    if ($('#message' + messageData.id).length > 0) {
         console.log("existing");
-        $('#message' + messageId).replaceWith(messageText);
+        $('#message' + messageData.id).replaceWith(messageLine);
     }
     else {
         let foundMatch = false;
         $('#messageList .messageLine').each(function() {
             if (window.settings.reversePostOrder) {
-                if ($('.messageText', this).attr('data-messageId') < messageId) {
-                    $(messageText).insertBefore(this);
+                if ($('.messageText', this).attr('data-messageId') < messageData.id) {
+                    $(messageLine).insertBefore(this);
                     foundMatch = true;
                     return false; // break each
                 }
             }
             else {
-                if ($('.messageText', this).attr('data-messageId') > messageId) {
-                    $(messageText).insertBefore(this);
+                if ($('.messageText', this).attr('data-messageId') > messageData.id) {
+                    $(messageLine).insertBefore(this);
                     foundMatch = true;
                     return false;
                 }
@@ -162,15 +211,15 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
 
         if (!foundMatch) {
             if (window.settings.reversePostOrder) {
-                $('#messageList').append(messageText);
+                $('#messageList').append(messageLine);
             }
             else {
-                $('#messageList').append(messageText);
+                $('#messageList').append(messageLine);
             }
         }
 
         // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
-        this.messageIndex.push(messageId); // Update the internal messageIndex array.
+        this.messageIndex.push(messageData.id); // Update the internal messageIndex array.
         if (this.messageIndex.length >= 100) {
             $('#message' + this.messageIndex[0]).remove();
             this.messageIndex = this.messageIndex.slice(1,99);
@@ -179,7 +228,7 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
 
 
     // Scroll Down
-    $('#message' + messageId + ' img').on('load', (() => {
+    $('#message' + messageData.id + ' img').on('load', (() => {
         this.scrollBack();
     }));
 

@@ -460,214 +460,6 @@ function fim_regexTokenizer(regexp, text, callback, newText) {
     return newText;
 }
 
-/**
- * Formats received message data for display in either the message list or message table.
- *
- * @param object json - The data to format.
- * @param string format - The format to use.
- *
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2017
- */
-function fim_messageFormat(json, format) {
-
-    var data,
-        text = json.text,
-        messageTime = json.time,
-        messageId = json.id,
-        roomId = json.roomId,
-        flag = json.flag,
-        userId = Number(json.userId),
-        anonId = Number(json.anonId),
-        userNameDeferred = fim_getUsernameDeferred(userId);
-
-    //text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-    switch (flag) {
-        case 'source': text = fim_youtubeParse(text); break; // Youtube, etc.
-        case 'image': text = fim_formatAsImage(text); break; // // Image
-        case 'video': text = fim_formatAsVideo(text) ; break; // Video
-        case 'audio': text = fim_formatAsAudio(text); break; // Audio
-        case 'email': text = fim_formatAsEmail(text); break; // Email Link
-        case 'url': case 'text': case 'html': case 'archive': case 'application': case 'other': // Various Files and URLs
-            text = fim_formatAsUrl(text);
-        break;
-
-        // Unspecified
-        default:
-
-            text = $('<span>').text(text);
-            // "/me" parse
-            if (/^\/me/.test(text.text())) {
-                text.text(text.text().replace(/^\/me/,''));
-
-                $.when(userNameDeferred).then(function(pairs) {
-                    text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' ' + text.text()).prop('outerHTML'));
-                });
-            }
-
-            // "/topic" parse
-            else if (/^\/topic/.test(text.text())) {
-                text.text(text.text().replace(/^\/topic/,''));
-
-                $.when(userNameDeferred).then(function(pairs) {
-                    text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' changed the topic to "' + text.text().trim() + '".').prop('outerHTML'));
-                });
-            }
-
-            // Parse basic markdown
-            jQuery.each({
-                '```' : 'pre',
-                '`' : 'code'
-            }, function(delimiter, tag) {
-                text.contents()
-                    .filter(function () {
-                        return this.nodeType === 3; //Node.TEXT_NODE
-                    }).each(function () {
-                        return $(this).replaceWith(fim_regexTokenizer(new RegExp('\\' + delimiter + '([\\s\\S]+?)\\' + delimiter, 'g'), $(this).text(), function (result) {
-                            return $('<' + tag + '>').text(result[1]);
-                        }).html());
-                    });
-            });
-
-            // URL Autoparse (will also detect youtube & image)
-            text.find('*').add(text).contents()
-                .filter(function() {
-                    return this.nodeType === 3; //Node.TEXT_NODE
-                }).each(function() {
-                    var result = fim_regexTokenizer(regexs.url, $(this).text(), function(match) {
-                        var suffix = "";
-
-                        if (match[0].match(regexs.url2)) {
-                            suffix = match[0].replace(regexs.url2, "$2");
-                            match[0] = match[0].replace(regexs.url2, "$1");
-                        }
-
-                        /* Youtube, Image, URL Parsing */
-                        if (match[0].match(regexs.youtubeFull) || match[0].match(regexs.youtubeShort)) // Youtube Autoparse
-                            return fim_youtubeParse(match[0]).append(document.createTextNode(suffix));
-
-                        else if (match[0].match(regexs.image)) // Image Autoparse
-                            return fim_formatAsImage(match[0]).append(document.createTextNode(suffix));
-
-                        else // Normal URL
-                            return fim_formatAsUrl(match[0]).append(document.createTextNode(suffix));
-                    }, this.nodeType !== 3 ? $(this).text('') : null);
-
-                    if (this.nodeType === 3)
-                        $(this).replaceWith(result.html());
-                });
-
-            // Parse basic markdown for del, strong, and em inside any text node
-            jQuery.each({
-                '~~' : 'del',
-                '*' : 'strong',
-                '_' : 'em'
-            }, function(delimiter, tag) {
-                text.contents()
-                    .filter(function () {
-                        return this.nodeType === 3; //Node.TEXT_NODE
-                    }).each(function () {
-                    return $(this).replaceWith(fim_regexTokenizer(new RegExp('\\' + delimiter + '([\\s\\S]+?)\\' + delimiter, 'g'), $(this).text(), function (result) {
-                        return $('<' + tag + '>').text(result[1]);
-                    }).html());
-                });
-            });
-
-            // Parse the emoticons inside any text, strong, em, or del node
-            jQuery.each(serverSettings.emoticons, function(index, emoticon) {
-                text.find('strong, em, del').add(text.contents().add(text)
-                    .filter(function() {
-                        return this.nodeType === 3; //Node.TEXT_NODE
-                    })).each(function() {
-                        var result = fim_regexTokenizer(new RegExp(emoticon.emoticonText.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), "gi"), $(this).text(), function() {
-                            return $('<img>').attr('src', emoticon.emoticonFile);
-                        }, this.nodeType !== 3 ? $(this).text('') : null);
-
-                        if (this.nodeType === 3)
-                            $(this).replaceWith(result.html());
-                    });
-            });
-
-            // Find all descendant text nodes, and parse new lines
-            text.find('*').add(text).contents()
-                .filter(function() {
-                    return this.nodeType === 3; //Node.TEXT_NODE
-                }).each(function() {
-                $(this).replaceWith(fim_regexTokenizer(new RegExp(/\n/g, "g"), $(this).text(), function() {
-                    return $('<br>');
-                }));
-            });
-            break;
-    }
-
-
-    switch (format) {
-        case 'table':
-            data = $('<tr style="word-wrap: break-word;">').attr({
-                'id': "archiveMessage' + messageId + '"
-            }).append(
-                $('<td>').append(
-                    fim_buildUsernameTag($('<span class="userName userNameTable"></span>'), userId, userNameDeferred, anonId)
-                )
-            ).append(
-                $('<td class="d-none d-sm-table-cell">').text(fim_dateFormat(messageTime))
-            ).append(
-                $('<td>').append(
-                    fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred).append(text)
-                )
-            );
-            break;
-
-        case 'list':
-            var messageLine = fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred);
-
-            if ($('iframe', messageLine).length) {
-                messageLine.css('width', '400px');
-            }
-
-            if (settings.showAvatars) {
-                messageLine.popover({
-                    content : function() {
-                        return fim_dateFormat($(this).attr('data-time'))
-                    },
-                    html : false,
-                    trigger : 'hover',
-                    placement : 'bottom'
-                });
-            }
-
-            var date = !settings.showAvatars
-                ? $('<span class="date">').css({'padding-right':'10px','letter-spacing':'-1px'}).text('@ ').append($('<em>').text(fim_dateFormat(messageTime)))
-                : '';
-
-            var avatar = $('<span class="usernameDate">').append(
-                fim_buildUsernameTag($('<span>'), userId, userNameDeferred, anonId, settings.showAvatars, !settings.showAvatars)
-            );
-
-            var data = $('<span>').attr({
-                'id': 'message' + messageId,
-                'class': 'messageLine'
-            });
-
-            if (settings.showAvatars) {
-                data.addClass('messageLineAvatar');
-            }
-
-            if (settings.showAvatars && userId == window.activeLogin.userData.id) {
-                data.addClass('messageLineReverse').append(messageLine).append(avatar.append(date));
-            }
-            else {
-                data.append(avatar.append(date)).append(messageLine);
-            }
-            break;
-    }
-
-
-    /* Format for Table/List Display */
-    return data;
-}
-
 function fim_buildUsernameTag(tag, userId, deferred, anonId, includeAvatar, includeUsername) {
     if (!deferred)
         deferred = fim_getUsernameDeferred(userId);
@@ -753,8 +545,130 @@ function fim_buildRoomNameTagPromise(tag, roomId, roomDeferred) {
     return deferred.promise();
 }
 
-function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, userNameDeferred) {
+function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime, userNameDeferred) {
     var tag = $('<span>');
+
+    if (!userNameDeferred) {
+        userNameDeferred = fim_getUsernameDeferred(userId);
+    }
+
+    switch (flag) {
+        case 'source': text = fim_youtubeParse(text); break; // Youtube, etc.
+        case 'image': text = fim_formatAsImage(text); break; // // Image
+        case 'video': text = fim_formatAsVideo(text) ; break; // Video
+        case 'audio': text = fim_formatAsAudio(text); break; // Audio
+        case 'email': text = fim_formatAsEmail(text); break; // Email Link
+        case 'url': case 'text': case 'html': case 'archive': case 'application': case 'other': // Various Files and URLs
+        text = fim_formatAsUrl(text);
+        break;
+
+        // Unspecified
+        default:
+
+            text = $('<span>').text(text);
+            // "/me" parse
+            if (/^\/me/.test(text.text())) {
+                text.text(text.text().replace(/^\/me/,''));
+
+                $.when(userNameDeferred).then(function(pairs) {
+                    text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' ' + text.text()).prop('outerHTML'));
+                });
+            }
+
+            // "/topic" parse
+            else if (/^\/topic/.test(text.text())) {
+                text.text(text.text().replace(/^\/topic/,''));
+
+                $.when(userNameDeferred).then(function(pairs) {
+                    text.html($('<span style="color: red; padding: 10px; font-weight: bold;">').text('* ' + pairs[userId].name + ' changed the topic to "' + text.text().trim() + '".').prop('outerHTML'));
+                });
+            }
+
+            // Parse basic markdown
+            jQuery.each({
+                '```' : 'pre',
+                '`' : 'code'
+            }, function(delimiter, tag) {
+                text.contents()
+                    .filter(function () {
+                        return this.nodeType === 3; //Node.TEXT_NODE
+                    }).each(function () {
+                    return $(this).replaceWith(fim_regexTokenizer(new RegExp('\\' + delimiter + '([\\s\\S]+?)\\' + delimiter, 'g'), $(this).text(), function (result) {
+                        return $('<' + tag + '>').text(result[1]);
+                    }).html());
+                });
+            });
+
+            // URL Autoparse (will also detect youtube & image)
+            text.find('*').add(text).contents()
+                .filter(function() {
+                    return this.nodeType === 3; //Node.TEXT_NODE
+                }).each(function() {
+                var result = fim_regexTokenizer(regexs.url, $(this).text(), function(match) {
+                    var suffix = "";
+
+                    if (match[0].match(regexs.url2)) {
+                        suffix = match[0].replace(regexs.url2, "$2");
+                        match[0] = match[0].replace(regexs.url2, "$1");
+                    }
+
+                    /* Youtube, Image, URL Parsing */
+                    if (match[0].match(regexs.youtubeFull) || match[0].match(regexs.youtubeShort)) // Youtube Autoparse
+                        return fim_youtubeParse(match[0]).append(document.createTextNode(suffix));
+
+                    else if (match[0].match(regexs.image)) // Image Autoparse
+                        return fim_formatAsImage(match[0]).append(document.createTextNode(suffix));
+
+                    else // Normal URL
+                        return fim_formatAsUrl(match[0]).append(document.createTextNode(suffix));
+                }, this.nodeType !== 3 ? $(this).text('') : null);
+
+                if (this.nodeType === 3)
+                    $(this).replaceWith(result.html());
+            });
+
+            // Parse basic markdown for del, strong, and em inside any text node
+            jQuery.each({
+                '~~' : 'del',
+                '*' : 'strong',
+                '_' : 'em'
+            }, function(delimiter, tag) {
+                text.contents()
+                    .filter(function () {
+                        return this.nodeType === 3; //Node.TEXT_NODE
+                    }).each(function () {
+                    return $(this).replaceWith(fim_regexTokenizer(new RegExp('\\' + delimiter + '([\\s\\S]+?)\\' + delimiter, 'g'), $(this).text(), function (result) {
+                        return $('<' + tag + '>').text(result[1]);
+                    }).html());
+                });
+            });
+
+            // Parse the emoticons inside any text, strong, em, or del node
+            jQuery.each(serverSettings.emoticons, function(index, emoticon) {
+                text.find('strong, em, del').add(text.contents().add(text)
+                    .filter(function() {
+                        return this.nodeType === 3; //Node.TEXT_NODE
+                    })).each(function() {
+                    var result = fim_regexTokenizer(new RegExp(emoticon.emoticonText.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), "gi"), $(this).text(), function() {
+                        return $('<img>').attr('src', emoticon.emoticonFile);
+                    }, this.nodeType !== 3 ? $(this).text('') : null);
+
+                    if (this.nodeType === 3)
+                        $(this).replaceWith(result.html());
+                });
+            });
+
+            // Find all descendant text nodes, and parse new lines
+            text.find('*').add(text).contents()
+                .filter(function() {
+                    return this.nodeType === 3; //Node.TEXT_NODE
+                }).each(function() {
+                $(this).replaceWith(fim_regexTokenizer(new RegExp(/\n/g, "g"), $(this).text(), function() {
+                    return $('<br>');
+                }));
+            });
+            break;
+    }
 
     tag.attr({
         'class': 'messageText',
@@ -772,11 +686,11 @@ function fim_buildMessageLine(text, messageId, userId, roomId, messageTime, user
                         'message' : textarea.val()
                     });
 
-                    $(this).replaceWith(fim_buildMessageLine(textarea.val(), messageId, userId, roomId, messageTime, userNameDeferred))
+                    $(this).replaceWith(fim_buildMessageLine(textarea.val(), flag, messageId, userId, roomId, messageTime, userNameDeferred));
                     e.preventDefault();
                 }
                 else if (e.keyCode == 27) {// TODO
-                    $(this).replaceWith(fim_buildMessageLine(fim_messageFormat(textarea.text(), 'list'), messageId, userId, roomId, messageTime, userNameDeferred))
+                    $(this).replaceWith(fim_buildMessageLine(textarea.text(), flag, messageId, userId, roomId, messageTime, userNameDeferred));
                     e.preventDefault();
                 }
             });
