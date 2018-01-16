@@ -714,7 +714,9 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
     }
 
     $.when(userNameDeferred).then(function(pairs) {
-        if (!window.settings.disableFormatting && pairs[userId].messageFormatting) {
+        if (!window.settings.disableFormatting
+            && window.settings.showAvatars
+            && pairs[userId].messageFormatting) {
             tag.attr("style", tag.attr("style") + ";" + pairs[userId].messageFormatting);
 
             if (window.settings.bubbleFormatting) {
@@ -892,11 +894,12 @@ var settingNames = {
     alternateSelfPosts : 512,
     reversePostOrder : 1024,
     showAvatars : 2048,
-    hideTimes : 4096,
-    bubbleFormatting : 8192,
+    groupMessages : 4096,
+    hideTimes : 8192,
+    bubbleFormatting : 16384,
 
     // Other Options
-    audioDing : 16384,
+    audioDing : 524288,
     disableRightClick : 1048576,
     webkitNotifications : 536870912
 };
@@ -904,7 +907,7 @@ var settingNames = {
 var settingsBitfield = $.cookie('webpro_settings');
 
 if (!settingsBitfield && settingsBitfield !== 0) {
-    settingsBitfield = settingNames.showAvatars + settingNames.audioDing + settingNames.alternateSelfPosts;
+    settingsBitfield = settingNames.showAvatars + settingNames.audioDing + settingNames.alternateSelfPosts + settingNames.bubbleFormatting;
     $.cookie('webpro_settings', settingsBitfield);
 }
 
@@ -924,7 +927,9 @@ window.settings = {
 
     audioDing : !!(settingsBitfield & settingNames.audioDing),
     disableRightClick : !!(settingsBitfield & settingNames.disableRightClick),
-    webkitNotifications : !!(settingsBitfield & settingNames.webkitNotifications)
+    webkitNotifications : !!(settingsBitfield & settingNames.webkitNotifications),
+
+    groupMessages : !!(settingsBitfield & settingNames.groupMessages)
 };
 
 

@@ -175,13 +175,6 @@ table#fileUploadInfo td {
     white-space: nowrap;
 }
 
-.userName.userNameAvatar > span {
-    vertical-align: middle;
-}
-
-/*.input-group-prepend > .userName.userNameAvatar > span, .input-group-append > .userName.userNameAvatar > span  {
-    vertical-align: baseline;
-}*/
 .userNameAvatar > img {
     vertical-align: middle !important;
     min-width: 12px;
@@ -189,6 +182,14 @@ table#fileUploadInfo td {
     max-height: 24px;
     margin-right: 4px;
 }
+
+.userName.userNameAvatar > span {
+    vertical-align: middle;
+}
+
+/*.input-group-prepend > .userName.userNameAvatar > span, .input-group-append > .userName.userNameAvatar > span  {
+    vertical-align: baseline;
+}*/
 
 .form-control-sm,
 .input-group-sm > .form-control,
@@ -287,6 +288,13 @@ table.page {
     font-style: italic;
 }
 
+.messageText {
+    word-wrap: break-word;
+    white-space: normal;
+    hyphens: auto;
+}
+
+/* Message Line: Avatar */
 .messageLineAvatar {
     margin: 4px 0;
     padding-bottom: 3px;
@@ -294,18 +302,20 @@ table.page {
     vertical-align: middle;
 }
 
-.messageLineAvatar .messageText {
+.messageLineAvatar .userNameAvatar > img {
+    vertical-align: middle !important;
+    min-width: 12px;
+    max-width: 24px;
+    max-height: 24px;
+    margin-right: 4px;
+}
+
+.messageLineAvatar > .messageText, .messageLineGroup > .messageText {
     display: inline-block;
     max-width: calc(100% - 45px);
 }
 
-.messageText {
-    word-wrap: break-word;
-    white-space: normal;
-    hyphens: auto;
-}
-
-.messageLineAvatar .messageTextFormatted {
+.messageLineAvatar > .messageTextFormatted {
     position: relative;
     padding: 5px 10px 5px 10px;
     z-index: 2;
@@ -314,7 +324,7 @@ table.page {
     margin-right: 25px; /* overflow */
 }
 
-.messageLineAvatar .messageTextFormatted:before {
+.messageLineAvatar > .messageTextFormatted:before {
     background-color: inherit;
 
     content: "\00a0";
@@ -355,6 +365,36 @@ table.page {
     right: -3px;
 }
 
+/* Message Line: Group */
+.messageLineGroup {
+    position: relative;
+    margin: 0;
+}
+
+.messageLineGroup .messageText {
+    top: -1.25rem;
+    display: block;
+    position: relative;
+    left: 60px;
+}
+
+.messageLineGroup .date {
+    vertical-align: top;
+}
+
+.messageLineGroup .userName > span {
+    vertical-align: top;
+}
+
+.messageLineGroup .userNameAvatar > img {
+    width: 48px;
+    max-width: 48px;
+    max-height: 48px;
+    margin-right: 4px;
+}
+
+
+/* Dates */
 .date {
     white-space: nowrap;
 }

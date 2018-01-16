@@ -96,7 +96,7 @@ popup.prototype.settings = {
 
 
         /* Various Settings onChange */
-        $('input[name=showAvatars], input[name=reversePostOrder], input[name=disableFormatting], input[name=disableVideos], input[name=disableImages], input[name=audioDing], input[name=webkitNotifications], input[name=hideTimes], input[name=alternateSelfPosts], input[name=bubbleFormatting]').change(function() {
+        $('input[name=reversePostOrder], input[name=disableFormatting], input[name=disableVideos], input[name=disableImages], input[name=audioDing], input[name=webkitNotifications], input[name=hideTimes], input[name=alternateSelfPosts], input[name=bubbleFormatting]').change(function() {
             let localId = $(this).attr('name');
 
             if ($(this).is(':checked') && !window.settings[localId]) {
@@ -106,6 +106,28 @@ popup.prototype.settings = {
             else if (!$(this).is(':checked') && window.settings[localId]) {
                 window.settings[localId] = false;
                 $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() & ~window.settingNames[localId], { expires : 14 });
+            }
+        });
+
+        $('input[name=displayMode]').change(function() {
+            switch ($(this).val()) {
+                case 'simple':
+                    window.settings.showAvatars = false;
+                    window.settings.groupMessages = false;
+                    $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() & ~window.settingNames.groupMessages & ~window.settingNames.showAvatars, { expires : 14 });
+                    break;
+
+                case 'avatars':
+                    window.settings.showAvatars = true;
+                    window.settings.groupMessages = false;
+                    $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() & ~window.settingNames.groupMessages | window.settingNames.showAvatars, { expires : 14 });
+                    break;
+
+                case 'grouped':
+                    window.settings.showAvatars = false;
+                    window.settings.groupMessages = true;
+                    $.cookie('webpro_settings', $.cookie('webpro_settings').toNumber() & ~window.settingNames.showAvatars | window.settingNames.groupMessages, { expires : 14 });
+                    break;
             }
         });
 

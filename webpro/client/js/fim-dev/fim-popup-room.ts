@@ -138,17 +138,35 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
     let usernameDeferred = fim_getUsernameDeferred(messageData.userId);
 
 
+    /* Dynamic Style Sheets */
+    if ($('#adjacentMessageSheets > #adjacentMessageSheet' + messageData.userId).length == 0) {
+        $('#adjacentMessageSheets').append(
+            $('<style>').attr('id', 'adjacentMessageSheet' + messageData.userId).text("" +
+                "#messageList > .messageLineGroup[data-userid='" + messageData.userId + "'] + .messageLineGroup[data-userid='" + messageData.userId + "'] {"
+                    + "margin: 10px 0;"
+                + "}"
+                + "#messageList > .messageLineGroup[data-userid='" + messageData.userId + "'] + .messageLineGroup[data-userid='" + messageData.userId + "'] .userNameDate {"
+                    + "display: none;"
+                + "}"
+                + "#messageList > .messageLineGroup[data-userid='" + messageData.userId + "'] + .messageLineGroup:not([data-userid='" + messageData.userId + "']) {"
+                    + "padding-top: 20px;"
+                    + "border-top: 1px solid;"
+                + "}")
+        );
+    }
+
+
     /* Message Text */
     let messageText = fim_buildMessageLine(messageData.text, messageData.flag, messageData.id, messageData.userId, messageData.roomId, messageData.time, usernameDeferred);
 
     if (!window.settings.bubbleFormatting) {
-        messageText.removeClass('messageTextFormatted');
+        //messageText.removeClass('messageTextFormatted');
     }
 
 
     /* Avatars */
     let avatar = $('<span class="userNameDate">').append(
-        fim_buildUsernameTag($('<span>'), messageData.userId, usernameDeferred, messageData.anonId, window.settings.showAvatars, !window.settings.showAvatars)
+        fim_buildUsernameTag($('<span>'), messageData.userId, usernameDeferred, messageData.anonId, window.settings.showAvatars || window.settings.groupMessages, !window.settings.showAvatars || window.settings.groupMessages)
     );
 
 
@@ -188,15 +206,19 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
     /* Build Message Line */
     let messageLine = $('<span>').attr({
         'id': 'message' + messageData.id,
-        'class': 'messageLine'
-
+        'class': 'messageLine',
+        'data-userid' : messageData.userId
     });
 
     if (window.settings.showAvatars) {
         messageLine.addClass('messageLineAvatar');
     }
+    else if (window.settings.groupMessages) {
+        messageLine.addClass('messageLineGroup');
+    }
 
     if (window.settings.showAvatars
+        && !window.settings.groupMessages
         && window.settings.alternateSelfPosts
         && messageData.userId == window.activeLogin.userData.id) {
         messageLine.addClass('messageLineReverse').append(messageText).append(avatar);
@@ -231,12 +253,14 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
         });
 
         if (!foundMatch) {
-            if (window.settings.reversePostOrder) {
-                $('#messageList').append(messageLine);
+            /*let lastMessage = $('#messageList .messageText:last-child');
+
+            if ($('.userName', lastMessage).length && $('.userName', lastMessage).attr('data-userid') == messageData.userId) {
+                $('#messageList .messageText:last-child').append($('<hr />'), $('.messageText', messageLine));
             }
-            else {
+            else {*/
                 $('#messageList').append(messageLine);
-            }
+            //}
         }
 
         // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).

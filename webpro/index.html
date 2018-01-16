@@ -384,6 +384,9 @@
 
 
 <script id="view-room" type="text/x-handlebars-template">
+    <div id="adjacentMessageSheets">
+    </div>
+
     <div id="modal-insertDoc" class="modal" tabindex="-1">
         <div class="modal-dialog modal-lg" role="document">
             <form method="post" enctype="multipart/form-data" id="uploadFileForm">
@@ -906,38 +909,54 @@ Pending Update
                         <small class="form-text text-muted">{{settingsThemeBlurb}}</small>
                     </div>
 
-                    <div class="pb-3">
-                        <label>
-                            <span class="btn btn-primary">
-                                <input type="checkbox" name="showAvatars" {{#if settings.showAvatars}} checked="checked" {{/if}}
-                                    onchange="$('input[name=alternateSelfPosts], input[name=bubbleFormatting]').attr('disabled', !$(this).is(':checked'))" />
-                                <strong>{{settingsView.showAvatars.label}}</strong>
-                            </span><br />
+
+                    <h4>Display Mode</h4>
+                    <div class="list-group mb-4">
+                        <label class="list-group-item list-group-item-action">
+                            <input type="radio" name="displayMode" value="simple"
+                                {{#unless settings.showAvatars}} {{#unless settings.groupMessages}} checked="checked" {{/unless}} {{/unless}}
+                                onchange="$('input[name=alternateSelfPosts], input[name=bubbleFormatting]').attr('disabled', true)"> Simple<br/>
+                            <small class="form-text text-muted">All messages are displayed on a single line, with few stylistic additions.</small>
+                        </label>
+
+                        <label class="list-group-item list-group-item-action">
+                            <input type="radio" name="displayMode" value="avatars"
+                                {{#if settings.showAvatars}} checked="checked" {{/if}}
+                                onchange="$('input[name=alternateSelfPosts], input[name=bubbleFormatting]').attr('disabled', false)"> {{settingsView.showAvatars.label}}<br/>
                             <small class="form-text text-muted">{{settingsView.showAvatars.blurb}}</small>
-                        </label>
-                    </div>
 
-                    <div class="pb-3 pl-5">
-                        <label>
-                            <span class="btn btn-primary">
-                                <input type="checkbox" name="alternateSelfPosts"
-                                    {{#if settings.alternateSelfPosts}} checked="checked" {{/if}}
-                                    {{#unless settings.showAvatars}} disabled="disabled" {{/unless}} />
-                                <strong>{{settingsView.alternateSelfPosts.label}}</strong>
-                            </span><br />
-                            <small class="form-text text-muted">{{settingsView.alternateSelfPosts.blurb}}</small>
-                        </label>
-                    </div>
+                            <div class="row mt-3">
+                                <div class="col">
+                                    <label>
+                                        <span class="btn btn-primary">
+                                            <input type="checkbox" name="alternateSelfPosts"
+                                                   {{#if settings.alternateSelfPosts}} checked="checked" {{/if}}
+                                                {{#unless settings.showAvatars}} disabled="disabled" {{/unless}} />
+                                            <strong>{{settingsView.alternateSelfPosts.label}}</strong>
+                                        </span><br />
+                                        <small class="form-text text-muted">{{settingsView.alternateSelfPosts.blurb}}</small>
+                                    </label>
+                                </div>
 
-                    <div class="pb-3 pl-5">
-                        <label>
-                            <span class="btn btn-primary">
-                                <input type="checkbox" name="bubbleFormatting"
-                                       {{#if settings.bubbleFormatting}} checked="checked" {{/if}}
-                                    {{#unless settings.showAvatars}} disabled="disabled" {{/unless}} />
-                                <strong>{{settingsView.bubbleFormatting.label}}</strong>
-                            </span><br />
-                            <small class="form-text text-muted">{{settingsView.bubbleFormatting.blurb}}</small>
+                                <div class="col">
+                                    <label>
+                                        <span class="btn btn-primary">
+                                            <input type="checkbox" name="bubbleFormatting"
+                                                   {{#if settings.bubbleFormatting}} checked="checked" {{/if}}
+                                                {{#unless settings.showAvatars}} disabled="disabled" {{/unless}} />
+                                            <strong>{{settingsView.bubbleFormatting.label}}</strong>
+                                        </span><br />
+                                        <small class="form-text text-muted">{{settingsView.bubbleFormatting.blurb}}</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="list-group-item list-group-item-action">
+                            <input type="radio" name="displayMode" value="grouped"
+                                {{#if settings.groupMessages}} checked="checked" {{/if}}
+                                onchange="$('input[name=alternateSelfPosts], input[name=bubbleFormatting]').attr('disabled', true)"> Grouped<br/>
+                            <small class="form-text text-muted">Messages are grouped by their author. This mode is still experimental.</small>
                         </label>
                     </div>
 
@@ -961,7 +980,9 @@ Pending Update
                         </label>
                     </div>
 
-                    <div class="pb-3">
+                    <h4>Notifications</h4>
+
+                    <div class="pb-2">
                         <label>
                             <span class="btn btn-primary">
                                 <input type="checkbox" name="audioDing" {{#if settings.audioDing}} checked="checked" {{/if}} />
@@ -971,7 +992,7 @@ Pending Update
                         </label>
                     </div>
 
-                    <div class="pb-3 pl-5">
+                    <div class="pb-4 pl-5">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">{{settingsAudioVolumeLabel}}</span>
