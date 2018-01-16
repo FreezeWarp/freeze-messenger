@@ -19,6 +19,7 @@ body {
 
 img {
     border: none;
+    vertical-align: initial !important; /* revert Bootstrap's reboot */
 }
 
 abbr {
@@ -182,6 +183,7 @@ table#fileUploadInfo td {
     vertical-align: baseline;
 }*/
 .userNameAvatar > img {
+    vertical-align: middle !important;
     min-width: 12px;
     max-width: 24px;
     max-height: 24px;
