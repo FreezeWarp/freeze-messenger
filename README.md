@@ -79,6 +79,14 @@ Admin Control Panel Configuration Editor
 Frequently Asked Questions
 ==========================
 
+General Databases
+-----------------
+
+### How can I enable persistent connections?
+If you are using the MySQLi driver, simply add 'p:' to your hostname, e.g. 'p:localhost'. Support for other drivers will be added soon.
+
+Note, however, that persistent connections are not guaranteed to work. While FreezeMessenger attempts to rollback any open transactions before script execution stops, this behaviour is not guaranteed.
+
 SQL Server
 ----------
 
