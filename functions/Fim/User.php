@@ -274,11 +274,6 @@ class User extends DynamicObject
     protected $favRooms = null;
 
     /**
-     * @var array An integer list of rooms the user is watching (wants to know when new messages are made in).
-     */
-    protected $watchRooms = null;
-
-    /**
      * @var array An integer list of users the user is ignoring (doesn't want protected messages from).
      */
     protected $ignoredUsers = null;
@@ -417,23 +412,6 @@ class User extends DynamicObject
     }
 
     /**
-     * @return array The list of rooms watched by this user.
-     */
-    public function getWatchRooms(): array
-    {
-        if (\Fim\Config::$enableWatchRooms) {
-            return $this->watchRooms =
-                ($this->watchRooms === null
-                    ? \Fim\Database::instance()->getUserWatchRoom($this->id)
-                    : $this->watchRooms
-                );
-        }
-        else {
-            return [];
-        }
-    }
-
-    /**
      * @return array The list of users friended by this user.
      */
     public function getFriendedUsers(): array
@@ -466,7 +444,6 @@ class User extends DynamicObject
         /* Define Tables */
         $tableNames = [
             'favRooms'      => 'userFavRooms',
-            'watchRooms'    => 'watchRooms',
             'ignoredUsers'  => 'userIgnoreList',
             'friendedUsers' => 'userFriendsList'
         ];
@@ -475,7 +452,7 @@ class User extends DynamicObject
 
 
         /* Get Valid Entries from the Database */
-        if ($listName === 'favRooms' || $listName === 'watchRooms') {
+        if ($listName === 'favRooms') {
             $items = (count($ids) > 0
                 ? \Fim\Database::instance()->getRooms([
                     'roomIds' => $ids
@@ -524,10 +501,8 @@ class User extends DynamicObject
         if ($action === 'create' || $action === 'edit') {
             foreach ($items AS $item) {
                 // Skip Rooms That The User Doesn't Have Permission To
-                if ($listName === 'favRooms' || $listName === 'watchRooms') {
-                    if (!(\Fim\Database::instance()->hasPermission($this, $item) & Room::ROOM_PERMISSION_VIEW)) {
-                        continue;
-                    }
+                if ($listName === 'favRooms' && !(\Fim\Database::instance()->hasPermission($this, $item) & Room::ROOM_PERMISSION_VIEW)) {
+                    continue;
                 }
 
                 // Update the Database List

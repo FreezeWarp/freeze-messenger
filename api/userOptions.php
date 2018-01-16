@@ -23,7 +23,7 @@
  * @copyright Joseph T. Parsons 2017
  *
  * =GET Parameters=
- * @param string["edit", "delete", "create"] _action - The action parameter is used here for watchRooms, favRooms, friendsList, and ignoreList. If "edit," then those lists will be replaced with the list specified. If create, then those lists will be appended by the lists specified. If "delete," then those lists will have all items in the specified list deleted.
+ * @param string["edit", "delete", "create"] _action - The action parameter is used here for favRooms, friendsList, and ignoreList. If "edit," then those lists will be replaced with the list specified. If create, then those lists will be appended by the lists specified. If "delete," then those lists will have all items in the specified list deleted.
  *
  * =PUT Parameters=
 These parameters are, where applicable, documented in the SQL documentation.
@@ -38,7 +38,6 @@ These parameters are, where applicable, documented in the SQL documentation.
  * @param list[parentalFlags] parentalFlags - A list of parental flags that the user has indicated they are willing to see. Valid entries are returned by getServerStatus.
  *
  * =POST/PUT/DELETE Parameters=
- * @param list[roomIds] watchRooms - A list of room IDs corresponding to rooms the user is watching. When a new message is made in these rooms, the user will be notified.
  * @param list[roomIds] favRooms - A list of room IDs corresponding to rooms the user has favourited. This exists to help synchronise different clients -- internally, the list is ignored.
  * @param list[userIds] friendsList - (Vanilla logins only.) A list of user IDs corresponding to users the user has friended. They may restrict private messages to this list. Additionally, future functionality is planned, but not currently supported.
  * @param list[userIds] ignoreList - A list of user IDs corresponding to users the user does not want to interact with. These users will not be able to initiate a private message with the user.
@@ -89,12 +88,12 @@ These parameters are, where applicable, documented in the SQL documentation.
  * =PUT/POST/DELETE Examples=
  * Note that when using PUT, every directive is supported. When using POST and DELETE, only the four lists are supported.
  *
- * PUT userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == replaces the list of watch rooms with the new list, [1,2,3]
- * PUT userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3&defaultHighlight=0,0,0 == replaces the list of watch rooms with the new list, [1,2,3]. Sets the default highlight color to black.
- * POST userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == adds rooms 1, 2, and 3 from the watch rooms list
- * POST userOptions.php watchRooms[]=1&favRooms[]=2&friendsLists[]=3 == adds room 1 to the watch rooms, room 2 to the favourite rooms, and user 3 to the friends list.
- * POST userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3&defaultHighlight=0,0,0 == adds room 1 to the watch rooms, room 2 to the favourite rooms, and user 3 to the friends list. Though defaultHighlight is specified, this is a POST request, and it will thus be ignored.
- * DELETE userOptions.php watchRooms[]=1&watchRooms[]=2&watchRooms[]=3 == removes rooms 1, 2, and 3 from the watch rooms list
+ * PUT userOptions.php favRooms[]=1&favRooms[]=2&favRooms[]=3 == replaces the list of fav rooms with the new list, [1,2,3]
+ * PUT userOptions.php favRooms[]=1&favRooms[]=2&favRooms[]=3&defaultHighlight=0,0,0 == replaces the list of fav rooms with the new list, [1,2,3]. Sets the default highlight color to black.
+ * POST userOptions.php favRooms[]=1&favRooms[]=2&favRooms[]=3 == adds rooms 1, 2, and 3 from the fav rooms list
+ * POST userOptions.php favRooms[]=1&favRooms[]=2&friendsLists[]=3 == adds room 1 to the fav rooms, room 2 to the favourite rooms, and user 3 to the friends list.
+ * POST userOptions.php favRooms[]=1&favRooms[]=2&favRooms[]=3&defaultHighlight=0,0,0 == adds room 1 to the fav rooms, room 2 to the favourite rooms, and user 3 to the friends list. Though defaultHighlight is specified, this is a POST request, and it will thus be ignored.
+ * DELETE userOptions.php favRooms[]=1&favRooms[]=2&favRooms[]=3 == removes rooms 1, 2, and 3 from the fav rooms list
  */
 
 use Fim\Error;
@@ -148,12 +147,6 @@ $request = fim_sanitizeGPC('p', array(
     'parentalFlags' => array(
         'cast' => 'list',
         'valid' => \Fim\Config::$parentalFlags, // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
-    ),
-
-    'watchRooms' => array(
-        'cast' => 'list',
-        'filter' => 'int',
-        'evaltrue' => true,
     ),
 
     'favRooms' => array(
@@ -411,17 +404,11 @@ if (count($updateArray) > 0) {
 
 \Fim\Database::instance()->autoQueue(true);
 
-/* Watch Rooms (used for notifications of new messages, which are placed in unreadMessages) */
-if (isset($request['watchRooms'])) {
-    $user->editList('watchRooms', $request['watchRooms'], $requestHead['_action']);
-}
 
-
-/* Fav List */
+/* Fav List (used for notifications of new messages, which are placed in unreadMessages) */
 if (isset($request['favRooms'])) {
     $user->editList('favRooms', $request['favRooms'], $requestHead['_action']);
 }
-
 
 /* Ignore List */
 if (isset($request['ignoreList'])) {

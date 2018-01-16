@@ -38,9 +38,9 @@ popup.prototype.settings = {
             'resolveFromNames' : Resolver.resolveUsersFromNames
         });
 
-        let watchRooms = new autoEntry($("#changeSettingsForm [name=watchRoomsContainer]"), {
-            'name' : 'watchRooms',
-            'default' : window.activeLogin.userData.watchRooms,
+        let favRooms = new autoEntry($("#changeSettingsForm [name=favRoomsContainer]"), {
+            'name' : 'favRooms',
+            'default' : window.activeLogin.userData.favRooms,
             'list' : 'rooms',
             'resolveFromIds' : Resolver.resolveRoomsFromIds,
             'resolveFromNames' : Resolver.resolveRoomsFromNames
@@ -153,7 +153,7 @@ popup.prototype.settings = {
                 "defaultHighlight" : ($('#fontPreview').css('background-color') === 'rgba(0, 0, 0, 0)' ? null : $('#fontPreview').css('background-color').slice(4,-1)),
                 "defaultColor" : $('#fontPreview').css('color').slice(4,-1),
                 "defaultRoomId" : $('#changeSettingsForm input[name=defaultRoom]').attr('data-id'),
-                "watchRooms" : $('#changeSettingsForm input[name=watchRooms]').val().split(','),
+                "favRooms" : $('#changeSettingsForm input[name=favRooms]').val().split(','),
                 "ignoreList" : $('#changeSettingsForm input[name=ignoreList]').val().split(','),
                 "friendsList" : $('#changeSettingsForm input[name=friendsList]').val().split(','),
                 "profile" : $('#changeSettingsForm input[name=profile]').val(),

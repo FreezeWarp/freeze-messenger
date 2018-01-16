@@ -481,7 +481,7 @@ function fim_buildUsernameTagPromise(tag, userId, userDeferred, anonId, includeA
     if (!anonId)
         anonId = "";
 
-    $.when(userDeferred).then(function(pairs) {
+    $.when(userDeferred).done(function(pairs) {
         var userName = pairs[userId].name + anonId,
             userNameFormat = pairs[userId].nameFormat,
             avatar = pairs[userId].avatar ? pairs[userId].avatar : 'images/blankperson.png';
@@ -1327,39 +1327,23 @@ $.when(
                     }
                 },
 
-                watch : {
-                    name : 'Watch',
+                fav : {
+                    name : 'Favourite',
                     callback : function() {
-                        var tag = $(this);
-
-                        fimApi.editUserOptions("create", {
-                            "watchRooms" : [$(this).attr('data-roomId')]
-                        }, {
-                            "end" : function() {
-                                dia.info("You have added " + tag.prop('outerHTML') + " to your watched rooms. You will now be notified when new messages are posted in this room.");
-                            }
-                        });
+                        fimApi.favRoom($(this).attr('data-roomId'));
                     },
                     visible : function() {
-                        return window.activeLogin.userData.watchRooms.indexOf($(this).attr('data-roomId')) < 0;
+                        return window.activeLogin.userData.favRooms.indexOf($(this).attr('data-roomId')) < 0;
                     }
                 },
 
-                unwatch : {
-                    name : 'Unwatch',
+                unfav : {
+                    name : 'Unfavourite',
                     callback : function() {
-                        var tag = $(this);
-
-                        fimApi.editUserOptions("delete", {
-                            "watchRooms" : [$(this).attr('data-roomId')]
-                        }, {
-                            "end" : function() {
-                                dia.info("You have removed " + tag.prop('outerHTML') + " from your watched rooms. You will no longer be notified when new messages are posted in this room.");
-                            }
-                        });
+                        fimApi.unfavRoom($(this).attr('data-roomId'));
                     },
                     visible : function() {
-                        return window.activeLogin.userData.watchRooms.indexOf($(this).attr('data-roomId')) >= 0;
+                        return window.activeLogin.userData.favRooms.indexOf($(this).attr('data-roomId')) >= 0;
                     }
                 }
             }

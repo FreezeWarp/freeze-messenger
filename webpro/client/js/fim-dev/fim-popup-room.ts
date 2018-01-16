@@ -252,16 +252,17 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
             }
         });
 
-        if (!foundMatch) {
-            /*let lastMessage = $('#messageList .messageText:last-child');
+        if (!foundMatch)
+            $('#messageList').append(messageLine);
 
-            if ($('.userName', lastMessage).length && $('.userName', lastMessage).attr('data-userid') == messageData.userId) {
-                $('#messageList .messageText:last-child').append($('<hr />'), $('.messageText', messageLine));
-            }
-            else {*/
-                $('#messageList').append(messageLine);
-            //}
-        }
+
+        // Autoscroll
+        this.scrollBack();
+
+        $('.messageText img', messageLine).on('load', (() => {
+            this.scrollBack();
+        }));
+
 
         // Only list 100 messages in the table at any given time. This prevents memory excess (this usually isn't a problem until around 1,000, but 100 is usually all a user is going to need).
         this.messageIndex.push(messageData.id); // Update the internal messageIndex array.
@@ -271,13 +272,6 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
         }
     }
 
-
-    /* Auto Scroll */
-    $('#message' + messageData.id + ' img').on('load', (() => {
-        this.scrollBack();
-    }));
-
-    this.scrollBack();
 
 
     /* Blur Events (Notifications */
@@ -309,10 +303,13 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
 };
 
 popup.prototype.room.prototype.scrollBack = function() { // Scrolls the message list to the bottom.
-    if (window.settings.reversePostOrder)
-        $('#messageListContainer').scrollTop(0);
-    else
-        $('#messageListContainer').scrollTop($('#messageListContainer')[0].scrollHeight);
+    window.setTimeout(() => {
+        if (window.settings.reversePostOrder)
+            $('#messageListContainer').scrollTop(0);
+        else {
+            $('#messageListContainer').scrollTop($('#messageListContainer')[0].scrollHeight);
+        }
+    }, 100);
 };
 
 popup.prototype.room.prototype.faviconFlashOnce = function() { // Changes the state of the favicon from opaque to transparent or similar.

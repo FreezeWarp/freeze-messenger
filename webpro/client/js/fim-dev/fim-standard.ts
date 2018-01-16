@@ -112,12 +112,11 @@ standard.prototype.login = function(options) {
 
             // TODO: only once
             fimApi.getRooms({
-                roomIds : window.serverSettings.officialRooms.concat(this.activeLogin.userData.favRooms).concat(this.activeLogin.userData.watchRooms)
+                roomIds : window.serverSettings.officialRooms.concat(this.activeLogin.userData.favRooms)
             }, {
                 begin : () => {
                     $('#navbar div[name=favRoomsList]').html('');
                     $('#navbar div[name=officialRoomsList]').html('');
-                    $('#navbar div[name=watchRoomsList]').html('');
                 },
                 each : (roomData) => {
                     let html = $('<a>').attr({
@@ -127,9 +126,6 @@ standard.prototype.login = function(options) {
 
                     if (this.activeLogin.userData.favRooms.indexOf(roomData.id) != -1)
                         $('#navbar div[name=favRoomsList]').append(html.clone());
-
-                    if (this.activeLogin.userData.watchRooms.indexOf(roomData.id) != -1)
-                        $('#navbar div[name=watchRoomsList]').append(html.clone());
 
                     if (roomData.official)
                         $('#navbar div[name=officialRoomsList]').append(html.clone());

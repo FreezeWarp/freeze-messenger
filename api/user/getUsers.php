@@ -130,14 +130,14 @@ foreach ($users AS $userData) {
         $xmlData['users'][$userData->id] = array_merge($xmlData['users'][$userData->id], [
             'permissions' => $userData->getPermissionsArray(),
         ]);
-        $returnFields = array_merge($returnFields, ['defaultRoomId', 'options', 'parentalAge', 'parentalFlags', 'privacyLevel', 'ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms']);
+        $returnFields = array_merge($returnFields, ['defaultRoomId', 'options', 'parentalAge', 'parentalFlags', 'privacyLevel', 'ignoredUsers', 'friendedUsers', 'favRooms']);
     }
 
     $xmlData['users'][$userData->id] = array_merge(
         $xmlData['users'][$userData->id],
         fim_castArrayEntry(
             fim_objectArrayFilterKeys($userData, $returnFields),
-            ['ignoredUsers', 'friendedUsers', 'favRooms', 'watchRooms', 'parentalFlags'],
+            ['ignoredUsers', 'friendedUsers', 'favRooms', 'parentalFlags'],
             'Http\ApiOutputList'
         )
     );

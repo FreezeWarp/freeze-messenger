@@ -639,7 +639,6 @@ fimApi.prototype.editUserOptions = function(action, params, requestSettings) {
         'defaultColor' : null,
         'defaultHighlight' : null,
         'defaultRoomId' : null,
-        'watchRooms' : null,
         'favRooms' : null,
         'ignoreList': null,
         'friendsList': null,
@@ -679,19 +678,6 @@ fimApi.prototype.unfavRoom = function(roomId) {
         'favRooms' : [roomId]
     });
 };
-
-fimApi.prototype.watchRoom = function(roomId) {
-    this.editUserOptions('create', {
-        'watchRooms' : [roomId]
-    });
-};
-
-fimApi.prototype.unwatchRoom = function(roomId) {
-    this.editUserOptions('delete', {
-        'watchRooms' : [roomId]
-    });
-};
-
 
 fimApi.prototype.editRoom = function(id, action, params, requestSettings) {
     params = this.mergeDefaults(params, {

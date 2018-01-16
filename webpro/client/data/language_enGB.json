@@ -320,10 +320,6 @@
   "settingsThemeVader" : "Vader",
   "settingsThemejQueryUIDarkness" : "jQueryUI Darkness",
   "settingsThemejQueryUILightness" : "jQueryUI Lightness",
-  "settingsWatchRoomsAdd" : "Add",
-  "settingsWatchRoomsBlurb" : "These rooms will be monitored for new posts, similar to Private IMs.",
-  "settingsWatchRoomsCurrentRooms" : "Current Rooms: ",
-  "settingsWatchRoomsLabel" : "Watch Rooms: ",
   "settingsWebkitNotificationsBlurb" : "Attempts to request permission to enable Webkit notifications, which are used by Google Chrome to notify you of new private messages even when you are not currently in a FreezeMessenger tab.",
   "settingsWebkitNotificationsLabel" : "Enable Webkit Notifications",
   "statsChooseSettings" : "Choose Settings",
@@ -428,6 +424,10 @@
     "bubbleFormatting" : {
       "blurb": "Display post formatting using a 'bubble' appearance.",
       "label": "Bubble Formatting"
+    },
+    "favRooms" : {
+      "blurb" : "Your favourited rooms will be monitored for new posts, displayed prominently in the header, and made more easily accessible.",
+      "label" : "Favourite Rooms: "
     }
   },
 
@@ -514,7 +514,6 @@
     "rooms" : {
       "title" : "Rooms",
       "fav" : "Favourite Rooms",
-      "watched" : "Watched Rooms",
       "promoted" : "Promoted Rooms",
       "all" : "All Rooms",
       "create" : "Create a Room"

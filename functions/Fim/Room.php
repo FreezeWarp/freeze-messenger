@@ -431,13 +431,13 @@ class Room extends DynamicObject
      */
     public function getWatchedByUsers()
     {
-        if (!\Fim\Config::$enableWatchRooms)
+        if (!\Fim\Config::$enableUnreadMessages)
             return [];
 
         else {
             return $this->watchedByUsers =
                 ($this->watchedByUsers === null
-                    ? \Fim\Database::instance()->getWatchRoomUsers($this->id)
+                    ? \Fim\Database::instance()->getFavRoomUsers($this->id)
                     : $this->watchedByUsers
                 );
         }

@@ -310,8 +310,6 @@
                         <div class="dropdown-menu" name="roomMenu" aria-labelledby="navbarRooms">
                             <h6 class="dropdown-header" name="favRoomsHeader">{{mainMenu.rooms.fav}}</h6>
                             <div name="favRoomsList"></div>
-                            <h6 class="dropdown-header" name="watchRoomsHeader">{{mainMenu.rooms.watched}}</h6>
-                            <div name="watchRoomsList"></div>
                             <h6 class="dropdown-header" name="officialRoomsHeader">{{mainMenu.rooms.promoted}}</h6>
                             <div name="officialRoomsList"></div>
                             <div class="dropdown-divider"></div>
@@ -772,18 +770,6 @@ Pending Update
                                 window.activeLogin.userData.favRooms.remove('{{id}}');
                                 fimApi.unfavRoom('{{id}}');
                             }" {{#contains id activeLogin.userData.favRooms}} checked {{/contains}} />
-                        </label>
-
-                        <label class="btn btn-secondary btn-sm {{#contains id activeLogin.userData.watchRooms}} active{{/contains}}">
-                            <i class="fa fa-eye"></i> Watch
-                            <input type="checkbox" onchange="if ($(this).prop('checked')) {
-                                dia.info('You will now be notified of new messages made in this room.', 'success');
-                                window.activeLogin.userData.watchRooms.push('{{id}}');
-                                fimApi.watchRoom('{{id}}');
-                            } else {
-                                window.activeLogin.userData.watchRooms.remove('{{id}}');
-                                fimApi.unwatchRoom('{{id}}');
-                            }" {{#contains id activeLogin.userData.watchRooms}} checked {{/contains}} />
                         </label>
                     </div>
                 {{/unless}}
@@ -1253,13 +1239,11 @@ Pending Update
 
                     {{#unless activeLogin.userData.anonId}}
                     <div>
-                        <span>{{settingsWatchRoomsLabel}}</span>
-                        <div name="watchRoomsContainer"></div>
-                        <small class="form-text text-muted">{{settingsWatchRoomsBlurb}}</small>
+                        <span>{{settingsView.favRooms.label}}</span>
+                        <div name="favRoomsContainer"></div>
+                        <small class="form-text text-muted">{{settingsView.favRooms.blurb}}</small>
                     </div>
                     {{/unless}}
-
-                    <input type="hidden" name="watchRooms" />
                 </div>
             </div>
         </div>

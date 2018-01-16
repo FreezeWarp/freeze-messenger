@@ -566,11 +566,12 @@
         </table>
 
 
-        <table name="userFavRooms" partitionBy="userId" type="general" comment="A list of starred rooms. Unlike most other lists, this list generally doesn't have any backend effects, but we thought it was too useful not to include. Clients are still encouraged to implement more powerful tagging and lists themselves.">
+        <table name="userFavRooms" partitionBy="userId" type="general" comment="A list of starred rooms, which are monitored for new posts.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID." />
 
             <key name="userId,roomId" type="primary" storage="btree" />
+            <key name="roomId"        type="index"   storage="hash" />
         </table>
 
 
@@ -623,15 +624,6 @@
             <key name="id"         type="primary" storage="btree" />
             <key name="userId"     type="index"   storage="hash" />
             <key name="changeTime" type="index"   storage="btree" />
-        </table>
-
-
-        <table name="watchRooms" partitionBy="userId" type="general" comment="A table of rooms being watched by different users. Doesn't include private rooms, since those are basically already watched.">
-            <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
-            <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID to be watched." />
-
-            <key name="userId,roomId" type="primary" storage="btree" />
-            <key name="roomId"        type="index"   storage="hash" />
         </table>
     </database>
 

@@ -649,9 +649,6 @@ class Config {
     /** @var bool Set this to false to disable unread messages functionality. Can be useful if that functionality is causing database overload; though this is rare. */
     public static $enableUnreadMessages = true;
 
-    /** @var bool Set this to false to disable watch rooms functionality. Can be useful if that functionality is causing database overload; though this is rare. (The watch rooms records are maintained if this is disabled, but the cache maintence operations will be used as little as possible.) */
-    public static $enableWatchRooms = true;
-
     /** @var bool Set this to false to disable events. You probably shouldn't. */
     public static $enableEvents = true;
 

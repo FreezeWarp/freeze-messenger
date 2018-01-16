@@ -1916,19 +1916,22 @@ class DatabaseInstance extends DatabaseSQL
         ])->getColumnValues('subjectId');
     }
 
+
     /**
-     * Gets an array list of all room IDs a user has favorited.
+     * Gets the entries from the favRooms table corresponding with a single roomId. Fim\Room($roomId)->favRooms should generally be used instead, since it implements additional caching.
      *
-     * @param int $userId The user to filter by.
-     * @return int[]
+     * @param $roomId
+     * @return mixed
+     * @throws Exception
      */
-    public function getUserWatchRoom($userId) {
+    public function getFavRoomUsers($roomId) {
         return $this->select([
-            $this->sqlPrefix . 'watchRooms' => 'userId, roomId'
+            $this->sqlPrefix . 'userFavRooms' => 'userId, roomId'
         ], [
-            'userId' => $userId
-        ])->getColumnValues('roomId');
+            'roomId' => $this->int($roomId)
+        ])->getColumnValues('userId');
     }
+
 
     /**
      * Gets an array list of all social group IDs a user has joined.
@@ -2028,22 +2031,6 @@ class DatabaseInstance extends DatabaseSQL
             'userId' => $user->id,
             'type' => 'member'
         ]);
-    }
-
-
-    /**
-     * Gets the entries from the watchRooms table corresponding with a single roomId. Fim\fimRoom($roomId)->watchRooms should generally be used instead, since it implements additional caching.
-     *
-     * @param $roomId
-     * @return mixed
-     * @throws Exception
-     */
-    public function getWatchRoomUsers($roomId) {
-        return $watchRoomIds = $this->select([
-            $this->sqlPrefix . 'watchRooms' => 'userId, roomId'
-        ], [
-            'roomId' => $this->int($roomId)
-        ])->getColumnValues('userId');
     }
 
 
