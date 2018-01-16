@@ -15,7 +15,7 @@ Headline Functionality
 
 -   Flexible frontends: all core functionality is implemented through a REST-like API, meaning anyone can write their own FreezeMessenger frontends. FreezeMessenger currently comes with two frontends: the in-browser "WebPro", and the desktop Java client.
 -   Event streams provide functionality for getting new messages, being informed of new messages in watched rooms, tracking which users are currently typing a message (and when users go offline), and more. Plus, most of this functionality works if event streams are disabled.
--   Redis and Postgres can be used for the lowest possible event stream latency.
+-   Redis, Postgres, and Apache Kafka can be used for the lowest possible event stream latency.
 -   Users may, if allowed, create their own rooms and open direct messages with other users.
 -   Rooms can permissioned to only allow specific users and specific usergroups.
 -   Rooms can be age- and content- restricted. Messages can also be censored on a per-room basis.
