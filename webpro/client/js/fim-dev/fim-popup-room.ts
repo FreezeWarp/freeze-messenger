@@ -160,6 +160,9 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
         + fim_dateFormat(messageData.time)
     );
 
+    if (window.settings.showAvatars) {
+        date.addClass('text-muted');
+    }
 
     let avatar = $('<span class="usernameDate">').append(
         fim_buildUsernameTag($('<span>'), messageData.userId, usernameDeferred, messageData.anonId, window.settings.showAvatars, !window.settings.showAvatars)
@@ -170,6 +173,9 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
         'class': 'messageLine'
     });
 
+    if (window.settings.showAvatars) {
+        messageLine.addClass('messageLineAvatar');
+    }
 
     if (!window.settings.showAvatars) {
         avatar.append(date);

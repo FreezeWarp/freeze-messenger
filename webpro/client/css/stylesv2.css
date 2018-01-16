@@ -259,15 +259,36 @@ table.page {
 }
 
 .messageLine {
-    margin: 4px 0px;
+    margin: 10px 0;
     display: block;
     white-space: nowrap;
+    line-height: 1.3rem;
+}
+
+.messageLine .usernameDate {
+    text-decoration: underline;
+    margin-right: 10px;
+}
+
+.usernameDate .userName {
+    font-weight: bold;
+}
+
+.usernameDate .date {
+    letter-spacing: -1px;
+    font-style: italic;
 }
 
 .messageLineAvatar {
+    margin: 4px 0;
     padding-bottom: 3px;
     padding-top: 3px;
     vertical-align: middle;
+}
+
+.messageLineAvatar .messageText {
+    display: inline-block;
+    max-width: calc(100% - 45px);
 }
 
 .messageText {
@@ -276,16 +297,7 @@ table.page {
     hyphens: auto;
 }
 
-.messageLine .messageText {
-    display: inline-block;
-    max-width: calc(100% - 35px);
-}
-
-.messageLineReverse {
-    text-align: right;
-}
-
-.messageLine .messageTextFormatted {
+.messageLineAvatar .messageTextFormatted {
     position: relative;
     padding: 5px 10px 5px 10px;
     z-index: 2;
@@ -294,16 +306,7 @@ table.page {
     margin-right: 25px; /* overflow */
 }
 
-.messageLine.messageLineReverse .messageTextFormatted {
-    margin-right: 0px;
-    margin-left: 0px;
-}
-
-.messageLine.messageLineReverse .userNameAvatar {
-    margin-left: 10px;
-}
-
-.messageLine .messageTextFormatted:before {
+.messageLineAvatar .messageTextFormatted:before {
     background-color: inherit;
 
     content: "\00a0";
@@ -321,18 +324,39 @@ table.page {
     -webkit-transform: rotate( 29deg ) skew( -35deg );
 }
 
-.messageLine:not(.messageLineReverse) .messageTextFormatted:before {
+.messageLineAvatar.messageLineReverse {
+    text-align: right;
+}
+
+.messageLineAvatar.messageLineReverse .messageTextFormatted {
+    margin-right: 0px;
+    margin-left: 0px;
+}
+
+.messageLineAvatar.messageLineReverse .userNameAvatar {
+    margin-left: 10px;
+}
+
+.messageLineAvatar:not(.messageLineReverse) .messageTextFormatted:before {
     bottom: 7px;
     left: -3px;
 }
 
-.messageLine.messageLineReverse .messageTextFormatted:before {
+.messageLineAvatar.messageLineReverse .messageTextFormatted:before {
     bottom: 7px;
     right: -3px;
 }
 
 .date {
     white-space: nowrap;
+}
+
+.messageText .date {
+    display: block;
+    font-size: .7em;
+    font-weight: bold;
+    text-align: right;
+    letter-spacing: -1px;
 }
 
 .messageTable {
