@@ -189,7 +189,9 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
         messageLine.addClass('messageLineAvatar');
     }
 
-    if (window.settings.showAvatars && messageData.userId == window.activeLogin.userData.id) {
+    if (window.settings.showAvatars
+        && window.settings.alternateSelfPosts
+        && messageData.userId == window.activeLogin.userData.id) {
         messageLine.addClass('messageLineReverse').append(messageText).append(avatar);
     }
     else {

@@ -909,10 +909,23 @@ Pending Update
                     <div class="pb-3">
                         <label>
                             <span class="btn btn-primary">
-                                <input type="checkbox" name="showAvatars" {{#if settings.showAvatars}} checked="checked" {{/if}} />
+                                <input type="checkbox" name="showAvatars" {{#if settings.showAvatars}} checked="checked" {{/if}}
+                                    onchange="$('input[name=alternateSelfPosts]').attr('disabled', !$(this).is(':checked'))" />
                                 <strong>{{settingsView.showAvatars.label}}</strong>
                             </span><br />
                             <small class="form-text text-muted">{{settingsView.showAvatars.blurb}}</small>
+                        </label>
+                    </div>
+
+                    <div class="pb-3 pl-5">
+                        <label>
+                            <span class="btn btn-primary">
+                                <input type="checkbox" name="alternateSelfPosts"
+                                    {{#if settings.alternateSelfPosts}} checked="checked" {{/if}}
+                                    {{#unless settings.showAvatars}} disabled="disabled" {{/unless}} />
+                                <strong>{{settingsView.alternateSelfPosts.label}}</strong>
+                            </span><br />
+                            <small class="form-text text-muted">{{settingsView.alternateSelfPosts.blurb}}</small>
                         </label>
                     </div>
 
@@ -936,7 +949,7 @@ Pending Update
                         </label>
                     </div>
 
-                    <div class="pb-2">
+                    <div class="pb-3">
                         <label>
                             <span class="btn btn-primary">
                                 <input type="checkbox" name="audioDing" {{#if settings.audioDing}} checked="checked" {{/if}} />
@@ -946,7 +959,7 @@ Pending Update
                         </label>
                     </div>
 
-                    <div class="pb-4">
+                    <div class="pb-3 pl-5">
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">{{settingsAudioVolumeLabel}}</span>

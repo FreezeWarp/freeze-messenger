@@ -420,6 +420,10 @@
     "hideTimes" : {
       "blurb": "Hiding post times will reduce the overall amount of text by hiding post times. Times can be viewed by moving the mouse over each message.",
       "label": "Hide Message Times"
+    },
+    "alternateSelfPosts" : {
+      "blurb": "Right-align your own posts when displaying messages.",
+      "label": "Alternate Self Posts"
     }
   },
 

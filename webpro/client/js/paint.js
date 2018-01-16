@@ -883,6 +883,7 @@ var settingNames = {
     disableVideos : 64, // Don't embed videos (use a link instead)
 
     // Chat Display
+    alternateSelfPosts : 512,
     reversePostOrder : 1024,
     showAvatars : 2048,
     hideTimes : 4096,
@@ -893,11 +894,18 @@ var settingNames = {
     webkitNotifications : 536870912
 };
 
-var settingsBitfield = $.getCookie('webpro_settings', settingNames.showAvatars + settingNames.audioDing);
+var settingsBitfield = $.cookie('webpro_settings');
+
+if (!settingsBitfield && settingsBitfield !== 0) {
+    settingsBitfield = settingNames.showAvatars + settingNames.audioDing + settingNames.alternateSelfPosts;
+    $.cookie('webpro_settings', settingsBitfield);
+}
+
 window.settings = {
     theme : $.getCookie('webpro_theme', 'css'), // Theme (goes into effect in document.ready)
     audioVolume : $.getCookie('webpro_audioVolume', .5),
 
+    alternateSelfPosts : !!(settingsBitfield & settingNames.alternateSelfPosts),
     disableFormatting : !!(settingsBitfield & settingNames.disableFormatting),
     disableImages : !!(settingsBitfield & settingNames.disableImages),
     disableVideos : !!(settingsBitfield & settingNames.disableVideos),
