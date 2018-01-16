@@ -42,7 +42,7 @@ Installation
 ============
 
 ### From Releases
-1.   [Download the latest release.](https://github.com/FreezeWarp/freeze-messenger/releases/tag/v1.0-beta.1)
+1.   [Download the latest release.](https://github.com/FreezeWarp/freeze-messenger/releases)
 2.   Unzip the latest release into `[messengerDirectory]`, which is whatever directory FreezeMessenger should be accessible from.
 3.   To install, navigate to the `https://yoursite.com/[messengerDirectory]/install/` and proceed from there.
 
