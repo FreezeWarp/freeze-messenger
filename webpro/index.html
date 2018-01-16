@@ -910,7 +910,7 @@ Pending Update
                         <label>
                             <span class="btn btn-primary">
                                 <input type="checkbox" name="showAvatars" {{#if settings.showAvatars}} checked="checked" {{/if}}
-                                    onchange="$('input[name=alternateSelfPosts]').attr('disabled', !$(this).is(':checked'))" />
+                                    onchange="$('input[name=alternateSelfPosts], input[name=bubbleFormatting]').attr('disabled', !$(this).is(':checked'))" />
                                 <strong>{{settingsView.showAvatars.label}}</strong>
                             </span><br />
                             <small class="form-text text-muted">{{settingsView.showAvatars.blurb}}</small>
@@ -926,6 +926,18 @@ Pending Update
                                 <strong>{{settingsView.alternateSelfPosts.label}}</strong>
                             </span><br />
                             <small class="form-text text-muted">{{settingsView.alternateSelfPosts.blurb}}</small>
+                        </label>
+                    </div>
+
+                    <div class="pb-3 pl-5">
+                        <label>
+                            <span class="btn btn-primary">
+                                <input type="checkbox" name="bubbleFormatting"
+                                       {{#if settings.bubbleFormatting}} checked="checked" {{/if}}
+                                    {{#unless settings.showAvatars}} disabled="disabled" {{/unless}} />
+                                <strong>{{settingsView.bubbleFormatting.label}}</strong>
+                            </span><br />
+                            <small class="form-text text-muted">{{settingsView.bubbleFormatting.blurb}}</small>
                         </label>
                     </div>
 

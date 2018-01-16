@@ -136,7 +136,14 @@ popup.prototype.room.prototype.insertDoc = function() {
 
 popup.prototype.room.prototype.newMessage = function(messageData) {
     let usernameDeferred = fim_getUsernameDeferred(messageData.userId);
+
+
+    /* Message Text */
     let messageText = fim_buildMessageLine(messageData.text, messageData.flag, messageData.id, messageData.userId, messageData.roomId, messageData.time, usernameDeferred);
+
+    if (!window.settings.bubbleFormatting) {
+        messageText.removeClass('messageTextFormatted');
+    }
 
 
     /* Avatars */

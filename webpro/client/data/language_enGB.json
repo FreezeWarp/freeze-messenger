@@ -424,6 +424,10 @@
     "alternateSelfPosts" : {
       "blurb": "Right-align your own posts when displaying messages.",
       "label": "Alternate Self Posts"
+    },
+    "bubbleFormatting" : {
+      "blurb": "Display post formatting using a 'bubble' appearance.",
+      "label": "Bubble Formatting"
     }
   },
 

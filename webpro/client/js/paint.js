@@ -714,8 +714,14 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
     }
 
     $.when(userNameDeferred).then(function(pairs) {
-        if (!settings.disableFormatting && settings.showAvatars && pairs[userId].messageFormatting)
-            tag.attr("style", tag.attr("style") + ";" + pairs[userId].messageFormatting).addClass('messageTextFormatted');
+        if (!window.settings.disableFormatting && pairs[userId].messageFormatting) {
+            tag.attr("style", tag.attr("style") + ";" + pairs[userId].messageFormatting);
+
+            if (window.settings.bubbleFormatting) {
+                tag.addClass('messageTextFormatted');
+            }
+        }
+
     });
 
     return tag;
@@ -887,9 +893,10 @@ var settingNames = {
     reversePostOrder : 1024,
     showAvatars : 2048,
     hideTimes : 4096,
+    bubbleFormatting : 8192,
 
     // Other Options
-    audioDing : 8192,
+    audioDing : 16384,
     disableRightClick : 1048576,
     webkitNotifications : 536870912
 };
@@ -905,13 +912,14 @@ window.settings = {
     theme : $.getCookie('webpro_theme', 'css'), // Theme (goes into effect in document.ready)
     audioVolume : $.getCookie('webpro_audioVolume', .5),
 
-    alternateSelfPosts : !!(settingsBitfield & settingNames.alternateSelfPosts),
     disableFormatting : !!(settingsBitfield & settingNames.disableFormatting),
     disableImages : !!(settingsBitfield & settingNames.disableImages),
     disableVideos : !!(settingsBitfield & settingNames.disableVideos),
 
     reversePostOrder : !!(settingsBitfield & settingNames.reversePostOrder),
     showAvatars : !!(settingsBitfield & settingNames.showAvatars),
+    alternateSelfPosts : !!(settingsBitfield & settingNames.alternateSelfPosts),
+    bubbleFormatting : !!(settingsBitfield & settingNames.bubbleFormatting),
     hideTimes : !!(settingsBitfield & settingNames.hideTimes),
 
     audioDing : !!(settingsBitfield & settingNames.audioDing),
