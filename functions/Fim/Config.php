@@ -189,7 +189,7 @@ class Config {
     public static $disableTopic = false;
 
     /** @var bool Whether _any_ user can create rooms, even those with the permission to do so. Setting this false, in effect; disables the entire feature. (Admins are excluded.) */
-    public static $userRoomCreation = false;
+    public static $userRoomCreation = true;
 
     /** @var bool Whether _any_ user can create private rooms, even those with the permission to do so. Setting this false, in effect; disables the entire feature. */
     public static $userPrivateRoomCreation = true;
