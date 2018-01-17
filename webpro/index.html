@@ -35,7 +35,7 @@
     <script src="client/js/fim-all.js" type="text/javascript" defer></script>
 
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0" />
     <link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css"/>
 
     <!-- .min currently broken by calc() expression -->
@@ -666,17 +666,17 @@ Pending Update
     <div class="card mx-auto view-thin">
         <div class="card-header" align="center">
             <div class="row">
-                <div class="col-3 text-left">
+                <div class="col col-sm-3 text-left">
                     <button name="prevPage" class="btn btn-primary">{{uploads.buttons.previous}}</button>
                 </div>
-                <div class="col-6">
+                <div class="col-sm-6 d-none d-sm-block">
                     {{#if activeLogin.userData.permissions.modFiles}}
                         <form>
                             <input type="text" name="user" class="form-control" placeholder="User" />
                         </form>
                     {{/if}}
                 </div>
-                <div class="col-3 text-right">
+                <div class="col col-sm-3 text-right">
                     <button name="nextPage" class="btn btn-primary">{{uploads.buttons.next}}</button>
                 </div>
             </div>
@@ -687,10 +687,10 @@ Pending Update
 
         <div class="card-header" align="center">
             <div class="row">
-                <div class="col">
+                <div class="col text-left">
                     <button name="prevPage" class="btn btn-primary">{{uploads.buttons.previous}}</button>
                 </div>
-                <div class="col">
+                <div class="col text-right">
                     <button name="nextPage" class="btn btn-primary">{{uploads.buttons.next}}</button>
                 </div>
             </div>
