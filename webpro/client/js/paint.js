@@ -1101,6 +1101,7 @@ $.when(
             selector : '.messageText, .messageText *',
             classNames : classNames,
             events : focusPreventionEvents,
+            zIndex : 5000,
             items : {
                 'delete' : {
                     name : 'Delete',
@@ -1210,6 +1211,7 @@ $.when(
             selector : '.userName',
             classNames : classNames,
             events : focusPreventionEvents,
+            zIndex : 5000,
             items : {
                 profile : {
                     name : 'Profile',
@@ -1302,6 +1304,7 @@ $.when(
             selector : '.roomName',
             classNames : classNames,
             events : focusPreventionEvents,
+            zIndex : 5000,
             items : {
                 edit : {
                     name : 'Edit',
