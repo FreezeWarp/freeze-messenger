@@ -721,11 +721,10 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
 
     $.when(userNameDeferred).then(function(pairs) {
         if (!window.settings.disableFormatting
-            && window.settings.showAvatars
             && pairs[userId].messageFormatting) {
             tag.attr("style", tag.attr("style") + ";" + pairs[userId].messageFormatting);
 
-            if (window.settings.bubbleFormatting) {
+            if (window.settings.showAvatars && window.settings.bubbleFormatting) {
                 tag.addClass('messageTextFormatted');
             }
         }
