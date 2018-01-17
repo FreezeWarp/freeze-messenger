@@ -907,7 +907,7 @@ popup.prototype.room.prototype.newRoomEntry = function(roomId) {
         console.log("new entry");
         $('#watchedRooms').append($('<li>').attr('class', 'list-group-item').attr('data-roomId', roomId)
             .append(fim_buildRoomNameTag($('<span>'), roomId))
-            .append($('<i class="otherMessages"></i>'))
+            .append($('<i class="otherMessages" style="display: none">').append(' (', $('<i class="otherMessagesCount"></i>'), ')'))
         );
     }
 };
@@ -917,16 +917,28 @@ popup.prototype.room.prototype.newRoomEntry = function(roomId) {
  * @param roomId
  */
 popup.prototype.room.prototype.markRoomEntryRead = function(roomId) {
-    $('#watchedRooms .list-group-item[data-roomId="' + roomId + '"]').css('font-weight', 'normal')
+    let watchedRooms = $('#watchedRooms .list-group-item[data-roomId="' + roomId + '"]');
+    watchedRooms.css('font-weight', 'normal');
+    $('.otherMessages', watchedRooms).css('display', 'none');
+    $('.otherMessagesCount', watchedRooms).text('0');
 };
 
 /**
  * Mark a given room as unread in the watched rooms list.
  * @param roomId
  */
-popup.prototype.room.prototype.markRoomEntryUnread = function(roomId) {
-    console.log("markRoomEntry", $('#watchedRooms .list-group-item[data-roomId="' + roomId + '"]'));
-    $('#watchedRooms .list-group-item[data-roomId="' + roomId + '"]').css('font-weight', 'bold')
+popup.prototype.room.prototype.markRoomEntryUnread = function(roomId, count) {
+    let watchedRooms = $('#watchedRooms .list-group-item[data-roomId="' + roomId + '"]');
+    watchedRooms.css('font-weight', 'bold');
+    $('.otherMessages', watchedRooms).css('display', 'inline');
+
+    let otherMessages = $('.otherMessagesCount', watchedRooms);
+    if (count) {
+        otherMessages.text(count);
+    }
+    else {
+        otherMessages.text(otherMessages.text().toNumber() + 1);
+    }
 };
 
 /**
@@ -936,7 +948,7 @@ popup.prototype.room.prototype.markRoomEntryUnread = function(roomId) {
 popup.prototype.room.prototype.unreadMessageHandler = function(message) {
     if (message.roomId != this.options.roomId) {
         this.newRoomEntry(message.roomId);
-        this.markRoomEntryUnread(message.roomId);
+        this.markRoomEntryUnread(message.roomId, message.otherMessages);
     }
 };
 
