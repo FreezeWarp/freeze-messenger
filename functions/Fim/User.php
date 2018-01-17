@@ -62,15 +62,10 @@ class User extends DynamicObject
      */
     const USER_PRIV_CREATE_ROOMS = 0x20;
 
-    /*
-     * The user may make private messages to friends.
-     */
-    const USER_PRIV_PRIVATE_FRIENDS = 0x40;
-
     /**
-     * The user may make private messages to everybody.
+     * The user may make private messages.
      */
-    const USER_PRIV_PRIVATE_ALL = 0x80;
+    const USER_PRIV_PRIVATE_ROOMS = 0x80;
 
 
 
@@ -117,8 +112,7 @@ class User extends DynamicObject
         'post'           => User::USER_PRIV_POST,
         'changeTopic'    => User::USER_PRIV_TOPIC,
         'createRooms'    => User::USER_PRIV_CREATE_ROOMS,
-        'privateFriends' => User::USER_PRIV_PRIVATE_FRIENDS,
-        'privateAll'     => User::USER_PRIV_PRIVATE_ALL,
+        'privateRooms'   => User::USER_PRIV_PRIVATE_ROOMS,
         'modPrivs'       => User::ADMIN_GRANT,
         'protected'      => User::ADMIN_PROTECTED,
         'modRooms'       => User::ADMIN_ROOMS,
@@ -549,15 +543,10 @@ class User extends DynamicObject
 
         // Note that we set these after setting admin privs, becuase we don't want admins using these functionalities when they are disabled.
         if (!\Fim\Config::$userPrivateRoomCreation)
-            $this->privs &= ~(User::USER_PRIV_PRIVATE_ALL | User::USER_PRIV_PRIVATE_FRIENDS); // Note: does not disable the usage of existing private rooms. Use "privateRoomsEnabled" for this.
+            $this->privs &= ~(User::USER_PRIV_PRIVATE_ROOMS);
 
         if (\Fim\Config::$disableTopic)
             $this->privs &= ~User::USER_PRIV_TOPIC; // Topics are disabled (in fact, this one should also disable the returning of topics; TODO).
-
-
-        // Certain bits imply other bits. Make sure that these are consistent.
-        if ($this->privs & User::USER_PRIV_PRIVATE_ALL)
-            $this->privs |= User::USER_PRIV_PRIVATE_FRIENDS;
 
 
         // Disable bits based on login-provider disabled features
@@ -648,7 +637,7 @@ class User extends DynamicObject
     /**
      * Checks to see if the user has permission to do the specified thing.
      *
-     * @param $priv string The priviledge to check, one of ['protected', 'modPrivs', 'modRooms', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll']
+     * @param $priv string The priviledge to check, one of ['protected', 'modPrivs', 'modRooms', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRooms']
      *
      * @return bool True if user has permission, false if not.
      * @throws Exception for unrecognised priviledges

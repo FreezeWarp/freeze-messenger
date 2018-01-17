@@ -17,7 +17,7 @@ class Config {
     public static $registrationEnabledIgnoreForums = false;
 
     /** @var int The default permissions newly registered users have. This is a bitfield consisting of some combination of {@see Fim\fimUser::USER_PRIV_VIEW}, {@see Fim\fimUser::USER_PRIV_POST}, {@see Fim\fimUser::USER_PRIV_TOPIC}, {@see Fim\fimUser::USER_PRIV_CREATE_ROOMS}, {@see Fim\fimUser::USER_PRIV_PRIVATE_FRIENDS}, {@see Fim\fimUser::USER_PRIV_PRIVATE_ALL}, {@see Fim\fimUser::USER_PRIV_ACTIVE_USERS}. {@see Fim\fimUser::USER_PRIV_TOPIC} and {@see Fim\fimUser::USER_PRIV_PRIVATE_ALL}. */
-    public static $defaultUserPrivs = User::USER_PRIV_VIEW | User::USER_PRIV_POST | User::USER_PRIV_CREATE_ROOMS | User::USER_PRIV_PRIVATE_FRIENDS;
+    public static $defaultUserPrivs = User::USER_PRIV_VIEW | User::USER_PRIV_POST | User::USER_PRIV_CREATE_ROOMS | User::USER_PRIV_PRIVATE_ROOMS;
 
     /** @var bool Whether an email is required to sign up. The vanilla subsystem can function without email, and in truth; its not even used for anything in FIMv3 (where Vanilla is very IRC-like)`. Additionally, there are no email registration limits; all limits to having multiple accounts are enforced by IP. */
     public static $emailRequired = false;

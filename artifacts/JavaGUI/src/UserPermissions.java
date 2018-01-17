@@ -15,8 +15,7 @@ public class UserPermissions {
     public boolean modUsers;
     public boolean modEmoticons;
     public boolean post;
-    public boolean privateAll;
-    public boolean privateFriends;
+    public boolean privateRooms;
     public boolean view;
     public boolean selfChangeAvatar;
     public boolean selfChangeFriends;

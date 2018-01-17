@@ -572,7 +572,7 @@ class Room extends DynamicObject
             throw new Exception('Call to Fim\fimRoom->getPrivateRoomMembersNames only supported on instances of a private room.');
 
 
-        if ($this->privateRoomState !== null)
+        if ($this->privateRoomState !== null) // Return cached result, if available
             return $this->privateRoomState;
 
         elseif (!$this->arePrivateRoomMembersValid())
@@ -607,7 +607,8 @@ class Room extends DynamicObject
                      ** the third n may be bigger -- this is the in_array(, friended/ignoredUsers)
                      */
                     foreach ($users AS $user) {
-                        if ($user->privacyLevel == User::USER_PRIVACY_BLOCKALL) {
+                        if ($user->privacyLevel == User::USER_PRIVACY_BLOCKALL
+                            || !$user->hasPriv('privateRooms')) {
                             $roomAllowed = false;
                             break;
                         }

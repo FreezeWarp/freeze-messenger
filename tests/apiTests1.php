@@ -673,8 +673,7 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
             ['users', $testUserId, 'permissions', 'post'],
             ['users', $testUserId, 'permissions', 'changeTopic'],
             ['users', $testUserId, 'permissions', 'createRooms'],
-            ['users', $testUserId, 'permissions', 'privateFriends'],
-            ['users', $testUserId, 'permissions', 'privateAll'],
+            ['users', $testUserId, 'permissions', 'privateRooms'],
             ['users', $testUserId, 'permissions', 'editOwnPosts'],
             ['users', $testUserId, 'permissions', 'deleteOwnPosts'],
         ],
@@ -685,7 +684,6 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
             false,
             false,
             true,
-            false,F
             true,
             true,
         ]
