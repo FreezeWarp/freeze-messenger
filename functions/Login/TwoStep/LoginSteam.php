@@ -148,7 +148,10 @@ class LoginSteam extends LoginTwoStep {
                     $dbFriends = \Fim\Database::instance()->select([
                         \Fim\Database::$sqlPrefix . 'users' => 'id, name, integrationId, integrationMethod'
                     ], ['either' => $friendMatches])->getColumnValues('id');
-                    $this->loginFactory->user->editList('friendedUsers', $dbFriends, 'create');
+
+                    if (count($dbFriends)) {
+                        $this->loginFactory->user->editList('friendedUsers', $dbFriends, 'create');
+                    }
                 }
             }
         }

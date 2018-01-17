@@ -519,7 +519,8 @@ class User extends DynamicObject
 
 
         /* Sort Our Local List */
-        sort($this->{$listName});
+        if ($this->{$listName})
+            sort($this->{$listName});
     }
 
 
