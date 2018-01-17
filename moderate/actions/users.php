@@ -44,7 +44,6 @@ else {
         'createRooms' => 'Create Rooms',
         'privateFriends' => 'Message Friended Users',
         'privateAll' => 'Message All Users',
-        'roomsOnline' => 'View Online Users',
         'modPrivs' => 'Change User Priviledges (Super Admin)',
         'protected' => '<abbr title="This user cannot be altered by any user other than themself and the site owner.">Protected</abbr>',
         'modRooms' => 'Administrate Rooms',

@@ -17,7 +17,6 @@ public class UserPermissions {
     public boolean post;
     public boolean privateAll;
     public boolean privateFriends;
-    public boolean roomsOnline;
     public boolean view;
     public boolean selfChangeAvatar;
     public boolean selfChangeFriends;

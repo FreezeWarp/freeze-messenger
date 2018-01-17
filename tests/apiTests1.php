@@ -675,7 +675,6 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
             ['users', $testUserId, 'permissions', 'createRooms'],
             ['users', $testUserId, 'permissions', 'privateFriends'],
             ['users', $testUserId, 'permissions', 'privateAll'],
-            ['users', $testUserId, 'permissions', 'roomsOnline'],
             ['users', $testUserId, 'permissions', 'editOwnPosts'],
             ['users', $testUserId, 'permissions', 'deleteOwnPosts'],
         ],
@@ -686,8 +685,7 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
             false,
             false,
             true,
-            false,
-            true,
+            false,F
             true,
             true,
         ]
@@ -2259,6 +2257,7 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
     // todo: message edits
     // todo: message/room/user text search
     // todo: user message formatting
+    // todo: active users not visible in rooms users can't view
     // todo: file uploads and enumerations (esp. whether a user should/shouldn't be allowed to see files)
     // todo: age content restrictions on rooms
     // todo: censor

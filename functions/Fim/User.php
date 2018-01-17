@@ -72,10 +72,6 @@ class User extends DynamicObject
      */
     const USER_PRIV_PRIVATE_ALL = 0x80;
 
-    /**
-     * The user may view active users.
-     */
-    const USER_PRIV_ACTIVE_USERS = 0x400;
 
 
     /**
@@ -123,7 +119,6 @@ class User extends DynamicObject
         'createRooms'    => User::USER_PRIV_CREATE_ROOMS,
         'privateFriends' => User::USER_PRIV_PRIVATE_FRIENDS,
         'privateAll'     => User::USER_PRIV_PRIVATE_ALL,
-        'roomsOnline'    => User::USER_PRIV_ACTIVE_USERS,
         'modPrivs'       => User::ADMIN_GRANT,
         'protected'      => User::ADMIN_PROTECTED,
         'modRooms'       => User::ADMIN_ROOMS,
@@ -653,7 +648,7 @@ class User extends DynamicObject
     /**
      * Checks to see if the user has permission to do the specified thing.
      *
-     * @param $priv string The priviledge to check, one of ['protected', 'modPrivs', 'modRooms', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll', 'roomsOnline']
+     * @param $priv string The priviledge to check, one of ['protected', 'modPrivs', 'modRooms', 'modUsers', 'modFiles', 'modCensor', 'view', 'post', 'changeTopic', 'createRooms', 'privateRoomsFriends', 'privateRoomsAll']
      *
      * @return bool True if user has permission, false if not.
      * @throws Exception for unrecognised priviledges
