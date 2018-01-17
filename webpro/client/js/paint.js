@@ -1331,6 +1331,7 @@ $.when(
                     name : 'Favourite',
                     callback : function() {
                         fimApi.favRoom($(this).attr('data-roomId'));
+                        window.activeLogin.userData.favRooms.push($(this).attr('data-roomId'));
                     },
                     visible : function() {
                         return window.activeLogin.userData.favRooms.indexOf($(this).attr('data-roomId')) < 0;
@@ -1341,6 +1342,7 @@ $.when(
                     name : 'Unfavourite',
                     callback : function() {
                         fimApi.unfavRoom($(this).attr('data-roomId'));
+                        window.activeLogin.userData.favRooms.remove($(this).attr('data-roomId'));
                     },
                     visible : function() {
                         return window.activeLogin.userData.favRooms.indexOf($(this).attr('data-roomId')) >= 0;

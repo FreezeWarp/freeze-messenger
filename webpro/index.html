@@ -452,7 +452,19 @@
     </div>
 
     <div id="roomTemplateContainer" class="row mx-0">
-        <div class="col-md-9 no-gutters p-0">
+        <div class="col-md-2 no-gutters py-0 pr-2 pr-lg-3 pl-0 d-none d-md-block">
+            <div class="card border-secondary" id="watchedRoomsCard">
+                <div class="card-header" role="tab" id="watchedRoomsCardHeader">
+                    <h5 class="mb-0">Followed Rooms</h5>
+                </div>
+
+                <div class="card-body p-0" style="overflow-y: auto; overflow-x: hidden;">
+                    <ul id="watchedRooms" class="list-group"></ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 no-gutters p-0">
             <div id="chatContainer" class="card border-secondary">
                 <div id="messageListCard">
                     <div id="messageListCardHeader" class="card-header">
@@ -514,7 +526,7 @@
 
                 <div id="textentryBoxMessage" class="card bg-primary">
                     <form id="sendForm" action="#" method="post">
-                        <div class="card-header">
+                        <div class="card-header p-0 p-sm-2">
                             <div class="row">
                                 <div class="col">
                                     <button type="button"
@@ -544,7 +556,7 @@
             </div>
         </div>
 
-        <div class="col-md-3 no-gutters py-0 pl-2 pl-lg-3 pr-0 d-none d-md-block">
+        <div class="col-md-2 no-gutters py-0 pl-2 pl-lg-3 pr-0 d-none d-md-block">
             <div class="card border-secondary" id="activeUsersCard">
                 <div class="card-header" role="tab" id="activeUsersCardHeader">
                     <h5 class="mb-0">{{template.activeUsersCat}}</h5>
@@ -762,7 +774,7 @@ Pending Update
                 {{#unless activeLogin.userData.anonId}}
                     <div class="btn-group btn-group-toggle m-1" data-toggle="buttons">
                         <label class="btn btn-secondary btn-sm {{#contains id activeLogin.userData.favRooms}} active{{/contains}}">
-                            <i class="fa fa-star"></i> Fav
+                            <i class="fa fa-star"></i> Follow
                             <input type="checkbox" onchange="if ($(this).prop('checked')) {
                                 window.activeLogin.userData.favRooms.push('{{id}}');
                                 fimApi.favRoom('{{id}}');

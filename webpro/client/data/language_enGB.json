@@ -331,7 +331,7 @@
   "statsRoomList" : "Room List (IDs): ",
   "template" : {
     "activeUsers" : "Who's Online",
-    "activeUsersCat" : "Online",
+    "activeUsersCat" : "Users Online",
     "admin" : "Admin Control Panel",
     "adminBanUser" : "Ban a User",
     "adminCensor" : "Modify Censor",
@@ -426,8 +426,8 @@
       "label": "Bubble Formatting"
     },
     "favRooms" : {
-      "blurb" : "Your favourited rooms will be monitored for new posts, displayed prominently in the header, and made more easily accessible.",
-      "label" : "Favourite Rooms: "
+      "blurb" : "Your followed rooms will be monitored for new posts, displayed prominently in the header, and made more easily accessible.",
+      "label" : "Followed Rooms: "
     }
   },
 
@@ -513,7 +513,7 @@
     "home" : "Home",
     "rooms" : {
       "title" : "Rooms",
-      "fav" : "Favourite Rooms",
+      "fav" : "Followed Rooms",
       "promoted" : "Promoted Rooms",
       "all" : "All Rooms",
       "create" : "Create a Room"

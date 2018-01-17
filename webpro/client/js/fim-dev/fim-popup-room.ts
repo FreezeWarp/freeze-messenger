@@ -44,7 +44,10 @@ popup.prototype.room = function() {
     return;
 };
 
-
+/**
+ * File upload functionality.
+ * @returns {boolean}
+ */
 popup.prototype.room.prototype.insertDoc = function() {
     // Show Modal
     $('#modal-insertDoc').modal();
@@ -302,7 +305,10 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
     }
 };
 
-popup.prototype.room.prototype.scrollBack = function() { // Scrolls the message list to the bottom.
+/**
+ * Scroll the message list to the bottom.
+ */
+popup.prototype.room.prototype.scrollBack = function() {
     window.setTimeout(() => {
         if (window.settings.reversePostOrder)
             $('#messageListContainer').scrollTop(0);
@@ -312,17 +318,26 @@ popup.prototype.room.prototype.scrollBack = function() { // Scrolls the message 
     }, 100);
 };
 
+/**
+ * Flash the browser favicon once, either to the on state or the off state.
+ */
 popup.prototype.room.prototype.faviconFlashOnce = function() { // Changes the state of the favicon from opaque to transparent or similar.
     if ($('#favicon').attr('href') === 'images/favicon.ico') $('#favicon').attr('href', 'images/favicon2.ico');
     else $('#favicon').attr('href', 'images/favicon.ico');
 };
 
+/**
+ * Begin flashing the browser favicon.
+ */
 popup.prototype.room.prototype.faviconFlashStart = function() {
     if (!this.faviconFlashTimer) {
         this.faviconFlashTimer = window.setInterval(this.faviconFlashOnce, 1000);
     }
 };
 
+/**
+ * Stop flashing the browser favicon.
+ */
 popup.prototype.room.prototype.faviconFlashStop = function() {
     if (this.faviconFlashTimer) {
         window.clearInterval(this.faviconFlashTimer);
@@ -332,6 +347,9 @@ popup.prototype.room.prototype.faviconFlashStop = function() {
     $('#favicon').attr('href', 'images/favicon.ico');
 };
 
+/**
+ * Function to register for browser's blur event -- can be used to track whether a user has tabbed out of the application.
+ */
 popup.prototype.room.prototype.onBlur = function() {
     this.windowBlurred = true;
 
@@ -341,11 +359,17 @@ popup.prototype.room.prototype.onBlur = function() {
     }
 };
 
+/**
+ * Function to register for browser's focus event -- can be used to track whether a user has tabbed into the application.
+ */
 popup.prototype.room.prototype.onFocus = function() {
     this.windowBlurred = false;
     this.faviconFlashStop();
 };
 
+/**
+ * Function to register for browser's visibilityChange event -- can be used to track whether a user has tabbed out of the application.
+ */
 popup.prototype.room.prototype.onVisibilityChange = function() {
     if (document.visibilityState == 'hidden')
         this.onBlur();
@@ -353,6 +377,10 @@ popup.prototype.room.prototype.onVisibilityChange = function() {
         this.onFocus();
 };
 
+/**
+ * Function to register for the browser's resize event -- will recalculate heights of various boxes, ensuring they are 100% height.
+ * TODO: probably rewrite to flexbox
+ */
 popup.prototype.room.prototype.onWindowResize = function() {
     let windowWidth = $(window).width(), // Get the browser window "viewport" width, excluding scrollbars.
         windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
@@ -372,8 +400,28 @@ popup.prototype.room.prototype.onWindowResize = function() {
         - $('#navbar').height()
         - 65)
     );
+
+    $('#watchedRooms').css('height', Math.floor(
+        windowHeight
+        - $('#watchedRoomsCardHeader').height()
+        - $('#navbar').height()
+        - 65)
+    );
 };
 
+/**
+ * Function to register for the browser's beforeUnload event
+ */
+popup.prototype.room.prototype.beforeUnload = function() {
+    fimApi.exitRoom(this.options.roomId);
+};
+
+/**
+ * Checks if a given key code is "neutral" -- that is, corresponding to an action that neither adds new characters to the message entry box, nor removes them from it.
+ *
+ * @param keyCode
+ * @returns {boolean}
+ */
 popup.prototype.room.prototype.isNeutralKeyCode = function(keyCode) {
     return (keyCode == 9 // Tab
         || (keyCode >= 16 && keyCode <= 18) // Shift, Control, Alt
@@ -385,6 +433,9 @@ popup.prototype.room.prototype.isNeutralKeyCode = function(keyCode) {
     );
 };
 
+/**
+ * Initiate this view.
+ */
 popup.prototype.room.prototype.init = function(options) {
     for (var i in options)
         this.options[i] = options[i];
@@ -494,6 +545,13 @@ popup.prototype.room.prototype.init = function(options) {
 
 
 
+    /* Get Unread Messages at Load (we'll rely on the events from fim-standard after this) */
+    fimApi.getUnreadMessages(null, {'each' : (message) => {
+        this.unreadMessageHandler(message);
+    }});
+
+
+
     /* Get our current room info and messages. */
     fimApi.getRooms({
         'id' : this.options.roomId,
@@ -593,7 +651,7 @@ popup.prototype.room.prototype.init = function(options) {
 
                 // Send logoff event on window close.
                 $(window).on('beforeunload', null, () => {
-                    this.beforeUnload(this.options.roomId);
+                    this.beforeUnload();
                 });
 
 
@@ -629,6 +687,8 @@ popup.prototype.room.prototype.init = function(options) {
             }
 
             this.onWindowResize();
+            this.newRoomEntry(roomData.id);
+            this.markRoomEntryRead(roomData.id);
         }),
 
         exception : ((exception) => {
@@ -640,8 +700,17 @@ popup.prototype.room.prototype.init = function(options) {
             else { fimApi.getDefaultExceptionHandler()(exception); }
         })
     });
+
+
+    /* Populate the Watched Rooms List */
+    jQuery.each(window.activeLogin.userData.favRooms, (index, roomId) => {
+        this.newRoomEntry(roomId);
+    });
 };
 
+/**
+ * Close all current resources used by this view.
+ */
 popup.prototype.room.prototype.close = function() {
     fimApi.getActiveUsers({}, {
         timerId : 1,
@@ -674,8 +743,18 @@ popup.prototype.room.prototype.close = function() {
     this.beforeUnload(this.options.roomId);
 
     $(window).off('resize', null, this.onWindowResize);
+
+    if (window.activeLogin.userData.favRooms.indexOf(this.options.roomId) == -1) {
+        $('#watchedRooms .list-group-item[data-roomId="' + this.options.roomId + '"]').remove();
+    }
+
+    fimApi.getUnreadMessages(null, {close : true});
 };
 
+/**
+ * Set a new roomId for this view. For simplicity, it will be completely rebuilt.
+ * @param roomId
+ */
 popup.prototype.room.prototype.setRoom = function(roomId) {
     if (this.options.roomId && this.options.roomId != roomId) {
         this.close();
@@ -686,11 +765,9 @@ popup.prototype.room.prototype.setRoom = function(roomId) {
     }
 };
 
-popup.prototype.room.prototype.beforeUnload = function(roomId) {
-    fimApi.exitRoom(roomId);
-};
-
-
+/**
+ * Open an EventSource and begin listening for new events.
+ */
 popup.prototype.room.prototype.eventListener = function() {
     this.roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
 
@@ -718,21 +795,37 @@ popup.prototype.room.prototype.eventListener = function() {
 };
 
 
+/**
+ * Handler for the new message event -- the message will be added to the message list.
+ * @param active
+ */
 popup.prototype.room.prototype.newMessageHandler = function(active) {
     this.options.lastMessage = Math.max(this.options.lastMessage, active.id);
 
     this.newMessage(active);
 };
 
+/**
+ * Handler for the message deleted event -- if the message is currently loaded, it will be removed.
+ * @param active
+ */
 popup.prototype.room.prototype.deletedMessageHandler = function(active) {
-    $('#message' + active.id).fadeOut();
+    $('#message' + active.id).fadeOut("normal", function() { $(this).remove(); });
 };
 
+/**
+ * Handler for the topic change event -- the topic line will be updated.
+ * @param active
+ */
 popup.prototype.room.prototype.topicChangeHandler = function(active) {
     $('#topic').text(active.topic);
     console.log('Event (Topic Change): ' + active.topic);
 };
 
+/**
+ * Handler for the message edited event -- if the message is currently loaded, it will be updated.
+ * @param active
+ */
 popup.prototype.room.prototype.editedMessageHandler = function(active) {
     if ($('#message' + active.id).length > 0) {
         active.userId = active.senderId;
@@ -742,6 +835,10 @@ popup.prototype.room.prototype.editedMessageHandler = function(active) {
     }
 };
 
+/**
+ * Handler for user status change event -- updates the active users list.
+ * @param active
+ */
 popup.prototype.room.prototype.userStatusChangeHandler = function(active) {
     let existingRow = $('ul#activeUsers > li[data-userId=' + active.userId + ']');
     let newRow = $('<li>').attr('class', 'list-group-item').attr('data-userId', active.userId)
@@ -760,7 +857,10 @@ popup.prototype.room.prototype.userStatusChangeHandler = function(active) {
     }
 };
 
-
+/**
+ * Start getting messages using the fallback method.
+ * @returns {boolean}
+ */
 popup.prototype.room.prototype.getMessagesFromFallback = function() {
     if (this.options.roomId) {
         fimApi.getEventsFallback({
@@ -792,6 +892,56 @@ popup.prototype.room.prototype.getMessagesFromFallback = function() {
 };
 
 
+/**
+ * Create a new room entry in the watched rooms list (won't create if it already exists)
+ * @param roomId
+ */
+popup.prototype.room.prototype.newRoomEntry = function(roomId) {
+    if (!$('#watchedRooms .list-group-item[data-roomId="' + roomId + '"]').length) {
+        console.log("new entry");
+        $('#watchedRooms').append($('<li>').attr('class', 'list-group-item').attr('data-roomId', roomId)
+            .append(fim_buildRoomNameTag($('<span>'), roomId))
+            .append($('<i class="otherMessages"></i>'))
+        );
+    }
+};
+
+/**
+ * Mark a given room as read in the watched rooms list.
+ * @param roomId
+ */
+popup.prototype.room.prototype.markRoomEntryRead = function(roomId) {
+    $('#watchedRooms .list-group-item[data-roomId="' + roomId + '"]').css('font-weight', 'normal')
+};
+
+/**
+ * Mark a given room as unread in the watched rooms list.
+ * @param roomId
+ */
+popup.prototype.room.prototype.markRoomEntryUnread = function(roomId) {
+    console.log("markRoomEntry", $('#watchedRooms .list-group-item[data-roomId="' + roomId + '"]'));
+    $('#watchedRooms .list-group-item[data-roomId="' + roomId + '"]').css('font-weight', 'bold')
+};
+
+/**
+ * Update for when a new unread message is received.
+ * @param message
+ */
+popup.prototype.room.prototype.unreadMessageHandler = function(message) {
+    if (message.roomId != this.options.roomId) {
+        this.newRoomEntry(message.roomId);
+        this.markRoomEntryUnread(message.roomId);
+    }
+};
+
+
+/**
+ * Send a given message to the server.
+ *
+ * @param message The message text.
+ * @param ignoreBlock {boolean} If true, will request that censor warnings be ignored.
+ * @param flag An explicit message flag (e.g. "image"), if any.
+ */
 popup.prototype.room.prototype.sendMessage = function(message, ignoreBlock, flag) {
     if (!this.options.roomId) {
         window.location.hash = '#rooms';
@@ -840,16 +990,16 @@ popup.prototype.room.prototype.sendMessage = function(message, ignoreBlock, flag
     }
 };
 
+/**
+ * Disable the message input field.
+ */
 popup.prototype.room.prototype.disableSender = function() {
-    $('#messageInput').attr('disabled','disabled'); // Disable input boxes.
-    $('#icon_url').button({ disabled : true }); // "
-    $('#icon_submit').button({ disabled : true }); // "
-    $('#icon_reset').button({ disabled : true }); // "
+    $('#messageInput, #icon_url, #icon_submit').attr('disabled','disabled');
 };
 
+/**
+ * Enable the message input field.
+ */
 popup.prototype.room.prototype.enableSender = function() {
-    $('#messageInput').removeAttr('disabled'); // Make sure the input is not disabled.
-    $('#icon_url').button({ disabled : false }); // "
-    $('#icon_submit').button({ disabled : false }); // "
-    $('#icon_reset').button({ disabled : false }); // "
+    $('#messageInput, #icon_url, #icon_submit').removeAttr('disabled');
 };

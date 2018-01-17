@@ -17,6 +17,8 @@ let standard = function() {
 
     this.notifications = {};
 
+    this.watchedRoomData = {};
+
     return;
 };
 
@@ -29,11 +31,6 @@ standard.prototype.initialLogin = function(options) {
         if (!this.anonId) {
             $.cookie('webpro_username', options.username, { expires : 14 });
             $.cookie('webpro_password', options.password, { expires : 14 });
-
-            // As soon as we have a valid login, we start polling getUnreadMessages.
-            fimApi.getUnreadMessages(null, {'each' : (message) => {
-                this.missedMessageHandler(message);
-            }});
         }
 
         if (!window.roomId) {
@@ -110,15 +107,11 @@ standard.prototype.login = function(options) {
                 }, activeLogin.expires * 1000 / 2);
             }
 
-            // TODO: only once
-            fimApi.getRooms({
-                roomIds : window.serverSettings.officialRooms.concat(this.activeLogin.userData.favRooms)
-            }, {
-                begin : () => {
-                    $('#navbar div[name=favRoomsList]').html('');
-                    $('#navbar div[name=officialRoomsList]').html('');
-                },
-                each : (roomData) => {
+
+            $('#navbar div[name=favRoomsList]').html('');
+            $('#navbar div[name=officialRoomsList]').html('');
+            $.when(Resolver.resolveRoomsFromIds(window.serverSettings.officialRooms.concat(this.activeLogin.userData.favRooms))).done((pairs) => {
+                jQuery.each(pairs, (index, roomData) => {
                     let html = $('<a>').attr({
                         'href' : '#room=' + roomData.id,
                         'class' : 'dropdown-item'
@@ -129,7 +122,7 @@ standard.prototype.login = function(options) {
 
                     if (roomData.official)
                         $('#navbar div[name=officialRoomsList]').append(html.clone());
-                }
+                });
             });
 
             /* Private Room Form */
@@ -220,44 +213,49 @@ standard.prototype.getEvents = function() {
 };
 
 standard.prototype.missedMessageHandler = function(message) {
-    if (message.roomId == window.roomId) {
-        // we'll eventually probably want to do something fancy here, like offering to scroll to the last-viewed message.
+    if (window.openObjectInstance instanceof popup.room) {
+        openObjectInstance.unreadMessageHandler(message);
     }
     else {
-        console.log("missed message", message);
-        if (!this.notifications["room" + message.roomId]) {
-            this.notifications["room" + message.roomId] = $.notify({
-                url : '#room=' + message.roomId,
-                message : $('<span>').attr({
-                    'class': 'missedMessage',
-                    'id': "missedMessage" + message.roomId,
-                    'data-roomId': message.roomId
-                }).prop('outerHTML')
-            }, {
-                newest_on_top : true,
-                type : "info",
-                placement: {
-                    from : 'top',
-                    align : 'right',
-                },
-                delay : 0,
-                animate : {
-                    exit : ""
-                },
-                onClose : () => {
-                    fimApi.markMessageRead(message.roomId);
-                },
-                url_target : "_self"
-            });
+        /*if (message.roomId == window.roomId) {
+            // we'll eventually probably want to do something fancy here, like offering to scroll to the last-viewed message.
         }
+        else {
+            console.log("missed message", message);
+            if (!this.notifications["room" + message.roomId]) {
+                this.notifications["room" + message.roomId] = $.notify({
+                    url : '#room=' + message.roomId,
+                    message : $('<span>').attr({
+                        'class': 'missedMessage',
+                        'id': "missedMessage" + message.roomId,
+                        'data-roomId': message.roomId
+                    }).prop('outerHTML')
+                }, {
+                    newest_on_top : true,
+                    type : "info",
+                    placement: {
+                        from : 'top',
+                        align : 'right',
+                    },
+                    delay : 0,
+                    animate : {
+                        exit : ""
+                    },
+                    onClose : () => {
+                        fimApi.markMessageRead(message.roomId);
+                    },
+                    url_target : "_self"
+                });
+            }
 
-        $('#missedMessage' + message.roomId.toString().replace(',', '\\,')).replaceWith(
-            $('<span>').text('New message from ')
-                .append(fim_buildUsernameTag($('<strong>'), message.senderId))
-                .append(' has been made in ')
-                .append(fim_buildRoomNameTag($('<strong>'), message.roomId))
-                .append(message.missedMessages ? $('<span>').text('(Other messages: ' + message.otherMessages + ')') : '')
-        );
+            $('#missedMessage' + message.roomId.toString().replace(',', '\\,')).replaceWith(
+                $('<span>').text('New message from ')
+                    .append(fim_buildUsernameTag($('<strong>'), message.senderId))
+                    .append(' has been made in ')
+                    .append(fim_buildRoomNameTag($('<strong>'), message.roomId))
+                    .append(message.missedMessages ? $('<span>').text('(Other messages: ' + message.otherMessages + ')') : '')
+            );
+        }*/
     }
 };
 
