@@ -187,7 +187,7 @@ table#fileUploadInfo td {
         /* for the animation */
         transition: transform 0.5s ease !important;
         padding-left: 0 !important;
-        padding-right: 8px;
+        padding-right: 8px !important;  
         position: absolute;
         width: 100%;
         z-index: 20;
