@@ -663,7 +663,7 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
                 .filter(function() {
                     return this.nodeType === 3; //Node.TEXT_NODE
                 }).each(function() {
-                $(this).replaceWith(fim_regexTokenizer(new RegExp(/\n/g, "g"), $(this).text(), function() {
+                $(this).replaceWith(fim_regexTokenizer(/\n/g, $(this).text(), function() {
                     return $('<br>');
                 }));
             });
