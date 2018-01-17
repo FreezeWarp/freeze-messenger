@@ -619,6 +619,12 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
                     else if (match[0].match(regexs.image)) // Image Autoparse
                         return fim_formatAsImage(match[0]).append(document.createTextNode(suffix));
 
+                    else if (match[0].match(regexs.video)) // Image Autoparse
+                        return fim_formatAsVideo(match[0]).append(document.createTextNode(suffix));
+
+                    else if (match[0].match(regexs.video)) // Image Autoparse
+                        return fim_formatAsAudio(match[0]).append(document.createTextNode(suffix));
+
                     else // Normal URL
                         return fim_formatAsUrl(match[0]).append(document.createTextNode(suffix));
                 }, this.nodeType !== 3 ? $(this).text('') : null);
@@ -847,6 +853,10 @@ var regexs = {
     url2 : new RegExp("^(.+)([\\\"\\?\\!\\.\\)])$"),
 
     image : new RegExp("^(.+)\\.(jpg|jpeg|gif|png|svg|svgz|bmp|ico)$"),
+
+    video : new RegExp("^(.+)\\.(mp4|webm|ogv)$"),
+
+    audio : new RegExp("^(.+)\\.(mp3|oga|flac|aac)$"),
 
     youtubeFull : new RegExp("^(" +
         "(http|https)" + // List of acceptable protocols. (so far: "http")
