@@ -32,13 +32,13 @@ popup.prototype.archive = {
             this.options[i] = options[i];
 
 
-        $('#active-view-archive form#archiveSearch input[name=searchText]').unbind('change').bind('change', () => {
-            this.update('searchText', $(this).val());
+        $('#active-view-archive form#archiveSearch input[name=searchText]').unbind('change').bind('change', (event) => {
+            this.update('searchText', $(event.target).val());
             this.retrieve();
         });
 
-        $('#active-view-archive form#archiveSearch input[name=searchUser]').unbind('change').bind('change', () => {
-            this.update('searchUser', $(this).attr('data-id'));
+        $('#active-view-archive form#archiveSearch input[name=searchUser]').unbind('change').bind('change', (event) => {
+            this.update('searchUser', $(event.target).attr('data-id'));
             this.retrieve();
         }).autocompleteHelper('users');
 
