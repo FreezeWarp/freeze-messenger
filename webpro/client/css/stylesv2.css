@@ -2,13 +2,8 @@
  *** FreezeMessenger Styling ****
  ********************************/
 
-/* General */
-* { /* This sets the box model to border-box, which is defined in CSS3 and supported by every browser. Border-box defines widths as including the border, which makes percentages like 20% and 80% work when one of the elements has a border. */
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -ms-box-sizing: border-box;
-    -o-box-sizing: border-box;
-    box-sizing: border-box;
+html, body {
+    margin: 0;
 }
 
 body {
@@ -38,6 +33,12 @@ html, body, #content {
     max-width: 800px;
 }
 
+@media (max-width: 576px) {
+    #messageListCardHeader .btn, #textentryBoxMessage .btn {
+        zoom: .8;
+    }
+}
+
 /***** Content *****/
 
 #buttonMenuLeft {
@@ -54,6 +55,22 @@ html, body, #content {
     border: transparent;
 
     width: 100%;
+}
+
+@media (max-width: 576px) {
+    #messageInput {
+        height: 50px;
+        text-align: center;
+    }
+    #messageInput::-webkit-input-placeholder {
+        text-align: center;
+    }
+    #messageInput::-moz-input-placeholder {
+        text-align: center;
+    }
+    #messageInput:-ms-input-placeholder {
+        text-align: center;
+    }
 }
 
 #youtubeResultsContainer {
@@ -81,30 +98,6 @@ table#fileUploadInfo td {
 
 #fileUpload, #urlUpload {
     width: 300px;
-}
-
-#activeUsers {
-    /*  min-height: 20px;
-  max-height: 250px;
-  overflow-x: hidden;
-  overflow-y: auto;*/
-}
-
-#activeUsers > ul {
-    display: inline;
-    list-style: none;
-}
-
-#activeUsers > ul > li {
-    display: inline;
-}
-
-#activeUsers > ul > li:after {
-    content: ", ";
-}
-
-#activeUsers > ul > li:last-child:after {
-    content: "";
 }
 
 #title {
@@ -173,7 +166,39 @@ table#fileUploadInfo td {
     white-space: nowrap;
 }
 
-@media screen and (max-width: 600px) {
+
+@media (max-width: 991px) {
+    #watchedRoomsColumn {
+        /* for the animation */
+        transition: transform 0.5s ease !important;
+        padding-left: 0 !important;
+        position: absolute;
+        width: 100%;
+        z-index: 20;
+        transform: translateX(-100%);
+    }
+    #watchedRoomsColumn.show {
+        transform: translateX(0%);
+    }
+}
+
+@media (max-width: 767px) {
+    #activeUsersColumn {
+        /* for the animation */
+        transition: transform 0.5s ease !important;
+        padding-left: 0 !important;
+        padding-right: 8px;
+        position: absolute;
+        width: 100%;
+        z-index: 20;
+        transform: translateX(100%);
+    }
+    #activeUsersColumn.show {
+        transform: translateX(0%);
+    }
+}
+
+@media screen and (max-width: 576px) {
     .userNameTable {
         display: inline;
         white-space: normal;

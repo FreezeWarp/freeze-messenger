@@ -452,7 +452,7 @@
     </div>
 
     <div id="roomTemplateContainer" class="row mx-0">
-        <div class="col-md-2 no-gutters py-0 pr-2 pr-lg-3 pl-0 d-none d-md-block">
+        <div class="col-lg-2 no-gutters py-0 pr-2 pr-lg-3 pl-0" id="watchedRoomsColumn">
             <div class="card border-secondary" id="watchedRoomsCard">
                 <div class="card-header" role="tab" id="watchedRoomsCardHeader">
                     <h5 class="mb-0">Followed Rooms</h5>
@@ -464,10 +464,10 @@
             </div>
         </div>
 
-        <div class="col-md-8 no-gutters p-0">
+        <div class="col-md-9 col-lg-8 no-gutters p-0">
             <div id="chatContainer" class="card border-secondary">
                 <div id="messageListCard">
-                    <div id="messageListCardHeader" class="card-header">
+                    <div id="messageListCardHeader" class="card-header px-0 px-sm-3 py-1 py-sm-3">
                         <{{!}}script id="messageListCardHeaderTemplate" type="text/x-handlebars-template">
                             <div class="row align-items-center">
                                 <div class="col text-center text-lg-left mb-2 mb-lg-0">
@@ -550,13 +550,24 @@
                         </div>
                         <div>
                             <textarea id="messageInput" accesskey="m" class="form-control" autofocus="autofocus" placeholder="{{room.messageBox.placeholder}}"></textarea>
+
+                            <div style="position: absolute; bottom: 0; left: 0; opacity: .5; z-index: 50;" class="d-lg-none">
+                                <button class="btn btn-outline-primary btn-sm" type="button" onclick="$('#activeUsersColumn').removeClass('show'); $('#watchedRoomsColumn').toggleClass('show');">
+                                    <i class="fa fa-th-list"></i>
+                                </button>
+                            </div>
+                            <div style="position: absolute; bottom: 0; right: 0; opacity: .5; z-index: 50;" class="d-md-none">
+                                <button class="btn btn-outline-primary btn-sm" type="button" onclick="$('#watchedRoomsColumn').removeClass('show'); $('#activeUsersColumn').toggleClass('show');">
+                                    <i class="fa fa-users"></i>
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-2 no-gutters py-0 pl-2 pl-lg-3 pr-0 d-none d-md-block">
+        <div class="col-md-3 col-lg-2 no-gutters py-0 pl-2 pl-lg-3 pr-0" id="activeUsersColumn">
             <div class="card border-secondary" id="activeUsersCard">
                 <div class="card-header" role="tab" id="activeUsersCardHeader">
                     <h5 class="mb-0">{{template.activeUsersCat}}</h5>

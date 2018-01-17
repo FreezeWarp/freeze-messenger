@@ -385,27 +385,33 @@ popup.prototype.room.prototype.onWindowResize = function() {
     let windowWidth = $(window).width(), // Get the browser window "viewport" width, excluding scrollbars.
         windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
 
+    let pageMargin = ($('#page').outerHeight(true) - $('#page').height());
+    let navbarHeight = $('#navbar').outerHeight(true);
+
     // Set the message list height to fill as much of the screen that remains after the textarea is placed.
     $('#messageListContainer').css('height', Math.floor(
         windowHeight
-        - ($('#messageListCardHeader').height())
-        - $('#textentryBoxMessage').height()
-        - $('#navbar').height()
-        - 65)
+        - pageMargin
+        - navbarHeight
+        - $('#messageListCardHeader').outerHeight(true)
+        - $('#textentryBoxMessage').outerHeight(true)
+        - 5)
     );
 
     $('#activeUsers').css('height', Math.floor(
         windowHeight
-        - $('#activeUsersCardHeader').height()
-        - $('#navbar').height()
-        - 65)
+        - pageMargin
+        - navbarHeight
+        - $('#activeUsersCardHeader').outerHeight(true)
+        - 5)
     );
 
     $('#watchedRooms').css('height', Math.floor(
         windowHeight
-        - $('#watchedRoomsCardHeader').height()
-        - $('#navbar').height()
-        - 65)
+        - pageMargin
+        - navbarHeight
+        - $('#watchedRoomsCardHeader').outerHeight(true)
+        - 5)
     );
 };
 
