@@ -1254,17 +1254,19 @@ $.when(
                     },
                     visible : function() {
                         return window.openObjectInstance instanceof popup.room
-                            && window.openObjectInstance.roomData.permissions.moderate;
+                            && window.openObjectInstance.roomData.permissions.moderate
+                            && $(this).attr('data-userid') != window.activeLogin.userData.id;
                     }
                 },
 
                 ban : {
                     name : 'Ban',
                     callback : function() {
-                        standard.banUser($('data-userid'))
+                        alert('Functionality coming soon.');
                     },
                     visible : function() {
-                        return window.activeLogin.userData.permissions.modUsers;
+                        return window.activeLogin.userData.permissions.modUsers
+                            && $(this).attr('data-userid') != window.activeLogin.userData.id;
                     }
                 },
 

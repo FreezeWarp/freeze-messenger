@@ -293,32 +293,3 @@ standard.prototype.logout = function() {
         return false;
     }); // Send the form data via AJAX.
 };
-
-standard.prototype.unkick = function(userId, roomId) {
-    fimApi.unkickUser(userId, roomId, {
-        'exception' : function(exception) {
-            switch (exception.string) {
-                case 'nopermission': dia.error('You do not have permision to moderate this room.'); break;
-                case 'baduser': case 'badroom': dia.error('Odd error: the user or room sent do not seem to exist.'); break;
-                default:
-                    fimApi.getDefaultExceptionHandler()(exception);
-                    break;
-            }
-        },
-        'end' : function() {
-            dia.info('The user has been unkicked.', 'Success');
-            $("#kickUserDialogue").dialog('close');
-        }
-    });
-
-    return false;
-};
-
-
-standard.prototype.deleteMessage = function(roomId, messageId) {
-    fimApi.deleteMessage(roomId, messageId, {
-        'end' : function() { dia.info("The message was deleted.") }
-    });
-
-    return false;
-};*/

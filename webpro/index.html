@@ -1445,7 +1445,12 @@ Pending Update
         </td>
 
         <td>
-            <button class="btn btn-sm btn-primary" onclick="standard.unkick({{kick.userId}}, {{kick.roomId}})">{{kicks.unkick}}</button>
+            <button class="btn btn-sm btn-primary" onclick="var _this = this; fimApi.unkickUser({{kick.userId}}, {{kick.roomId}}, {
+                'end' : function() {
+                    dia.info('The user has been unkicked.', 'success');
+                    $(_this).closest('tr').remove();
+                }
+            });">{{kicks.unkick}}</button>
         </td>
     </tr>
 </script>
