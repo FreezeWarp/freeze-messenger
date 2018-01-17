@@ -21560,13 +21560,13 @@ var dia = {
         $('#modal-dynamicConfirm .modal-title').text(title);
         $('#modal-dynamicConfirm .modal-body').html(options.text);
 
-        $('#modal-dynamicConfirm button[name=confirm]').click(function() {
+        $('#modal-dynamicConfirm button[name=confirm]').off('click').on('click', function() {
             if (typeof options['true'] !== 'undefined') options['true']();
 
             $('#modal-dynamicConfirm').modal('hide');
         });
 
-        $('#modal-dynamicConfirm button[name=cancel]').click(function() {
+        $('#modal-dynamicConfirm button[name=cancel]').off('click').on('click', function() {
             if (typeof options['false'] !== 'undefined') options['false']();
 
             $('#modal-dynamicConfirm').modal('hide');
