@@ -292,4 +292,4 @@ standard.prototype.logout = function() {
 
         return false;
     }); // Send the form data via AJAX.
-};
+};*/

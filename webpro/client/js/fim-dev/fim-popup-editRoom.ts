@@ -137,9 +137,9 @@ popup.prototype.editRoom = {
                     allowedGroupsList.displayEntries(allowedGroupsArray);
 
                     // Default Permissions
-                    if ('view' in roomData.defaultPermissions) // If all users are currently allowed, check the box (which triggers other stuff above).
+                    if (roomData.defaultPermissions.view) // If all users are currently allowed, check the box (which triggers other stuff above).
                         $('#editRoomForm input[name=allowViewing]').prop('checked', true);
-                    if ('post' in roomData.defaultPermissions) // If all users are currently allowed, check the box (which triggers other stuff above).
+                    if (roomData.defaultPermissions.post) // If all users are currently allowed, check the box (which triggers other stuff above).
                         $('#editRoomForm input[name=allowPosting]').prop('checked', true);
 
                     // Name
