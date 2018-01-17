@@ -160,10 +160,10 @@ class Config {
     public static $floodDetectionRooms = true;
 
     /** @var int The maximum number of messages a user may send in any given room before trigger a flood lockout for sending additional messages in that room. */
-    public static $floodRoomLimitPerMinute = 30;
+    public static $floodRoomLimitPerMinute = 15;
 
     /** @var int The maximum number of messages a user may send site-wide before trigger a flood lockout for sending additional messages in ANY room. */
-    public static $floodSiteLimitPerMinute = 60;
+    public static $floodSiteLimitPerMinute = 30;
 
 
 
