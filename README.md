@@ -1,5 +1,5 @@
-FreezeMessenger
-====================
+FreezeMessenger: A Flexibile PHP Messenger with Built-in AJAX Frontend
+======================================================================
 Copyright © 2017 Joseph T. Parsons <josephtparsons@gmail.com>
 
 Licensed under the GPLv3 (see LICENSE)
