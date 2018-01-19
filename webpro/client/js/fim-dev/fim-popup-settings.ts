@@ -178,13 +178,15 @@ popup.prototype.settings = {
                     }
                     else {
                         dia.info('Your settings have been updated successfully.');
-                        window.location.hash = '#';
 
                         fimApi.getUsers({
                             'id' : window.activeLogin.userData.id,
                         }, {
                             'each' : function(userData) {
                                 window.standard.setUserData(userData);
+                            },
+                            'end' : function () {
+                                window.location.hash = '#';
                             }
                         })
                     }
