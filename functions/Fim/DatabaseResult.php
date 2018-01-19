@@ -75,20 +75,5 @@ class DatabaseResult extends \Database\Result {
         return new Message($this);
     }
 
-
-    function getAsObjects($objectType) {
-        $return = array();
-
-        for ($i = 0; $i < $this->count; $i++) {
-            $return[] = new $objectType($this);
-        }
-
-        return $return;
-    }
-
-    function getAsObject($objectType) {
-        return new $objectType($this);
-    }
-
 }
 ?>
