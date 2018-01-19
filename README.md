@@ -133,6 +133,14 @@ This is most commonly a problem with message streaming (enabled by default), and
 3. Thirdly, like above, it is possible to run out of memory to start new scripts if many connections currently exist. In gen
 eral, a typical FreezeMessenger API request will require about 1 megabyte of memory; a long-lasting streaming connection may require 2-3 megabytes. In general, you should have around 5 megabytes times the number of maximum concurrent users of memory available available to FreezeMessenger. (This doesn't include overhead introduced by Apache, Nginx, FastCGI, etc.)
 
+### Getting the room list seems very sluggish.
+
+Due to the complexity of room lookups (see below), servers with many "exclusive" rooms (which only a few users have access to) will tend to be very slow at retrieving the room list; this is because internally *all* rooms are retrieved, and then they are filtered down to the list of rooms a user is actually allowed to view. Addressing this issue is a priority for FreezeMessenger v1.1, but a fix likely won't be available in the v1.0 stable.
+
+### Logging in, especially with Steam and Reddit, is slow.
+
+This is because, at present, every usergroup a user belongs to (for Steam, the list of games a user owns, and for Reddit, a list of subscribed subreddits) is generated and pushed to the database. In the future, this will be optimised.
+
 ### The list of currently active users appears inaccurate.
 
 On MySQL systems, the [`ping`](http://josephtparsons.com/messenger/docs/database.htm#ping) table is stored in memory. On default systems, only about 500,000 rows can exist in this table; after this, new records will simply be dropped, and the list of active users could, in theory, stop updating normally. To address this situation, increase the MySQL [max_heap_table_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_heap_table_size) system variable.
@@ -156,7 +164,6 @@ More common is that too many queries are being made to this table at once; due t
 Like with the ping and roomPermissionsCache tables, the [`oauth_access_tokens`](http://josephtparsons.com/messenger/docs/database.htm#oauth_access_tokens) table is stored in memory on MySQL installations. When a user tries to log in, the table will first be pruned of expired sessions, but in theory so many users may be active at once that no new rows can be added to the table.
 
 Around 18,000 rows can be stored in this table on a default MySQL installation; this can be increased by changing the [`oauth_access_tokens`](http://josephtparsons.com/messenger/docs/database.htm#oauth_access_tokens) table to a non-memory table, or by increasing the MySQL [max_heap_table_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_heap_table_size) system variable.
-
 
 Administration Tools
 ====================
