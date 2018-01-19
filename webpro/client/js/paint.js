@@ -136,7 +136,7 @@ function fim_openView(viewName, options) {
         else if (typeof popup[viewName] === "object")
             openObjectInstance = popup[viewName];
         else
-            throw "View is invalid type.";
+            throw "View " + viewName + " is invalid type.";
 
 
         if (tag.length > 0) {

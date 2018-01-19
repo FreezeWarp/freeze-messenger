@@ -21,7 +21,7 @@ use Fim\User;
 use Fim\Error;
 use \Exception;
 
-class Message extends \Fim\MagicGettersSetters
+class Message extends MagicGettersSetters
 {
     /**
      * @var Room The room the message is in.
