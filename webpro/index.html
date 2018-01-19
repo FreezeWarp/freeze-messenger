@@ -36,14 +36,9 @@
 
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0" />
-    <link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css"/>
 
     <!-- .min currently broken by calc() expression -->
     <link rel="stylesheet" id="stylesv2" type="text/css" href="client/css/stylesv2.css"/>
-
-
-    <!-- todo: merge, update -->
-    <script type="text/javascript" src="client/colorpicker/js/colorpicker.js" defer></script>
 
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
           integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
@@ -877,6 +872,8 @@ Pending Update
 </script>
 
 <script id="view-settings" type="text/x-handlebars-template">
+<link rel="stylesheet" media="screen" type="text/css" href="client/colorpicker/css/colorpicker.css"/>
+<{{!}}script type="text/javascript" src="client/colorpicker/js/colorpicker.js" defer><{{!}}/script>
 <form action="#" method="post" id="changeSettingsForm">
     <div class="card mx-auto view-thin">
         <div class="card-header p-0">
