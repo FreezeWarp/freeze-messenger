@@ -193,15 +193,11 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
             + fim_dateFormat(messageData.time)
         );
 
-        if (window.settings.showAvatars) {
-            date.addClass('text-muted');
-        }
-
         if (!window.settings.showAvatars) {
             avatar.append(date);
         }
         else {
-            messageText.append(date);
+            messageText.prepend(date);
         }
     }
 
