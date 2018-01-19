@@ -317,9 +317,11 @@ table.page {
 }
 
 .messageText {
-    word-wrap: break-word;
-    white-space: normal;
     hyphens: auto;
+    -ms-hyphens: auto;
+    white-space: initial;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Message Line: Avatar */
