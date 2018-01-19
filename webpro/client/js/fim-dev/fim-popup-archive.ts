@@ -28,19 +28,17 @@ popup.prototype.archive = {
     messageData : {},
 
     init : function(options) {
-        for (i in options)
+        for (i in options) {
             this.options[i] = options[i];
-
+        }
 
         $('#active-view-archive form#archiveSearch input[name=searchText]').unbind('change').bind('change', (event) => {
-            this.update('searchText', $(event.target).val());
-            this.retrieve();
-        });
+            fim_setHashParameter('searchText', $(event.target).val());
+        }).val(this.options.searchText);
 
         $('#active-view-archive form#archiveSearch input[name=searchUser]').unbind('change').bind('change', (event) => {
-            this.update('searchUser', $(event.target).attr('data-id'));
-            this.retrieve();
-        }).autocompleteHelper('users');
+            fim_setHashParameter('searchUser', $(event.target).attr('data-id'));
+        }).autocompleteHelper('users', this.options.searchUser);
 
 
         $('#active-view-archive button[name=archiveNext]').unbind('click').bind('click', () => {
@@ -53,28 +51,30 @@ popup.prototype.archive = {
         $('#active-view-archive button[name=export]').unbind('click').bind('click', () => {
             popup.exportArchive();
         });
-
-
-        this.retrieve();
     },
 
     setRoom : function(roomId) {
         if (this.options.roomId != roomId) {
             this.options.roomId = roomId;
-            this.retrieve();
         }
     },
 
     setFirstMessage : function(firstMessage) {
         this.options.firstMessage = firstMessage;
         this.options.lastMessage = null;
-        this.retrieve();
     },
 
     setLastMessage : function(lastMessage) {
         this.options.lastMessage = lastMessage;
         this.options.firstMessage = null;
-        this.retrieve();
+    },
+
+    setSearchUser : function(searchUser) {
+        this.options.searchUser = searchUser;
+    },
+
+    setSearchText : function(searchText) {
+        this.options.searchText = searchText;
     },
 
     nextPage : function () {
@@ -86,63 +86,63 @@ popup.prototype.archive = {
     },
 
     retrieve : function() {
-        fimApi.getMessages({
-            'roomId' : this.options.roomId,
-            'userIds' : [this.options.searchUser],
-            'messageTextSearch' : this.options.searchText,
-            'messageIdStart' : this.options.firstMessage,
-            'messageIdEnd' : this.options.lastMessage,
-            'page' : this.options.page
-        }, {
-            'reverseEach' : (this.options.firstMessage ? true : false),
-            'end' : (messages) => {
-                $('#active-view-archive table.messageTable > tbody').html('');
-                $('#active-view-archive button[name=archivePrev]').prop('disabled', false);
+        $.when(fim_getRoomNameDeferred(this.options.roomId)).done((pairs) => {
+            this.roomData = pairs[this.options.roomId];
 
-                this.messageData = {};
+            fimApi.getMessages({
+                'roomId' : this.options.roomId,
+                'userIds' : [this.options.searchUser],
+                'messageTextSearch' : this.options.searchText,
+                'messageIdStart' : this.options.firstMessage,
+                'messageIdEnd' : this.options.lastMessage,
+                'page' : this.options.page
+            }, {
+                'reverseEach' : (this.options.firstMessage ? true : false),
+                'end' : (messages) => {
+                    $('#active-view-archive table.messageTable > tbody').html('');
+                    $('#active-view-archive button[name=archivePrev]').prop('disabled', false);
 
-                jQuery.each(messages, (index, messageData) => {
-                    let usernameDeferred = fim_getUsernameDeferred(messageData.userId);
+                    this.messageData = {};
 
-                    $('#active-view-archive table.messageTable > tbody').append(
-                        $('<tr style="word-wrap: break-word;">').attr({
-                            'id': 'archiveMessage' + messageData.id
-                        }).append(
-                            $('<td>').append(
-                                fim_buildUsernameTag($('<span class="userName userNameTable"></span>'), messageData.userId, usernameDeferred, messageData.anonId)
-                            ),
-                            $('<td class="d-none d-sm-table-cell">').text(fim_dateFormat(messageData.time)),
-                            $('<td>').append(
-                                fim_buildMessageLine(messageData.text, messageData.flag, messageData.id, Number(messageData.userId), this.options.roomId, messageData.time, usernameDeferred)
-                            ),
-                            $('<td class="d-none d-md-table-cell">').append(
-                                $('<a href="#archive#room=' + this.options.roomId + '#lastMessage=' + messageData.id + '">Show</a>')
+                    jQuery.each(messages, (index, messageData) => {
+                        let usernameDeferred = fim_getUsernameDeferred(messageData.userId);
+
+                        $('#active-view-archive table.messageTable > tbody').append(
+                            $('<tr style="word-wrap: break-word;">').attr({
+                                'id': 'archiveMessage' + messageData.id
+                            }).append(
+                                $('<td>').append(
+                                    fim_buildUsernameTag($('<span class="userName userNameTable"></span>'), messageData.userId, usernameDeferred, messageData.anonId)
+                                ),
+                                $('<td class="d-none d-sm-table-cell">').text(fim_dateFormat(messageData.time)),
+                                $('<td>').append(
+                                    fim_buildMessageLine(messageData.text, messageData.flag, messageData.id, Number(messageData.userId), this.options.roomId, messageData.time, usernameDeferred)
+                                ),
+                                $('<td class="d-none d-md-table-cell">').append(
+                                    $('<a href="#archive#room=' + this.options.roomId + '#lastMessage=' + messageData.id + '">Show</a>')
+                                )
                             )
-                        )
-                    );
+                        );
 
-                    this.messageData[messageData.id] = messageData;
-                });
+                        this.messageData[messageData.id] = messageData;
+                    });
 
-                if (messages.length < 2) {
-                    if (this.options.firstMessage)
-                        $('#active-view-archive button[name=archivePrev]').prop('disabled', true);
+                    if (messages.length < 2) {
+                        if (this.options.firstMessage)
+                            $('#active-view-archive button[name=archivePrev]').prop('disabled', true);
 
-                    if (this.options.lastMessage)
-                        $('#active-view-archive button[name=archiveNext]').prop('disabled', true);
-                }
-                else {
-                    if (this.options.firstMessage)
-                        $('#active-view-archive button[name=archiveNext]').prop('disabled', false);
+                        if (this.options.lastMessage)
+                            $('#active-view-archive button[name=archiveNext]').prop('disabled', true);
+                    }
+                    else {
+                        if (this.options.firstMessage)
+                            $('#active-view-archive button[name=archiveNext]').prop('disabled', false);
 
-                    if (this.options.lastMessage)
-                        $('#active-view-archive button[name=archivePage]').prop('disabled', false);
-                }
-            },
+                        if (this.options.lastMessage)
+                            $('#active-view-archive button[name=archivePage]').prop('disabled', false);
+                    }
+                },
+            });
         });
     },
-
-    update : function (option, value) {
-        this.options[option] = value;
-    }
 };
