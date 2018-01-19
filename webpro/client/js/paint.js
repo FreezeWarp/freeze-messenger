@@ -743,6 +743,32 @@ if (typeof console !== 'object' || typeof console.log !== 'function') {
     };
 }
 
+/**
+ * jQuery getCookie Wrapper
+ *
+ * @param name - The name of the cookie to obtain.
+ * @param ifNull - A value to return if the cookie is not set.
+ *
+ */
+jQuery.getCookie = function (name, ifNull) {
+    var cookie = $.cookie(name);
+
+    if (cookie === null || cookie === undefined) return ifNull;
+    else return cookie;
+};
+
+/**
+ * jQuery toArray Wrapper
+ * Converts an object to an array.
+ *
+ * @param obj - Object to convert.
+ * @return array - Converted object.
+ *
+ */
+jQuery.toArray = function(obj) {
+    return $.map(obj, function (value, key) { return value; });
+};
+
 
 
 /* Define Global Variables */
