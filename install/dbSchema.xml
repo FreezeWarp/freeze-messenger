@@ -345,7 +345,7 @@
             <!-- General -->
             <column name="id" type="int" maxlen="6" autoincrement="1" comment="The unique ID for the room." />
             <column name="idEncoded" type="blob" maxlen="23" comment="The unique ID for the room, encoded as appropriate." />
-            <column name="name" type="string" maxlen="50" comment="The name of the room." />
+            <column name="name" type="string" maxlen="100" comment="The name of the room." />
             <column name="nameSearchable" type="string" maxlen="50" comment="The name of the room." />
             <column name="topic" type="string" maxlen="200" comment="The current topic of the room." />
             <column name="options" type="bitfield" bits="8" default="0" comment="A bitfield corrosponding to certain room options." />

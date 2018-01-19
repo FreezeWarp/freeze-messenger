@@ -183,7 +183,7 @@ class Config {
     public static $roomLengthMinimum = 5;
 
     /** @var int Requires all room names to not exceed this many characters in length. */
-    public static $roomLengthMaximum = 20;
+    public static $roomLengthMaximum = 50;
 
     /** @var bool Whether or not to disable topic functionality. */
     public static $disableTopic = false;
