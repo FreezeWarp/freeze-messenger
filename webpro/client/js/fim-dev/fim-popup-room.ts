@@ -463,8 +463,6 @@ popup.prototype.room.prototype.init = function(options) {
         pasteZone : $('textarea#messageInput'),
         paramName : 'file',
         submit: (e, data) => {
-            console.log("send", data);
-
             // Append the access token only on submit, since it may change.
             data.url = window.serverSettings.installUrl + 'api/file.php?' + $.param({
                 "_action" : "create",
@@ -486,6 +484,31 @@ popup.prototype.room.prototype.init = function(options) {
 
             return true;
         }
+    }).on('fileuploadpaste', function (e, data) {
+        console.log("files", e, data);
+        let reader = new FileReader();
+
+        reader.readAsDataURL(data.files[0]);
+        reader.onloadend = function() {
+            $('#imageFileUpload').html(fim_messagePreview('image', this.result));
+        };
+
+        dia.confirm({
+            text : $('<div>').append(
+                "Would you like to upload your current clipboard?",
+                $("<div id='imageFileUpload'>").append(
+                    $('<img src="images/ajax-loader.gif" id="waitThrobber" />')
+                )
+            ),
+            'true' : function() {
+                console.log('This is confusing and dumb and eh.');
+                $('#chatContainer').fileupload('add', {
+                    files: data.files[0]
+                });
+            }
+        });
+
+        return false;
     });
 
 
