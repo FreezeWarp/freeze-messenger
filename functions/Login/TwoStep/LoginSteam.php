@@ -105,14 +105,11 @@ class LoginSteam extends LoginTwoStep {
                 if (isset($games['response']['games'])) {
                     $groupNames = [];
                     foreach ($games['response']['games'] AS $game) {
-                        if ($game['playtime_forever'] > 0) { 
-                            // TODO: group icon
-                            // img_icon_url
-
+                        if ($game['playtime_forever'] > 0) {
                             $groupNames[] = 'Steam Players of ' . $game['name'];
 
                             // create group if doesn't exist
-                            @\Fim\Database::instance()->createSocialGroup('Steam Players of ' . $game['name']);
+                            @\Fim\Database::instance()->createSocialGroup('Steam Players of ' . $game['name'], "http://media.steampowered.com/steamcommunity/public/images/apps/{$game['appid']}/{$game['img_icon_url']}.jpg");
                         }
                     }
 
