@@ -110,8 +110,17 @@ class StreamDatabase implements StreamInterface {
     }
 
 
-    public function subscribeOnce($stream, $lastId, $createStream = true) {
+    public function subscribeOnce($stream, $lastId = false, $createStream = true) {
 
+        /* Use distributed cache to avoid making database queries, if possible. */
+        if ($lastId) {
+            $cacheLastId = \Cache\CacheFactory::get("lastEvent_$stream", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL);
+            if ($lastId !== false && $lastId <= $cacheLastId)
+                return [];
+        }
+
+
+        /* Get Stream Response */
         try {
             $output = $this->database->select([
                 $this->getStreamTableName($stream) => 'id, time, chunk, data, eventName'
@@ -131,6 +140,8 @@ class StreamDatabase implements StreamInterface {
 
         $events = [];
 
+
+        /* Process Stream Response */
         foreach ($output AS $id => $chunks) {
             $entry = $chunks[0];
             $entry['data'] = '';
@@ -166,6 +177,7 @@ class StreamDatabase implements StreamInterface {
 
 
         /* Insert Stream Data */
+
         // Use Chunking if Enabled
         if ($this->chunkingEnabled()) {
             // Split up the data into chunks
@@ -200,6 +212,11 @@ class StreamDatabase implements StreamInterface {
                 'data'      => json_encode($data),
             ]);
         }
+
+
+        /* Update the Last Insert ID Cache
+         * (In practice, this is only especially useful on memcache. The other main distributed cache, Redis, has its own preferred pub/sub method.) */
+        \Cache\CacheFactory::set("lastEvent_$stream", $this->database->getLastInsertId(), 3600, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL);
 
 
         /* Update the Streams Table to Keep This Stream Alive */

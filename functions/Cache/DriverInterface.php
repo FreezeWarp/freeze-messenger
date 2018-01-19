@@ -8,6 +8,11 @@ interface DriverInterface {
     const CACHE_TYPE_DISTRIBUTED = 'distributed';
 
     /**
+     * A cache that will be synced across all server instances. A memory cache may not be used as a fallback.
+     */
+    const CACHE_TYPE_DISTRIBUTED_CRITICAL = 'distributed_critical';
+
+    /**
      * A cache that will primarily write to disk.
      */
     const CACHE_TYPE_DISK = 'disk';

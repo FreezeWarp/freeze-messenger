@@ -55,29 +55,34 @@ class CacheFactory {
 
     private static function chooseMethod($preferredMethod) {
         switch ($preferredMethod) {
-            case 'memcached': // TODO: remove
-            case 'redis':
+            case DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL:
+                return self::$methods[DriverInterface::CACHE_TYPE_DISTRIBUTED]
+                    ?? null;
+            break;
+
             case DriverInterface::CACHE_TYPE_DISTRIBUTED:
                 return self::$methods[DriverInterface::CACHE_TYPE_DISTRIBUTED]
                     ?? self::$methods[DriverInterface::CACHE_TYPE_MEMORY]
                     ?? null;
-                break;
+            break;
 
-            case 'apc':
-            case 'apcu':
             case DriverInterface::CACHE_TYPE_MEMORY:
                 return self::$methods[DriverInterface::CACHE_TYPE_MEMORY]
                     ?? self::$methods[DriverInterface::CACHE_TYPE_DISTRIBUTED]
                     ?? null;
+            break;
 
-
-            case 'disk':
             case DriverInterface::CACHE_TYPE_DISK:
-            default:
+            case false:
                 return self::$methods[DriverInterface::CACHE_TYPE_MEMORY]
                     ?? self::$methods[DriverInterface::CACHE_TYPE_DISTRIBUTED]
                     ?? self::$methods[DriverInterface::CACHE_TYPE_DISK]
                     ?? null;
+            break;
+
+            default:
+                throw new \Exception('Unknown cache method: ' . $preferredMethod);
+            break;
         }
     }
 
