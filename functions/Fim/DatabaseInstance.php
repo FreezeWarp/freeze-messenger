@@ -403,7 +403,7 @@ class DatabaseInstance extends DatabaseSQL
      *
      * @return DatabaseResult
      */
-    public function getCensorLists($options = array(), $sort = array('listId' => 'asc'), $limit = false, $page = false)
+    public function getCensorLists($options = array(), $sort = array('id' => 'asc'), $limit = false, $page = false)
     {
         $options = $this->argumentMerge(array(
             'listIds'        => array(),
@@ -417,7 +417,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
         $columns = array(
-            $this->sqlPrefix . "censorLists" => 'listId, listName, listType, options',
+            $this->sqlPrefix . "censorLists" => 'listId id, listName name, listType type, options',
         );
 
         if ($options['includeStatus']) {
@@ -429,7 +429,7 @@ class DatabaseInstance extends DatabaseSQL
                     'columns'    => 'listId bwlistId, roomId, status',
                     'conditions' => [
                         'roomId'   => $options['includeStatus'],
-                        'bwlistId' => $this->col('listId')
+                        'bwlistId' => $this->col('id')
                     ]
                 ];
             }
@@ -442,10 +442,10 @@ class DatabaseInstance extends DatabaseSQL
         ];
 
         if (count($options['listIds']) > 0)
-            $conditions['both']['listId'] = $this->in((array) $options['listIds']);
+            $conditions['both']['id'] = $this->in((array) $options['listIds']);
 
         if ($options['listNameSearch'])
-            $conditions['both']['listName'] = $this->type('string', $options['listNameSearch'], 'search');
+            $conditions['both']['name'] = $this->type('string', $options['listNameSearch'], 'search');
 
         if ($options['activeStatus'] === 'active')
             $conditions['both']['options'] = $this->int(CensorList::CENSORLIST_ENABLED, 'bAnd'); // TODO: Test!
@@ -494,18 +494,17 @@ class DatabaseInstance extends DatabaseSQL
         $censorLists = $this->getCensorLists(array(
             'includeStatus' => $roomId,
             'activeStatus' => 'active',
-        ))->getAsArray(array('listId'));
+        ))->getAsArray('id');
 
         foreach ($censorLists AS $listId => $list) { // Run through each censor list retrieved.
-            if (isset($list['status']) && (
-                $list['status'] === 'unblock'
-                || (
-                    $list['listType'] === 'black'
-                    && $list['status'] !== 'block'
-                )
-            )) continue;
+            if ((isset($list['status'])
+                    && $list['status'] === 'unblock'
+                ) || ($list['type'] === 'black'
+                    && (!isset($list['status'])
+                        || $list['status'] !== 'block')
+                )) continue;
 
-            $censorListsReturn[$list['listId']] = $list;
+            $censorListsReturn[$list['id']] = $list;
         }
 
         return $censorListsReturn;
@@ -542,16 +541,25 @@ class DatabaseInstance extends DatabaseSQL
         ), $options);
 
         $columns = array(
-            $this->sqlPrefix . "censorWords" => 'listId, word, wordId, severity, param',
+            $this->sqlPrefix . "censorWords" => 'wordId id, listId, word, severity, param',
         );
 
         $conditions = array();
 
-        if (count($options['listIds']) > 0) $conditions['both']['listId'] = $this->in($options['listIds']);
-        if (count($options['wordIds']) > 0) $conditions['both']['wordId'] = $this->in($options['wordIds']);
-        if ($options['wordSearch']) $conditions['both']['word'] = $this->type('string', $options['wordSearch'], 'search');
-        if (count($options['severities']) > 0) $conditions['both']['severity'] = $this->in($options['severities']);
-        if ($options['paramSearch']) $conditions['both']['param'] = $this->type('string', $options['paramSearch'], 'search');
+        if (count($options['listIds']) > 0)
+            $conditions['both']['listId'] = $this->in($options['listIds']);
+
+        if (count($options['wordIds']) > 0)
+            $conditions['both']['id'] = $this->in($options['wordIds']);
+
+        if ($options['wordSearch'])
+            $conditions['both']['word'] = $this->type('string', $options['wordSearch'], 'search');
+
+        if (count($options['severities']) > 0)
+            $conditions['both']['severity'] = $this->in($options['severities']);
+
+        if ($options['paramSearch'])
+            $conditions['both']['param'] = $this->type('string', $options['paramSearch'], 'search');
 
         return $this->select($columns, $conditions, $sort, $limit, $page);
     }

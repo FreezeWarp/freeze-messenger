@@ -65,35 +65,23 @@ $censorLists = \Fim\DatabaseSlave::instance()->getCensorLists(array(
     'includeStatus' => $request['roomId'] ?? false,
     'hiddenStatus' => 'unhidden', // Don't include hidden lists.
     'activeStatus' => 'active' // Don't include "archived"/inactive lists.
-))->getAsArray(array('listId'));
+))->getAsObjects('\Fim\CensorList', 'id');
 
 if ($request['includeWords']) {
     $censorWords = \Fim\DatabaseSlave::instance()->getCensorWords(array(
         'listIds' => array_keys($censorLists),
-    ))->getAsArray(array('listId', 'wordId'));
+    ))->getAsArray(array('listId', 'id'));
 }
 
 
 
 /* Start Processing */
-foreach ($censorLists AS $listId => $list) { // Run through each censor list retrieved.
-    if (!isset($xmlData['lists'][$list['listId']])) {
-        $xmlData['lists'][$list['listId']] = array(
-            'listId' => (int) $list['listId'],
-            'listName' => ($list['listName']),
-            'listType' => ($list['listType']),
-            'listOptions' => (int) $list['options'],
-            'words' => array(),
-        );
+foreach ($censorLists AS $list) { // Run through each censor list retrieved.
+    $xmlData['lists']['list ' . $list->id] = fim_objectArrayFilterKeys($list, ['id', 'name', 'type', 'status', 'disableable']);
 
-        if (isset($list['status'])) {
-            $xmlData['lists'][$list['listId']]['status'] = $list['status'];
-        }
-
-        if ($request['includeWords']) {
-            foreach($censorWords[$list['listId']] AS $wordId => $censorListWord) {
-                $xmlData['lists'][$list['listId']]['words'][$censorListWord['wordId']] = fim_arrayFilterKeys($censorListWord, ['wordId', 'word', 'severity', 'param']);
-            }
+    if ($request['includeWords']) {
+        foreach($censorWords[$list->id] AS $censorListWord) {
+            $xmlData['lists']['list ' . $list->id]['words'][$censorListWord['id']] = fim_arrayFilterKeys($censorListWord, ['id', 'word', 'severity', 'param']);
         }
     }
 }
