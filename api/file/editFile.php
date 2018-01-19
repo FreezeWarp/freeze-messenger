@@ -96,17 +96,17 @@ switch ($requestHead['_action']) {
 
 
         if (!\Fim\Config::$enableUploads)
-            throw new \Fim\Error('uploadsDisabled', 'Uploads are disabled on this FreezeMessenger server.');
+            new \Fim\Error('uploadsDisabled', 'Uploads are disabled on this FreezeMessenger server.');
         if (!$roomData && !\Fim\Config::$allowOrphanFiles)
-            throw new \Fim\Error('noOrphanFiles', 'Files cannot be orphaned on this FreezeMessenger server. You must post them to a room.');
+            new \Fim\Error('noOrphanFiles', 'Files cannot be orphaned on this FreezeMessenger server. You must post them to a room.');
         if (\Fim\Config::$uploadMaxFiles !== -1 && \Fim\Database::instance()->getCounterValue('uploads') > \Fim\Config::$uploadMaxFiles)
-            throw new \Fim\Error('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
+            new \Fim\Error('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
         if (\Fim\Config::$uploadMaxUserFiles !== -1 && $user->fileCount > \Fim\Config::$uploadMaxUserFiles)
-            throw new \Fim\Error('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
+            new \Fim\Error('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
         if (\Fim\Config::$uploadMaxSpace !== -1 && \Fim\Database::instance()->getCounterValue('uploadSize') > \Fim\Config::$uploadMaxSpace)
-            throw new \Fim\Error('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
+            new \Fim\Error('tooManyFilesServer', 'The server has reached its upload limit. No more uploads can be made.');
         if (\Fim\Config::$uploadMaxUserSpace !== -1 && $user->fileSize > \Fim\Config::$uploadMaxUserSpace)
-            throw new \Fim\Error('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
+            new \Fim\Error('tooManyFilesUser', 'You have reached your upload limit. No more uploads can be made.');
 
 
         /* PUT Support */
@@ -122,6 +122,10 @@ switch ($requestHead['_action']) {
             fclose($putResource);
         }
         else {
+            if (!$_FILES['file']['tmp_name']) {
+                new \Fim\Error('uploadFailed', 'The upload was not successful. This is most likely because the server is not configured to support large file uploads. (Using the PUT method may be more successful.)');
+            }
+
             $fileMime = mime_content_type($_FILES['file']['tmp_name']);
             $fileData = file_get_contents($_FILES['file']['tmp_name']);
         }
@@ -129,9 +133,9 @@ switch ($requestHead['_action']) {
 
         /* Verify Against Empty Data */
         if (!strlen($request['fileName']))
-            throw new \Fim\Error('badName', 'The filename is not valid.'); // This error may be expanded in the future.
+            new \Fim\Error('badName', 'The filename is not valid.'); // This error may be expanded in the future.
         if (!strlen($fileData))
-            throw new \Fim\Error('emptyData', 'No file contents were received.');
+            new \Fim\Error('emptyData', 'No file contents were received.');
 
 
         /* Create the File Object */
@@ -145,21 +149,21 @@ switch ($requestHead['_action']) {
 
         /* Verify Basic File Object Parameters */
         if (!$file->extension)
-            throw new \Fim\Error('noFileExtension', 'The uploaded file did not have a file extension.');
+            new \Fim\Error('noFileExtension', 'The uploaded file did not have a file extension.');
 
 
         /* Verify the file's contents against any sent hashes. */
         if (isset($request['md5hash']) && $file->md5hash != $request['md5hash'])
-            throw new \Fim\Error('badMd5Hash', 'The uploaded file\'s contents did not match those of its sent MD5 hash.');
+            new \Fim\Error('badMd5Hash', 'The uploaded file\'s contents did not match those of its sent MD5 hash.');
 
         if (isset($request['sha256hash']) && $file->sha256hash != $request['sha256hash'])
-            throw new \Fim\Error('badSha256Hash', 'The uploaded file\'s contents did not match those of its sent SHA256 hash.');
+            new \Fim\Error('badSha256Hash', 'The uploaded file\'s contents did not match those of its sent SHA256 hash.');
 
         if (isset($request['crc32bhash']) && $file->crc32bhash != $request['crc32bhash'])
-            throw new \Fim\Error('badCrc32BHash', 'The uploaded file\'s contents did not match those of its sent CRC32B hash.');
+            new \Fim\Error('badCrc32BHash', 'The uploaded file\'s contents did not match those of its sent CRC32B hash.');
 
         if (isset($request['fileSize']) && $file->size != $request['fileSize'])
-            throw new \Fim\Error('badSize', 'The uploaded file\'s contents did not match those of its sent filesize.');
+            new \Fim\Error('badSize', 'The uploaded file\'s contents did not match those of its sent filesize.');
 
 
         /* File Type Restrictions */
@@ -167,15 +171,15 @@ switch ($requestHead['_action']) {
             $file->extension = \Fim\Config::$extensionChanges[$fileNameParts[1]];
 
         if (!in_array($file->extension, \Fim\Config::$allowedExtensions))
-            throw new \Fim\Error('badExt', 'The filetype is forbidden, and thus the file cannot be uploaded.'); // Not allowed...
+            new \Fim\Error('badExt', 'The filetype is forbidden, and thus the file cannot be uploaded.'); // Not allowed...
 
         // All files theoretically need to have a mime (at any rate, we will require one). This is different from simply not being allowed, wherein we understand what file you are trying to upload, but aren't going to accept it. (Small diff, I know.)
         if (!isset(\Fim\Config::$uploadMimes[$file->extension]))
-            throw new \Fim\Error('unrecExt', 'The filetype is unrecognised, and thus the file cannot be uploaded.');
+            new \Fim\Error('unrecExt', 'The filetype is unrecognised, and thus the file cannot be uploaded.');
         // We "check" the contents of a file to see if they match the extension-determined mimetype if the extension is in the list of those to check.
         else if (in_array($file->extension, \Fim\Config::$uploadMimeProof)
             && \Fim\Config::$uploadMimes[$file->extension] !== $fileMime)
-            throw new \Fim\Error('invalidFileContent', 'The upload file does not appear to be a valid file of its type.');
+            new \Fim\Error('invalidFileContent', 'The upload file does not appear to be a valid file of its type.');
 
 
         /* File Size Restrictions */
