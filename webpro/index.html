@@ -1279,145 +1279,180 @@ Pending Update
 </form>
 </script>
 
+<script id="view-editRoom-censorList" type="text/x-handlebars-template">
+    <label class="btn btn-secondary m-1">{{listData.name}}
+        <input type="checkbox" name="censorLists[{{listData.id}}" value="true" data-unchecked-value="false"
+            {{#unless listData.disableable}} disabled="disabled" {{/unless}}
+            {{#if listData.enabled}} checked="checked" {{/if}}
+        />
+    </label>
+</script>
+
 <script id="view-editRoom" type="text/x-handlebars-template">
-<form action="#" method="post" id="editRoomForm">
-    <div class="card mx-auto view-thin">
-        <div class="card-header p-0">
-            <ul class="nav nav-tabs justify-content-center bg-light" role="tablist" id="editRoomTabs">
-                <li class="nav-item">
-                    <a class="nav-link active" data-toggle="tab" role="tab" href="#editRoom1">{{editRoom.tabGeneral}}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" role="tab" href="#editRoom2">{{editRoom.tabPermissions}}</a>
-                </li>
-            </ul>
-        </div>
+    <form action="#" method="post" id="editRoomForm">
+        <div class="card mx-auto view-thin">
+            <div class="card-header p-0">
+                <ul class="nav nav-tabs justify-content-center bg-light" role="tablist" id="editRoomTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" role="tab" href="#editRoom1">{{editRoom.tabGeneral}}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" role="tab" href="#editRoom2">{{editRoom.tabPermissions}}</a>
+                    </li>
+                </ul>
+            </div>
 
-        <div class="card-body">
-            <div class="tab-content p-0 p-md-4" id="editRoomTabsContent">
-                <div class="tab-pane fade show active" role="tabpanel" id="editRoom1">
-                    <div id="editRoom1Name" class="mb-3">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">{{editRoom.nameLabel}}</span>
+
+            <div class="card-body">
+                <div class="tab-content p-0 p-md-4" id="editRoomTabsContent">
+                    <div class="tab-pane fade show active" role="tabpanel" id="editRoom1">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">{{editRoom.nameLabel}}</span>
+                                </div>
+                                <input type="text" class="form-control" name="name" value="{{roomData.name}}"
+                                    {{#if roomData}}{{#unless activeLogin.userData.permissions.modRooms}}
+                                        disabled
+                                    {{/unless}}{{/if}}
+                                />
                             </div>
-                            <input type="text" class="form-control" name="name"/>
+                            <small class="form-text text-muted">{{editRoom.nameBlurb}}</small>
                         </div>
-                        <small class="form-text text-muted">{{editRoom.nameBlurb}}</small>
-                    </div>
 
-                    {{#if serverSettings.parentalControls.parentalEnabled}}
-                    <div class="mb-4">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">{{editRoom.parentalAgeLabel}}</span>
+                        {{#if serverSettings.parentalControls.parentalEnabled}}
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">{{editRoom.parentalAgeLabel}}</span>
+                                </div>
+                                <select class="form-control" name="parentalAge">
+                                    {{#each serverSettings.parentalControls.parentalAges}}
+                                        <option value="{{this}}">{{lookup ../parentalAges this}}</option>
+                                    {{/each}}
+                                </select>
                             </div>
-                            <select class="form-control" name="parentalAge">
-                                {{#each serverSettings.parentalControls.parentalAges}}
-                                <option value="{{this}}">{{lookup ../parentalAges this}}</option>
-                                {{/each}}
-                            </select>
+                            <small class="form-text text-muted">{{editRoom.parentalAgeBlurb}}</small>
                         </div>
-                        <small class="form-text text-muted">{{editRoom.parentalAgeBlurb}}</small>
-                    </div>
 
-                    <div class="mb-4">
-                        <h4>{{editRoom.parentalFlagsLabel}}</h4>
-                        <div name="parentalFlagsList">
-                            {{#each serverSettings.parentalControls.parentalFlags}}
-                            <label class="btn btn-secondary m-1">
-                                <input type="checkbox" name="parentalFlags" value="{{this}}" />
-                                {{lookup ../parentalFlags this}}
-                            </label>
-                            {{/each}}
-                        </div>
-                        <small class="form-text text-muted">{{editRoom.parentalFlagsBlurb}}</small>
-                    </div>
-                    {{/if}}
-
-                    {{#if serverSettings.censorEnabled}}
-                    <div class="mb-4">
-                        <h4>{{editRoom.censorLabel}}</h4>
-                        <div name="censorLists">
-                        </div>
-                        <small class="form-text text-muted">{{editRoom.censorBlurb}}</small>
-                    </div>
-                    {{/if}}
-
-                    <h4>Room Options</h4>
-                    <div id="editRoom1Hidden" class="mb-3">
-                        <label>
-                                <span class="btn btn-primary">
-                                    <input type="checkbox" name="hidden"/>
-                                    <strong>{{editRoom.hiddenLabel}}</strong>
-                                </span><br />
-                            <small class="form-text text-muted">{{editRoom.hiddenBlurb}}</small>
-                        </label>
-                    </div>
-
-                    <div id="editRoom1Official">
-                        <label>
-                                <span class="btn btn-primary">
-                                    <input type="checkbox" name="official"/>
-                                    <strong>{{editRoom.officialLabel}}</strong>
-                                </span><br />
-                            <small class="form-text text-muted">{{editRoom.officialBlurb}}</small>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="tab-pane fade" role="tabpanel" id="editRoom2">
-                    <div id="editRoom2AllowViewing">
-                        <label class="btn btn-secondary">
-                            <input type="checkbox" id="allowViewing" name="allowViewing"/>
-                            {{editRoom.allowViewingLabel}}
-                        </label><br/>
-                        <small class="form-text text-muted">{{editRoom.allowViewingBlurb}}</small>
-                        <br/>
-                    </div>
-
-                    <div>
-                        <fieldset class="p-3 border border-dark rounded">
-                            <legend style="display: inline; width: auto;" class="m-0">
-                                <label class="btn btn-secondary m-0">
-                                    <input type="checkbox" name="allowPosting" onchange="
-                                        if ($(this).is(':checked')) {
-                                            $(this).closest('fieldset').attr('disabled', 'disabled');
-                                        }
-                                        else {
-                                            $(this).closest('fieldset').removeAttr('disabled', 'disabled');
-                                        }"
+                        <div class="mb-4">
+                            <h4>{{editRoom.parentalFlagsLabel}}</h4>
+                            <div name="parentalFlagsList">
+                                {{#each serverSettings.parentalControls.parentalFlags}}
+                                <label class="btn btn-secondary m-1">
+                                    <input type="checkbox" name="parentalFlags[]" value="{{this}}"
+                                        {{#contains this @root.roomData.parentalFlags}} checked="checked" {{/contains}}
                                     />
-                                    {{editRoom.allowAll}}
+                                    {{lookup ../parentalFlags this}}
                                 </label>
-                            </legend>
-
-                            <div id="editRoom2AllowedUsers">
-                                <span>{{editRoom.allowedUsersLabel}}</span>
-                                <div name="allowedUsersContainer" id="allowedUsersContainer"></div>
-                            </div><br />
-
-                            <div id="editRoom2AllowedGroups">
-                                <span>{{editRoom.allowedGroupsLabel}}</span>
-                                <div name="allowedGroupsContainer" id="allowedGroupsContainer"></div>
+                                {{/each}}
                             </div>
-                        </fieldset>
-                    </div><br/>
+                            <small class="form-text text-muted">{{editRoom.parentalFlagsBlurb}}</small>
+                        </div>
+                        {{/if}}
 
-                    <div id="editRoom2Moderators">
-                        <span>{{editRoom.moderatorsLabel}}</span>
-                        <div name="moderatorsContainer" id="moderatorsContainer"></div>
-                    </div><br />
+                        {{#if serverSettings.censorEnabled}}
+                        <div class="mb-4">
+                            <h4>{{editRoom.censorLabel}}</h4>
+                            <div name="censorLists">
+                            </div>
+                            <small class="form-text text-muted">{{editRoom.censorBlurb}}</small>
+                        </div>
+                        {{/if}}
+
+                        {{#if activeLogin.userData.permissions.modRooms}}
+                            <h4>Room Options</h4>
+                            <div class="mb-3">
+                                <label>
+                                        <span class="btn btn-primary">
+                                            <input type="checkbox" name="hidden" value="true" data-unchecked-value="false"
+                                                {{#if roomData.hidden}}checked{{/if}}
+                                            />
+                                            <strong>{{editRoom.hiddenLabel}}</strong>
+                                        </span><br />
+                                    <small class="form-text text-muted">{{editRoom.hiddenBlurb}}</small>
+                                </label>
+                            </div>
+
+                            <div>
+                                <label>
+                                        <span class="btn btn-primary">
+                                            <input type="checkbox" name="official" value="true" data-unchecked-value="false"
+                                                {{#if roomData.official}}checked{{/if}}
+                                            />
+                                            <strong>{{editRoom.officialLabel}}</strong>
+                                        </span><br />
+                                    <small class="form-text text-muted">{{editRoom.officialBlurb}}</small>
+                                </label>
+                            </div>
+                        {{/if}}
+                    </div>
+
+                    <div class="tab-pane fade" role="tabpanel" id="editRoom2">
+                        <div id="editRoom2AllowViewing">
+                            <label class="btn btn-secondary">
+                                <input type="checkbox" id="defaultPermissionsView" name="defaultPermissions[]" value="view"
+                                    {{#if roomData.defaultPermissions.view}}checked{{/if}}
+                                />
+                                {{editRoom.allowViewingLabel}}
+                            </label><br/>
+                            <small class="form-text text-muted">{{editRoom.allowViewingBlurb}}</small>
+                            <br/>
+                        </div>
+
+                        <div>
+                            <fieldset class="p-3 border border-dark rounded"
+                                {{#if roomData.defaultPermissions.post}}disabled{{/if}}
+                            >
+                                <legend style="display: inline; width: auto;" class="m-0">
+                                    <label class="btn btn-secondary m-0">
+                                        <input type="checkbox"  name="defaultPermissions[]" value="post"
+                                            {{#if roomData.defaultPermissions.post}}checked{{/if}}
+                                            onchange="
+                                                if ($(this).is(':checked')) {
+                                                    $(this).closest('form').find('#defaultPermissionsView').prop('checked', 'checked').change();
+                                                    $(this).closest('fieldset').attr('disabled', 'disabled');
+                                                }
+                                                else {
+                                                    $(this).closest('fieldset').removeAttr('disabled', 'disabled');
+                                                }"
+                                        />
+                                        {{editRoom.allowAll}}
+                                    </label>
+                                </legend>
+
+                                <div>
+                                    <span>{{editRoom.allowedUsersLabel}}</span>
+                                    <div name="allowedUsersContainer" id="allowedUsersContainer"></div>
+                                </div><br />
+
+                                <div>
+                                    <span>{{editRoom.allowedGroupsLabel}}</span>
+                                    <div name="allowedGroupsContainer" id="allowedGroupsContainer"></div>
+                                </div>
+                            </fieldset>
+                        </div><br/>
+
+                        <div>
+                            <span>{{editRoom.moderatorsLabel}}</span>
+                            <div name="moderatorsContainer" id="moderatorsContainer"></div>
+                        </div><br />
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card-footer text-center">
-            <button type="submit" class="btn btn-success">{{#if hash.room}}{{editRoom.submit}}{{else}}{{createRoom.buttons.submit}}{{/if}}</button>
-            <button type="reset" class="btn btn-secondary">{{editRoom.reset}}</button>
+            <div class="card-footer text-center">
+                <button type="submit" class="btn btn-success">
+                    {{#if roomData}}
+                        {{editRoom.submit}}
+                    {{else}}
+                        {{createRoom.buttons.submit}}
+                    {{/if}}
+                </button>
+                <button type="reset" class="btn btn-secondary">{{editRoom.reset}}</button>
+            </div>
         </div>
-    </div>
-</form>
+    </form>
 </script>
 
 

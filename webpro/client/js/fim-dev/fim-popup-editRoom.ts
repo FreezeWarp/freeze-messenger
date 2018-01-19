@@ -14,203 +14,114 @@ popup.prototype.editRoom = {
     options : {
         roomId : null
     },
+    
+    action : null,
+
+    moderatorsList : null,
+    allowedUsersList : null,
+    allowedGroupsList : null,
 
     setRoomId : function(roomId) {
         this.options.roomId = roomId ? roomId : null;
+
+        if (this.options.roomId != null)
+            this.action = 'edit';
+        else
+            this.action = 'create';
     },
 
     init : function() {
     },
 
-    retrieve : function() {
-        $('#editRoomForm [name=censorLists]').html('');
-        $('#moderatorsContainer').html('');
-        $('#allowedUsersContainer').html('');
-        $('#allowedGroupsContainer').html('');
+    render : function() {
+    },
 
-        
-        let action;
-        if (this.options.roomId != null)
-            action = 'edit';
-        else
-            action = 'create';
-
-
+    afterRender : function() {
         /* Autocomplete Users and Groups */
-        let moderatorsList = new autoEntry($("#moderatorsContainer"), {
-            'name' : 'moderators',
-            'list' : 'users',
-            'onAdd' : (id) => {
-                if (action === 'edit') fimApi.createRoomPermissionUser(this.options.roomId, id, ["view", "post", "moderate", "properties", "grant"])
+        this.moderatorsList = new autoEntry($("#moderatorsContainer"), {
+            'name': 'moderators',
+            'list': 'users',
+            'onAdd': (id) => {
+                if (this.action === 'edit')
+                    fimApi.createRoomPermissionUser(this.options.roomId, id, ["view", "post", "moderate", "properties", "grant"])
             },
-            'onRemove' : (id) => {
-                if (action === 'edit') fimApi.deleteRoomPermissionUser(this.options.roomId, id, ["moderate", "properties", "grant"])
+            'onRemove': (id) => {
+                if (this.action === 'edit')
+                    fimApi.deleteRoomPermissionUser(this.options.roomId, id, ["moderate", "properties", "grant"])
             },
-            'resolveFromIds' : Resolver.resolveUsersFromIds,
-            'resolveFromNames' : Resolver.resolveUsersFromNames
+            'resolveFromIds': Resolver.resolveUsersFromIds,
+            'resolveFromNames': Resolver.resolveUsersFromNames
+        });//
+
+        this.allowedUsersList = new autoEntry($("#allowedUsersContainer"), {
+            'name': 'allowedUsers',
+            'list': 'users',
+            'onAdd': (id) => {
+                if (this.action === 'edit')
+                    fimApi.createRoomPermissionUser(this.options.roomId, id, ["view", "post"])
+            },
+            'onRemove': (id) => {
+                if (this.action === 'edit')
+                    fimApi.deleteRoomPermissionUser(this.options.roomId, id, ["view", "post", "changeTopic", "moderate", "properties", "grant"]) // In effect, reset the user's permissions to the default.
+            },
+            'resolveFromIds': Resolver.resolveUsersFromIds,
+            'resolveFromNames': Resolver.resolveUsersFromNames
         });
 
-        let allowedUsersList = new autoEntry($("#allowedUsersContainer"), {
-            'name' : 'allowedUsers',
-            'list' : 'users',
-            'onAdd' : (id) => {
-                if (action === 'edit') fimApi.createRoomPermissionUser(this.options.roomId, id, ["view", "post"])
+        this.allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
+            'name': 'allowedGroups',
+            'list': 'groups',
+            'onAdd': (id) => {
+                if (this.action === 'edit')
+                    fimApi.createRoomPermissionGroup(this.options.roomId, id, ["view", "post"])
             },
-            'onRemove' : (id) => {
-                if (action === 'edit') fimApi.deleteRoomPermissionUser(this.options.roomId, id, ["view", "post", "changeTopic", "moderate", "properties", "grant"]) // In effect, reset the user's permissions to the default.
+            'onRemove': (id) => {
+                if (this.action === 'edit')
+                    fimApi.deleteRoomPermissionGroup(this.options.roomId, id, ["view", "post", "changeTopic", "moderate", "properties", "grant"]) // In effect, reset the user's permissions to the default.
             },
-            'resolveFromIds' : Resolver.resolveUsersFromIds,
-            'resolveFromNames' : Resolver.resolveUsersFromNames
-        });
-
-        let allowedGroupsList = new autoEntry($("#allowedGroupsContainer"), {
-            'name' : 'allowedGroups',
-            'list' : 'groups',
-            'onAdd' : (id) => {
-                if (action === 'edit') fimApi.createRoomPermissionGroup(this.options.roomId, id, ["view", "post"])
-            },
-            'onRemove' : (id) => {
-                if (action === 'edit') fimApi.deleteRoomPermissionGroup(this.options.roomId, id, ["view", "post", "changeTopic", "moderate", "properties", "grant"]) // In effect, reset the user's permissions to the default.
-            },
-            'resolveFromIds' : Resolver.resolveGroupsFromIds,
-            'resolveFromNames' : Resolver.resolveGroupsFromNames
+            'resolveFromIds': Resolver.resolveGroupsFromIds,
+            'resolveFromNames': Resolver.resolveGroupsFromNames
         });
 
 
         /* Censor Lists */
+        let censorListTemplate = Handlebars.compile($('#view-editRoom-censorList').html());
         fimApi.getCensorLists({
-            'roomId' : this.options.roomId,
-            'includeWords' : 0,
+            'roomId': this.options.roomId,
+            'includeWords': 0,
         }, {
-            'each' : function(listData) {
-                let listStatus;
-
-                if (listData.status)
-                    listStatus = listData.status;
-                else if (listData.listType === 'white')
-                    listStatus = 'block';
-                else if (listData.listType === 'black')
-                    listStatus = 'unblock';
-                else throw 'Bad logic.';
+            'each': (listData) => {
+                listData.enabled = (listData.status === 'block' || listData.type === 'white');
 
                 $('#editRoomForm [name=censorLists]').append(
-                    $('<label>').attr('class', 'btn btn-secondary m-1').text(listData.listName).prepend(
-                        $('<input>').attr({
-                            'type' : 'checkbox',
-                            'name' : 'censorLists',
-                            'value' : listData.listId
-                        }).attr(listData.listOptions & 2 ? { 'disabled' : 'disabled' } : {})
-                            .attr(listStatus == 'block' ? { 'checked' : 'checked' } : {})
-                    )
+                    censorListTemplate(fim_getHandlebarsPhrases({listData : listData}))
                 );
             }
         });
 
 
-        /*
-         * Prepopulate Data if Editing a Room
-         */
-        if (this.options.roomId != null) {
-            fimApi.getRooms({
-                'id' : this.options.roomId
-            }, {'each' : function(roomData) {
-                    // User Permissions
-                    let allowedUsersArray = [], moderatorsArray = [];
-
-                    jQuery.each(roomData.userPermissions, function(userId, privs) {
-                        if (privs.moderate && privs.properties && privs.grant)
-                            moderatorsArray.push(userId);
-
-                        else if (privs.post)
-                            allowedUsersArray.push(userId);
-                    });
-
-                    allowedUsersList.displayEntries(allowedUsersArray);
-                    moderatorsList.displayEntries(moderatorsArray);
-
-                    // Group Permissions
-                    var allowedGroupsArray = [];
-                    jQuery.each(roomData.groupPermissions, function(userId, privs) {
-                        if (privs.post) // Are the 1, 2, and 4 bits all present?
-                            allowedGroupsArray.push(userId);
-                    });
-                    allowedGroupsList.displayEntries(allowedGroupsArray);
-
-                    // Default Permissions
-                    if (roomData.defaultPermissions.view) // If all users are currently allowed, check the box (which triggers other stuff above).
-                        $('#editRoomForm input[name=allowViewing]').prop('checked', true);
-                    if (roomData.defaultPermissions.post) // If all users are currently allowed, check the box (which triggers other stuff above).
-                        $('#editRoomForm input[name=allowPosting]').prop('checked', true);
-
-                    // Name
-                    $('#editRoomForm input[name=name]').val(roomData.name);
-
-                    // Options
-                    $('#editRoomForm input[name=official]').prop('checked', roomData.official);
-                    $('#editRoomForm input[name=hidden]').prop('checked', roomData.hidden);
-
-                    // Parental Data
-                    jQuery.each(roomData.parentalFlags, function(index, flag) {
-                        $('#editRoomForm input[name=parentalFlags][value=' + flag + ']').prop('checked', true);
-                    });
-                    $('#editRoomForm select[name=parentalAge] option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
-                }});
-        }
-
-
         /* Submit */
-        $("#editRoomForm").submit(() => {
-            // Parse Default Permissions
-            let defaultPermissions = [];
-            if ($('#editRoomForm input[name=allowViewing]').is(':checked'))
-                defaultPermissions.push("view");
-            if ($('#editRoomForm input[name=allowPosting]').is(':checked'))
-                defaultPermissions.push("post");
-
-            let censorLists = {};
-            jQuery.each($('#editRoomForm input[name=censorLists]:checked').map(function(){
-                return $(this).attr('value');
-            }).get(), function(index, value) {
-                censorLists[value] = 1;
-            });
-
-            jQuery.each($('#editRoomForm input[name=censorLists]:not(:checked)').map(function(){
-                return $(this).attr('value');
-            }).get(), function(index, value) {
-                censorLists[value] = 0;
-            });
-
-            // Do Edit
-            fimApi.editRoom(this.options.roomId, action, {
-                "name" : $('#editRoomForm input[name=name]').val(),
-                "defaultPermissions" : defaultPermissions,
-                "parentalAge" : $('#editRoomForm select[name=parentalAge] option:selected').val(),
-                "parentalFlags" : $('#editRoomForm input[name=parentalFlags]:checked').map(function(){
-                    return $(this).attr('value');
-                }).get(),
-                "censorLists" : censorLists,
-                "official" : $("#editRoomForm input[name=official]").is(":checked"),
-                "hidden" : $("#editRoomForm input[name=hidden]").is(":checked")
-            }, {
-                end : function(room) {
+        $("#editRoomForm").off('submit').on('submit', () => {
+            fimApi.editRoom(this.options.roomId, this.action, $('#editRoomForm').serializeJSON(), {
+                end : (room) => {
                     // Parse Allowed Users
-                    if (action === 'create') {
-                        allowedUsersList.getList().forEach((user) => {
-                            fimApi.createRoomPermissionUser(this.options.roomId, user, ["view", "post"]);
+                    if (this.action === 'create') {
+                        this.allowedUsersList.getList().forEach((user) => {
+                            fimApi.createRoomPermissionUser(room.id, user, ["view", "post"]);
                         });
-                        moderatorsList.getList().forEach((user) => {
-                            fimApi.createRoomPermissionUser(this.options.roomId, user, ["view", "post", "changeTopic", "moderate", "properties", "grant"]);
+                        this.moderatorsList.getList().forEach((user) => {
+                            fimApi.createRoomPermissionUser(room.id, user, ["view", "post", "changeTopic", "moderate", "properties", "grant"]);
                         });
-                        allowedGroupsList.getList().forEach((group) => {
-                            fimApi.createRoomPermissionGroup(this.options.roomId, group, ["view", "post"]);
+                        this.allowedGroupsList.getList().forEach((group) => {
+                            fimApi.createRoomPermissionGroup(room.id, group, ["view", "post"]);
                         });
                     }
 
                     window.location.hash = '#';
 
                     dia.full({
-                        content : $l('editRoom.finish.' + action + "Title") + '<br /><br /><form action="#room=' + room.id + '"><div class="input-group"><input autofocus type="text" value="' + window.currentLocation + '#room=' + room.id + '" name="url" class="form-control"  /><span class="input-group-btn"><button class="btn btn-primary">Go!</button></span></div></form>',
-                        title : $l('editRoom.finish.' + action + "Message"),
+                        content : window.phrases.editRoom.finish[this.action + "Title"] + '<br /><br /><form action="#room=' + room.id + '"><div class="input-group"><input autofocus type="text" value="' + window.currentLocation + '#room=' + room.id + '" name="url" class="form-control"  /><span class="input-group-btn"><button class="btn btn-primary">Go!</button></span></div></form>',
+                        title : window.phrases.editRoom.finish[this.action + "Message"],
                         buttons : {
                             Open : function() {
                                 window.location.hash = '#room=' + room.id;
@@ -223,6 +134,57 @@ popup.prototype.editRoom = {
 
             return false; // Don't submit the form.
         });
+    },
+
+    retrieve : function(render) {
+        /*
+         * Prepopulate Data if Editing a Room
+         */
+        if (this.options.roomId != null) {
+            fimApi.getRooms({
+                'id' : this.options.roomId
+            }, {'end' : (data) => {
+                let roomData = data['room ' + this.options.roomId];
+
+                render({roomData : roomData});
+                this.afterRender();
+
+
+                // User Permissions
+                let allowedUsersArray = [], moderatorsArray = [];
+
+                jQuery.each(roomData.userPermissions, function(userId, privs) {
+                    if (privs.moderate && privs.properties && privs.grant)
+                        moderatorsArray.push(userId);
+
+                    else if (privs.post)
+                        allowedUsersArray.push(userId);
+                });
+
+                this.allowedUsersList.displayEntries(allowedUsersArray);
+                this.moderatorsList.displayEntries(moderatorsArray);
+
+
+                // Group Permissions
+                let allowedGroupsArray = [];
+                jQuery.each(roomData.groupPermissions, function(userId, privs) {
+                    if (privs.post) // Are the 1, 2, and 4 bits all present?
+                        allowedGroupsArray.push(userId);
+                });
+                this.allowedGroupsList.displayEntries(allowedGroupsArray);
+
+
+                // Parental Data
+                jQuery.each(roomData.parentalFlags, function(index, flag) {
+                    $('#editRoomForm input[name=parentalFlags][value=' + flag + ']').prop('checked', true);
+                });
+                $('#editRoomForm select[name=parentalAge] option[value=' + roomData.parentalAge + ']').attr('selected', 'selected');
+            }});
+        }
+        else {
+            render();
+            this.afterRender();
+        }
 
         return false;
     }
