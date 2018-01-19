@@ -200,12 +200,6 @@ class Config {
     /** @var int The maximum number of rooms a single user can create times the number of years the user has been registered. TODO: Test */
     public static $userRoomMaximumPerYear = 50;
 
-    /** @var bool Whether hidden rooms are enabled. Disable this if the functionality is deemed too confusing. */
-    public static $hiddenRooms = true;
-
-    /** @var bool Whether rooms should can be marked as "official." It may make sense to disable this if user room creation is disabled. */
-    public static $officialRooms = true;
-
     /** @var int The room that new users will enter by default. */
     public static $defaultRoomId = 1;
 
