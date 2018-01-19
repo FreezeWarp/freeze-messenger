@@ -267,13 +267,9 @@ img.standard {
     width: 16px;
 }
 
-img.inlineImage {
+video, audio, img.inlineImage {
     max-width: 100%;
     max-height: 400px;
-}
-
-audio {
-    max-width: 100%;
 }
 
 label.standard, button.standard {
