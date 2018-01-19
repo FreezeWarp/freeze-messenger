@@ -127,8 +127,10 @@ unset($dbConnect); // There is no reason the login credentials should still be a
 /* Only small tables are cached this way. */
 
 // Initiate cache object.
-foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
-    \Cache\CacheFactory::addMethod($cacheConnectName, $cacheConnectParams);
+if (isset($cacheConnectMethods)) {
+    foreach ($cacheConnectMethods AS $cacheConnectName => $cacheConnectParams) {
+        \Cache\CacheFactory::addMethod($cacheConnectName, $cacheConnectParams);
+    }
 }
 
 // Get Configuration Data
