@@ -156,14 +156,14 @@ function fim_renderHandlebarsInPlace(tag, extra) {
     $('<div id="active-' + id + '">' + template(fim_getHandlebarsPhrases(extra)) + '</div>').insertAfter(tag);
 }
 
-function fim_renderHandlebars(tag, target) {
+function fim_renderHandlebars(tag, target, extra) {
     var id       = tag.attr('id');
     var source   = tag.html();
     var template = Handlebars.compile(source);
 
     $('#active-' + id).remove();
 
-    $(target).html($('<div id="active-' + id + '">' + template(fim_getHandlebarsPhrases()) + '</div>'));
+    $(target).html($('<div id="active-' + id + '">' + template(fim_getHandlebarsPhrases(extra)) + '</div>'));
 }
 
 function fim_getHandlebarsPhrases(extra) {
@@ -174,6 +174,14 @@ function fim_getHandlebarsPhrases(extra) {
 
 var openObjectInstance;
 function fim_openView(viewName, options) {
+    // Find the view tag
+    tag = $('#view-' + viewName);
+    var render = function(extra) {
+        fim_renderHandlebars(tag, $('#content'), extra);
+        $('#active-view-' + viewName).addClass('fim-activeView');
+    };
+
+
     if ($('.fim-activeView').attr('id') == 'active-view-' + viewName) {
         jQuery.each(options, function(name, value) {
             var setterName = "set" + name.charAt(0).toUpperCase() + name.slice(1);
@@ -184,13 +192,12 @@ function fim_openView(viewName, options) {
         });
 
         if (typeof openObjectInstance.retrieve != "undefined")
-            openObjectInstance.retrieve();
+            openObjectInstance.retrieve(render);
     }
 
     else {
         // Close the existing object
         if (openObjectInstance && typeof openObjectInstance.close !== "undefined") {
-            console.log("close view2");
             openObjectInstance.close();
         }
 
@@ -200,24 +207,21 @@ function fim_openView(viewName, options) {
 
 
         // Set the new object
-        if (typeof popup[viewName] === "function") {
+        if (typeof popup[viewName] === "function")
             openObjectInstance = new popup[viewName]();
-        }
-        else if (typeof popup[viewName] === "object") {
+        else if (typeof popup[viewName] === "object")
             openObjectInstance = popup[viewName];
-        }
-        else {
+        else
             throw "View is invalid type.";
-        }
 
-
-        // Find the view tag
-        tag = $('#view-' + viewName);
 
         if (tag.length > 0) {
             // Render view
-            fim_renderHandlebars(tag, $('#content'));
-            $('#active-view-' + viewName).addClass('fim-activeView');
+            if (typeof openObjectInstance.render == "undefined")
+                render();
+            else
+                openObjectInstance.render(render);
+
 
             // Run init
             openObjectInstance.init(options);
@@ -233,7 +237,7 @@ function fim_openView(viewName, options) {
 
             // Run retrieve method
             if (typeof openObjectInstance.retrieve != "undefined")
-                openObjectInstance.retrieve();
+                openObjectInstance.retrieve(render);
         }
         else {
             throw "Unknown view.";
