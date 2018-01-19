@@ -32,13 +32,15 @@ popup.prototype.archive = {
             this.options[i] = options[i];
         }
 
-        $('#active-view-archive form#archiveSearch input[name=searchText]').unbind('change').bind('change', (event) => {
+        $('#active-view-archive form#archiveSearch input[name=searchText]').off('change').on('change', (event) => {
             fim_setHashParameter('searchText', $(event.target).val());
         }).val(this.options.searchText);
 
-        $('#active-view-archive form#archiveSearch input[name=searchUser]').unbind('change').bind('change', (event) => {
-            fim_setHashParameter('searchUser', $(event.target).attr('data-id'));
-        }).autocompleteHelper('users', this.options.searchUser);
+        $('#active-view-archive form#archiveSearch input[name=searchUser]').autocompleteHelper('users', this.options.searchUser)
+            .off('change.archive')
+            .on('change.archive', (event) => {
+                fim_setHashParameter('searchUser', $(event.target).attr('data-id'));
+            });
 
 
         $('#active-view-archive button[name=archiveNext]').unbind('click').bind('click', () => {

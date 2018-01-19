@@ -23,12 +23,9 @@ let autoEntry = function(target, options) {
 
     // Create the autocomplete input element (which will be bound with the autocomplete helper only once it's inside the <form>)
     this.autocompleteInput = $('<input>').attr({
-        type : "text",
         name : this.options.name + 'Bridge',
         id : this.options.name + 'Bridge',
-        'class' : 'ui-autocomplete-input form-control',
-        autocomplete : 'off'
-    });
+    }).autocompleteHelper(this.options.list);
 
     // Create the submit button
     this.autocompleteSubmit = $('<button>').attr({
@@ -38,14 +35,16 @@ let autoEntry = function(target, options) {
     // Create the form containing the entry list
     this.autocompleteForm = $('<form>').attr('class', 'input-group').append(
         $('<span>').attr('class', 'input-group-prepend').append(this.autocompleteSubmit),
-        this.autocompleteInput
+        this.autocompleteInput.closest('.typeahead__container')
     );
 
-    // Bind the autocomplete helper only once the input is inside of the <form> DOM element
-    this.autocompleteInput.autocompleteHelper(this.options.list);
+    // Add the field itself, which will store the IDs of the entry list as a comma-separated list
+    this.autocompleteValue = $('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">');
+    this.autocompleteForm.append(this.autocompleteValue);
 
     // Bind the form submit event
     this.autocompleteForm.submit((event) => {
+        console.log('hi', this.autocompleteInput);
         if (!this.autocompleteInput.attr('data-id')) {
             $('button', event.target).popover({
                 placement : "bottom",
@@ -65,9 +64,7 @@ let autoEntry = function(target, options) {
         return false;
     });
 
-    // Add the field itself, which will store the IDs of the entry list as a comma-separated list
-    this.autocompleteValue = $('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">');
-    this.autocompleteForm.append(this.autocompleteValue);
+
 
     // Add the entry adder to the target
     target.append(this.autocompleteForm);
@@ -134,8 +131,6 @@ autoEntry.prototype = {
                 setTimeout(function() {
                     this.autocompleteSubmit.popover('dispose')
                 }, 1000);
-
-                this.autocompleteInput.val('');
             }
 
             else {

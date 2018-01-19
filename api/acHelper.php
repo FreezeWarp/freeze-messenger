@@ -38,21 +38,21 @@ $request = fim_sanitizeGPC('g', [
 switch ($request['list']) {
 
     case 'users':
-        $entries = new Http\ApiOutputDict(\Fim\DatabaseSlave::instance()->getUsers([
+        $entries = new Http\ApiOutputList(\Fim\DatabaseSlave::instance()->getUsers([
             'userNameSearch' => $request['search'],
-        ], null, 10)->getAsSlicedArray(['name', 'avatar'], 'id'));
+        ], null, 10)->getAsSlicedArray(['id', 'name', 'avatar'], null));
         break;
 
     case 'rooms':
-        $entries = new Http\ApiOutputDict(\Fim\DatabaseSlave::instance()->getRooms([
+        $entries = new Http\ApiOutputList(\Fim\DatabaseSlave::instance()->getRooms([
             'roomNameSearch' => $request['search'],
-        ], null, 10)->getAsSlicedArray(['name'], 'id'));
+        ], null, 10)->getAsSlicedArray(['id', 'name']));
         break;
 
     case 'groups':
-        $entries = new Http\ApiOutputDict(\Fim\DatabaseSlave::instance()->getGroups([
+        $entries = new Http\ApiOutputList(\Fim\DatabaseSlave::instance()->getGroups([
             'groupNameSearch' => $request['search'],
-        ], null, 10)->getAsSlicedArray(['name', 'avatar'], 'id'));
+        ], null, 10)->getAsSlicedArray(['id', 'name', 'avatar']));
         break;
 
 }
