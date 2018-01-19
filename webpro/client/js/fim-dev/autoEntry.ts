@@ -65,12 +65,12 @@ let autoEntry = function(target, options) {
         return false;
     });
 
-    // Add the entry adder to the target
-    target.append(this.autocompleteForm);
-
     // Add the field itself, which will store the IDs of the entry list as a comma-separated list
     this.autocompleteValue = $('<input type="hidden" name="' + this.options.name + '" id="' + this.options.name + '">');
-    this.autocompleteValue.insertAfter(target);
+    this.autocompleteForm.append(this.autocompleteValue);
+
+    // Add the entry adder to the target
+    target.append(this.autocompleteForm);
 
     // Add the "list" div, which will display each list element
     this.autocompleteDiv = $('<div class="d-flex flex-wrap">').attr('id', this.options.name + 'List');
