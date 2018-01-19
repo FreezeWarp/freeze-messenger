@@ -1,721 +1,681 @@
-/* jQuery, jQueryUI, and Javascipt Plugins File
- * Whenever a write a function that could be used with other projects, I will include it here instead of a fim-*.js file.
- * Below are several mini-libaries bundled into one file. If any author has issues with their software being included, the means used to attribute their work, or would otherwise like to contact me, email me at <josephtparsons@gmail.com>.
- * The copyright of each piece is listed directly above the section. It should be easy enough to distinguish between sections. *
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports) {
+
+module.exports = jQuery;
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(2);
+__webpack_require__(3);
+__webpack_require__(4);
+__webpack_require__(5);
+__webpack_require__(6);
+__webpack_require__(7);
+__webpack_require__(9);
+__webpack_require__(10);
+__webpack_require__(11);
+module.exports = __webpack_require__(12);
 
 
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
 
-/*! jQuery UI - v1.11.4+CommonJS - 2015-08-28
-* http://jqueryui.com
-* Includes: widget.js
-* Copyright 2015 jQuery Foundation and other contributors; Licensed MIT */
+jQuery.fn.extend({
+    autocompleteHelper: function (resourceName, defaultId) {
+        var _this = $('<input class="js-typeahead form-control" type="search" autocomplete="off" />');
 
-(function( factory ) {
-    if ( typeof define === "function" && define.amd ) {
+        if (this.attr('name'))
+            _this.attr('name', this.attr('name'));
+        if (this.attr('id'))
+            _this.attr('id', this.attr('id'));
 
-        // AMD. Register as an anonymous module.
-        define([ "jquery" ], factory );
+        var container = $('<div class="typeahead__container form-control-container">').append(
+            $('<div class="typeahead__field">').append(
+                $('<span class="typeahead__query">').append(
+                    _this
+                )
+            )
+        );
 
-    } else if ( typeof exports === "object" ) {
+        this.replaceWith(container);
 
-        // Node/CommonJS
-        factory( require( "jquery" ) );
+        _this.typeahead({
+            display: ['name'],
+            order: 'asc',
+            minLength: 1,
+            dynamic: true,
+            source: {
+                users: {
+                    ajax: {
+                        url: fimApi.directory + 'api/acHelper.php',
+                        data: {
+                            'access_token': fimApi.lastSessionHash,
+                            'list': resourceName,
+                            'search': '{{query}}'
+                        },
+                        path: 'entries'
+                    }
+                }
+            },
+            template: function (query, item) {
+                if (item.avatar)
+                    return '<span class="userName userNameAvatar"><img src="{{avatar}}" style="max-width: 20px; max-height: 20px;"/> <span>{{name}}</span></span>';
+                else
+                    return '<span>{{name}}</span>';
+            },
+            callback: {
+                onClick: function (node, a, item, event) {
+                    $(node).val(item.name);
+                    $(node).attr('data-id', item.id);
+                    $(node).attr('data-value', item.name);
+                    $(node).removeClass('is-invalid');
 
-    } else {
+                    $(node).trigger('autocompleteChange').change();
+                },
+                onCancel: function (node, event) {
+                    $(node).attr('data-id', '');
+                    $(node).attr('data-value', '');
+                    $(node).removeClass('is-invalid');
 
-        // Browser globals
-        factory( jQuery );
+                    $(node).trigger('autocompleteChange').change();
+                }
+            }
+        });
+        _this.on('change', function (event) {
+            console.log('change', event)
+        });
+
+
+        _this.off('keyup.autocompleteHelper').on('keyup.autocompleteHelper', function (event) {
+            if ($(event.target).attr('data-value') != $(event.target).val()) {
+                $(event.target).removeClass('is-invalid');
+                $(event.target).attr('data-id', '');
+                $(event.target).attr('data-value', '');
+            }
+        });
+
+
+        function resolveInput(target, callback) {
+            if (!target.val()) {
+                target.attr('data-id', '');
+                target.attr('data-value', '');
+
+                target.removeClass('is-invalid');
+
+                target.trigger('autocompleteChange');
+
+                if (callback) callback();//
+            }
+            else {
+                $.when(Resolver.resolveFromName(resourceName, target.val())).then(function (pairs) {
+                    if (pairs[target.val()]) {
+                        target.attr('data-value', pairs[target.val()].name);
+                        target.attr('data-id', pairs[target.val()].id);
+
+                        target.removeClass('is-invalid');
+
+                        target.trigger('autocompleteChange');
+
+                        if (callback) callback();
+                        //target.popover('dispose');
+                    }
+                    else {
+                        target.attr('data-id', '');
+                        target.attr('data-value', '');
+
+                        target.addClass('is-invalid');
+
+                        if (callback) callback();
+                    }
+                });
+            }
+        }
+
+
+        // Catch form submissions in order to resolve manually-inputted data
+        _this.closest('form').off('submit.autocompleteHelper').on('submit.autocompleteHelper', function (event) {
+
+            if (_this.val() && !(_this.attr('data-id')) && !_this.hasClass('is-invalid')) {
+                console.log("fetcher invalid");
+                event.stopImmediatePropagation();
+
+                // Refire the submit when we've resolved the text.
+                resolveInput(_this, function () {
+                    // Re-trigger the event
+                    $(event.target).trigger('submit');
+                });
+
+                // Prevent the event from continuing (since we have to wait on a promise before we can finish this callback)
+                return false;
+            }
+
+            return true;
+        });
+
+
+        // Catch change events in order to resolve manually-inputted data
+        /*_this.off('change.autocompleteHelper').on('change.autocompleteHelper', function(event) {
+            resolveInput($(event.target));
+        });*/
+
+
+        // Set the initial value of the form field, if needed
+        if (defaultId) {
+            $.when(Resolver.resolveFromId(resourceName, defaultId)).then(function (pairs) {
+                _this.val(pairs[defaultId].name);
+                _this.attr('data-value', pairs[defaultId].name);
+                _this.attr('data-id', defaultId);
+            });
+        }
+        else {
+            _this.val('');
+            _this.attr('data-id', '');
+            _this.attr('data-value', '');
+        }
+
+
+        return _this;
     }
-}(function( $ ) {
-    /*!
-     * jQuery UI Widget 1.11.4
-     * http://jqueryui.com
-     *
-     * Copyright jQuery Foundation and other contributors
-     * Released under the MIT license.
-     * http://jquery.org/license
-     *
-     * http://api.jqueryui.com/jQuery.widget/
-     */
+});
 
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
 
-    var widget_uuid = 0,
-        widget_slice = Array.prototype.slice;
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
+/*
+* Project: Bootstrap Notify = v3.1.5
+* Description: Turns standard Bootstrap alerts into "Growl-like" notifications.
+* Author: Mouse0270 aka Robert McIntosh
+* License: MIT License
+* Website: https://github.com/mouse0270/bootstrap-growl
+*/
 
-    $.cleanData = (function( orig ) {
-        return function( elems ) {
-            var events, elem, i;
-            for ( i = 0; (elem = elems[i]) != null; i++ ) {
-                try {
+/* global define:false, require: false, jQuery:false */
 
-                    // Only trigger remove when necessary to save time
-                    events = $._data( elem, "events" );
-                    if ( events && events.remove ) {
-                        $( elem ).triggerHandler( "remove" );
-                    }
-
-                    // http://bugs.jquery.com/ticket/8235
-                } catch ( e ) {}
-            }
-            orig( elems );
-        };
-    })( $.cleanData );
-
-    $.widget = function( name, base, prototype ) {
-        var fullName, existingConstructor, constructor, basePrototype,
-            // proxiedPrototype allows the provided prototype to remain unmodified
-            // so that it can be used as a mixin for multiple widgets (#8876)
-            proxiedPrototype = {},
-            namespace = name.split( "." )[ 0 ];
-
-        name = name.split( "." )[ 1 ];
-        fullName = namespace + "-" + name;
-
-        if ( !prototype ) {
-            prototype = base;
-            base = $.Widget;
-        }
-
-        // create selector for plugin
-        $.expr[ ":" ][ fullName.toLowerCase() ] = function( elem ) {
-            return !!$.data( elem, fullName );
-        };
-
-        $[ namespace ] = $[ namespace ] || {};
-        existingConstructor = $[ namespace ][ name ];
-        constructor = $[ namespace ][ name ] = function( options, element ) {
-            // allow instantiation without "new" keyword
-            if ( !this._createWidget ) {
-                return new constructor( options, element );
-            }
-
-            // allow instantiation without initializing for simple inheritance
-            // must use "new" keyword (the code above always passes args)
-            if ( arguments.length ) {
-                this._createWidget( options, element );
-            }
-        };
-        // extend with the existing constructor to carry over any static properties
-        $.extend( constructor, existingConstructor, {
-            version: prototype.version,
-            // copy the object used to create the prototype in case we need to
-            // redefine the widget later
-            _proto: $.extend( {}, prototype ),
-            // track widgets that inherit from this widget in case this widget is
-            // redefined after a widget inherits from it
-            _childConstructors: []
-        });
-
-        basePrototype = new base();
-        // we need to make the options hash a property directly on the new instance
-        // otherwise we'll modify the options hash on the prototype that we're
-        // inheriting from
-        basePrototype.options = $.widget.extend( {}, basePrototype.options );
-        $.each( prototype, function( prop, value ) {
-            if ( !$.isFunction( value ) ) {
-                proxiedPrototype[ prop ] = value;
-                return;
-            }
-            proxiedPrototype[ prop ] = (function() {
-                var _super = function() {
-                        return base.prototype[ prop ].apply( this, arguments );
-                    },
-                    _superApply = function( args ) {
-                        return base.prototype[ prop ].apply( this, args );
-                    };
-                return function() {
-                    var __super = this._super,
-                        __superApply = this._superApply,
-                        returnValue;
-
-                    this._super = _super;
-                    this._superApply = _superApply;
-
-                    returnValue = value.apply( this, arguments );
-
-                    this._super = __super;
-                    this._superApply = __superApply;
-
-                    return returnValue;
-                };
-            })();
-        });
-        constructor.prototype = $.widget.extend( basePrototype, {
-            // TODO: remove support for widgetEventPrefix
-            // always use the name + a colon as the prefix, e.g., draggable:start
-            // don't prefix for widgets that aren't DOM-based
-            widgetEventPrefix: existingConstructor ? (basePrototype.widgetEventPrefix || name) : name
-        }, proxiedPrototype, {
-            constructor: constructor,
-            namespace: namespace,
-            widgetName: name,
-            widgetFullName: fullName
-        });
-
-        // If this widget is being redefined then we need to find all widgets that
-        // are inheriting from it and redefine all of them so that they inherit from
-        // the new version of this widget. We're essentially trying to replace one
-        // level in the prototype chain.
-        if ( existingConstructor ) {
-            $.each( existingConstructor._childConstructors, function( i, child ) {
-                var childPrototype = child.prototype;
-
-                // redefine the child widget using the same prototype that was
-                // originally used, but inherit from the new version of the base
-                $.widget( childPrototype.namespace + "." + childPrototype.widgetName, constructor, child._proto );
-            });
-            // remove the list of existing child constructors from the old constructor
-            // so the old child constructors can be garbage collected
-            delete existingConstructor._childConstructors;
-        } else {
-            base._childConstructors.push( constructor );
-        }
-
-        $.widget.bridge( name, constructor );
-
-        return constructor;
-    };
-
-    $.widget.extend = function( target ) {
-        var input = widget_slice.call( arguments, 1 ),
-            inputIndex = 0,
-            inputLength = input.length,
-            key,
-            value;
-        for ( ; inputIndex < inputLength; inputIndex++ ) {
-            for ( key in input[ inputIndex ] ) {
-                value = input[ inputIndex ][ key ];
-                if ( input[ inputIndex ].hasOwnProperty( key ) && value !== undefined ) {
-                    // Clone objects
-                    if ( $.isPlainObject( value ) ) {
-                        target[ key ] = $.isPlainObject( target[ key ] ) ?
-                            $.widget.extend( {}, target[ key ], value ) :
-                            // Don't extend strings, arrays, etc. with objects
-                            $.widget.extend( {}, value );
-                        // Copy everything else by reference
-                    } else {
-                        target[ key ] = value;
-                    }
-                }
-            }
-        }
-        return target;
-    };
-
-    $.widget.bridge = function( name, object ) {
-        var fullName = object.prototype.widgetFullName || name;
-        $.fn[ name ] = function( options ) {
-            var isMethodCall = typeof options === "string",
-                args = widget_slice.call( arguments, 1 ),
-                returnValue = this;
-
-            if ( isMethodCall ) {
-                this.each(function() {
-                    var methodValue,
-                        instance = $.data( this, fullName );
-                    if ( options === "instance" ) {
-                        returnValue = instance;
-                        return false;
-                    }
-                    if ( !instance ) {
-                        return $.error( "cannot call methods on " + name + " prior to initialization; " +
-                            "attempted to call method '" + options + "'" );
-                    }
-                    if ( !$.isFunction( instance[options] ) || options.charAt( 0 ) === "_" ) {
-                        return $.error( "no such method '" + options + "' for " + name + " widget instance" );
-                    }
-                    methodValue = instance[ options ].apply( instance, args );
-                    if ( methodValue !== instance && methodValue !== undefined ) {
-                        returnValue = methodValue && methodValue.jquery ?
-                            returnValue.pushStack( methodValue.get() ) :
-                            methodValue;
-                        return false;
-                    }
-                });
-            } else {
-
-                // Allow multiple hashes to be passed on init
-                if ( args.length ) {
-                    options = $.widget.extend.apply( null, [ options ].concat(args) );
-                }
-
-                this.each(function() {
-                    var instance = $.data( this, fullName );
-                    if ( instance ) {
-                        instance.option( options || {} );
-                        if ( instance._init ) {
-                            instance._init();
-                        }
-                    } else {
-                        $.data( this, fullName, new object( options, this ) );
-                    }
-                });
-            }
-
-            return returnValue;
-        };
-    };
-
-    $.Widget = function( /* options, element */ ) {};
-    $.Widget._childConstructors = [];
-
-    $.Widget.prototype = {
-        widgetName: "widget",
-        widgetEventPrefix: "",
-        defaultElement: "<div>",
-        options: {
-            disabled: false,
-
-            // callbacks
-            create: null
+(function (factory) {
+    if (true) {
+        // AMD. Register as an anonymous module.
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+    } else if (typeof exports === 'object') {
+        // Node/CommonJS
+        factory(require('jquery'));
+    } else {
+        // Browser globals
+        factory(jQuery);
+    }
+}(function ($) {
+    // Create the defaults once
+    var defaults = {
+        element: 'body',
+        position: null,
+        type: "info",
+        allow_dismiss: true,
+        allow_duplicates: true,
+        newest_on_top: false,
+        showProgressbar: false,
+        placement: {
+            from: "top",
+            align: "right"
         },
-        _createWidget: function( options, element ) {
-            element = $( element || this.defaultElement || this )[ 0 ];
-            this.element = $( element );
-            this.uuid = widget_uuid++;
-            this.eventNamespace = "." + this.widgetName + this.uuid;
+        offset: 20,
+        spacing: 10,
+        z_index: 1031,
+        delay: 5000,
+        timer: 1000,
+        url_target: '_blank',
+        mouse_over: null,
+        animate: {
+            enter: 'animated fadeInDown',
+            exit: 'animated fadeOutUp'
+        },
+        onShow: null,
+        onShown: null,
+        onClose: null,
+        onClosed: null,
+        onClick: null,
+        icon_type: 'class',
+        template: '<div data-notify="container" class="col-xs-11 col-sm-4 alert alert-{0}" role="alert"><button type="button" aria-hidden="true" class="close" data-notify="dismiss">&times;</button><span data-notify="icon"></span> <span data-notify="title">{1}</span> <span data-notify="message">{2}</span><div class="progress" data-notify="progressbar"><div class="progress-bar progress-bar-{0}" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div></div><a href="{3}" target="{4}" data-notify="url"></a></div>'
+    };
 
-            this.bindings = $();
-            this.hoverable = $();
-            this.focusable = $();
+    String.format = function () {
+        var args = arguments;
+        var str = arguments[0];
+        return str.replace(/(\{\{\d\}\}|\{\d\})/g, function (str) {
+            if (str.substring(0, 2) === "{{") return str;
+            var num = parseInt(str.match(/\d/)[0]);
+            return args[num + 1];
+        });
+    };
 
-            if ( element !== this ) {
-                $.data( element, this.widgetFullName, this );
-                this._on( true, this.element, {
-                    remove: function( event ) {
-                        if ( event.target === element ) {
-                            this.destroy();
+    function isDuplicateNotification(notification) {
+        var isDupe = false;
+
+        $('[data-notify="container"]').each(function (i, el) {
+            var $el = $(el);
+            var title = $el.find('[data-notify="title"]').html().trim();
+            var message = $el.find('[data-notify="message"]').html().trim();
+
+            // The input string might be different than the actual parsed HTML string!
+            // (<br> vs <br /> for example)
+            // So we have to force-parse this as HTML here!
+            var isSameTitle = title === $("<div>" + notification.settings.content.title + "</div>").html().trim();
+            var isSameMsg = message === $("<div>" + notification.settings.content.message + "</div>").html().trim();
+            var isSameType = $el.hasClass('alert-' + notification.settings.type);
+
+            if (isSameTitle && isSameMsg && isSameType) {
+                //we found the dupe. Set the var and stop checking.
+                isDupe = true;
+            }
+            return !isDupe;
+        });
+
+        return isDupe;
+    }
+
+    function Notify(element, content, options) {
+        // Setup Content of Notify
+        var contentObj = {
+            content: {
+                message: typeof content === 'object' ? content.message : content,
+                title: content.title ? content.title : '',
+                icon: content.icon ? content.icon : '',
+                url: content.url ? content.url : '#',
+                target: content.target ? content.target : '-'
+            }
+        };
+
+        options = $.extend(true, {}, contentObj, options);
+        this.settings = $.extend(true, {}, defaults, options);
+        this._defaults = defaults;
+        if (this.settings.content.target === "-") {
+            this.settings.content.target = this.settings.url_target;
+        }
+        this.animations = {
+            start: 'webkitAnimationStart oanimationstart MSAnimationStart animationstart',
+            end: 'webkitAnimationEnd oanimationend MSAnimationEnd animationend'
+        };
+
+        if (typeof this.settings.offset === 'number') {
+            this.settings.offset = {
+                x: this.settings.offset,
+                y: this.settings.offset
+            };
+        }
+
+        //if duplicate messages are not allowed, then only continue if this new message is not a duplicate of one that it already showing
+        if (this.settings.allow_duplicates || (!this.settings.allow_duplicates && !isDuplicateNotification(this))) {
+            this.init();
+        }
+    }
+
+    $.extend(Notify.prototype, {
+        init: function () {
+            var self = this;
+
+            this.buildNotify();
+            if (this.settings.content.icon) {
+                this.setIcon();
+            }
+            if (this.settings.content.url != "#") {
+                this.styleURL();
+            }
+            this.styleDismiss();
+            this.placement();
+            this.bind();
+
+            this.notify = {
+                $ele: this.$ele,
+                update: function (command, update) {
+                    var commands = {};
+                    if (typeof command === "string") {
+                        commands[command] = update;
+                    } else {
+                        commands = command;
+                    }
+                    for (var cmd in commands) {
+                        switch (cmd) {
+                            case "type":
+                                this.$ele.removeClass('alert-' + self.settings.type);
+                                this.$ele.find('[data-notify="progressbar"] > .progress-bar').removeClass('progress-bar-' + self.settings.type);
+                                self.settings.type = commands[cmd];
+                                this.$ele.addClass('alert-' + commands[cmd]).find('[data-notify="progressbar"] > .progress-bar').addClass('progress-bar-' + commands[cmd]);
+                                break;
+                            case "icon":
+                                var $icon = this.$ele.find('[data-notify="icon"]');
+                                if (self.settings.icon_type.toLowerCase() === 'class') {
+                                    $icon.removeClass(self.settings.content.icon).addClass(commands[cmd]);
+                                } else {
+                                    if (!$icon.is('img')) {
+                                        $icon.find('img');
+                                    }
+                                    $icon.attr('src', commands[cmd]);
+                                }
+                                self.settings.content.icon = commands[command];
+                                break;
+                            case "progress":
+                                var newDelay = self.settings.delay - (self.settings.delay * (commands[cmd] / 100));
+                                this.$ele.data('notify-delay', newDelay);
+                                this.$ele.find('[data-notify="progressbar"] > div').attr('aria-valuenow', commands[cmd]).css('width', commands[cmd] + '%');
+                                break;
+                            case "url":
+                                this.$ele.find('[data-notify="url"]').attr('href', commands[cmd]);
+                                break;
+                            case "target":
+                                this.$ele.find('[data-notify="url"]').attr('target', commands[cmd]);
+                                break;
+                            default:
+                                this.$ele.find('[data-notify="' + cmd + '"]').html(commands[cmd]);
                         }
                     }
-                });
-                this.document = $( element.style ?
-                    // element within the document
-                    element.ownerDocument :
-                    // element is window or document
-                    element.document || element );
-                this.window = $( this.document[0].defaultView || this.document[0].parentWindow );
-            }
-
-            this.options = $.widget.extend( {},
-                this.options,
-                this._getCreateOptions(),
-                options );
-
-            this._create();
-            this._trigger( "create", null, this._getCreateEventData() );
-            this._init();
-        },
-        _getCreateOptions: $.noop,
-        _getCreateEventData: $.noop,
-        _create: $.noop,
-        _init: $.noop,
-
-        destroy: function() {
-            this._destroy();
-            // we can probably remove the unbind calls in 2.0
-            // all event bindings should go through this._on()
-            this.element
-                .unbind( this.eventNamespace )
-                .removeData( this.widgetFullName )
-                // support: jquery <1.6.3
-                // http://bugs.jquery.com/ticket/9413
-                .removeData( $.camelCase( this.widgetFullName ) );
-            this.widget()
-                .unbind( this.eventNamespace )
-                .removeAttr( "aria-disabled" )
-                .removeClass(
-                    this.widgetFullName + "-disabled " +
-                    "ui-state-disabled" );
-
-            // clean up events and states
-            this.bindings.unbind( this.eventNamespace );
-            this.hoverable.removeClass( "ui-state-hover" );
-            this.focusable.removeClass( "ui-state-focus" );
-        },
-        _destroy: $.noop,
-
-        widget: function() {
-            return this.element;
-        },
-
-        option: function( key, value ) {
-            var options = key,
-                parts,
-                curOption,
-                i;
-
-            if ( arguments.length === 0 ) {
-                // don't return a reference to the internal hash
-                return $.widget.extend( {}, this.options );
-            }
-
-            if ( typeof key === "string" ) {
-                // handle nested keys, e.g., "foo.bar" => { foo: { bar: ___ } }
-                options = {};
-                parts = key.split( "." );
-                key = parts.shift();
-                if ( parts.length ) {
-                    curOption = options[ key ] = $.widget.extend( {}, this.options[ key ] );
-                    for ( i = 0; i < parts.length - 1; i++ ) {
-                        curOption[ parts[ i ] ] = curOption[ parts[ i ] ] || {};
-                        curOption = curOption[ parts[ i ] ];
-                    }
-                    key = parts.pop();
-                    if ( arguments.length === 1 ) {
-                        return curOption[ key ] === undefined ? null : curOption[ key ];
-                    }
-                    curOption[ key ] = value;
-                } else {
-                    if ( arguments.length === 1 ) {
-                        return this.options[ key ] === undefined ? null : this.options[ key ];
-                    }
-                    options[ key ] = value;
+                    var posX = this.$ele.outerHeight() + parseInt(self.settings.spacing) + parseInt(self.settings.offset.y);
+                    self.reposition(posX);
+                },
+                close: function () {
+                    self.close();
                 }
+            };
+
+        },
+        buildNotify: function () {
+            var content = this.settings.content;
+            this.$ele = $(String.format(this.settings.template, this.settings.type, content.title, content.message, content.url, content.target));
+            this.$ele.attr('data-notify-position', this.settings.placement.from + '-' + this.settings.placement.align);
+            if (!this.settings.allow_dismiss) {
+                this.$ele.find('[data-notify="dismiss"]').css('display', 'none');
             }
-
-            this._setOptions( options );
-
-            return this;
-        },
-        _setOptions: function( options ) {
-            var key;
-
-            for ( key in options ) {
-                this._setOption( key, options[ key ] );
+            if ((this.settings.delay <= 0 && !this.settings.showProgressbar) || !this.settings.showProgressbar) {
+                this.$ele.find('[data-notify="progressbar"]').remove();
             }
-
-            return this;
         },
-        _setOption: function( key, value ) {
-            this.options[ key ] = value;
-
-            if ( key === "disabled" ) {
-                this.widget()
-                    .toggleClass( this.widgetFullName + "-disabled", !!value );
-
-                // If the widget is becoming disabled, then nothing is interactive
-                if ( value ) {
-                    this.hoverable.removeClass( "ui-state-hover" );
-                    this.focusable.removeClass( "ui-state-focus" );
-                }
-            }
-
-            return this;
-        },
-
-        enable: function() {
-            return this._setOptions({ disabled: false });
-        },
-        disable: function() {
-            return this._setOptions({ disabled: true });
-        },
-
-        _on: function( suppressDisabledCheck, element, handlers ) {
-            var delegateElement,
-                instance = this;
-
-            // no suppressDisabledCheck flag, shuffle arguments
-            if ( typeof suppressDisabledCheck !== "boolean" ) {
-                handlers = element;
-                element = suppressDisabledCheck;
-                suppressDisabledCheck = false;
-            }
-
-            // no element argument, shuffle and use this.element
-            if ( !handlers ) {
-                handlers = element;
-                element = this.element;
-                delegateElement = this.widget();
+        setIcon: function () {
+            if (this.settings.icon_type.toLowerCase() === 'class') {
+                this.$ele.find('[data-notify="icon"]').addClass(this.settings.content.icon);
             } else {
-                element = delegateElement = $( element );
-                this.bindings = this.bindings.add( element );
-            }
-
-            $.each( handlers, function( event, handler ) {
-                function handlerProxy() {
-                    // allow widgets to customize the disabled handling
-                    // - disabled as an array instead of boolean
-                    // - disabled class as method for disabling individual parts
-                    if ( !suppressDisabledCheck &&
-                        ( instance.options.disabled === true ||
-                            $( this ).hasClass( "ui-state-disabled" ) ) ) {
-                        return;
-                    }
-                    return ( typeof handler === "string" ? instance[ handler ] : handler )
-                        .apply( instance, arguments );
-                }
-
-                // copy the guid so direct unbinding works
-                if ( typeof handler !== "string" ) {
-                    handlerProxy.guid = handler.guid =
-                        handler.guid || handlerProxy.guid || $.guid++;
-                }
-
-                var match = event.match( /^([\w:-]*)\s*(.*)$/ ),
-                    eventName = match[1] + instance.eventNamespace,
-                    selector = match[2];
-                if ( selector ) {
-                    delegateElement.delegate( selector, eventName, handlerProxy );
+                if (this.$ele.find('[data-notify="icon"]').is('img')) {
+                    this.$ele.find('[data-notify="icon"]').attr('src', this.settings.content.icon);
                 } else {
-                    element.bind( eventName, handlerProxy );
+                    this.$ele.find('[data-notify="icon"]').append('<img src="' + this.settings.content.icon + '" alt="Notify Icon" />');
                 }
-            });
-        },
-
-        _off: function( element, eventName ) {
-            eventName = (eventName || "").split( " " ).join( this.eventNamespace + " " ) +
-                this.eventNamespace;
-            element.unbind( eventName ).undelegate( eventName );
-
-            // Clear the stack to avoid memory leaks (#10056)
-            this.bindings = $( this.bindings.not( element ).get() );
-            this.focusable = $( this.focusable.not( element ).get() );
-            this.hoverable = $( this.hoverable.not( element ).get() );
-        },
-
-        _delay: function( handler, delay ) {
-            function handlerProxy() {
-                return ( typeof handler === "string" ? instance[ handler ] : handler )
-                    .apply( instance, arguments );
             }
-            var instance = this;
-            return setTimeout( handlerProxy, delay || 0 );
         },
-
-        _hoverable: function( element ) {
-            this.hoverable = this.hoverable.add( element );
-            this._on( element, {
-                mouseenter: function( event ) {
-                    $( event.currentTarget ).addClass( "ui-state-hover" );
-                },
-                mouseleave: function( event ) {
-                    $( event.currentTarget ).removeClass( "ui-state-hover" );
-                }
+        styleDismiss: function () {
+            this.$ele.find('[data-notify="dismiss"]').css({
+                position: 'absolute',
+                right: '10px',
+                top: '5px',
+                zIndex: this.settings.z_index + 2
             });
         },
-
-        _focusable: function( element ) {
-            this.focusable = this.focusable.add( element );
-            this._on( element, {
-                focusin: function( event ) {
-                    $( event.currentTarget ).addClass( "ui-state-focus" );
-                },
-                focusout: function( event ) {
-                    $( event.currentTarget ).removeClass( "ui-state-focus" );
-                }
+        styleURL: function () {
+            this.$ele.find('[data-notify="url"]').css({
+                backgroundImage: 'url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7)',
+                height: '100%',
+                left: 0,
+                position: 'absolute',
+                top: 0,
+                width: '100%',
+                zIndex: this.settings.z_index + 1
             });
         },
+        placement: function () {
+            var self = this,
+                offsetAmt = this.settings.offset.y,
+                css = {
+                    display: 'inline-block',
+                    margin: '0px auto',
+                    position: this.settings.position ? this.settings.position : (this.settings.element === 'body' ? 'fixed' : 'absolute'),
+                    transition: 'all .5s ease-in-out',
+                    zIndex: this.settings.z_index
+                },
+                hasAnimation = false,
+                settings = this.settings;
 
-        _trigger: function( type, event, data ) {
-            var prop, orig,
-                callback = this.options[ type ];
+            $('[data-notify-position="' + this.settings.placement.from + '-' + this.settings.placement.align + '"]:not([data-closing="true"])').each(function () {
+                offsetAmt = Math.max(offsetAmt, parseInt($(this).css(settings.placement.from)) + parseInt($(this).outerHeight()) + parseInt(settings.spacing));
+            });
+            if (this.settings.newest_on_top === true) {
+                offsetAmt = this.settings.offset.y;
+            }
+            css[this.settings.placement.from] = offsetAmt + 'px';
 
-            data = data || {};
-            event = $.Event( event );
-            event.type = ( type === this.widgetEventPrefix ?
-                type :
-                this.widgetEventPrefix + type ).toLowerCase();
-            // the original event may come from any element
-            // so we need to reset the target on the new event
-            event.target = this.element[ 0 ];
+            switch (this.settings.placement.align) {
+                case "left":
+                case "right":
+                    css[this.settings.placement.align] = this.settings.offset.x + 'px';
+                    break;
+                case "center":
+                    css.left = 0;
+                    css.right = 0;
+                    break;
+            }
+            this.$ele.css(css).addClass(this.settings.animate.enter);
+            $.each(Array('webkit-', 'moz-', 'o-', 'ms-', ''), function (index, prefix) {
+                self.$ele[0].style[prefix + 'AnimationIterationCount'] = 1;
+            });
 
-            // copy original event properties over to the new event
-            orig = event.originalEvent;
-            if ( orig ) {
-                for ( prop in orig ) {
-                    if ( !( prop in event ) ) {
-                        event[ prop ] = orig[ prop ];
+            $(this.settings.element).append(this.$ele);
+
+            if (this.settings.newest_on_top === true) {
+                offsetAmt = (parseInt(offsetAmt) + parseInt(this.settings.spacing)) + this.$ele.outerHeight();
+                this.reposition(offsetAmt);
+            }
+
+            if ($.isFunction(self.settings.onShow)) {
+                self.settings.onShow.call(this.$ele);
+            }
+
+            this.$ele.one(this.animations.start, function () {
+                hasAnimation = true;
+            }).one(this.animations.end, function () {
+                self.$ele.removeClass(self.settings.animate.enter);
+                if ($.isFunction(self.settings.onShown)) {
+                    self.settings.onShown.call(this);
+                }
+            });
+
+            setTimeout(function () {
+                if (!hasAnimation) {
+                    if ($.isFunction(self.settings.onShown)) {
+                        self.settings.onShown.call(this);
                     }
                 }
+            }, 600);
+        },
+        bind: function () {
+            var self = this;
+
+            this.$ele.find('[data-notify="dismiss"]').on('click', function () {
+                self.close();
+            });
+
+            if ($.isFunction(self.settings.onClick)) {
+                this.$ele.on('click', function (event) {
+                    if (event.target != self.$ele.find('[data-notify="dismiss"]')[0]) {
+                        self.settings.onClick.call(this, event);
+                    }
+                });
             }
 
-            this.element.trigger( event, data );
-            return !( $.isFunction( callback ) &&
-                callback.apply( this.element[0], [ event ].concat( data ) ) === false ||
-                event.isDefaultPrevented() );
+            this.$ele.mouseover(function () {
+                $(this).data('data-hover', "true");
+            }).mouseout(function () {
+                $(this).data('data-hover', "false");
+            });
+            this.$ele.data('data-hover', "false");
+
+            if (this.settings.delay > 0) {
+                self.$ele.data('notify-delay', self.settings.delay);
+                var timer = setInterval(function () {
+                    var delay = parseInt(self.$ele.data('notify-delay')) - self.settings.timer;
+                    if ((self.$ele.data('data-hover') === 'false' && self.settings.mouse_over === "pause") || self.settings.mouse_over != "pause") {
+                        var percent = ((self.settings.delay - delay) / self.settings.delay) * 100;
+                        self.$ele.data('notify-delay', delay);
+                        self.$ele.find('[data-notify="progressbar"] > div').attr('aria-valuenow', percent).css('width', percent + '%');
+                    }
+                    if (delay <= -(self.settings.timer)) {
+                        clearInterval(timer);
+                        self.close();
+                    }
+                }, self.settings.timer);
+            }
+        },
+        close: function () {
+            var self = this,
+                posX = parseInt(this.$ele.css(this.settings.placement.from)),
+                hasAnimation = false;
+
+            this.$ele.attr('data-closing', 'true').addClass(this.settings.animate.exit);
+            self.reposition(posX);
+
+            if ($.isFunction(self.settings.onClose)) {
+                self.settings.onClose.call(this.$ele);
+            }
+
+            this.$ele.one(this.animations.start, function () {
+                hasAnimation = true;
+            }).one(this.animations.end, function () {
+                $(this).remove();
+                if ($.isFunction(self.settings.onClosed)) {
+                    self.settings.onClosed.call(this);
+                }
+            });
+
+            setTimeout(function () {
+                if (!hasAnimation) {
+                    self.$ele.remove();
+                    if ($.isFunction(self.settings.onClosed)) {
+                        self.settings.onClosed.call(this);
+                    }
+                }
+            }, 600);
+        },
+        reposition: function (posX) {
+            var self = this,
+                notifies = '[data-notify-position="' + this.settings.placement.from + '-' + this.settings.placement.align + '"]:not([data-closing="true"])',
+                $elements = this.$ele.nextAll(notifies);
+            if (this.settings.newest_on_top === true) {
+                $elements = this.$ele.prevAll(notifies);
+            }
+            $elements.each(function () {
+                $(this).css(self.settings.placement.from, posX);
+                posX = (parseInt(posX) + parseInt(self.settings.spacing)) + $(this).outerHeight();
+            });
         }
-    };
-
-    $.each( { show: "fadeIn", hide: "fadeOut" }, function( method, defaultEffect ) {
-        $.Widget.prototype[ "_" + method ] = function( element, options, callback ) {
-            if ( typeof options === "string" ) {
-                options = { effect: options };
-            }
-            var hasOptions,
-                effectName = !options ?
-                    method :
-                    options === true || typeof options === "number" ?
-                        defaultEffect :
-                        options.effect || defaultEffect;
-            options = options || {};
-            if ( typeof options === "number" ) {
-                options = { duration: options };
-            }
-            hasOptions = !$.isEmptyObject( options );
-            options.complete = callback;
-            if ( options.delay ) {
-                element.delay( options.delay );
-            }
-            if ( hasOptions && $.effects && $.effects.effect[ effectName ] ) {
-                element[ method ]( options );
-            } else if ( effectName !== method && element[ effectName ] ) {
-                element[ effectName ]( options.duration, options.easing, callback );
-            } else {
-                element.queue(function( next ) {
-                    $( this )[ method ]();
-                    if ( callback ) {
-                        callback.call( element[ 0 ] );
-                    }
-                    next();
-                });
-            }
-        };
     });
 
-    var widget = $.widget;
+    $.notify = function (content, options) {
+        var plugin = new Notify(this, content, options);
+        return plugin.notify;
+    };
+    $.notifyDefaults = function (options) {
+        defaults = $.extend(true, {}, defaults, options);
+        return defaults;
+    };
 
+    $.notifyClose = function (selector) {
+
+        if (typeof selector === "undefined" || selector === "all") {
+            $('[data-notify]').find('[data-notify="dismiss"]').trigger('click');
+        }else if(selector === 'success' || selector === 'info' || selector === 'warning' || selector === 'danger'){
+            $('.alert-' + selector + '[data-notify]').find('[data-notify="dismiss"]').trigger('click');
+        } else if(selector){
+            $(selector + '[data-notify]').find('[data-notify="dismiss"]').trigger('click');
+        }
+        else {
+            $('[data-notify-position="' + selector + '"]').find('[data-notify="dismiss"]').trigger('click');
+        }
+    };
+
+    $.notifyCloseExcept = function (selector) {
+
+        if(selector === 'success' || selector === 'info' || selector === 'warning' || selector === 'danger'){
+            $('[data-notify]').not('.alert-' + selector).find('[data-notify="dismiss"]').trigger('click');
+        } else{
+            $('[data-notify]').not(selector).find('[data-notify="dismiss"]').trigger('click');
+        }
+    };
 
 
 }));
 
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
 
-
-
-
-
-
-// ######################################################################################################### //
-/* Start jQuery Cookie Extension */
-/**
- * jQuery Cookie plugin
- *
- * Copyright (c) 2010 Klaus Hartl (stilbuero.de)
- * Dual licensed under the MIT and GPL licenses:
- * http://www.opensource.org/licenses/mit-license.php
- * http://www.gnu.org/licenses/gpl.html
- *
- * Documentation: https://github.com/carhartl/jquery-cookie/blob/master/README.rdoc
- * Source: https://github.com/carhartl/jquery-cookie/blob/master/jquery.cookie.js
- *
- */
-jQuery.cookie = function (name, value, options) {
-    if (typeof value != 'undefined') { // name and value given, set cookie
-        options = options || {};
-        if (value === null) {
-            value = '';
-            options.expires = -1;
-        }
-        var expires = '';
-        if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
-            var date;
-            if (typeof options.expires == 'number') {
-                date = new Date();
-                date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
-            }
-            else {
-                date = options.expires;
-            }
-            expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
-        }
-        // CAUTION: Needed to parenthesize options.path and options.domain
-        // in the following expressions, otherwise they evaluate to undefined
-        // in the packed version for some reason...
-        var path = options.path ? '; path=' + (options.path) : '';
-        var domain = options.domain ? '; domain=' + (options.domain) : '';
-        var secure = options.secure ? '; secure' : '';
-        document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
-    }
-    else { // only name given, get cookie
-        var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = jQuery.trim(cookies[i]);
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-};
-
-/* END jQuery Cookie Extension */
-// ######################################################################################################### //
-
-
-
-
-
-
-
-
-
-// ######################################################################################################### //
-/* Start jQuery Get Cookie Extension */
-
-/**
- * jQuery getCookie Wrapper
- *
- * @param name - The name of the cookie to obtain.
- * @param ifNull - A value to return if the cookie is not set.
- *
- * @author Joseph T. Parsons
- *
- */
-jQuery.getCookie = function (name, ifNull) {
-    var cookie = $.cookie(name);
-
-    if (cookie === null || cookie === undefined) return ifNull;
-    else return cookie;
-};
-
-/* END jQuery Get Cookie Extension */
-// ######################################################################################################### //
-
-
-
-
-
-
-
-
-
-
-
-// ######################################################################################################### //
-/* Start jQuery toArray Extension */
-
-/**
- * jQuery toArray Wrapper
- * Converts an object to an array.
- *
- * @param obj - Object to convert.
- *
- * @return array - Converted object.
- *
- * @author Joseph T. Parsons
- *
- */
-jQuery.toArray = function(obj) {
-    return $.map(obj, function (value, key) { return value; });
-};
-
-/* END jQuery toArray Extension */
-// ######################################################################################################### //
-
-
-
-
-
-
-
-
-
-
-// ######################################################################################################### //
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;// ######################################################################################################### //
 /* START jQuery Context Menu */
 
 /**
@@ -737,9 +697,12 @@ jQuery.toArray = function(obj) {
 // jscs:disable
 /* jshint ignore:start */
 (function (factory) {
-    if (typeof define === 'function' && define.amd) {
+    if (true) {
         // AMD. Register as anonymous module.
-        define(['jquery'], factory);
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
     } else if (typeof exports === 'object') {
         // Node / CommonJS
         factory(require('jquery'));
@@ -2773,646 +2736,73 @@ jQuery.toArray = function(obj) {
     $.contextMenu.menus = menus;
 });
 
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
 
-/* END jQuery Context Menu */
-// ######################################################################################################### //
-
-
-
-
-
-
-
-// ######################################################################################################### //
-/* START jQuery Non-Obfusicating Alert Box (Generic Implementation) */
-
-/*
-* Project: Bootstrap Notify = v3.1.5
-* Description: Turns standard Bootstrap alerts into "Growl-like" notifications.
-* Author: Mouse0270 aka Robert McIntosh
-* License: MIT License
-* Website: https://github.com/mouse0270/bootstrap-growl
-*/
-
-/* global define:false, require: false, jQuery:false */
-
-(function (factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define(['jquery'], factory);
-    } else if (typeof exports === 'object') {
-        // Node/CommonJS
-        factory(require('jquery'));
-    } else {
-        // Browser globals
-        factory(jQuery);
-    }
-}(function ($) {
-    // Create the defaults once
-    var defaults = {
-        element: 'body',
-        position: null,
-        type: "info",
-        allow_dismiss: true,
-        allow_duplicates: true,
-        newest_on_top: false,
-        showProgressbar: false,
-        placement: {
-            from: "top",
-            align: "right"
-        },
-        offset: 20,
-        spacing: 10,
-        z_index: 1031,
-        delay: 5000,
-        timer: 1000,
-        url_target: '_blank',
-        mouse_over: null,
-        animate: {
-            enter: 'animated fadeInDown',
-            exit: 'animated fadeOutUp'
-        },
-        onShow: null,
-        onShown: null,
-        onClose: null,
-        onClosed: null,
-        onClick: null,
-        icon_type: 'class',
-        template: '<div data-notify="container" class="col-xs-11 col-sm-4 alert alert-{0}" role="alert"><button type="button" aria-hidden="true" class="close" data-notify="dismiss">&times;</button><span data-notify="icon"></span> <span data-notify="title">{1}</span> <span data-notify="message">{2}</span><div class="progress" data-notify="progressbar"><div class="progress-bar progress-bar-{0}" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div></div><a href="{3}" target="{4}" data-notify="url"></a></div>'
-    };
-
-    String.format = function () {
-        var args = arguments;
-        var str = arguments[0];
-        return str.replace(/(\{\{\d\}\}|\{\d\})/g, function (str) {
-            if (str.substring(0, 2) === "{{") return str;
-            var num = parseInt(str.match(/\d/)[0]);
-            return args[num + 1];
-        });
-    };
-
-    function isDuplicateNotification(notification) {
-        var isDupe = false;
-
-        $('[data-notify="container"]').each(function (i, el) {
-            var $el = $(el);
-            var title = $el.find('[data-notify="title"]').html().trim();
-            var message = $el.find('[data-notify="message"]').html().trim();
-
-            // The input string might be different than the actual parsed HTML string!
-            // (<br> vs <br /> for example)
-            // So we have to force-parse this as HTML here!
-            var isSameTitle = title === $("<div>" + notification.settings.content.title + "</div>").html().trim();
-            var isSameMsg = message === $("<div>" + notification.settings.content.message + "</div>").html().trim();
-            var isSameType = $el.hasClass('alert-' + notification.settings.type);
-
-            if (isSameTitle && isSameMsg && isSameType) {
-                //we found the dupe. Set the var and stop checking.
-                isDupe = true;
-            }
-            return !isDupe;
-        });
-
-        return isDupe;
-    }
-
-    function Notify(element, content, options) {
-        // Setup Content of Notify
-        var contentObj = {
-            content: {
-                message: typeof content === 'object' ? content.message : content,
-                title: content.title ? content.title : '',
-                icon: content.icon ? content.icon : '',
-                url: content.url ? content.url : '#',
-                target: content.target ? content.target : '-'
-            }
-        };
-
-        options = $.extend(true, {}, contentObj, options);
-        this.settings = $.extend(true, {}, defaults, options);
-        this._defaults = defaults;
-        if (this.settings.content.target === "-") {
-            this.settings.content.target = this.settings.url_target;
+/**
+ * jQuery Cookie plugin
+ *
+ * Copyright (c) 2010 Klaus Hartl (stilbuero.de)
+ * Dual licensed under the MIT and GPL licenses:
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ * Documentation: https://github.com/carhartl/jquery-cookie/blob/master/README.rdoc
+ * Source: https://github.com/carhartl/jquery-cookie/blob/master/jquery.cookie.js
+ *
+ */
+jQuery.cookie = function (name, value, options) {
+    if (typeof value != 'undefined') { // name and value given, set cookie
+        options = options || {};
+        if (value === null) {
+            value = '';
+            options.expires = -1;
         }
-        this.animations = {
-            start: 'webkitAnimationStart oanimationstart MSAnimationStart animationstart',
-            end: 'webkitAnimationEnd oanimationend MSAnimationEnd animationend'
-        };
-
-        if (typeof this.settings.offset === 'number') {
-            this.settings.offset = {
-                x: this.settings.offset,
-                y: this.settings.offset
-            };
+        var expires = '';
+        if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
+            var date;
+            if (typeof options.expires == 'number') {
+                date = new Date();
+                date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+            }
+            else {
+                date = options.expires;
+            }
+            expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
         }
-
-        //if duplicate messages are not allowed, then only continue if this new message is not a duplicate of one that it already showing
-        if (this.settings.allow_duplicates || (!this.settings.allow_duplicates && !isDuplicateNotification(this))) {
-            this.init();
-        }
+        // CAUTION: Needed to parenthesize options.path and options.domain
+        // in the following expressions, otherwise they evaluate to undefined
+        // in the packed version for some reason...
+        var path = options.path ? '; path=' + (options.path) : '';
+        var domain = options.domain ? '; domain=' + (options.domain) : '';
+        var secure = options.secure ? '; secure' : '';
+        document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
     }
-
-    $.extend(Notify.prototype, {
-        init: function () {
-            var self = this;
-
-            this.buildNotify();
-            if (this.settings.content.icon) {
-                this.setIcon();
-            }
-            if (this.settings.content.url != "#") {
-                this.styleURL();
-            }
-            this.styleDismiss();
-            this.placement();
-            this.bind();
-
-            this.notify = {
-                $ele: this.$ele,
-                update: function (command, update) {
-                    var commands = {};
-                    if (typeof command === "string") {
-                        commands[command] = update;
-                    } else {
-                        commands = command;
-                    }
-                    for (var cmd in commands) {
-                        switch (cmd) {
-                            case "type":
-                                this.$ele.removeClass('alert-' + self.settings.type);
-                                this.$ele.find('[data-notify="progressbar"] > .progress-bar').removeClass('progress-bar-' + self.settings.type);
-                                self.settings.type = commands[cmd];
-                                this.$ele.addClass('alert-' + commands[cmd]).find('[data-notify="progressbar"] > .progress-bar').addClass('progress-bar-' + commands[cmd]);
-                                break;
-                            case "icon":
-                                var $icon = this.$ele.find('[data-notify="icon"]');
-                                if (self.settings.icon_type.toLowerCase() === 'class') {
-                                    $icon.removeClass(self.settings.content.icon).addClass(commands[cmd]);
-                                } else {
-                                    if (!$icon.is('img')) {
-                                        $icon.find('img');
-                                    }
-                                    $icon.attr('src', commands[cmd]);
-                                }
-                                self.settings.content.icon = commands[command];
-                                break;
-                            case "progress":
-                                var newDelay = self.settings.delay - (self.settings.delay * (commands[cmd] / 100));
-                                this.$ele.data('notify-delay', newDelay);
-                                this.$ele.find('[data-notify="progressbar"] > div').attr('aria-valuenow', commands[cmd]).css('width', commands[cmd] + '%');
-                                break;
-                            case "url":
-                                this.$ele.find('[data-notify="url"]').attr('href', commands[cmd]);
-                                break;
-                            case "target":
-                                this.$ele.find('[data-notify="url"]').attr('target', commands[cmd]);
-                                break;
-                            default:
-                                this.$ele.find('[data-notify="' + cmd + '"]').html(commands[cmd]);
-                        }
-                    }
-                    var posX = this.$ele.outerHeight() + parseInt(self.settings.spacing) + parseInt(self.settings.offset.y);
-                    self.reposition(posX);
-                },
-                close: function () {
-                    self.close();
-                }
-            };
-
-        },
-        buildNotify: function () {
-            var content = this.settings.content;
-            this.$ele = $(String.format(this.settings.template, this.settings.type, content.title, content.message, content.url, content.target));
-            this.$ele.attr('data-notify-position', this.settings.placement.from + '-' + this.settings.placement.align);
-            if (!this.settings.allow_dismiss) {
-                this.$ele.find('[data-notify="dismiss"]').css('display', 'none');
-            }
-            if ((this.settings.delay <= 0 && !this.settings.showProgressbar) || !this.settings.showProgressbar) {
-                this.$ele.find('[data-notify="progressbar"]').remove();
-            }
-        },
-        setIcon: function () {
-            if (this.settings.icon_type.toLowerCase() === 'class') {
-                this.$ele.find('[data-notify="icon"]').addClass(this.settings.content.icon);
-            } else {
-                if (this.$ele.find('[data-notify="icon"]').is('img')) {
-                    this.$ele.find('[data-notify="icon"]').attr('src', this.settings.content.icon);
-                } else {
-                    this.$ele.find('[data-notify="icon"]').append('<img src="' + this.settings.content.icon + '" alt="Notify Icon" />');
-                }
-            }
-        },
-        styleDismiss: function () {
-            this.$ele.find('[data-notify="dismiss"]').css({
-                position: 'absolute',
-                right: '10px',
-                top: '5px',
-                zIndex: this.settings.z_index + 2
-            });
-        },
-        styleURL: function () {
-            this.$ele.find('[data-notify="url"]').css({
-                backgroundImage: 'url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7)',
-                height: '100%',
-                left: 0,
-                position: 'absolute',
-                top: 0,
-                width: '100%',
-                zIndex: this.settings.z_index + 1
-            });
-        },
-        placement: function () {
-            var self = this,
-                offsetAmt = this.settings.offset.y,
-                css = {
-                    display: 'inline-block',
-                    margin: '0px auto',
-                    position: this.settings.position ? this.settings.position : (this.settings.element === 'body' ? 'fixed' : 'absolute'),
-                    transition: 'all .5s ease-in-out',
-                    zIndex: this.settings.z_index
-                },
-                hasAnimation = false,
-                settings = this.settings;
-
-            $('[data-notify-position="' + this.settings.placement.from + '-' + this.settings.placement.align + '"]:not([data-closing="true"])').each(function () {
-                offsetAmt = Math.max(offsetAmt, parseInt($(this).css(settings.placement.from)) + parseInt($(this).outerHeight()) + parseInt(settings.spacing));
-            });
-            if (this.settings.newest_on_top === true) {
-                offsetAmt = this.settings.offset.y;
-            }
-            css[this.settings.placement.from] = offsetAmt + 'px';
-
-            switch (this.settings.placement.align) {
-                case "left":
-                case "right":
-                    css[this.settings.placement.align] = this.settings.offset.x + 'px';
+    else { // only name given, get cookie
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                     break;
-                case "center":
-                    css.left = 0;
-                    css.right = 0;
-                    break;
-            }
-            this.$ele.css(css).addClass(this.settings.animate.enter);
-            $.each(Array('webkit-', 'moz-', 'o-', 'ms-', ''), function (index, prefix) {
-                self.$ele[0].style[prefix + 'AnimationIterationCount'] = 1;
-            });
-
-            $(this.settings.element).append(this.$ele);
-
-            if (this.settings.newest_on_top === true) {
-                offsetAmt = (parseInt(offsetAmt) + parseInt(this.settings.spacing)) + this.$ele.outerHeight();
-                this.reposition(offsetAmt);
-            }
-
-            if ($.isFunction(self.settings.onShow)) {
-                self.settings.onShow.call(this.$ele);
-            }
-
-            this.$ele.one(this.animations.start, function () {
-                hasAnimation = true;
-            }).one(this.animations.end, function () {
-                self.$ele.removeClass(self.settings.animate.enter);
-                if ($.isFunction(self.settings.onShown)) {
-                    self.settings.onShown.call(this);
-                }
-            });
-
-            setTimeout(function () {
-                if (!hasAnimation) {
-                    if ($.isFunction(self.settings.onShown)) {
-                        self.settings.onShown.call(this);
-                    }
-                }
-            }, 600);
-        },
-        bind: function () {
-            var self = this;
-
-            this.$ele.find('[data-notify="dismiss"]').on('click', function () {
-                self.close();
-            });
-
-            if ($.isFunction(self.settings.onClick)) {
-                this.$ele.on('click', function (event) {
-                    if (event.target != self.$ele.find('[data-notify="dismiss"]')[0]) {
-                        self.settings.onClick.call(this, event);
-                    }
-                });
-            }
-
-            this.$ele.mouseover(function () {
-                $(this).data('data-hover', "true");
-            }).mouseout(function () {
-                $(this).data('data-hover', "false");
-            });
-            this.$ele.data('data-hover', "false");
-
-            if (this.settings.delay > 0) {
-                self.$ele.data('notify-delay', self.settings.delay);
-                var timer = setInterval(function () {
-                    var delay = parseInt(self.$ele.data('notify-delay')) - self.settings.timer;
-                    if ((self.$ele.data('data-hover') === 'false' && self.settings.mouse_over === "pause") || self.settings.mouse_over != "pause") {
-                        var percent = ((self.settings.delay - delay) / self.settings.delay) * 100;
-                        self.$ele.data('notify-delay', delay);
-                        self.$ele.find('[data-notify="progressbar"] > div').attr('aria-valuenow', percent).css('width', percent + '%');
-                    }
-                    if (delay <= -(self.settings.timer)) {
-                        clearInterval(timer);
-                        self.close();
-                    }
-                }, self.settings.timer);
-            }
-        },
-        close: function () {
-            var self = this,
-                posX = parseInt(this.$ele.css(this.settings.placement.from)),
-                hasAnimation = false;
-
-            this.$ele.attr('data-closing', 'true').addClass(this.settings.animate.exit);
-            self.reposition(posX);
-
-            if ($.isFunction(self.settings.onClose)) {
-                self.settings.onClose.call(this.$ele);
-            }
-
-            this.$ele.one(this.animations.start, function () {
-                hasAnimation = true;
-            }).one(this.animations.end, function () {
-                $(this).remove();
-                if ($.isFunction(self.settings.onClosed)) {
-                    self.settings.onClosed.call(this);
-                }
-            });
-
-            setTimeout(function () {
-                if (!hasAnimation) {
-                    self.$ele.remove();
-                    if ($.isFunction(self.settings.onClosed)) {
-                        self.settings.onClosed.call(this);
-                    }
-                }
-            }, 600);
-        },
-        reposition: function (posX) {
-            var self = this,
-                notifies = '[data-notify-position="' + this.settings.placement.from + '-' + this.settings.placement.align + '"]:not([data-closing="true"])',
-                $elements = this.$ele.nextAll(notifies);
-            if (this.settings.newest_on_top === true) {
-                $elements = this.$ele.prevAll(notifies);
-            }
-            $elements.each(function () {
-                $(this).css(self.settings.placement.from, posX);
-                posX = (parseInt(posX) + parseInt(self.settings.spacing)) + $(this).outerHeight();
-            });
-        }
-    });
-
-    $.notify = function (content, options) {
-        var plugin = new Notify(this, content, options);
-        return plugin.notify;
-    };
-    $.notifyDefaults = function (options) {
-        defaults = $.extend(true, {}, defaults, options);
-        return defaults;
-    };
-
-    $.notifyClose = function (selector) {
-
-        if (typeof selector === "undefined" || selector === "all") {
-            $('[data-notify]').find('[data-notify="dismiss"]').trigger('click');
-        }else if(selector === 'success' || selector === 'info' || selector === 'warning' || selector === 'danger'){
-            $('.alert-' + selector + '[data-notify]').find('[data-notify="dismiss"]').trigger('click');
-        } else if(selector){
-            $(selector + '[data-notify]').find('[data-notify="dismiss"]').trigger('click');
-        }
-        else {
-            $('[data-notify-position="' + selector + '"]').find('[data-notify="dismiss"]').trigger('click');
-        }
-    };
-
-    $.notifyCloseExcept = function (selector) {
-
-        if(selector === 'success' || selector === 'info' || selector === 'warning' || selector === 'danger'){
-            $('[data-notify]').not('.alert-' + selector).find('[data-notify="dismiss"]').trigger('click');
-        } else{
-            $('[data-notify]').not(selector).find('[data-notify="dismiss"]').trigger('click');
-        }
-    };
-
-
-}));
-
-
-/* END jQuery Non-Obfusicating Alert Box (Generic Implementation) */
-// ######################################################################################################### //
-
-
-
-jQuery.fn.extend({autocompleteHelper : function(resourceName, defaultId) {
-    var _this = $('<input class="js-typeahead form-control" type="search" autocomplete="off" />');
-
-    if (this.attr('name'))
-        _this.attr('name', this.attr('name'));
-    if (this.attr('id'))
-        _this.attr('id', this.attr('id'));
-
-    var container = $('<div class="typeahead__container form-control-container">').append(
-        $('<div class="typeahead__field">').append(
-            $('<span class="typeahead__query">').append(
-                _this
-            )
-        )
-    );
-
-    this.replaceWith(container);
-
-    _this.typeahead({
-        display: ['name'],
-        order: 'asc',
-        minLength : 1,
-        dynamic: true,
-        source: {
-            users: {
-                ajax: {
-                    url: fimApi.directory + 'api/acHelper.php',
-                    data: {
-                        'access_token': fimApi.lastSessionHash,
-                        'list': resourceName,
-                        'search': '{{query}}'
-                    },
-                    path: 'entries'
                 }
             }
-        },
-        template : function (query, item) {
-            if (item.avatar)
-                return '<span class="userName userNameAvatar"><img src="{{avatar}}" style="max-width: 20px; max-height: 20px;"/> <span>{{name}}</span></span>';
-            else
-                return '<span>{{name}}</span>';
-        },
-        callback : {
-            onClick : function(node, a, item, event) {
-                $(node).val(item.name);
-                $(node).attr('data-id', item.id);
-                $(node).attr('data-value', item.name);
-                $(node).removeClass('is-invalid');
-
-                $(node).trigger('autocompleteChange').change();
-            },
-            onCancel : function(node, event) {
-                $(node).attr('data-id', '');
-                $(node).attr('data-value', '');
-                $(node).removeClass('is-invalid');
-
-                $(node).trigger('autocompleteChange').change();
-            }
         }
-    });
-        _this.on('change', function(event) {console.log('change', event)});
-
-
-    _this.off('keyup.autocompleteHelper').on('keyup.autocompleteHelper', function(event) {
-        if ($(event.target).attr('data-value') != $(event.target).val()) {
-            $(event.target).removeClass('is-invalid');
-            $(event.target).attr('data-id', '');
-            $(event.target).attr('data-value', '');
-        }
-    });
-
-
-    function resolveInput(target, callback) {
-        if (!target.val()) {
-            target.attr('data-id', '');
-            target.attr('data-value', '');
-
-            target.removeClass('is-invalid');
-
-            target.trigger('autocompleteChange');
-
-            if (callback) callback();//
-        }
-        else {
-            $.when(Resolver.resolveFromName(resourceName, target.val())).then(function (pairs) {
-                if (pairs[target.val()]) {
-                    target.attr('data-value', pairs[target.val()].name);
-                    target.attr('data-id', pairs[target.val()].id);
-
-                    target.removeClass('is-invalid');
-
-                    target.trigger('autocompleteChange');
-
-                    if (callback) callback();
-                    //target.popover('dispose');
-                }
-                else {
-                    target.attr('data-id', '');
-                    target.attr('data-value', '');
-
-                    target.addClass('is-invalid');
-
-                    if (callback) callback();
-                }
-            });
-        }
-    }
-
-
-    // Catch form submissions in order to resolve manually-inputted data
-    _this.closest('form').off('submit.autocompleteHelper').on('submit.autocompleteHelper', function(event) {
-
-        if (_this.val() && !(_this.attr('data-id')) && !_this.hasClass('is-invalid')) {
-            console.log("fetcher invalid");
-            event.stopImmediatePropagation();
-
-            // Refire the submit when we've resolved the text.
-            resolveInput(_this, function() {
-                // Re-trigger the event
-                $(event.target).trigger('submit');
-            });
-
-            // Prevent the event from continuing (since we have to wait on a promise before we can finish this callback)
-            return false;
-        }
-
-        return true;
-    });
-
-
-    // Catch change events in order to resolve manually-inputted data
-    /*_this.off('change.autocompleteHelper').on('change.autocompleteHelper', function(event) {
-        resolveInput($(event.target));
-    });*/
-
-
-    // Set the initial value of the form field, if needed
-    if (defaultId) {
-        $.when(Resolver.resolveFromId(resourceName, defaultId)).then(function(pairs) {
-            _this.val(pairs[defaultId].name);
-            _this.attr('data-value', pairs[defaultId].name);
-            _this.attr('data-id', defaultId);
-        });
-    }
-    else {
-        _this.val('');
-        _this.attr('data-id', '');
-        _this.attr('data-value', '');
-    }
-
-
-    return _this;
-}});
-
-
-
-
-
-
-// ######################################################################################################### //
-/* Start Generic Notify
- * Joseph Todd Parsons
- * http://www.gnu.org/licenses/gpl.html */
-
-var notify = {
-    webkitNotifySupported: function() {
-        return "Notification" in window;
-    },
-
-    webkitNotifyRequest: function () {
-        window.Notification.requestPermission();
-    },
-
-    webkitNotify: function (icon, title, notifyData) {
-        if (window.Notification.permission != "granted") {
-            notify.webkitNotifyRequest();
-        }
-        else {
-            new window.Notification(title, {
-                body : notifyData,
-                icon : icon,
-                tag : "fm-notify"
-            });
-        }
+        return cookieValue;
     }
 };
 
-/* End Generic Notify */
-// ######################################################################################################### //
-
-
-
-
-
-
-
-
-
-
-
-// ######################################################################################################### //
+/***/ }),
+/* 6 */
+/***/ (function(module, exports) {
 
 /* Start Dia -- Simplified jQueryUI Dialogues
  * Joseph T. Parsons
- * http://www.gnu7.org/licenses/gpl.html */
+ * http://www.gnu.org/licenses/gpl.html */
 var dia = {
     exception: function(exception) {
         $('#modal-dynamicException .modal-title').html('Exception: ' + exception.string);
@@ -3488,649 +2878,11 @@ var dia = {
     }
 };
 
-/* End Dia -- Simplified jQueryUI Dialogues */
-// ######################################################################################################### //
-
-
-
-
-
-
-
-
-
-
-// ######################################################################################################### //
-/* Start HashChange Abstraction */
-
-/*!
- * jQuery hashchange event - v1.3 - 7/21/2010
- * http://benalman.com/projects/jquery-hashchange-plugin/
- *
- * Copyright (c) 2010 "Cowboy" Ben Alman
- * Dual licensed under the MIT and GPL licenses.
- * http://benalman.com/about/license/
- */
-
-// Script: jQuery hashchange event
-//
-// *Version: 1.3, Last updated: 7/21/2010*
-//
-// Project Home - http://benalman.com/projects/jquery-hashchange-plugin/
-// GitHub       - http://github.com/cowboy/jquery-hashchange/
-// Source       - http://github.com/cowboy/jquery-hashchange/raw/master/jquery.ba-hashchange.js
-// (Minified)   - http://github.com/cowboy/jquery-hashchange/raw/master/jquery.ba-hashchange.min.js (0.8kb gzipped)
-//
-// About: License
-//
-// Copyright (c) 2010 "Cowboy" Ben Alman,
-// Dual licensed under the MIT and GPL licenses.
-// http://benalman.com/about/license/
-//
-// About: Examples
-//
-// These working examples, complete with fully commented code, illustrate a few
-// ways in which this plugin can be used.
-//
-// hashchange event - http://benalman.com/code/projects/jquery-hashchange/examples/hashchange/
-// document.domain - http://benalman.com/code/projects/jquery-hashchange/examples/document_domain/
-//
-// About: Support and Testing
-//
-// Information about what version or versions of jQuery this plugin has been
-// tested with, what browsers it has been tested in, and where the unit tests
-// reside (so you can test it yourself).
-//
-// jQuery Versions - 1.2.6, 1.3.2, 1.4.1, 1.4.2
-// Browsers Tested - Internet Explorer 6-8, Firefox 2-4, Chrome 5-6, Safari 3.2-5,
-//                   Opera 9.6-10.60, iPhone 3.1, Android 1.6-2.2, BlackBerry 4.6-5.
-// Unit Tests      - http://benalman.com/code/projects/jquery-hashchange/unit/
-//
-// About: Known issues
-//
-// While this jQuery hashchange event implementation is quite stable and
-// robust, there are a few unfortunate browser bugs surrounding expected
-// hashchange event-based behaviors, independent of any JavaScript
-// window.onhashchange abstraction. See the following examples for more
-// information:
-//
-// Chrome: Back Button - http://benalman.com/code/projects/jquery-hashchange/examples/bug-chrome-back-button/
-// Firefox: Remote XMLHttpRequest - http://benalman.com/code/projects/jquery-hashchange/examples/bug-firefox-remote-xhr/
-// WebKit: Back Button in an Iframe - http://benalman.com/code/projects/jquery-hashchange/examples/bug-webkit-hash-iframe/
-// Safari: Back Button from a different domain - http://benalman.com/code/projects/jquery-hashchange/examples/bug-safari-back-from-diff-domain/
-//
-// Also note that should a browser natively support the window.onhashchange
-// event, but not report that it does, the fallback polling loop will be used.
-//
-// About: Release History
-//
-// 1.3.20140227 - Replaced msie check, which is no longer available -- JTP.
-// 1.3   - (7/21/2010) Reorganized IE6/7 Iframe code to make it more
-//         "removable" for mobile-only development. Added IE6/7 document.title
-//         support. Attempted to make Iframe as hidden as possible by using
-//         techniques from http://www.paciellogroup.com/blog/?p=604. Added
-//         support for the "shortcut" format $(window).hashchange( fn ) and
-//         $(window).hashchange() like jQuery provides for built-in events.
-//         Renamed jQuery.hashchangeDelay to <jQuery.fn.hashchange.delay> and
-//         lowered its default value to 50. Added <jQuery.fn.hashchange.domain>
-//         and <jQuery.fn.hashchange.src> properties plus document-domain.html
-//         file to address access denied issues when setting document.domain in
-//         IE6/7.
-// 1.2   - (2/11/2010) Fixed a bug where coming back to a page using this plugin
-//         from a page on another domain would cause an error in Safari 4. Also,
-//         IE6/7 Iframe is now inserted after the body (this actually works),
-//         which prevents the page from scrolling when the event is first bound.
-//         Event can also now be bound before DOM ready, but it won't be usable
-//         before then in IE6/7.
-// 1.1   - (1/21/2010) Incorporated document.documentMode test to fix IE8 bug
-//         where browser version is incorrectly reported as 8.0, despite
-//         inclusion of the X-UA-Compatible IE=EmulateIE7 meta tag.
-// 1.0   - (1/9/2010) Initial Release. Broke out the jQuery BBQ event.special
-//         window.onhashchange functionality into a separate plugin for users
-//         who want just the basic event & back button support, without all the
-//         extra awesomeness that BBQ provides. This plugin will be included as
-//         part of jQuery BBQ, but also be available separately.
-
-(function ($, window, undefined) {
-    '$:nomunge'; // Used by YUI compressor.
-
-    // Reused string.
-    var str_hashchange = 'hashchange',
-
-    // Method / object references.
-        doc = document,
-        fake_onhashchange,
-        special = $.event.special,
-
-    // Does the browser support window.onhashchange? Note that IE8 running in
-    // IE7 compatibility mode reports true for 'onhashchange' in window, even
-    // though the event isn't supported, so also test document.documentMode.
-        doc_mode = doc.documentMode,
-        supports_onhashchange = 'on' + str_hashchange in window && (doc_mode === undefined || doc_mode > 7);
-
-    // Get location.hash (or what you'd expect location.hash to be) sans any
-    // leading #. Thanks for making this necessary, Firefox!
-    function get_fragment(url) {
-        url = url || location.href;
-        return '#' + url.replace(/^[^#]*#?(.*)$/, '$1');
-    };
-
-    // Method: jQuery.fn.hashchange
-    //
-    // Bind a handler to the window.onhashchange event or trigger all bound
-    // window.onhashchange event handlers. This behavior is consistent with
-    // jQuery's built-in event handlers.
-    //
-    // Usage:
-    //
-    // > jQuery(window).hashchange( [ handler ] );
-    //
-    // Arguments:
-    //
-    //  handler - (Function) Optional handler to be bound to the hashchange
-    //    event. This is a "shortcut" for the more verbose form:
-    //    jQuery(window).bind( 'hashchange', handler ). If handler is omitted,
-    //    all bound window.onhashchange event handlers will be triggered. This
-    //    is a shortcut for the more verbose
-    //    jQuery(window).trigger( 'hashchange' ). These forms are described in
-    //    the <hashchange event> section.
-    //
-    // Returns:
-    //
-    //  (jQuery) The initial jQuery collection of elements.
-
-    // Allow the "shortcut" format $(elem).hashchange( fn ) for binding and
-    // $(elem).hashchange() for triggering, like jQuery does for built-in events.
-    $.fn[str_hashchange] = function (fn) {
-        return fn ? this.bind(str_hashchange, fn) : this.trigger(str_hashchange);
-    };
-
-    // Property: jQuery.fn.hashchange.delay
-    //
-    // The numeric interval (in milliseconds) at which the <hashchange event>
-    // polling loop executes. Defaults to 50.
-
-    // Property: jQuery.fn.hashchange.domain
-    //
-    // If you're setting document.domain in your JavaScript, and you want hash
-    // history to work in IE6/7, not only must this property be set, but you must
-    // also set document.domain BEFORE jQuery is loaded into the page. This
-    // property is only applicable if you are supporting IE6/7 (or IE8 operating
-    // in "IE7 compatibility" mode).
-    //
-    // In addition, the <jQuery.fn.hashchange.src> property must be set to the
-    // path of the included "document-domain.html" file, which can be renamed or
-    // modified if necessary (note that the document.domain specified must be the
-    // same in both your main JavaScript as well as in this file).
-    //
-    // Usage:
-    //
-    // jQuery.fn.hashchange.domain = document.domain;
-
-    // Property: jQuery.fn.hashchange.src
-    //
-    // If, for some reason, you need to specify an Iframe src file (for example,
-    // when setting document.domain as in <jQuery.fn.hashchange.domain>), you can
-    // do so using this property. Note that when using this property, history
-    // won't be recorded in IE6/7 until the Iframe src file loads. This property
-    // is only applicable if you are supporting IE6/7 (or IE8 operating in "IE7
-    // compatibility" mode).
-    //
-    // Usage:
-    //
-    // jQuery.fn.hashchange.src = 'path/to/file.html';
-
-    $.fn[str_hashchange].delay = 50;
-    /*
-     $.fn[ str_hashchange ].domain = null;
-     $.fn[ str_hashchange ].src = null;
-     */
-
-    // Event: hashchange event
-    //
-    // Fired when location.hash changes. In browsers that support it, the native
-    // HTML5 window.onhashchange event is used, otherwise a polling loop is
-    // initialized, running every <jQuery.fn.hashchange.delay> milliseconds to
-    // see if the hash has changed. In IE6/7 (and IE8 operating in "IE7
-    // compatibility" mode), a hidden Iframe is created to allow the back button
-    // and hash-based history to work.
-    //
-    // Usage as described in <jQuery.fn.hashchange>:
-    //
-    // > // Bind an event handler.
-    // > jQuery(window).hashchange( function(e) {
-    // >   var hash = location.hash;
-    // >   ...
-    // > });
-    // >
-    // > // Manually trigger the event handler.
-    // > jQuery(window).hashchange();
-    //
-    // A more verbose usage that allows for event namespacing:
-    //
-    // > // Bind an event handler.
-    // > jQuery(window).bind( 'hashchange', function(e) {
-    // >   var hash = location.hash;
-    // >   ...
-    // > });
-    // >
-    // > // Manually trigger the event handler.
-    // > jQuery(window).trigger( 'hashchange' );
-    //
-    // Additional Notes:
-    //
-    // * The polling loop and Iframe are not created until at least one handler
-    //   is actually bound to the 'hashchange' event.
-    // * If you need the bound handler(s) to execute immediately, in cases where
-    //   a location.hash exists on page load, via bookmark or page refresh for
-    //   example, use jQuery(window).hashchange() or the more verbose
-    //   jQuery(window).trigger( 'hashchange' ).
-    // * The event can be bound before DOM ready, but since it won't be usable
-    //   before then in IE6/7 (due to the necessary Iframe), recommended usage is
-    //   to bind it inside a DOM ready handler.
-
-    // Override existing $.event.special.hashchange methods (allowing this plugin
-    // to be defined after jQuery BBQ in BBQ's source code).
-    special[str_hashchange] = $.extend(special[str_hashchange], {
-
-        // Called only when the first 'hashchange' event is bound to window.
-        setup: function () {
-            // If window.onhashchange is supported natively, there's nothing to do..
-            if (supports_onhashchange) {
-                return false;
-            }
-
-            // Otherwise, we need to create our own. And we don't want to call this
-            // until the user binds to the event, just in case they never do, since it
-            // will create a polling loop and possibly even a hidden Iframe.
-            $(fake_onhashchange.start);
-        },
-
-        // Called only when the last 'hashchange' event is unbound from window.
-        teardown: function () {
-            // If window.onhashchange is supported natively, there's nothing to do..
-            if (supports_onhashchange) {
-                return false;
-            }
-
-            // Otherwise, we need to stop ours (if possible).
-            $(fake_onhashchange.stop);
-        }
-
-    });
-
-    // fake_onhashchange does all the work of triggering the window.onhashchange
-    // event for browsers that don't natively support it, including creating a
-    // polling loop to watch for hash changes and in IE 6/7 creating a hidden
-    // Iframe to enable back and forward.
-    fake_onhashchange = (function () {
-        var self = {},
-            timeout_id,
-
-        // Remember the initial hash so it doesn't get triggered immediately.
-            last_hash = get_fragment(),
-
-            fn_retval = function (val) {
-                return val;
-            },
-            history_set = fn_retval,
-            history_get = fn_retval;
-
-        // Start the polling loop.
-        self.start = function () {
-            timeout_id || poll();
-        };
-
-        // Stop the polling loop.
-        self.stop = function () {
-            timeout_id && clearTimeout(timeout_id);
-            timeout_id = undefined;
-        };
-
-        // This polling loop checks every $.fn.hashchange.delay milliseconds to see
-        // if location.hash has changed, and triggers the 'hashchange' event on
-        // window when necessary.
-        function poll() {
-            var hash = get_fragment(),
-                history_hash = history_get(last_hash);
-
-            if (hash !== last_hash) {
-                history_set(last_hash = hash, history_hash);
-
-                $(window).trigger(str_hashchange);
-
-            }
-            else if (history_hash !== last_hash) {
-                location.href = location.href.replace(/#.*/, '') + history_hash;
-            }
-
-            timeout_id = setTimeout(poll, $.fn[str_hashchange].delay);
-        };
-
-        // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-        // vvvvvvvvvvvvvvvvvvv REMOVE IF NOT SUPPORTING IE6/7/8 vvvvvvvvvvvvvvvvvvv
-        // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-        navigator.userAgent.match(/msie [6,7,8]/i) && !supports_onhashchange && (function () { // TODO: Test change.
-            // Not only do IE6/7 need the "magical" Iframe treatment, but so does IE8
-            // when running in "IE7 compatibility" mode.
-
-            var iframe,
-                iframe_src;
-
-            // When the event is bound and polling starts in IE 6/7, create a hidden
-            // Iframe for history handling.
-            self.start = function () {
-                if (!iframe) {
-                    iframe_src = $.fn[str_hashchange].src;
-                    iframe_src = iframe_src && iframe_src + get_fragment();
-
-                    // Create hidden Iframe. Attempt to make Iframe as hidden as possible
-                    // by using techniques from http://www.paciellogroup.com/blog/?p=604.
-                    iframe = $('<iframe tabindex="-1" title="empty"/>').hide()
-
-                        // When Iframe has completely loaded, initialize the history and
-                        // start polling.
-                        .one('load', function () {
-                            iframe_src || history_set(get_fragment());
-                            poll();
-                        })
-
-                        // Load Iframe src if specified, otherwise nothing.
-                        .attr('src', iframe_src || 'javascript:0')
-
-                        // Append Iframe after the end of the body to prevent unnecessary
-                        // initial page scrolling (yes, this works).
-                        .insertAfter('body')[0].contentWindow;
-
-                    // Whenever `document.title` changes, update the Iframe's title to
-                    // prettify the back/next history menu entries. Since IE sometimes
-                    // errors with "Unspecified error" the very first time this is set
-                    // (yes, very useful) wrap this with a try/catch block.
-                    doc.onpropertychange = function () {
-                        try {
-                            if (event.propertyName === 'title') {
-                                iframe.document.title = doc.title;
-                            }
-                        }
-                        catch (e) {}
-                    };
-
-                }
-            };
-
-            // Override the "stop" method since an IE6/7 Iframe was created. Even
-            // if there are no longer any bound event handlers, the polling loop
-            // is still necessary for back/next to work at all!
-            self.stop = fn_retval;
-
-            // Get history by looking at the hidden Iframe's location.hash.
-            history_get = function () {
-                return get_fragment(iframe.location.href);
-            };
-
-            // Set a new history item by opening and then closing the Iframe
-            // document, *then* setting its location.hash. If document.domain has
-            // been set, update that as well.
-            history_set = function (hash, history_hash) {
-                var iframe_doc = iframe.document,
-                    domain = $.fn[str_hashchange].domain;
-
-                if (hash !== history_hash) {
-                    // Update Iframe with any initial `document.title` that might be set.
-                    iframe_doc.title = doc.title;
-
-                    // Opening the Iframe's document after it has been closed is what
-                    // actually adds a history entry.
-                    iframe_doc.open();
-
-                    // Set document.domain for the Iframe document as well, if necessary.
-                    domain && iframe_doc.write('<script>document.domain="' + domain + '"</script>');
-
-                    iframe_doc.close();
-
-                    // Update the Iframe's hash, for great justice.
-                    iframe.location.hash = hash;
-                }
-            };
-
-        })();
-        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        // ^^^^^^^^^^^^^^^^^^^ REMOVE IF NOT SUPPORTING IE6/7/8 ^^^^^^^^^^^^^^^^^^^
-        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-        return self;
-    })();
-
-})(jQuery, this);
-
-/* End HashChange Abstraction */
-// ######################################################################################################### //
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ######################################################################################################### //
-/* Start HashChange Abstraction */
-
-/*jslint adsafe: false, bitwise: true, browser: true, cap: false, css: false,
- debug: false, devel: true, eqeqeq: true, es5: false, evil: false,
- forin: false, fragment: false, immed: true, laxbreak: false, newcap: true,
- nomen: false, on: false, onevar: true, passfail: false, plusplus: true,
- regexp: false, rhino: true, safe: false, strict: false, sub: false,
- undef: true, white: false, widget: false, windows: false */
-/*global jQuery: false, window: false */
-
-/*
- * Original code (c) 2010 Nick Galbreath
- * http://code.google.com/p/stringencoders/source/browse/#svn/trunk/javascript
- *
- * jQuery port (c) 2010 Carlo Zottmann
- * http://github.com/carlo/jquery-base64
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- */
-
-/* base64 encode/decode compatible with window.btoa/atob
- *
- * window.atob/btoa is a Firefox extension to convert binary data (the "b")
- * to base64 (ascii, the "a").
- *
- * It is also found in Safari and Chrome.  It is not available in IE.
- *
- * if (!window.btoa) window.btoa = $.base64.encode
- * if (!window.atob) window.atob = $.base64.decode
- *
- * The original spec's for atob/btoa are a bit lacking
- * https://developer.mozilla.org/en/DOM/window.atob
- * https://developer.mozilla.org/en/DOM/window.btoa
- *
- * window.btoa and $.base64.encode takes a string where charCodeAt is [0,255]
- * If any character is not [0,255], then an exception is thrown.
- *
- * window.atob and $.base64.decode take a base64-encoded string
- * If the input length is not a multiple of 4, or contains invalid characters
- *   then an exception is thrown.
- */
-
-jQuery.base64 = (function ($) {
-
-    var _PADCHAR = "=",
-        _ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
-        _VERSION = "1.0";
-
-
-    function _getbyte64(s, i) {
-        // This is oddly fast, except on Chrome/V8.
-        // Minimal or no improvement in performance by using a
-        // object with properties mapping chars to value (eg. 'A': 0)
-
-        var idx = _ALPHA.indexOf(s.charAt(i));
-
-        if (idx === -1) {
-            throw "Cannot decode base64";
-        }
-
-        return idx;
-    }
-
-
-    function _decode(s) {
-        var pads = 0,
-            i,
-            b10,
-            imax = s.length,
-            x = [];
-
-        s = String(s);
-
-        if (imax === 0) {
-            return s;
-        }
-
-        if (imax % 4 !== 0) {
-            throw "Cannot decode base64";
-        }
-
-        if (s.charAt(imax - 1) === _PADCHAR) {
-            pads = 1;
-
-            if (s.charAt(imax - 2) === _PADCHAR) {
-                pads = 2;
-            }
-
-            // either way, we want to ignore this last block
-            imax -= 4;
-        }
-
-        for (i = 0; i < imax; i += 4) {
-            b10 = (_getbyte64(s, i) << 18) | (_getbyte64(s, i + 1) << 12) | (_getbyte64(s, i + 2) << 6) | _getbyte64(s, i + 3);
-            x.push(String.fromCharCode(b10 >> 16, (b10 >> 8) & 0xff, b10 & 0xff));
-        }
-
-        switch (pads) {
-            case 1:
-                b10 = (_getbyte64(s, i) << 18) | (_getbyte64(s, i + 1) << 12) | (_getbyte64(s, i + 2) << 6);
-                x.push(String.fromCharCode(b10 >> 16, (b10 >> 8) & 0xff));
-                break;
-
-            case 2:
-                b10 = (_getbyte64(s, i) << 18) | (_getbyte64(s, i + 1) << 12);
-                x.push(String.fromCharCode(b10 >> 16));
-                break;
-        }
-
-        return x.join("");
-    }
-
-
-    function _getbyte(s, i) {
-        var x = s.charCodeAt(i);
-
-        if (x > 255) {
-            throw "INVALID_CHARACTER_ERR: DOM Exception 5";
-        }
-
-        return x;
-    }
-
-
-    function _encode(s) {
-        if (arguments.length !== 1) {
-            throw "SyntaxError: exactly one argument required";
-        }
-
-        s = String(s);
-
-        var i,
-            b10,
-            x = [],
-            imax = s.length - s.length % 3;
-
-        if (s.length === 0) {
-            return s;
-        }
-
-        for (i = 0; i < imax; i += 3) {
-            b10 = (_getbyte(s, i) << 16) | (_getbyte(s, i + 1) << 8) | _getbyte(s, i + 2);
-            x.push(_ALPHA.charAt(b10 >> 18));
-            x.push(_ALPHA.charAt((b10 >> 12) & 0x3F));
-            x.push(_ALPHA.charAt((b10 >> 6) & 0x3f));
-            x.push(_ALPHA.charAt(b10 & 0x3f));
-        }
-
-        switch (s.length - imax) {
-            case 1:
-                b10 = _getbyte(s, i) << 16;
-                x.push(_ALPHA.charAt(b10 >> 18) + _ALPHA.charAt((b10 >> 12) & 0x3F) + _PADCHAR + _PADCHAR);
-                break;
-
-            case 2:
-                b10 = (_getbyte(s, i) << 16) | (_getbyte(s, i + 1) << 8);
-                x.push(_ALPHA.charAt(b10 >> 18) + _ALPHA.charAt((b10 >> 12) & 0x3F) + _ALPHA.charAt((b10 >> 6) & 0x3f) + _PADCHAR);
-                break;
-        }
-
-        return x.join("");
-    }
-
-
-    return {
-        decode: _decode,
-        encode: _encode,
-        VERSION: _VERSION
-    };
-
-}(jQuery));
-
-/* End HashChange Abstraction */
-// ######################################################################################################### //
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
  * jQuery File Upload Plugin
  * https://github.com/blueimp/jQuery-File-Upload
  *
@@ -4161,12 +2913,15 @@ jQuery.base64 = (function ($) {
 
 ;(function (factory) {
     'use strict';
-    if (typeof define === 'function' && define.amd) {
+    if (true) {
         // Register as an anonymous AMD module:
-        define([
-            'jquery',
-            'jquery-ui/ui/widget'
-        ], factory);
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [
+            __webpack_require__(0),
+            __webpack_require__(8)
+        ], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
     } else if (typeof exports === 'object') {
         // Node/CommonJS:
         factory(
@@ -5628,10 +4383,448 @@ jQuery.base64 = (function ($) {
 
 }));
 
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
 
+module.exports = widget;
 
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
 
 /*!
+ * jQuery hashchange event - v1.3 - 7/21/2010
+ * http://benalman.com/projects/jquery-hashchange-plugin/
+ *
+ * Copyright (c) 2010 "Cowboy" Ben Alman
+ * Dual licensed under the MIT and GPL licenses.
+ * http://benalman.com/about/license/
+ */
+
+// Script: jQuery hashchange event
+//
+// *Version: 1.3, Last updated: 7/21/2010*
+//
+// Project Home - http://benalman.com/projects/jquery-hashchange-plugin/
+// GitHub       - http://github.com/cowboy/jquery-hashchange/
+// Source       - http://github.com/cowboy/jquery-hashchange/raw/master/jquery.ba-hashchange.js
+// (Minified)   - http://github.com/cowboy/jquery-hashchange/raw/master/jquery.ba-hashchange.min.js (0.8kb gzipped)
+//
+// About: License
+//
+// Copyright (c) 2010 "Cowboy" Ben Alman,
+// Dual licensed under the MIT and GPL licenses.
+// http://benalman.com/about/license/
+//
+// About: Examples
+//
+// These working examples, complete with fully commented code, illustrate a few
+// ways in which this plugin can be used.
+//
+// hashchange event - http://benalman.com/code/projects/jquery-hashchange/examples/hashchange/
+// document.domain - http://benalman.com/code/projects/jquery-hashchange/examples/document_domain/
+//
+// About: Support and Testing
+//
+// Information about what version or versions of jQuery this plugin has been
+// tested with, what browsers it has been tested in, and where the unit tests
+// reside (so you can test it yourself).
+//
+// jQuery Versions - 1.2.6, 1.3.2, 1.4.1, 1.4.2
+// Browsers Tested - Internet Explorer 6-8, Firefox 2-4, Chrome 5-6, Safari 3.2-5,
+//                   Opera 9.6-10.60, iPhone 3.1, Android 1.6-2.2, BlackBerry 4.6-5.
+// Unit Tests      - http://benalman.com/code/projects/jquery-hashchange/unit/
+//
+// About: Known issues
+//
+// While this jQuery hashchange event implementation is quite stable and
+// robust, there are a few unfortunate browser bugs surrounding expected
+// hashchange event-based behaviors, independent of any JavaScript
+// window.onhashchange abstraction. See the following examples for more
+// information:
+//
+// Chrome: Back Button - http://benalman.com/code/projects/jquery-hashchange/examples/bug-chrome-back-button/
+// Firefox: Remote XMLHttpRequest - http://benalman.com/code/projects/jquery-hashchange/examples/bug-firefox-remote-xhr/
+// WebKit: Back Button in an Iframe - http://benalman.com/code/projects/jquery-hashchange/examples/bug-webkit-hash-iframe/
+// Safari: Back Button from a different domain - http://benalman.com/code/projects/jquery-hashchange/examples/bug-safari-back-from-diff-domain/
+//
+// Also note that should a browser natively support the window.onhashchange
+// event, but not report that it does, the fallback polling loop will be used.
+//
+// About: Release History
+//
+// 1.3.20140227 - Replaced msie check, which is no longer available -- JTP.
+// 1.3   - (7/21/2010) Reorganized IE6/7 Iframe code to make it more
+//         "removable" for mobile-only development. Added IE6/7 document.title
+//         support. Attempted to make Iframe as hidden as possible by using
+//         techniques from http://www.paciellogroup.com/blog/?p=604. Added
+//         support for the "shortcut" format $(window).hashchange( fn ) and
+//         $(window).hashchange() like jQuery provides for built-in events.
+//         Renamed jQuery.hashchangeDelay to <jQuery.fn.hashchange.delay> and
+//         lowered its default value to 50. Added <jQuery.fn.hashchange.domain>
+//         and <jQuery.fn.hashchange.src> properties plus document-domain.html
+//         file to address access denied issues when setting document.domain in
+//         IE6/7.
+// 1.2   - (2/11/2010) Fixed a bug where coming back to a page using this plugin
+//         from a page on another domain would cause an error in Safari 4. Also,
+//         IE6/7 Iframe is now inserted after the body (this actually works),
+//         which prevents the page from scrolling when the event is first bound.
+//         Event can also now be bound before DOM ready, but it won't be usable
+//         before then in IE6/7.
+// 1.1   - (1/21/2010) Incorporated document.documentMode test to fix IE8 bug
+//         where browser version is incorrectly reported as 8.0, despite
+//         inclusion of the X-UA-Compatible IE=EmulateIE7 meta tag.
+// 1.0   - (1/9/2010) Initial Release. Broke out the jQuery BBQ event.special
+//         window.onhashchange functionality into a separate plugin for users
+//         who want just the basic event & back button support, without all the
+//         extra awesomeness that BBQ provides. This plugin will be included as
+//         part of jQuery BBQ, but also be available separately.
+
+(function ($, window, undefined) {
+    '$:nomunge'; // Used by YUI compressor.
+
+    // Reused string.
+    var str_hashchange = 'hashchange',
+
+        // Method / object references.
+        doc = document,
+        fake_onhashchange,
+        special = $.event.special,
+
+        // Does the browser support window.onhashchange? Note that IE8 running in
+        // IE7 compatibility mode reports true for 'onhashchange' in window, even
+        // though the event isn't supported, so also test document.documentMode.
+        doc_mode = doc.documentMode,
+        supports_onhashchange = 'on' + str_hashchange in window && (doc_mode === undefined || doc_mode > 7);
+
+    // Get location.hash (or what you'd expect location.hash to be) sans any
+    // leading #. Thanks for making this necessary, Firefox!
+    function get_fragment(url) {
+        url = url || location.href;
+        return '#' + url.replace(/^[^#]*#?(.*)$/, '$1');
+    };
+
+    // Method: jQuery.fn.hashchange
+    //
+    // Bind a handler to the window.onhashchange event or trigger all bound
+    // window.onhashchange event handlers. This behavior is consistent with
+    // jQuery's built-in event handlers.
+    //
+    // Usage:
+    //
+    // > jQuery(window).hashchange( [ handler ] );
+    //
+    // Arguments:
+    //
+    //  handler - (Function) Optional handler to be bound to the hashchange
+    //    event. This is a "shortcut" for the more verbose form:
+    //    jQuery(window).bind( 'hashchange', handler ). If handler is omitted,
+    //    all bound window.onhashchange event handlers will be triggered. This
+    //    is a shortcut for the more verbose
+    //    jQuery(window).trigger( 'hashchange' ). These forms are described in
+    //    the <hashchange event> section.
+    //
+    // Returns:
+    //
+    //  (jQuery) The initial jQuery collection of elements.
+
+    // Allow the "shortcut" format $(elem).hashchange( fn ) for binding and
+    // $(elem).hashchange() for triggering, like jQuery does for built-in events.
+    $.fn[str_hashchange] = function (fn) {
+        return fn ? this.bind(str_hashchange, fn) : this.trigger(str_hashchange);
+    };
+
+    // Property: jQuery.fn.hashchange.delay
+    //
+    // The numeric interval (in milliseconds) at which the <hashchange event>
+    // polling loop executes. Defaults to 50.
+
+    // Property: jQuery.fn.hashchange.domain
+    //
+    // If you're setting document.domain in your JavaScript, and you want hash
+    // history to work in IE6/7, not only must this property be set, but you must
+    // also set document.domain BEFORE jQuery is loaded into the page. This
+    // property is only applicable if you are supporting IE6/7 (or IE8 operating
+    // in "IE7 compatibility" mode).
+    //
+    // In addition, the <jQuery.fn.hashchange.src> property must be set to the
+    // path of the included "document-domain.html" file, which can be renamed or
+    // modified if necessary (note that the document.domain specified must be the
+    // same in both your main JavaScript as well as in this file).
+    //
+    // Usage:
+    //
+    // jQuery.fn.hashchange.domain = document.domain;
+
+    // Property: jQuery.fn.hashchange.src
+    //
+    // If, for some reason, you need to specify an Iframe src file (for example,
+    // when setting document.domain as in <jQuery.fn.hashchange.domain>), you can
+    // do so using this property. Note that when using this property, history
+    // won't be recorded in IE6/7 until the Iframe src file loads. This property
+    // is only applicable if you are supporting IE6/7 (or IE8 operating in "IE7
+    // compatibility" mode).
+    //
+    // Usage:
+    //
+    // jQuery.fn.hashchange.src = 'path/to/file.html';
+
+    $.fn[str_hashchange].delay = 50;
+    /*
+     $.fn[ str_hashchange ].domain = null;
+     $.fn[ str_hashchange ].src = null;
+     */
+
+    // Event: hashchange event
+    //
+    // Fired when location.hash changes. In browsers that support it, the native
+    // HTML5 window.onhashchange event is used, otherwise a polling loop is
+    // initialized, running every <jQuery.fn.hashchange.delay> milliseconds to
+    // see if the hash has changed. In IE6/7 (and IE8 operating in "IE7
+    // compatibility" mode), a hidden Iframe is created to allow the back button
+    // and hash-based history to work.
+    //
+    // Usage as described in <jQuery.fn.hashchange>:
+    //
+    // > // Bind an event handler.
+    // > jQuery(window).hashchange( function(e) {
+    // >   var hash = location.hash;
+    // >   ...
+    // > });
+    // >
+    // > // Manually trigger the event handler.
+    // > jQuery(window).hashchange();
+    //
+    // A more verbose usage that allows for event namespacing:
+    //
+    // > // Bind an event handler.
+    // > jQuery(window).bind( 'hashchange', function(e) {
+    // >   var hash = location.hash;
+    // >   ...
+    // > });
+    // >
+    // > // Manually trigger the event handler.
+    // > jQuery(window).trigger( 'hashchange' );
+    //
+    // Additional Notes:
+    //
+    // * The polling loop and Iframe are not created until at least one handler
+    //   is actually bound to the 'hashchange' event.
+    // * If you need the bound handler(s) to execute immediately, in cases where
+    //   a location.hash exists on page load, via bookmark or page refresh for
+    //   example, use jQuery(window).hashchange() or the more verbose
+    //   jQuery(window).trigger( 'hashchange' ).
+    // * The event can be bound before DOM ready, but since it won't be usable
+    //   before then in IE6/7 (due to the necessary Iframe), recommended usage is
+    //   to bind it inside a DOM ready handler.
+
+    // Override existing $.event.special.hashchange methods (allowing this plugin
+    // to be defined after jQuery BBQ in BBQ's source code).
+    special[str_hashchange] = $.extend(special[str_hashchange], {
+
+        // Called only when the first 'hashchange' event is bound to window.
+        setup: function () {
+            // If window.onhashchange is supported natively, there's nothing to do..
+            if (supports_onhashchange) {
+                return false;
+            }
+
+            // Otherwise, we need to create our own. And we don't want to call this
+            // until the user binds to the event, just in case they never do, since it
+            // will create a polling loop and possibly even a hidden Iframe.
+            $(fake_onhashchange.start);
+        },
+
+        // Called only when the last 'hashchange' event is unbound from window.
+        teardown: function () {
+            // If window.onhashchange is supported natively, there's nothing to do..
+            if (supports_onhashchange) {
+                return false;
+            }
+
+            // Otherwise, we need to stop ours (if possible).
+            $(fake_onhashchange.stop);
+        }
+
+    });
+
+    // fake_onhashchange does all the work of triggering the window.onhashchange
+    // event for browsers that don't natively support it, including creating a
+    // polling loop to watch for hash changes and in IE 6/7 creating a hidden
+    // Iframe to enable back and forward.
+    fake_onhashchange = (function () {
+        var self = {},
+            timeout_id,
+
+            // Remember the initial hash so it doesn't get triggered immediately.
+            last_hash = get_fragment(),
+
+            fn_retval = function (val) {
+                return val;
+            },
+            history_set = fn_retval,
+            history_get = fn_retval;
+
+        // Start the polling loop.
+        self.start = function () {
+            timeout_id || poll();
+        };
+
+        // Stop the polling loop.
+        self.stop = function () {
+            timeout_id && clearTimeout(timeout_id);
+            timeout_id = undefined;
+        };
+
+        // This polling loop checks every $.fn.hashchange.delay milliseconds to see
+        // if location.hash has changed, and triggers the 'hashchange' event on
+        // window when necessary.
+        function poll() {
+            var hash = get_fragment(),
+                history_hash = history_get(last_hash);
+
+            if (hash !== last_hash) {
+                history_set(last_hash = hash, history_hash);
+
+                $(window).trigger(str_hashchange);
+
+            }
+            else if (history_hash !== last_hash) {
+                location.href = location.href.replace(/#.*/, '') + history_hash;
+            }
+
+            timeout_id = setTimeout(poll, $.fn[str_hashchange].delay);
+        };
+
+        // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+        // vvvvvvvvvvvvvvvvvvv REMOVE IF NOT SUPPORTING IE6/7/8 vvvvvvvvvvvvvvvvvvv
+        // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+        navigator.userAgent.match(/msie [6,7,8]/i) && !supports_onhashchange && (function () { // TODO: Test change.
+            // Not only do IE6/7 need the "magical" Iframe treatment, but so does IE8
+            // when running in "IE7 compatibility" mode.
+
+            var iframe,
+                iframe_src;
+
+            // When the event is bound and polling starts in IE 6/7, create a hidden
+            // Iframe for history handling.
+            self.start = function () {
+                if (!iframe) {
+                    iframe_src = $.fn[str_hashchange].src;
+                    iframe_src = iframe_src && iframe_src + get_fragment();
+
+                    // Create hidden Iframe. Attempt to make Iframe as hidden as possible
+                    // by using techniques from http://www.paciellogroup.com/blog/?p=604.
+                    iframe = $('<iframe tabindex="-1" title="empty"/>').hide()
+
+                    // When Iframe has completely loaded, initialize the history and
+                    // start polling.
+                        .one('load', function () {
+                            iframe_src || history_set(get_fragment());
+                            poll();
+                        })
+
+                        // Load Iframe src if specified, otherwise nothing.
+                        .attr('src', iframe_src || 'javascript:0')
+
+                        // Append Iframe after the end of the body to prevent unnecessary
+                        // initial page scrolling (yes, this works).
+                        .insertAfter('body')[0].contentWindow;
+
+                    // Whenever `document.title` changes, update the Iframe's title to
+                    // prettify the back/next history menu entries. Since IE sometimes
+                    // errors with "Unspecified error" the very first time this is set
+                    // (yes, very useful) wrap this with a try/catch block.
+                    doc.onpropertychange = function () {
+                        try {
+                            if (event.propertyName === 'title') {
+                                iframe.document.title = doc.title;
+                            }
+                        }
+                        catch (e) {}
+                    };
+
+                }
+            };
+
+            // Override the "stop" method since an IE6/7 Iframe was created. Even
+            // if there are no longer any bound event handlers, the polling loop
+            // is still necessary for back/next to work at all!
+            self.stop = fn_retval;
+
+            // Get history by looking at the hidden Iframe's location.hash.
+            history_get = function () {
+                return get_fragment(iframe.location.href);
+            };
+
+            // Set a new history item by opening and then closing the Iframe
+            // document, *then* setting its location.hash. If document.domain has
+            // been set, update that as well.
+            history_set = function (hash, history_hash) {
+                var iframe_doc = iframe.document,
+                    domain = $.fn[str_hashchange].domain;
+
+                if (hash !== history_hash) {
+                    // Update Iframe with any initial `document.title` that might be set.
+                    iframe_doc.title = doc.title;
+
+                    // Opening the Iframe's document after it has been closed is what
+                    // actually adds a history entry.
+                    iframe_doc.open();
+
+                    // Set document.domain for the Iframe document as well, if necessary.
+                    domain && iframe_doc.write('<script>document.domain="' + domain + '"</script>');
+
+                    iframe_doc.close();
+
+                    // Update the Iframe's hash, for great justice.
+                    iframe.location.hash = hash;
+                }
+            };
+
+        })();
+        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        // ^^^^^^^^^^^^^^^^^^^ REMOVE IF NOT SUPPORTING IE6/7/8 ^^^^^^^^^^^^^^^^^^^
+        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        return self;
+    })();
+
+})(jQuery, this);
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+var notify = {
+    webkitNotifySupported: function() {
+        return "Notification" in window;
+    },
+
+    webkitNotifyRequest: function () {
+        window.Notification.requestPermission();
+    },
+
+    webkitNotify: function (icon, title, notifyData) {
+        if (window.Notification.permission != "granted") {
+            notify.webkitNotifyRequest();
+        }
+        else {
+            new window.Notification(title, {
+                body : notifyData,
+                icon : icon,
+                tag : "fm-notify"
+            });
+        }
+    }
+};
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
   SerializeJSON jQuery plugin.
   https://github.com/marioizquierdo/jquery.serializeJSON
   version 2.9.0 (Jan, 2018)
@@ -5641,8 +4834,11 @@ jQuery.base64 = (function ($) {
   and GPL (http://www.opensource.org/licenses/gpl-license.php) licenses.
 */
 (function (factory) {
-    if (typeof define === 'function' && define.amd) { // AMD. Register as an anonymous module.
-        define(['jquery'], factory);
+    if (true) { // AMD. Register as an anonymous module.
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
     } else if (typeof exports === 'object') { // Node/CommonJS
         var jQuery = require('jquery');
         module.exports = factory(jQuery);
@@ -5976,12 +5172,11 @@ jQuery.base64 = (function ($) {
 
 }));
 
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
 
-
-
-
-
-/*!
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
  * jQuery Typeahead
  * Copyright (C) 2017 RunningCoder.org
  * Licensed under the MIT license
@@ -5991,10 +5186,11 @@ jQuery.base64 = (function ($) {
  * @link http://www.runningcoder.org/jquerytypeahead/
  */
 (function (factory) {
-    if (typeof define === "function" && define.amd) {
-        define("jquery-typeahead", ["jquery"], function (jQuery) {
+    if (true) {
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_RESULT__ = (function (jQuery) {
             return factory(jQuery);
-        });
+        }).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
     } else if (typeof module === "object" && module.exports) {
         module.exports = (function (jQuery, root) {
             if (jQuery === undefined) {
@@ -9879,3 +9075,6 @@ jQuery.base64 = (function ($) {
 
     return Typeahead;
 });
+
+/***/ })
+/******/ ]);
