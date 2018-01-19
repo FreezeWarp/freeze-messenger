@@ -1128,6 +1128,12 @@ $.when(
                                 });
                             }
                         });
+                    },
+                    visible : function() {
+                        return (
+                            $(this).closest('.messageLine').find('.userName').attr('data-userid') == window.userId
+                                && window.activeLogin.userData.permissions.deleteOwnPosts
+                        ) || window.openObjectInstance.roomData.permissions.moderate;
                     }
                 },
 
