@@ -263,13 +263,17 @@ standard.prototype.missedMessageHandler = function(message) {
 standard.prototype.logout = function() {
     // TODO: clear refresh token on server?
 
+    if (window.openObjectInstance.close) {
+        window.openObjectInstance.close();
+    }
+
     $.cookie('webpro_username', null);
     $.cookie('webpro_password', null);
     $.cookie('webpro_refreshToken', null);
 
-    fimApi.getMessages(null, {close : true});
-    fimApi.getActiveUsers(null, {close : true});
-    fimApi.getUnreadMessages(null, {close : true});
+    //fimApi.getMessages(null, {close : true});
+    //fimApi.getActiveUsers(null, {close : true});
+    //fimApi.getUnreadMessages(null, {close : true});
     // TODO: others?
 
     $('#logout').parent().show();
