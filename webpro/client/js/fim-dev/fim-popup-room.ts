@@ -64,7 +64,7 @@ popup.prototype.room.prototype.insertDoc = function() {
     else {
         /* File Upload Form */
         if (typeof FileReader !== 'function') {
-            $('#uploadFileForm').html($l('uploadErrors.notSupported'));
+            $('#uploadFileForm').html(window.phrases.uploadErrors.notSupported);
         }
         else {
             $('#uploadFileForm').unbind('submit').bind('submit', () => {
@@ -110,12 +110,12 @@ popup.prototype.room.prototype.insertDoc = function() {
                     }
 
                     if ($.inArray(filePartsLast, $.toArray(window.serverSettings.fileUploads.allowedExtensions)) === -1) {
-                        $('#uploadFileFormPreview').html($l('uploadErrors.badExtPersonal'));
+                        $('#uploadFileFormPreview').html(window.phrases.uploadErrors.badExtPersonal);
                     }
                     else if (fileSize > window.serverSettings.fileUploads.sizeLimits[filePartsLast]) {
-                        $('#uploadFileFormPreview').html($l('uploadErrors.tooLargePersonal', {
+                        $('#uploadFileFormPreview').html(window.phrases.uploadErrors.tooLargePersonal, {
                             'fileSize' : window.serverSettings.fileUploads.sizeLimits[filePartsLast]
-                        }));
+                        });
                     }
                     else {
                         $('#uploadFileFormPreview').html('Loading Preview...');
