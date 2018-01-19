@@ -1,85 +1,9 @@
 /* START WebPro
  * Note that: WebPro is not optimised for large sets of rooms. It can handle around 1,000 "normal" rooms. */
 
-
-/*var originalLeave = $.fn.popover.Constructor.prototype._leave;
-$.fn.popover.Constructor.prototype._leave = function(obj, context){
-    var  dataKey = this.constructor.DATA_KEY;
-    var  context = context || $(obj.currentTarget).data(dataKey);
-
-    if (!context) {
-        context = new this.constructor(
-            obj.currentTarget,
-            this._getDelegateConfig()
-        );
-        $(obj.currentTarget).data(dataKey, context);
-    }
-
-    originalLeave.call(this, obj);
-
-    if (obj.currentTarget) {
-        $(context.tip).one('mouseenter', function() {
-            console.log("enter");
-            clearTimeout(context._timeout);
-            $(context.tip).one('mouseleave', function() {
-                $.fn.popover.Constructor.prototype._leave.call(context, obj, context);
-            });
-        })
-    }
-};*/
-
-//$q($l('errorQuitMessage', 'errorGenericQuit'));
 function $q(message, error) {
     $('body').replaceWith(message);
     throw new Error(error || message);
-}
-
-
-/**
- * TODO: DEPRECATED
- * Returns a localised string.
- * Note that this currently is using "window.phrase", as that is how I did things prior to creating this function, but I will likely change this later.
- * (Also, this framework is decidedly original and custom-made. That said, if you like it, you are free to take it, assuming you follow WebPro's GPL licensing guidelines.)
- *
- * @param stringName - The name of the string we will return.
- * @param substitutions - Strings can contain simple substitutions of their own. Strange though this is, we feel it is better than using a template when no HTML is involved.
- * @param extra - Additional replacements values, in addition to those stored in window.phrases.
- *
- * @todo No optimisation has yet been made. We will need to do at least some profiling later on.
- *
- * @author Jospeph T. Parsons <josephtparsons@gmail.com>
- * @copyright Joseph T. Parsons 2017
- */
-function $l(stringName, substitutions, extra) {
-    var phrase = false,
-        stringParsed = '',
-        eachBreak = false;
-
-    // We start be breaking up the stringName (which needs to be seperated with periods), to use the [] format. This is mainly neccissary because of integer indexes (JS does not support "a.b.1"), but these indexes are better anyway for arrays.
-    stringNameParts = stringName.split('.');
-
-    $.each(stringNameParts, function(index, value) {
-        stringParsed += ('[\'' + value + '\']');
-
-        if (undefined === eval("window.phrases" + stringParsed + " || extra" + stringParsed)) {
-            eachBreak = true;
-            return false;
-        }
-    });
-
-    if ((eachBreak === false) && (phrase = eval("window.phrases" + stringParsed + " || extra" + stringParsed))) {
-        if (substitutions) {
-            $.each(substitutions, function(index, value) {
-                phrase = phrase.replace('{{{{' + index + '}}}}', value);
-            });
-        }
-
-        return phrase;
-    }
-    else {
-        console.log('Missing phrase "' + stringName + '"');
-        return '~~' + stringName;
-    }
 }
 
 Handlebars.registerHelper("contains", function( value, array, options ){
