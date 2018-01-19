@@ -332,24 +332,32 @@ class DatabaseInstance extends DatabaseSQL
             'roomIds'         => array(),
             'userIds'         => array(),
             'typing'          => null,
-            'statuses'        => array()
+            'statuses'        => array(),
+            'includeUserData' => true,
+            'includeRoomData' => true
         ), $options);
 
         $columns = array(
-            $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId',
-            "join " . $this->sqlPrefix . "users" => [
-                'columns' => 'id userId, name userName, status',
+            $this->sqlPrefix . "ping"  => 'status pstatus, typing, time ptime, roomId proomId, userId puserId'
+        );
+
+        if ($options['includeUserData']) {
+            $columns["join " . $this->sqlPrefix . "users"] = [
+                'columns'    => 'id userId, name userName, status',
                 'conditions' => [
                     'userId' => $this->col('puserId')
                 ],
-            ],
-            "join " . $this->sqlPrefix . "rooms" => [
+            ];
+        }
+
+        if ($options['includeRoomData']) {
+            $columns["join " . $this->sqlPrefix . "rooms"] = [
                 'columns' => 'id roomId, idEncoded roomIdEncoded, name roomName',
                 'conditions' => [
                     'roomIdEncoded' => $this->col('proomId')
                 ],
-            ],
-        );
+            ];
+        }
 
 
         if (count($options['roomIds']) > 0)  $conditions['both']['proomId 1'] = $this->in($options['roomIds']);
@@ -360,7 +368,6 @@ class DatabaseInstance extends DatabaseSQL
 
 
         $conditions['both']['ptime'] = $this->int(time() - $options['onlineThreshold'], 'gt');
-        //$conditions['both']['puserId'] = $this->col('userId');
 
 
         return $this->select($columns, $conditions, $sort, $limit, $page);
@@ -2282,18 +2289,25 @@ class DatabaseInstance extends DatabaseSQL
         $this->endTransaction();
 
 
+
+        // TODO: possibly also exclude rooms a user is in
+        $activeUsers = $this->getActiveUsers([
+            'includeUserData' => false,
+            'includeRoomData' => false
+        ])->getColumnValues('puserId');
+
         // If the contact is a private communication, create an event and add to the message unread table.
         if ($message->room->isPrivateRoom()) {
             foreach (($message->room->getPrivateRoomMemberIds()) AS $sendToUserId) {
                 if ($sendToUserId == $message->user->id)
                     continue;
                 else
-                    $this->createUnreadMessage($sendToUserId, $message);
+                    $this->createUnreadMessage($sendToUserId, $message, in_array($sendToUserId, $activeUsers));
             }
         }
         else {
             foreach ($message->room->watchedByUsers AS $sendToUserId) {
-                $this->createUnreadMessage($sendToUserId, $message);
+                $this->createUnreadMessage($sendToUserId, $message, in_array($sendToUserId, $activeUsers));
             }
         }
 
@@ -2369,13 +2383,15 @@ class DatabaseInstance extends DatabaseSQL
 
 
 
-    public function createUnreadMessage($sendToUserId, Message $message) {
+    public function createUnreadMessage($sendToUserId, Message $message, $publish = true) {
         if (Config::$enableUnreadMessages) {
-            \Stream\StreamFactory::publish('user_' . $sendToUserId, 'missedMessage', [
-                'id' => $message->id,
-                'senderId' => $message->user->id,
-                'roomId' => $message->room->id,
-            ]);
+            if ($publish) {
+                \Stream\StreamFactory::publish('user_' . $sendToUserId, 'missedMessage', [
+                    'id'       => $message->id,
+                    'senderId' => $message->user->id,
+                    'roomId'   => $message->room->id,
+                ]);
+            }
 
 
             $this->upsert($this->sqlPrefix . "unreadMessages", array(
