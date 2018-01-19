@@ -354,6 +354,7 @@ table.page {
     border-radius: .25em;
     margin-left: 5px;
     margin-right: 25px; /* overflow */
+    box-shadow: 1px 1px 5px grey;
 }
 
 .messageLineAvatar > .messageTextFormatted:before {
@@ -437,6 +438,11 @@ table.page {
     font-weight: bold;
     text-align: right;
     letter-spacing: -1px;
+    color: white;
+    text-shadow: 0px 0px 3px #0e0e0e;
+}
+.messageLineAvatar.messageLineReverse > .messageText .date {
+    text-align: left;
 }
 
 .messageTable {

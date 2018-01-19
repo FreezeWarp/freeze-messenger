@@ -723,10 +723,10 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
         if (!window.settings.disableFormatting
             && pairs[userId].messageFormatting) {
             tag.attr("style", tag.attr("style") + ";" + pairs[userId].messageFormatting);
+        }
 
-            if (window.settings.showAvatars && window.settings.bubbleFormatting) {
-                tag.addClass('messageTextFormatted');
-            }
+        if (window.settings.showAvatars && window.settings.bubbleFormatting) {
+            tag.addClass('messageTextFormatted');
         }
 
     });
