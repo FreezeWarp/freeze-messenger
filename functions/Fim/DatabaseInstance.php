@@ -1985,7 +1985,7 @@ class DatabaseInstance extends DatabaseSQL
             'groupIds'            => [],
             'groupNames'          => [],
             'groupNameSearch'     => false,
-            'columns'            => ['id', 'name', 'options'],
+            'columns'            => ['id', 'name', 'avatar', 'options'],
         ), $options);
 
         $columns = [$this->sqlPrefix . 'socialGroups' => $options['columns']];
