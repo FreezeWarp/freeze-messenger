@@ -25,9 +25,6 @@
 
 
 /* Prevent Direct Access of File */
-
-use Fim\Room;
-
 if (!defined('API_INUSERSTATUS'))
     die();
 
@@ -41,7 +38,6 @@ $request = fim_sanitizeGPC('p', array(
     ),
 
     'typing' => array(
-        'default' => false,
         'cast' => 'bool',
     )
 ));
@@ -49,12 +45,19 @@ $request = fim_sanitizeGPC('p', array(
 
 
 
+/* Validate Request */
+if (isset($request['typing']) && !\Fim\Config::$userTypingStatus) {
+    new \Fim\Error('typingDisabled', 'User typing functionality is disabled on this server.');
+}
+
+
+
 /* Get Room Data */
 foreach ($requestHead['roomIds'] AS $roomId) {
-    $room = new Room($roomId);
+    $room = new \Fim\Room($roomId);
 
-    if (\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW)
-        \Fim\Database::instance()->setUserStatus($room->id, $request['status'],  $request['typing']);
+    if (\Fim\Database::instance()->hasPermission($user, $room) & \Fim\Room::ROOM_PERMISSION_VIEW)
+        \Fim\Database::instance()->setUserStatus($room->id, $request['status'], $request['typing'] ?? null);
 }
 
 

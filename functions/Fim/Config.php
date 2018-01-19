@@ -185,7 +185,7 @@ class Config {
     /** @var int Requires all room names to not exceed this many characters in length. */
     public static $roomLengthMaximum = 50;
 
-    /** @var bool Whether or not to disable topic functionality. */
+    /** @var bool Whether or not to disable topic functionality. (TODO) */
     public static $disableTopic = false;
 
     /** @var bool Whether _any_ user can create rooms, even those with the permission to do so. Setting this false, in effect; disables the entire feature. (Admins are excluded.) */
@@ -199,6 +199,9 @@ class Config {
 
     /** @var int The maximum number of rooms a single user can create times the number of years the user has been registered. TODO: Test */
     public static $userRoomMaximumPerYear = 50;
+
+    /** @var bool Whether or not to allow users to send "typing" statuses. If disabled, you should also probably lower {@see $floodDetectionGlobal_editUserStatus_perMinute}. */
+    public static $userTypingStatus = false;
 
 
     /** @var int The room that new users will enter by default. */

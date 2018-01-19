@@ -1,5 +1,7 @@
-let fimApi = function(directory: string) {
-    this.directory = directory;
+let fimApi = function(serverSettings) {
+    this.directory = serverSettings.installUrl;
+    this.serverSettings = serverSettings;
+
     this.lastSessionHash = '';
 
     this.requestDefaults = {
@@ -808,11 +810,13 @@ fimApi.prototype.exitRoom = function(roomId, requestSettings) {
 };
 
 fimApi.prototype.startedTyping = function(roomId, requestSettings) {
-    this.editUserStatus(roomId, {"typing" : true}, requestSettings);
+    if (this.serverSettings.rooms.typingStatus)
+        this.editUserStatus(roomId, {"typing" : true}, requestSettings);
 };
 
 fimApi.prototype.stoppedTyping = function(roomId, requestSettings) {
-    this.editUserStatus(roomId, {"typing" : false}, requestSettings);
+    if (this.serverSettings.rooms.typingStatus)
+        this.editUserStatus(roomId, {"typing" : false}, requestSettings);
 };
 
 

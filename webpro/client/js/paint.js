@@ -958,6 +958,7 @@ $.when(
         success: function(json) {
             window.serverSettings = json.serverStatus;
 
+
             window.serverSettings.fileUploads.extensionChangesReverse = {};
 
             jQuery.each(window.serverSettings.fileUploads.extensionChanges, function(index, extension) {
@@ -982,7 +983,7 @@ $.when(
 
 
     /* Our handful of global objects */
-    window.fimApi = new fimApi(window.serverSettings.installUrl);
+    window.fimApi = new fimApi(window.serverSettings);
     fimApi.registerDefaultExceptionHandler(function(exception) {
         dia.exception(exception);
     });

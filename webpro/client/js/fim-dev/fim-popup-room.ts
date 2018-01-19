@@ -629,10 +629,7 @@ popup.prototype.room.prototype.init = function(options) {
                 // Send user status pings
                 fimApi.ping(this.options.roomId);
                 this.pingInterval = window.setInterval((() => {
-                    fimApi.editUserStatus(this.options.roomId, {
-                        status : "",
-                        typing : this.typing
-                    });
+                    fimApi.ping(this.options.roomId);
                 }), 60 * 1000);
 
 

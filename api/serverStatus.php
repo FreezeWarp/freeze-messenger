@@ -83,6 +83,7 @@ echo new Http\ApiData([
             'roomLengthMinimum' => (int) \Fim\Config::$roomLengthMinimum,
             'roomLengthMaximum' => (int) \Fim\Config::$roomLengthMaximum,
             'disableTopic' => (bool) \Fim\Config::$disableTopic,
+            'typingStatus' => (bool) \Fim\Config::$userTypingStatus,
         ),
 
         'officialRooms' => new Http\ApiOutputList(\Fim\Database::instance()->getRooms(['onlyOfficial' => true])->getColumnValues('id')),
