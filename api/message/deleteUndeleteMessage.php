@@ -34,7 +34,7 @@ if (!defined('API_INMESSAGE'))
     die();
 
 
-if (($message->user->id = $user->id && $user->hasPriv('editOwnPosts'))
+if (($message->user->id == $user->id && $user->hasPriv('editOwnPosts'))
     || (\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_MODERATE)) {
 
     if ($requestHead['_action'] == 'delete')
