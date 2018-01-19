@@ -200,6 +200,7 @@ class Config {
     /** @var int The maximum number of rooms a single user can create times the number of years the user has been registered. TODO: Test */
     public static $userRoomMaximumPerYear = 50;
 
+
     /** @var int The room that new users will enter by default. */
     public static $defaultRoomId = 1;
 
@@ -359,7 +360,7 @@ class Config {
     public static $uploadMaxSpace = -1;
 
     /** @var int The maximum space that can be taken by the files belonging to a single user. -1 for unlimited. */
-    public static $uploadMaxUserSpace = -1;
+    public static $uploadMaxUserSpace = 1024 * 1024 * 512;
 
     /** @var bool Whether uploads (and, if applicable, thumbnails) should be written to disk. In many cases, it is slightly faster to do so, but potentially harder to maintain/perform backups. (TODO) */
     public static $uploadUseFilesystem = false;
@@ -497,15 +498,15 @@ class Config {
 
     /** @var array The maximum allowed size for different filetypes. */
     public static $uploadSizeLimits = array(
-        'txt' => 1 * 1024 * 1024, // 1MB
-        'htm' => 1 * 1024 * 1024, // 1MB
-        'php' => 1 * 1024 * 1024, // 1MB
-        'css' => 1 * 1024 * 1024, // 1MB
-        'js' => 1 * 1024 * 1024, // 1MB
-        'json' => 1 * 1024 * 1024, // 1MB
-        'java' => 1 * 1024 * 1024, // 1MB
-        'xml' => 1 * 1024 * 1024, // 1MB
-        'ini' => 1 * 1024 * 1024, // 1MB
+        'txt' => 256 * 1024, // 256KB
+        'htm' => 256 * 1024,
+        'php' => 256 * 1024,
+        'css' => 256 * 1024 * 1024,
+        'js' => 256 * 1024 * 1024,
+        'json' => 256 * 1024 * 1024,
+        'java' => 256 * 1024 * 1024,
+        'xml' => 256 * 1024 * 1024,
+        'ini' => 256 * 1024 * 1024,
 
         'exe' => 50 * 1024 * 1024, // 50MB
         'msi' => 50 * 1024 * 1024, // 50MB
@@ -534,28 +535,28 @@ class Config {
         'ods' => 10 * 1024 * 1024, // 10MB
         'odp' => 10 * 1024 * 1024, // 10MB
 
-        'png' => 10 * 1024 * 1024, // 10MB
-        'jpg' => 10 * 1024 * 1024, // 10MB
-        'gif' => 10 * 1024 * 1024, // 10MB
-        'bmp' => 10 * 1024 * 1024, // 10MB
-        'ico' => 1 * 1024 * 1024, // 1MB
-        'tif' => 10 * 1024 * 1024, // 10MB
-        'svg' => 10 * 1024 * 1024, // 10MB
-        'svgz' => 10 * 1024 * 1024, // 10MB
+        'png' => 5 * 524 * 524, // 5MB
+        'jpg' => 5 * 524 * 524, // 5MB
+        'gif' => 5 * 524 * 524, // 5MB
+        'bmp' => 5 * 524 * 524, // 5MB
+        'ico' => 1 * 524 * 524, // 1MB
+        'tif' => 5 * 524 * 524, // 5MB
+        'svg' => 5 * 524 * 524, // 5MB
+        'svgz' => 5 * 524 * 524, // 5MB
 
-        'mp2' => 20 * 1024 * 1024, // 20MB
-        'mp3' => 20 * 1024 * 1024, // 20MB
-        'ogg' => 20 * 1024 * 1024, // 20MB
+        'mp2' => 10 * 1024 * 1024, // 10MB
+        'mp3' => 10 * 1024 * 1024, // 10MB
+        'ogg' => 10 * 1024 * 1024, // 10MB
         'flac' => 50 * 1024 * 1024, // 50MB
-        'm4a' => 20 * 1024 * 1024, // 20MB
+        'm4a' => 10 * 1024 * 1024, // 10MB
         'wav' => 50 * 1024 * 1024, // 50MB
-        'wma' => 20 * 1024 * 1024, // 20MB
+        'wma' => 10 * 1024 * 1024, // 10MB
 
-        'mp4' => 10 * 1024 * 1024, // 100MB
-        'm4v' => 10 * 1024 * 1024, // 100MB
-        'ogv' => 10 * 1024 * 1024, // 100MB
-        'wmv' => 20 * 1024 * 1024, // 20MB
-        'mov' => 20 * 1024 * 1024, // 20MB
+        'mp4' => 100 * 1024 * 1024, // 100MB
+        'm4v' => 100 * 1024 * 1024, // 100MB
+        'ogv' => 100 * 1024 * 1024, // 100MB
+        'wmv' => 100 * 1024 * 1024, // 100MB
+        'mov' => 100 * 1024 * 1024, // 100MB
 
         'zip' => 50 * 1024 * 1024, // 50MB
         'rar' => 50 * 1024 * 1024, // 50MB
