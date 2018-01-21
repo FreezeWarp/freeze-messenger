@@ -115,7 +115,7 @@ class StreamDatabase implements StreamInterface {
         /* Use distributed cache to avoid making database queries, if possible. */
         if ($lastId) {
             $cacheLastId = \Cache\CacheFactory::get("lastEvent_$stream", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL);
-            if ($lastId !== false && $lastId <= $cacheLastId)
+            if ($lastId !== false && $lastId >= $cacheLastId)
                 return [];
         }
 
