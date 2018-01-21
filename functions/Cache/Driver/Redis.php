@@ -93,7 +93,13 @@ class Redis implements DriverInterface {
     }
 
     public function dump() {
-        return "";
+        $keys = [];
+
+        foreach ($this->instance->getKeys('*') AS $key) {
+            $keys[$key] = $this->get($key);
+        }
+
+        return $keys;
     }
 }
 ?>

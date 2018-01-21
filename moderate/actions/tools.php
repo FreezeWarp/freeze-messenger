@@ -53,14 +53,13 @@ else {
                 }
 
                 foreach (\Cache\CacheFactory::$methods AS $method) {
-                    echo container('Cache Dump: ' . get_class($method), '<pre>' . print_r(\Cache\CacheFactory::dump($method), true) . '</pre>');
+                    echo container('Cache Dump: ' . get_class($method), '<pre>' . var_export($method->dump(), true) . '</pre>') . '<br />';
                 }
 
-                echo '<br />';
-                echo container('Contents of \Fim\Config', '<pre>' . print_r((new ReflectionClass('\Fim\Config'))->getStaticProperties(), true) . '</pre>');
-                echo '<br />';
-                echo container('Contents of roomPermissionsCache Table', '<table class="table table-bordered table-striped table-sm"><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>');
-                echo '<br />';
+                echo container('Contents of \Fim\Config', '<pre>' . print_r((new ReflectionClass('\Fim\Config'))->getStaticProperties(), true) . '</pre>') . '<br />';
+
+                echo container('Contents of roomPermissionsCache Table', '<table class="table table-bordered table-striped table-sm"><tr><th>Room ID</th><th>User ID</th><th>Permissions</th><th>Expires</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'])->getAsTemplate('<tr><td>$roomId</td><td>$userId</td><td>$permissions</td><td>$expires</td></tr>') . '</table>') . '<br />';
+
                 echo container('Contents of counters Table', '<table class="table table-bordered table-striped table-sm"><tr><th>Name</th><th>Value</th></tr>' . \Fim\Database::instance()->select([\Fim\Database::$sqlPrefix . 'counters' => 'counterName, counterValue'])->getAsTemplate('<tr><td>$counterName</td><td>$counterValue</td></tr>') . '</table>');
                 break;
 
