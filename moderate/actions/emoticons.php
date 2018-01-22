@@ -31,7 +31,7 @@ else {
             'default' => 'view'
         ),
 
-        'emoticonId' => array(
+        'id' => array(
             'cast' => 'int'
         )
     ));
@@ -43,11 +43,11 @@ else {
 
                 foreach ($emoticons AS $emoticon) {
                     $rows .= "<tr>
-                        <td>{$emoticon['emoticonText']}</td>
-                        <td>{$emoticon['emoticonFile']} (<img src='{$emoticon['emoticonFile']}' />)</td>
+                        <td>{$emoticon['text']}</td>
+                        <td>{$emoticon['file']} (<img src='{$emoticon['emoticonFile']}' />)</td>
                         <td>
-                            <a class='btn btn-secondary' href='./index.php?do=emoticons&do2=edit&emoticonId={$emoticon['emoticonId']}'><i class='fas fa-edit'></i> Edit</a>
-                            <a class='btn btn-danger' href='./index.php?do=emoticons&do2=delete&emoticonId={$emoticon['emoticonId']}'><i class='fas fa-trash'></i> Delete</a>
+                            <a class='btn btn-secondary' href='./index.php?do=emoticons&do2=edit&id={$emoticon['id']}'><i class='fas fa-edit'></i> Edit</a>
+                            <a class='btn btn-danger' href='./index.php?do=emoticons&do2=delete&id={$emoticon['id']}'><i class='fas fa-trash'></i> Delete</a>
                         </td>
                     </tr>";
                 }
@@ -69,31 +69,31 @@ else {
 
 
             case 'edit':
-                if ($request['emoticonId']) {
-                    $emoticon = \Fim\Cache::getEmoticons()[$request['emoticonId']];
+                if ($request['id']) {
+                    $emoticon = \Fim\Cache::getEmoticons()[$request['id']];
 
-                    $title = 'Edit Emote "' . $emoticon['emoticonText'] . '"';
+                    $title = 'Edit Emote "' . $emoticon['text'] . '"';
                 }
                 else {
                     $emoticon = array(
-                        'emoticonId' => 0,
-                        'emoticonText' => '',
-                        'emoticonFile' => ''
+                        'id' => 0,
+                        'text' => '',
+                        'file' => ''
                     );
 
                     $title = 'Add New Emote';
                 }
 
-                echo container($title, "<form action='./index.php?do=emoticons&do2=edit2&emoticonId={$emoticon['emoticonId']}' method='post'>
+                echo container($title, "<form action='./index.php?do=emoticons&do2=edit2&id={$emoticon['id']}' method='post'>
                     <label class='input-group'>
                         <span class='input-group-addon'>Text</span>
-                        <input class='form-control' type='text' name='emoticonText' value='{$emoticon['emoticonText']}' required />
+                        <input class='form-control' type='text' name='text' value='{$emoticon['text']}' required />
                     </label>
                     <small class='form-text text-muted'>This is the text that will be replaced with an emote.</small><br />
                     
                     <label class='input-group'>
                         <span class='input-group-addon'>File</span>
-                        <input class='form-control' type='text' name='emoticonFile' value='{$emoticon['emoticonFile']}' required />
+                        <input class='form-control' type='text' name='file' value='{$emoticon['file']}' required />
                     </label>
                     <small class='form-text text-muted'>This is the file that will be used for the emote image. It should be an absolute path.</small><br />
                     
@@ -107,32 +107,32 @@ else {
             case 'edit2':
                 // Get Request
                 $request = array_merge($request, fim_sanitizeGPC('p', [
-                    'emoticonText' => [
+                    'text' => [
                         'require' => true
                     ],
-                    'emoticonFile' => [
+                    'file' => [
                         'require' => true
                     ],
                 ]));
 
                 // Log and Perform Request
-                if ($request['emoticonId']) {
-                    \Fim\Database::instance()->modLog('editEmoticon', $request['emoticonId']);
-                    \Fim\Database::instance()->fullLog('editEmoticon', fim_arrayFilterKeys($request, ['emoticonId', 'emoticonText', 'emoticonFile']));
+                if ($request['id']) {
+                    \Fim\Database::instance()->modLog('editEmoticon', $request['id']);
+                    \Fim\Database::instance()->fullLog('editEmoticon', fim_arrayFilterKeys($request, ['id', 'text', 'file']));
 
                     \Fim\Database::instance()->update(
                         \Fim\Database::$sqlPrefix . 'emoticons',
-                        fim_arrayFilterKeys($request, ['emoticonText', 'emoticonFile']),
-                        fim_arrayFilterKeys($request, ['emoticonId'])
+                        fim_arrayFilterKeys($request, ['text', 'file']),
+                        fim_arrayFilterKeys($request, ['id'])
                     );
                 }
                 else {
-                    \Fim\Database::instance()->modLog('addEmoticon', $request['emoticonText']);
-                    \Fim\Database::instance()->fullLog('addEmoticon', fim_arrayFilterKeys($request, ['emoticonText', 'emoticonFile']));
+                    \Fim\Database::instance()->modLog('addEmoticon', $request['text']);
+                    \Fim\Database::instance()->fullLog('addEmoticon', fim_arrayFilterKeys($request, ['text', 'file']));
 
                     \Fim\Database::instance()->insert(
                         \Fim\Database::$sqlPrefix . 'emoticons',
-                        fim_arrayFilterKeys($request, ['emoticonText', 'emoticonFile'])
+                        fim_arrayFilterKeys($request, ['text', 'file'])
                     );
                 }
 
@@ -147,15 +147,15 @@ else {
 
             case 'delete':
                 // Log the Deletion
-                $emoticon = \Fim\Cache::getEmoticons()[$request['emoticonId']];
+                $emoticon = \Fim\Cache::getEmoticons()[$request['id']];
 
-                \Fim\Database::instance()->modLog('deleteEmoticon', $emoticon['emoticonText']);
+                \Fim\Database::instance()->modLog('deleteEmoticon', $emoticon['text']);
                 \Fim\Database::instance()->fullLog('deleteEmoticon', $emoticon);
 
                 // Perform the Deletion
                 \Fim\Database::instance()->delete(
                     \Fim\Database::$sqlPrefix . 'emoticons',
-                    fim_arrayFilterKeys($request, ['emoticonId'])
+                    fim_arrayFilterKeys($request, ['id'])
                 );
 
                 // Clear the Cache

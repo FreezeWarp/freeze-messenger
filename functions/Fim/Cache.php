@@ -87,8 +87,8 @@ class Cache extends \Cache\CacheFactory {
     public static function getEmoticons() {
         return self::getGeneric(self::EMOTICON_KEY, function() {
             return \Fim\DatabaseSlave::instance()->select(array(
-                \Fim\DatabaseSlave::$sqlPrefix . "emoticons" => 'emoticonId, emoticonText, emoticonFile'
-            ))->getAsArray('emoticonId');
+                \Fim\DatabaseSlave::$sqlPrefix . "emoticons" => 'id, text, file'
+            ))->getAsArray('id');
         }, \Fim\Config::$emoticonCacheTimeout);
     }
 

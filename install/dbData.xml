@@ -178,20 +178,20 @@
 
         <!-- Table counters -->
         <table name="counters">
-            <column name="counterName" value="uploads" />
-            <column name="counterValue" value="0" />
+            <column name="name" value="uploads" />
+            <column name="value" value="0" />
         </table>
         <table name="counters">
-            <column name="counterName" value="uploadSize" />
-            <column name="counterValue" value="0" />
+            <column name="name" value="uploadSize" />
+            <column name="value" value="0" />
         </table>
         <table name="counters">
-            <column name="counterName" value="messages" />
-            <column name="counterValue" value="0" />
+            <column name="name" value="messages" />
+            <column name="value" value="0" />
         </table>
         <table name="counters">
-            <column name="counterName" value="rooms" />
-            <column name="counterValue" value="0" />
+            <column name="name" value="rooms" />
+            <column name="value" value="0" />
         </table>
 
 

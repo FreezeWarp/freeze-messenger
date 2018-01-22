@@ -583,8 +583,8 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
                     .filter(function() {
                         return this.nodeType === 3; //Node.TEXT_NODE
                     })).each(function() {
-                    var result = fim_regexTokenizer(new RegExp(emoticon.emoticonText.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), "gi"), $(this).text(), function() {
-                        return $('<img>').attr('src', emoticon.emoticonFile);
+                    var result = fim_regexTokenizer(new RegExp(emoticon.text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), "gi"), $(this).text(), function() {
+                        return $('<img>').attr('src', emoticon.file);
                     }, this.nodeType !== 3 ? $(this).text('') : null);
 
                     if (this.nodeType === 3)

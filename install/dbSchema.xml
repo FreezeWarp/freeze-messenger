@@ -55,10 +55,10 @@
 
 
         <table name="counters" type="general" comment="A cached list of counters. Can be rebuilt from other tables (and must be rebuilt for deletions, etc.)">
-            <column name="counterName" type="string" maxlen="50" comment="The name of the counter." />
-            <column name="counterValue" type="int" maxlen="10" default="0" comment="The current value of the counter." />
+            <column name="name" type="string" maxlen="50" comment="The name of the counter." />
+            <column name="value" type="int" maxlen="10" default="0" comment="The current value of the counter." />
 
-            <key name="counterName" type="primary" storage="hash" comment="This is used to quickly look up a counter value." />
+            <key name="name" type="primary" storage="hash" comment="This is used to quickly look up a counter value." />
         </table>
 
 
@@ -72,42 +72,42 @@
 
 
         <table name="censorLists" type="general" comment="Admin-defined text censor categories. It will typically be read in full, or joined from censorBlackWhiteLists.">
-            <column name="listId" type="int" maxlen="6" autoincrement="1" comment="The unique ID of the list." />
-            <column name="listName" type="string" maxlen="40" comment="The name of the list. It is only used for user identification." />
-            <column name="listType" type="enum" restrict="black,white" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
+            <column name="id" type="int" maxlen="6" autoincrement="1" comment="The unique ID of the list." />
+            <column name="name" type="string" maxlen="40" comment="The name of the list. It is only used for user identification." />
+            <column name="type" type="enum" restrict="black,white" comment="The list type - black to apply to no rooms automatically, and white to apply to all rooms automatically (opt-in vs. opt-out)" />
             <column name="options" type="bitfield" bits="6" default="3" comment="A bitfield of specific options for the list (6 bits are allotted, but only three are used by default)." />
 
-            <key name="listId" type="primary" storage="hash" comment="This is used to look up data on a specific censor list" />
+            <key name="id" type="primary" storage="hash" comment="This is used to look up data on a specific censor list" />
             <key name="options" type="index" />
         </table>
 
 
         <table name="censorWords" type="general" comment="Admin-defined text censor items.">
-            <column name="wordId" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for the word." />
+            <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for the word." />
             <column name="listId" fkey="censorLists.listId" type="int" maxlen="6" comment="The ID of the list the word is filed under." />
             <column name="word" type="string" maxlen="100" comment="The word text." />
             <column name="severity" type="enum" restrict="replace,warn,confirm,block" default="replace" comment="The severity/type of word." />
             <column name="param" type="string" default="" maxlen="100" comment="The action data for the word, used in multiple ways based on the word's severity." />
 
-			<key name="wordId"        type="primary" />
-            <key name="listId,wordId" type="index" storage="btree" comment="This is used to look up words belonging to a given list." />
+			<key name="id"            type="primary" />
+            <key name="listId,id"     type="index" storage="btree" comment="This is used to look up words belonging to a given list." />
         </table>
 
 
         <table name="emoticons" type="general" comment="Emoticon-oriented search/replace list.">
-            <column name="emoticonId" type="int" maxlen="8" autoincrement="1" comment="Emoticon ID." />
-            <column name="emoticonText" type="string" maxlen="20" comment="Text to find." />
-            <column name="emoticonFile" type="string" maxlen="1000" comment="Image source." />
+            <column name="id" type="int" maxlen="8" autoincrement="1" comment="Emoticon ID." />
+            <column name="text" type="string" maxlen="20" comment="Text to find." />
+            <column name="file" type="string" maxlen="1000" comment="Image source." />
             <column name="context" type="enum" restrict="imageReplace" maxlen="20" default="imageReplace" comment="How to parse emoticon. ('imageReplace' only current option.)" />
 
-            <key name="emoticonId"   type="primary" storage="hash" />
-            <key name="emoticonText" type="unique"  storage="hash" />
+            <key name="id"   type="primary" storage="hash" />
+            <key name="text" type="unique"  storage="hash" />
         </table>
 
 
         <table name="files" type="general" comment="User-created files.">
-            <column name="fileId" type="int" maxlen="6" autoincrement="1" comment="A unique ID for the file." />
-            <column name="fileName" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
+            <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique ID for the file." />
+            <column name="name" type="string" maxlen="255" comment="The file's name to be sent for downloading." />
             <!--<column name="fileType" type="string" maxlen="255" comment="The file's mime-type/content-type." />-->
             <column name="creationTime" type="time" default="__TIME__" comment="The date the file was uploaded." />
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who uploaded the file." />
@@ -118,21 +118,21 @@
             <column name="options" type="bitfield" bits="16" comment="File options." />
             <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
-            <key name="fileId" type="primary" storage="hash" comment="This is used to quickly look up file entries." />
+            <key name="id"     type="primary" storage="hash" comment="This is used to quickly look up file entries." />
             <key name="userId" type="index"   storage="hash" comment="This is used to look up files belonging to a user." />
         </table>
 
 
         <table name="fileVersions" type="general" comment="User-created file contents and revisions.">
-            <column name="versionId" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for all file versions, regardless of each file." />
-            <column name="fileId" fkey="files.fileId" type="int" maxlen="6" comment="The ID of the parent file." />
+            <column name="id" type="int" maxlen="6" autoincrement="1" comment="A unique identifier for all file versions, regardless of each file." />
+            <column name="fileId" fkey="files.id" type="int" maxlen="6" comment="The ID of the parent file." />
             <column name="time" type="time" default="__TIME__" comment="The time the revision of the file was uploaded." />
             <column name="size" type="int" maxlen="10" comment="The file size of the revision." />
             <column name="sha256hash" type="string" maxlen="64" comment="The SHA256 hash of the file's binary data." />
             <column name="contents" type="blob" maxlen="4294967295" comment="The base64-encoded binary data of the file." />
 
-			<key name="versionId"        type="primary" storage="hash" />
-            <key name="fileId,versionId" type="index"   storage="btree" comment="This is used to look up a specific file version, or versions belonging to a specific file." />
+			<key name="id"               type="primary" storage="hash" />
+            <key name="fileId,id"        type="index"   storage="btree" comment="This is used to look up a specific file version, or versions belonging to a specific file." />
 			<key name="sha256hash"       type="unique"  storage="hash"  comment="This is used to look up file versions from hashes." />
         </table>
 

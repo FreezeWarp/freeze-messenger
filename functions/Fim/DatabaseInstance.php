@@ -424,7 +424,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
         $columns = array(
-            $this->sqlPrefix . "censorLists" => 'listId id, listName name, listType type, options',
+            $this->sqlPrefix . "censorLists" => 'id, name, type, options',
         );
 
         if ($options['includeStatus']) {
@@ -548,7 +548,7 @@ class DatabaseInstance extends DatabaseSQL
         ), $options);
 
         $columns = array(
-            $this->sqlPrefix . "censorWords" => 'wordId id, listId, word, severity, param',
+            $this->sqlPrefix . "censorWords" => 'id, listId, word, severity, param',
         );
 
         $conditions = array();
@@ -661,24 +661,6 @@ class DatabaseInstance extends DatabaseSQL
 
 
     /**
-     * Retrieves a single global counter value.
-     *
-     * @param string $counterName THe name of the counter to retreive.
-     * @return int The counter's current value.
-     */
-    public function getCounterValue($counterName)
-    {
-        $queryParts['columns']    = [$this->sqlPrefix . "counters" => 'counterName, counterValue'];
-        $queryParts['conditions'] = ['counterName' => $this->str($counterName), ];
-
-        $counterData = $this->select($queryParts['columns'], $queryParts['conditions'], false, 1)->getAsArray(false);
-
-        return $counterData['counterValue'];
-    }
-
-
-
-    /**
      * Retrieves files matching the given conditions.
      *
      * Scans tables `files` and `fileVersions`. These two tables cannot be queried individually using fimDatabase.
@@ -726,36 +708,39 @@ class DatabaseInstance extends DatabaseSQL
             'fileNameSearch'  => '',
             'includeContent'  => false,
             'includeThumbnails'=> false,
+            'includeDeleted'  => false,
             'sizeMin' => 0,
             'sizeMax' => 0,
         ), $options);
 
 
         $columns = array(
-            $this->sqlPrefix . "files"        => 'fileId id, fileName name, creationTime, userId, roomIdLink, source', // TODO
-            $this->sqlPrefix . "fileVersions" => 'fileId vfileId, versionId, sha256hash sha256Hash, size',
+            $this->sqlPrefix . "files"        => 'id, name, creationTime, userId, roomIdLink, source', // TODO
+            $this->sqlPrefix . "fileVersions" => 'fileId vfileId, id versionId, sha256hash sha256Hash, size',
         );
 
-        if ($options['includeContent']) $columns[$this->sqlPrefix . 'fileVersions'] .= ', contents';
-
-
-        // This is a method of optimisation I'm trying. Basically, if a very small sample is requested, then we can optimise by doing those first. Otherwise, the other filters are usually better performed first.
-        foreach (array('fileIds' => 'id', 'versionIds' => 'versionId', 'sha256hashes' => 'sha256Hash') AS $group => $key) {
-            if (count($options[$group]) > 0 && count($options[$group]) <= 10) {
-                $conditions['both'][$key] = $this->in($options[$group]);
-            }
-        }
+        if ($options['includeContent'])
+            $columns[$this->sqlPrefix . 'fileVersions'] .= ', contents';
 
 
         // Narrow down files _before_ matching to fileVersions. Try to perform the quickest searches first (those which act on integer indexes).
-        if (!isset($conditions['both']['fileIds']) && count($options['fileIds']) > 0) $conditions['both']['id'] = $this->in($options['fileIds']);
-        if (count($options['userIds']) > 0) $conditions['both']['userId'] = $this->in($options['userIds']);
-        if (count($options['roomIds']) > 0) $conditions['both']['roomLinkId'] = $this->in($options['roomIds']);
+        if (!empty($options['fileIds']))
+            $conditions['both']['id'] = $this->in($options['fileIds']);
+        if (count($options['userIds']) > 0)
+            $conditions['both']['userId'] = $this->in($options['userIds']);
+        if (count($options['roomIds']) > 0)
+            $conditions['both']['roomLinkId'] = $this->in($options['roomIds']);
 
-        if ($options['creationTimeMin'] > 0) $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'gte');
-        if ($options['creationTimeMax'] > 0) $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'lte');
+        if ($options['creationTimeMin'] > 0)
+            $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'gte');
+        if ($options['creationTimeMax'] > 0)
+            $conditions['both']['creationTime'] = $this->int($options['creationTime'], 'lte');
 
-        if ($options['fileNameSearch']) $conditions['both']['name'] = $this->search($options['fileNameSearch']);
+        if ($options['fileNameSearch'])
+            $conditions['both']['name'] = $this->search($options['fileNameSearch']);
+
+        if (!$options['includeDeleted'])
+            $conditions['both']['deleted'] = false;
 
 
         // Match files to fileVersions.
@@ -763,11 +748,15 @@ class DatabaseInstance extends DatabaseSQL
 
 
         // Narrow down fileVersions _after_ it has been restricted to matched files.
-        if (!isset($conditions['both']['versionIds']) && count($options['versionIds']) > 0) $conditions['both']['versionId'] = $this->in($options['versionIds']);
-        if (!isset($conditions['both']['sha256hashes']) && count($options['sha256hashes']) > 0) $conditions['both']['sha256Hash'] = $this->in($options['sha256hashes']);
+        if (!empty($options['versionIds']))
+            $conditions['both']['versionId'] = $this->in($options['versionIds']);
+        if (!empty($options['sha256hashes']))
+            $conditions['both']['sha256Hash'] = $this->in($options['sha256hashes']);
 
-        if ($options['sizeMin'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'gte');
-        if ($options['sizeMax'] > 0) $conditions['both']['size'] = $this->int($options['size'], 'lte');
+        if ($options['sizeMin'] > 0)
+            $conditions['both']['size'] = $this->int($options['size'], 'gte');
+        if ($options['sizeMax'] > 0)
+            $conditions['both']['size'] = $this->int($options['size'], 'lte');
 
 
         // Get Thumbnails, if Requested
@@ -781,6 +770,99 @@ class DatabaseInstance extends DatabaseSQL
 
         return $this->select($columns, $conditions, $sort, $limit, $page);
     }
+
+
+
+    /**
+     * Store a file object in the database.
+     * TODO: Store new version if file already exists. (This is roughly version 2 functionality.)
+     *
+     * @param File $file The file object to store in the database.
+     * @param User $user The user who is uploading the file.
+     * @param Room $room The room the file is being uploaded into.
+     */
+    public function storeFile(File $file, User $user, Room $room) {
+        $this->startTransaction();
+
+        $this->insert($this->sqlPrefix . "files", array(
+            'userId' => $user->id,
+            'roomIdLink' => $room->id,
+            'name' => $file->name,
+            'creationTime' => time(),
+        ));
+        $fileId = $this->getLastInsertId();
+
+        $this->insert($this->sqlPrefix . "fileVersions", array(
+            'fileId' => $fileId,
+            'sha256hash' => $file->sha256Hash,
+            'size' => $file->size,
+            'contents' => $this->blob($file->contents),
+            'time' => time(),
+        ));
+        $versionId = $this->getLastInsertId();
+
+        $this->update($this->sqlPrefix . "users", array(
+            'fileCount' => $this->type('equation', '$fileCount + 1'),
+            'fileSize' => $this->type('equation', '$fileSize + ' . (int) $file->size),
+        ), array(
+            'id' => $user->id,
+        ));
+
+        $this->incrementCounter('uploads');
+        $this->incrementCounter('uploadSize', $file->size);
+
+        if (in_array($file->extension, Config::$imageTypes)) {
+            list($width, $height) = getimagesizefromstring($file->contents);
+
+            if ($width > Config::$imageResizeMaxWidth || $height > Config::$imageResizeMaxHeight) {
+
+            }
+            elseif (!$imageOriginal = imagecreatefromstring($file->contents)) {
+                new \Fim\Error('resizeFailed', 'The image could not be thumbnailed. The file was still uploaded.');
+            }
+            else {
+                foreach (Config::$imageThumbnails AS $resizeFactor) {
+                    if ($resizeFactor < 0 || $resizeFactor > 1) {
+                        $this->rollbackTransaction();
+                        new \Fim\Error('badServerConfigImageThumbnails', 'The server is configured with an incorrect thumbnail factor, ' . $resizeFactor . '. Image file uploads will be disabled until this issue is rectified.');
+                    }
+
+                    $newWidth = (int) ($resizeFactor * $width);
+                    $newHeight = (int) ($resizeFactor * $height);
+
+                    $imageThumb = imagecreatetruecolor($newWidth, $newHeight);
+                    //imagealphablending($imageThumb,false);
+                    //imagesavealpha($imageThumb,true);
+                    $transparent = imagecolorallocatealpha($imageThumb, 255, 255, 255, 0);
+                    imagefilledrectangle($imageThumb, 0, 0, $newWidth, $newHeight, $transparent);
+                    imagecopyresampled($imageThumb, $imageOriginal, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+                    ob_start();
+                    imagejpeg($imageThumb);
+                    $thumbnail = ob_get_clean();
+
+                    $this->insert($this->sqlPrefix . "fileVersionThumbnails", array(
+                        'versionId' => $versionId,
+                        'scaleFactor' => $this->float($resizeFactor),
+                        'width' => $newWidth,
+                        'height' => $newHeight,
+                        'contents' => $this->blob($thumbnail)
+                    ));
+                }
+            }
+        }
+
+        $this->endTransaction();
+
+        if ($room->id)
+            $this->storeMessage(new Message([
+                'room' => $room,
+                'user' => $user,
+                'text'    => $file->webLocation,
+                'flag'    => $file->container,
+            ]));
+    }
+
 
 
 
@@ -2096,7 +2178,7 @@ class DatabaseInstance extends DatabaseSQL
      * @param array $lists - An array where each key is a list ID and each value is true/false -- true to enable a censor, false to disable a censor.
      */
     public function setCensorLists($roomId, $lists) {
-        $dbLists = $this->getCensorListsActive($roomId);// var_dump($lists); die();
+        $dbLists = $this->getCensorListsActive($roomId);
 
         foreach ($lists AS $listId => $listEnable) {
             if ($listEnable && !isset($dbLists[$listId])) // the list should be enabled but isn't currently
@@ -2409,106 +2491,63 @@ class DatabaseInstance extends DatabaseSQL
     }
 
 
-    public function storeFile(\Fim\File $file, User $user, Room $room) {
-        $this->startTransaction();
 
-        $this->insert($this->sqlPrefix . "files", array(
-            'userId' => $user->id,
-            'roomIdLink' => $room->id,
-            'fileName' => $file->name,// TODO
-            'creationTime' => time(),
-        ));
-        $fileId = $this->getLastInsertId();
 
-        $this->insert($this->sqlPrefix . "fileVersions", array(
-            'fileId' => $fileId,
-            'sha256hash' => $file->sha256Hash,
-            'size' => $file->size,
-            'contents' => $this->blob($file->contents),
-            'time' => time(),
-        ));
-        $versionId = $this->getLastInsertId();
 
-        $this->update($this->sqlPrefix . "users", array(
-            'fileCount' => $this->type('equation', '$fileCount + 1'),
-            'fileSize' => $this->type('equation', '$fileSize + ' . (int) $file->size),
-        ), array(
-            'id' => $user->id,
-        ));
+    /**
+     * Retrieves a single global counter value.
+     *
+     * @param string $counterName THe name of the counter to retreive.
+     * @return int The counter's current value.
+     */
+    public function getCounterValue($counterName)
+    {
+        $queryParts['columns']    = [$this->sqlPrefix . "counters" => 'name, value'];
+        $queryParts['conditions'] = ['name' => $this->str($counterName), ];
 
-        $this->incrementCounter('uploads');
-        $this->incrementCounter('uploadSize', $file->size);
+        $counterData = $this->select($queryParts['columns'], $queryParts['conditions'], false, 1)->getAsArray(false);
 
-        if ($room->id)
-            $this->storeMessage(new Message([
-                'room' => $room,
-                'user' => $user,
-                'text'    => $file->webLocation,
-                'flag'    => $file->container,
-            ]));
-
-        if (in_array($file->extension, Config::$imageTypes)) {
-            list($width, $height) = getimagesizefromstring($file->contents);
-
-            if ($width > Config::$imageResizeMaxWidth || $height > Config::$imageResizeMaxHeight) {
-
-            }
-            elseif (!$imageOriginal = imagecreatefromstring($file->contents)) {
-                new \Fim\Error('resizeFailed', 'The image could not be thumbnailed. The file was still uploaded.');
-            }
-            else {
-                foreach (Config::$imageThumbnails AS $resizeFactor) {
-                    if ($resizeFactor < 0 || $resizeFactor > 1) {
-                        $this->rollbackTransaction();
-                        new \Fim\Error('badServerConfigImageThumbnails', 'The server is configured with an incorrect thumbnail factor, ' . $resizeFactor . '. Image file uploads will be disabled until this issue is rectified.');
-                    }
-
-                    $newWidth = (int) ($resizeFactor * $width);
-                    $newHeight = (int) ($resizeFactor * $height);
-
-                    $imageThumb = imagecreatetruecolor($newWidth, $newHeight);
-                    //imagealphablending($imageThumb,false);
-                    //imagesavealpha($imageThumb,true);
-                    $transparent = imagecolorallocatealpha($imageThumb, 255, 255, 255, 0);
-                    imagefilledrectangle($imageThumb, 0, 0, $newWidth, $newHeight, $transparent);
-                    imagecopyresampled($imageThumb, $imageOriginal, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-
-                    ob_start();
-                    imagejpeg($imageThumb);
-                    $thumbnail = ob_get_clean();
-
-                    $this->insert($this->sqlPrefix . "fileVersionThumbnails", array(
-                        'versionId' => $versionId,
-                        'scaleFactor' => $this->float($resizeFactor),
-                        'width' => $newWidth,
-                        'height' => $newHeight,
-                        'contents' => $this->blob($thumbnail)
-                    ));
-                }
-            }
-        }
+        return $counterData['value'];
     }
 
 
 
     /**
-     * @param     $counterName
-     * @param int $incrementValue
+     * Increment a counter in the counters table by a given value.
+     *
+     * @param string $counterName    The name of the counter.
+     * @param int    $incrementValue The amount to decrease.
      *
      * @return bool
      */
     public function incrementCounter($counterName, $incrementValue = 1)
     {
-        if ($this->update($this->sqlPrefix . "counters", array(
-            'counterValue' => $this->equation('$counterValue + ' . (int) $incrementValue)
+        return $this->update($this->sqlPrefix . "counters", array(
+            'value' => $this->equation('$value + ' . (int) $incrementValue)
         ), array(
-            'counterName' => $counterName,
-        ))) {
-            return true;
-        } else {
-            return false;
-        }
+            'name' => $counterName,
+        ));
     }
+
+
+
+    /**
+     * Decrement a counter in the counters table by a given value.
+     *
+     * @param string $counterName    The name of the counter.
+     * @param int    $incrementValue The amount to increase.
+     *
+     * @return bool
+     */
+    public function decrementCounter($counterName, $incrementValue = 1)
+    {
+        return $this->update($this->sqlPrefix . "counters", array(
+            'value' => $this->equation('$value - ' . (int) $incrementValue)
+        ), array(
+            'name' => $counterName,
+        ));
+    }
+
 
 
 

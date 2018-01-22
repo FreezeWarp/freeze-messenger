@@ -126,15 +126,15 @@ abstract class LoginDatabase implements LoginRunner
         // Start by upserting all of the emoticons we fetched
         foreach ($emoticons AS $emoticon) {
             @\Fim\Database::instance()->upsert(\Fim\Database::$sqlPrefix . 'emoticons', [
-                'emoticonText' => $emoticon['emoticonText'],
+                'text' => $emoticon['emoticonText'],
             ], [
-                'emoticonFile' => "{$loginConfig['url']}{$basePath}{$emoticon['emoticonFile']}"
+                'file' => "{$loginConfig['url']}{$basePath}{$emoticon['emoticonFile']}"
             ]);
         }
 
         // Now delete all the ones we didn't
         @\Fim\Database::instance()->delete(\Fim\Database::$sqlPrefix . 'emoticons', [
-            '!emoticonText' => @\Fim\Database::instance()->in(array_keys($emoticons))
+            '!text' => @\Fim\Database::instance()->in(array_keys($emoticons))
         ]);
 
         // Commit the queued queries.
