@@ -90,7 +90,7 @@ $cacheConnectMethods['disk'] = [
 
 
 /* $cacheConnectMethods['redis']
- * If specified, this will enable Redis caching and message streaming. */
+ * If specified, this will enable Redis caching. Refer to $streamMethods['redis'] to enable streaming as well. */
 /*$cacheConnectMethods['redis'] = [
     'host' => '127.0.0.1',
     'port' => 6379,
@@ -125,8 +125,8 @@ $cacheConnectMethods['disk'] = [
 
 
 /* $streamMethods['redis']
- * If speciifed, this will enable Redis for message streaming, which takes priority over Postgres. */
-/*$streamMethods['redis'] = $cacheConnectionMethods['redis'];*/
+ * If specified, this will enable Redis for message streaming, which takes priority over Postgres. */
+/*$streamMethods['redis'] = $cacheConnectMethods['redis'];*/
 
 
 /* $streamMethods['pgsql']
