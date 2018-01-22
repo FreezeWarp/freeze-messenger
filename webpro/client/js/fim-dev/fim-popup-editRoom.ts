@@ -91,7 +91,7 @@ popup.prototype.editRoom = {
             'includeWords': 0,
         }, {
             'each': (listData) => {
-                listData.enabled = (listData.status === 'block' || listData.type === 'white');
+                listData.enabled = (listData.status == 'block' || (listData.type == 'white' && listData.status != 'unblock'));
 
                 $('#editRoomForm [name=censorLists]').append(
                     censorListTemplate(fim_getHandlebarsPhrases({listData : listData}))
