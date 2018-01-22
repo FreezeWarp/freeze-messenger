@@ -96,7 +96,8 @@ class Redis implements DriverInterface {
         $keys = [];
 
         foreach ($this->instance->getKeys('*') AS $key) {
-            $keys[$key] = $this->get($key);
+            $keys[$key]['value'] = $this->get($key);
+            $keys[$key]['ttl'] = $this->instance->ttl($key);
         }
 
         return $keys;
