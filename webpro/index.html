@@ -632,7 +632,7 @@ Pending Update
 
             {{#if activeLogin.userData.permissions.selfChangeAvatar}}
                 <a href="#" class="card-link" onclick="fimApi.editUserOptions('edit', {
-                    'avatar': window.serverSettings.installUrl + 'file.php?sha256hash={{fileData.sha256Hash}}&thumbnailWidth=200&thumbnailHeight=200',
+                    'avatar': window.serverSettings.installUrl + 'file.php?sha256hash={{fileData.sha256Hash}}&thumbnailWidth=200&thumbnailHeight=200'
                 }, {
                     'end' : function(response) {
                         if ('avatar' in response) {
@@ -644,6 +644,20 @@ Pending Update
                     }
                 });">{{uploads.buttons.setAsAvatar}}</a>
             {{/if}}
+
+            <a href="javascript:void(0);" onclick="
+                var _this = this;
+                dia.confirm({
+                    'text' : 'Are you sure you want to delete this file?',
+                    'true' : function() {
+                        fimApi.deleteFile('{{fileData.id}}', {
+                            'end' : function(response) {
+                                $(_this).closest('.card').fadeOut();
+                            }
+                        });
+                    }
+                });
+            " class="card-link">{{uploads.buttons.delete}}</a>
         </div>
     </div>
 </script>

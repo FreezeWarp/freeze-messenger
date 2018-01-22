@@ -715,7 +715,7 @@ class DatabaseInstance extends DatabaseSQL
 
 
         $columns = array(
-            $this->sqlPrefix . "files"        => 'id, name, creationTime, userId, roomIdLink, source', // TODO
+            $this->sqlPrefix . "files"        => 'id, name, creationTime, userId, roomIdLink, source, options',
             $this->sqlPrefix . "fileVersions" => 'fileId vfileId, id versionId, sha256hash sha256Hash, size',
         );
 
@@ -740,11 +740,11 @@ class DatabaseInstance extends DatabaseSQL
             $conditions['both']['name'] = $this->search($options['fileNameSearch']);
 
         if (!$options['includeDeleted'])
-            $conditions['both']['deleted'] = false;
+            $conditions['both']['!options'] = $this->int(\Fim\File::FILE_DELETED, 'bAnd');
 
 
         // Match files to fileVersions.
-        $conditions['both']['id'] = $this->col('vfileId');
+        $conditions['both']['id 2'] = $this->col('vfileId');
 
 
         // Narrow down fileVersions _after_ it has been restricted to matched files.
@@ -863,6 +863,39 @@ class DatabaseInstance extends DatabaseSQL
             ]));
     }
 
+    /**
+     * Delete a file entry from the database.
+     * @param File      $file
+     */
+    public function deleteFile(\Fim\File $file) {
+        if (\Fim\Config::$uploadDeletionsArePermanent) {
+            $this->startTransaction();
+
+            $this->decrementCounter('uploads');
+            $this->decrementCounter('uploadSize', $file->size);
+
+            $this->delete($this->sqlPrefix . "fileVersionThumbnails", array(
+                'versionId' => $this->in($this->getFiles(['fileIds' => [$file->id]])->getColumnValues('versionId')),
+            ));
+
+            $this->delete($this->sqlPrefix . "fileVersions", array(
+                'fileId' => $file->id,
+            ));
+
+            $this->delete($this->sqlPrefix . "files", array(
+                'id' => $file->id,
+            ));
+
+            $this->endTransaction();
+        }
+        else {
+            $this->update($this->sqlPrefix . "files", [
+                'options' => $this->equation('$options | ' . \Fim\File::FILE_DELETED),
+            ], [
+                'id' => $file->id
+            ]);
+        }
+    }
 
 
 

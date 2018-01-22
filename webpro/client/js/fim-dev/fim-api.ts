@@ -438,6 +438,23 @@ fimApi.prototype.getFiles = function(params, requestSettings) {
 };
 
 
+fimApi.prototype.deleteFile = function(fileId, requestSettings) {
+    let requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+
+    $.ajax({
+        type: 'post',
+        url: this.directory + 'api/file.php?' + $.param({
+            'access_token' : this.lastSessionHash,
+            '_action' : 'delete',
+            'id' : fileId,
+        }),
+        timeout: requestSettings.timeout
+    }).done(this.done(requestSettings)).fail(this.fail(requestSettings, (() => {
+        this.deleteFile(fileId, requestSettings)
+    })));
+};
+
+
 
 fimApi.prototype.getStats = function(params, requestSettings) {
     requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);

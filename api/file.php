@@ -78,6 +78,9 @@ if (isset($requestHead['id'])) {
         new \Fim\Error('idExtra', 'Parameter ID should not be used with PUT requests.');
 
     try {
+        /**
+         * @var $file \Fim\File
+         */
         $file = \Fim\Database::instance()->getFiles(['fileIds' => $requestHead['id']])->getAsObject('\\Fim\\File');
     } catch (Exception $ex) {
         new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
@@ -94,5 +97,15 @@ switch ($requestHead['_action']) {
 
     case 'get':
         require(__DIR__ . '/file/files.php');
+        break;
+
+    case 'delete':
+        if ($file->user->id != $user->id
+            && !$user->hasPriv('modFiles')) {
+            new \Fim\Error('noPerm', 'You do not have permission to delete that file.');
+        }
+
+        \Fim\Database::instance()->deleteFile($file);
+        echo new Http\ApiData(['deleteFile' => []]);
         break;
 }

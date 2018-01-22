@@ -552,7 +552,8 @@
     "buttons" : {
       "next" : "Next Page",
       "previous" : "Previous Page",
-      "setAsAvatar" : "Set as avatar"
+      "setAsAvatar" : "Set as avatar",
+      "delete" : "Delete"
     },
     "actions" : {
       "setAsAvatar" : {

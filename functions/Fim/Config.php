@@ -350,6 +350,9 @@ class Config {
     /** @var bool Whether to allow file uploads that are not anchored to a room. */
     public static $enableGeneralUploads = false;
 
+    /** @var bool Whether file deletions (either by a user or by an admin) are unreversible (i.e. the contents are removed from the database or filesystem). If false, files will be hidden when deleted, but still count against a user's file upload total. */
+    public static $uploadDeletionsArePermanent = false;
+
     /** @var int The number of bytes to read/write at once during uploads. Higher numbers allow faster uploads, but use more memory. */
     public static $fileUploadChunkSize = 4096;
 

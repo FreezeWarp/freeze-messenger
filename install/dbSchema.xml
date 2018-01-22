@@ -115,7 +115,7 @@
 
             <!-- unimplemented -->
             <column name="source" type="string" maxlen="50" default="upload" comment="The file's source - in most cases upload." />
-            <column name="options" type="bitfield" bits="16" comment="File options." />
+            <column name="options" type="bitfield" bits="16" default="0" comment="File options." />
             <column name="flags" type="int" maxlen="3" comment="The number of flags this room has received. After a certain number (proportional to activeUsers, possibly), the room should be marked for moderation." />
 
             <key name="id"     type="primary" storage="hash" comment="This is used to quickly look up file entries." />

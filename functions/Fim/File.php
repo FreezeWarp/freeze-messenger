@@ -23,6 +23,12 @@ use \Exception;
 
 class File extends MagicGettersSetters {
     /**
+     * The file is deleted, and only viewable by administrators.
+     */
+    const FILE_DELETED = 4;
+
+
+    /**
      * @var int The ID of the file.
      */
     protected $id;
@@ -63,6 +69,11 @@ class File extends MagicGettersSetters {
     protected $size;
 
     /**
+     * @var int A bitfield of options applied to this file.
+     */
+    protected $options;
+
+    /**
      * @var int The number of times this image has been reported.
      */
     protected $flags;
@@ -100,6 +111,7 @@ class File extends MagicGettersSetters {
         $this->contents = $fileData['contents'] ?? '';
         $this->sha256Hash = $fileData['sha256Hash'] ?? '';
         $this->creationTime = $fileData['creationTime'] ?? time();
+        $this->options = (int) ($fileData['options'] ?? 0);
 
         // Unimplemented
         $this->flags = $fileData['flags'] ?? 0;
@@ -110,7 +122,7 @@ class File extends MagicGettersSetters {
 
         $this->user = UserFactory::getFromId($userId);
         $this->room = $roomIdLink
-            ? new Room($fileData['roomIdLink'])
+            ? RoomFactory::getFromId($fileData['roomIdLink'])
             : null;
     }
 
@@ -180,5 +192,12 @@ class File extends MagicGettersSetters {
     public function getWebLocation() {
         global $installUrl;
         return "{$installUrl}file.php?sha256hash=" . $this->get('sha256hash');
+    }
+
+    /**
+     * @return bool If the file is marked deleted.
+     */
+    public function getDeleted() {
+        return $this->options && self::FILE_DELETED;
     }
 }
