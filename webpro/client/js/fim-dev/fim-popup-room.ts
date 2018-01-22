@@ -949,8 +949,8 @@ popup.prototype.room.prototype.markRoomEntryUnread = function(roomId, count) {
     $('.otherMessages', watchedRooms).css('display', 'inline');
 
     let otherMessages = $('.otherMessagesCount', watchedRooms);
-    if (count) {
-        otherMessages.text(count);
+    if (String(count).toNumber() > 0) {
+        otherMessages.text(String(count).toNumber() + 1);
     }
     else {
         otherMessages.text(otherMessages.text().toNumber() + 1);
