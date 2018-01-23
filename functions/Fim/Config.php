@@ -201,7 +201,7 @@ class Config {
     public static $userRoomMaximumPerYear = 50;
 
     /** @var bool Whether or not to allow users to send "typing" statuses. If disabled, you should also probably lower {@see $floodDetectionGlobal_editUserStatus_perMinute}. */
-    public static $userTypingStatus = false;
+    public static $userTypingStatus = true;
 
 
     /** @var int The room that new users will enter by default. */
@@ -308,7 +308,7 @@ class Config {
     /** @var bool Whether to enable SSE. These are fairly stable; but some server configurations will still have problems with server sent events (in particular, enabling this means that every user will open at least two PHP threads that will stay open for the duration of the user's activity; as such, only use this if you have enough available PHP threads and memory for those PHP threads to serve your expected number of users). Disable if you have issues. */
     public static $serverSentEvents = true;
 
-    /** @var float Server sent events are more controlled; so we can call them at a greater frequency. Note that this setting is ignored if using Kafka or Redis message streaming; it is still used for regular database streaming, and with Postgres LISTEN/NOTIFY. */
+    /** @var float How much time the script should wait between polls when using SSE. Note that this setting is ignored if using Kafka or Redis message streaming; it is still used for regular database streaming, and with Postgres LISTEN/NOTIFY. (Note that with database streaming, a distributed cache is used to check if new messages are available. If you are using Memcache, you can lower this to approximately 0 without experience major issues. If you are Redis, you can also do that, but should probably be using Redis streaming instead.) */
     public static $serverSentEventsWait = .5;
 
     /** @var int The number of tries the server will requery before requiring the client to resend a SSE request. Note that this setting is ignored if using Kafka or Redis message streaming; it is still used for regular database streaming, and with Postgres LISTEN/NOTIFY. */
@@ -541,14 +541,14 @@ class Config {
         'ods' => 10 * 1024 * 1024, // 10MB
         'odp' => 10 * 1024 * 1024, // 10MB
 
-        'png' => 5 * 524 * 524, // 5MB
-        'jpg' => 5 * 524 * 524, // 5MB
-        'gif' => 5 * 524 * 524, // 5MB
-        'bmp' => 5 * 524 * 524, // 5MB
-        'ico' => 1 * 524 * 524, // 1MB
-        'tif' => 5 * 524 * 524, // 5MB
-        'svg' => 5 * 524 * 524, // 5MB
-        'svgz' => 5 * 524 * 524, // 5MB
+        'png' => 10 * 1024 * 1024, // 5MB
+        'jpg' => 10 * 1024 * 1024, // 5MB
+        'gif' => 5 * 1024 * 1024, // 5MB
+        'bmp' => 10 * 1024 * 1024, // 5MB
+        'ico' => 1 * 1024 * 1024, // 1MB
+        'tif' => 5 * 1024 * 1024, // 5MB
+        'svg' => 5 * 1024 * 1024, // 5MB
+        'svgz' => 5 * 1024 * 1024, // 5MB
 
         'mp2' => 10 * 1024 * 1024, // 10MB
         'mp3' => 10 * 1024 * 1024, // 10MB
