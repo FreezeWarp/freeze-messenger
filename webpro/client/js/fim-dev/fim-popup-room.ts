@@ -572,9 +572,13 @@ popup.prototype.room.prototype.init = function(options) {
 
 
     /* Get Unread Messages at Load (we'll rely on the events from fim-standard after this) */
-    fimApi.getUnreadMessages(null, {'each' : (message) => {
-        this.unreadMessageHandler(message);
-    }});
+    if (!window.activeLogin.userData.anonId) {
+        fimApi.getUnreadMessages(null, {
+            'each': (message) => {
+                this.unreadMessageHandler(message);
+            }
+        });
+    }
 
 
 
