@@ -36,6 +36,7 @@ else {
                 echo container('Please Choose a Tool','<ul>
                     <li><a href="./index.php?do=tools&tool=viewCache">View Cache</a> - This shows all cache entries available to the current server. APC caches for other servers will not be displayed.</li>
                     <li><a href="./index.php?do=tools&tool=clearCache">Clear Cache</a> - This clears all cache entries available to the current server. APC caches for other servers will not be cleared.</li>
+                    <li><a href="./index.php?do=tools&tool=updateBeta3">MySQL Only: Update to Beta 3 from Beta 2</a> - This will update your database schema to correspond with Beta 3 changes, specifically retaining data from Beta 2.</li>
                     <li><a href="./index.php?do=tools&tool=updateDatabaseSchema">Perform Database Schema Update</a> - This will update your database schema to correspond with install/dbSchema.xml. It is primarily intended for development purposes (as updating to a new version should come with its own custom schema update procedure), but you also have the option of manually tweaking the DB schema in dbSchema.xml and then using this tool to have the changes take effect. Note that the tool is currently not fully tested, and will currently take a while, as it does not check if a column has changed before running the update command.</li>
                 </ul>');
                 break;
@@ -69,6 +70,29 @@ else {
 
                 else
                     echo container('Failed','The clear was unsuccessful.<form action="index.php?do=tools" method="POST"><button type="submit" class="btn btn-secondary">Return to Tools</button></form>');
+                break;
+
+            case 'updateBeta3':
+                \Fim\Database::instance()->startTransaction();
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'censorWords` CHANGE COLUMN `wordId` `id` MEDIUMINT(9) AUTO_INCREMENT');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'censorLists` CHANGE COLUMN `listId` `id` MEDIUMINT(9) AUTO_INCREMENT');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'censorLists` CHANGE COLUMN `listName` `name` CHAR(40)');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'censorLists` CHANGE COLUMN `listType` `type` ENUM(\'black\', \'white\')');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'counters` CHANGE COLUMN `counterName` `name` CHAR(50)');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'counters` CHANGE COLUMN `counterValue` `value` BIGINT(20) DEFAULT 0');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'emoticons` CHANGE COLUMN `emoticonId` `id` INT(7) AUTO_INCREMENT');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'emoticons` CHANGE COLUMN `emoticonText` `text` CHAR(20)');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'emoticons` CHANGE COLUMN `emoticonFile` `file` VARCHAR(1000)');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'files` CHANGE COLUMN `fileId` `id` MEDIUMINT(9) AUTO_INCREMENT');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'files` CHANGE COLUMN `fileName` `name` CHAR(255)');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'fileVersions` CHANGE COLUMN `versionId` `id` MEDIUMINT(9) AUTO_INCREMENT');
+                \Fim\Database::instance()->rawQuery('ALTER TABLE `' . \Fim\Database::$sqlPrefix . 'files` CHANGE COLUMN `options` `options` BIT(16) DEFAULT 0');
+                \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . 'files', [
+                    'options' => 0,
+                ]);
+                \Fim\Database::instance()->endTransaction();
+
+                echo container('Complete','The database schema was updated.<form action="index.php?do=tools" method="POST"><button type="submit" class="btn btn-secondary">Return to Tools</button></form>');
                 break;
 
             case 'updateDatabaseSchema':
