@@ -24,6 +24,7 @@ Headline Functionality
 -   Integration with PHPBB and vBulletin is supported, as is single-sign on with Google, Twitter, Facebook, Steam, and Reddit.
 -   In addition to fallback disk caching, APC, Memcached, and Redis can all be used for blazing fast cache performance, used to optimise the performance for checking usage rights, flood detection, and more.
 -   Compatible with MySQL, PostgreSQL, and SQL Server databases. Supports fulltext message searching with all three.
+-   Easily installable on Amazon Web Services (AWS).
 
 Requirements
 ============
@@ -79,13 +80,23 @@ Admin Control Panel Configuration Editor
 Frequently Asked Questions
 ==========================
 
-General Databases
------------------
+General
+-------
+### How do I install on Amazon Web Services (AWS)?
+An Elastic Beanstalk environment running PHP will work great. In-fact, you can run FreezeMessenger quite well using only the AWS free tier; while other combinations are possible, we recommend creating a MySQL RDS instance and a Redis ElastiCache instance.
 
-### How can I enable persistent connections?
+Note that deployment to AWS requires that you commit your config.php as part of the initial deployment (if you rely on the install script, the config.php file will most likely be reset automatically by the server after a few hours). If you are especially adverse to editing the file by hand, you can deploy without config.php, run the installer script, download the config.php file that is generated following installation, and then reupload it. However, editing config.php by hand is much easier, and for best performance, you must do so anyway to enable Redis caching and Redis streaming.
+
+### Is a cache server required?
+Kinda. A disk cache will be used to cache the most commonly accessed data, but most queries will be left to the database. Most servers should have APC available; if it wasn't enabled at install time, check with your host to see if APC or APCu can be installed, and then edit config.php to make sure they are used by FreezeMessenger.
+
+A distributed cache, one of either Redis or Memcached, is also strongly recommended in addition to (or in lieu of) APC, but you generally won't notice a huge loss of performance without them as long as you have APC available.
+
+### How can I enable persistent database connections?
 If you are using the MySQLi driver, simply add 'p:' to your hostname, e.g. 'p:localhost'. Support for other drivers will be added soon.
 
-Note, however, that persistent connections are not guaranteed to work. While FreezeMessenger attempts to rollback any open transactions before script execution stops, this behaviour is not guaranteed.
+(Note that using persistent connections may be slightly more likely to expose FreezeMessenger bugs. In practice, none have been observed from using persistent connections.)
+
 
 SQL Server
 ----------
