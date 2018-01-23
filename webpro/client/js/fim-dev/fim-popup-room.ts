@@ -415,7 +415,8 @@ popup.prototype.room.prototype.onWindowResize = function() {
  * Function to register for the browser's beforeUnload event
  */
 popup.prototype.room.prototype.beforeUnload = function() {
-    fimApi.exitRoom(this.options.roomId);
+    if (this.options.roomId)
+        fimApi.exitRoom(this.options.roomId);
 };
 
 /**
@@ -578,156 +579,164 @@ popup.prototype.room.prototype.init = function(options) {
 
 
     /* Get our current room info and messages. */
-    fimApi.getRooms({
-        'id' : this.options.roomId,
-    }, {
-        each : ((roomData) => {
-            this.roomData = roomData;
+    if (!this.options.roomId) {
+        window.location.hash = "#rooms";
+        dia.error('No room has been specified. Please choose a room.');
+    }
+    else {
+        fimApi.getRooms({
+            'id': this.options.roomId,
+        }, {
+            each: ((roomData) => {
+                this.roomData = roomData;
 
 
-            if (!roomData.permissions.view) { // If we can not view the room
-                window.roomId = null; // Set the global roomId false.
-                window.location.hash = "#rooms";
-                dia.error('You have been restricted access from this room. Please select a new room.');
-            }
+                if (!roomData.permissions.view) { // If we can not view the room
+                    window.roomId = null; // Set the global roomId false.
+                    window.location.hash = "#rooms";
+                    dia.error('You have been restricted access from this room. Please select a new room.');
+                }
 
-            else if (!roomData.permissions.post) { // If we can view, but not post
-                dia.info('You are not allowed to post in this room. You will be able to view it, though.', 'danger');
-                this.disableSender();
-            }
+                else if (!roomData.permissions.post) { // If we can view, but not post
+                        dia.info('You are not allowed to post in this room. You will be able to view it, though.', 'danger');
+                    this.disableSender();
+                }
 
-            else { // If we can both view and post.
-                this.enableSender();
-            }
-
-
-            if (roomData.permissions.view) { // If we can view the room...
-                window.roomId = roomData.id;
+                else { // If we can both view and post.
+                    this.enableSender();
+                }
 
 
-                // Populate Active Users for the Room
-                fimApi.getActiveUsers({
-                    'roomIds' : [this.options.roomId]
-                }, {
-                    'refresh' : 15000,
-                    'timerId' : 1,
-                    'begin' : (() => {
-                        $('ul#activeUsers').html('');
-                    }),
-                    'each' : (user) => {
-                        jQuery.each(user.rooms, (index, status) => {
-                            this.userStatusChangeHandler({
-                                status : status.status,
-                                typing : status.typing,
-                                userId : user.id
+                if (roomData.permissions.view) { // If we can view the room...
+                    window.roomId = roomData.id;
+
+
+                    // Populate Active Users for the Room
+                    fimApi.getActiveUsers({
+                        'roomIds': [this.options.roomId]
+                    }, {
+                        'refresh': 15000,
+                        'timerId': 1,
+                        'begin': (() => {
+                            $('ul#activeUsers').html('');
+                        }),
+                        'each': (user) => {
+                            jQuery.each(user.rooms, (index, status) => {
+                                this.userStatusChangeHandler({
+                                    status: status.status,
+                                    typing: status.typing,
+                                    userId: user.id
+                                });
                             });
-                        });
-                    }
-                });
+                        }
+                    });
 
 
-                // Send user status pings
-                fimApi.ping(this.options.roomId);
-                this.pingInterval = window.setInterval((() => {
+                    // Send user status pings
                     fimApi.ping(this.options.roomId);
-                }), 60 * 1000);
+                    this.pingInterval = window.setInterval((() => {
+                        fimApi.ping(this.options.roomId);
+                    }), 60 * 1000);
 
 
-                // Detect form typing
-                $('textarea#messageInput').on('keyup', (e) => {
-                    if (!this.isNeutralKeyCode(e.keyCode)) {
-                        return this.debounce.invoke(() => {
+                    // Detect form typing
+                    $('textarea#messageInput').on('keyup', (e) => {
+                        if (!this.isNeutralKeyCode(e.keyCode)) {
+                            return this.debounce.invoke(() => {
+                                if (this.isTyping) {
+                                    this.isTyping = false;
+                                    fimApi.stoppedTyping(this.options.roomId);
+                                }
+                            }, 2000);
+                        }
+                    }).on('keydown', (e) => {
+                        // Enter
+                        if (e.keyCode == 13 && !e.shiftKey) {
+                            $('#sendForm').submit();
+                            e.preventDefault();
+
                             if (this.isTyping) {
                                 this.isTyping = false;
                                 fimApi.stoppedTyping(this.options.roomId);
                             }
-                        }, 2000);
-                    }
-                }).on('keydown', (e) => {
-                    // Enter
-                    if (e.keyCode == 13 && !e.shiftKey) {
-                        $('#sendForm').submit();
-                        e.preventDefault();
-
-                        if (this.isTyping) {
-                            this.isTyping = false;
-                            fimApi.stoppedTyping(this.options.roomId);
                         }
-                    }
 
-                    // Backspace or Delete
-                    else if (e.keyCode == 8 || e.keyCode == 46) {
-                        if (this.isTyping) {
-                            this.isTyping = false;
-                            fimApi.stoppedTyping(this.options.roomId);
+                        // Backspace or Delete
+                        else if (e.keyCode == 8 || e.keyCode == 46) {
+                            if (this.isTyping) {
+                                this.isTyping = false;
+                                fimApi.stoppedTyping(this.options.roomId);
+                            }
                         }
-                    }
 
-                    // Special Keys
-                    else if (!this.isNeutralKeyCode(e.keyCode) && !this.isTyping) {
-                        this.isTyping = true;
-                        fimApi.startedTyping(this.options.roomId);
-                    }
-                });
-
-
-                // Send logoff event on window close.
-                $(window).on('beforeunload', null, () => {
-                    this.beforeUnload();
-                });
-
-
-                // Render Header Template
-                fim_renderHandlebarsInPlace($('#messageListCardHeaderTemplate'), {roomData : roomData});
-
-
-                // Clear the message list.
-                $('#messageList').html('');
-
-
-                // Get New Messages
-                window.requestSettings[this.options.roomId] = {
-                    lastMessage : null,
-                    firstRequest : true
-                };
-
-                fimApi.getMessages({
-                    'roomId': this.options.roomId,
-                }, {
-                    each: ((messageData) => {
-                        this.newMessage(messageData);
-                    }),
-                    end: (() => {
-                        if (window.requestSettings.serverSentEvents) {
-                            this.eventListener();
+                        // Special Keys
+                        else if (!this.isNeutralKeyCode(e.keyCode) && !this.isTyping) {
+                            this.isTyping = true;
+                            fimApi.startedTyping(this.options.roomId);
                         }
-                        else {
-                            this.getMessagesFromFallback();
-                        }
-                    })
-                });
-            }
-
-            this.onWindowResize();
-            this.newRoomEntry(roomData.id);
-            this.markRoomEntryRead(roomData.id);
-        }),
-
-        exception : ((exception) => {
-            if (exception.string === 'idNoExist' || exception.string === 'roomIdInvalid') {
-                window.roomId = null; // Set the global roomId false.
-                window.location.hash = "#rooms";
-                dia.error('That room doesn\'t exist. Please select a room.');
-            }
-            else { fimApi.getDefaultExceptionHandler()(exception); }
-        })
-    });
+                    });
 
 
-    /* Populate the Watched Rooms List */
-    jQuery.each(window.activeLogin.userData.favRooms, (index, roomId) => {
-        this.newRoomEntry(roomId);
-    });
+                    // Send logoff event on window close.
+                    $(window).on('beforeunload', null, () => {
+                        this.beforeUnload();
+                    });
+
+
+                    // Render Header Template
+                    fim_renderHandlebarsInPlace($('#messageListCardHeaderTemplate'), {roomData: roomData});
+
+
+                    // Clear the message list.
+                    $('#messageList').html('');
+
+
+                    // Get New Messages
+                    window.requestSettings[this.options.roomId] = {
+                        lastMessage: null,
+                        firstRequest: true
+                    };
+
+                    fimApi.getMessages({
+                        'roomId': this.options.roomId,
+                    }, {
+                        each: ((messageData) => {
+                            this.newMessage(messageData);
+                        }),
+                        end: (() => {
+                            if (window.requestSettings.serverSentEvents) {
+                                this.eventListener();
+                            }
+                            else {
+                                this.getMessagesFromFallback();
+                            }
+                        })
+                    });
+                }
+
+                this.onWindowResize();
+                this.newRoomEntry(roomData.id);
+                this.markRoomEntryRead(roomData.id);
+            }),
+
+            exception: ((exception) => {
+                if (exception.string === 'idNoExist' || exception.string === 'roomIdInvalid') {
+                    window.roomId = null; // Set the global roomId false.
+                    window.location.hash = "#rooms";
+                    dia.error('That room doesn\'t exist. Please select a room.');
+                }
+                else {
+                    fimApi.getDefaultExceptionHandler()(exception);
+                }
+            })
+        });
+
+
+        /* Populate the Watched Rooms List */
+        jQuery.each(window.activeLogin.userData.favRooms, (index, roomId) => {
+            this.newRoomEntry(roomId);
+        });
+    }
 };
 
 /**
