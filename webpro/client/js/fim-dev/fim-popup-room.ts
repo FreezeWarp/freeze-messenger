@@ -21,18 +21,17 @@ interface popup {
 popup.prototype.room = function() {
     this.options = {
         roomId : 0,
-        lastEvent : 0,
-        lastMessage : 0
+        lastEvent : 0
     };
 
     this.roomData = false;
+    this.worker = null;
 
     this.faviconFlashTimer = false;
     this.windowBlurred = false;
     this.messageIndex = [];
     this.isTyping = false;
     this.roomSource = false;
-    this.eventTimeout = false;
     this.pingInterval = false;
 
     this.focusListener = false;
@@ -353,6 +352,10 @@ popup.prototype.room.prototype.onBlur = function() {
         fimApi.stoppedTyping(this.options.roomId);
         this.isTyping = false;
     }
+
+    this.sendWorkerMessage({
+        eventName : 'blur'
+    });
 };
 
 /**
@@ -361,6 +364,10 @@ popup.prototype.room.prototype.onBlur = function() {
 popup.prototype.room.prototype.onFocus = function() {
     this.windowBlurred = false;
     this.faviconFlashStop();
+
+    this.sendWorkerMessage({
+        eventName : 'unblur'
+    });
 };
 
 /**
@@ -711,12 +718,7 @@ popup.prototype.room.prototype.init = function(options) {
                             this.newMessage(messageData);
                         }),
                         end: (() => {
-                            if (window.requestSettings.serverSentEvents) {
-                                this.eventListener();
-                            }
-                            else {
-                                this.getMessagesFromFallback();
-                            }
+                            this.createWorker();
                         })
                     });
                 }
@@ -746,6 +748,48 @@ popup.prototype.room.prototype.init = function(options) {
     }
 };
 
+popup.prototype.room.prototype.createWorker = function() {
+    if (window.Worker) {
+        this.worker = new Worker('client/js/eventWorker.ts.js');
+        this.worker.postMessage({
+            eventName : 'registerApi',
+            serverSettings : fimApi.serverSettings,
+            sessionHash : fimApi.lastSessionHash
+        });
+        this.worker.postMessage({
+            eventName : 'listenRoom',
+            roomId : this.options.roomId
+        });
+        this.worker.onmessage = (event) => {
+            this[event.data.name + "Handler"](JSON.parse(event.data.data));
+        };
+    }
+    else {
+        postMessage = (event) => {
+            this[event.name + "Handler"](JSON.parse(event.data));
+        };
+
+        $.getScript('client/js/eventWorker.ts.js', () => {
+            onmessage({
+                data : {
+                    eventName : 'listenRoom',
+                    roomId : this.options.roomId
+                }
+            });
+        });
+    }
+}
+
+popup.prototype.room.prototype.sendWorkerMessage = function(event) {
+    if (window.Worker) {
+        if (this.worker)
+            this.worker.postMessage(event);
+    }
+    else {
+        onmessage(event);
+    }
+}
+
 /**
  * Close all current resources used by this view.
  */
@@ -759,14 +803,10 @@ popup.prototype.room.prototype.close = function() {
     window.removeEventListener('blur', this.blurListener);
     window.removeEventListener('focus',  this.focusListener);
 
-    if (this.roomSource) {
-        this.roomSource.close();
-        this.roomSource = false;
-    }
-
-    if (this.eventTimeout) {
-        window.clearTimeout(this.eventTimeout);
-    }
+    this.sendWorkerMessage({
+        eventName : 'unlistenRoom',
+        roomId : this.options.roomId
+    });
 
     if (this.pingInterval) {
         window.clearInterval(this.pingInterval);
@@ -797,39 +837,9 @@ popup.prototype.room.prototype.setRoom = function(roomId) {
     if (this.options.roomId && this.options.roomId != roomId) {
         this.close();
         this.options.lastEvent = 0;
-        this.options.lastMessage = 0;
         this.options.roomId = roomId;
         this.init();
     }
-};
-
-/**
- * Open an EventSource and begin listening for new events.
- */
-popup.prototype.room.prototype.eventListener = function() {
-    this.roomSource = new EventSource(directory + 'stream.php?queryId=' + this.options.roomId + '&streamType=room&lastEvent=' + this.options.lastEvent + '&lastMessage=' + this.options.lastMessage + '&access_token=' + window.sessionHash);
-
-    // If we get an error that causes the browser to close the connection, open a fallback connection instead
-    this.roomSource.onerror = ((e) => {
-        if (this.roomSource.readyState === 2) {
-            this.roomSource = false;
-            this.getMessagesFromFallback();
-        }
-    });
-
-    let eventHandler = ((callback) => {
-        return ((event) => {
-            this.options.lastEvent = Math.max(Number(this.options.lastEvent), Number(event.lastEventId));
-
-            callback.call(this, JSON.parse(event.data));
-        });
-    });
-
-    this.roomSource.addEventListener('userStatusChange', eventHandler(this.userStatusChangeHandler), false);
-    this.roomSource.addEventListener('newMessage', eventHandler(this.newMessageHandler), false);
-    this.roomSource.addEventListener('topicChange', eventHandler(this.topicChangeHandler), false);
-    this.roomSource.addEventListener('deletedMessage', eventHandler(this.deletedMessageHandler), false);
-    this.roomSource.addEventListener('editedMessage', eventHandler(this.editedMessageHandler), false);
 };
 
 
@@ -838,8 +848,6 @@ popup.prototype.room.prototype.eventListener = function() {
  * @param active
  */
 popup.prototype.room.prototype.newMessageHandler = function(active) {
-    this.options.lastMessage = Math.max(this.options.lastMessage, active.id);
-
     this.newMessage(active);
 };
 
@@ -893,40 +901,6 @@ popup.prototype.room.prototype.userStatusChangeHandler = function(active) {
         if (active.status !== "offline")
             $('ul#activeUsers').append(newRow);
     }
-};
-
-/**
- * Start getting messages using the fallback method.
- * @returns {boolean}
- */
-popup.prototype.room.prototype.getMessagesFromFallback = function() {
-    if (this.options.roomId) {
-        fimApi.getEventsFallback({
-            'streamType': 'room',
-            'queryId': this.options.roomId,
-            'lastEvent' : this.options.lastEvent
-        }, {
-            each: ((event) => {
-                this.options.lastEvent = Math.max(Number(this.options.lastEvent), Number(event.id));
-                this[event.eventName + "Handler"](event.data);
-            }),
-            end: (() => {
-                if (window.requestSettings.serverSentEvents) {
-                    this.eventListener();
-                }
-                else {
-                    this.eventTimeout = window.setTimeout((() => {
-                        this.getMessagesFromFallback()
-                    }), 2000);
-                }
-            })
-        });
-    }
-    else {
-        console.log('Not requesting messages; room undefined.');
-    }
-
-    return false;
 };
 
 
