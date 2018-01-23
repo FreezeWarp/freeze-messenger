@@ -761,7 +761,7 @@ class DatabaseInstance extends DatabaseSQL
 
         // Get Thumbnails, if Requested
         if ($options['includeThumbnails']) {
-            $columns[$this->sqlPrefix . 'fileVersions'] .= ', versionId';
+            $columns[$this->sqlPrefix . 'fileVersions'] .= ', id versionId';
             $columns[$this->sqlPrefix . 'fileVersionThumbnails'] = 'versionId tversionId, scaleFactor, width, height';
 
             $conditions['both']['versionId'] = $this->col('tversionId');
