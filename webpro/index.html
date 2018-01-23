@@ -328,6 +328,7 @@
                         <div class="dropdown-menu" name="otherMenu" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item" accesskey="o" href="javascript:popup.online()">{{mainMenu.more.online}}</a>
                             <a class="dropdown-item" accesskey="p" href="#uploads">{{mainMenu.more.uploads}}</a>
+                            <a class="dropdown-item" accesskey="p" href="#kicks#room=">{{mainMenu.more.kicks}}</a>
 
                             {{#if activeLogin}}
                                 {{#unless activeLogin.userData.anonId}}
@@ -1489,6 +1490,7 @@ Pending Update
             {{date kick.expires}}
         </td>
 
+        {{#ifCond activeLogin.userData.permissions.modRooms "||" hash.room}}
         <td>
             <button class="btn btn-sm btn-primary" onclick="var _this = this; fimApi.unkickUser({{kick.userId}}, {{kick.roomId}}, {
                 'end' : function() {
@@ -1497,6 +1499,7 @@ Pending Update
                 }
             });">{{kicks.unkick}}</button>
         </td>
+        {{/ifCond}}
     </tr>
 </script>
 
@@ -1527,7 +1530,10 @@ Pending Update
                 <th>{{kicks.inRoom}}</th>
                 <th>{{kicks.onDate}}</th>
                 <th>{{kicks.untilDate}}</th>
+
+                {{#ifCond activeLogin.userData.permissions.modRooms "||" hash.room}}
                 <th>{{kicks.actions}}</th>
+                {{/ifCond}}
             </tr>
             </thead>
             <tbody id="kickedUsers"></tbody>

@@ -522,7 +522,8 @@
     "more" : {
       "title" : "More",
       "online" : "See Who's Online",
-      "uploads" : "View My Uploads"
+      "uploads" : "View My Uploads",
+      "kicks" : "View My Kicks"
     },
     "private" : {
       "label" : "Enter Private Message",
