@@ -136,6 +136,33 @@ table#fileUploadInfo td {
     opacity: .8;
 }
 
+#activeUsers li.list-group-item {
+    padding: 0;
+    border-radius: .25rem;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+
+    border-right: none;
+    border-left: none;
+    margin-top: -1px;
+    margin-right: 1px;
+}
+
+#activeUsers li.list-group-item .userNameAvatar > img {
+    min-width: initial;
+    max-height: initial;
+
+    border-radius: .25rem;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+
+    height: 0; /* If the below doesn't work, don't display the image at all. */
+    height: 2rem;
+    max-width: 2.5rem;
+
+    padding-right: .25rem;
+}
+
 /***** Other Crap *****/
 
 .video-container-container {
