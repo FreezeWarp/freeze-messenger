@@ -1314,9 +1314,9 @@ class DatabaseInstance extends DatabaseSQL
 
         // Modify Query Data for Directives
       	if (!$options['showDeleted'])
-      	    $conditions['both']['!options'] = $this->int(Room::ROOM_DELETED, 'bAnd');
+      	    $conditions['both']['!options 1'] = $this->int(Room::ROOM_DELETED, 'bAnd');
         if (!$options['showHidden'])
-            $conditions['both']['!options'] = $this->int(Room::ROOM_HIDDEN, 'bAnd');
+            $conditions['both']['!options 2'] = $this->int(Room::ROOM_HIDDEN, 'bAnd');
 
         if ($options['onlyOfficial'])
             $conditions['both']['options'] = $this->int(Room::ROOM_OFFICIAL, 'bAnd');

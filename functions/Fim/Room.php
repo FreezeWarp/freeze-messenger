@@ -208,12 +208,12 @@ class Room extends DynamicObject
      * @var array A map of string permissions to their bits in a bitfield.
      */
     public static $permArray = [
-        'view'        => Room::ROOM_PERMISSION_VIEW,
-        'post'        => Room::ROOM_PERMISSION_POST + Room::ROOM_PERMISSION_VIEW, // Post implies view.
-        'changeTopic' => Room::ROOM_PERMISSION_TOPIC + Room::ROOM_PERMISSION_POST + Room::ROOM_PERMISSION_VIEW, // Changetopic implies post and view.
-        'moderate'    => Room::ROOM_PERMISSION_MODERATE + Room::ROOM_PERMISSION_POST + Room::ROOM_PERMISSION_VIEW, // Moderate implies post and view.
-        'properties'  => Room::ROOM_PERMISSION_PROPERTIES + Room::ROOM_PERMISSION_POST + Room::ROOM_PERMISSION_VIEW, // Properties implies post and view.
-        'grant'       => Room::ROOM_PERMISSION_GRANT + Room::ROOM_PERMISSION_POST + Room::ROOM_PERMISSION_VIEW + Room::ROOM_PERMISSION_MODERATE + Room::ROOM_PERMISSION_PROPERTIES, // Grant implies all.
+        'view'        => self::ROOM_PERMISSION_VIEW,
+        'post'        => self::ROOM_PERMISSION_POST + self::ROOM_PERMISSION_VIEW, // Post implies view.
+        'changeTopic' => self::ROOM_PERMISSION_TOPIC + self::ROOM_PERMISSION_POST + self::ROOM_PERMISSION_VIEW, // Changetopic implies post and view.
+        'moderate'    => self::ROOM_PERMISSION_MODERATE + self::ROOM_PERMISSION_POST + self::ROOM_PERMISSION_VIEW, // Moderate implies post and view.
+        'properties'  => self::ROOM_PERMISSION_PROPERTIES + self::ROOM_PERMISSION_POST + self::ROOM_PERMISSION_VIEW, // Properties implies post and view.
+        'grant'       => self::ROOM_PERMISSION_GRANT + self::ROOM_PERMISSION_POST + self::ROOM_PERMISSION_VIEW + self::ROOM_PERMISSION_MODERATE + self::ROOM_PERMISSION_PROPERTIES, // Grant implies all.
     ];
 
     /**
@@ -327,7 +327,7 @@ class Room extends DynamicObject
 
 
     /**
-     * Decodes a packed roomId into its string representation by {@link Fim\fimRoom::encodeId()}.
+     * Decodes a packed roomId into its string representation by {@link Fim\fimself::encodeId()}.
      *
      * @param $id string The roomId encoded.
      *
@@ -372,7 +372,7 @@ class Room extends DynamicObject
     {
         $returnArray = [];
 
-        foreach (Room::$permArray AS $perm => $bit) {
+        foreach (self::$permArray AS $perm => $bit) {
             $returnArray[$perm] = ($field & $bit) == $bit;
         }
 
@@ -382,13 +382,13 @@ class Room extends DynamicObject
     /**
      * Generates a permissions bitfield from a list of permission strings.
      *
-     * @param $permissionsArray array List of strings corresponding with permissions in {@link Fim\fimRoom::$permArray}.
+     * @param $permissionsArray array List of strings corresponding with permissions in {@link Fim\fimself::$permArray}.
      */
     public static function getPermissionsField(array $permissionsArray)
     {
         $permissionsField = 0;
 
-        foreach (Room::$permArray AS $string => $byte) {
+        foreach (self::$permArray AS $string => $byte) {
             if (in_array($string, $permissionsArray)) $permissionsField |= $byte;
         }
 
@@ -412,7 +412,7 @@ class Room extends DynamicObject
             foreach ($this->getPrivateRoomMembers() AS $user)
                 $userNames[] = $user->name;
 
-            $name = ($this->type === Room::ROOM_TYPE_PRIVATE ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
+            $name = ($this->type === self::ROOM_TYPE_PRIVATE ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
             $this->set('name', $name);
 
             return $name;
@@ -448,7 +448,14 @@ class Room extends DynamicObject
      */
     public function getDeleted(): bool
     {
-        return ($this->options & Room::ROOM_DELETED) === Room::ROOM_DELETED;
+        return ($this->options & self::ROOM_DELETED) === self::ROOM_DELETED;
+    }
+    
+    public function setDeleted($deleted) {
+        if ($deleted)
+            $this->options |= self::ROOM_DELETED;
+        else
+            $this->options &= ~self::ROOM_DELETED;
     }
 
     /**
@@ -456,7 +463,7 @@ class Room extends DynamicObject
      */
     public function getArchived(): bool
     {
-        return ($this->options & Room::ROOM_ARCHIVED) === Room::ROOM_ARCHIVED;
+        return ($this->options & self::ROOM_ARCHIVED) === self::ROOM_ARCHIVED;
     }
 
     /**
@@ -464,7 +471,7 @@ class Room extends DynamicObject
      */
     public function getOfficial(): bool
     {
-        return ($this->options & Room::ROOM_OFFICIAL) === Room::ROOM_OFFICIAL;
+        return ($this->options & self::ROOM_OFFICIAL) === self::ROOM_OFFICIAL;
     }
 
     /**
@@ -472,7 +479,7 @@ class Room extends DynamicObject
      */
     public function getHidden(): bool
     {
-        return ($this->options & Room::ROOM_HIDDEN) === Room::ROOM_HIDDEN;
+        return ($this->options & self::ROOM_HIDDEN) === self::ROOM_HIDDEN;
     }
 
     /**
@@ -481,7 +488,7 @@ class Room extends DynamicObject
      */
     public function isGeneralRoom()
     {
-        return $this->type === Room::ROOM_TYPE_GENERAL;
+        return $this->type === self::ROOM_TYPE_GENERAL;
     }
 
     /**
@@ -490,7 +497,7 @@ class Room extends DynamicObject
      */
     public function isPrivateRoom()
     {
-        return $this->type === Room::ROOM_TYPE_PRIVATE || $this->type === Room::ROOM_TYPE_OTR;
+        return $this->type === self::ROOM_TYPE_PRIVATE || $this->type === self::ROOM_TYPE_OTR;
     }
 
 
@@ -576,27 +583,27 @@ class Room extends DynamicObject
             return $this->privateRoomState;
 
         elseif (!$this->arePrivateRoomMembersValid())
-            return $this->privateRoomState = Room::PRIVATE_ROOM_STATE_DISABLED;
+            return $this->privateRoomState = self::PRIVATE_ROOM_STATE_DISABLED;
 
         else {
             // Disallow OTR rooms if disabled.
-            if ($this->type === Room::ROOM_TYPE_OTR && !\Fim\Config::$otrRoomsEnabled)
-                return $this->privateRoomState = Room::PRIVATE_ROOM_STATE_DISABLED;
+            if ($this->type === self::ROOM_TYPE_OTR && !\Fim\Config::$otrRoomsEnabled)
+                return $this->privateRoomState = self::PRIVATE_ROOM_STATE_DISABLED;
 
             // Disallow private rooms if disabled.
-            elseif ($this->type === Room::ROOM_TYPE_PRIVATE && !\Fim\Config::$privateRoomsEnabled)
-                return $this->privateRoomState = Room::PRIVATE_ROOM_STATE_DISABLED;
+            elseif ($this->type === self::ROOM_TYPE_PRIVATE && !\Fim\Config::$privateRoomsEnabled)
+                return $this->privateRoomState = self::PRIVATE_ROOM_STATE_DISABLED;
 
             // Disallow private rooms with too many members.
             elseif (count($this->getPrivateRoomMemberIds()) > \Fim\Config::$privateRoomMaxUsers)
-                return $this->privateRoomState = Room::PRIVATE_ROOM_STATE_DISABLED;
+                return $this->privateRoomState = self::PRIVATE_ROOM_STATE_DISABLED;
 
             else {
                 $users = $this->getPrivateRoomMembers();
 
                 // This checks for invalid users, as getPrivateRoomMembers() will only return members who exist in the database, while getPrivateRoomMemberIds() returns all ids who were specified when the Fim\fimRoom object was created.
                 if (count($this->getPrivateRoomMemberIds()) !== count($users))
-                    return $this->privateRoomState = Room::PRIVATE_ROOM_STATE_DISABLED;
+                    return $this->privateRoomState = self::PRIVATE_ROOM_STATE_DISABLED;
 
                 else {
                     $roomAllowed = true;
@@ -635,9 +642,9 @@ class Room extends DynamicObject
                     }
 
                     if ($roomAllowed)
-                        return $this->privateRoomState = Room::PRIVATE_ROOM_STATE_NORMAL;
+                        return $this->privateRoomState = self::PRIVATE_ROOM_STATE_NORMAL;
                     else
-                        return $this->privateRoomState = Room::PRIVATE_ROOM_STATE_READONLY;
+                        return $this->privateRoomState = self::PRIVATE_ROOM_STATE_READONLY;
                 }
             }
         }
@@ -648,7 +655,7 @@ class Room extends DynamicObject
      */
     public function getEncodedId()
     {
-        return Room::encodeId($this->id);
+        return self::encodeId($this->id);
     }
 
     /**
@@ -669,15 +676,15 @@ class Room extends DynamicObject
      */
     protected function setId($id)
     {
-        if (Room::isPrivateRoomId($id)) {
+        if (self::isPrivateRoomId($id)) {
             $members = explode(',', substr($id, 1));
             sort($members, SORT_NUMERIC);
             $this->id = $id[0] . implode(',', $members);
 
             if ($id[0] === 'p')
-                $this->set('type', Room::ROOM_TYPE_PRIVATE);
+                $this->set('type', self::ROOM_TYPE_PRIVATE);
             elseif ($id[0] === 'o')
-                $this->set('type', Room::ROOM_TYPE_OTR);
+                $this->set('type', self::ROOM_TYPE_OTR);
 
             $this->set('options', 0);
             $this->set('parentalAge', 0);
@@ -688,11 +695,11 @@ class Room extends DynamicObject
 
         elseif (is_int($id) || ctype_digit($id)) {
             $this->id = $id;
-            $this->set('type', Room::ROOM_TYPE_GENERAL);
+            $this->set('type', self::ROOM_TYPE_GENERAL);
         }
 
         else
-            throw new Exception('Invalid ID passed to Fim\fimRoom::setId');
+            throw new Exception('Invalid ID passed to Fim\fimself::setId');
     }
 
     /**
@@ -847,7 +854,7 @@ class Room extends DynamicObject
 
                 $return = \Fim\Database::instance()->update(
                     \Fim\Database::$sqlPrefix . "rooms",
-                    array_merge(fim_arrayFilterKeys((array)$this, ['name', 'topic', 'options', 'defaultPermissions', 'parentalFlags', 'parentalAge']), $roomParameters),
+                    fim_objectArrayFilterKeys($this, ['name', 'topic', 'options', 'defaultPermissions', 'parentalFlags', 'parentalAge']),
                     [
                         'id' => (int)$this->id,
                     ]
@@ -888,7 +895,7 @@ class Room extends DynamicObject
             throw new Exception('Can\'t call Fim\fimRoom->changeTopic on private room.');
 
         elseif (\Fim\Config::$disableTopic)
-            throw new \Fim\Error('topicsDisabled', 'Topics are disabled on this server.');
+            new \Fim\Error('topicsDisabled', 'Topics are disabled on this server.');
 
         else {
             $this->setDatabase(['topic' => $topic]);

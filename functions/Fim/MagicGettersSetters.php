@@ -14,11 +14,10 @@ class MagicGettersSetters {
      * @throws Exception If a property doesn't exist.
      */
     public function set(string $property, $value) {
-        if (!property_exists($this, $property))
-            throw new Exception('Invalid property to set in ' . get_called_class() . ': ' . $property);
-
         $setterName = $this->setterName($property);
 
+        if (!$property)
+            throw new Exception('No property specified.');
         if (method_exists($this, $setterName))
             $this->$setterName($value);
         elseif ($this->propertyExists($property))
