@@ -598,6 +598,9 @@ popup.prototype.room.prototype.init = function(options) {
                 }
 
                 else if (!roomData.permissions.post) { // If we can view, but not post
+                    if (roomData.permissionsReason === 'kick')
+                        dia.info('You have been muted from this room, and won\'t be allowed to post for a while.', 'danger');
+                    else
                         dia.info('You are not allowed to post in this room. You will be able to view it, though.', 'danger');
                     this.disableSender();
                 }

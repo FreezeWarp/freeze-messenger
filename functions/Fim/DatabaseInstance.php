@@ -1522,7 +1522,7 @@ class DatabaseInstance extends DatabaseSQL
      *
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function hasPermission(User $user, Room $room) {
+    public function hasPermission(User $user, Room $room, &$reason = null) {
         /* Private Room Have Their Own, Fairly Involved Permission Logic */
         if ($room->isPrivateRoom()) {
             $userIds = $room->getPrivateRoomMemberIds();
@@ -1554,7 +1554,7 @@ class DatabaseInstance extends DatabaseSQL
 
         else {
             /* Check for Cached Entry */
-            $permissionsCached = $this->getPermissionCache($room->id, $user->id);
+            $permissionsCached = $this->getPermissionCache($room->id, $user->id, $reason);
             if ($permissionsCached > -1) // -1 equals an outdated permission.
                 return $permissionsCached;
 
@@ -1627,7 +1627,16 @@ class DatabaseInstance extends DatabaseSQL
             }
 
             /* Update cache and return. */
-            $this->updatePermissionsCache($room->id, $user->id, $returnBitfield, (isset($kicks) && $kicks > 0 ? 'kick' : ''));
+            $this->updatePermissionsCache($room->id,
+                $user->id,
+                $returnBitfield,
+                (isset($kicks) && $kicks->getCount() > 0 ? 'kick' : ''),
+                (isset($kicks) && $kicks->getCount() > 0 ? $kicks->getAsArray(false)['expires'] - time() : null)
+            );
+
+            if (isset($kicks) && $kicks->getCount() > 0 && $reason) {
+                $reason = 'kick';
+            }
 
             return $returnBitfield;
         }
@@ -1775,12 +1784,15 @@ class DatabaseInstance extends DatabaseSQL
      *
      * @return int A permission bitfield, or -1 if none/expired.
      */
-    public function getPermissionCache($roomId, $userId) {
+    public function getPermissionCache($roomId, $userId, &$reason = null) {
         if (!Config::$roomPermissionsCacheEnabled)
             return -1;
 
-        elseif (($permissionsCache = \Cache\CacheFactory::get("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) !== false)
-            return $permissionsCache;
+        elseif (($permissionsCache = \Cache\CacheFactory::get("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) !== false) {
+            $reason = $permissionsCache['reason'];
+
+            return $permissionsCache['bitfield'];
+        }
 
         else {
             $permissions = $this->select(array(
@@ -1791,7 +1803,11 @@ class DatabaseInstance extends DatabaseSQL
                 'expires' => $this->now(0, 'gte')
             ))->getAsArray(false);
 
-            return !count($permissions)
+            if (!empty($permissions) && $reason) {
+                $reason = $permissions['reason'];
+            }
+
+            return empty($permissions)
                 ? -1
                 : (int) $permissions['permissions'];
         }
@@ -1806,15 +1822,18 @@ class DatabaseInstance extends DatabaseSQL
      * @param int $permissions The new permissions bitfield.
      * @param string $reason If the user was denied for a specific reason, indicate it here.
      */
-    public function updatePermissionsCache($roomId, $userId, $permissions, $reason = '') {
+    public function updatePermissionsCache($roomId, $userId, $permissions, $reason = '', $timeout = null) {
         if (Config::$roomPermissionsCacheEnabled) {
-            if (!\Cache\CacheFactory::set("permission_{$userId}_{$roomId}", $permissions, Config::$roomPermissionsCacheExpires, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
+            if (!\Cache\CacheFactory::set("permission_{$userId}_{$roomId}", [
+                'bitfield' => $permissions,
+                'reason' => $reason
+            ], $timeout ?? Config::$roomPermissionsCacheExpires, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
                 $this->upsert($this->sqlPrefix . 'roomPermissionsCache', [
                     'roomId' => $roomId,
                     'userId' => $userId,
                 ], [
                     'permissions' => $permissions,
-                    'expires'     => $this->now(Config::$roomPermissionsCacheExpires),
+                    'expires'     => $this->now($timeout ?? Config::$roomPermissionsCacheExpires),
                     'deniedReason'=> $reason,
                 ]);
             }

@@ -135,7 +135,7 @@ do {
     }
 
     foreach ($rooms AS $number => &$roomLocal) {
-        $permission = \Fim\Database::instance()->hasPermission($user, $roomLocal);
+        $permission = \Fim\Database::instance()->hasPermission($user, $roomLocal, $reason);
 
         if ($request['permFilter'] != 'own'
             && ($permission & Room::$permArray[$request['permFilter']]) != Room::$permArray[$request['permFilter']]) {
@@ -146,7 +146,8 @@ do {
             fim_objectArrayFilterKeys($roomLocal, ['id', 'name', 'ownerId', 'parentalAge', 'official', 'archived', 'hidden', 'deleted', 'topic', 'ownerId', 'lastMessageId', 'lastMessageTime', 'messageCount']),
             [
                 'defaultPermissions' => $roomLocal->getPermissionsArray($roomLocal->defaultPermissions),
-                'permissions'        => $roomLocal->getPermissionsArray(\Fim\Database::instance()->hasPermission($user, $roomLocal)),
+                'permissions'        => $roomLocal->getPermissionsArray($permission),
+                'permissionsReason'  => $reason,
                 'parentalFlags'      => new Http\ApiOutputList($roomLocal->parentalFlags)
             ]
         );
