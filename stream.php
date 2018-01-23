@@ -31,6 +31,14 @@ header('Cache-Control: no-cache'); // recommended to prevent caching of event da
 
 @set_time_limit(\Fim\Config::$serverSentTimeLimit);
 
+/*
+ * If the user exits the script, make sure it aborts.
+ * We respect the INI default normally in FIM, but the stream is unique for two reasons:
+ * 1.) The stream can potentially use a lot of DB IOPS, which should be avoided if the user has quit.
+ * 2.) Network errors are more likely for a long-running script like this, meaning this script will frequently exit early.
+ */
+ignore_user_abort(false);
+
 $serverSentRetries = 0;
 
 
