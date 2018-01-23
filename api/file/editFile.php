@@ -187,7 +187,7 @@ switch ($requestHead['_action']) {
         $maxSize = (\Fim\Config::$uploadSizeLimits[$file->extension] ? \Fim\Config::$uploadSizeLimits[$file->extension] : 0);
 
         if ($file->size > $maxSize)
-            throw new Exception('tooLarge', 'The file is too large to upload; the maximum size is ' . $maxSize . 'B, and the file you uploaded was ' . $file->size . '.');
+            new \Fim\Error('tooLarge', 'The file is too large to upload; the maximum size is ' . $maxSize . 'B, and the file you uploaded was ' . $file->size . '.');
 
 
         /* Get Files with Existing, Matching Sha256 */
