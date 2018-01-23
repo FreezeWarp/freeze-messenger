@@ -195,5 +195,10 @@ popup.prototype.settings = {
 
             return false; // Don't submit the form.
         });
+    },
+
+    close : function() {
+        // Clean up colour pickers
+        $('.colorpicker').remove();
     }
 };
