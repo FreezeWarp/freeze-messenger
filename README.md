@@ -97,8 +97,14 @@ If you are using the MySQLi driver, simply add 'p:' to your hostname, e.g. 'p:lo
 
 (Note that using persistent connections may be slightly more likely to expose FreezeMessenger bugs. In practice, none have been observed from using persistent connections.)
 
+WebPro
+------
+
+### Why aren't WebKit notifications working?
+WebKit notifications require that you run FreezeMessenger on a HTTPS domain. If you are using HTTP, check to see if your host supports adding a free [LetsEncrypt](https://letsencrypt.org/) certificate.
+
 ### How do I enable push notifications?
-Push notifications are experimentally available in Beta 3. To enable them, set [`$enablePushNotifications`](http://josephtparsons.com/messenger/docs/classes/classes/Fim.Config.html#property_enablePushNotifications) to true in the [admin control panel](#configuration-editor). Users can then opt-in to push notifications in WebPro in their settings.
+Push notifications are experimentally available in Beta 3 to those running FreezeMessenger on an HTTPS-enabled server. To enable push notifications, set [`$enablePushNotifications`](http://josephtparsons.com/messenger/docs/classes/classes/Fim.Config.html#property_enablePushNotifications) to true in the [admin control panel](#configuration-editor). Users can then opt-in to push notifications in WebPro in their settings.
 
 Note that push notifications are not especially performant, regardless of your available caching or streaming: in order to push a notification, an HTTPS request has to be made to the browser endpoints, which for active rooms can take a while. In the future, more granular options will be available, such as only enabling push notifications for private rooms.
 
