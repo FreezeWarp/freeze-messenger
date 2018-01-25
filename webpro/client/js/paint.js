@@ -838,9 +838,6 @@ var regexs = {
 
 window.isBlurred = false; // By default, we assume the window is active and not blurred.
 var favicon = $('#favicon').attr('href'),
-    requestSettings = {
-        serverSentEvents : false // We may set this to true if the server supports it.
-    },
     timers = {t1 : false},
     messageIndex = {};
 
@@ -971,12 +968,6 @@ $.when(
         }
     })
 ).then(function() {
-    /* Do some final compat testing */
-    if (typeof window.EventSource === 'undefined')
-        requestSettings.serverSentEvents = false;
-    else
-        requestSettings.serverSentEvents = window.serverSettings.requestMethods.serverSentEvents;
-
     if (window.serverSettings.installUrl !== (window.location.protocol + '//' + window.location.host + window.directory))
         dia.error(window.phrases.errorBadInstall);
 

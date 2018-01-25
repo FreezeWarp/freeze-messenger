@@ -25,14 +25,11 @@ popup.prototype.room = function() {
     };
 
     this.roomData = false;
-    this.worker = null;
 
     this.faviconFlashTimer = false;
     this.windowBlurred = false;
     this.messageIndex = [];
     this.isTyping = false;
-    this.roomSource = false;
-    this.pingInterval = false;
 
     this.focusListener = false;
     this.blurListener = false;
@@ -124,7 +121,6 @@ popup.prototype.room.prototype.insertDoc = function() {
                             $('#uploadFileFormPreview').html(fim_messagePreview(window.serverSettings.fileUploads.fileContainers[filePartsLast], this.result));
                         };
 
-                        console.log("file good");
                         $('#uploadFileForm [type=submit]').removeAttr('disabled');
                     }
                 }
@@ -228,7 +224,7 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
 
     /* Insert Message Line */
     if ($('#message' + messageData.id).length > 0) {
-        console.log("existing");
+        console.log("existing message", messageData);
         $('#message' + messageData.id).replaceWith(messageLine);
     }
     else {
@@ -353,7 +349,7 @@ popup.prototype.room.prototype.onBlur = function() {
         this.isTyping = false;
     }
 
-    this.sendWorkerMessage({
+    standard.sendWorkerMessage({
         eventName : 'blur'
     });
 };
@@ -365,7 +361,7 @@ popup.prototype.room.prototype.onFocus = function() {
     this.windowBlurred = false;
     this.faviconFlashStop();
 
-    this.sendWorkerMessage({
+    standard.sendWorkerMessage({
         eventName : 'unblur'
     });
 };
@@ -416,14 +412,6 @@ popup.prototype.room.prototype.onWindowResize = function() {
         - $('#watchedRoomsCardHeader').outerHeight(true)
         - 5)
     );
-};
-
-/**
- * Function to register for the browser's beforeUnload event
- */
-popup.prototype.room.prototype.beforeUnload = function() {
-    if (this.options.roomId)
-        fimApi.exitRoom(this.options.roomId);
 };
 
 /**
@@ -493,7 +481,6 @@ popup.prototype.room.prototype.init = function(options) {
             return true;
         }
     }).on('fileuploadpaste', function (e, data) {
-        console.log("files", e, data);
         let reader = new FileReader();
 
         reader.readAsDataURL(data.files[0]);
@@ -509,7 +496,6 @@ popup.prototype.room.prototype.init = function(options) {
                 )
             ),
             'true' : function() {
-                console.log('This is confusing and dumb and eh.');
                 $('#chatContainer').fileupload('add', {
                     files: data.files[0]
                 });
@@ -539,7 +525,6 @@ popup.prototype.room.prototype.init = function(options) {
                 return false;
             }
             else if (e.which === 40) { // Down
-                console.log("down", $(this).closest('.messageLine'), $(this).closest('.messageLine').next('.messageLine'), $(this).hasClass('userName'));
                 $(this).closest('.messageLine').next('.messageLine').find($(this).hasClass('userName') ? '.userName' : '.messageText').focus();
                 return false;
             }
@@ -582,7 +567,7 @@ popup.prototype.room.prototype.init = function(options) {
     if (!window.activeLogin.userData.anonId) {
         fimApi.getUnreadMessages(null, {
             'each': (message) => {
-                this.unreadMessageHandler(message);
+                this.missedMessageHandler(message);
             }
         });
     }
@@ -646,13 +631,6 @@ popup.prototype.room.prototype.init = function(options) {
                     });
 
 
-                    // Send user status pings
-                    fimApi.ping(this.options.roomId);
-                    this.pingInterval = window.setInterval((() => {
-                        fimApi.ping(this.options.roomId);
-                    }), 60 * 1000);
-
-
                     // Detect form typing
                     $('textarea#messageInput').on('keyup', (e) => {
                         if (!this.isNeutralKeyCode(e.keyCode)) {
@@ -691,12 +669,6 @@ popup.prototype.room.prototype.init = function(options) {
                     });
 
 
-                    // Send logoff event on window close.
-                    $(window).on('beforeunload', null, () => {
-                        this.beforeUnload();
-                    });
-
-
                     // Render Header Template
                     fim_renderHandlebarsInPlace($('#messageListCardHeaderTemplate'), {roomData: roomData});
 
@@ -706,11 +678,6 @@ popup.prototype.room.prototype.init = function(options) {
 
 
                     // Get New Messages
-                    window.requestSettings[this.options.roomId] = {
-                        lastMessage: null,
-                        firstRequest: true
-                    };
-
                     fimApi.getMessages({
                         'roomId': this.options.roomId,
                     }, {
@@ -718,7 +685,10 @@ popup.prototype.room.prototype.init = function(options) {
                             this.newMessage(messageData);
                         }),
                         end: (() => {
-                            this.createWorker();
+                            standard.sendWorkerMessage({
+                                eventName : 'listenRoom',
+                                roomId : this.options.roomId
+                            });
                         })
                     });
                 }
@@ -748,48 +718,6 @@ popup.prototype.room.prototype.init = function(options) {
     }
 };
 
-popup.prototype.room.prototype.createWorker = function() {
-    if (window.Worker) {
-        this.worker = new Worker('client/js/eventWorker.ts.js');
-        this.worker.postMessage({
-            eventName : 'registerApi',
-            serverSettings : fimApi.serverSettings,
-            sessionHash : fimApi.lastSessionHash
-        });
-        this.worker.postMessage({
-            eventName : 'listenRoom',
-            roomId : this.options.roomId
-        });
-        this.worker.onmessage = (event) => {
-            this[event.data.name + "Handler"](JSON.parse(event.data.data));
-        };
-    }
-    else {
-        postMessage = (event) => {
-            this[event.name + "Handler"](JSON.parse(event.data));
-        };
-
-        $.getScript('client/js/eventWorker.ts.js', () => {
-            onmessage({
-                data : {
-                    eventName : 'listenRoom',
-                    roomId : this.options.roomId
-                }
-            });
-        });
-    }
-}
-
-popup.prototype.room.prototype.sendWorkerMessage = function(event) {
-    if (window.Worker) {
-        if (this.worker)
-            this.worker.postMessage(event);
-    }
-    else {
-        onmessage(event);
-    }
-}
-
 /**
  * Close all current resources used by this view.
  */
@@ -803,22 +731,15 @@ popup.prototype.room.prototype.close = function() {
     window.removeEventListener('blur', this.blurListener);
     window.removeEventListener('focus',  this.focusListener);
 
-    this.sendWorkerMessage({
+    standard.sendWorkerMessage({
         eventName : 'unlistenRoom',
         roomId : this.options.roomId
     });
-
-    if (this.pingInterval) {
-        window.clearInterval(this.pingInterval);
-    }
 
     $('#fileupload').fileupload('destroy');
 
     $('textarea#messageInput').off('keyup').off('keydown');
     $('#sendForm').off('submit');
-
-    this.beforeUnload();
-    $(window).off('beforeunload');
 
     $(window).off('resize', null, this.onWindowResize);
 
@@ -865,7 +786,6 @@ popup.prototype.room.prototype.deletedMessageHandler = function(active) {
  */
 popup.prototype.room.prototype.topicChangeHandler = function(active) {
     $('#topic').text(active.topic);
-    console.log('Event (Topic Change): ' + active.topic);
 };
 
 /**
@@ -903,6 +823,14 @@ popup.prototype.room.prototype.userStatusChangeHandler = function(active) {
     }
 };
 
+/**
+ * Handler for when the client fails to connect to the server stream.
+ * @param active
+ */
+popup.prototype.room.prototype.streamFailedHandler = function(active) {
+    dia.info('The connection to the ' + active.streamType + ' stream has been lost. Retrying in ' + (active.retryTime / 1000) + " seconds.", 'danger');
+};
+
 
 /**
  * Create a new room entry in the watched rooms list (won't create if it already exists)
@@ -910,7 +838,6 @@ popup.prototype.room.prototype.userStatusChangeHandler = function(active) {
  */
 popup.prototype.room.prototype.newRoomEntry = function(roomId) {
     if (!$('#watchedRooms .list-group-item[data-roomId="' + roomId + '"]').length) {
-        console.log("new entry");
         $('#watchedRooms').append($('<li>').attr('class', 'list-group-item').attr('data-roomId', roomId)
             .append(fim_buildRoomNameTag($('<span>'), roomId))
             .append($('<i class="otherMessages" style="display: none">').append(' (', $('<i class="otherMessagesCount"></i>'), ')'))
@@ -951,7 +878,7 @@ popup.prototype.room.prototype.markRoomEntryUnread = function(roomId, count) {
  * Update for when a new unread message is received.
  * @param message
  */
-popup.prototype.room.prototype.unreadMessageHandler = function(message) {
+popup.prototype.room.prototype.missedMessageHandler = function(message) {
     if (message.roomId != this.options.roomId) {
         this.newRoomEntry(message.roomId);
         this.markRoomEntryUnread(message.roomId, message.otherMessages);
@@ -1000,9 +927,11 @@ popup.prototype.room.prototype.sendMessage = function(message, ignoreBlock, flag
 
             error : ((request) => {
                 if (window.settings.reversePostOrder)
-                    $('#messageList').append($('<div>').text('Your message, "' + message + '", could not be sent and will be retried.'));
-                else
                     $('#messageList').prepend($('<div>').text('Your message, "' + message + '", could not be sent and will be retried.'));
+                else
+                    $('#messageList').append($('<div>').text('Your message, "' + message + '", could not be sent and will be retried.'));
+
+                this.scrollBack();
 
                 window.setTimeout(() => {
                     this.sendMessage(message)

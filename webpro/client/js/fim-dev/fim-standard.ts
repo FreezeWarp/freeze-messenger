@@ -12,6 +12,7 @@ let standard = function() {
     this.sessionHash = "";
     this.anonId = "";
     this.activeLogin = {};
+    this.worker = null;
 
     this.lastEvent = 0;
 
@@ -64,7 +65,7 @@ standard.prototype.setUserData = function(userData) {
 standard.prototype.setActiveLogin = function(activeLogin) {
     this.activeLogin = window.activeLogin = activeLogin;
     this.setUserData(activeLogin.userData);
-}
+};
 
 
 /* Trigger a login using provided data. This will open a login form if necessary. */
@@ -94,7 +95,15 @@ standard.prototype.login = function(options) {
             this.sessionHash = window.sessionHash = activeLogin.access_token;
             fim_removeHashParameter("sessionHash");
 
-            if (options.finish) options.finish(activeLogin);
+            this.createWorker(() => {
+                if (options.finish)
+                    options.finish(activeLogin);
+
+                this.sendWorkerMessage({
+                    eventName : 'login',
+                    sessionHash : this.sessionHash
+                });
+            });
 
             if (activeLogin.expires && activeLogin.refresh_token) {
                 $.cookie('webpro_refreshToken', activeLogin.refresh_token);
@@ -108,6 +117,7 @@ standard.prototype.login = function(options) {
             }
 
 
+            /* Room Navbar Contents */
             $('#navbar div[name=favRoomsList]').html('');
             $('#navbar div[name=officialRoomsList]').html('');
             $.when(Resolver.resolveRoomsFromIds(window.serverSettings.officialRooms.concat(this.activeLogin.userData.favRooms))).done((pairs) => {
@@ -125,10 +135,10 @@ standard.prototype.login = function(options) {
                 });
             });
 
+
             /* Private Room Form */
             $('#privateRoomForm input[name=userName]').autocompleteHelper('users');
-
-            $("#privateRoomForm").submit(() => {
+            $("#privateRoomForm").off('submit').on('submit', () => {
                 let userName = $("#privateRoomForm input[name=userName]").val();
                 let userId = $("#privateRoomForm input[name=userName]").attr('data-id');
 
@@ -136,128 +146,74 @@ standard.prototype.login = function(options) {
                     window.location.hash = "#room=p" + [this.userId, userId].join(',');
                 };
 
-                if (!userId && userName) {
+                if (!userId && userName)
                     whenUserIdAvailable(userId);
-                }
-                else if (!userName) {
+                else if (!userName)
                     dia.error('Please enter a username.');
-                }
                 else {
                     $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
                         whenUserIdAvailable(pairs[userName].id);
                     }));
                 }
 
-                return false; // Don't submit the form.
-
+                // Don't submit the form
+                return false;
             });
-
-            this.getEvents();
-
-            return false;
         },
         error: (data) => {
-            if (options.error) options.error(data);
-
-            return false;
+            if (options.error)
+                options.error(data);
         }
     });
 };
 
 
-standard.prototype.getEventsFromFallback = function() {
-    fimApi.getEventsFallback({
-        'streamType': 'user',
-        'lastEvent' : this.lastEvent
-    }, {
-        each: ((event) => {
-            this.lastEvent = Math.max(Number(event.id), Number(this.lastEvent));
-
-            if (event.eventName == "missedMessage") {
-                this.missedMessageHandler(event.data);
-            }
-        }),
-        end: (() => {
-            if (window.requestSettings.serverSentEvents) {
-                this.getEventsFromStream();
-            }
-            else {
-                window.setTimeout((() => {
-                    this.getEventsFromFallback()
-                }), 3000);
-            }
-        })
-    });
-};
-
-standard.prototype.getEventsFromStream = function() {
-    let userSource = new EventSource(directory + 'stream.php?streamType=user&lastEvent=' + this.lastEvent + '&access_token=' + this.sessionHash);
-    let eventHandler = ((callback) => {
-        return ((event) => {
-            this.lastEvent = Math.max(this.lastEvent, event.id);
-
-            callback.call(this, JSON.parse(event.data));
-        });
-    });
-
-    userSource.addEventListener('missedMessage', eventHandler(this.missedMessageHandler), false);
-};
-
-standard.prototype.getEvents = function() {
-    if (window.requestSettings.serverSentEvents) {
-        this.getEventsFromStream();
+standard.prototype.sendWorkerMessage = function(event) {
+    if (window.Worker) {
+        if (this.worker)
+            this.worker.postMessage(event);
     }
     else {
-        this.getEventsFromFallback();
+        onmessage({data : event});
     }
 };
 
-standard.prototype.missedMessageHandler = function(message) {
-    if (window.openObjectInstance instanceof popup.room) {
-        openObjectInstance.unreadMessageHandler(message);
+
+standard.prototype.createWorker = function(callback) {
+    if (window.Worker) {
+        if (!this.worker) {
+            this.worker = new Worker('client/js/eventWorker.ts.js');
+
+            this.worker.postMessage({
+                eventName: 'registerApi',
+                serverSettings: fimApi.serverSettings
+            });
+
+            this.worker.onmessage = (event) => {
+                if (typeof window.openObjectInstance[event.data.name + "Handler"] === "function") {
+                    window.openObjectInstance[event.data.name + "Handler"](JSON.parse(event.data.data));
+                }
+            };
+        }
+
+        callback();
     }
     else {
-        /*if (message.roomId == window.roomId) {
-            // we'll eventually probably want to do something fancy here, like offering to scroll to the last-viewed message.
+        if (typeof onmessage === "undefined") {
+            postMessage = (event) => {
+                if (typeof window.openObjectInstance[event.name + "Handler"] === "function") {
+                    window.openObjectInstance[event.name + "Handler"](JSON.parse(event.data));
+                }
+            };
+
+            $.getScript('client/js/eventWorker.ts.js', callback);
         }
         else {
-            console.log("missed message", message);
-            if (!this.notifications["room" + message.roomId]) {
-                this.notifications["room" + message.roomId] = $.notify({
-                    url : '#room=' + message.roomId,
-                    message : $('<span>').attr({
-                        'class': 'missedMessage',
-                        'id': "missedMessage" + message.roomId,
-                        'data-roomId': message.roomId
-                    }).prop('outerHTML')
-                }, {
-                    newest_on_top : true,
-                    type : "info",
-                    placement: {
-                        from : 'top',
-                        align : 'right',
-                    },
-                    delay : 0,
-                    animate : {
-                        exit : ""
-                    },
-                    onClose : () => {
-                        fimApi.markMessageRead(message.roomId);
-                    },
-                    url_target : "_self"
-                });
-            }
-
-            $('#missedMessage' + message.roomId.toString().replace(',', '\\,')).replaceWith(
-                $('<span>').text('New message from ')
-                    .append(fim_buildUsernameTag($('<strong>'), message.senderId))
-                    .append(' has been made in ')
-                    .append(fim_buildRoomNameTag($('<strong>'), message.roomId))
-                    .append(message.missedMessages ? $('<span>').text('(Other messages: ' + message.otherMessages + ')') : '')
-            );
-        }*/
+            callback();
+        }
     }
 };
+
 
 
 standard.prototype.logout = function() {
@@ -267,33 +223,18 @@ standard.prototype.logout = function() {
         window.openObjectInstance.close();
     }
 
+    this.sendWorkerMessage({
+        eventName : 'logout'
+    });
+
     $.cookie('webpro_username', null);
     $.cookie('webpro_password', null);
     $.cookie('webpro_refreshToken', null);
 
-    //fimApi.getMessages(null, {close : true});
-    //fimApi.getActiveUsers(null, {close : true});
-    //fimApi.getUnreadMessages(null, {close : true});
-    // TODO: others?
+    fimApi.getActiveUsers(null, {close : true});
 
     $('#logout').parent().show();
     $('#login').parent().hide();
 
     window.popup.login();
 };
-
-
-/*standard.prototype.deleteRoom = function(roomIdLocal) {
-    $.post(directory + 'api/editRoom.php', 'action=delete&messageId=' + messageId + '&access_token=' + sessionHash, function(json) {
-        var errStr = json.editRoom.errStr,
-            errDesc = json.editRoom.errDesc;
-
-        switch (errStr) {
-            case '': console.log('Message ' + messageId + ' deleted.'); break;
-            case 'nopermission': dia.error('You do not have permission to administer this room.'); break;
-            case 'badroom': dia.error('The specified room does not exist.'); break;
-        }
-
-        return false;
-    }); // Send the form data via AJAX.
-};*/
