@@ -10,6 +10,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var fimApiInstance;
 if (typeof fimApi == "undefined") {
+    // Juryrig the jQuery properties for jQuery
     var document = self.document = { parentNode: null, nodeType: 9, toString: function () { return "FakeDocument"; } };
     var window = self.window = self;
     var fakeElement = Object.create(document);
@@ -27,7 +28,9 @@ if (typeof fimApi == "undefined") {
             function () { return null; };
     document.cloneNode = document.appendChild = function () { return this; };
     document.appendChild = function (child) { return child; };
+    // Load AJAX-only version of jQuery
     importScripts("jquery.ajax.min.js");
+    // Load fim-api
     importScripts('fim-dev/fim-api.ts.js');
 }
 else {
@@ -36,6 +39,9 @@ else {
 var userSourceInstance = null;
 var roomSources = [];
 var isBlurred = false;
+/**
+ * A generic event source provider.
+ */
 var eventSource = /** @class */ (function () {
     function eventSource() {
         /** @var The last event ID we received in this room source. */
@@ -43,12 +49,21 @@ var eventSource = /** @class */ (function () {
         /** @var The number of times in a row a request has failed. */
         this.failureCount = 0;
     }
+    /**
+     * Close the event source object, freeing up network resources.
+     */
     eventSource.prototype.close = function () {
         if (this.eventSource)
             this.eventSource.close();
         if (this.eventTimeout)
             window.clearTimeout(this.eventTimeout);
     };
+    /**
+     * Generic callback when an event occurs.
+     *
+     * @param eventName The name of the event.
+     * @returns {(event) => void}
+     */
     eventSource.prototype.eventHandler = function (eventName) {
         var _this = this;
         return function (event) {
@@ -60,6 +75,9 @@ var eventSource = /** @class */ (function () {
             });
         };
     };
+    /**
+     * Get events from whichever method is most appropriate.
+     */
     eventSource.prototype.getEvents = function () {
         if (fimApiInstance.serverSettings.requestMethods.serverSentEvents
             && typeof (EventSource) !== "undefined") {
@@ -69,6 +87,13 @@ var eventSource = /** @class */ (function () {
             this.getEventsFromFallback();
         }
     };
+    /**
+     * Get events from a FIM event stream with the given properties.
+     *
+     * @param streamType The type of the stream (e.g. user)
+     * @param queryId The ID of the stream, if room
+     * @param events A list of events to register callbacks for
+     */
     eventSource.prototype.getEventsFromStreamGenerator = function (streamType, queryId, events) {
         var _this = this;
         if (this.eventSource)
@@ -92,6 +117,12 @@ var eventSource = /** @class */ (function () {
             this.eventSource.addEventListener(events[i], this.eventHandler(events[i]), false);
         }
     };
+    /**
+     * Get events from a FIM fallback event stream with the given properties.
+     *
+     * @param streamType The type of the stream (e.g. user)
+     * @param queryId The ID of the stream, if room
+     */
     eventSource.prototype.getEventsFromFallbackGenerator = function (streamType, queryId) {
         var _this = this;
         fimApiInstance.getEventsFallback({
@@ -129,6 +160,9 @@ var eventSource = /** @class */ (function () {
     };
     return eventSource;
 }());
+/**
+ * An event source providing room events.
+ */
 var roomSource = /** @class */ (function (_super) {
     __extends(roomSource, _super);
     function roomSource(roomId) {
@@ -156,6 +190,9 @@ var roomSource = /** @class */ (function (_super) {
     };
     return roomSource;
 }(eventSource));
+/**
+ * An event source providing user events.
+ */
 var userSource = /** @class */ (function (_super) {
     __extends(userSource, _super);
     function userSource() {
@@ -164,7 +201,7 @@ var userSource = /** @class */ (function (_super) {
         return _this;
     }
     userSource.prototype.getEventsFromStream = function () {
-        this.getEventsFromStreamGenerator('user', null, ['missedMessage']);
+        this.getEventsFromStreamGenerator('user', null, ['missedMessage', 'refreshApplication']);
     };
     userSource.prototype.getEventsFromFallback = function () {
         this.getEventsFromFallbackGenerator('user', null);

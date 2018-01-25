@@ -1,6 +1,7 @@
 let fimApiInstance;
 
 if (typeof fimApi == "undefined") {
+    // Juryrig the jQuery properties for jQuery
     var document = self.document = {parentNode: null, nodeType: 9, toString: function() {return "FakeDocument"}};
     var window = self.window = self;
     var fakeElement = Object.create(document);
@@ -20,7 +21,10 @@ if (typeof fimApi == "undefined") {
     document.cloneNode = document.appendChild = function() {return this;};
     document.appendChild = function(child) {return child;};
 
+    // Load AJAX-only version of jQuery
     importScripts("jquery.ajax.min.js");
+
+    // Load fim-api
     importScripts('fim-dev/fim-api.ts.js');
 }
 else {
@@ -31,6 +35,9 @@ let userSourceInstance = null;
 let roomSources = [];
 let isBlurred = false;
 
+/**
+ * A generic event source provider.
+ */
 abstract class eventSource {
     /** @var An EventSource opened, if available. */
     eventSource : object;
@@ -47,6 +54,9 @@ abstract class eventSource {
     constructor() {
     }
 
+    /**
+     * Close the event source object, freeing up network resources.
+     */
     close() {
         if (this.eventSource)
             this.eventSource.close();
@@ -55,6 +65,12 @@ abstract class eventSource {
             window.clearTimeout(this.eventTimeout);
     }
 
+    /**
+     * Generic callback when an event occurs.
+     *
+     * @param eventName The name of the event.
+     * @returns {(event) => void}
+     */
     eventHandler(eventName) {
         return (event) => {
             console.log("new event", eventName, event);
@@ -68,6 +84,9 @@ abstract class eventSource {
         };
     }
 
+    /**
+     * Get events from whichever method is most appropriate.
+     */
     getEvents() {
         if (fimApiInstance.serverSettings.requestMethods.serverSentEvents
             && typeof(EventSource) !== "undefined") {
@@ -78,8 +97,18 @@ abstract class eventSource {
         }
     }
 
+    /**
+     * Get events from an event stream.
+     */
     abstract getEventsFromStream();
 
+    /**
+     * Get events from a FIM event stream with the given properties.
+     *
+     * @param streamType The type of the stream (e.g. user)
+     * @param queryId The ID of the stream, if room
+     * @param events A list of events to register callbacks for
+     */
     getEventsFromStreamGenerator(streamType, queryId, events) {
         if (this.eventSource)
             this.eventSource.close();
@@ -107,8 +136,17 @@ abstract class eventSource {
         }
     }
 
+    /**
+     * Get events from a stream fallback method.
+     */
     abstract getEventsFromFallback();
 
+    /**
+     * Get events from a FIM fallback event stream with the given properties.
+     *
+     * @param streamType The type of the stream (e.g. user)
+     * @param queryId The ID of the stream, if room
+     */
     getEventsFromFallbackGenerator(streamType, queryId) {
         fimApiInstance.getEventsFallback({
             'streamType': streamType,
@@ -148,6 +186,9 @@ abstract class eventSource {
     }
 }
 
+/**
+ * An event source providing room events.
+ */
 class roomSource extends eventSource {
     /** @var The roomId corresponding with this event source. */
     roomId : any;
@@ -187,6 +228,9 @@ class roomSource extends eventSource {
     }
 }
 
+/**
+ * An event source providing user events.
+ */
 class userSource extends eventSource {
 
     constructor() {
@@ -197,7 +241,7 @@ class userSource extends eventSource {
 
 
     getEventsFromStream() {
-        this.getEventsFromStreamGenerator('user', null, ['missedMessage']);
+        this.getEventsFromStreamGenerator('user', null, ['missedMessage', 'refreshApplication']);
     }
 
     getEventsFromFallback() {

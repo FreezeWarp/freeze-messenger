@@ -179,6 +179,18 @@ standard.prototype.sendWorkerMessage = function(event) {
 };
 
 
+standard.prototype.workerCallback = function(name, data) {
+    console.log("received worker event", name, data);
+
+    if (typeof window.openObjectInstance[name + "Handler"] === "function") {
+        window.openObjectInstance[name + "Handler"](JSON.parse(data));
+    }
+    else if (typeof this[name + "Handler"] === "function") {
+        this[name + "Handler"](JSON.parse(data));
+    }
+};
+
+
 standard.prototype.createWorker = function(callback) {
     if (window.Worker) {
         if (!this.worker) {
@@ -190,9 +202,7 @@ standard.prototype.createWorker = function(callback) {
             });
 
             this.worker.onmessage = (event) => {
-                if (typeof window.openObjectInstance[event.data.name + "Handler"] === "function") {
-                    window.openObjectInstance[event.data.name + "Handler"](JSON.parse(event.data.data));
-                }
+                this.workerCallback(event.data.name, event.data.data);
             };
         }
 
@@ -201,9 +211,7 @@ standard.prototype.createWorker = function(callback) {
     else {
         if (typeof onmessage === "undefined") {
             postMessage = (event) => {
-                if (typeof window.openObjectInstance[event.name + "Handler"] === "function") {
-                    window.openObjectInstance[event.name + "Handler"](JSON.parse(event.data));
-                }
+                this.workerCallback(event.name, event.data);
             };
 
             $.getScript('client/js/eventWorker.ts.js', callback);
@@ -211,6 +219,14 @@ standard.prototype.createWorker = function(callback) {
         else {
             callback();
         }
+    }
+};
+
+
+standard.prototype.refreshApplicationHandler = function(event) {
+    if ((new Date()).getTime() - window.lastCache > 60000) { // Only refresh if our cache is more than a minute out of date.
+        fim_setHashParameter("nocache");
+        window.location.reload(true);
     }
 };
 

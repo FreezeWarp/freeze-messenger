@@ -54,6 +54,16 @@ class StreamDatabase implements StreamInterface {
         return $this->database->sqlInterface->getLanguage() !== 'pgsql';
     }
 
+
+    /**
+     * Get the list of currently active event streams.
+     *
+     * @return array
+     */
+    public function getEventStreams() {
+        return $this->database->select([$this->database->sqlPrefix . 'streams' => 'streamName, lastEvent'])->getAsArray(true);
+    }
+
     /**
      * Ensures that the stream named $stream exists. This will surpress errors that may otherwise exist with the create table, in order to suopress any table-already-exists errors.
      *

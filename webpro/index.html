@@ -14,7 +14,6 @@
     <link rel="icon" id="favicon" type="image/x-icon" href="images/favicon.ico"/>
 
 
-
     <!-- START Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js"
             integrity="sha256-0JaDbGZRXlzkFbV8Xi8ZhH/zZ6QQM0Y3dCkYZ7JYq34="
@@ -28,22 +27,53 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js"
             integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
             crossorigin="anonymous"></script>
-
-
-    <script src="client/js/jquery.plugins.min.js" type="text/javascript"></script>
-    <script src="client/js/fim-all.js" type="text/javascript"></script>
-    <script src="client/js/paint.min.js" type="text/javascript"></script>
-
-
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0" />
-
-    <!-- .min currently broken by calc() expression -->
-    <link rel="stylesheet" id="stylesv2" type="text/css" href="client/css/stylesv2.css"/>
-
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
           integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 
+
+    <!-- Load our local resources dynamically, forcing a cache refresh if the hash calls for it. -->
+    <script>
+        var lastCache = 0;
+        try {
+            if ("hash" in window.location && window.location.hash.indexOf('nocache') !== -1) {
+                lastCache = (new Date()).getTime();
+                localStorage.setItem('lastCache', lastCache);
+            }
+
+            var lastCache = localStorage.getItem("lastCache");
+        } catch (e) {
+        }
+
+        $('<link/>', {
+            id : 'stylesv2',
+            rel: 'stylesheet',
+            type: 'text/css',
+            href: 'client/css/stylesv2.css?_=' + lastCache
+        }).appendTo('head');
+
+        $.when(
+            $.ajax({
+                url: "client/js/jquery.plugins.min.js?_=" + lastCache,
+                dataType: "script",
+                cache : true
+            }),
+            $.ajax({
+                url: "client/js/fim-all.js?_=" + lastCache,
+                dataType: "script",
+                cache : true
+            })
+        ).done(function() {
+            $.ajax({
+                url: "client/js/paint.min.js?_=" + lastCache,
+                dataType: "script",
+                cache : true
+            });
+        });
+    </script>
     <!-- END Scripts -->
+
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0" />
 </head>
 <body class="bg-light" style="max-width: 1600px; margin-left: auto; margin-right: auto;">
 

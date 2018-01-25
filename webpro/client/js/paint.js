@@ -975,6 +975,8 @@ $.when(
         }
     })
 ).then(function() {
+    fim_removeHashParameter("nocache");
+
     if (window.serverSettings.installUrl !== (window.location.protocol + '//' + window.location.host + window.directory))
         dia.error(window.phrases.errorBadInstall);
 

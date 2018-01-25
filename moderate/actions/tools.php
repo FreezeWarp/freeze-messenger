@@ -36,6 +36,7 @@ else {
                 echo container('Please Choose a Tool','<ul>
                     <li><a href="./index.php?do=tools&tool=viewCache">View Cache</a> - This shows all cache entries available to the current server. APC caches for other servers will not be displayed.</li>
                     <li><a href="./index.php?do=tools&tool=clearCache">Clear Cache</a> - This clears all cache entries available to the current server. APC caches for other servers will not be cleared.</li>
+                    <li><a href="./index.php?do=tools&tool=sendRefreshEvent">Send Refresh Event</a> - This will send an event to all currently logged in users to refresh their FreezeMessenger application.</li>
                     <li><a href="./index.php?do=tools&tool=updateBeta3">MySQL Only: Update to Beta 3 from Beta 2</a> - This will update your database schema to correspond with Beta 3 changes, specifically retaining data from Beta 2.</li>
                     <li><a href="./index.php?do=tools&tool=updateDatabaseSchema">Perform Database Schema Update</a> - This will update your database schema to correspond with install/dbSchema.xml. It is primarily intended for development purposes (as updating to a new version should come with its own custom schema update procedure), but you also have the option of manually tweaking the DB schema in dbSchema.xml and then using this tool to have the changes take effect. Note that the tool is currently not fully tested, and will currently take a while, as it does not check if a column has changed before running the update command.</li>
                 </ul>');
@@ -71,6 +72,14 @@ else {
                 else
                     echo container('Failed','The clear was unsuccessful.<form action="index.php?do=tools" method="POST"><button type="submit" class="btn btn-secondary">Return to Tools</button></form>');
                 break;
+
+            case 'sendRefreshEvent':
+                foreach (array_unique(\Fim\Database::instance()->getSessions()->getColumnValues('suserId')) AS $userId) {
+                    \Stream\StreamFactory::publish('user_' . $userId, 'refreshApplication', []);
+                }
+
+                echo container('Complete','The user events were sent.<form action="index.php?do=tools" method="POST"><button type="submit" class="btn btn-secondary">Return to Tools</button></form>');
+            break;
 
             case 'updateBeta3':
                 \Fim\Database::instance()->startTransaction();
