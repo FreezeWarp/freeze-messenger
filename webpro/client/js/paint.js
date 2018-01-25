@@ -1286,7 +1286,8 @@ $.when(
                         window.location.hash = '#editRoom#room=' + $(this).attr('data-roomId');
                     },
                     visible : function() { // TODO, sorta kinda
-                        return window.activeLogin.userData.permissions.modRooms;
+                        return $(this).attr('data-roomId').match(/^[0-9]+$/)
+                            && window.activeLogin.userData.permissions.modRooms;
                     }
                 },
 
@@ -1311,7 +1312,8 @@ $.when(
                         window.activeLogin.userData.favRooms.push($(this).attr('data-roomId'));
                     },
                     visible : function() {
-                        return window.activeLogin.userData.favRooms.indexOf($(this).attr('data-roomId')) < 0;
+                        return $(this).attr('data-roomId').match(/^[0-9]+$/)
+                            && window.activeLogin.userData.favRooms.indexOf($(this).attr('data-roomId')) < 0;
                     }
                 },
 
@@ -1322,7 +1324,8 @@ $.when(
                         window.activeLogin.userData.favRooms.remove($(this).attr('data-roomId'));
                     },
                     visible : function() {
-                        return window.activeLogin.userData.favRooms.indexOf($(this).attr('data-roomId')) >= 0;
+                        return $(this).attr('data-roomId').match(/^[0-9]+$/)
+                            && window.activeLogin.userData.favRooms.indexOf($(this).attr('data-roomId')) >= 0;
                     }
                 }
             }
