@@ -97,6 +97,9 @@ echo new Http\ApiData([
         ),
 
         'emoticons' => \Fim\Cache::getEmoticons(),
+
+        'watchRooms' => \Fim\Config::$enableUnreadMessages,
+        'pushNotifications' => \Fim\Config::$enablePushNotifications,
         'pushPublicKey' => \Stream\WebPushHandler::$publicKey
     ),
 ]);

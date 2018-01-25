@@ -1083,6 +1083,24 @@ Pending Update
                             </span><br />
                             <small class="form-text text-muted">{{settingsWebkitNotificationsBlurb}}</small>
                         </label><br /><br />
+
+                        {{#if serverSettings.pushNotifications}}
+                            <label class="pl-5">
+                                <span class="btn btn-primary">
+                                    <input type="checkbox" name="pushNotifications" {{#if settings.pushNotifications}} checked="checked" {{/if}}
+                                        onchange="if ($(this).is(':checked')) {
+                                            if ('Notification' in window && navigator.serviceWorker)
+                                                notify.webkitNotifyRequest();  // Ask client permission for webkit notifications
+
+                                            else
+                                                dia.error('Push notifications are not supported on your browser.');
+                                        }
+                                    " />
+                                    <strong>Push Notifications</strong>
+                                </span><br />
+                                <small class="form-text text-muted">Push notifications are experimental functionality. If enabled, you may receive notifications when rooms you follow are posted in, even if you don't currently have FreezeMessenger open.</small>
+                            </label><br /><br />
+                        {{/if}}
                     </div>
 
                     <!--

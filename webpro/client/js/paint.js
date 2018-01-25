@@ -868,7 +868,8 @@ var settingNames = {
     // Other Options
     audioDing : 524288,
     disableRightClick : 1048576,
-    webkitNotifications : 536870912
+    webkitNotifications : 268435456,
+    pushNotifications : 536870912
 };
 
 var settingsBitfield = $.cookie('webpro_settings');
@@ -895,6 +896,7 @@ window.settings = {
     audioDing : !!(settingsBitfield & settingNames.audioDing),
     disableRightClick : !!(settingsBitfield & settingNames.disableRightClick),
     webkitNotifications : !!(settingsBitfield & settingNames.webkitNotifications),
+    pushNotifications : !!(settingsBitfield & settingNames.pushNotifications),
 
     groupMessages : !!(settingsBitfield & settingNames.groupMessages)
 };

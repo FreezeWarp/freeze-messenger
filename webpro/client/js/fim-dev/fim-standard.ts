@@ -13,6 +13,7 @@ let standard = function() {
     this.anonId = "";
     this.activeLogin = {};
     this.worker = null;
+    this.watchRoomsData = {};
 
     this.lastEvent = 0;
 
@@ -93,16 +94,6 @@ standard.prototype.login = function(options) {
             this.sessionHash = window.sessionHash = activeLogin.access_token;
             fim_removeHashParameter("sessionHash");
 
-            this.createWorker(() => {
-                if (options.finish)
-                    options.finish(activeLogin);
-
-                this.sendWorkerMessage({
-                    eventName : 'login',
-                    sessionHash : this.sessionHash
-                });
-            });
-
             if (activeLogin.expires && activeLogin.refresh_token) {
                 $.cookie('webpro_refreshToken', activeLogin.refresh_token);
 
@@ -134,28 +125,23 @@ standard.prototype.login = function(options) {
             });
 
 
-            /* Private Room Form */
-            $('#privateRoomForm input[name=userName]').autocompleteHelper('users');
-            $("#privateRoomForm").off('submit').on('submit', () => {
-                let userName = $("#privateRoomForm input[name=userName]").val();
-                let userId = $("#privateRoomForm input[name=userName]").attr('data-id');
+            this.createWorker(() => {
+                if (options.finish)
+                    options.finish(activeLogin);
 
-                let whenUserIdAvailable = (userId) => {
-                    window.location.hash = "#room=p" + [this.userId, userId].join(',');
-                };
+                this.sendWorkerMessage({
+                    eventName : 'login',
+                    sessionHash : this.sessionHash
+                });
 
-                if (!userId && userName)
-                    whenUserIdAvailable(userId);
-                else if (!userName)
-                    dia.error('Please enter a username.');
-                else {
-                    $.when(Resolver.resolveUsersFromNames([userName]).then(function(pairs) {
-                        whenUserIdAvailable(pairs[userName].id);
-                    }));
-                }
+                /* Private Room Form */
+                $('#privateRoomForm input[name=userName]').autocompleteHelper('users');
+                $("#privateRoomForm").off('submit.home').on('submit.home', (() => {
+                    window.location.hash = "#room=p" + [this.userId, $("#privateRoomForm input[name=userName]").attr('data-id')].join(',');
 
-                // Don't submit the form
-                return false;
+                    // Don't submit the form
+                    return false;
+                }));
             });
         },
         error: (data) => {
@@ -167,9 +153,8 @@ standard.prototype.login = function(options) {
 
 
 standard.prototype.sendWorkerMessage = function(event) {
-    if (window.Worker) {
-        if (this.worker)
-            navigator.serviceWorker.controller.postMessage(event);
+    if (navigator.serviceWorker && false) {
+        navigator.serviceWorker.controller.postMessage(event);
     }
     else {
         onmessage({data : event});
@@ -190,62 +175,71 @@ standard.prototype.workerCallback = function(name, data) {
 
 
 standard.prototype.createWorker = function(callback) {
-    if (window.Worker) {
-        if (!this.worker) {
-            let cc = (event) => {
-                console.log("controller change", event, navigator.serviceWorker.controller);
+    if (navigator.serviceWorker && false) {
+        let cc = (event) => {
+            console.log("controller change", event, navigator.serviceWorker.controller);
 
-                navigator.serviceWorker.onmessage = (event) => {
-                    this.workerCallback(event.data.name, event.data.data);
-                };
-
-                navigator.serviceWorker.controller.postMessage({
-                    eventName: 'registerApi',
-                    directory : fimApi.directory,
-                    serverSettings: fimApi.serverSettings
-                });
-
-                callback();
+            navigator.serviceWorker.onmessage = (event) => {
+                this.workerCallback(event.data.name, event.data.data);
             };
-            navigator.serviceWorker.addEventListener('controllerchange',
-                function() { cc(); }
-            );
 
-            this.worker = navigator.serviceWorker.register('serviceWorker.ts.js').then(function(registration) {
-                console.log('Service worker registration succeeded:', registration, navigator.serviceWorker.controller);
-
-                if (navigator.serviceWorker.controller)
-                    cc(null);
-            }).catch(function(error) {
-                console.log('Service worker registration failed:', error);
+            navigator.serviceWorker.controller.postMessage({
+                eventName: 'registerApi',
+                isServiceWorker : true,
+                directory : fimApi.directory,
+                serverSettings: fimApi.serverSettings
             });
 
-            navigator.serviceWorker.ready.then(function(reg) {
-                console.log("key", Uint8Array.from(window.atob(this.serverSettings.pushPublicKey), c => c.charCodeAt(0)), this.serverSettings.pushPublicKey);
-                if (Notification.permission === "granted") {
-                    reg.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: Uint8Array.from(window.atob(this.serverSettings.pushPublicKey), c => c.charCodeAt(0))
-                    }).then(function (sub) {
-                        console.log('Endpoint URL: ', sub, sub.getKey('p256dh'), sub.getKey('auth'));
-                        fimApi.pushSub(sub.endpoint,
-                            btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh')))),
-                            btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth')))));
-                    }).catch(function (e) {
-                        console.error('Unable to subscribe to push', e);
-                    });
-                }
-            });
-            //this.worker = new Worker('client/js/eventWorker.ts.js');
-        }
+            callback();
+        };
+        navigator.serviceWorker.addEventListener('controllerchange',
+            () => { cc(null); }
+        );
+
+        this.worker = navigator.serviceWorker.register('serviceWorker.ts.js').then(function(registration) {
+            console.log('Service worker registration succeeded:', registration, navigator.serviceWorker.controller);
+
+            if (navigator.serviceWorker.controller)
+                cc(null);
+        }).catch(function(error) {
+            console.log('Service worker registration failed:', error);
+        });
+
+        navigator.serviceWorker.ready.then(function(reg) {
+            if (Notification.permission === "granted"
+                && this.serverSettings.pushNotifications
+                && window.settings.pushNotifications) {
+                reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: Uint8Array.from(window.atob(this.serverSettings.pushPublicKey), c => c.charCodeAt(0))
+                }).then(function (sub) {
+                    console.log('Endpoint URL: ', sub, sub.getKey('p256dh'), sub.getKey('auth'));
+                    fimApi.pushSub(sub.endpoint,
+                        btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh')))),
+                        btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth')))));
+                }).catch(function (e) {
+                    console.error('Unable to subscribe to push', e);
+                });
+            }
+        });
     }
     else {
-        if (typeof onmessage === "undefined") {
+        if (typeof onmessage === "undefined" || onmessage === null) {
             postMessage = (event) => {
+                console.log("fallback event", event);
                 this.workerCallback(event.name, event.data);
             };
 
-            $.getScript('client/js/eventWorker.ts.js', callback);
+            $.getScript('serviceWorker.ts.js', function() {
+                onmessage({data : {
+                    eventName: 'registerApi',
+                    isServiceWorker : false,
+                    directory : fimApi.directory,
+                    serverSettings: fimApi.serverSettings
+                }});
+
+                callback();
+            });
         }
         else {
             callback();

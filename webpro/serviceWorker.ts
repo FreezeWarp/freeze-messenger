@@ -1,7 +1,5 @@
 self.addEventListener('install', function(event) {
-    console.log("install listener");
     event.waitUntil(self.skipWaiting()); // Activate worker immediately
-    return true;
 });
 
 self.addEventListener('activate', function(event) {
@@ -11,9 +9,9 @@ self.addEventListener('activate', function(event) {
 
 self.addEventListener('push', function(event) {
     let data = event.data.json().data;
-    console.log("push message", data);
+    console.log("push message", data, roomSources);
 
-    if (!roomSources[String(data.roomId)]) {
+    if (!roomSources[String(data.roomId)] || !roomSources[String(data.roomId)].isOpen) {
         event.waitUntil(
             self.registration.showNotification(data.roomName + ": " + data.userName, {
                 body: data.messageText,
@@ -28,6 +26,7 @@ self.addEventListener('push', function(event) {
     }
 });
 
+let isServiceWorker = false;
 let directory = '';
 let userSourceInstance = null;
 let roomSources = [];
@@ -51,6 +50,9 @@ abstract class eventSource {
     /** @var The number of times in a row a request has failed. */
     failureCount = 0;
 
+    /** @var Whether this event source is currently monitoring for new events. */
+    isOpen = true;
+
     clients = [];
 
     constructor() {
@@ -59,13 +61,14 @@ abstract class eventSource {
     addClient(clientId) {
         this.clients.push(clientId);
 
-        if (!this.eventSource && !this.eventTimeout) {
+        if (!this.isOpen) {
+            this.isOpen = true;
             this.getEvents();
         }
     }
 
     removeClient(clientId) {
-        this.clients.splice(clientId, 1);
+        this.clients.splice(this.clients.indexOf(clientId), 1);
 
         if (this.clients.length === 0) {
             this.close();
@@ -81,6 +84,8 @@ abstract class eventSource {
 
         if (this.eventTimeout)
             clearTimeout(this.eventTimeout);
+
+        this.isOpen = false;
     }
 
     /**
@@ -95,26 +100,36 @@ abstract class eventSource {
 
             this.lastEvent = Math.max(Number(this.lastEvent), Number(event.lastEventId));
 
-            for (i in this.clients) {
-                clients.get(this.clients[i]).then((client) => {
-                    if (client) {
-                        client.postMessage({
-                            name: eventName,
-                            data: event.data
-                        });
-                    }
-                    else {
-                        this.removeClient(this.clients[i]);
-                    }
-                })
+            if (isServiceWorker) {
+                for (i in this.clients) {
+                    clients.get(this.clients[i]).then((client) => {
+                        if (client) {
+                            client.postMessage({
+                                name: eventName,
+                                data: event.data
+                            });
+                        }
+                        else {
+                            this.removeClient(this.clients[i]);
+                        }
+                    })
+                }
+            }
+            else {
+                postMessage({
+                    name: eventName,
+                    data: event.data
+                });
             }
         };
     }
 
     /**
-     * Get events from whichever method is most appropriate.
+     * Get events from whichever method is most appropriate. Reopens the connection, if needed.
      */
     getEvents() {
+        this.isOpen = true;
+
         if (serverSettings.requestMethods.serverSentEvents
             && typeof(EventSource) !== "undefined"
             && false) {
@@ -145,12 +160,15 @@ abstract class eventSource {
 
         // If we get an error that causes the browser to close the connection, open a fallback connection instead
         this.eventSource.onerror = ((e) => {
+            console.log("event source error");
             if (this.eventSource.readyState === 2) {
                 this.eventSource = null;
 
-                this.eventTimeout = setTimeout((() => {
-                    this.getEventsFromFallback();
-                }), 1000);
+                if (this.isOpen) {
+                    this.eventTimeout = setTimeout((() => {
+                        this.getEventsFromFallback();
+                    }), 1000);
+                }
             }
         });
 
@@ -172,7 +190,7 @@ abstract class eventSource {
      */
     getEventsFromFallbackGenerator(streamType, queryId) {
         // todo: without fetch?
-        fetch(directory + "stream.php?fallback=1&streamType=" + streamType + "&queryId=" + queryId + "&lastEvent=" + this.lastEvent + "&access_token=" + lastSessionHash)
+        fetch(directory + "stream.php?fallback=1&streamType=" + streamType + (queryId ? "&queryId=" + queryId : '') + "&lastEvent=" + this.lastEvent + "&access_token=" + lastSessionHash)
             .catch((error) => {
                 console.log("error", error);
                 let retryTime = Math.min(30, 2 * this.failureCount++) * 1000;
@@ -186,23 +204,26 @@ abstract class eventSource {
                     })
                 });
 
-                this.eventTimeout = setTimeout((() => {
-                    this.getEventsFromFallback()
-                }), retryTime);
+                if (this.isOpen) {
+                    this.eventTimeout = setTimeout((() => {
+                        this.getEventsFromFallback()
+                    }), retryTime);
+                }
             })
             .then(response => response.json())
             .then((data) => {
                 for (i in data['events']) {
-                    console.log("hi", i, data['events'][i]);
                     this.eventHandler(data['events'][i].eventName)({
                         lastEventId : Number(data['events'][i].id),
                         data : JSON.stringify(data['events'][i].data)
                     });
                 }
 
-                this.eventTimeout = setTimeout((() => {
-                    this.getEvents()
-                }), 1000);
+                if (this.isOpen) {
+                    this.eventTimeout = setTimeout((() => {
+                        this.getEvents()
+                    }), 1000);
+                }
 
                 this.failureCount = 0;
             });
@@ -273,13 +294,14 @@ class userSource extends eventSource {
 
 }
 
-self.onmessage = (event) => {
+onmessage = (event) => {
     console.log("service work message", event);
 
     switch (event.data.eventName) {
         case 'registerApi':
             serverSettings = event.data.serverSettings;
             directory = event.data.directory;
+            isServiceWorker = event.data.isServiceWorker;
             break;
 
         case 'login':
@@ -298,9 +320,10 @@ self.onmessage = (event) => {
         case 'listenRoom':
             if (!roomSources[String(event.data.roomId)])
                 roomSources[String(event.data.roomId)] = new roomSource(event.data.roomId);
-
-            if (event.source && event.source.id)
+            else if (event.source && event.source.id)
                 roomSources[String(event.data.roomId)].addClient(event.source.id);
+            else
+                roomSources[String(event.data.roomId)].getEvents();
             break;
 
         case 'unlistenRoom':
