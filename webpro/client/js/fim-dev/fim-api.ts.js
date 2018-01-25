@@ -718,3 +718,21 @@ fimApi.prototype.changeAvatar = function (avatarHash, requestSettings) {
         'avatarHash': avatarHash
     }, requestSettings);
 };
+fimApi.prototype.pushSub = function (endpoint, p256dh, auth, requestSettings) {
+    var _this = this;
+    requestSettings = this.mergeDefaults(requestSettings, this.requestDefaults);
+    $.ajax({
+        url: this.directory + 'api/webpushSubscribe.php',
+        type: 'POST',
+        data: {
+            'access_token': this.lastSessionHash,
+            'endpoint': endpoint,
+            'p256dh': p256dh,
+            'auth': auth
+        },
+        timeout: requestSettings.timeout,
+        cache: requestSettings.cache
+    }).done(this.done(requestSettings)).fail(this.fail(requestSettings, function () {
+        _this.pushSub(endpoint, requestSettings);
+    }));
+};

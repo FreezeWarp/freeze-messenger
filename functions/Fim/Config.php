@@ -650,6 +650,9 @@ class Config {
     /** @var bool Set this to false to disable unread messages functionality. Can be useful if that functionality is causing database overload; though this is rare. */
     public static $enableUnreadMessages = true;
 
+    /** @var bool Set this to true to enable experimental WebPush functionality. */
+    public static $enablePushNotifications = true;
+
     /** @var bool Set this to false to disable events. You probably shouldn't. */
     public static $enableEvents = true;
 

@@ -9,7 +9,9 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
     public static $files = array (
         'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
+        'a4ecaeafb8cfb009ad0e052c90355e98' => __DIR__ . '/..' . '/beberlei/assert/lib/Assert/functions.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '5255c38a0faeba867671b61dfda6d864' => __DIR__ . '/..' . '/paragonie/random_compat/lib/random.php',
         'decc78cc4436b1292c6c0d151b19445c' => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib/bootstrap.php',
         'c65d09b6820da036953a371c8c73a9b1' => __DIR__ . '/..' . '/facebook/graph-sdk/src/Facebook/polyfills.php',
@@ -22,6 +24,7 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         ),
         'S' => 
         array (
+            'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Stream\\' => 7,
             'Stevenmaguire\\OAuth2\\Client\\' => 28,
         ),
@@ -40,11 +43,17 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'M' => 
         array (
             'Monolog\\' => 8,
+            'Minishlink\\WebPush\\' => 19,
+            'Mdanter\\Ecc\\' => 12,
         ),
         'L' => 
         array (
             'Login\\' => 6,
             'League\\OAuth2\\Client\\' => 21,
+        ),
+        'J' => 
+        array (
+            'Jose\\' => 5,
         ),
         'H' => 
         array (
@@ -62,6 +71,7 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
             'Firebase\\JWT\\' => 13,
             'Fim\\' => 4,
             'Facebook\\' => 9,
+            'FG\\' => 3,
         ),
         'D' => 
         array (
@@ -71,9 +81,16 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         array (
             'Cache\\' => 6,
         ),
+        'B' => 
+        array (
+            'Base64Url\\' => 10,
+        ),
         'A' => 
         array (
+            'Assert\\' => 7,
             'Abraham\\TwitterOAuth\\' => 21,
+            'AESKW\\' => 6,
+            'AESGCM\\' => 7,
         ),
     );
 
@@ -81,6 +98,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'phpseclib\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpseclib/phpseclib/phpseclib',
+        ),
+        'Symfony\\Polyfill\\Mbstring\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
         ),
         'Stream\\' => 
         array (
@@ -118,6 +139,14 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
+        'Minishlink\\WebPush\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/minishlink/web-push/src',
+        ),
+        'Mdanter\\Ecc\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/mdanter/ecc/src',
+        ),
         'Login\\' => 
         array (
             0 => __DIR__ . '/../..' . '/functions/Login',
@@ -125,6 +154,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         'League\\OAuth2\\Client\\' => 
         array (
             0 => __DIR__ . '/..' . '/league/oauth2-client/src',
+        ),
+        'Jose\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/spomky-labs/jose/src',
         ),
         'Http\\' => 
         array (
@@ -158,6 +191,10 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         array (
             0 => __DIR__ . '/..' . '/facebook/graph-sdk/src/Facebook',
         ),
+        'FG\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/fgrosse/phpasn1/lib',
+        ),
         'Database\\' => 
         array (
             0 => __DIR__ . '/../..' . '/functions/Database',
@@ -166,9 +203,25 @@ class ComposerStaticInit3c857898182a46a9cf398c392203e51d
         array (
             0 => __DIR__ . '/../..' . '/functions/Cache',
         ),
+        'Base64Url\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/spomky-labs/base64url/src',
+        ),
+        'Assert\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/beberlei/assert/lib/Assert',
+        ),
         'Abraham\\TwitterOAuth\\' => 
         array (
             0 => __DIR__ . '/..' . '/abraham/twitteroauth/src',
+        ),
+        'AESKW\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/spomky-labs/aes-key-wrap/src',
+        ),
+        'AESGCM\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/spomky-labs/php-aes-gcm/src',
         ),
     );
 

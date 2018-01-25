@@ -97,6 +97,7 @@ echo new Http\ApiData([
         ),
 
         'emoticons' => \Fim\Cache::getEmoticons(),
+        'pushPublicKey' => \Stream\WebPushHandler::$publicKey
     ),
 ]);
 ?>

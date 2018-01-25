@@ -133,7 +133,7 @@ class CurlRequest {
     public function guzzle($method) {
         $client = new GuzzleHttp\Client([
             'http_errors' => false,
-            'verify' => \Fim\Config::$sslVerify
+            'verify' => !\Fim\Config::$sslVerify ? false : \Fim\Config::$sslCertLocation
         ]);
 
         $effectiveUrl = '';

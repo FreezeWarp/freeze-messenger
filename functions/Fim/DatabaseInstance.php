@@ -29,6 +29,7 @@ use Fim\Room;
 use Fim\Error;
 
 use \Exception;
+use Stream\WebPushHandler;
 
 /**
  * FreezeMessenger-specific database functionality. Attempts to define a function for effectively every needed database call; most database calls, that is, will be through these methods instead of custom query logic.
@@ -2430,6 +2431,9 @@ class DatabaseInstance extends DatabaseSQL
             'includeRoomData' => false
         ])->getColumnValues('puserId');
 
+        if (\Fim\Config::$enablePushNotifications)
+            \Stream\WebPushHandler::init();
+
         // If the contact is a private communication, create an event and add to the message unread table.
         if ($message->room->isPrivateRoom()) {
             foreach (($message->room->getPrivateRoomMemberIds()) AS $sendToUserId) {
@@ -2444,6 +2448,10 @@ class DatabaseInstance extends DatabaseSQL
                 $this->createUnreadMessage($sendToUserId, $message, in_array($sendToUserId, $activeUsers));
             }
         }
+
+        if (\Fim\Config::$enablePushNotifications)
+            \Stream\WebPushHandler::commit();
+
 
 
         // Return the ID of the inserted message.
@@ -2525,6 +2533,20 @@ class DatabaseInstance extends DatabaseSQL
                     'senderId' => $message->user->id,
                     'roomId'   => $message->room->id,
                 ]);
+
+                if (\Fim\Config::$enablePushNotifications) {
+                    \Stream\WebPushHandler::push($sendToUserId, [
+                        'eventName' => 'messageMessage',
+                        'data'      => [
+                            'roomName'    => $message->room->name,
+                            'userName'    => $message->user->name,
+                            'userAvatar'  => $message->user->avatar,
+                            'messageText' => $message->text,
+                            'roomId'      => $message->room->id,
+                            'messageId'   => $message->room->id
+                        ]
+                    ]);
+                }
             }
 
 

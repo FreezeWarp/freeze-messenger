@@ -18,8 +18,6 @@ let standard = function() {
 
     this.notifications = {};
 
-    this.watchedRoomData = {};
-
     return;
 };
 
@@ -171,7 +169,7 @@ standard.prototype.login = function(options) {
 standard.prototype.sendWorkerMessage = function(event) {
     if (window.Worker) {
         if (this.worker)
-            this.worker.postMessage(event);
+            navigator.serviceWorker.controller.postMessage(event);
     }
     else {
         onmessage({data : event});
@@ -194,19 +192,52 @@ standard.prototype.workerCallback = function(name, data) {
 standard.prototype.createWorker = function(callback) {
     if (window.Worker) {
         if (!this.worker) {
-            this.worker = new Worker('client/js/eventWorker.ts.js');
+            let cc = (event) => {
+                console.log("controller change", event, navigator.serviceWorker.controller);
 
-            this.worker.postMessage({
-                eventName: 'registerApi',
-                serverSettings: fimApi.serverSettings
+                navigator.serviceWorker.onmessage = (event) => {
+                    this.workerCallback(event.data.name, event.data.data);
+                };
+
+                navigator.serviceWorker.controller.postMessage({
+                    eventName: 'registerApi',
+                    directory : fimApi.directory,
+                    serverSettings: fimApi.serverSettings
+                });
+
+                callback();
+            };
+            navigator.serviceWorker.addEventListener('controllerchange',
+                function() { cc(); }
+            );
+
+            this.worker = navigator.serviceWorker.register('serviceWorker.ts.js').then(function(registration) {
+                console.log('Service worker registration succeeded:', registration, navigator.serviceWorker.controller);
+
+                if (navigator.serviceWorker.controller)
+                    cc(null);
+            }).catch(function(error) {
+                console.log('Service worker registration failed:', error);
             });
 
-            this.worker.onmessage = (event) => {
-                this.workerCallback(event.data.name, event.data.data);
-            };
+            navigator.serviceWorker.ready.then(function(reg) {
+                console.log("key", Uint8Array.from(window.atob(this.serverSettings.pushPublicKey), c => c.charCodeAt(0)), this.serverSettings.pushPublicKey);
+                if (Notification.permission === "granted") {
+                    reg.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: Uint8Array.from(window.atob(this.serverSettings.pushPublicKey), c => c.charCodeAt(0))
+                    }).then(function (sub) {
+                        console.log('Endpoint URL: ', sub, sub.getKey('p256dh'), sub.getKey('auth'));
+                        fimApi.pushSub(sub.endpoint,
+                            btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh')))),
+                            btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth')))));
+                    }).catch(function (e) {
+                        console.error('Unable to subscribe to push', e);
+                    });
+                }
+            });
+            //this.worker = new Worker('client/js/eventWorker.ts.js');
         }
-
-        callback();
     }
     else {
         if (typeof onmessage === "undefined") {
