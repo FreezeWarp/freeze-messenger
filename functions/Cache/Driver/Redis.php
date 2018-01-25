@@ -46,9 +46,14 @@ class Redis implements DriverInterface {
 
 
     public function get($index) {
-        return ctype_digit($value = $this->instance->get($index))
-            ? (int) $value
-            : unserialize($value);
+        if ($this->instance->type($index) === \Redis::REDIS_SET) {
+            return $this->instance->sMembers($index);
+        }
+        else {
+            return ctype_digit($value = $this->instance->get($index))
+                ? (int)$value
+                : unserialize($value);
+        }
     }
 
     public function set($index, $value, $ttl = 3600) {
@@ -70,13 +75,13 @@ class Redis implements DriverInterface {
     public function setAdd($index, $value) {
         $value = (array) $value;
         array_unshift($value, $index);
-        return call_user_func_array(array($this->redis, 'sAdd'), $value);
+        return call_user_func_array(array($this->instance, 'sAdd'), $value);
     }
 
     public function setRemove($index, $value) {
         $value = (array) $value;
         array_unshift($value, $index);
-        return call_user_func_array(array($this->redis, 'sRemove'), $value);
+        return call_user_func_array(array($this->instance, 'sRemove'), $value);
     }
 
     public function setContains($index, $value) : bool {

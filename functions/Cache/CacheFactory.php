@@ -147,7 +147,7 @@ class CacheFactory {
      *
      * {@link CacheInterface::setAdd($index, $value)}
      */
-    public static function setAdd($index, $value, $preferredMethod = 'redis') {
+    public static function setAdd($index, $value, $preferredMethod = DriverInterface::CACHE_TYPE_DISTRIBUTED) {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->setAdd($index, $value);
         else
@@ -158,7 +158,7 @@ class CacheFactory {
     /**
      * {@link CacheInterface::setRemove($index, $value)}
      */
-    public static function setRemove($index, $value, $preferredMethod = 'redis') {
+    public static function setRemove($index, $value, $preferredMethod = DriverInterface::CACHE_TYPE_DISTRIBUTED) {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->setRemove($index, $value);
         else
