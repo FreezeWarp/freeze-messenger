@@ -533,28 +533,35 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
                     return this.nodeType === 3; //Node.TEXT_NODE
                 }).each(function() {
                 var result = fim_regexTokenizer(regexs.url, $(this).text(), function(match) {
+                    // Detect if we matched punctuation that would normally fall outside of a URL
                     var suffix = "";
 
                     if (match[0].match(regexs.url2)) {
                         suffix = match[0].replace(regexs.url2, "$2");
                         match[0] = match[0].replace(regexs.url2, "$1");
+
+                        // If we caught a ) as the end of the match, but there is a ( in the match, add it back in
+                        if (suffix === ")" && match[0].indexOf('(') !== -1) {
+                            match[0] += suffix;
+                            suffix = "";
+                        }
                     }
 
                     /* Youtube, Image, URL Parsing */
                     if (match[0].match(regexs.youtubeFull) || match[0].match(regexs.youtubeShort)) // Youtube Autoparse
-                        return fim_youtubeParse(match[0]).append(document.createTextNode(suffix));
+                        return [fim_youtubeParse(match[0]), document.createTextNode(suffix)];
 
                     else if (match[0].match(regexs.image)) // Image Autoparse
-                        return fim_formatAsImage(match[0]).append(document.createTextNode(suffix));
+                        return [fim_formatAsImage(match[0]), document.createTextNode(suffix)];
 
-                    else if (match[0].match(regexs.video)) // Image Autoparse
-                        return fim_formatAsVideo(match[0]).append(document.createTextNode(suffix));
+                    else if (match[0].match(regexs.video)) // Video Autoparse
+                        return [fim_formatAsVideo(match[0]), document.createTextNode(suffix)];
 
-                    else if (match[0].match(regexs.video)) // Image Autoparse
-                        return fim_formatAsAudio(match[0]).append(document.createTextNode(suffix));
+                    else if (match[0].match(regexs.audio)) // Image Autoparse
+                        return [fim_formatAsAudio(match[0]), document.createTextNode(suffix)];
 
                     else // Normal URL
-                        return fim_formatAsUrl(match[0]).append(document.createTextNode(suffix));
+                        return [fim_formatAsUrl(match[0]), document.createTextNode(suffix)];
                 }, this.nodeType !== 3 ? $(this).text('') : null);
 
                 if (this.nodeType === 3)
