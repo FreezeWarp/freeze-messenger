@@ -407,7 +407,7 @@ class Config {
 
         'mp2' => 'audio', 'mp3' => 'audio', 'ogg' => 'audio', 'flac' => 'audio', 'm4a' => 'audio', 'wav' => 'audio', 'wma' => 'audio',
 
-        'mp4' => 'video', 'm4v' => 'video', 'ogv' => 'video', 'mov' => 'video', 'wmv' => 'video',
+        'mp4' => 'video', 'm4v' => 'video', 'ogv' => 'video', 'mov' => 'video', 'wmv' => 'video', 'webm' => 'video',
 
         'zip' => 'archive', 'rar' => 'archive', '7z' => 'archive', 'tgz' => 'archive', 'tbz2' => 'archive',
     );
@@ -428,7 +428,7 @@ class Config {
     public static $imageResizeMaxWidth = 10000;
 
     /** @var array Only files with these extensions can be uploaded. (They are also then outputted according to uploadMimes, and can only be as big as specified in uploadSizeLimits.) */
-    public static $allowedExtensions = ['txt', 'css', 'java', 'js', 'json', 'xml', 'ini', 'pdf', 'rtf', 'docx', 'xlsx', 'pptx', 'gif', 'png', 'jpg', 'ogg', 'mp3', 'flac'];
+    public static $allowedExtensions = ['txt', 'css', 'java', 'js', 'json', 'xml', 'ini', 'pdf', 'rtf', 'docx', 'xlsx', 'pptx', 'gif', 'png', 'jpg', 'ogg', 'mp3', 'flac', 'webm'];
 
     /** @var array The mimetypes used to transfer different files. Obviously, certain types are more prone to viruses than others. */
     public static $uploadMimes = array(
@@ -491,6 +491,7 @@ class Config {
         'ogv' => 'video/ogg',
         'mov' => 'video/quicktime',
         'wmv' => 'video/x-ms-wmv',
+        'webm' => 'video/webm',
 
         'zip' => 'application/zip',
         'rar' => 'application/x-rar-compressed',
@@ -504,15 +505,15 @@ class Config {
 
     /** @var array The maximum allowed size for different filetypes. */
     public static $uploadSizeLimits = array(
-        'txt' => 256 * 1024, // 256KB
-        'htm' => 256 * 1024,
-        'php' => 256 * 1024,
-        'css' => 256 * 1024 * 1024,
-        'js' => 256 * 1024 * 1024,
-        'json' => 256 * 1024 * 1024,
-        'java' => 256 * 1024 * 1024,
-        'xml' => 256 * 1024 * 1024,
-        'ini' => 256 * 1024 * 1024,
+        'txt' => 4 * 1024 * 1024, // 256KB
+        'htm' => 4 * 1024 * 1024,
+        'php' => 4 * 1024 * 1024,
+        'css' => 4 * 1024 * 1024,
+        'js' => 4 * 1024 * 1024,
+        'json' => 4 * 1024 * 1024,
+        'java' => 4 * 1024 * 1024,
+        'xml' => 4 * 1024 * 1024,
+        'ini' => 4 * 1024 * 1024,
 
         'exe' => 50 * 1024 * 1024, // 50MB
         'msi' => 50 * 1024 * 1024, // 50MB
@@ -558,6 +559,7 @@ class Config {
         'wav' => 50 * 1024 * 1024, // 50MB
         'wma' => 10 * 1024 * 1024, // 10MB
 
+        'webm' => 10 * 1024 * 1024,
         'mp4' => 100 * 1024 * 1024, // 100MB
         'm4v' => 100 * 1024 * 1024, // 100MB
         'ogv' => 100 * 1024 * 1024, // 100MB
@@ -707,8 +709,11 @@ class Config {
     /** @var int The number of kilobytes to send when flushing the output buffer. On most hosts, 4 is more than sufficient. However, values as high as 100 have been observed helpful. */
     public static $outputFlushPaddingKilobytes = 4;
 
-    /** @var bool Whether or not SSL requests should be verified by the Guzzle library. This should generally be left on, and is included primarily for testing purposes. */
-    public static $sslVerify = true;
+    /** @var bool Whether or not SSL requests should be verified by the Guzzle library. This is disabled by default to allow access to the admin control panel on sites hosted using a self-signed or LetsEncrypt certificate -- after installation, you are recommended to set {@see self::$sslCertLocation} to the location of your self-signed certificate and set this to true. */
+    public static $sslVerify = false;
+
+    /** @var string If you are using a self-signed (or LetsEncrypt) certificate, this should be its location on the filesystem. */
+    public static $sslCertLocation = '/etc/letsencrypt/live/messenger.josephtparsons.com/fullchain.pem';
 
     public static $recaptchaPublicKey = '';
 
