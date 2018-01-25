@@ -102,6 +102,7 @@ switch ($requestHead['_action']) {
 
         // Handle Room Edit Exceptions
         elseif ($requestHead['_action'] === 'edit') {
+
             if (isset($request['name'])) {
                 if (!$user->hasPriv('modRooms'))
                     new \Fim\Error('nameExtra', 'The room\'s name cannot be edited except by administrators.');
@@ -111,7 +112,7 @@ switch ($requestHead['_action']) {
                     new \Fim\Error('nameTaken', 'The room name specified already belongs to another room.');
             }
 
-            elseif ($room->type !== 'general')
+            if ($room->type !== 'general')
                 new \Fim\Error('specialRoom', 'You are trying to edit a special room, which cannot be altered.');
 
             elseif ($room->deleted) // Make sure the room hasn't been deleted.
