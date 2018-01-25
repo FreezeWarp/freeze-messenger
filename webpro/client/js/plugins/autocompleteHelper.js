@@ -2,10 +2,10 @@ jQuery.fn.extend({
     autocompleteHelper: function (resourceName, defaultId) {
         var _this = $('<input class="js-typeahead form-control" type="search" autocomplete="off" />');
 
-        if (this.attr('name'))
-            _this.attr('name', this.attr('name'));
-        if (this.attr('id'))
-            _this.attr('id', this.attr('id'));
+        jQuery.each(['name', 'id', 'placeholder'], function(index, attr) {
+            if (this.attr(attr))
+                _this.attr(attr, this.attr(attr));
+        });
 
         var container = $('<div class="typeahead__container form-control-container">').append(
             $('<div class="typeahead__field">').append(
