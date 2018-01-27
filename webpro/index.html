@@ -933,13 +933,13 @@ Pending Update
     <div class="card mx-auto view-thin">
         <div class="card-header p-0">
             <ul class="nav nav-tabs justify-content-center" role="tablist" id="settingsTabs">
-                <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#settings5">{{settingsTabGeneral}}</a></li>
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings1">{{settingsTabDisplay}}</a></li>
+                <li class="nav-item"><a class="nav-link active" data-toggle="tab" role="tab" href="#settings5">{{settingsView.tabGeneral}}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings1">{{settingsView.tabDisplay}}</a></li>
                 {{#unless activeLogin.userData.anonId}}
-                    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsTabPrivacy}}</a></li>
+                    <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings6">{{settingsView.tabPrivacy}}</a></li>
                 {{/unless}}
                 {{#unless activeLogin.userData.anonId}}
-                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings4">{{settingsTabFormatting}}</a></li>
+                <li class="nav-item"><a class="nav-link" data-toggle="tab" role="tab" href="#settings4">{{settingsView.tabFormatting}}</a></li>
                 {{/unless}}
             </ul>
         </div>
@@ -950,7 +950,7 @@ Pending Update
                     <div class="pb-3">
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <span class="input-group-text">{{settingsThemeLabel}}</span>
+                                <span class="input-group-text">{{settingsView.themeLabel}}</span>
                             </div>
                             <select name="theme" class="form-control" onchange="
                                 fim_loadTheme(this.value);
@@ -967,7 +967,7 @@ Pending Update
                                 {{/select}}
                             </select>
                         </div>
-                        <small class="form-text text-muted">{{settingsThemeBlurb}}</small>
+                        <small class="form-text text-muted">{{settingsView.themeBlurb}}</small>
                     </div>
 
 
@@ -1035,9 +1035,9 @@ Pending Update
                         <label>
                             <span class="btn btn-primary">
                                 <input type="checkbox" name="reversePostOrder" {{#if settings.reversePostOrder}} checked="checked" {{/if}} />
-                                <strong>{{settingsReversePostOrderLabel}}</strong>
+                                <strong>{{settingsView.reversePostOrderLabel}}</strong>
                             </span><br />
-                            <small class="form-text text-muted">{{settingsReversePostOrderBlurb}}</small>
+                            <small class="form-text text-muted">{{settingsView.reversePostOrderBlurb}}</small>
                         </label>
                     </div>
 
@@ -1047,16 +1047,16 @@ Pending Update
                         <label>
                             <span class="btn btn-primary">
                                 <input type="checkbox" name="audioDing" {{#if settings.audioDing}} checked="checked" {{/if}} />
-                                <strong>{{settingsAudioDingLabel}}</strong>
+                                <strong>{{settingsView.audioDing.label}}</strong>
                             </span><br />
-                            <small class="form-text text-muted">{{settingsAudioDingBlurb}}</small>
+                            <small class="form-text text-muted">{{settingsView.audioDing.blurb}}</small>
                         </label>
                     </div>
 
                     <div class="pb-4 pl-5">
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <span class="input-group-text">{{settingsAudioVolumeLabel}}</span>
+                                <span class="input-group-text">{{settingsView.audioVolume.label}}</span>
                             </div>
                             <input type="range" min="0" max="1" name="audioVolume" value=".5" step=".01"
                                 onchange="
@@ -1064,7 +1064,7 @@ Pending Update
                                     window.snd.volume = this.value / 100;
                                 " />
                         </div>
-                        <small class="form-text text-muted">{{settingsAudioVolumeBlurb}}</small>
+                        <small class="form-text text-muted">{{settingsView.audioVolume.blurb}}</small>
                     </div>
 
                     <div>
@@ -1079,9 +1079,9 @@ Pending Update
                                             dia.error('Notifications are not supported on your browser.');
                                     }
                                 " />
-                                <strong>{{settingsWebkitNotificationsLabel}}</strong>
+                                <strong>{{settingsView.webkitNotificationsLabel}}</strong>
                             </span><br />
-                            <small class="form-text text-muted">{{settingsWebkitNotificationsBlurb}}</small>
+                            <small class="form-text text-muted">{{settingsView.webkitNotificationsBlurb}}</small>
                         </label><br /><br />
 
                         {{#if serverSettings.pushNotifications}}
@@ -1109,9 +1109,9 @@ Pending Update
                     <div id="settings2disableRightClick">
                         <label>
                             <input type="checkbox" name="disableRightClick" id="disableRightClick" value="true"/>
-                            {{settingsDisableRightClickLabel}}
+                            {{settingsView.disableRightClickLabel}}
                         </label><br/>
-                        <small><span style="margin-left: 10px;">{{settingsDisableRightClickBlurb}}</span></small>
+                        <small><span style="margin-left: 10px;">{{settingsView.disableRightClickBlurb}}</span></small>
                         <br/><br/>
                     </div>
                     -->
@@ -1121,15 +1121,15 @@ Pending Update
                     <!-- todo: global disable, login method disable -->
                     {{#unless activeLogin.userData.anonId}}
                         <div class="pb-3">
-                            <span>{{settingsIgnoreListLabel}}</span>
+                            <span>{{settingsView.ignoreListLabel}}</span>
                             <div name="ignoreListContainer"></div>
-                            <small class="form-text text-muted">{{settingsIgnoreListBlurb}}</small>
+                            <small class="form-text text-muted">{{settingsView.ignoreListBlurb}}</small>
                         </div>
 
                         <div class="pb-4">
-                            <span>{{settingsFriendsListLabel}}</span>
+                            <span>{{settingsView.friendsListLabel}}</span>
                             <div name="friendsListContainer"></div>
-                            <small class="form-text text-muted">{{settingsFriendsListBlurb}}</small>
+                            <small class="form-text text-muted">{{settingsView.friendsListBlurb}}</small>
                         </div>
                     {{/unless}}
 
@@ -1138,18 +1138,18 @@ Pending Update
                     <div id="settings6privacyLevel">
                         <div class="list-group">
                             <label class="list-group-item list-group-item-action">
-                                <input type="radio" name="privacyLevel" value="allow">{{settingsPrivacyAllowAll}}<br/>
-                                <small class="form-text text-muted">{{settingsPrivacyAllowAllBlurb}}</small>
+                                <input type="radio" name="privacyLevel" value="allow">{{settingsView.privacyAllowAll}}<br/>
+                                <small class="form-text text-muted">{{settingsView.privacyAllowAllBlurb}}</small>
                             </label>
 
                             <label class="list-group-item list-group-item-action">
-                                <input type="radio" name="privacyLevel" value="friends">{{settingsPrivacyAllowFriends}}<br/>
-                                <small class="form-text text-muted">{{settingsPrivacyAllowFriendsBlurb}}</small>
+                                <input type="radio" name="privacyLevel" value="friends">{{settingsView.privacyAllowFriends}}<br/>
+                                <small class="form-text text-muted">{{settingsView.privacyAllowFriendsBlurb}}</small>
                             </label>
 
                             <label class="list-group-item list-group-item-action">
-                                <input type="radio" name="privacyLevel" value="block">{{settingsPrivacyAllowNone}}<br/>
-                                <small class="form-text text-muted">{{settingsPrivacyAllowNoneBlurb}}</small>
+                                <input type="radio" name="privacyLevel" value="block">{{settingsView.privacyAllowNone}}<br/>
+                                <small class="form-text text-muted">{{settingsView.privacyAllowNoneBlurb}}</small>
                             </label>
                         </div>
                     </div>
@@ -1157,13 +1157,13 @@ Pending Update
                 </div>
 
                 <div class="tab-pane fade" role="tabpanel" id="settings4">
-                    <h4>{{settingsDefaultFormattingLabel}}</h4>
+                    <h4>{{settingsView.defaultFormatting.label}}</h4>
                     <div id="settings4defaultFont">
                         <div class="row mb-2">
                             {{#if serverSettings.formatting.color}}
                                 <div class="input-group col">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text">Colour</span>
+                                        <span class="input-group-text">{{settingsView.defaultFormatting.colourLabel}}</span>
                                     </div>
                                     <input class="form-control" id="defaultColour" name="defaultColour"/>
                                 </div>
@@ -1172,7 +1172,7 @@ Pending Update
                             {{#if serverSettings.formatting.highlight}}
                                 <div class="input-group col">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text">Highlight</span>
+                                        <span class="input-group-text">{{settingsView.defaultFormatting.highlightLabel}}</span>
                                     </div>
                                     <input class="form-control" id="defaultHighlight" name="defaultHighlight"/>
                                 </div>
@@ -1202,7 +1202,7 @@ Pending Update
                                             {{/ifCond}}
                                             onchange="$('#fontPreview').css('font-weight', $(this).is(':checked') ? 'bold' : 'normal'); "
                                         />
-                                        <strong>{{settingsDefaultFormattingBoldLabel}}</strong>
+                                        <strong>{{settingsView.defaultFormatting.boldLabel}}</strong>
                                     </span>
                                 </label>
                             {{/if}}
@@ -1216,14 +1216,14 @@ Pending Update
                                             {{/ifCond}}
                                             onchange="$('#fontPreview').css('font-style', $(this).is(':checked') ? 'italic' : 'normal'); "
                                         />
-                                        <strong>{{settingsDefaultFormattingItalicsLabel}}</strong>
+                                        <strong>{{settingsView.defaultFormatting.italicsLabel}}</strong>
                                     </span>
                                 </label>
                             {{/if}}
                         </div>
 
                         <small>
-                            <span style="margin-left: 10px; {{activeLogin.userData.messageFormatting}}" id="fontPreview">{{settingsDefaultFormattingPreview}}</span>
+                            <span style="margin-left: 10px; {{activeLogin.userData.messageFormatting}}" id="fontPreview">{{settingsView.defaultFormatting.previewText}}</span>
                         </small><br/><br/>
                     </div>
 
@@ -1232,9 +1232,19 @@ Pending Update
                         <label>
                                     <span class="btn btn-primary">
                                         <input type="checkbox" name="disableFormatting" {{#if settings.disableFormatting}} checked="checked" {{/if}} />
-                                        <strong>{{settingsDisableFormattingLabel}}</strong>
+                                        <strong>{{settingsView.disableFormatting.label}}</strong>
                                     </span><br />
-                            <small class="form-text text-muted">{{settingsDisableFormattingBlurb}}</small>
+                            <small class="form-text text-muted">{{settingsView.disableFormatting.blurb}}</small>
+                        </label>
+                    </div>
+                    
+                    <div class="pb-3">
+                        <label>
+                                    <span class="btn btn-primary">
+                                        <input type="checkbox" name="disableSocial" {{#if settings.disableSocial}} checked="checked" {{/if}} />
+                                        <strong>{{settingsView.disableSocial.label}}</strong>
+                                    </span><br />
+                            <small class="form-text text-muted">{{settingsView.disableSocial.blurb}}</small>
                         </label>
                     </div>
 
@@ -1242,9 +1252,9 @@ Pending Update
                         <label>
                                     <span class="btn btn-primary">
                                         <input type="checkbox" name="disableVideos" {{#if settings.disableVideos}} checked="checked" {{/if}} />
-                                        <strong>{{settingsDisableVideoLabel}}</strong>
+                                        <strong>{{settingsView.disableVideo.label}}</strong>
                                     </span><br />
-                            <small class="form-text text-muted">{{settingsDisableVideoBlurb}}</small>
+                            <small class="form-text text-muted">{{settingsView.disableVideo.blurb}}</small>
                         </label>
                     </div>
 
@@ -1252,9 +1262,9 @@ Pending Update
                         <label>
                                     <span class="btn btn-primary">
                                         <input type="checkbox" name="disableImages" {{#if settings.disableImages}} checked="checked" {{/if}} />
-                                        <strong>{{settingsDisableImageLabel}}</strong>
+                                        <strong>{{settingsView.disableImage.label}}</strong>
                                     </span><br />
-                            <small class="form-text text-muted">{{settingsDisableImageBlurb}}</small>
+                            <small class="form-text text-muted">{{settingsView.disableImage.blurb}}</small>
                         </label>
                     </div>
                 </div>
@@ -1262,21 +1272,21 @@ Pending Update
                 <div class="tab-pane fade show active" role="tabpanel" id="settings5">
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text">{{settingsLanguageLabel}}</span>
+                            <span class="input-group-text">{{settingsView.languageLabel}}</span>
                         </div>
                         <select class="form-control" name="language" id="language">
                             <option value="enGB">English (United Kingdom)</option>
                             <option value="enUS">English (United States)</option>
                         </select>
                     </div>
-                    <small><span style="margin-left: 10px;">{{settingsLanguageBlurb}}</span></small><br/><br/>
+                    <small><span style="margin-left: 10px;">{{settingsView.languageBlurb}}</span></small><br/><br/>
 
                     {{#unless activeLogin.userData.anonId}}
                         {{#if serverSettings.parentalControls.parentalEnabled}}
                         <div>
                             <div class="input-group">
                                 <div class="input-group-prepend">
-                                    <span class="input-group-text">{{settingsParentalAgeLabel}}</span>
+                                    <span class="input-group-text">{{settingsView.parentalAgeLabel}}</span>
                                 </div>
                                 <select class="form-control" name="parentalAge">
                                     {{#each serverSettings.parentalControls.parentalAges}}
@@ -1284,11 +1294,11 @@ Pending Update
                                     {{/each}}
                                 </select>
                             </div>
-                            <small class="form-text text-muted">{{settingsParentalAgeBlurb}}</small><br/>
+                            <small class="form-text text-muted">{{settingsView.parentalAgeBlurb}}</small><br/>
                         </div>
 
                         <div>
-                            <span>{{settingsParentalFlagsLabel}}</span>
+                            <span>{{settingsView.parentalFlagsLabel}}</span>
                             <div name="parentalFlagsList">
                                 {{#each serverSettings.parentalControls.parentalFlags}}
                                 <label class="btn btn-secondary m-1">
@@ -1299,7 +1309,7 @@ Pending Update
                                 {{/each}}
 
                             </div>
-                            <small class="form-text text-muted">{{settingsParentalFlagsBlurb}}</small><br />
+                            <small class="form-text text-muted">{{settingsView.parentalFlagsBlurb}}</small><br />
                         </div>
                         {{/if}}
                     {{/unless}}
@@ -1307,25 +1317,25 @@ Pending Update
                     <div>
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <span class="input-group-text">{{settingsProfileLabel}}</span>
+                                <span class="input-group-text">{{settingsView.profileLabel}}</span>
                             </div>
                             <input class="form-control" type="text" name="profile"
                                    value="{{activeLogin.userData.profile}}"
                                    {{#unless activeLogin.userData.permissions.selfChangeProfile}} disabled {{/unless}}
                             /><br/>
                         </div>
-                        <small class="form-text text-muted">{{settingsProfileBlurb}}</small><br/>
+                        <small class="form-text text-muted">{{settingsView.profileBlurb}}</small><br/>
                     </div>
 
                     {{#unless activeLogin.userData.anonId}}
                     <div>
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <span class="input-group-text">{{settingsDefaultRoomLabel}}</span>
+                                <span class="input-group-text">{{settingsView.defaultRoomLabel}}</span>
                             </div>
                             <input class="form-control" type="text" name="defaultRoom" /><br/>
                         </div>
-                        <small class="form-text text-muted">{{settingsDefaultRoomBlurb}}</small><br/>
+                        <small class="form-text text-muted">{{settingsView.defaultRoomBlurb}}</small><br/>
                     </div>
                     {{/unless}}
 
@@ -1341,8 +1351,8 @@ Pending Update
         </div>
 
         <div class="card-footer text-center">
-            <button class="btn btn-primary" type="submit">{{settingsSave}}</button>
-            <button class="btn btn-secondary" type="reset">{{settingsReset}}</button>
+            <button class="btn btn-primary" type="submit">{{settingsView.save}}</button>
+            <button class="btn btn-secondary" type="reset">{{settingsView.reset}}</button>
         </div>
     </div>
 </form>

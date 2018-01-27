@@ -297,6 +297,7 @@ img.standard {
 video, audio, img.inlineImage {
     max-width: 100%;
     max-height: 400px;
+    width: auto;
 }
 
 label.standard, button.standard {
@@ -559,6 +560,12 @@ li.typeahead__item a > span.userNameAvatar > span {
 li.typeahead__item a > span:not(.userNameAvatar) {
     padding: 0.5rem 0.75rem;
     display: inline-block;
+}
+
+/* Embed Overrides */
+.fb-post.fb_iframe_widget {
+    width: 100% !important;
+    overflow-x: auto;
 }
 
 /********************************

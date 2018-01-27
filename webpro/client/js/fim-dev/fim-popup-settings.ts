@@ -96,7 +96,7 @@ popup.prototype.settings = {
 
 
         /* Various Settings onChange */
-        $('input[name=reversePostOrder], input[name=disableFormatting], input[name=disableVideos], input[name=disableImages], input[name=audioDing], input[name=webkitNotifications], input[name=pushNotifications], input[name=hideTimes], input[name=alternateSelfPosts], input[name=bubbleFormatting]').change(function() {
+        $('input[name=reversePostOrder], input[name=disableFormatting], input[name=disableVideos], input[name=disableImages], input[name=disableSocial], input[name=audioDing], input[name=webkitNotifications], input[name=pushNotifications], input[name=hideTimes], input[name=alternateSelfPosts], input[name=bubbleFormatting]').change(function() {
             let localId = $(this).attr('name');
 
             if ($(this).is(':checked') && !window.settings[localId]) {

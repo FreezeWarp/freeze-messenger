@@ -560,8 +560,109 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
                     else if (match[0].match(regexs.audio)) // Image Autoparse
                         return [fim_formatAsAudio(match[0]), document.createTextNode(suffix)];
 
-                    else // Normal URL
+                    else { // Normal URL
+
+                        if (!window.settings.disableSocial) {
+                            var videoCallback = function (tag, data, sourceUrl) {
+                                tag.html('').addClass('video-container-container').append(
+                                    $('<div class="video-container">').html(data.html)
+                                );
+                            };
+
+                            var oembeds = [{
+                                name: 'dailyMotion',
+                                url: 'http://www.dailymotion.com/services/oembed?format=json&url=',
+                                regex: new RegExp("^https?://(www\.)?dailymotion\.com/video/.+$"),
+                                callback: videoCallback
+                            }, {
+                                name: 'deviantArt',
+                                url: 'http://backend.deviantart.com/oembed?format=jsonp&url=',
+                                regex: new RegExp("^https?://[^\.]+\.deviantart\.com/art/.+$"),
+                                callback: function (tag, data, sourceUrl) {
+                                    tag.html('').append($('<a target="_blank">').attr('href', sourceUrl).append(
+                                        $('<img class="inlineImage">').attr('src', data.url)
+                                    ))
+                                }
+                            }, {
+                                name: 'facebookVideo',
+                                url: 'https://www.facebook.com/plugins/video/oembed.json?url=',
+                                regex: new RegExp("^https?://(www\.)?facebook\.com/[^/]+/videos/.+$"),
+                                callback: videoCallback
+                            }, {
+                                name: 'facebookPost',
+                                url: 'https://www.facebook.com/plugins/post/oembed.json?maxwidth=' + (Math.floor($('#chatContainer').width() * .75)) + '&url=',
+                                regex: new RegExp("^https?://(www\.)?facebook\.com/[^/]+/(posts|activity|photos|media|questions|notes)/.+$")
+                            }, {
+                                name: 'flickr',
+                                url: 'https://www.flickr.com/services/oembed/?format=json&url=',
+                                regex: new RegExp("^https?://(www\.)?flickr\.com/photos/.+/$"),
+                                jsoncallback: 'jsoncallback',
+                                callback: function (tag, data, sourceUrl) {
+                                    // TODO: the Flickr embed JS isn't working. Not sure why.
+                                    $('#' + oembeds[i].name + 'Embed' + messageId).html(data.html);
+                                    $('a', $('#' + oembeds[i].name + 'Embed' + messageId)).attr('target', '_blank');
+                                    $('img', $('#' + oembeds[i].name + 'Embed' + messageId)).addClass('inlineImage');
+                                }
+                            }, {
+                                name: 'instagram',
+                                url: 'https://api.instagram.com/oembed?url=',
+                                regex: new RegExp("^https?://(www\.)?(instagram\.com|instagr\.am)/p/.+$")
+                            }, {
+                                name: 'twitch',
+                                url: 'https://api.twitch.tv/v4/oembed?url=',
+                                regex: new RegExp("^https?://(clips\.twitch\.tv/|www\.twitch\.tv/videos/).+$"),
+                                callback: videoCallback
+                            }/*, { TODO: requires gfycat proxy for JSONP
+                                name : 'gfycat',
+                                url : 'https://api.gfycat.com/v1/oembed?url=',
+                                regex : new RegExp("^https?://(www\.)?gfycat.com/gifs/detail/.+$")
+                            }*/, {
+                                name: 'twitter',
+                                url: 'https://publish.twitter.com/oembed?url=',
+                                regex: new RegExp("^https?://(www\.)?twitter\.com/[^/]+/status/\\d+$")
+                            }/*, TODO: requires reddit proxy for JSONP
+                            {
+                                name : 'reddit',
+                                url : fimApi.directory + 'api/oembedProxy.php?url=',
+                                regex : new RegExp("^https?://(www\.)?reddit\.com/r/.+?/comments/.+?/.+?/$")
+                            }*/, {
+                                name: 'soundcloud',
+                                url: ' https://soundcloud.com/oembed?format=js&url=',
+                                regex: new RegExp("^https?://(www\.)?soundcloud\.com/[^/]{10,}/.+$")
+                            }, {
+                                name: 'vimeo',
+                                url: 'https://vimeo.com/api/oembed.json?url=',
+                                regex: new RegExp("^https?://(www\.)?vimeo\.com/(\\d+|channels/[^/]+/[^/]+)$"),
+                                callback: videoCallback
+                            }];
+
+                            for (var i = 0; i < oembeds.length; i++) {
+                                if (match[0].match(oembeds[i].regex)) {
+                                    console.log("match", match[0], oembeds[i].regex, oembeds[i]);
+                                    var oembedEmbed = $('<div>').attr('id', oembeds[i].name + 'Embed' + messageId).text('Loading ' + oembeds[i].name + '...');
+
+                                    // while not responsive, this width/height values will usually do the job
+                                    $.when($.ajax(oembeds[i].url + match[0], {
+                                        dataType: "jsonp",
+                                        jsonp: oembeds[i].jsoncallback ? oembeds[i].jsoncallback : 'callback'
+                                    })).done(function (data) {
+                                        console.log("loaded " + oembeds[i].name, data);
+
+                                        if (oembeds[i].callback) {
+                                            oembeds[i].callback($('#' + oembeds[i].name + 'Embed' + messageId), data, match[0])
+                                        }
+                                        else {
+                                            $('#' + oembeds[i].name + 'Embed' + messageId).html(data.html);
+                                        }
+                                    });
+
+                                    return [oembedEmbed, document.createTextNode(suffix)];
+                                }
+                            }
+                        }
+
                         return [fim_formatAsUrl(match[0]), document.createTextNode(suffix)];
+                    }
                 }, this.nodeType !== 3 ? $(this).text('') : null);
 
                 if (this.nodeType === 3)
@@ -856,6 +957,7 @@ var settingNames = {
     disableFormatting : 16, // Don't show custom user formatting
     disableImages : 32, // Don't embed images (use a link instead)
     disableVideos : 64, // Don't embed videos (use a link instead)
+    disableSocial : 128, // Don't embed social media (use a link instead)
 
     // Chat Display
     alternateSelfPosts : 512,
