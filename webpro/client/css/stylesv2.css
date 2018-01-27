@@ -2,10 +2,6 @@
  *** FreezeMessenger Styling ****
  ********************************/
 
-html, body {
-    margin: 0;
-}
-
 body {
     margin: 0px;
     font-family: Ubuntu, Calibria, Arial;
@@ -21,10 +17,6 @@ img {
 
 abbr {
     border-bottom: 1px dotted;
-}
-
-html, body, #content {
-    max-height: 100%;
 }
 
 .view-thin {
@@ -163,6 +155,44 @@ table#fileUploadInfo td {
     padding-right: .25rem;
 }
 
+
+/***** Message List (and Room) Autosizing *****/
+/* Message List Auto-Sizing */
+html, body {
+    margin: 0;
+}
+
+#page {
+    display: flex;
+    flex-direction: column;
+}
+
+#content {
+    position: relative
+}
+
+#active-view-room {
+    position: absolute;
+}
+
+html, body, #active-entry-template, #page, #content, #active-view-room, #chatContainer, #roomTemplateContainer, #activeUsersCard, #watchedRoomsCard {
+    height: 100%;
+}
+
+#active-view-room, #navbar {
+    width: 100%;
+}
+
+#navbar {
+    flex-shrink: 0;
+}
+
+#messageListContainer {
+    flex: 1;
+    min-height: 100px; /* Make sure it can't disappear */
+}
+
+
 /***** Other Crap *****/
 
 .video-container-container {
@@ -198,13 +228,13 @@ table#fileUploadInfo td {
 
 @media (max-width: 991px) {
     #watchedRoomsColumn {
-        /* for the animation */
         transition: transform 0.5s ease !important;
-        padding-left: 0 !important;
+        padding: 0 !important;
         position: absolute;
         width: 100%;
+        height: 100%;
         z-index: 20;
-        transform: translateX(-100%);
+        transform: translateX(calc(-100% - 4px));
     }
     #watchedRoomsColumn.show {
         transform: translateX(0%);
@@ -213,14 +243,13 @@ table#fileUploadInfo td {
 
 @media (max-width: 767px) {
     #activeUsersColumn {
-        /* for the animation */
         transition: transform 0.5s ease !important;
-        padding-left: 0 !important;
-        padding-right: 8px !important;
+        padding: 0 !important;
         position: absolute;
         width: 100%;
+        height: 100%;
         z-index: 20;
-        transform: translateX(100%);
+        transform: translateX(calc(100% + 4px));
     }
     #activeUsersColumn.show {
         transform: translateX(0%);

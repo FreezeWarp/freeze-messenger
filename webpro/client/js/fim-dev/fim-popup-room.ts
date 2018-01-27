@@ -377,44 +377,6 @@ popup.prototype.room.prototype.onVisibilityChange = function() {
 };
 
 /**
- * Function to register for the browser's resize event -- will recalculate heights of various boxes, ensuring they are 100% height.
- * TODO: probably rewrite to flexbox
- */
-popup.prototype.room.prototype.onWindowResize = function() {
-    let windowWidth = $(window).width(), // Get the browser window "viewport" width, excluding scrollbars.
-        windowHeight = $(window).height(); // Get the browser window "viewport" height, excluding scrollbars.
-
-    let pageMargin = ($('#page').outerHeight(true) - $('#page').height());
-    let navbarHeight = $('#navbar').outerHeight(true);
-
-    // Set the message list height to fill as much of the screen that remains after the textarea is placed.
-    $('#messageListContainer').css('height', Math.floor(
-        windowHeight
-        - pageMargin
-        - navbarHeight
-        - $('#messageListCardHeader').outerHeight(true)
-        - $('#textentryBoxMessage').outerHeight(true)
-        - 5)
-    );
-
-    $('#activeUsers').css('height', Math.floor(
-        windowHeight
-        - pageMargin
-        - navbarHeight
-        - $('#activeUsersCardHeader').outerHeight(true)
-        - 5)
-    );
-
-    $('#watchedRooms').css('height', Math.floor(
-        windowHeight
-        - pageMargin
-        - navbarHeight
-        - $('#watchedRoomsCardHeader').outerHeight(true)
-        - 5)
-    );
-};
-
-/**
  * Checks if a given key code is "neutral" -- that is, corresponding to an action that neither adds new characters to the message entry box, nor removes them from it.
  *
  * @param keyCode
@@ -446,11 +408,6 @@ popup.prototype.room.prototype.init = function(options) {
     window.addEventListener('blur', this.blurListener = this.onBlur.bind(this));
     window.addEventListener('focus',  this.focusListener = this.onFocus.bind(this));
     this.onFocus();
-
-
-    // Process Resizes
-    $(window).on('resize', null, this.onWindowResize);
-    $('#navbarSupportedContent').on('shown.bs.collapse', () => { this.onWindowResize() }).on('hidden.bs.collapse', () => { this.onWindowResize() });
 
 
     // Set up file upload handler, used for drag/drop, pasting, and insertDoc method.
@@ -551,10 +508,6 @@ popup.prototype.room.prototype.init = function(options) {
 
         return false;
     }));
-
-
-    // Try to allow resizes of the messageInput. (Currently kinda broken.)
-    //$('textarea#messageInput').mouseup(this.onWindowResize);
 
 
     // Close any open notifications for this room
@@ -693,7 +646,6 @@ popup.prototype.room.prototype.init = function(options) {
                     });
                 }
 
-                this.onWindowResize();
                 this.newRoomEntry(roomData.id);
                 this.markRoomEntryRead(roomData.id);
             }),
@@ -740,8 +692,6 @@ popup.prototype.room.prototype.close = function() {
 
     $('textarea#messageInput').off('keyup').off('keydown');
     $('#sendForm').off('submit');
-
-    $(window).off('resize', null, this.onWindowResize);
 
     if (window.activeLogin.userData.favRooms.indexOf(this.options.roomId) == -1) {
         $('#watchedRooms .list-group-item[data-roomId="' + this.options.roomId + '"]').remove();

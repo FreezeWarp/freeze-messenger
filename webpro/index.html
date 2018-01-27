@@ -315,7 +315,7 @@
         </div>
     </div>
 
-    <div id="page" data-role="page" class="mt-1 ml-1 mr-1"><!-- START links -->
+    <div id="page" data-role="page" class="p-1"><!-- START links -->
         <nav class="navbar sticky-top navbar-expand-md navbar-dark bg-primary mb-2 mx-auto rounded" id="navbar" style="z-index: 100; max-width: 1200px;">
             <a class="navbar-brand" accesskey="h" href="#">FlexChat</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -492,62 +492,60 @@
 
         <div class="col-md-9 col-lg-8 no-gutters p-0">
             <div id="chatContainer" class="card border-secondary">
-                <div id="messageListCard">
-                    <div id="messageListCardHeader" class="card-header px-0 px-sm-3 py-1 py-sm-3">
-                        <{{!}}script id="messageListCardHeaderTemplate" type="text/x-handlebars-template">
-                            <div class="row align-items-center">
-                                <div class="col text-center text-lg-left mb-2 mb-lg-0">
-                                    <h4 id="roomName" class="card-title m-0">{{inner "roomData.name"}}</h4>
-                                    <em id="topic" class="d-none d-sm-inline">{{inner "roomData.topic"}}</em>
-                                </div>
+                <div id="messageListCardHeader" class="card-header px-0 px-sm-3 py-1 py-sm-3">
+                    <{{!}}script id="messageListCardHeaderTemplate" type="text/x-handlebars-template">
+                        <div class="row align-items-center">
+                            <div class="col text-center text-lg-left mb-2 mb-lg-0">
+                                <h4 id="roomName" class="card-title m-0">{{inner "roomData.name"}}</h4>
+                                <em id="topic" class="d-none d-sm-inline">{{inner "roomData.topic"}}</em>
+                            </div>
 
-                                <div class="col-lg-auto text-center text-lg-left">
-                                    <div class="btn-toolbar text-center d-inline-block" role="toolbar">
-                                        {{inner "#if roomData.permissions.moderate"}}
-                                        <div class="dropdown d-inline">
-                                            <button class="btn btn-primary dropdown-toggle" type="button" id="roomModerateMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                {{room.buttons.moderate}}
-                                            </button>
+                            <div class="col-lg-auto text-center text-lg-left">
+                                <div class="btn-toolbar text-center d-inline-block" role="toolbar">
+                                    {{inner "#if roomData.permissions.moderate"}}
+                                    <div class="dropdown d-inline">
+                                        <button class="btn btn-primary dropdown-toggle" type="button" id="roomModerateMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            {{room.buttons.moderate}}
+                                        </button>
 
-                                            <div class="dropdown-menu" aria-labelledby="roomModerateMenu">
-                                                {{inner '#ifCond roomData.permissions.grant "||" roomData.permissions.properties'}}
-                                                    <a class="dropdown-item" href="#editRoom" accesskey="e" onclick="$(this).attr('href', '#editRoom#room=' + window.roomId)"><i class="fa fa-cog" aria-hidden="true"></i> {{room.buttons.edit}}</a>
-                                                {{inner "/ifCond"}}
+                                        <div class="dropdown-menu" aria-labelledby="roomModerateMenu">
+                                            {{inner '#ifCond roomData.permissions.grant "||" roomData.permissions.properties'}}
+                                                <a class="dropdown-item" href="#editRoom" accesskey="e" onclick="$(this).attr('href', '#editRoom#room=' + window.roomId)"><i class="fa fa-cog" aria-hidden="true"></i> {{room.buttons.edit}}</a>
+                                            {{inner "/ifCond"}}
 
-                                                {{inner "#if roomData.permissions.moderate"}}
-                                                    <a class="dropdown-item" href="#" accesskey="k" onclick="popup.kick(null, window.roomId);"><i class="fa fa-ban" aria-hidden="true"></i> {{room.buttons.kick}}</a>
-                                                    <a class="dropdown-item" href="#kicks" accesskey="i"><i class="fa fa-list" aria-hidden="true"></i> {{room.buttons.kicks}}</a>
-                                                {{inner "/if"}}
-                                            </div>
+                                            {{inner "#if roomData.permissions.moderate"}}
+                                                <a class="dropdown-item" href="#" accesskey="k" onclick="popup.kick(null, window.roomId);"><i class="fa fa-ban" aria-hidden="true"></i> {{room.buttons.kick}}</a>
+                                                <a class="dropdown-item" href="#kicks" accesskey="i"><i class="fa fa-list" aria-hidden="true"></i> {{room.buttons.kicks}}</a>
+                                            {{inner "/if"}}
                                         </div>
-                                        {{inner "/if"}}
-
-                                        <button type="button"
-                                                class="btn btn-primary mx-1"
-                                                title="Top Posters"
-                                                name="topPosters"
-                                                accesskey="t"
-                                                onclick="popup.viewStats()">
-                                            <i class="fa fa-list-ol" aria-hidden="true"></i> {{room.buttons.top}}
-                                        </button>
-
-                                        <button type="button"
-                                                class="btn btn-primary"
-                                                title="Archive"
-                                                name="archive"
-                                                accesskey="a"
-                                                onclick="location.hash='#archive#room=' + window.roomId">
-                                            <i class="fa fa-history"></i> {{room.buttons.archive}}
-                                        </button>
                                     </div>
+                                    {{inner "/if"}}
+
+                                    <button type="button"
+                                            class="btn btn-primary mx-1"
+                                            title="Top Posters"
+                                            name="topPosters"
+                                            accesskey="t"
+                                            onclick="popup.viewStats()">
+                                        <i class="fa fa-list-ol" aria-hidden="true"></i> {{room.buttons.top}}
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-primary"
+                                            title="Archive"
+                                            name="archive"
+                                            accesskey="a"
+                                            onclick="location.hash='#archive#room=' + window.roomId">
+                                        <i class="fa fa-history"></i> {{room.buttons.archive}}
+                                    </button>
                                 </div>
                             </div>
-                        <{{!}}/script>
-                    </div>
+                        </div>
+                    <{{!}}/script>
+                </div>
 
-                    <div id="messageListContainer">
-                        <div id="messageList"></div>
-                    </div>
+                <div id="messageListContainer">
+                    <div id="messageList"></div>
                 </div>
 
                 <div id="textentryBoxMessage" class="card bg-primary">
