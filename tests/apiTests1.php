@@ -328,7 +328,7 @@ echo '<tr><td>Create Room With Long Name</td>';
 curlTestPOSTEquals(
     'api/room.php',
     ['access_token' => $accessToken, '_action' => 'create'],
-    ['name' => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+    ['name' => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
     ['exception', 'string'],
     'nameMaximumLength'
 );
@@ -682,7 +682,7 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
             true,
             true,
             false,
-            false,
+            true,
             true,
             true,
             true,
@@ -839,7 +839,7 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ],
         [
             $testUserName,
-            'ont-style:italic;background-color:rgb(0,0,255);color:rgb(25,25,25)',
+            'font-style:italic;background-color:rgb(0,0,255);color:rgb(25,25,25)',
         ]
     );
 
@@ -1417,7 +1417,19 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
      ***** WATCH ROOMS *************
      *******************************/
 
-    echo '<thead><tr class="ui-widget-header"><th colspan="4">Watch Rooms Test</th></tr></thead>';
+    echo '<thead><tr class="ui-widget-header"><th colspan="4">Fav Rooms Test</th></tr></thead>';
+
+    /*
+     * Make sure the user isn't online.
+     */
+    echo "<tr><td>Go Offline in '$testRoomName' as '$testUserName'</td>";
+    curlTestPOSTEquals(
+        'api/userStatus.php',
+        ['_action' => 'edit', 'access_token' => $testUserToken, 'roomIds' => [$testRoomId]],
+        ['status' => 'offline'],
+        ['response'],
+        []
+    );
 
     /*
      * No unread messages by default?
@@ -1431,13 +1443,13 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
     );
 
     /*
-     * Watch the room.
+     * Fav the room.
      */
-    echo "<tr><td>'$testUserName' Watches Room '$testRoomName'</td>";
+    echo "<tr><td>'$testUserName' Favs Room '$testRoomName'</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
         ['access_token' => $testUserToken, '_action' => 'create'],
-        ['watchRooms' => [$testRoomId]],
+        ['favRooms' => [$testRoomId]],
         ['editUserOptions'],
         []
     );
@@ -1454,7 +1466,7 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
     );
 
     /*
-     * Send a message in the watched room (as other user)
+     * Send a message in the faved room (as other user)
      */
     echo "<tr><td>Send Message 'Hello' in '$testRoomName' as '$testUser2Name'</td>";
     curlTestPOSTEquals(
@@ -1533,13 +1545,13 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
     );
 
     /*
-     * Stop watching the room.
+     * Unfav the room.
      */
-    echo "<tr><td>'$testUserName' Stops Watching Room '$testRoomName'</td>";
+    echo "<tr><td>'$testUserName' Unfavs Room '$testRoomName'</td>";
     curlTestPOSTEquals(
         'api/userOptions.php',
         ['access_token' => $testUserToken, '_action' => 'edit'],
-        ['watchRooms' => ['']],
+        ['favRooms' => ['']],
         ['editUserOptions'],
         []
     );
@@ -1566,6 +1578,165 @@ if ($serverStatus['registrationPolicies']['registrationEnabled']) {
         ['unreadMessages'],
         []
     );
+
+
+
+
+
+    /*******************************
+     ***** PARENTAL CONTROLS *******
+     *******************************/
+
+    echo '<thead><tr class="ui-widget-header"><th colspan="4">Parental Controls Test</th></tr></thead>';
+
+    /*
+     * Change Test Room 1 Age to 16
+     */
+    echo "<tr><td>Change Room '$testRoomName' Age to 16</td>";
+    curlTestPOSTEquals(
+        'api/room.php',
+        ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoomId],
+        ['parentalAge' => 16],
+        ['room', 'id'],
+        (string) $testRoomId
+    );
+
+    /*
+     * Get Test User 1's Permissions
+     */
+    echo "<tr><td>Get Room '$testRoomName' as Underage User</td>";
+    curlTestGETEquals(
+        'api/room.php',
+        ['access_token' => $testUserToken, 'id' => $testRoomId],
+        ['exception', 'string'],
+        'parentalBlock'
+    );
+
+    /*
+     * Change Test Room 1 Age to 13
+     */
+    echo "<tr><td>Change Room '$testRoomName' Age to 13</td>";
+    curlTestPOSTEquals(
+        'api/room.php',
+        ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoomId],
+        ['parentalAge' => 13],
+        ['room', 'id'],
+        (string) $testRoomId
+    );
+
+    /*
+     * Get Test User 1's Permissions
+     */
+    echo "<tr><td>Get Room '$testRoomName' as Aboveage User, Test Permissions</td>";
+    curlTestGETEquals(
+        'api/room.php',
+        ['access_token' => $testUserToken, 'id' => $testRoomId],
+        ['rooms', "room $testRoomId", 'permissions', 'view'],
+        true
+    );
+
+    /*
+     * Set User 1's Parental Age
+     */
+    echo "<tr><td>'$testUserName' Sets Parental Age to 10</td>";
+    curlTestPOSTEquals(
+        'api/userOptions.php',
+        ['access_token' => $testUserToken, '_action' => 'create'],
+        ['parentalAge' => 10],
+        ['editUserOptions'],
+        []
+    );
+
+    /*
+     * Get Test User 1's Permissions
+     */
+    echo "<tr><td>Get Room '$testRoomName' as Age-Restricted User</td>";
+    curlTestGETEquals(
+        'api/room.php',
+        ['access_token' => $testUserToken, 'id' => $testRoomId],
+        ['exception', 'string'],
+        'parentalBlock'
+    );
+
+    /*
+     * Change Test Room 1 Age to 10
+     */
+    echo "<tr><td>Change Room '$testRoomName' Age to 10</td>";
+    curlTestPOSTEquals(
+        'api/room.php',
+        ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoomId],
+        ['parentalAge' => 10],
+        ['room', 'id'],
+        (string) $testRoomId
+    );
+
+    /*
+     * Get Test User 1's Permissions
+     */
+    echo "<tr><td>Get Room '$testRoomName' as Aboveage User, Test Permissions</td>";
+    curlTestGETEquals(
+        'api/room.php',
+        ['access_token' => $testUserToken, 'id' => $testRoomId],
+        ['rooms', "room $testRoomId", 'permissions', 'view'],
+        true
+    );
+
+    /*
+     * Set User 1's Parental Flags
+     */
+    echo "<tr><td>'$testUserName' Sets Parental Flags to Gore, Violence</td>";
+    curlTestPOSTEquals(
+        'api/userOptions.php',
+        ['access_token' => $testUserToken, '_action' => 'create'],
+        ['parentalFlags' => ['gore', 'violence']],
+        ['editUserOptions'],
+        []
+    );
+
+    /*
+     * Change Test Room 1 Flags to Gore, Gambling
+     */
+    echo "<tr><td>Change Room '$testRoomName' Flags to Gore, Gambling</td>";
+    curlTestPOSTEquals(
+        'api/room.php',
+        ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoomId],
+        ['parentalFlags' => ['gore', 'gambling']],
+        ['room', 'id'],
+        (string) $testRoomId
+    );
+
+    echo "<tr><td>Get Room '$testRoomName' as Underage User</td>";
+    curlTestGETEquals(
+        'api/room.php',
+        ['access_token' => $testUserToken, 'id' => $testRoomId],
+        ['exception', 'string'],
+        'parentalBlock'
+    );
+
+    /*
+     * Reset Room
+     */
+    echo "<tr><td>Revert Room '$testRoomName' Flags to Empty, Age to 6</td>";
+    curlTestPOSTEquals(
+        'api/room.php',
+        ['access_token' => $accessToken, '_action' => 'edit', 'id' => $testRoomId],
+        ['parentalFlags' => [''], 'parentalAge' => 6],
+        ['room', 'id'],
+        (string) $testRoomId
+    );
+
+    /*
+     * Verify Permissions
+     */
+    echo "<tr><td>Get Room '$testRoomName' as User, Test Permissions</td>";
+    curlTestGETEquals(
+        'api/room.php',
+        ['access_token' => $testUserToken, 'id' => $testRoomId],
+        ['rooms', "room $testRoomId", 'permissions', 'view'],
+        true
+    );
+
+
 
 
 
