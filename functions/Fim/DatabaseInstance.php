@@ -1012,7 +1012,7 @@ class DatabaseInstance extends DatabaseSQL
                 'time' => $this->now(),
             ));
 
-            $this->deleteUserPermissionsCache($roomId, $userId);
+            $this->deleteUserPermissionsCache($userId, $roomId);
         }
     }
 
@@ -1032,7 +1032,7 @@ class DatabaseInstance extends DatabaseSQL
                 'roomId' => (int) $roomId,
             ));
 
-            $this->deleteUserPermissionsCache($roomId, $userId);
+            $this->deleteUserPermissionsCache($userId, $roomId);
         }
     }
 
@@ -1523,7 +1523,9 @@ class DatabaseInstance extends DatabaseSQL
      *
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
-    public function hasPermission(User $user, Room $room, &$reason = null) {
+    public function hasPermission(User $user, Room $room, &$reasonInput = null) {
+        $reason = false;
+
         /* Private Room Have Their Own, Fairly Involved Permission Logic */
         if ($room->isPrivateRoom()) {
             $userIds = $room->getPrivateRoomMemberIds();
@@ -1555,7 +1557,7 @@ class DatabaseInstance extends DatabaseSQL
 
         else {
             /* Check for Cached Entry */
-            $permissionsCached = $this->getPermissionCache($room->id, $user->id, $reason);
+            $permissionsCached = $this->getPermissionCache($room->id, $user->id, $reasonInput);
             if ($permissionsCached > -1) // -1 equals an outdated permission.
                 return $permissionsCached;
 
@@ -1581,9 +1583,7 @@ class DatabaseInstance extends DatabaseSQL
             // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
             elseif (in_array($user->mainGroupId, $loginConfig['bannedGroups'])) {
                 $returnBitfield = 0;
-
-                if (func_num_args() > 2)
-                    $reason = 'banned';
+                $reason = 'banned';
             }
 
             // Owners have all permissions (but can still be banned).
@@ -1593,9 +1593,7 @@ class DatabaseInstance extends DatabaseSQL
             // A user blocked by parental controls has no permissions. This cannot apply to the room owner.
             elseif (($user->parentalAge && $room->parentalAge && $room->parentalAge > $user->parentalAge) || fim_inArray($user->parentalFlags, $room->parentalFlags)) {
                 $returnBitfield = 0;
-
-                if (func_num_args() > 2)
-                    $reason = 'parentalBlock';
+                $reason = 'parentalBlock';
             }
 
             else {
@@ -1623,10 +1621,7 @@ class DatabaseInstance extends DatabaseSQL
                         'expires' => $this->now(0, 'gt')
                     )))->getCount() > 0) {
                     $returnBitfield &= Room::ROOM_PERMISSION_VIEW;
-
-                    if (func_num_args() > 2) {
-                        $reason = 'kick';
-                    }
+                    $reason = 'kick';
                 }
             }
 
@@ -1649,6 +1644,10 @@ class DatabaseInstance extends DatabaseSQL
                     ? $kicks->getAsArray(false)['expires'] - time()
                     : null
             );
+
+            if ($reason && func_num_args() > 2) {
+                $reasonInput = $reason;
+            }
 
             return $returnBitfield;
         }
