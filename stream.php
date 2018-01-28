@@ -77,7 +77,7 @@ if ($request['streamType'] === 'room') {
     if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW))
         new \Fim\Error('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
-    \Fim\Database::instance()->markMessageRead($request['queryId'], $user->id);
+    \Fim\Database::instance()->markMessageRead($request['queryId'], $user->id); // TODO: optimise, I think
 }
 elseif ($request['streamType'] === 'user') {
     $request['queryId'] = $user->id;
@@ -97,7 +97,7 @@ if (isset($_SERVER['HTTP_LAST_EVENT_ID'])) {
 if ($request['fallback']) {
     $messageResults = \Stream\StreamFactory::getDatabaseInstance()->subscribeOnce($request['streamType'] . '_' . $request['queryId'], $request['lastEvent']);
 
-    echo new Http\ApiData(["events" => $messageResults]);
+    die(new Http\ApiData(["events" => $messageResults]));
 }
 else {
     \Stream\StreamFactory::subscribe($request['streamType'] . '_' . $request['queryId'], $request['lastEvent'], function($message) use ($request) {
@@ -110,9 +110,7 @@ else {
         echo "data: " . json_encode($message['data']) . "\n\n";
         fim_flush();
     });
-}
 
-if (!$request['fallback']) {
     echo "retry: 0\n";
 }
 ?>
