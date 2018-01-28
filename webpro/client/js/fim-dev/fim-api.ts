@@ -64,8 +64,8 @@ let fimApi = function(serverSettings) {
                 let firstElement = json[firstIndex ? firstIndex : Object.keys(json)[0]];
 
                 requestSettings.begin(firstElement);
-                if (requestSettings.reverseEach) firstElement = firstElement.reverse();
 
+                if (requestSettings.reverseEach) firstElement = firstElement.reverse();
                 $.each(firstElement, function (index, value) {
                     requestSettings.each(value);
                 });

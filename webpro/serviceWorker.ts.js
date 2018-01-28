@@ -9,10 +9,20 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 self.addEventListener('install', function (event) {
-    event.waitUntil(self.skipWaiting()); // Activate worker immediately
+    try {
+        event.waitUntil(self.skipWaiting()); // Activate worker immediately
+    }
+    catch (e) {
+        console.log("Install error: ", e);
+    }
 });
 self.addEventListener('activate', function (event) {
-    event.waitUntil(self.clients.claim()); // Become available to all pages
+    try {
+        event.waitUntil(self.clients.claim()); // Become available to all pages
+    }
+    catch (e) {
+        console.log("Activate error: ", e);
+    }
 });
 self.addEventListener('push', function (event) {
     var data = event.data.json().data;
@@ -124,10 +134,7 @@ var eventSource = /** @class */ (function () {
                 }
             }
             else {
-                postMessage({
-                    name: eventName,
-                    data: event.data
-                });
+                standard.workerCallback(eventName, event.data);
             }
         };
     };

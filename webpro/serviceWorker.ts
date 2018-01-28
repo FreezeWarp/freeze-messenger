@@ -1,13 +1,21 @@
-self.addEventListener('install', function(event) {
-    event.waitUntil(self.skipWaiting()); // Activate worker immediately
+self.addEventListener('install', function (event) {
+    try {
+        event.waitUntil(self.skipWaiting()); // Activate worker immediately
+    } catch (e) {
+        console.log("Install error: ", e);
+    }
 });
 
-self.addEventListener('activate', function(event) {
-    event.waitUntil(self.clients.claim()); // Become available to all pages
+self.addEventListener('activate', function (event) {
+    try {
+        event.waitUntil(self.clients.claim()); // Become available to all pages
+    } catch (e) {
+        console.log("Activate error: ", e);
+    }
 });
 
 
-self.addEventListener('push', function(event) {
+self.addEventListener('push', function (event) {
     let data = event.data.json().data;
     console.info("push message", data, roomSources);
 
@@ -148,10 +156,7 @@ abstract class eventSource {
                 }
             }
             else {
-                postMessage({
-                    name: eventName,
-                    data: event.data
-                });
+                standard.workerCallback(eventName, event.data);
             }
         };
     }

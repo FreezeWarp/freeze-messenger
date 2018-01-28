@@ -174,17 +174,13 @@ standard.prototype.workerCallback = function(name, data) {
 
 standard.prototype.createWorkerFallback = function(callback) {
     if (typeof onmessage === "undefined" || onmessage === null) {
-        postMessage = (event) => {
-            this.workerCallback(event.name, event.data);
-        };
-
         $.getScript('serviceWorker.ts.js?_=' + window.lastCache, function() {
             onmessage({data : {
-                    eventName: 'registerApi',
-                    isServiceWorker : false,
-                    directory : fimApi.directory,
-                    serverSettings: fimApi.serverSettings
-                }});
+                eventName: 'registerApi',
+                isServiceWorker : false,
+                directory : fimApi.directory,
+                serverSettings: fimApi.serverSettings
+            }});
 
             callback();
         });

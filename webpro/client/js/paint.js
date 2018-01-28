@@ -1018,21 +1018,28 @@ if (window.settings.audioVolume > 1 || window.settings.audioVolume < 0) {
  * Essentially, if a cookie has a custom audio file, we play it instead.
  * If not, we will try to play the default, either via ogg, mp3, or wav. */
 if (typeof Audio !== 'undefined') {
-    var snd = new Audio();
+    try {
+        var snd = new Audio();
 
-    if ($.cookie('webpro_audioFile') !== null) audioFile = $.cookie('webpro_audioFile');
-    else {
-        if (snd.canPlayType('audio/ogg; codecs=vorbis')) audioFile = 'images/beep.ogg';
-        else if (snd.canPlayType('audio/mp3')) audioFile = 'images/beep.mp3';
-        else if (snd.canPlayType('audio/wav')) audioFile = 'images/beep.wav';
+        if ($.cookie('webpro_audioFile') !== null) audioFile = $.cookie('webpro_audioFile');
         else {
-            audioFile = '';
-            console.log('Audio Disabled');
+            if (snd.canPlayType('audio/ogg; codecs=vorbis')) audioFile = 'images/beep.ogg';
+            else if (snd.canPlayType('audio/mp3')) audioFile = 'images/beep.mp3';
+            else if (snd.canPlayType('audio/wav')) audioFile = 'images/beep.wav';
+            else {
+                audioFile = '';
+                console.log('Audio Disabled');
+            }
+        }
+
+        snd.setAttribute('src', audioFile);
+        snd.volume = window.settings.audioVolume; // Audio Volume
+    } catch (e) {
+        var snd = {
+            play : function() { return false; },
+            volume : 0
         }
     }
-
-    snd.setAttribute('src', audioFile);
-    snd.volume = window.settings.audioVolume; // Audio Volume
 }
 else {
     var snd = {
