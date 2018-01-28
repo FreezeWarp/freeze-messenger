@@ -14,7 +14,8 @@
     "iignatov/lightopenid": "*",
     "google/recaptcha": "~1.1",
     "kwn/php-rdkafka-stubs": "^1.0.2",
-    "bshaffer/oauth2-server-php" : "^1.10"
+    "bshaffer/oauth2-server-php" : "^1.10",
+    "minishlink/web-push" : "^2.0.1"
   },
   "autoload" : {
     "psr-4": {
