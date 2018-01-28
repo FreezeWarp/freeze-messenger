@@ -1051,17 +1051,17 @@ fim_loadTheme(settings.theme);
 
 $.when(
     $.ajax({ // TODO?
-        url: 'client/data/config.json',
+        url: 'client/data/config.json?_=' + lastCache,
         dataType: 'json',
         success: function(data) { window.fim_config = data; }
     }),
     $.ajax({
-        url: 'client/data/language_enGB.json',
+        url: 'client/data/language_enGB.json?_=' + lastCache,
         dataType: 'json',
         success: function(data) { window.phrases = data; }
     }),
     $.ajax({
-        url: window.directory + 'api/serverStatus.php',
+        url: window.directory + 'api/serverStatus.php?_=' + lastCache,
         dataType: 'json',
         success: function(json) {
             window.serverSettings = json.serverStatus;

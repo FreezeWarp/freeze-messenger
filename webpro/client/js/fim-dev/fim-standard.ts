@@ -182,7 +182,7 @@ standard.prototype.createWorkerFallback = function(callback) {
             this.workerCallback(event.name, event.data);
         };
 
-        $.getScript('serviceWorker.ts.js', function() {
+        $.getScript('serviceWorker.ts.js?_=' + window.lastCache, function() {
             onmessage({data : {
                     eventName: 'registerApi',
                     isServiceWorker : false,

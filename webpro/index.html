@@ -34,13 +34,20 @@
     <!-- Load our local resources dynamically, forcing a cache refresh if the hash calls for it. -->
     <script>
         var lastCache = 0;
+
         try {
-            if ("hash" in window.location && window.location.hash.indexOf('nocache') !== -1) {
-                lastCache = (new Date()).getTime();
-                localStorage.setItem('lastCache', lastCache);
+            // Set the lastCache if it's not available.
+            if (!localStorage.getItem("lastCache-b3")) {
+                localStorage.setItem('lastCache-b3', (new Date()).getTime());
             }
 
-            var lastCache = localStorage.getItem("lastCache");
+            // Otherwise, update the lastCache if requested
+            else if ("hash" in window.location && window.location.hash.indexOf('nocache') !== -1) {
+                localStorage.setItem('lastCache-b3', (new Date()).getTime());
+            }
+
+            // And get that lastCache into memory
+            lastCache = localStorage.getItem("lastCache-b3");
         } catch (e) {
         }
 
