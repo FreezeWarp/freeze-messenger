@@ -14,9 +14,6 @@ class WebPushHandler
 {
     public static $resolvedEndpoints = [];
 
-    public static $publicKey = 'BLJWiV56xr//gimHWiDwtiZOF9yC5uRPwSOoVU8mhLzUI5vvRU+UTKuj3O3R4d27S8L3wYeoNC1b+ME71rcI2YM';
-    public static $privateKey = 'uaB7G4nYE5h/cqDKC80C2RB/6QG902oKUkY5RPUayYA';
-
     /**
      * @var WebPush
      */
@@ -27,8 +24,8 @@ class WebPushHandler
         self::$webPush = new WebPush([
             'VAPID' => [
                 'subject'    => 'https://messenger.josephtparsons.com',
-                'publicKey'  => self::$publicKey, // (recommended) uncompressed public key P-256 encoded in Base64-URL
-                'privateKey' => self::$privateKey, // (recommended) in fact the secret multiplier of the private key encoded in Base64-URL
+                'publicKey'  => \Fim\Config::$pushNotificationsPublicKey, // (recommended) uncompressed public key P-256 encoded in Base64-URL
+                'privateKey' => \Fim\Config::$pushNotificationsPrivateKey, // (recommended) in fact the secret multiplier of the private key encoded in Base64-URL
             ],
         ]);
         self::$webPush->setAutomaticPadding(false);

@@ -31,6 +31,7 @@ $request = fim_sanitizeGPC('p', [
         'require' => true
     ]
 ]);
+\Fim\Database::instance()->accessLog('webpushSubscribe', $request);
 
 \Cache\CacheFactory::setAdd('pushSubs_' . $user->id, $request['endpoint'], \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
 \Cache\CacheFactory::set('pushSubsKeys_' . $request['endpoint'], [$request['p256dh'], $request['auth']], 31536000, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);

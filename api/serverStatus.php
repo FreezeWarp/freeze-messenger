@@ -100,7 +100,7 @@ echo new Http\ApiData([
 
         'watchRooms' => \Fim\Config::$enableUnreadMessages,
         'pushNotifications' => \Fim\Config::$enablePushNotifications,
-        'pushPublicKey' => \Stream\WebPushHandler::$publicKey
+        'pushPublicKey' => \Fim\Config::$pushNotificationsPublicKey,
     ),
 ]);
 ?>

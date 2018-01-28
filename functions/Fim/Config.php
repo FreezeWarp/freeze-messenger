@@ -653,7 +653,13 @@ class Config {
     public static $enableUnreadMessages = true;
 
     /** @var bool Set this to true to enable experimental WebPush functionality. */
-    public static $enablePushNotifications = true;
+    public static $enablePushNotifications = false;
+
+    /** @var string The Base64-encoded private key to use for push notifications. */
+    public static $pushNotificationsPrivateKey = "";
+
+    /** @var string The Base64-encoded public key to use for push notifications. */
+    public static $pushNotificationsPublicKey = "";
 
     /** @var bool Set this to false to disable events. You probably shouldn't. */
     public static $enableEvents = true;
