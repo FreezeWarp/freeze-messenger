@@ -21,17 +21,56 @@ self.addEventListener('push', function (event) {
 
     if (!roomSources[String(data.roomId)] || !roomSources[String(data.roomId)].isOpen) {
         event.waitUntil(
-            self.registration.showNotification(data.roomName + ": " + data.userName, {
-                body: data.messageText,
-                icon: data.userAvatar,
-                vibrate: [100, 50, 100],
-                data: {
-                    dateOfArrival: Date.now(),
-                    primaryKey: '2'
-                },
-            })
+            createNotification(data)
         );
     }
+});
+
+let createNotification = function(data) {
+    console.log("create notification", data);
+
+    if (self.registration) {
+        return self.registration.showNotification(data.roomName + ": " + data.userName, {
+            tag: data.roomId,
+            body: data.messageText,
+            icon: data.userAvatar,
+            vibrate: [100, 50, 100],
+        });
+    }
+    else {
+        return new Notification(data.roomName + ": " + data.userName, {
+            tag: data.roomId,
+            body: data.messageText,
+            icon: data.userAvatar,
+            vibrate: [100, 50, 100],
+        });
+    }
+};
+
+
+self.addEventListener('notificationclick', function(event) {
+    console.log('On notification click: ', event.notification.tag);
+    // Android doesn't close the notification when you click on it
+    // See: http://crbug.com/463146
+    event.notification.close();
+
+    // This looks to see if the current is already open and
+    // focuses if it is
+    event.waitUntil(
+        clients.matchAll({
+            type: "window"
+        })
+            .then(function(clientList) {
+                for (var i = 0; i < clientList.length; i++) {
+                    var client = clientList[i];
+                    if (client.url.match(new RegExp('\/\#room=' + event.notification.tag)) && 'focus' in client)
+                        return client.focus();
+                }
+                if (clients.openWindow) {
+                    return clients.openWindow(fimApiInstance.directory + '#room=' + event.notification.tag);
+                }
+            })
+    );
 });
 
 let isServiceWorker = false;
@@ -337,6 +376,8 @@ class userSource extends eventSource {
 }
 
 onmessage = (event) => {
+    console.log("message to service worker", event.data.eventName, event.data, event);
+
     switch (event.data.eventName) {
         case 'registerApi':
             if (!fimApiInstance)
@@ -380,6 +421,10 @@ onmessage = (event) => {
 
         case 'unblur':
             isBlurred = false;
+            break;
+
+        case 'requestNotification':
+            createNotification(event.data);
             break;
     }
 };

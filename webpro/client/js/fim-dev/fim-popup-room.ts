@@ -291,9 +291,19 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
         }
 
         // HTML5 Notification
-        if (window.notify.webkitNotifySupported() && window.settings.webkitNotifications) {
+        if (window.notify.webkitNotifySupported() && window.settings.webkitNotifications) { // TODO
             $.when(fim_getUsernameDeferred(messageData.userId)).then(function(matches) {
-                window.notify.webkitNotify("images/favicon.ico", $('#roomName').text() + "[" + matches[messageData.userId].name + "]", messageData.text);
+                console.log("notify", matches, matches[messageData.userId]);
+
+                standard.sendWorkerMessage({
+                    eventName : 'requestNotification',
+                    roomId: messageData.roomId,
+                    roomName: $('#roomName').text(), // ...TODO, man
+                    userId: messageData.userId,
+                    userAvatar: matches[messageData.userId].avatar,
+                    userName: matches[messageData.userId].name,
+                    messageText: messageData.text
+                });
             })
         }
     }
