@@ -2548,20 +2548,19 @@ class DatabaseInstance extends DatabaseSQL
                     'senderId' => $message->user->id,
                     'roomId'   => $message->room->id,
                 ]);
-
-                if (\Fim\Config::$enablePushNotifications) {
-                    \Stream\WebPushHandler::push($sendToUserId, [
-                        'eventName' => 'messageMessage',
-                        'data'      => [
-                            'roomName'    => $message->room->name,
-                            'userName'    => $message->user->name,
-                            'userAvatar'  => $message->user->avatar,
-                            'messageText' => $message->text,
-                            'roomId'      => $message->room->id,
-                            'messageId'   => $message->room->id
-                        ]
-                    ]);
-                }
+            }
+            elseif (\Fim\Config::$enablePushNotifications) {
+                \Stream\WebPushHandler::push($sendToUserId, [
+                    'eventName' => 'messageMessage',
+                    'data'      => [
+                        'roomName'    => $message->room->name,
+                        'userName'    => $message->user->name,
+                        'userAvatar'  => $message->user->avatar,
+                        'messageText' => $message->text,
+                        'roomId'      => $message->room->id,
+                        'messageId'   => $message->room->id
+                    ]
+                ]);
             }
 
 
