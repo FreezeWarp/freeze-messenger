@@ -33,10 +33,14 @@ class WebPushHandler
 
     public static function push($userId, $data)
     {
-        foreach (\Cache\CacheFactory::get('pushSubs_' . $userId, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED) AS $endpoint) {
-            self::$resolvedEndpoints[$endpoint] = $userId;
-            list($public, $private) = \Cache\CacheFactory::get('pushSubsKeys_' . $endpoint, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
-            self::$webPush->sendNotification($endpoint, json_encode($data), $public, $private);
+        $endpoints = \Cache\CacheFactory::get('pushSubs_' . $userId, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+
+        if ($endpoints) {
+            foreach ($endpoints AS $endpoint) {
+                self::$resolvedEndpoints[$endpoint] = $userId;
+                list($public, $private) = \Cache\CacheFactory::get('pushSubsKeys_' . $endpoint, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+                self::$webPush->sendNotification($endpoint, json_encode($data), $public, $private);
+            }
         }
     }
 

@@ -155,6 +155,9 @@ class Config {
     /** @var int The maximum number of calls a user can make to api/sendUser per minute before triggering a flood lockout on that specific API. */
     public static $floodDetectionGlobal_sendUser_perMinute = 1;
 
+    /** @var int The maximum number of web push subscriptions that can be made in one minute before triggering a flood lockout on that specific API. */
+    public static $floodDetectionGlobal_webpushSubscribe_perMinute = 5;
+
 
     /** @var bool Whether global API-based flood detection is enabled. This relies on a memory table to be efficient, so it should generally be disabled if memory tables are not available. */
     public static $floodDetectionRooms = true;
