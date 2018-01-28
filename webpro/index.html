@@ -523,20 +523,20 @@
 
                                     <button type="button"
                                             class="btn btn-primary mx-1"
-                                            title="Top Posters"
+                                            title="{{room.buttons.top}}"
                                             name="topPosters"
                                             accesskey="t"
                                             onclick="popup.viewStats()">
-                                        <i class="fa fa-list-ol" aria-hidden="true"></i> {{room.buttons.top}}
+                                        <i class="fa fa-list-ol" aria-hidden="true"></i> <span class="d-none d-sm-inline">{{room.buttons.top}}</span>
                                     </button>
 
                                     <button type="button"
                                             class="btn btn-primary"
-                                            title="Archive"
+                                            title="{{room.buttons.archive}}"
                                             name="archive"
                                             accesskey="a"
                                             onclick="location.hash='#archive#room=' + window.roomId">
-                                        <i class="fa fa-history"></i> {{room.buttons.archive}}
+                                        <i class="fa fa-history"></i> <span class="d-none d-sm-inline">{{room.buttons.archive}}</span>
                                     </button>
                                 </div>
                             </div>
@@ -796,7 +796,7 @@ Pending Update
         <td class="text-nowrap">
             <a class="roomName" data-roomId="{{id}}" data-roomName="{{name}}" href="#room={{id}}">{{name}}</a>{{#if official}} <i class="fa fa-star text-success" title="Official Room"></i>{{/if}}
         </td>
-        <td class="d-none d-sm-table-cell">
+        <td class="d-none d-md-table-cell">
             {{topic}}
         </td>
         <td class="d-none d-sm-table-cell">
@@ -806,7 +806,7 @@ Pending Update
             <div>
                 {{#if permissions.properties}}
                 <button class="btn btn-secondary btn-sm m-1" onclick="window.location.hash = '#editRoom#room={{id}}'">
-                    <i class="fa fa-sliders"></i> Edit
+                    <i class="fa fa-sliders"></i> <span class="d-none d-md-inline">Edit</span>
                 </button>
 
                 <button class="btn btn-danger btn-sm m-1" onclick="
@@ -822,18 +822,18 @@ Pending Update
                         }
                     })
                 ">
-                    <i class="fa fa-trash"></i> Delete
+                    <i class="fa fa-trash"></i> <span class="d-none d-md-inline">Delete</span>
                 </button>
                 {{/if}}
 
                 <button class="btn btn-secondary btn-sm m-1" onclick="window.location.hash = '#archive#room={{id}}'">
-                    <i class="fa fa-history"></i> Archive</a>
+                    <i class="fa fa-history"></i> <span class="d-none d-md-inline">Archive</span></a>
                 </button>
 
                 {{#unless activeLogin.userData.anonId}}
                     <div class="btn-group btn-group-toggle m-1" data-toggle="buttons">
                         <label class="btn btn-secondary btn-sm {{#contains id activeLogin.userData.favRooms}} active{{/contains}}">
-                            <i class="fa fa-star"></i> Follow
+                            <i class="fa fa-star"></i> <span class="d-none d-md-inline">Follow</span>
                             <input type="checkbox" onchange="if ($(this).prop('checked')) {
                                 window.activeLogin.userData.favRooms.push('{{id}}');
                                 fimApi.favRoom('{{id}}');
@@ -902,8 +902,8 @@ Pending Update
             <thead class="table-primary">
             <tr>
                 <th>{{selectRoom.table.header.name}}</th>
-                <th class="d-none d-sm-table-cell">{{selectRoom.table.header.topic}}</th>
-                <th>{{selectRoom.table.header.lastMessageTime}}</th>
+                <th class="d-none d-md-table-cell">{{selectRoom.table.header.topic}}</th>
+                <th class="d-none d-sm-table-cell">{{selectRoom.table.header.lastMessageTime}}</th>
                 <th>{{selectRoom.table.header.actions}}</th>
             </tr>
             </thead>
