@@ -18,6 +18,7 @@ let standard = function() {
     this.lastEvent = 0;
 
     this.notifications = {};
+    this.serviceWorkerEnabled = false;
 
     return;
 };
@@ -153,7 +154,7 @@ standard.prototype.login = function(options) {
 
 
 standard.prototype.sendWorkerMessage = function(event) {
-    if (navigator.serviceWorker && false) {
+    if (this.serviceWorkerEnabled) {
         navigator.serviceWorker.controller.postMessage(event);
     }
     else {
@@ -174,39 +175,66 @@ standard.prototype.workerCallback = function(name, data) {
 };
 
 
-standard.prototype.createWorker = function(callback) {
-    if (navigator.serviceWorker && false) {
-        let cc = (event) => {
-            console.log("controller change", event, navigator.serviceWorker.controller);
+standard.prototype.createWorkerFallback = function(callback) {
+    if (typeof onmessage === "undefined" || onmessage === null) {
+        postMessage = (event) => {
+            console.log("fallback event", event);
+            this.workerCallback(event.name, event.data);
+        };
 
-            navigator.serviceWorker.onmessage = (event) => {
-                this.workerCallback(event.data.name, event.data.data);
-            };
-
-            navigator.serviceWorker.controller.postMessage({
-                eventName: 'registerApi',
-                isServiceWorker : true,
-                directory : fimApi.directory,
-                serverSettings: fimApi.serverSettings
-            });
+        $.getScript('serviceWorker.ts.js', function() {
+            onmessage({data : {
+                    eventName: 'registerApi',
+                    isServiceWorker : false,
+                    directory : fimApi.directory,
+                    serverSettings: fimApi.serverSettings
+                }});
 
             callback();
-        };
-        navigator.serviceWorker.addEventListener('controllerchange',
-            () => { cc(null); }
-        );
+        });
+    }
+    else {
+        callback();
+    }
+};
 
-        this.worker = navigator.serviceWorker.register('serviceWorker.ts.js').then(function(registration) {
+
+standard.prototype.createWorker = function(callback) {
+    if ("serviceWorker" in navigator
+        // Since service workers are more experimental, only enable them if push notifications are on.
+        && window.settings.pushNotifications) {
+        this.worker = navigator.serviceWorker.register('serviceWorker.ts.js').then((registration) => {
             console.log('Service worker registration succeeded:', registration, navigator.serviceWorker.controller);
 
-            if (navigator.serviceWorker.controller)
-                cc(null);
-        }).catch(function(error) {
-            console.log('Service worker registration failed:', error);
+            if (navigator.serviceWorker.controller) {
+                console.log("controller registered", navigator.serviceWorker.controller);
+
+                this.serviceWorkerEnabled = true;
+
+                navigator.serviceWorker.onmessage = (event) => {
+                    this.workerCallback(event.data.name, event.data.data);
+                };
+
+                navigator.serviceWorker.controller.postMessage({
+                    eventName: 'registerApi',
+                    isServiceWorker : true,
+                    directory : fimApi.directory,
+                    serverSettings: fimApi.serverSettings
+                });
+
+                callback();
+            }
+            else {
+                this.createWorkerFallback(callback);
+            }
+        }).catch((error) => {
+            console.error('Service worker registration failed:', error);
+            this.createWorkerFallback(callback);
         });
 
         navigator.serviceWorker.ready.then(function(reg) {
-            if (Notification.permission === "granted"
+            if (notify.pushNotifySupported()
+                && Notification.permission === "granted"
                 && this.serverSettings.pushNotifications
                 && window.settings.pushNotifications) {
                 reg.pushManager.subscribe({
@@ -224,26 +252,7 @@ standard.prototype.createWorker = function(callback) {
         });
     }
     else {
-        if (typeof onmessage === "undefined" || onmessage === null) {
-            postMessage = (event) => {
-                console.log("fallback event", event);
-                this.workerCallback(event.name, event.data);
-            };
-
-            $.getScript('serviceWorker.ts.js', function() {
-                onmessage({data : {
-                    eventName: 'registerApi',
-                    isServiceWorker : false,
-                    directory : fimApi.directory,
-                    serverSettings: fimApi.serverSettings
-                }});
-
-                callback();
-            });
-        }
-        else {
-            callback();
-        }
+        this.createWorkerFallback(callback);
     }
 };
 

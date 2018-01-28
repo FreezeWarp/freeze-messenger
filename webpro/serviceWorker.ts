@@ -1,15 +1,15 @@
 self.addEventListener('install', function(event) {
-    event.waitUntil(self.skipWaiting()); // Activate worker immediately
+    //event.waitUntil(self.skipWaiting()); // Activate worker immediately
 });
 
 self.addEventListener('activate', function(event) {
-    event.waitUntil(self.clients.claim()); // Become available to all pages
+    //event.waitUntil(self.clients.claim()); // Become available to all pages
 });
 
 
 self.addEventListener('push', function(event) {
     let data = event.data.json().data;
-    console.log("push message", data, roomSources);
+    console.info("push message", data, roomSources);
 
     if (!roomSources[String(data.roomId)] || !roomSources[String(data.roomId)].isOpen) {
         event.waitUntil(
@@ -96,7 +96,7 @@ abstract class eventSource {
      */
     eventHandler(eventName) {
         return (event) => {
-            console.log("new event", eventName, event, this.clients);
+            console.info("new event", eventName, event, this.clients);
 
             this.lastEvent = Math.max(Number(this.lastEvent), Number(event.lastEventId));
 
@@ -160,7 +160,8 @@ abstract class eventSource {
 
         // If we get an error that causes the browser to close the connection, open a fallback connection instead
         this.eventSource.onerror = ((e) => {
-            console.log("event source error");
+            console.error("event source error");
+
             if (this.eventSource.readyState === 2) {
                 this.eventSource = null;
 
@@ -192,7 +193,7 @@ abstract class eventSource {
         // todo: without fetch?
         fetch(directory + "stream.php?fallback=1&streamType=" + streamType + (queryId ? "&queryId=" + queryId : '') + "&lastEvent=" + this.lastEvent + "&access_token=" + lastSessionHash)
             .catch((error) => {
-                console.log("error", error);
+                console.error("error", error);
                 let retryTime = Math.min(30, 2 * this.failureCount++) * 1000;
 
                 this.eventHandler('streamFailed')({
@@ -295,7 +296,7 @@ class userSource extends eventSource {
 }
 
 onmessage = (event) => {
-    console.log("service work message", event);
+    console.info("service work message", event);
 
     switch (event.data.eventName) {
         case 'registerApi':
@@ -329,7 +330,7 @@ onmessage = (event) => {
         case 'unlistenRoom':
             if (event.source && event.source.id)
                 roomSources[String(event.data.roomId)].removeClient(event.source.id);
-            else
+            else if (roomSources[String(event.data.roomId)])
                 roomSources[String(event.data.roomId)].close();
             break;
 

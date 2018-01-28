@@ -148,7 +148,7 @@ function fim_openView(viewName, options) {
 
 
             // Run init
-            openObjectInstance.init(options);
+            openObjectInstance.init(options, render);
 
             // Run setters
             jQuery.each(options, function(name, value) {

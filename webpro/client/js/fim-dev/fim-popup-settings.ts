@@ -11,7 +11,16 @@ declare var Handlebars : any;
 declare var popup : any;
 
 popup.prototype.settings = {
-    init : function() { /* TODO: Handle reset properly, and refresh the entire application when settings are changed. It used to make some sense not to, but not any more. */
+    render : function() {
+        // Disable autorender
+    },
+
+    init : function(options, render) { /* TODO: Handle reset properly, and refresh the entire application when settings are changed. It used to make some sense not to, but not any more. */
+
+        render({
+            notifySupported : notify.webkitNotifySupported(),
+            pushNotifySupported : notify.pushNotifySupported()
+        });
 
         /**************************
          ***** Server Settings ****

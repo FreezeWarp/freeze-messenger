@@ -9,14 +9,14 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 self.addEventListener('install', function (event) {
-    event.waitUntil(self.skipWaiting()); // Activate worker immediately
+    //event.waitUntil(self.skipWaiting()); // Activate worker immediately
 });
 self.addEventListener('activate', function (event) {
-    event.waitUntil(self.clients.claim()); // Become available to all pages
+    //event.waitUntil(self.clients.claim()); // Become available to all pages
 });
 self.addEventListener('push', function (event) {
     var data = event.data.json().data;
-    console.log("push message", data, roomSources);
+    console.info("push message", data, roomSources);
     if (!roomSources[String(data.roomId)] || !roomSources[String(data.roomId)].isOpen) {
         event.waitUntil(self.registration.showNotification(data.roomName + ": " + data.userName, {
             body: data.messageText,
@@ -81,7 +81,7 @@ var eventSource = /** @class */ (function () {
     eventSource.prototype.eventHandler = function (eventName) {
         var _this = this;
         return function (event) {
-            console.log("new event", eventName, event, _this.clients);
+            console.info("new event", eventName, event, _this.clients);
             _this.lastEvent = Math.max(Number(_this.lastEvent), Number(event.lastEventId));
             if (isServiceWorker) {
                 for (i in _this.clients) {
@@ -134,7 +134,7 @@ var eventSource = /** @class */ (function () {
         this.eventSource = new EventSource(directory + 'stream.php?streamType=' + streamType + '&lastEvent=' + this.lastEvent + (queryId ? '&queryId=' + queryId : '') + '&access_token=' + lastSessionHash);
         // If we get an error that causes the browser to close the connection, open a fallback connection instead
         this.eventSource.onerror = (function (e) {
-            console.log("event source error");
+            console.error("event source error");
             if (_this.eventSource.readyState === 2) {
                 _this.eventSource = null;
                 if (_this.isOpen) {
@@ -158,7 +158,7 @@ var eventSource = /** @class */ (function () {
         var _this = this;
         // todo: without fetch?
         fetch(directory + "stream.php?fallback=1&streamType=" + streamType + (queryId ? "&queryId=" + queryId : '') + "&lastEvent=" + this.lastEvent + "&access_token=" + lastSessionHash)["catch"](function (error) {
-            console.log("error", error);
+            console.error("error", error);
             var retryTime = Math.min(30, 2 * _this.failureCount++) * 1000;
             _this.eventHandler('streamFailed')({
                 lastEventId: 0,
@@ -241,7 +241,7 @@ var userSource = /** @class */ (function (_super) {
     return userSource;
 }(eventSource));
 onmessage = function (event) {
-    console.log("service work message", event);
+    console.info("service work message", event);
     switch (event.data.eventName) {
         case 'registerApi':
             serverSettings = event.data.serverSettings;
@@ -268,7 +268,7 @@ onmessage = function (event) {
         case 'unlistenRoom':
             if (event.source && event.source.id)
                 roomSources[String(event.data.roomId)].removeClient(event.source.id);
-            else
+            else if (roomSources[String(event.data.roomId)])
                 roomSources[String(event.data.roomId)].close();
             break;
         case 'blur':

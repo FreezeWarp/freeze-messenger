@@ -1,6 +1,14 @@
 var notify = {
     webkitNotifySupported: function() {
-        return "Notification" in window;
+        return "Notification" in window
+            // Chrome now disables notifications is non-secure origins
+            && !(window.chrome && !window.isSecureContext);
+    },
+
+    pushNotifySupported : function() {
+        return "Notification" in window
+            && "serviceWorker" in navigator
+            && window.isSecureContext;
     },
 
     webkitNotifyRequest: function () {
