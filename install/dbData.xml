@@ -55,18 +55,18 @@
 
         <!-- Table censorLists -->
         <table name="censorLists">
-            <column name="listName" value="Example Censor" />
-            <column name="listType" value="white" />
+            <column name="name" value="Example Censor" />
+            <column name="type" value="white" />
             <column name="options" value="3" type="bitfield" />
         </table>
         <table name="censorLists" mode="dev">
-            <column name="listName" value="Really Bad Words" />
-            <column name="listType" value="white" />
+            <column name="name" value="Really Bad Words" />
+            <column name="type" value="white" />
             <column name="options" value="3" type="bitfield" />
         </table>
         <table name="censorLists" mode="dev">
-            <column name="listName" value="IBF" />
-            <column name="listType" value="black" />
+            <column name="name" value="IBF" />
+            <column name="type" value="black" />
             <column name="options" value="3" type="bitfield" />
         </table>
 
