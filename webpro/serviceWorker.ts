@@ -132,9 +132,8 @@ abstract class eventSource {
      */
     eventHandler(eventName) {
         return (event) => {
-            console.info("new event", eventName, event, this.clients);
-
-            this.lastEvent = Math.max(Number(this.lastEvent), Number(event.lastEventId));
+            if (event.lastEventId)
+                this.lastEvent = Math.max(Number(this.lastEvent), Number(event.lastEventId));
 
             if (isServiceWorker) {
                 for (let i = 0; i < this.clients.length; i++) {
@@ -145,11 +144,6 @@ abstract class eventSource {
                                 data: event.data
                             });
                         }
-                        /*else {
-                            console.log("removing old client", this.clients[i]);
-                            this.removeClient(this.clients[i]);
-                            i--;
-                        }*/
                     })
                 }
             }
@@ -169,8 +163,7 @@ abstract class eventSource {
         this.isOpen = true;
 
         if (fimApiInstance.serverSettings.requestMethods.serverSentEvents
-            && typeof(EventSource) !== "undefined"
-            && false) {
+            && typeof(EventSource) !== "undefined") {
             this.getEventsFromStream();
         }
         else {
@@ -239,7 +232,6 @@ abstract class eventSource {
                 let retryTime = Math.min(30, 2 * this.failureCount++) * 1000;
 
                 this.eventHandler('streamFailed')({
-                    lastEventId : 0,
                     data : JSON.stringify({
                         streamType: streamType,
                         queryId : queryId,
@@ -293,7 +285,6 @@ class roomSource extends eventSource {
         this.getEvents();
 
         // Send Pings
-        console.log("fimApiInstance", fimApiInstance);
         fimApiInstance.ping(this.roomId);
         this.pingInterval = window.setInterval((() => {
             fimApiInstance.ping(this.roomId);
@@ -341,8 +332,6 @@ class userSource extends eventSource {
 }
 
 onmessage = (event) => {
-    console.info("service work message", event);
-
     switch (event.data.eventName) {
         case 'registerApi':
             if (!fimApiInstance)

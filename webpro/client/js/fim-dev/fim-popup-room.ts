@@ -30,6 +30,7 @@ popup.prototype.room = function() {
     this.windowBlurred = false;
     this.messageIndex = [];
     this.isTyping = false;
+    this.lastAudioPlayback = 0;
 
     this.focusListener = false;
     this.blurListener = false;
@@ -271,8 +272,10 @@ popup.prototype.room.prototype.newMessage = function(messageData) {
     /* Blur Events (Notifications */
     if (this.windowBlurred) {
         // Play Sound
-        if (window.settings.audioDing)
+        if (window.settings.audioDing && (new Date()).getTime() - this.lastAudioPlayback > 3000) {
             window.snd.play();
+            this.lastAudioPlayback = (new Date()).getTime();
+        }
 
         // Flash Favicon
         this.faviconFlashStart();

@@ -163,8 +163,6 @@ standard.prototype.sendWorkerMessage = function(event) {
 
 
 standard.prototype.workerCallback = function(name, data) {
-    console.log("received worker event", name, data);
-
     if (typeof window.openObjectInstance[name + "Handler"] === "function") {
         window.openObjectInstance[name + "Handler"](JSON.parse(data));
     }
@@ -177,7 +175,6 @@ standard.prototype.workerCallback = function(name, data) {
 standard.prototype.createWorkerFallback = function(callback) {
     if (typeof onmessage === "undefined" || onmessage === null) {
         postMessage = (event) => {
-            console.log("fallback event", event);
             this.workerCallback(event.name, event.data);
         };
 
@@ -212,7 +209,6 @@ standard.prototype.createWorker = function(callback) {
                 this.serviceWorkerEnabled = true;
 
                 navigator.serviceWorker.onmessage = (event) => {
-                    console.log("event", event);
                     this.workerCallback(event.data.name, event.data.data);
                 };
 

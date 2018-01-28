@@ -109,8 +109,8 @@ var eventSource = /** @class */ (function () {
     eventSource.prototype.eventHandler = function (eventName) {
         var _this = this;
         return function (event) {
-            console.info("new event", eventName, event, _this.clients);
-            _this.lastEvent = Math.max(Number(_this.lastEvent), Number(event.lastEventId));
+            if (event.lastEventId)
+                _this.lastEvent = Math.max(Number(_this.lastEvent), Number(event.lastEventId));
             if (isServiceWorker) {
                 for (var i = 0; i < _this.clients.length; i++) {
                     clients.get(_this.clients[i]).then(function (client) {
@@ -120,11 +120,6 @@ var eventSource = /** @class */ (function () {
                                 data: event.data
                             });
                         }
-                        /*else {
-                            console.log("removing old client", this.clients[i]);
-                            this.removeClient(this.clients[i]);
-                            i--;
-                        }*/
                     });
                 }
             }
@@ -142,8 +137,7 @@ var eventSource = /** @class */ (function () {
     eventSource.prototype.getEvents = function () {
         this.isOpen = true;
         if (fimApiInstance.serverSettings.requestMethods.serverSentEvents
-            && typeof (EventSource) !== "undefined"
-            && false) {
+            && typeof (EventSource) !== "undefined") {
             this.getEventsFromStream();
         }
         else {
@@ -196,7 +190,6 @@ var eventSource = /** @class */ (function () {
                 console.error("error", error);
                 var retryTime = Math.min(30, 2 * _this.failureCount++) * 1000;
                 _this.eventHandler('streamFailed')({
-                    lastEventId: 0,
                     data: JSON.stringify({
                         streamType: streamType,
                         queryId: queryId,
@@ -239,7 +232,6 @@ var roomSource = /** @class */ (function (_super) {
             _this.addClient(clientId);
         _this.getEvents();
         // Send Pings
-        console.log("fimApiInstance", fimApiInstance);
         fimApiInstance.ping(_this.roomId);
         _this.pingInterval = window.setInterval((function () {
             fimApiInstance.ping(_this.roomId);
@@ -279,7 +271,6 @@ var userSource = /** @class */ (function (_super) {
     return userSource;
 }(eventSource));
 onmessage = function (event) {
-    console.info("service work message", event);
     switch (event.data.eventName) {
         case 'registerApi':
             if (!fimApiInstance)
