@@ -402,12 +402,15 @@ popup.prototype.room.prototype.init = function(options) {
 
 
     /* Setup */
-
     // Monitor the window visibility for running favicon flash and notifications.
     document.addEventListener('visibilitychange', this.visibilitychangeListener = this.onVisibilityChange.bind(this));
     window.addEventListener('blur', this.blurListener = this.onBlur.bind(this));
     window.addEventListener('focus',  this.focusListener = this.onFocus.bind(this));
+    window.addEventListener("beforeunload", this.beforeUnload.bind(this));
+
     this.onFocus();
+
+
 
 
     // Set up file upload handler, used for drag/drop, pasting, and insertDoc method.
@@ -651,10 +654,14 @@ popup.prototype.room.prototype.init = function(options) {
             }),
 
             exception: ((exception) => {
+                window.roomId = null; // Set the global roomId false.
+                window.location.hash = "#rooms";
+
                 if (exception.string === 'idNoExist' || exception.string === 'roomIdInvalid') {
-                    window.roomId = null; // Set the global roomId false.
-                    window.location.hash = "#rooms";
                     dia.error('That room doesn\'t exist. Please select a room.');
+                }
+                else if (exception.string === 'parentalBlock') {
+                    dia.error('That room is blocked by your parental controls. Please select a different room.');
                 }
                 else {
                     fimApi.getDefaultExceptionHandler()(exception);
@@ -670,11 +677,20 @@ popup.prototype.room.prototype.init = function(options) {
     }
 };
 
+popup.prototype.room.prototype.beforeUnload = function() {
+    standard.sendWorkerMessage({
+        eventName : 'unlistenRoom',
+        roomId : this.options.roomId
+    });
+};
+
 /**
  * Close all current resources used by this view.
  */
 popup.prototype.room.prototype.close = function() {
-     fimApi.getActiveUsers({}, {
+    this.beforeUnload();
+
+    fimApi.getActiveUsers({}, {
         timerId : 1,
         close : true
     });
@@ -682,11 +698,6 @@ popup.prototype.room.prototype.close = function() {
     document.removeEventListener('visibilitychange', this.visibilitychangeListener);
     window.removeEventListener('blur', this.blurListener);
     window.removeEventListener('focus',  this.focusListener);
-
-    standard.sendWorkerMessage({
-        eventName : 'unlistenRoom',
-        roomId : this.options.roomId
-    });
 
     $('#fileupload').fileupload('destroy');
 

@@ -1,9 +1,9 @@
 self.addEventListener('install', function(event) {
-    //event.waitUntil(self.skipWaiting()); // Activate worker immediately
+    event.waitUntil(self.skipWaiting()); // Activate worker immediately
 });
 
 self.addEventListener('activate', function(event) {
-    //event.waitUntil(self.clients.claim()); // Become available to all pages
+    event.waitUntil(self.clients.claim()); // Become available to all pages
 });
 
 
@@ -27,12 +27,44 @@ self.addEventListener('push', function(event) {
 });
 
 let isServiceWorker = false;
-let directory = '';
 let userSourceInstance = null;
 let roomSources = [];
 let isBlurred = false;
-let serverSettings = {};
-let lastSessionHash = '';
+
+let fimApiInstance;
+
+if (typeof fimApi === "undefined") {
+    // Juryrig the jQuery properties for jQuery
+    var document = self.document = {parentNode: null, nodeType: 9, toString: function() {return "FakeDocument"}};
+    var window = self.window = self;
+    var fakeElement = Object.create(document);
+    fakeElement.nodeType = 1;
+    fakeElement.toString=function() {return "FakeElement"};
+    fakeElement.parentNode = fakeElement.firstChild = fakeElement.lastChild = fakeElement;
+    fakeElement.ownerDocument = document;
+
+    document.head = document.body = fakeElement;
+    document.ownerDocument = document.documentElement = document;
+    document.getElementById = document.createElement = function() {return fakeElement;};
+    document.createDocumentFragment = function() {return this;};
+    document.getElementsByTagName = document.getElementsByClassName = function() {return [fakeElement];};
+    document.getAttribute = document.setAttribute = document.removeChild =
+        document.addEventListener = document.removeEventListener =
+            function() {return null;};
+    document.cloneNode = document.appendChild = function() {return this;};
+    document.appendChild = function(child) {return child;};
+
+    // Load AJAX-only version of jQuery
+    importScripts("client/js/jquery.ajax.min.js");
+    var $ = jQuery;
+
+    // Load fim-api
+    importScripts('client/js/fim-dev/fim-api.ts.js');
+}
+else {
+    fimApiInstance = fimApi;
+}
+
 
 /**
  * A generic event source provider.
@@ -59,6 +91,8 @@ abstract class eventSource {
     }
 
     addClient(clientId) {
+        console.log("add client", clientId, this.clients);
+
         this.clients.push(clientId);
 
         if (!this.isOpen) {
@@ -68,6 +102,8 @@ abstract class eventSource {
     }
 
     removeClient(clientId) {
+        console.log("remove client", clientId, this.clients);
+
         this.clients.splice(this.clients.indexOf(clientId), 1);
 
         if (this.clients.length === 0) {
@@ -101,7 +137,7 @@ abstract class eventSource {
             this.lastEvent = Math.max(Number(this.lastEvent), Number(event.lastEventId));
 
             if (isServiceWorker) {
-                for (i in this.clients) {
+                for (let i = 0; i < this.clients.length; i++) {
                     clients.get(this.clients[i]).then((client) => {
                         if (client) {
                             client.postMessage({
@@ -109,9 +145,11 @@ abstract class eventSource {
                                 data: event.data
                             });
                         }
-                        else {
+                        /*else {
+                            console.log("removing old client", this.clients[i]);
                             this.removeClient(this.clients[i]);
-                        }
+                            i--;
+                        }*/
                     })
                 }
             }
@@ -130,7 +168,7 @@ abstract class eventSource {
     getEvents() {
         this.isOpen = true;
 
-        if (serverSettings.requestMethods.serverSentEvents
+        if (fimApiInstance.serverSettings.requestMethods.serverSentEvents
             && typeof(EventSource) !== "undefined"
             && false) {
             this.getEventsFromStream();
@@ -156,7 +194,7 @@ abstract class eventSource {
         if (this.eventSource)
             this.eventSource.close();
 
-        this.eventSource = new EventSource(directory + 'stream.php?streamType=' + streamType + '&lastEvent=' + this.lastEvent + (queryId ? '&queryId=' + queryId : '') + '&access_token=' + lastSessionHash);
+        this.eventSource = new EventSource(fimApiInstance.directory + 'stream.php?streamType=' + streamType + '&lastEvent=' + this.lastEvent + (queryId ? '&queryId=' + queryId : '') + '&access_token=' + fimApiInstance.lastSessionHash);
 
         // If we get an error that causes the browser to close the connection, open a fallback connection instead
         this.eventSource.onerror = ((e) => {
@@ -191,8 +229,12 @@ abstract class eventSource {
      */
     getEventsFromFallbackGenerator(streamType, queryId) {
         // todo: without fetch?
-        fetch(directory + "stream.php?fallback=1&streamType=" + streamType + (queryId ? "&queryId=" + queryId : '') + "&lastEvent=" + this.lastEvent + "&access_token=" + lastSessionHash)
-            .catch((error) => {
+        fimApiInstance.getEventsFallback({
+            'streamType': streamType,
+            'queryId': (queryId ? queryId : null),
+            'lastEvent': this.lastEvent
+        }, {
+            'error' : (error) => {
                 console.error("error", error);
                 let retryTime = Math.min(30, 2 * this.failureCount++) * 1000;
 
@@ -210,16 +252,14 @@ abstract class eventSource {
                         this.getEventsFromFallback()
                     }), retryTime);
                 }
-            })
-            .then(response => response.json())
-            .then((data) => {
-                for (i in data['events']) {
-                    this.eventHandler(data['events'][i].eventName)({
-                        lastEventId : Number(data['events'][i].id),
-                        data : JSON.stringify(data['events'][i].data)
-                    });
-                }
-
+            },
+            'each' : (event) => {
+                this.eventHandler(event.eventName)({
+                    lastEventId : Number(event.id),
+                    data : JSON.stringify(event.data)
+                });
+            },
+            'end' : () => {
                 if (this.isOpen) {
                     this.eventTimeout = setTimeout((() => {
                         this.getEvents()
@@ -227,7 +267,8 @@ abstract class eventSource {
                 }
 
                 this.failureCount = 0;
-            });
+            }
+        });
     }
 }
 
@@ -241,18 +282,22 @@ class roomSource extends eventSource {
     /** @var A return from setInterval, set when we start pinging the server. */
     pingInterval : any;
 
-    constructor(roomId) {
+    constructor(roomId, clientId) {
         super();
 
         this.roomId = roomId;
 
+        if (clientId)
+            this.addClient(clientId);
+
         this.getEvents();
 
         // Send Pings
-        /*fimApiInstance.ping(this.roomId);
+        console.log("fimApiInstance", fimApiInstance);
+        fimApiInstance.ping(this.roomId);
         this.pingInterval = window.setInterval((() => {
             fimApiInstance.ping(this.roomId);
-        }), 60 * 1000);*/
+        }), 60 * 1000);
     }
 
     close() {
@@ -261,7 +306,7 @@ class roomSource extends eventSource {
         if (this.pingInterval)
             clearInterval(this.pingInterval);
 
-        //fimApiInstance.exitRoom(this.roomId);
+        fimApiInstance.exitRoom(this.roomId);
     }
 
     getEventsFromStream() {
@@ -300,13 +345,14 @@ onmessage = (event) => {
 
     switch (event.data.eventName) {
         case 'registerApi':
-            serverSettings = event.data.serverSettings;
-            directory = event.data.directory;
+            if (!fimApiInstance)
+                fimApiInstance = new fimApi(event.data.serverSettings);
+
             isServiceWorker = event.data.isServiceWorker;
             break;
 
         case 'login':
-            lastSessionHash = event.data.sessionHash;
+            fimApiInstance.lastSessionHash = event.data.sessionHash;
 
             if (userSourceInstance)
                 userSourceInstance.close();
@@ -320,7 +366,7 @@ onmessage = (event) => {
 
         case 'listenRoom':
             if (!roomSources[String(event.data.roomId)])
-                roomSources[String(event.data.roomId)] = new roomSource(event.data.roomId);
+                roomSources[String(event.data.roomId)] = new roomSource(event.data.roomId, (event.source && event.source.id ? event.source.id : false));
             else if (event.source && event.source.id)
                 roomSources[String(event.data.roomId)].addClient(event.source.id);
             else

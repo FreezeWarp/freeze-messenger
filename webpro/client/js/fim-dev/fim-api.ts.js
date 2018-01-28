@@ -1,3 +1,28 @@
+if (typeof XMLHttpRequest === 'undefined') {
+    $.ajax = function (options) {
+        var params = {
+            method: options.type ? options.type.toUpperCase() : 'GET'
+        };
+        if (options.data && params.method !== 'GET') {
+            params['body'] = new URLSearchParams($.param(options.data));
+        }
+        var url = options.url + (params.method === 'GET' && options.data ? '?' + $.param(options.data) : '');
+        console.log("request", options, url, params);
+        var promise = jQuery.Deferred();
+        $.when(fetch(url, params)).then(function (response) {
+            var contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                return response.json();
+            }
+            else {
+                promise.reject("Could not parse JSON.");
+            }
+        })
+            .then(function (json) { promise.resolve(json); })["catch"](function (error) { promise.reject(error); });
+        ;
+        return promise.promise();
+    };
+}
 var fimApi = function (serverSettings) {
     var _this = this;
     this.directory = serverSettings.installUrl;

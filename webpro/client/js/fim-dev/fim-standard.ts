@@ -12,7 +12,6 @@ let standard = function() {
     this.sessionHash = "";
     this.anonId = "";
     this.activeLogin = {};
-    this.worker = null;
     this.watchRoomsData = {};
 
     this.lastEvent = 0;
@@ -202,8 +201,9 @@ standard.prototype.createWorkerFallback = function(callback) {
 standard.prototype.createWorker = function(callback) {
     if ("serviceWorker" in navigator
         // Since service workers are more experimental, only enable them if push notifications are on.
-        && window.settings.pushNotifications) {
-        this.worker = navigator.serviceWorker.register('serviceWorker.ts.js').then((registration) => {
+        && window.settings.pushNotifications
+        && fimApi.serverSettings.pushNotifications) {
+        navigator.serviceWorker.register('serviceWorker.ts.js?_=' + window.lastCache).then((registration) => {
             console.log('Service worker registration succeeded:', registration, navigator.serviceWorker.controller);
 
             if (navigator.serviceWorker.controller) {
@@ -212,6 +212,7 @@ standard.prototype.createWorker = function(callback) {
                 this.serviceWorkerEnabled = true;
 
                 navigator.serviceWorker.onmessage = (event) => {
+                    console.log("event", event);
                     this.workerCallback(event.data.name, event.data.data);
                 };
 
