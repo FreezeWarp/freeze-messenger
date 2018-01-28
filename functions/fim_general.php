@@ -289,8 +289,7 @@ function fim_sanitizeGPC($type, $data) {
                 // If the global is provided, check to see if it's valid. If not, throw error.
                 if (isset($activeGlobal[$indexName], $indexMetaData['valid'])) {
                     if (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'list') {
-                        if (count(array_diff($activeGlobal[$indexName], $indexMetaData['valid'])) > 0)
-                            new \Fim\Error("{$indexName}InvalidValues", "Invalid value(s) for API parameter '$indexName': " . implode(', ', array_diff($activeGlobal[$indexName], $indexMetaData['valid'])));
+                        // We'll get back here.
                     }
 
                     elseif (isset($indexMetaData['cast']) && $indexMetaData['cast'] === 'dict')
@@ -376,13 +375,19 @@ function fim_sanitizeGPC($type, $data) {
                         $activeGlobal[$indexName]
                     );
 
-                    // Apply filters, evaltrue, and valid -- these will cast the datatype, remove falsey entries, and remove entries not on the valid list respectively.
+                    // Apply filters and evaltrue -- these will cast the datatype and remove falsey entries.
                     $newData[$indexName] = fim_arrayValidate(
                         $arrayFromGlobal,
-                        ($indexMetaData['filter'] ? $indexMetaData['filter'] : 'string'),
-                        ($indexMetaData['evaltrue'] ? false : true),
-                        (isset($indexMetaData['valid']) ? $indexMetaData['valid'] : false)
+                        $indexMetaData['filter'] ?: 'string',
+                        !$indexMetaData['evaltrue']
                     );
+
+                    // Find nonvalid values
+                    if (isset($indexMetaData['valid'])) {
+                        $diffValues = array_diff($newData[$indexName], $indexMetaData['valid']);
+                        if (count($diffValues) > 0)
+                            new \Fim\Error("{$indexName}InvalidValues", "Invalid value(s) for API parameter '$indexName': " . var_export($diffValues, true));
+                    }
 
                     // Remove duplicate values from the list if required
                     if (isset($indexMetaData['removeDuplicates']) && $indexMetaData['removeDuplicates']) {
@@ -679,18 +684,6 @@ function fim_naturalLanguageJoin(string $glue, array $list, string $conjunction 
         return implode($glue, $list) . ' ' . $conjunction . ' ' . $last;
     }
     return $last;
-}
-
-
-/**
- * Acts like PHP's explode, but will return an empty array ([] instead of [""]) if passed an empty string or otherwise falsey value.
- *
- * @param string $separator
- * @param string $list
- * @return array
- */
-function fim_emptyExplode(string $separator, $list) {
-    return $list ? explode($separator, $list) : [];
 }
 
 

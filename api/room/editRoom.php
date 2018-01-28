@@ -59,9 +59,9 @@ $request = fim_sanitizeGPC('p', [
 
     'parentalFlags' => [
         'cast'      => 'list',
-        'transform' => 'csv',
         'default'   => ($requestHead['_action'] === 'create' ? \Fim\Config::$parentalFlagsDefault : null),
         'valid'     => \Fim\Config::$parentalFlags,
+        'evaltrue'  => true
     ],
 ]);
 
@@ -125,7 +125,7 @@ switch ($requestHead['_action']) {
             $request = array_merge($request, fim_sanitizeGPC('p', [
                 'options' => [
                     'cast'      => 'bitfieldShift',
-                    'source'    => ($request['_action'] === 'edit'
+                    'source'    => ($requestHead['_action'] === 'edit'
                         ? $room->options
                         : 0
                     ),

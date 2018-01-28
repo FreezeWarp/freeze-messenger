@@ -27,4 +27,24 @@ class Utilities {
             ? ($rgb1luminance + .05) / ($rgb2luminance + .05)
             : ($rgb2luminance + .05) / ($rgb1luminance + .05);
     }
+
+    public static function encodeList(array $list) {
+        return implode(',', $list);
+    }
+
+    public static function decodeList($listString) {
+        return self::emptyExplode(",", $listString);
+    }
+
+    /**
+     * Acts like PHP's explode, but will return an empty array ([] instead of [""]) if passed an empty string or otherwise falsey value.
+     *
+     * @param string $separator
+     * @param string $list
+     * @return array
+     */
+    public static function emptyExplode(string $separator, $list) {
+        return $list ? explode($separator, $list) : [];
+    }
+
 }

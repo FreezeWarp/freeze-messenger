@@ -1579,16 +1579,24 @@ class DatabaseInstance extends DatabaseSQL
                 $returnBitfield = 65535;
 
             // A list of "banned" user groups can be specified in config. These groups lose all permissions, similar to having userPrivs = 0. But, in the interest of sanity, we don't check it elsewhere.
-            elseif (in_array($user->mainGroupId, $loginConfig['bannedGroups']))
+            elseif (in_array($user->mainGroupId, $loginConfig['bannedGroups'])) {
                 $returnBitfield = 0;
+
+                if (func_num_args() > 2)
+                    $reason = 'banned';
+            }
 
             // Owners have all permissions (but can still be banned).
             elseif ($room->ownerId === $user->id)
                 $returnBitfield = 65535;
 
             // A user blocked by parental controls has no permissions. This cannot apply to the room owner.
-            elseif (($user->parentalAge && $room->parentalAge && $room->parentalAge > $user->parentalAge) || fim_inArray($user->parentalFlags, $room->parentalFlags))
+            elseif (($user->parentalAge && $room->parentalAge && $room->parentalAge > $user->parentalAge) || fim_inArray($user->parentalFlags, $room->parentalFlags)) {
                 $returnBitfield = 0;
+
+                if (func_num_args() > 2)
+                    $reason = 'parentalBlock';
+            }
 
             else {
                 // Obtain Data from roomPermissions Table
@@ -1615,6 +1623,10 @@ class DatabaseInstance extends DatabaseSQL
                         'expires' => $this->now(0, 'gt')
                     )))->getCount() > 0) {
                     $returnBitfield &= Room::ROOM_PERMISSION_VIEW;
+
+                    if (func_num_args() > 2) {
+                        $reason = 'kick';
+                    }
                 }
             }
 
@@ -1627,17 +1639,16 @@ class DatabaseInstance extends DatabaseSQL
                 $returnBitfield &= ~(Room::ROOM_PERMISSION_POST | Room::ROOM_PERMISSION_TOPIC); // And no one can post in them - a rare case where even admins are denied certain abilities.
             }
 
+
             /* Update cache and return. */
             $this->updatePermissionsCache($room->id,
                 $user->id,
                 $returnBitfield,
-                (isset($kicks) && $kicks->getCount() > 0 ? 'kick' : ''),
-                (isset($kicks) && $kicks->getCount() > 0 ? $kicks->getAsArray(false)['expires'] - time() : null)
+                $reason ?: '',
+                isset($kicks) && $kicks->getCount() > 0
+                    ? $kicks->getAsArray(false)['expires'] - time()
+                    : null
             );
-
-            if (isset($kicks) && $kicks->getCount() > 0 && $reason) {
-                $reason = 'kick';
-            }
 
             return $returnBitfield;
         }
@@ -1790,22 +1801,23 @@ class DatabaseInstance extends DatabaseSQL
             return -1;
 
         elseif (($permissionsCache = \Cache\CacheFactory::get("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) !== false) {
-            $reason = $permissionsCache['reason'];
+            if (func_num_args() > 2)
+                $reason = $permissionsCache['reason'];
 
             return $permissionsCache['bitfield'];
         }
 
         else {
             $permissions = $this->select(array(
-                $this->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires'
+                $this->sqlPrefix . 'roomPermissionsCache' => 'roomId, userId, permissions, expires, deniedReason'
             ), array(
                 'roomId' => $this->int($roomId),
                 'userId' => $this->int($userId),
                 'expires' => $this->now(0, 'gte')
             ))->getAsArray(false);
 
-            if (!empty($permissions) && $reason) {
-                $reason = $permissions['reason'];
+            if (!empty($permissions) && func_num_args() > 2) {
+                $reason = $permissions['deniedReason'];
             }
 
             return empty($permissions)
@@ -1852,10 +1864,10 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function deletePermissionsCache($roomId, $attribute = false, $param = false) {
         if ($attribute === 'user')
-            return $this->deleteUserPermissionsCache($roomId, $param);
+            return $this->deleteUserPermissionsCache($param, $roomId);
 
         elseif ($attribute === 'group')
-            return $this->deleteGroupPermissionsCache($roomId, $param);
+            return $this->deleteGroupPermissionsCache($param, $roomId);
 
         elseif ($attribute === false)
             return $this->deleteRoomPermissionsCache($roomId);
@@ -1871,14 +1883,15 @@ class DatabaseInstance extends DatabaseSQL
      * @param int $roomId The room ID a permission change has occurred in.
      * @param int $userId The user ID for whom a permission has changed.
      */
-    public function deleteUserPermissionsCache($roomId, $userId) {
+    public function deleteUserPermissionsCache($userId, $roomId = false) {
         if (Config::$roomPermissionsCacheEnabled) {
             \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
 
-            $this->delete($this->sqlPrefix . 'roomPermissionsCache', [
-                'roomId' => $roomId,
-                'userId' => $userId
-            ]);
+            $conditions = ['userId' => $userId];
+            if ($roomId)
+                $conditions['roomId'] = $roomId;
+
+            $this->delete($this->sqlPrefix . 'roomPermissionsCache', $conditions);
         }
     }
 
@@ -1890,18 +1903,21 @@ class DatabaseInstance extends DatabaseSQL
      * @param string $attribute
      * @param int $param The new permission.
      */
-    public function deleteGroupPermissionsCache($roomId, $groupId) {
+    public function deleteGroupPermissionsCache($groupId, $roomId = false) {
         if (Config::$roomPermissionsCacheEnabled) {
             $userIds = $this->getSocialGroupMembers($groupId);
 
-            foreach ($userIds AS $userId) {
-                \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+            if ($roomId) {
+                foreach ($userIds AS $userId) {
+                    \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+                }
             }
 
-            $this->delete($this->sqlPrefix . 'roomPermissionsCache', [
-                'roomId' => $roomId,
-                'userId' => $this->in($userIds)
-            ]);
+            $conditions = ['userId' => $this->in($userIds)];
+            if ($roomId)
+                $conditions['roomId'] = $roomId;
+
+            $this->delete($this->sqlPrefix . 'roomPermissionsCache', $conditions);
         }
     }
 

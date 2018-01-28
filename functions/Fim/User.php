@@ -428,7 +428,7 @@ class User extends DynamicObject
     {
         /* Flag the Object for Recaching */
         $this->doCache = true;
-
+        $this->__get($listName);
 
         /* Define Tables */
         $tableNames = [
@@ -436,6 +436,9 @@ class User extends DynamicObject
             'ignoredUsers'  => 'userIgnoreList',
             'friendedUsers' => 'userFriendsList'
         ];
+
+        if (!isset($tableNames[$listName]))
+            throw new Exception('Unrecognised list in editList.');
 
         $table = \Fim\Database::$sqlPrefix . $tableNames[$listName];
 
@@ -608,10 +611,10 @@ class User extends DynamicObject
     /**
      * Set {@see $parentalFlags}
      */
-    protected function setParentalFlags($flags)
+    protected function setParentalFlags(array $parentalFlags)
     {
         if (\Fim\Config::$parentalEnabled)
-            $this->parentalFlags = fim_emptyExplode(',', $flags);
+            $this->parentalFlags = $parentalFlags;
     }
 
     /**
@@ -797,23 +800,23 @@ class User extends DynamicObject
      *
      * @return bool|resource
      */
-    public function setDatabase($databaseFields)
+    public function setDatabase($userParameters)
     {
-        if (isset($databaseFields['password'])) {
+        if (isset($userParameters['password'])) {
             $h = new \Login\PasswordHash(8, false);
-            $databaseFields['passwordHash'] = $h->HashPassword($databaseFields['password']);
-            $databaseFields['passwordFormat'] = 'phpass';
+            $userParameters['passwordHash'] = $h->HashPassword($userParameters['password']);
+            $userParameters['passwordFormat'] = 'phpass';
 
-            unset($databaseFields['password']);
+            unset($userParameters['password']);
         }
 
-        $this->populateFromArray($databaseFields, true);
-        $databaseFields = fim_dbCastArrayEntry($databaseFields, 'privs', Type::bitfield);
+        $this->populateFromArray($userParameters, true);
+        $userParameters = fim_dbCastArrayEntry($userParameters, 'privs', Type::bitfield);
 
         if ($this->id) {
             \Fim\Database::instance()->startTransaction();
 
-            if (fim_inArray(array_keys($databaseFields), explode(', ', \Fim\DatabaseInstance::userHistoryColumns))) {
+            if (fim_inArray(array_keys($userParameters), explode(', ', \Fim\DatabaseInstance::userHistoryColumns))) {
                 if ($existingUserData = \Fim\Database::instance()->getUsers([
                     'userIds' => [$this->id],
                     'columns' => \Fim\DatabaseInstance::userHistoryColumns,
@@ -824,7 +827,11 @@ class User extends DynamicObject
 
             $return = \Fim\Database::instance()->upsert(\Fim\Database::$sqlPrefix . "users", [
                 'id' => $this->id,
-            ], $databaseFields);
+            ], $userParameters);
+
+            if (isset($userParameters['parentalAge']) || isset($userParameters['parentalFlags'])) {
+                \Fim\Database::instance()->deleteUserPermissionsCache($this->id);
+            }
 
             \Fim\Database::instance()->endTransaction();
 
@@ -834,11 +841,11 @@ class User extends DynamicObject
         }
 
         else {
-            $databaseFields = array_merge([
+            $userParameters = array_merge([
                 'privs' => \Fim\Config::$defaultUserPrivs
-            ], $databaseFields);
+            ], $userParameters);
 
-            $return = \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "users", $databaseFields);
+            $return = \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "users", $userParameters);
 
             $this->id = \Fim\Database::instance()->getLastInsertId();
 

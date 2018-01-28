@@ -118,9 +118,11 @@ if (isset($requestHead['id'])) {
     try {
         $room = \Fim\Database::instance()->getRoom($requestHead['id']);
 
-        if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW)) {
-            new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
+        if (!(\Fim\Database::instance()->hasPermission($user, $room, $reason) & Room::ROOM_PERMISSION_VIEW)) {
+            new \Fim\Error($reason ?: 'idNoExist', $reason ?: 'The given "id" parameter does not correspond with a real room.');
         }
+    } catch (\Fim\ErrorThrown $ex) {
+        throw $ex;
     } catch (Exception $ex) {
         new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
     }

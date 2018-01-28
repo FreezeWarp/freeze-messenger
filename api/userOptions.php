@@ -146,7 +146,8 @@ $request = fim_sanitizeGPC('p', array(
 
     'parentalFlags' => array(
         'cast' => 'list',
-        'valid' => \Fim\Config::$parentalFlags, // Note that values are dropped automatically if a value is not allowed. We will not tell the client this.
+        'valid' => \Fim\Config::$parentalFlags,
+        'evaltrue'  => true
     ),
 
     'favRooms' => array(
@@ -369,7 +370,7 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
      ********** Parental Flags **********
      ************************************/
     if (isset($request['parentalFlags']))
-        $updateArray['parentalFlags'] = implode(',', $request['parentalFlags']);
+        $updateArray['parentalFlags'] = $request['parentalFlags'];
 
 
 

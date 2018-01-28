@@ -731,10 +731,10 @@ class Room extends DynamicObject
      *
      * @param $parentalFlags string A comma-separated list of parental flags from the database.
      */
-    protected function setParentalFlags($parentalFlags)
+    protected function setParentalFlags(array $parentalFlags)
     {
-        if (\Fim\Config::$parentalEnabled && is_string($parentalFlags))
-            $this->parentalFlags = fim_emptyExplode(',', $parentalFlags);
+        if (\Fim\Config::$parentalEnabled)
+            $this->parentalFlags = $parentalFlags;
     }
 
     /**
@@ -844,12 +844,12 @@ class Room extends DynamicObject
         $this->populateFromArray($roomParameters);
 
         if ($this->id) {
-            \Fim\Database::instance()->startTransaction();
-
             if ($existingRoomData = \Fim\Database::instance()->getRooms([
                 'roomIds' => [$this->id],
                 'columns' => explode(', ', \Fim\DatabaseInstance::roomHistoryColumns), // TODO: uh... shouldn't roomHistoryColumns be array?
             ])->getAsArray(false)) {
+                \Fim\Database::instance()->startTransaction();
+
                 \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "roomHistory", fim_arrayFilterKeys(fim_removeNullValues($existingRoomData), ['roomId', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge']));
 
                 $return = \Fim\Database::instance()->update(
@@ -860,17 +860,23 @@ class Room extends DynamicObject
                     ]
                 );
 
-                if (isset($roomParameters['defaultPermissions'])) {
+                if (isset($roomParameters['defaultPermissions'])
+                    || isset($roomParameters['parentalAge'])
+                    || isset($roomParameters['parentalFlags'])) {
                     \Fim\Database::instance()->deletePermissionsCache($this->id);
                 }
+
+                \Fim\Database::instance()->endTransaction();
+
+                return $return;
             }
 
-            \Fim\Database::instance()->endTransaction();
-
-            return $return;
+            return false;
         }
 
         else {
+            \Fim\Database::instance()->startTransaction();
+
             \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "rooms", $roomParameters);
             \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "users", [
                 'ownedRooms' => \Fim\Database::instance()->equation('$ownedRooms + 1'),
@@ -878,6 +884,7 @@ class Room extends DynamicObject
                 "id" => $this->ownerId
             ]);
 
+            \Fim\Database::instance()->endTransaction();
 
             return $this->id = \Fim\Database::instance()->getLastInsertId();
         }
