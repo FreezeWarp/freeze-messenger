@@ -104,9 +104,9 @@ WebPro
 WebKit notifications require that you run FreezeMessenger on a HTTPS domain. If you are using HTTP, check to see if your host supports adding a free [LetsEncrypt](https://letsencrypt.org/) certificate.
 
 ### How do I enable push notifications?
-Push notifications are experimentally available in Beta 3 to those running FreezeMessenger on an HTTPS-enabled server. To enable push notifications, set [`$enablePushNotifications`](http://josephtparsons.com/messenger/docs/classes/classes/Fim.Config.html#property_enablePushNotifications) to true in the [admin control panel](#configuration-editor). Users can then opt-in to push notifications in WebPro in their settings.
+Push notifications are experimentally available in Beta 3 to those running FreezeMessenger on an HTTPS-enabled server. To enable push notifications, set [`$enablePushNotifications`](http://josephtparsons.com/messenger/docs/classes/classes/Fim.Config.html#property_enablePushNotifications) to true in the [admin control panel](#configuration-editor), and set [`$pushNotificationsPrivateKey`](http://josephtparsons.com/messenger/docs/classes/classes/Fim.Config.html#property_pushNotificationsPrivateKey) and [`$pushNotificationsPublicKey`](http://josephtparsons.com/messenger/docs/classes/classes/Fim.Config.html#property_pushNotificationsPublicKey) to a SSL keypair, as per the instructions available on the [WebPush library page](https://github.com/web-push-libs/web-push-php). Users can then opt-in to push notifications in WebPro in their settings.
 
-Note that push notifications are not especially performant, regardless of your available caching or streaming: in order to push a notification, an HTTPS request has to be made to the browser endpoints, which for active rooms can take a while. In the future, more granular options will be available, such as only enabling push notifications for private rooms.
+Note that, in Beta 3, push notifications are only supported if you have Redis or Memcached installed; they will be more generally available in Beta 4. In addition, they are still not especially performant, regardless of your available caching or streaming: in order to push a notification, an HTTPS request has to be made to the browser endpoints, which for active rooms can take a while. In the future, more granular options will be available, such as only enabling push notifications for private rooms.
 
 
 SQL Server
@@ -354,6 +354,11 @@ Kafka
 
 Finally, the [rdkafka](https://pecl.php.net/package/rdkafka) plugin can be installed and used to connect to an Apache Kafka server. However, partitioning is not currently well-implemented, and this method is considered experimental.
 
+WebPush
+-------
+This is a special, experimental method using the [WebPush library](https://github.com/web-push-libs/web-push-php). It specifically writes to the Push notification systems used by Google Chrome and Mozilla Firefox for push messaging.
+
+
 Adding Your Own Methods
 -----------------------
 
@@ -441,7 +446,7 @@ Caching is deployed in a number of ways throughout FreezeMessenger. We sort cach
 
 1. __Disk Cache__: A cache that writes to disk. This currently only includes the custom disk-cache implementation included with FreezeMessenger. However, if a memory cache or a distributed cache is available (in that order), they will always be used instead of a disk cache.
 2. __Memory Cache__: A cache that writes to system memory, typically for users that can be "out-of-sync" with users on other servers. This currently only includes [APC](http://php.net/manual/en/book.apc.php) and [APCu](http://php.net/manual/en/book.apcu.php), but any distributed cache may be used instead.
-3. __Distributed Cache__: A cache that is synchronised across servers, typically for data that should be updated for all users simultaneously. This currently includes [Redis](https://github.com/phpredis/phpredis) and [Memcached](http://php.net/manual/en/book.memcached.php), though any available memory cache may be used instead (albeit at the risk of de-syncing data).
+3. __Distributed Cache__: A cache that is synchronised across servers, typically for data that should be updated for all users simultaneously. This currently includes [Redis](https://github.com/phpredis/phpredis) and [Memcached](http://php.net/manual/en/book.memcached.php), though in some instances any available memory cache may be used instead (albeit at the risk of de-syncing data).
 
 Complete Caches (Disk)
 ----------------------
@@ -468,6 +473,8 @@ Some functions query many different tables in order to ascertain relatively litt
 -   __fimDatabase->hasPermission__ takes two arguments, a fimRoom and a fimUser, and computes the bitfield of the user's permissions in that room. If a distributed cache is available, we use it to cache the result; alternatively, we cache the result in the [`roomPermissionsCache`](http://josephtparsons.com/messenger/docs/database.htm#roomPermissionsCache) table.
 
 -   __The number of queries of a given type a user has made in any given minute__ is preferentially tracked using a memory cache. If no memory cache is available, it will instead use the [`accessFlood`](http://josephtparsons.com/messenger/docs/database.htm#accessFlood) table.
+
+-   __The last event in an event stream__ is tracked using a distributed cache, if one is available. This allows us to reduce the number of database queries needed when using database streaming.
 
 Memory Table Caches
 -------------------
