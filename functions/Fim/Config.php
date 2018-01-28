@@ -719,7 +719,7 @@ class Config {
     public static $sslVerify = false;
 
     /** @var string If you are using a self-signed (or LetsEncrypt) certificate, this should be its location on the filesystem. */
-    public static $sslCertLocation = '/etc/letsencrypt/live/messenger.josephtparsons.com/fullchain.pem';
+    public static $sslCertLocation = '';
 
     public static $recaptchaPublicKey = '';
 
