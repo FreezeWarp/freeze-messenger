@@ -571,12 +571,12 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
 
                             var oembeds = [{
                                 name: 'dailyMotion',
-                                url: 'http://www.dailymotion.com/services/oembed?format=json&url=',
+                                url: 'https://www.dailymotion.com/services/oembed?format=json&url=',
                                 regex: new RegExp("^https?://(www\.)?dailymotion\.com/video/.+$"),
                                 callback: videoCallback
                             }, {
                                 name: 'deviantArt',
-                                url: 'http://backend.deviantart.com/oembed?format=jsonp&url=',
+                                url: 'https://backend.deviantart.com/oembed?format=jsonp&url=',
                                 regex: new RegExp("^https?://[^\.]+\.deviantart\.com/art/.+$"),
                                 callback: function (tag, data, sourceUrl) {
                                     tag.html('').append($('<a target="_blank">').attr('href', sourceUrl).append(
@@ -595,7 +595,7 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
                             }, {
                                 name: 'flickr',
                                 url: 'https://www.flickr.com/services/oembed/?format=json&url=',
-                                regex: new RegExp("^https?://(www\.)?flickr\.com/photos/.+/$"),
+                                regex: new RegExp("^https?:\/\/(www\.)?(flickr\.com\/photos\/|flic\.kr\/p\/).+$"),
                                 jsoncallback: 'jsoncallback',
                                 callback: function (tag, data, sourceUrl) {
                                     // TODO: the Flickr embed JS isn't working. Not sure why.
