@@ -24,7 +24,7 @@
         <script type="text/javascript">
         function loadExternalCodeSnippets() {
             Array.prototype.slice.call(document.querySelectorAll('pre[data-src]')).forEach(function (pre) {
-                var src = pre.getAttribute('data-src').replace( /\\/g, '/');
+                var src = pre.getAttribute('data-src');
                 var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
                 var language = 'php';
 
@@ -119,12 +119,12 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a href="../reports/errors.html">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">1179</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">1173</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="../reports/markers.html">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">41</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">37</span>
                                 </a>
                             </li>
                             <li>
@@ -149,28 +149,28 @@
                                 <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-651208322"></a>
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-1491848783"></a>
                                 <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
             </div>
-            <div id="namespace-651208322" class="accordion-body collapse in">
+            <div id="namespace-1491848783" class="accordion-body collapse in">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1362510485"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-520444917"></a>
                                 <a href="../namespaces/Cache.html" style="margin-left: 30px; padding-left: 0">Cache</a>
             </div>
-            <div id="namespace-1362510485" class="accordion-body collapse ">
+            <div id="namespace-520444917" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-344899771"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1187928470"></a>
                                 <a href="../namespaces/Cache.Driver.html" style="margin-left: 30px; padding-left: 0">Driver</a>
             </div>
-            <div id="namespace-344899771" class="accordion-body collapse ">
+            <div id="namespace-1187928470" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -202,19 +202,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1710379900"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1182178108"></a>
                                 <a href="../namespaces/Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
             </div>
-            <div id="namespace-1710379900" class="accordion-body collapse ">
+            <div id="namespace-1182178108" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2117100868"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-183864759"></a>
                                 <a href="../namespaces/Database.Index.html" style="margin-left: 30px; padding-left: 0">Index</a>
             </div>
-            <div id="namespace-2117100868" class="accordion-body collapse ">
+            <div id="namespace-183864759" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -230,31 +230,11 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-178310328"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1193617200"></a>
                                 <a href="../namespaces/Database.SQL.html" style="margin-left: 30px; padding-left: 0">SQL</a>
             </div>
-            <div id="namespace-178310328" class="accordion-body collapse ">
+            <div id="namespace-1193617200" class="accordion-body collapse ">
                 <div class="accordion-inner">
-
-                                                    <div class="accordion" style="margin-bottom: 0">
-        <div class="accordion-group">
-            <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1264334105"></a>
-                                <a href="../namespaces/Database.SQL.Drivers.html" style="margin-left: 30px; padding-left: 0">Drivers</a>
-            </div>
-            <div id="namespace-1264334105" class="accordion-body collapse ">
-                <div class="accordion-inner">
-
-                    
-                    <ul>
-                                                                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoMysql.html">PdoMysql</a></li>
-                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoPgsql.html">PdoPgsql</a></li>
-                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoSqlsrv.html">PdoSqlsrv</a></li>
-                                            </ul>
-                </div>
-            </div>
-        </div>
-    </div>
 
                     
                     <ul>
@@ -275,10 +255,10 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2131108465"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-633912975"></a>
                                 <a href="../namespaces/Database.Type.html" style="margin-left: 30px; padding-left: 0">Type</a>
             </div>
-            <div id="namespace-2131108465" class="accordion-body collapse ">
+            <div id="namespace-633912975" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -307,19 +287,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1726737112"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-532666252"></a>
                                 <a href="../namespaces/Fim.html" style="margin-left: 30px; padding-left: 0">Fim</a>
             </div>
-            <div id="namespace-1726737112" class="accordion-body collapse ">
+            <div id="namespace-532666252" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-638728975"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-496660113"></a>
                                 <a href="../namespaces/Fim.OAuthGrantTypes.html" style="margin-left: 30px; padding-left: 0">OAuthGrantTypes</a>
             </div>
-            <div id="namespace-638728975" class="accordion-body collapse ">
+            <div id="namespace-496660113" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -345,6 +325,8 @@
                                                     <li class="class"><a href="../classes/Fim.DatabaseResult.html">DatabaseResult</a></li>
                                                     <li class="class"><a href="../classes/Fim.DatabaseSlave.html">DatabaseSlave</a></li>
                                                     <li class="class"><a href="../classes/Fim.DynamicObject.html">DynamicObject</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Error.html">Error</a></li>
+                                                    <li class="class"><a href="../classes/Fim.ErrorThrown.html">ErrorThrown</a></li>
                                                     <li class="class"><a href="../classes/Fim.File.html">File</a></li>
                                                     <li class="class"><a href="../classes/Fim.FileThumbnail.html">FileThumbnail</a></li>
                                                     <li class="class"><a href="../classes/Fim.MagicGettersSetters.html">MagicGettersSetters</a></li>
@@ -354,6 +336,7 @@
                                                     <li class="class"><a href="../classes/Fim.RoomFactory.html">RoomFactory</a></li>
                                                     <li class="class"><a href="../classes/Fim.User.html">User</a></li>
                                                     <li class="class"><a href="../classes/Fim.UserFactory.html">UserFactory</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Utilities.html">Utilities</a></li>
                                                     <li class="class"><a href="../classes/Fim.Xml2Array.html">Xml2Array</a></li>
                                             </ul>
                 </div>
@@ -364,10 +347,10 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1783204900"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-447185546"></a>
                                 <a href="../namespaces/Http.html" style="margin-left: 30px; padding-left: 0">Http</a>
             </div>
-            <div id="namespace-1783204900" class="accordion-body collapse ">
+            <div id="namespace-447185546" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -386,19 +369,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1538388751"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-423172569"></a>
                                 <a href="../namespaces/Login.html" style="margin-left: 30px; padding-left: 0">Login</a>
             </div>
-            <div id="namespace-1538388751" class="accordion-body collapse ">
+            <div id="namespace-423172569" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1029533098"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-320647623"></a>
                                 <a href="../namespaces/Login.Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
             </div>
-            <div id="namespace-1029533098" class="accordion-body collapse ">
+            <div id="namespace-320647623" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -416,10 +399,10 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1148806739"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-874707582"></a>
                                 <a href="../namespaces/Login.TwoStep.html" style="margin-left: 30px; padding-left: 0">TwoStep</a>
             </div>
-            <div id="namespace-1148806739" class="accordion-body collapse ">
+            <div id="namespace-874707582" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -453,19 +436,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-995526927"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2023320668"></a>
                                 <a href="../namespaces/Stream.html" style="margin-left: 30px; padding-left: 0">Stream</a>
             </div>
-            <div id="namespace-995526927" class="accordion-body collapse ">
+            <div id="namespace-2023320668" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1102098652"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1865000901"></a>
                                 <a href="../namespaces/Stream.Streams.html" style="margin-left: 30px; padding-left: 0">Streams</a>
             </div>
-            <div id="namespace-1102098652" class="accordion-body collapse ">
+            <div id="namespace-1865000901" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -484,6 +467,7 @@
                     <ul>
                                                     <li class="interface"><a href="../classes/Stream.StreamInterface.html">StreamInterface</a></li>
                                                                                                     <li class="class"><a href="../classes/Stream.StreamFactory.html">StreamFactory</a></li>
+                                                    <li class="class"><a href="../classes/Stream.WebPushHandler.html">WebPushHandler</a></li>
                                             </ul>
                 </div>
             </div>
@@ -497,8 +481,6 @@
                                                     <li class="class"><a href="../classes/databaseSQLTests.html">databaseSQLTests</a></li>
                                                     <li class="class"><a href="../classes/databaseSQLTests1.html">databaseSQLTests1</a></li>
                                                     <li class="class"><a href="../classes/databaseSQLTests2.html">databaseSQLTests2</a></li>
-                                                    <li class="class"><a href="../classes/fimError.html">fimError</a></li>
-                                                    <li class="class"><a href="../classes/fimErrorThrown.html">fimErrorThrown</a></li>
                                             </ul>
                 </div>
             </div>
@@ -537,7 +519,7 @@
                                     version
                                 </th>
                                 <td>
-                                                                            3.0                                        
+                                                                            
                                                                     </td>
                             </tr>
                                                     <tr>
@@ -545,7 +527,7 @@
                                     author
                                 </th>
                                 <td>
-                                                                                                                    <p>Jospeph T. Parsons <a href="mailto:josephtparsons@gmail.com">josephtparsons@gmail.com</a></p>
+                                                                            <p>Jospeph T. Parsons <a href="mailto:josephtparsons@gmail.com">josephtparsons@gmail.com</a></p>
                                                                     </td>
                             </tr>
                                                     <tr>
@@ -553,7 +535,7 @@
                                     copyright
                                 </th>
                                 <td>
-                                                                                                                    <p>Joseph T. Parsons 2017</p>
+                                                                            <p>Joseph T. Parsons 2017</p>
 <p>=GET Parameters=</p>
                                                                     </td>
                             </tr>
@@ -562,23 +544,22 @@
                                     param
                                 </th>
                                 <td>
-                                                                                                                    <p>&quot;delete&quot;, &quot;create&quot;] _action - The action parameter is used here for watchRooms, favRooms, friendsList, and ignoreList. If &quot;edit,&quot; then those lists will be replaced with the list specified. If create, then those lists will be appended by the lists specified. If &quot;delete,&quot; then those lists will have all items in the specified list deleted.</p>
+                                                                            <p>&quot;delete&quot;, &quot;create&quot;] _action - The action parameter is used here for favRooms, friendsList, and ignoreList. If &quot;edit,&quot; then those lists will be replaced with the list specified. If create, then those lists will be appended by the lists specified. If &quot;delete,&quot; then those lists will have all items in the specified list deleted.</p>
 <p>=PUT Parameters=
 These parameters are, where applicable, documented in the SQL documentation.</p>
-                                                                                                                    <p>defaultRoomId - The ID of the room that the user would like loaded when they login to FreezeMessenger.</p>
-                                                                                                                    <p>avatar - (Vanilla logins only.) A file pointing to the user's avatar.</p>
-                                                                                                                    <p>profile - (Vanilla logins only.) A url pointing to the user's profile.</p>
-                                                                                                                    <p>defaultColor - A comma-seperated list of the three chroma values, corresponding to red, green, and blue. The range of these chroma values is [0,255], where 0 is no color, and 255 is full color.</p>
-                                                                                                                    <p>defaultHighlight - Same as defaultColor.</p>
-                                                                                                                    <p>defaultFontface - A fontface name corresponding with the table returned by getServerStatus. It should be the name, and not the full font-family list.</p>
-                                                                                                                    <p>'italic'] defaultFormatting - A list of default formatting styles to apply to all of the user's messages. Supports &quot;bold&quot; and &quot;italic.&quot;</p>
-                                                                                                                    <p>parentalAge - The age-appropriateness of content the user has indicated they are willing to view. Increasing this will allow more mature content, and decreasing it will disallow such content.</p>
-                                                                                                                    <p>parentalFlags - A list of parental flags that the user has indicated they are willing to see. Valid entries are returned by getServerStatus.</p>
+                                                                            <p>defaultRoomId - The ID of the room that the user would like loaded when they login to FreezeMessenger.</p>
+                                                                            <p>avatar - (Vanilla logins only.) A file pointing to the user's avatar.</p>
+                                                                            <p>profile - (Vanilla logins only.) A url pointing to the user's profile.</p>
+                                                                            <p>defaultColor - A comma-seperated list of the three chroma values, corresponding to red, green, and blue. The range of these chroma values is [0,255], where 0 is no color, and 255 is full color.</p>
+                                                                            <p>defaultHighlight - Same as defaultColor.</p>
+                                                                            <p>defaultFontface - A fontface name corresponding with the table returned by getServerStatus. It should be the name, and not the full font-family list.</p>
+                                                                            <p>'italic'] defaultFormatting - A list of default formatting styles to apply to all of the user's messages. Supports &quot;bold&quot; and &quot;italic.&quot;</p>
+                                                                            <p>parentalAge - The age-appropriateness of content the user has indicated they are willing to view. Increasing this will allow more mature content, and decreasing it will disallow such content.</p>
+                                                                            <p>parentalFlags - A list of parental flags that the user has indicated they are willing to see. Valid entries are returned by getServerStatus.</p>
 <p>=POST/PUT/DELETE Parameters=</p>
-                                                                                                                    <p>watchRooms - A list of room IDs corresponding to rooms the user is watching. When a new message is made in these rooms, the user will be notified.</p>
-                                                                                                                    <p>favRooms - A list of room IDs corresponding to rooms the user has favourited. This exists to help synchronise different clients -- internally, the list is ignored.</p>
-                                                                                                                    <p>friendsList - (Vanilla logins only.) A list of user IDs corresponding to users the user has friended. They may restrict private messages to this list. Additionally, future functionality is planned, but not currently supported.</p>
-                                                                                                                    <p>ignoreList - A list of user IDs corresponding to users the user does not want to interact with. These users will not be able to initiate a private message with the user.</p>
+                                                                            <p>favRooms - A list of room IDs corresponding to rooms the user has favourited. This exists to help synchronise different clients -- internally, the list is ignored.</p>
+                                                                            <p>friendsList - (Vanilla logins only.) A list of user IDs corresponding to users the user has friended. They may restrict private messages to this list. Additionally, future functionality is planned, but not currently supported.</p>
+                                                                            <p>ignoreList - A list of user IDs corresponding to users the user does not want to interact with. These users will not be able to initiate a private message with the user.</p>
 <p>=Errors=
 Error codes are listed by the parent node they appear under:</p>
 <p>==avatar==</p>
@@ -589,86 +570,86 @@ Error codes are listed by the parent node they appear under:</p>
                                     throw
                                 </th>
                                 <td>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The avatar's dimensions are below the server minimum. This may also occur if a valid image was not sent.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The avatar's dimensions exceed the server maximum.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The avatar's filetype is not supported.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The file has been been blockzed by a server regex blacklist/whitelist.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The URL provided did not seem to be a URL.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The URL provided could not be resolved (didn't exist).</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>Avatars are not supported by the FreezeMessenger server (typically because it is integrated with a seperate login system).</li>
 </ul>
 <p>==profile==</p>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>A valid URL was not provided.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The URL provided could not be resolved (didn't exist).</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The URL has been blocked by a server regex blacklist.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>Profiles are not supported by the FreezeMessenger server (typically because it is integrated with a seperate login system).</li>
 </ul>
 <p>==defaultRoom==</p>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The room specified does not exist.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The user is not allowed to view the room specified.</li>
 </ul>
 <p>==defaultHighlight, defaultColor==</p>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>Default highlight/color is disabled by the FreezeMessenger server.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The first color value, red, is out of the [0,255] range.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The second color value, green, is out of the [0,255] range.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The second color value, blue, is out of the [0,255] range.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>Too few, or too many, chroma values were specified.</li>
 </ul>
 <p>==defaultFontface==</p>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>Default fonts are disabled by the FreezeMessenger server.</li>
 </ul>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The font specified does not exist.</li>
 </ul>
 <p>==defaultFormatting==
 No errors are thrown by defaultFormatting, however specifying an invalid value will cause an exception. If a parameter is disabled, it will simply not be applied.</p>
 <p>==parentalAge==</p>
-                                                                                                                    <ul>
+                                                                            <ul>
 <li>The parental age specified is not valid.</li>
 </ul>
 <p>==parentalFlags==
 No errors are thrown by parentalFlags, however specifying an invalid value will cause an exception.</p>
 <p>=PUT/POST/DELETE Examples=
 Note that when using PUT, every directive is supported. When using POST and DELETE, only the four lists are supported.</p>
-<p>PUT userOptions.php watchRooms[]=1&amp;watchRooms[]=2&amp;watchRooms[]=3 == replaces the list of watch rooms with the new list, [1,2,3]
-PUT userOptions.php watchRooms[]=1&amp;watchRooms[]=2&amp;watchRooms[]=3&amp;defaultHighlight=0,0,0 == replaces the list of watch rooms with the new list, [1,2,3]. Sets the default highlight color to black.
-POST userOptions.php watchRooms[]=1&amp;watchRooms[]=2&amp;watchRooms[]=3 == adds rooms 1, 2, and 3 from the watch rooms list
-POST userOptions.php watchRooms[]=1&amp;favRooms[]=2&amp;friendsLists[]=3 == adds room 1 to the watch rooms, room 2 to the favourite rooms, and user 3 to the friends list.
-POST userOptions.php watchRooms[]=1&amp;watchRooms[]=2&amp;watchRooms[]=3&amp;defaultHighlight=0,0,0 == adds room 1 to the watch rooms, room 2 to the favourite rooms, and user 3 to the friends list. Though defaultHighlight is specified, this is a POST request, and it will thus be ignored.
-DELETE userOptions.php watchRooms[]=1&amp;watchRooms[]=2&amp;watchRooms[]=3 == removes rooms 1, 2, and 3 from the watch rooms list</p>
+<p>PUT userOptions.php favRooms[]=1&amp;favRooms[]=2&amp;favRooms[]=3 == replaces the list of fav rooms with the new list, [1,2,3]
+PUT userOptions.php favRooms[]=1&amp;favRooms[]=2&amp;favRooms[]=3&amp;defaultHighlight=0,0,0 == replaces the list of fav rooms with the new list, [1,2,3]. Sets the default highlight color to black.
+POST userOptions.php favRooms[]=1&amp;favRooms[]=2&amp;favRooms[]=3 == adds rooms 1, 2, and 3 from the fav rooms list
+POST userOptions.php favRooms[]=1&amp;favRooms[]=2&amp;friendsLists[]=3 == adds room 1 to the fav rooms, room 2 to the favourite rooms, and user 3 to the friends list.
+POST userOptions.php favRooms[]=1&amp;favRooms[]=2&amp;favRooms[]=3&amp;defaultHighlight=0,0,0 == adds room 1 to the fav rooms, room 2 to the favourite rooms, and user 3 to the friends list. Though defaultHighlight is specified, this is a POST request, and it will thus be ignored.
+DELETE userOptions.php favRooms[]=1&amp;favRooms[]=2&amp;favRooms[]=3 == removes rooms 1, 2, and 3 from the fav rooms list</p>
                                                                     </td>
                             </tr>
                                             </table>
@@ -733,7 +714,7 @@ DELETE userOptions.php watchRooms[]=1&amp;watchRooms[]=2&amp;watchRooms[]=3 == r
                 <section class="span10 offset1">
                     <hr />
                     Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
-                    on January 11th, 2018 at 00:50.
+                    on January 29th, 2018 at 22:48.
                 </section>
             </section>
         </section>

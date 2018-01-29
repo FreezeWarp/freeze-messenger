@@ -24,7 +24,7 @@
     <script type="text/javascript">
     function loadExternalCodeSnippets() {
         Array.prototype.slice.call(document.querySelectorAll('pre[data-src]')).forEach(function (pre) {
-            var src = pre.getAttribute('data-src').replace( /\\/g, '/');
+            var src = pre.getAttribute('data-src');
             var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
             var language = 'php';
 
@@ -119,12 +119,12 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a href="../reports/errors.html">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">1179</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">1173</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="../reports/markers.html">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">41</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">37</span>
                                 </a>
                             </li>
                             <li>
@@ -149,28 +149,28 @@
                                 <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-720775536"></a>
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-415593532"></a>
                                 <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
             </div>
-            <div id="namespace-720775536" class="accordion-body collapse in">
+            <div id="namespace-415593532" class="accordion-body collapse in">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1006842026"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1735802083"></a>
                                 <a href="../namespaces/Cache.html" style="margin-left: 30px; padding-left: 0">Cache</a>
             </div>
-            <div id="namespace-1006842026" class="accordion-body collapse ">
+            <div id="namespace-1735802083" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-656164671"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1261634212"></a>
                                 <a href="../namespaces/Cache.Driver.html" style="margin-left: 30px; padding-left: 0">Driver</a>
             </div>
-            <div id="namespace-656164671" class="accordion-body collapse ">
+            <div id="namespace-1261634212" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -202,19 +202,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1721758210"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1149884686"></a>
                                 <a href="../namespaces/Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
             </div>
-            <div id="namespace-1721758210" class="accordion-body collapse ">
+            <div id="namespace-1149884686" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-383203190"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1977438168"></a>
                                 <a href="../namespaces/Database.Index.html" style="margin-left: 30px; padding-left: 0">Index</a>
             </div>
-            <div id="namespace-383203190" class="accordion-body collapse ">
+            <div id="namespace-1977438168" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -230,31 +230,11 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-510166572"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1303314211"></a>
                                 <a href="../namespaces/Database.SQL.html" style="margin-left: 30px; padding-left: 0">SQL</a>
             </div>
-            <div id="namespace-510166572" class="accordion-body collapse ">
+            <div id="namespace-1303314211" class="accordion-body collapse ">
                 <div class="accordion-inner">
-
-                                                    <div class="accordion" style="margin-bottom: 0">
-        <div class="accordion-group">
-            <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1709146352"></a>
-                                <a href="../namespaces/Database.SQL.Drivers.html" style="margin-left: 30px; padding-left: 0">Drivers</a>
-            </div>
-            <div id="namespace-1709146352" class="accordion-body collapse ">
-                <div class="accordion-inner">
-
-                    
-                    <ul>
-                                                                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoMysql.html">PdoMysql</a></li>
-                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoPgsql.html">PdoPgsql</a></li>
-                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoSqlsrv.html">PdoSqlsrv</a></li>
-                                            </ul>
-                </div>
-            </div>
-        </div>
-    </div>
 
                     
                     <ul>
@@ -275,10 +255,10 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1226300047"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-591556098"></a>
                                 <a href="../namespaces/Database.Type.html" style="margin-left: 30px; padding-left: 0">Type</a>
             </div>
-            <div id="namespace-1226300047" class="accordion-body collapse ">
+            <div id="namespace-591556098" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -307,19 +287,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-124965792"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1465903059"></a>
                                 <a href="../namespaces/Fim.html" style="margin-left: 30px; padding-left: 0">Fim</a>
             </div>
-            <div id="namespace-124965792" class="accordion-body collapse ">
+            <div id="namespace-1465903059" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1742144452"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-947013827"></a>
                                 <a href="../namespaces/Fim.OAuthGrantTypes.html" style="margin-left: 30px; padding-left: 0">OAuthGrantTypes</a>
             </div>
-            <div id="namespace-1742144452" class="accordion-body collapse ">
+            <div id="namespace-947013827" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -345,6 +325,8 @@
                                                     <li class="class"><a href="../classes/Fim.DatabaseResult.html">DatabaseResult</a></li>
                                                     <li class="class"><a href="../classes/Fim.DatabaseSlave.html">DatabaseSlave</a></li>
                                                     <li class="class"><a href="../classes/Fim.DynamicObject.html">DynamicObject</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Error.html">Error</a></li>
+                                                    <li class="class"><a href="../classes/Fim.ErrorThrown.html">ErrorThrown</a></li>
                                                     <li class="class"><a href="../classes/Fim.File.html">File</a></li>
                                                     <li class="class"><a href="../classes/Fim.FileThumbnail.html">FileThumbnail</a></li>
                                                     <li class="class"><a href="../classes/Fim.MagicGettersSetters.html">MagicGettersSetters</a></li>
@@ -354,6 +336,7 @@
                                                     <li class="class"><a href="../classes/Fim.RoomFactory.html">RoomFactory</a></li>
                                                     <li class="class"><a href="../classes/Fim.User.html">User</a></li>
                                                     <li class="class"><a href="../classes/Fim.UserFactory.html">UserFactory</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Utilities.html">Utilities</a></li>
                                                     <li class="class"><a href="../classes/Fim.Xml2Array.html">Xml2Array</a></li>
                                             </ul>
                 </div>
@@ -364,10 +347,10 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1343408703"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1753923605"></a>
                                 <a href="../namespaces/Http.html" style="margin-left: 30px; padding-left: 0">Http</a>
             </div>
-            <div id="namespace-1343408703" class="accordion-body collapse ">
+            <div id="namespace-1753923605" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -386,19 +369,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-582861736"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1912346607"></a>
                                 <a href="../namespaces/Login.html" style="margin-left: 30px; padding-left: 0">Login</a>
             </div>
-            <div id="namespace-582861736" class="accordion-body collapse ">
+            <div id="namespace-1912346607" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1597579055"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1629541291"></a>
                                 <a href="../namespaces/Login.Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
             </div>
-            <div id="namespace-1597579055" class="accordion-body collapse ">
+            <div id="namespace-1629541291" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -416,10 +399,10 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-431126772"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-567051326"></a>
                                 <a href="../namespaces/Login.TwoStep.html" style="margin-left: 30px; padding-left: 0">TwoStep</a>
             </div>
-            <div id="namespace-431126772" class="accordion-body collapse ">
+            <div id="namespace-567051326" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -453,19 +436,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1594993935"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1228277433"></a>
                                 <a href="../namespaces/Stream.html" style="margin-left: 30px; padding-left: 0">Stream</a>
             </div>
-            <div id="namespace-1594993935" class="accordion-body collapse ">
+            <div id="namespace-1228277433" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-651216026"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1764719320"></a>
                                 <a href="../namespaces/Stream.Streams.html" style="margin-left: 30px; padding-left: 0">Streams</a>
             </div>
-            <div id="namespace-651216026" class="accordion-body collapse ">
+            <div id="namespace-1764719320" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -484,6 +467,7 @@
                     <ul>
                                                     <li class="interface"><a href="../classes/Stream.StreamInterface.html">StreamInterface</a></li>
                                                                                                     <li class="class"><a href="../classes/Stream.StreamFactory.html">StreamFactory</a></li>
+                                                    <li class="class"><a href="../classes/Stream.WebPushHandler.html">WebPushHandler</a></li>
                                             </ul>
                 </div>
             </div>
@@ -497,8 +481,6 @@
                                                     <li class="class"><a href="../classes/databaseSQLTests.html">databaseSQLTests</a></li>
                                                     <li class="class"><a href="../classes/databaseSQLTests1.html">databaseSQLTests1</a></li>
                                                     <li class="class"><a href="../classes/databaseSQLTests2.html">databaseSQLTests2</a></li>
-                                                    <li class="class"><a href="../classes/fimError.html">fimError</a></li>
-                                                    <li class="class"><a href="../classes/fimErrorThrown.html">fimErrorThrown</a></li>
                                             </ul>
                 </div>
             </div>
@@ -736,7 +718,7 @@
                         
                         
                         
-                                                
+                        
                                                                         </dl>
                     <h2>Tags</h2>
                     <table class="table table-condensed">
@@ -758,7 +740,7 @@
             <a id="constant_FORMAT_VALUE_DETECT" name="constant_FORMAT_VALUE_DETECT" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_DETECT" class="constant">
                 <h3 class="">FORMAT_VALUE_DETECT</h3>
-                <pre class="signature">FORMAT_VALUE_DETECT = &#039;detect&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_DETECT</pre>
                 <p><em>Autodetect how to format.</em></p>
                 <p>In most cases, this will format either an an integer or a string. Refer to \Database\SQL\database::auto() for more information.</p>
             </article>
@@ -779,7 +761,7 @@
             <a id="constant_FORMAT_VALUE_SEARCH" name="constant_FORMAT_VALUE_SEARCH" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_SEARCH" class="constant">
                 <h3 class="">FORMAT_VALUE_SEARCH</h3>
-                <pre class="signature">FORMAT_VALUE_SEARCH = &#039;search&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_SEARCH</pre>
                 <p><em>Format for fuzzy searching.</em></p>
                 
             </article>
@@ -800,7 +782,7 @@
             <a id="constant_FORMAT_VALUE_COLUMN_ALIAS" name="constant_FORMAT_VALUE_COLUMN_ALIAS" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_COLUMN_ALIAS" class="constant">
                 <h3 class="">FORMAT_VALUE_COLUMN_ALIAS</h3>
-                <pre class="signature">FORMAT_VALUE_COLUMN_ALIAS = &#039;columnAlias&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_COLUMN_ALIAS</pre>
                 <p><em>Format as a column alias.</em></p>
                 <p>When used, the first variable argument is the column name and the second variable argument is the alias name.</p>
             </article>
@@ -821,7 +803,7 @@
             <a id="constant_FORMAT_VALUE_TABLE" name="constant_FORMAT_VALUE_TABLE" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_TABLE" class="constant">
                 <h3 class="">FORMAT_VALUE_TABLE</h3>
-                <pre class="signature">FORMAT_VALUE_TABLE = &#039;table&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_TABLE</pre>
                 <p><em>Format as a table name.</em></p>
                 
             </article>
@@ -842,7 +824,7 @@
             <a id="constant_FORMAT_VALUE_TABLE_COLUMN" name="constant_FORMAT_VALUE_TABLE_COLUMN" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_TABLE_COLUMN" class="constant">
                 <h3 class="">FORMAT_VALUE_TABLE_COLUMN</h3>
-                <pre class="signature">FORMAT_VALUE_TABLE_COLUMN = &#039;tableColumn&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_TABLE_COLUMN</pre>
                 <p><em>Format as a column name with a table name.</em></p>
                 <p>When used, the first variable argument is the table name and the second variable argument is the column name.</p>
             </article>
@@ -863,7 +845,7 @@
             <a id="constant_FORMAT_VALUE_TABLE_ALIAS" name="constant_FORMAT_VALUE_TABLE_ALIAS" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_TABLE_ALIAS" class="constant">
                 <h3 class="">FORMAT_VALUE_TABLE_ALIAS</h3>
-                <pre class="signature">FORMAT_VALUE_TABLE_ALIAS = &#039;tableAlias&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_TABLE_ALIAS</pre>
                 <p><em>Format as a table alias.</em></p>
                 <p>When used, the first variable argument is the table name and the second variable argument is the table alias.</p>
             </article>
@@ -884,7 +866,7 @@
             <a id="constant_FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS" name="constant_FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS" class="constant">
                 <h3 class="">FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS</h3>
-                <pre class="signature">FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS = &#039;tableColumnNameAlias&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_TABLE_COLUMN_NAME_ALIAS</pre>
                 <p><em>Format as a column name with a table name.</em></p>
                 <p>When used, the first variable argument is the table name, the second variable argument is the column name, and the third variable argument is the column alias.</p>
             </article>
@@ -905,7 +887,7 @@
             <a id="constant_FORMAT_VALUE_DATABASE" name="constant_FORMAT_VALUE_DATABASE" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_DATABASE" class="constant">
                 <h3 class="">FORMAT_VALUE_DATABASE</h3>
-                <pre class="signature">FORMAT_VALUE_DATABASE = &#039;database&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_DATABASE</pre>
                 <p><em>Format as a database name.</em></p>
                 
             </article>
@@ -926,7 +908,7 @@
             <a id="constant_FORMAT_VALUE_DATABASE_TABLE" name="constant_FORMAT_VALUE_DATABASE_TABLE" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_DATABASE_TABLE" class="constant">
                 <h3 class="">FORMAT_VALUE_DATABASE_TABLE</h3>
-                <pre class="signature">FORMAT_VALUE_DATABASE_TABLE = &#039;databaseTable&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_DATABASE_TABLE</pre>
                 <p><em>Format as a table name with an attached database name.</em></p>
                 <p>When used, the first variable argument is the database name and the second variable argument is the table name.</p>
             </article>
@@ -947,7 +929,7 @@
             <a id="constant_FORMAT_VALUE_INDEX" name="constant_FORMAT_VALUE_INDEX" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_INDEX" class="constant">
                 <h3 class="">FORMAT_VALUE_INDEX</h3>
-                <pre class="signature">FORMAT_VALUE_INDEX = &#039;index&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_INDEX</pre>
                 <p><em>Format as a table index name.</em></p>
                 
             </article>
@@ -968,7 +950,7 @@
             <a id="constant_FORMAT_VALUE_ENUM_ARRAY" name="constant_FORMAT_VALUE_ENUM_ARRAY" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_ENUM_ARRAY" class="constant">
                 <h3 class="">FORMAT_VALUE_ENUM_ARRAY</h3>
-                <pre class="signature">FORMAT_VALUE_ENUM_ARRAY = &#039;enumArray&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_ENUM_ARRAY</pre>
                 <p><em>Format as an array of values used in an ENUM.</em></p>
                 
             </article>
@@ -989,7 +971,7 @@
             <a id="constant_FORMAT_VALUE_TABLE_NAME_ALIAS" name="constant_FORMAT_VALUE_TABLE_NAME_ALIAS" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_TABLE_NAME_ALIAS" class="constant">
                 <h3 class="">FORMAT_VALUE_TABLE_NAME_ALIAS</h3>
-                <pre class="signature">FORMAT_VALUE_TABLE_NAME_ALIAS = &#039;tableNameAlias&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_TABLE_NAME_ALIAS</pre>
                 <p><em>Format as a table alias with an attached table name.</em></p>
                 <p>When used, the first variable argument is the table name and the second variable argument is the alias name.</p>
             </article>
@@ -1010,7 +992,7 @@
             <a id="constant_FORMAT_VALUE_UPDATE_ARRAY" name="constant_FORMAT_VALUE_UPDATE_ARRAY" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_UPDATE_ARRAY" class="constant">
                 <h3 class="">FORMAT_VALUE_UPDATE_ARRAY</h3>
-                <pre class="signature">FORMAT_VALUE_UPDATE_ARRAY = &#039;updateArray&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_UPDATE_ARRAY</pre>
                 <p><em>Format as an array of update clauses.</em></p>
                 
             </article>
@@ -1031,7 +1013,7 @@
             <a id="constant_FORMAT_VALUE_COLUMN_ARRAY" name="constant_FORMAT_VALUE_COLUMN_ARRAY" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_COLUMN_ARRAY" class="constant">
                 <h3 class="">FORMAT_VALUE_COLUMN_ARRAY</h3>
-                <pre class="signature">FORMAT_VALUE_COLUMN_ARRAY = &#039;columnArray&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_COLUMN_ARRAY</pre>
                 <p><em>Format as an array of columns.</em></p>
                 
             </article>
@@ -1052,7 +1034,7 @@
             <a id="constant_FORMAT_VALUE_TABLE_COLUMN_VALUES" name="constant_FORMAT_VALUE_TABLE_COLUMN_VALUES" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_TABLE_COLUMN_VALUES" class="constant">
                 <h3 class="">FORMAT_VALUE_TABLE_COLUMN_VALUES</h3>
-                <pre class="signature">FORMAT_VALUE_TABLE_COLUMN_VALUES = &#039;tableColumnValues&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_TABLE_COLUMN_VALUES</pre>
                 <p><em>Format as an array of table columns and corresponding values.</em></p>
                 <p>When used, the first variable argument is the table name, the second variable argument is a list of columns, and the third variable argument is a list of values.</p>
             </article>
@@ -1073,7 +1055,7 @@
             <a id="constant_FORMAT_VALUE_TABLE_UPDATE_ARRAY" name="constant_FORMAT_VALUE_TABLE_UPDATE_ARRAY" class="anchor"></a>
             <article id="constant_FORMAT_VALUE_TABLE_UPDATE_ARRAY" class="constant">
                 <h3 class="">FORMAT_VALUE_TABLE_UPDATE_ARRAY</h3>
-                <pre class="signature">FORMAT_VALUE_TABLE_UPDATE_ARRAY = &#039;tableUpdateArray&#039;</pre>
+                <pre class="signature">FORMAT_VALUE_TABLE_UPDATE_ARRAY</pre>
                 <p><em>Format as an array of table columns and corresponding values.</em></p>
                 <p>When used, the first variable argument is the table name and the second variable argument is a an associative array of columns-value pairs, indexed by column name.</p>
             </article>
@@ -2168,7 +2150,7 @@ Database drivers are required to support.                            </article>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2196,15 +2178,13 @@ Database drivers are required to support.                            </article>
 
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2240,7 +2220,7 @@ Database drivers are required to support.                            </article>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True if $haystack starts with $needle, false otherwise.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2284,7 +2264,7 @@ Database drivers are required to support.                            </article>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True if $haystack ends with $needle, false otherwise.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2364,15 +2344,13 @@ $dB-&gt;connect('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli'
                                             &mdash; <ul>
 <li>True if a connection was successfully established, false otherwise.</li>
 </ul>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2392,15 +2370,13 @@ $dB-&gt;connect('localhost', 3306, 'root', 'r00tpassword', 'database1', 'mysqli'
 
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2437,7 +2413,7 @@ if (count($db-&gt;select(...)) &gt; 5) {
                                     <h4>Returns</h4>
                     integer
                                             &mdash; <p>The new error level.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2473,7 +2449,7 @@ if (count($db-&gt;select(...)) &gt; 5) {
                                     <h4>Returns</h4>
                     integer
                                             &mdash; <p>The current error level.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2504,7 +2480,7 @@ if (count($db-&gt;select(...)) &gt; 5) {
                                     <h4>Returns</h4>
                     string
                                             &mdash; <p>The last logged error.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2532,7 +2508,7 @@ if (count($db-&gt;select(...)) &gt; 5) {
 
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2578,7 +2554,7 @@ if (count($db-&gt;select(...)) &gt; 5) {
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2619,7 +2595,7 @@ if (count($db-&gt;select(...)) &gt; 5) {
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2655,7 +2631,7 @@ if (count($db-&gt;select(...)) &gt; 5) {
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2691,7 +2667,7 @@ if (count($db-&gt;select(...)) &gt; 5) {
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2719,15 +2695,13 @@ if (count($db-&gt;select(...)) &gt; 5) {
 
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2747,15 +2721,13 @@ if (count($db-&gt;select(...)) &gt; 5) {
 
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2775,15 +2747,13 @@ if (count($db-&gt;select(...)) &gt; 5) {
 
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2814,15 +2784,13 @@ if (count($db-&gt;select(...)) &gt; 5) {
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True if the operation was successful, false otherwise.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2853,15 +2821,13 @@ if (count($db-&gt;select(...)) &gt; 5) {
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True if the operation was successful, false otherwise.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2964,15 +2930,13 @@ $db-&gt;createTable('table1', 'Our first table!', 'general', array(
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3010,15 +2974,13 @@ $db-&gt;renameTable('table1', 'specialTable1');</code></pre>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3065,15 +3027,13 @@ $db-&gt;renameTable('table1', 'specialTable1');</code></pre>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3122,15 +3082,13 @@ $db-&gt;renameTable('table1', 'specialTable1');</code></pre>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3179,15 +3137,13 @@ $db-&gt;renameTable('table1', 'specialTable1');</code></pre>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3240,15 +3196,13 @@ An array of table column properties indexed by a comma-seperated list of columns
                                     <h4>Returns</h4>
                     boolean|array
                                             &mdash; <p>When $duringTableCreation is false, this returns true on success, false on failure. When $duringTableCreation is true, this returns a list of index components to use with the table creation and a list of triggers to run after the table is created.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3281,15 +3235,13 @@ $db-&gt;deleteTable('table1');</code></pre>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3312,15 +3264,13 @@ $db-&gt;deleteTable('table1');</code></pre>
                                     <h4>Returns</h4>
                     array
                                             &mdash; <p>A list of tables in the current database.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3356,7 +3306,7 @@ $db-&gt;where(['col1' =&gt; $db-&gt;col('col2')])-&gt;sortBy(['col1' =&gt; 'asc'
                 
                                     <h4>Returns</h4>
                     $this
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -3399,7 +3349,7 @@ $db-&gt;where(['col1' =&gt; $db-&gt;col('col2')])-&gt;sortBy(['col1' =&gt; 'asc'
                 
                                     <h4>Returns</h4>
                     $this
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -3442,7 +3392,7 @@ $db-&gt;where(['col1' =&gt; $db-&gt;col('col2')])-&gt;sortBy(['col1' =&gt; 'asc'
                 
                                     <h4>Returns</h4>
                     $this
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -3485,7 +3435,7 @@ $db-&gt;where(['col1' =&gt; $db-&gt;col('col2')])-&gt;sortBy(['col1' =&gt; 'asc'
                 
                                     <h4>Returns</h4>
                     $this
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -3526,7 +3476,7 @@ $db-&gt;partitionAt(['id' =&gt; 1])-&gt;delete(['time' =&gt; $this-&gt;now(-600)
                 
                                     <h4>Returns</h4>
                     $this
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -3600,15 +3550,13 @@ If an alias is provided, it must be used in the condition, sort, and limit array
                 
                                     <h4>Returns</h4>
                     object
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                                            <dt>See also</dt>
+                                                                                            <dt>See also</dt>
                                                                 <dd><a href="../classes/Database.Database.html#method_select"><span class="namespace-wrapper">\Database\Database::select()</span></a></dd>
                                                                 </dl>
             <h2>Tags</h2>
@@ -3658,15 +3606,13 @@ $db-&gt;insert('table1', array(
                                             &mdash; <ul>
 <li>True on success, false on failure.</li>
 </ul>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3688,15 +3634,13 @@ $db-&gt;insert('table1', array(
                 
                                     <h4>Returns</h4>
                     integer
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                                            <dt>See also</dt>
+                                                                                            <dt>See also</dt>
                                                                 <dd><a href="../classes/Database.Database.html#method_getLastInsertId"><span class="namespace-wrapper">\Database\Database::getLastInsertId()</span></a></dd>
                                                                 </dl>
             <h2>Tags</h2>
@@ -3748,15 +3692,13 @@ $db-&gt;update('table1', array(
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                                            <dt>See also</dt>
+                                                                                            <dt>See also</dt>
                                                                 <dd><a href="../classes/Database.Database.html#method_update"><span class="namespace-wrapper">\Database\Database::update()</span></a></dd>
                                                                 </dl>
             <h2>Tags</h2>
@@ -3808,15 +3750,13 @@ $db-&gt;update('table1', array(
                 
                                     <h4>Returns</h4>
                     boolean|resource
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3857,15 +3797,13 @@ $db-&gt;delete('table1', array(
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                                            <dt>See also</dt>
+                                                                                            <dt>See also</dt>
                                                                 <dd><a href="../classes/Database.Database.html#method_delete"><span class="namespace-wrapper">\Database\Database::delete()</span></a></dd>
                                                                 </dl>
             <h2>Tags</h2>
@@ -3896,15 +3834,13 @@ When autoQueue is turned off, the queue is processed.</p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3942,15 +3878,13 @@ When autoQueue is turned off, the queue is processed.</p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3983,15 +3917,13 @@ When autoQueue is turned off, the queue is processed.</p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -4024,15 +3956,13 @@ When autoQueue is turned off, the queue is processed.</p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -4052,15 +3982,13 @@ When autoQueue is turned off, the queue is processed.</p>
 
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -4126,7 +4054,7 @@ When autoQueue is turned off, the queue is processed.</p>
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
                                             &mdash; <p>A special representation of a column int only for use in database functions.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4164,7 +4092,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4207,7 +4135,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4245,7 +4173,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4283,7 +4211,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4321,7 +4249,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4359,7 +4287,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4402,7 +4330,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4445,7 +4373,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4488,7 +4416,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4531,7 +4459,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4574,7 +4502,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4617,7 +4545,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4655,7 +4583,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4693,7 +4621,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4731,7 +4659,7 @@ When autoQueue is turned off, the queue is processed.</p>
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -4775,15 +4703,13 @@ When autoQueue is turned off, the queue is processed.</p>
                                     <h4>Returns</h4>
                     mixed
                                             &mdash; <p>Value, formatted as specified.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -4803,15 +4729,13 @@ When autoQueue is turned off, the queue is processed.</p>
 
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -4846,15 +4770,13 @@ When autoQueue is turned off, the queue is processed.</p>
                                             &mdash; <ul>
 <li>True on success, false on failure.</li>
 </ul>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -4897,15 +4819,13 @@ When autoQueue is turned off, the queue is processed.</p>
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Result.html">\Database\Result</a>
                                             &mdash; <p>The database result returned by the query, or false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -4929,15 +4849,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                 
                                     <h4>Returns</h4>
                     $this
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -4962,15 +4880,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                             &mdash; <ul>
 <li>The query text of the last query executed.</li>
 </ul>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr>
@@ -5002,15 +4918,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                             &mdash; <ul>
 <li>The query text of the last query executed.</li>
 </ul>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr>
@@ -5045,15 +4959,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5089,15 +5001,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5153,15 +5063,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5207,15 +5115,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5246,15 +5152,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5290,15 +5194,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5334,15 +5236,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5383,15 +5283,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5427,15 +5325,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5471,15 +5367,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True on success, false on failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5493,17 +5387,12 @@ Obviously, this should not be used in conjunction with functions that execute mu
             <article class="method">
                 <h3 class="public ">executeTriggers()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
-                <pre class="signature" style="margin-right: 54px;">executeTriggers(  <span class="argument">$tableName</span>,   <span class="argument">$triggers</span>) : boolean</pre>
+                <pre class="signature" style="margin-right: 54px;">executeTriggers(  <span class="argument">$triggers</span>) : boolean</pre>
                 <p><em>Run a series of SQL statements in sequence, returning true if all run successfully.</em></p>
-                <p>If \Database\SQL\holdTriggers is enabled, the trigger statements will instead by placed in \Database\SQL\triggerQueue</p>
+                <p>If \holdTriggers is enabled, the trigger statements will instead by placed in \triggerQueue</p>
 
                                     <h4>Parameters</h4>
                     <table class="table table-condensed table-hover">
-                                                    <tr>
-                                <td></td>
-                                <td>$tableName </td>
-                                <td><p>string The SQL tablename.</p></td>
-                            </tr>
                                                     <tr>
                                 <td></td>
                                 <td>$triggers </td>
@@ -5515,15 +5404,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>true if all queries successful, false if any fails</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5546,15 +5433,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     array
                                             &mdash; <p>The current SQL statements set to run when {@see DatabaseSQL::holdTriggers()} is set to off.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5577,15 +5462,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     array
                                             &mdash; <p>The table columns in the current database, grouped by table.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5608,15 +5491,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     array
                                             &mdash; <p>The table constraints in the current database, grouped by table.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5639,15 +5520,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                                     <h4>Returns</h4>
                     array
                                             &mdash; <p>The table indexes in the current database, grouped by table.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5697,15 +5576,13 @@ Obviously, this should not be used in conjunction with functions that execute mu
                 
                                     <h4>Returns</h4>
                     boolean|object|resource|string
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -5758,7 +5635,7 @@ When a database error is encountered, database implementations should call this 
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -5794,7 +5671,7 @@ When a database error is encountered, database implementations should call this 
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -5830,7 +5707,7 @@ When a database error is encountered, database implementations should call this 
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -5883,7 +5760,7 @@ When a database error is encountered, database implementations should call this 
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Type.html">\Database\Type</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -5941,15 +5818,13 @@ When a database error is encountered, database implementations should call this 
                 
                                     <h4>Returns</h4>
                     <a href="../classes/Database.Result.html">\Database\Result</a>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                                            <dt>See also</dt>
+                                                                                            <dt>See also</dt>
                                                                 <dd><a href="../classes/Database.Database.html#method_databaseResultPipe"><span class="namespace-wrapper">\Database\Database::databaseResultPipe()</span></a></dd>
                                                                 </dl>
             <h2>Tags</h2>
@@ -5986,15 +5861,13 @@ When a database error is encountered, database implementations should call this 
                 
                                     <h4>Returns</h4>
                     string
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr>
@@ -6039,15 +5912,13 @@ When a database error is encountered, database implementations should call this 
                                             &mdash; <ul>
 <li>The query text of the last query executed.</li>
 </ul>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr>
@@ -6082,15 +5953,13 @@ When a database error is encountered, database implementations should call this 
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -6149,15 +6018,13 @@ An array of table column properties indexed by the table column name. Valid para
                                     <h4>Returns</h4>
                     array
                                             &mdash; <p>An array of four things: (1.) an array of SQL column statements, (2.) an array of triggers to run after creating columns (which will typically maintain default values), (3.) the array of indexes, which may have been modified, and (4.) additional SQL parameters to append to the CREATE TABLE statement, for instance &quot;AUTO_INCREMENT=&quot;.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -6185,15 +6052,13 @@ An array of table column properties indexed by the table column name. Valid para
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -6226,15 +6091,13 @@ An array of table column properties indexed by the table column name. Valid para
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -6262,15 +6125,13 @@ An array of table column properties indexed by the table column name. Valid para
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -6319,15 +6180,13 @@ An array of table column properties indexed by the table column name. Valid para
                 
                                     <h4>Returns</h4>
                     string
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr>
@@ -6379,15 +6238,13 @@ An array of table column properties indexed by the table column name. Valid para
                 
                                     <h4>Returns</h4>
                     array
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -6422,15 +6279,13 @@ An array of table column properties indexed by the table column name. Valid para
                 
                                     <h4>Returns</h4>
                     string
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -6458,15 +6313,13 @@ An array of table column properties indexed by the table column name. Valid para
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -6506,15 +6359,13 @@ An array of table column properties indexed by the table column name. Valid para
                 
                                     <h4>Returns</h4>
                     boolean
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                                            <dt>See also</dt>
+                                                                                            <dt>See also</dt>
                                                                 <dd><a href="../classes/Database.SQL.DatabaseSQL.html#method_insert"><span class="namespace-wrapper">\Database\SQL\DatabaseSQL::insert()</span></a></dd>
                                                                 </dl>
             <h2>Tags</h2>
@@ -6561,15 +6412,13 @@ An array of table column properties indexed by the table column name. Valid para
                 
                                     <h4>Returns</h4>
                     boolean
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Database.SQL.DatabaseSQL.html"><div class="path-wrapper">\Database\SQL\DatabaseSQL</div></a></dd>
-                                                                            <dt>See also</dt>
+                                                                                            <dt>See also</dt>
                                                                 <dd><a href="../classes/Database.SQL.DatabaseSQL.html#method_delete"><span class="namespace-wrapper">\Database\SQL\DatabaseSQL::delete()</span></a></dd>
                                                                 </dl>
             <h2>Tags</h2>
@@ -6634,7 +6483,7 @@ An array of table column properties indexed by the table column name. Valid para
                 <section class="span10 offset1">
                     <hr />
                     Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
-                    on January 11th, 2018 at 00:50.
+                    on January 29th, 2018 at 22:48.
                 </section>
             </section>
         </section>

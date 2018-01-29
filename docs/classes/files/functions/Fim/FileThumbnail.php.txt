@@ -1,1 +1,45 @@
+<?php
+/* FreezeMessenger Copyright © 2017 Joseph Todd Parsons
 
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+namespace Fim;
+
+use \Exception;
+
+class FileThumbnail extends File {
+    // Thumbnails only
+    protected $width;
+    protected $height;
+    protected $scaleFactor;
+
+
+    public function __construct($fileData) {
+        // When working with an existing file row, we require that all (almost) indexes be present.
+        if ($fileData instanceof \Database\Result) {
+            $fileData = $fileData->getAsArray(false);
+        }
+        // When creating a new file.
+        else if (!is_array($fileData)) {
+            throw new Exception('Invalid message data specified -- must be an associative array corresponding to a table row. Passed: ' . print_r($fileData, true));
+        }
+
+
+        parent::__construct($fileData);
+
+        $this->width = $fileData['width'] ?? 0;
+        $this->height = $fileData['height'] ?? 0;
+        $this->scaleFactor = $fileData['scaleFactor'] ?? 0;
+    }
+}

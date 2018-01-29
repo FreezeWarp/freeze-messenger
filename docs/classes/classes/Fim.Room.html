@@ -24,7 +24,7 @@
     <script type="text/javascript">
     function loadExternalCodeSnippets() {
         Array.prototype.slice.call(document.querySelectorAll('pre[data-src]')).forEach(function (pre) {
-            var src = pre.getAttribute('data-src').replace( /\\/g, '/');
+            var src = pre.getAttribute('data-src');
             var extension = (src.match(/\.(\w+)$/) || [, ''])[1];
             var language = 'php';
 
@@ -119,12 +119,12 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a href="../reports/errors.html">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">1179</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Errors <span class="label label-info pull-right">1173</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="../reports/markers.html">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">41</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <i class="icon-list-alt"></i>&#160;Markers <span class="label label-info pull-right">37</span>
                                 </a>
                             </li>
                             <li>
@@ -149,28 +149,28 @@
                                 <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-2100896617"></a>
+                                    <a class="accordion-toggle " data-toggle="collapse" data-target="#namespace-1328201887"></a>
                                 <a href="../namespaces/default.html" style="margin-left: 30px; padding-left: 0">\</a>
             </div>
-            <div id="namespace-2100896617" class="accordion-body collapse in">
+            <div id="namespace-1328201887" class="accordion-body collapse in">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-460565759"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2089075423"></a>
                                 <a href="../namespaces/Cache.html" style="margin-left: 30px; padding-left: 0">Cache</a>
             </div>
-            <div id="namespace-460565759" class="accordion-body collapse ">
+            <div id="namespace-2089075423" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-753653989"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-694707741"></a>
                                 <a href="../namespaces/Cache.Driver.html" style="margin-left: 30px; padding-left: 0">Driver</a>
             </div>
-            <div id="namespace-753653989" class="accordion-body collapse ">
+            <div id="namespace-694707741" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -202,19 +202,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1316270663"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1724340699"></a>
                                 <a href="../namespaces/Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
             </div>
-            <div id="namespace-1316270663" class="accordion-body collapse ">
+            <div id="namespace-1724340699" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1859455689"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-50553005"></a>
                                 <a href="../namespaces/Database.Index.html" style="margin-left: 30px; padding-left: 0">Index</a>
             </div>
-            <div id="namespace-1859455689" class="accordion-body collapse ">
+            <div id="namespace-50553005" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -230,31 +230,11 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-431237345"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1736005746"></a>
                                 <a href="../namespaces/Database.SQL.html" style="margin-left: 30px; padding-left: 0">SQL</a>
             </div>
-            <div id="namespace-431237345" class="accordion-body collapse ">
+            <div id="namespace-1736005746" class="accordion-body collapse ">
                 <div class="accordion-inner">
-
-                                                    <div class="accordion" style="margin-bottom: 0">
-        <div class="accordion-group">
-            <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1586447044"></a>
-                                <a href="../namespaces/Database.SQL.Drivers.html" style="margin-left: 30px; padding-left: 0">Drivers</a>
-            </div>
-            <div id="namespace-1586447044" class="accordion-body collapse ">
-                <div class="accordion-inner">
-
-                    
-                    <ul>
-                                                                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoMysql.html">PdoMysql</a></li>
-                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoPgsql.html">PdoPgsql</a></li>
-                                                    <li class="class"><a href="../classes/Database.SQL.Drivers.PdoSqlsrv.html">PdoSqlsrv</a></li>
-                                            </ul>
-                </div>
-            </div>
-        </div>
-    </div>
 
                     
                     <ul>
@@ -275,10 +255,10 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-949233122"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-472046688"></a>
                                 <a href="../namespaces/Database.Type.html" style="margin-left: 30px; padding-left: 0">Type</a>
             </div>
-            <div id="namespace-949233122" class="accordion-body collapse ">
+            <div id="namespace-472046688" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -307,19 +287,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1171419445"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-742797276"></a>
                                 <a href="../namespaces/Fim.html" style="margin-left: 30px; padding-left: 0">Fim</a>
             </div>
-            <div id="namespace-1171419445" class="accordion-body collapse ">
+            <div id="namespace-742797276" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-867481363"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1711889964"></a>
                                 <a href="../namespaces/Fim.OAuthGrantTypes.html" style="margin-left: 30px; padding-left: 0">OAuthGrantTypes</a>
             </div>
-            <div id="namespace-867481363" class="accordion-body collapse ">
+            <div id="namespace-1711889964" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -345,6 +325,8 @@
                                                     <li class="class"><a href="../classes/Fim.DatabaseResult.html">DatabaseResult</a></li>
                                                     <li class="class"><a href="../classes/Fim.DatabaseSlave.html">DatabaseSlave</a></li>
                                                     <li class="class"><a href="../classes/Fim.DynamicObject.html">DynamicObject</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Error.html">Error</a></li>
+                                                    <li class="class"><a href="../classes/Fim.ErrorThrown.html">ErrorThrown</a></li>
                                                     <li class="class"><a href="../classes/Fim.File.html">File</a></li>
                                                     <li class="class"><a href="../classes/Fim.FileThumbnail.html">FileThumbnail</a></li>
                                                     <li class="class"><a href="../classes/Fim.MagicGettersSetters.html">MagicGettersSetters</a></li>
@@ -354,6 +336,7 @@
                                                     <li class="class"><a href="../classes/Fim.RoomFactory.html">RoomFactory</a></li>
                                                     <li class="class"><a href="../classes/Fim.User.html">User</a></li>
                                                     <li class="class"><a href="../classes/Fim.UserFactory.html">UserFactory</a></li>
+                                                    <li class="class"><a href="../classes/Fim.Utilities.html">Utilities</a></li>
                                                     <li class="class"><a href="../classes/Fim.Xml2Array.html">Xml2Array</a></li>
                                             </ul>
                 </div>
@@ -364,10 +347,10 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-877984751"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2031599593"></a>
                                 <a href="../namespaces/Http.html" style="margin-left: 30px; padding-left: 0">Http</a>
             </div>
-            <div id="namespace-877984751" class="accordion-body collapse ">
+            <div id="namespace-2031599593" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -386,19 +369,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-859239293"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-123141150"></a>
                                 <a href="../namespaces/Login.html" style="margin-left: 30px; padding-left: 0">Login</a>
             </div>
-            <div id="namespace-859239293" class="accordion-body collapse ">
+            <div id="namespace-123141150" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-438184629"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-553432904"></a>
                                 <a href="../namespaces/Login.Database.html" style="margin-left: 30px; padding-left: 0">Database</a>
             </div>
-            <div id="namespace-438184629" class="accordion-body collapse ">
+            <div id="namespace-553432904" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -416,10 +399,10 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-180733309"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-167799079"></a>
                                 <a href="../namespaces/Login.TwoStep.html" style="margin-left: 30px; padding-left: 0">TwoStep</a>
             </div>
-            <div id="namespace-180733309" class="accordion-body collapse ">
+            <div id="namespace-167799079" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -453,19 +436,19 @@
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-2099141973"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-696121068"></a>
                                 <a href="../namespaces/Stream.html" style="margin-left: 30px; padding-left: 0">Stream</a>
             </div>
-            <div id="namespace-2099141973" class="accordion-body collapse ">
+            <div id="namespace-696121068" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                                                     <div class="accordion" style="margin-bottom: 0">
         <div class="accordion-group">
             <div class="accordion-heading">
-                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1030725415"></a>
+                                    <a class="accordion-toggle collapsed" data-toggle="collapse" data-target="#namespace-1966158917"></a>
                                 <a href="../namespaces/Stream.Streams.html" style="margin-left: 30px; padding-left: 0">Streams</a>
             </div>
-            <div id="namespace-1030725415" class="accordion-body collapse ">
+            <div id="namespace-1966158917" class="accordion-body collapse ">
                 <div class="accordion-inner">
 
                     
@@ -484,6 +467,7 @@
                     <ul>
                                                     <li class="interface"><a href="../classes/Stream.StreamInterface.html">StreamInterface</a></li>
                                                                                                     <li class="class"><a href="../classes/Stream.StreamFactory.html">StreamFactory</a></li>
+                                                    <li class="class"><a href="../classes/Stream.WebPushHandler.html">WebPushHandler</a></li>
                                             </ul>
                 </div>
             </div>
@@ -497,8 +481,6 @@
                                                     <li class="class"><a href="../classes/databaseSQLTests.html">databaseSQLTests</a></li>
                                                     <li class="class"><a href="../classes/databaseSQLTests1.html">databaseSQLTests1</a></li>
                                                     <li class="class"><a href="../classes/databaseSQLTests2.html">databaseSQLTests2</a></li>
-                                                    <li class="class"><a href="../classes/fimError.html">fimError</a></li>
-                                                    <li class="class"><a href="../classes/fimErrorThrown.html">fimErrorThrown</a></li>
                                             </ul>
                 </div>
             </div>
@@ -559,6 +541,7 @@ The data for a room object.</em></p>
                                                                     <a href="../classes/Fim.Room.html#method_getName" class="">getName()</a><br />
                                                                     <a href="../classes/Fim.Room.html#method_getWatchedByUsers" class="">getWatchedByUsers()</a><br />
                                                                     <a href="../classes/Fim.Room.html#method_getDeleted" class="">getDeleted()</a><br />
+                                                                    <a href="../classes/Fim.Room.html#method_setDeleted" class="">setDeleted()</a><br />
                                                                     <a href="../classes/Fim.Room.html#method_getArchived" class="">getArchived()</a><br />
                                                                     <a href="../classes/Fim.Room.html#method_getOfficial" class="">getOfficial()</a><br />
                                                                     <a href="../classes/Fim.Room.html#method_getHidden" class="">getHidden()</a><br />
@@ -665,7 +648,7 @@ The data for a room object.</em></p>
                         
                         
                         
-                                                
+                        
                                                                         </dl>
                     <h2>Tags</h2>
                     <table class="table table-condensed">
@@ -687,7 +670,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_OFFICIAL" name="constant_ROOM_OFFICIAL" class="anchor"></a>
             <article id="constant_ROOM_OFFICIAL" class="constant">
                 <h3 class="">ROOM_OFFICIAL</h3>
-                <pre class="signature">ROOM_OFFICIAL = 1</pre>
+                <pre class="signature">ROOM_OFFICIAL</pre>
                 <p><em>The room is official, and will receive special prominence in room searches.</em></p>
                 
             </article>
@@ -708,7 +691,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_DELETED" name="constant_ROOM_DELETED" class="anchor"></a>
             <article id="constant_ROOM_DELETED" class="constant">
                 <h3 class="">ROOM_DELETED</h3>
-                <pre class="signature">ROOM_DELETED = 4</pre>
+                <pre class="signature">ROOM_DELETED</pre>
                 <p><em>The room is deleted, and cannot be viewed (except by admins) or posted in.</em></p>
                 
             </article>
@@ -729,7 +712,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_HIDDEN" name="constant_ROOM_HIDDEN" class="anchor"></a>
             <article id="constant_ROOM_HIDDEN" class="constant">
                 <h3 class="">ROOM_HIDDEN</h3>
-                <pre class="signature">ROOM_HIDDEN = 8</pre>
+                <pre class="signature">ROOM_HIDDEN</pre>
                 <p><em>The room is hidden, and will not be shown in room searches.</em></p>
                 
             </article>
@@ -750,7 +733,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_ARCHIVED" name="constant_ROOM_ARCHIVED" class="anchor"></a>
             <article id="constant_ROOM_ARCHIVED" class="constant">
                 <h3 class="">ROOM_ARCHIVED</h3>
-                <pre class="signature">ROOM_ARCHIVED = 16</pre>
+                <pre class="signature">ROOM_ARCHIVED</pre>
                 <p><em>The room is archived, and cannot be posted in, but can still be viewed.</em></p>
                 
             </article>
@@ -771,7 +754,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_PERMISSION_VIEW" name="constant_ROOM_PERMISSION_VIEW" class="anchor"></a>
             <article id="constant_ROOM_PERMISSION_VIEW" class="constant">
                 <h3 class="">ROOM_PERMISSION_VIEW</h3>
-                <pre class="signature">ROOM_PERMISSION_VIEW = 1</pre>
+                <pre class="signature">ROOM_PERMISSION_VIEW</pre>
                 <p><em>The room can be viewed by the user.</em></p>
                 
             </article>
@@ -792,7 +775,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_PERMISSION_POST" name="constant_ROOM_PERMISSION_POST" class="anchor"></a>
             <article id="constant_ROOM_PERMISSION_POST" class="constant">
                 <h3 class="">ROOM_PERMISSION_POST</h3>
-                <pre class="signature">ROOM_PERMISSION_POST = 2</pre>
+                <pre class="signature">ROOM_PERMISSION_POST</pre>
                 <p><em>The room can be posted in by the user.</em></p>
                 
             </article>
@@ -813,7 +796,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_PERMISSION_TOPIC" name="constant_ROOM_PERMISSION_TOPIC" class="anchor"></a>
             <article id="constant_ROOM_PERMISSION_TOPIC" class="constant">
                 <h3 class="">ROOM_PERMISSION_TOPIC</h3>
-                <pre class="signature">ROOM_PERMISSION_TOPIC = 4</pre>
+                <pre class="signature">ROOM_PERMISSION_TOPIC</pre>
                 <p><em>The room&#039;s topic can be changed by the user.</em></p>
                 
             </article>
@@ -834,7 +817,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_PERMISSION_MODERATE" name="constant_ROOM_PERMISSION_MODERATE" class="anchor"></a>
             <article id="constant_ROOM_PERMISSION_MODERATE" class="constant">
                 <h3 class="">ROOM_PERMISSION_MODERATE</h3>
-                <pre class="signature">ROOM_PERMISSION_MODERATE = 8</pre>
+                <pre class="signature">ROOM_PERMISSION_MODERATE</pre>
                 <p><em>The room can be moderated by the user, e.g. posts can be deleted.</em></p>
                 
             </article>
@@ -855,7 +838,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_PERMISSION_PROPERTIES" name="constant_ROOM_PERMISSION_PROPERTIES" class="anchor"></a>
             <article id="constant_ROOM_PERMISSION_PROPERTIES" class="constant">
                 <h3 class="">ROOM_PERMISSION_PROPERTIES</h3>
-                <pre class="signature">ROOM_PERMISSION_PROPERTIES = 16</pre>
+                <pre class="signature">ROOM_PERMISSION_PROPERTIES</pre>
                 <p><em>The room&#039;s properties can be altered by the user, e.g. the room&#039;s censors can be changed.</em></p>
                 
             </article>
@@ -876,7 +859,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_PERMISSION_GRANT" name="constant_ROOM_PERMISSION_GRANT" class="anchor"></a>
             <article id="constant_ROOM_PERMISSION_GRANT" class="constant">
                 <h3 class="">ROOM_PERMISSION_GRANT</h3>
-                <pre class="signature">ROOM_PERMISSION_GRANT = 128</pre>
+                <pre class="signature">ROOM_PERMISSION_GRANT</pre>
                 <p><em>The room&#039;s permissions for users and groups can be changed by the user. This includes, for instance, making other users moderators.</em></p>
                 
             </article>
@@ -897,7 +880,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_TYPE_PRIVATE" name="constant_ROOM_TYPE_PRIVATE" class="anchor"></a>
             <article id="constant_ROOM_TYPE_PRIVATE" class="constant">
                 <h3 class="">ROOM_TYPE_PRIVATE</h3>
-                <pre class="signature">ROOM_TYPE_PRIVATE = &#039;private&#039;</pre>
+                <pre class="signature">ROOM_TYPE_PRIVATE</pre>
                 <p><em>The room is private between two or more people.</em></p>
                 
             </article>
@@ -918,7 +901,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_TYPE_OTR" name="constant_ROOM_TYPE_OTR" class="anchor"></a>
             <article id="constant_ROOM_TYPE_OTR" class="constant">
                 <h3 class="">ROOM_TYPE_OTR</h3>
-                <pre class="signature">ROOM_TYPE_OTR = &#039;otr&#039;</pre>
+                <pre class="signature">ROOM_TYPE_OTR</pre>
                 <p><em>The room is off-the-record between two or more people.</em></p>
                 
             </article>
@@ -939,7 +922,7 @@ The data for a room object.</em></p>
             <a id="constant_ROOM_TYPE_GENERAL" name="constant_ROOM_TYPE_GENERAL" class="anchor"></a>
             <article id="constant_ROOM_TYPE_GENERAL" class="constant">
                 <h3 class="">ROOM_TYPE_GENERAL</h3>
-                <pre class="signature">ROOM_TYPE_GENERAL = &#039;general&#039;</pre>
+                <pre class="signature">ROOM_TYPE_GENERAL</pre>
                 <p><em></em></p>
                 
             </article>
@@ -960,7 +943,7 @@ The data for a room object.</em></p>
             <a id="constant_PRIVATE_ROOM_STATE_NORMAL" name="constant_PRIVATE_ROOM_STATE_NORMAL" class="anchor"></a>
             <article id="constant_PRIVATE_ROOM_STATE_NORMAL" class="constant">
                 <h3 class="">PRIVATE_ROOM_STATE_NORMAL</h3>
-                <pre class="signature">PRIVATE_ROOM_STATE_NORMAL = &#039;normal&#039;</pre>
+                <pre class="signature">PRIVATE_ROOM_STATE_NORMAL</pre>
                 <p><em>When a private room behaves normally.</em></p>
                 
             </article>
@@ -981,7 +964,7 @@ The data for a room object.</em></p>
             <a id="constant_PRIVATE_ROOM_STATE_READONLY" name="constant_PRIVATE_ROOM_STATE_READONLY" class="anchor"></a>
             <article id="constant_PRIVATE_ROOM_STATE_READONLY" class="constant">
                 <h3 class="">PRIVATE_ROOM_STATE_READONLY</h3>
-                <pre class="signature">PRIVATE_ROOM_STATE_READONLY = &#039;readOnly&#039;</pre>
+                <pre class="signature">PRIVATE_ROOM_STATE_READONLY</pre>
                 <p><em>When a private room has members who are not allowed to private message eachother.</em></p>
                 
             </article>
@@ -1002,7 +985,7 @@ The data for a room object.</em></p>
             <a id="constant_PRIVATE_ROOM_STATE_DISABLED" name="constant_PRIVATE_ROOM_STATE_DISABLED" class="anchor"></a>
             <article id="constant_PRIVATE_ROOM_STATE_DISABLED" class="constant">
                 <h3 class="">PRIVATE_ROOM_STATE_DISABLED</h3>
-                <pre class="signature">PRIVATE_ROOM_STATE_DISABLED = &#039;disabled&#039;</pre>
+                <pre class="signature">PRIVATE_ROOM_STATE_DISABLED</pre>
                 <p><em>When a private room is outright disabled, and should not be readable even by its member users.</em></p>
                 <p>This is typically the state of the room when one member does not exist, or private rooms are disabled entirely.</p>
             </article>
@@ -1615,7 +1598,7 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>Returns false if object data is empty, true otherwise.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -1661,7 +1644,7 @@ The data for a room object.</em></p>
                             <dd><p>If a property doesn't exist.</p></dd>
                                                                     </dl>
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -1702,7 +1685,7 @@ The data for a room object.</em></p>
                             <dd><p>If a property doesn't exist.</p></dd>
                                                                     </dl>
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -1738,15 +1721,13 @@ The data for a room object.</em></p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                                            <dt>See also</dt>
+                                                                                            <dt>See also</dt>
                                                                 <dd><a href="fimDynamicObject::resolve"><span class="namespace-wrapper">fimDynamicObject::resolve</span></a></dd>
                                                                 </dl>
             <h2>Tags</h2>
@@ -1775,15 +1756,13 @@ The data for a room object.</em></p>
                 
                                     <h4>Returns</h4>
                     boolean
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -1816,7 +1795,7 @@ The data for a room object.</em></p>
                             <dd><p>If matching pullgroup not found.</p></dd>
                                                                     </dl>
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -1847,15 +1826,13 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>true when the object has a corresponding entry in the database, false otherwise</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                                            <dt>See also</dt>
+                                                                                            <dt>See also</dt>
                                                                 <dd><a href=""><span class="namespace-wrapper">\Fim\dynamicObject::exists()</span></a></dd>
                                                                 </dl>
             <h2>Tags</h2>
@@ -1885,7 +1862,7 @@ The data for a room object.</em></p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -1921,7 +1898,7 @@ The data for a room object.</em></p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -1957,7 +1934,7 @@ The data for a room object.</em></p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -1993,7 +1970,7 @@ The data for a room object.</em></p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2029,7 +2006,7 @@ The data for a room object.</em></p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
@@ -2065,15 +2042,13 @@ The data for a room object.</em></p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2104,16 +2079,14 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True if the ID string can be evaluated as a private room ID string, false otherwise.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                             <span class="label label-info">static</span>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2149,16 +2122,14 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     string
                                             &mdash; <p>The roomId encoded.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                             <span class="label label-info">static</span>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2173,7 +2144,7 @@ The data for a room object.</em></p>
                 <h3 class="public ">decodeId()</h3>
                 <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
                 <pre class="signature" style="margin-right: 54px;">decodeId(  <span class="argument">$id</span>) : string</pre>
-                <p><em>Decodes a packed roomId into its string representation by {@link Fim\fimRoom::encodeId()}.</em></p>
+                <p><em>Decodes a packed roomId into its string representation by {@link Fim\fimself::encodeId()}.</em></p>
                 
 
                                     <h4>Parameters</h4>
@@ -2189,16 +2160,14 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     string
                                             &mdash; <p>The roomId decoded, e.g. &quot;12&quot; or &quot;p1,3&quot;</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                             <span class="label label-info">static</span>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2229,16 +2198,14 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     array
                                             &mdash; <p>An associative array corresponding to the permissions user has based on their bitfield. Keys are &quot;view&quot;, &quot;post&quot;, &quot;moderate&quot;, etc., and values are true if the user has the given permission, false otherwise.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                             <span class="label label-info">static</span>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2261,21 +2228,19 @@ The data for a room object.</em></p>
                                                     <tr>
                                 <td></td>
                                 <td>$permissionsArray </td>
-                                <td><p>array List of strings corresponding with permissions in {@link Fim\fimRoom::$permArray}.</p></td>
+                                <td><p>array List of strings corresponding with permissions in {@link Fim\fimself::$permArray}.</p></td>
                             </tr>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                             <span class="label label-info">static</span>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2303,15 +2268,13 @@ The data for a room object.</em></p>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2334,15 +2297,13 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     array
                                             &mdash; <p>The name of this room, which will be automatically generated if it is a private room.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2365,15 +2326,13 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     array
                                             &mdash; <p>The list of users watching this room for new messages.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2396,15 +2355,47 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>If the room is currently deleted (and will only be readable by administrators).</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
+            <h2>Tags</h2>
+            <table class="table table-condensed">
+                                    <tr><td colspan="2"><em>None found</em></td></tr>
+                            </table>
+        </aside>
+    </div>
+
+                                    <div class="row-fluid">
+        <div class="span8 content class">
+            <a id="method_setDeleted" name="method_setDeleted" class="anchor"></a>
+            <article class="method">
+                <h3 class="public ">setDeleted()</h3>
+                <a href="#source-view" role="button" class="pull-right btn" data-toggle="modal" style="font-size: 1.1em; padding: 9px 14px"><i class="icon-code"></i></a>
+                <pre class="signature" style="margin-right: 54px;">setDeleted(  <span class="argument">$deleted</span>) </pre>
+                <p><em></em></p>
+                
+
+                                    <h4>Parameters</h4>
+                    <table class="table table-condensed table-hover">
+                                                    <tr>
+                                <td></td>
+                                <td>$deleted </td>
+                                <td></td>
+                            </tr>
+                                            </table>
+                
+                
+                				
+                            </article>
+        </div>
+        <aside class="span4 detailsbar">
+            <h1><i class="icon-arrow-down"></i></h1>
+                                                            <dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2427,15 +2418,13 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>If the room is currently in archived mode (and will only be readable).</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2458,15 +2447,13 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>If the room is currently in official mode (and will be prioritised when getting the list of rooms).</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2489,15 +2476,13 @@ The data for a room object.</em></p>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>If the room is currently in hidden mode (and won't be shown when getting the list of rooms).</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2519,15 +2504,13 @@ The data for a room object.</em></p>
                 
                                     <h4>Returns</h4>
                     boolean
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2549,15 +2532,13 @@ The data for a room object.</em></p>
                 
                                     <h4>Returns</h4>
                     boolean
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2584,15 +2565,13 @@ The data for a room object.</em></p>
                 
                                     <h4>Returns</h4>
                     array
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2619,15 +2598,13 @@ The data for a room object.</em></p>
                 
                                     <h4>Returns</h4>
                     array&lt;mixed,<a href="../classes/Fim.User.html">\Fim\User</a>&gt;
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2655,15 +2632,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                 
                                     <h4>Returns</h4>
                     boolean
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2695,15 +2670,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                                     <h4>Returns</h4>
                     boolean
                                             &mdash; <p>True if all private room members are allowed to private message all other private room members, false otherwise.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2726,15 +2699,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                                     <h4>Returns</h4>
                     string
                                             &mdash; <p>The current room ID encoded for compact storage.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2757,15 +2728,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                                     <h4>Returns</h4>
                     array
                                             &mdash; <p>The list of censor words applied to this room.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2812,15 +2781,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                                     <h4>Returns</h4>
                     string
                                             &mdash; <p>text with substitutions made.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2851,15 +2818,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                                     <h4>Returns</h4>
                     mixed
                                             &mdash; <p>The room's ID if inserted, otherwise true if success/false if failure.</p>
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2887,15 +2852,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2930,15 +2893,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                 
                                     <h4>Returns</h4>
                     boolean
-                                    
+                                    				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -2966,15 +2927,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3002,15 +2961,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3038,15 +2995,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3074,15 +3029,13 @@ TODO: move into fimRoomPrivate class</p></dd>
                                             </table>
                 
                 
-                
+                				
                             </article>
         </div>
         <aside class="span4 detailsbar">
             <h1><i class="icon-arrow-down"></i></h1>
                                                             <dl>
-                                                    <dt>Inherited from</dt>
-                    <dd><a href="../classes/Fim.Room.html"><div class="path-wrapper">\Fim\Room</div></a></dd>
-                                                            </dl>
+                                                                            </dl>
             <h2>Tags</h2>
             <table class="table table-condensed">
                                     <tr><td colspan="2"><em>None found</em></td></tr>
@@ -3145,7 +3098,7 @@ TODO: move into fimRoomPrivate class</p></dd>
                 <section class="span10 offset1">
                     <hr />
                     Documentation is powered by <a href="http://www.phpdoc.org/">phpDocumentor </a> and authored
-                    on January 11th, 2018 at 00:50.
+                    on January 29th, 2018 at 22:48.
                 </section>
             </section>
         </section>

@@ -1,1 +1,111 @@
+<?php
+/* FreezeMessenger Copyright © 2017 Joseph Todd Parsons
 
+ * This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+/**
+ * Represents a "file" object in some context, performing file enumerations and file posts:
+ ** When used with a GET request, this will retrieve a list of files. If a file ID is provided, it will retrieve a single file's information, otherwise it will retrieve files who match certain parameters.
+ ** When used with a PUT request, this will create a new file.
+ ** (TODO) When used with a delete request, the file will be marked as deleted, though the file data may remain on the server.
+ ** To view a specific file, use the /file.php API.
+ *
+ *
+ * = Create File Directives =
+ * @param string uploadMethod='raw' - How the file is being transferred from the server, either:
+ ** 'raw' - File is being uploaded as an HTTP upload.
+ ** 'put' - File is being transferred via PUT.
+ * @param string fileName - The name of the file. [[Required.]]
+ * @param int fileSize - The size of the file (in bytes), used for checks.
+ * @param string md5hash - The MD5 hash of the file, used for checks.
+ * @param string sha256hash - The SHA256 hash of the file, used for checks.
+ * @param string crc32bhash - The CRC32b hash of the file, used for checks.
+ * @param int roomId - If the image is to be directly posted to a room, specify the room ID here. This may be required, depending on server settings.
+ *
+ * = Errors =
+ * == Creating Files ==
+ * @throws tooManyFiles - The user is not allowed to upload files because they have reached the file upload limit, either for themselves or for the entire server.
+ * @throws badEncoding - The encoding specified is not recognised.
+ * @throws badMd5Hash - The md5 hash of the uploaded file data does not match the md5 hash sent.
+ * @throws badSha256Hash - The sha256 hash of the uploaded file data does not match the sha256 hash sent.
+ * @throws badSize - The size of the uploaded file data does not match the fileSize parameter sent.
+ * @throws badName - No name was specified, or, potentially, the name contained characters that are not allowed but will not be removed.
+ * @throws badNameParts - An extension could not be obtained because of the number of '.' characters in the file. If there are zero, or two or more, then this error will thrown. (Thus, for example, ".tar.gz" files can not be processed by the script.)
+ * @throws emptyFile - The file sent was empty. This is only thrown if the server does not accept empty files.
+ * @throws tooLarge - The file data exceeds the server limit.
+ * @throws unrecExt - The extension of the file is not recognised by the server, and thus is not accepted.
+ * @throws invalidFile - The 'fileId' parameter sent does not correspond to an existing file.
+ * @throws noPerm - The active user does not have permission to perform the action requested.
+ * @throws noOrphanFiles - A valid room was not provided, and the server requires that all files are associated with a room.
+ */
+
+/* Common Resources */
+
+use Fim\Error;
+
+$apiRequest = true;
+require(__DIR__ . '/../global.php');
+define('API_INFILE', true);
+
+
+/* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
+$requestHead = fim_sanitizeGPC('g', [
+    '_action' => [],
+]);
+$requestHead = array_merge($requestHead, (array)fim_sanitizeGPC('g', [
+    'id' => [
+        'cast' => 'int',
+        'require' => in_array($requestHead['_action'], ['edit', 'delete'])
+    ],
+]));
+
+
+/* Early Validation */
+if (isset($requestHead['id'])) {
+    if ($requestHead['_action'] === 'create') // ID shouldn't be used here.
+        new \Fim\Error('idExtra', 'Parameter ID should not be used with PUT requests.');
+
+    try {
+        /**
+         * @var $file \Fim\File
+         */
+        $file = \Fim\Database::instance()->getFiles(['fileIds' => $requestHead['id']])->getAsObject('\\Fim\\File');
+    } catch (Exception $ex) {
+        new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
+    }
+}
+
+
+/* Load the correct file to perform the action */
+switch ($requestHead['_action']) {
+    case 'create':
+    case 'edit':
+        require(__DIR__ . '/file/editFile.php');
+        break;
+
+    case 'get':
+        require(__DIR__ . '/file/files.php');
+        break;
+
+    case 'delete':
+        if ($file->user->id != $user->id
+            && !$user->hasPriv('modFiles')) {
+            new \Fim\Error('noPerm', 'You do not have permission to delete that file.');
+        }
+
+        \Fim\Database::instance()->deleteFile($file);
+        echo new Http\ApiData(['deleteFile' => []]);
+        break;
+}

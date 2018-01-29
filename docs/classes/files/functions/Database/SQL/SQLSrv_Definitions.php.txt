@@ -1,1 +1,109 @@
+<?php
 
+namespace Database\SQL;
+
+use Database\Engine;
+use Database\Type;
+
+abstract class SQLSrv_Definitions extends SQL_Definitions
+{
+    public $storeTypes = [Engine::general];
+
+    public $dataTypes = [
+        'columnIntLimits' => [
+            2         => 'TINYINT',
+            4         => 'SMALLINT',
+            9         => 'INT',
+            'default' => 'BIGINT'
+        ],
+
+        'columnStringPermLimits' => [
+            4000      => 'NVARCHAR',
+            'default' => 'NVARCHAR(MAX)'
+        ],
+
+        'columnStringTempLimits' => [
+            4000      => 'NVARCHAR',
+            'default' => 'NVARCHAR(MAX)'
+        ],
+
+        'columnBlobPermLimits' => [
+            4000      => 'VARBINARY',
+            'default' => 'VARBINARY(MAX)',
+        ],
+
+        'columnBlobTempLimits' => [
+            4000      => 'VARBINARY',
+            'default' => 'VARBINARY(MAX)',
+        ],
+
+        'columnNoLength' => [],
+
+        'columnBitLimits' => [
+            8         => 'TINYINT',
+            16        => 'SMALLINT',
+            32        => 'INTEGER',
+            64        => 'BIGINT',
+            'default' => 'INTEGER',
+        ],
+
+        Type\Type::float     => 'REAL',
+        Type\Type::bool      => 'BIT',
+        Type\Type::timestamp => 'INTEGER',
+        Type\Type::blob      => 'VARBINARY(MAX)',
+        Type\Type::json      => false,
+    ];
+
+
+    /* Hex is used. */
+    public $binaryQuoteStart = '';
+    public $binaryQuoteEnd = '';
+
+
+    public $upsertMode = 'tryCatch';
+    public $enumMode = 'useCheck';
+    public $indexMode = 'useCreateIndex';
+    public $serialMode = 'identity';
+    //foreign keys make dropping tables difficult, so they are not enabled by default
+    //public $foreignKeyMode = 'useAlterTableConstraint';
+    public $useDropIndexIfExists = true;
+
+
+    public function getTablesAsArray(DatabaseSQL $database)
+    {
+        return $database->rawQueryReturningResult('SELECT * FROM '
+            . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'TABLES')
+            . ' WHERE TABLE_TYPE = \'BASE TABLE\' AND TABLE_CATALOG = '
+            . $database->formatValue(Type\Type::string, $database->activeDatabase)
+        )->getColumnValues('TABLE_NAME');
+    }
+
+    public function getTableColumnsAsArray(DatabaseSQL $database)
+    {
+        return $database->rawQueryReturningResult('SELECT * FROM '
+            . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'COLUMNS')
+            . ' WHERE TABLE_CATALOG = '
+            . $database->formatValue(Type\Type::string, $database->activeDatabase)
+        )->getColumnValues(['TABLE_NAME', 'COLUMN_NAME']);
+    }
+
+    public function getTableConstraintsAsArray(DatabaseSQL $database)
+    {
+        return $database->rawQueryReturningResult('SELECT * FROM '
+            . $database->formatValue(DatabaseSQL::FORMAT_VALUE_DATABASE_TABLE, 'INFORMATION_SCHEMA', 'TABLE_CONSTRAINTS')
+            . ' WHERE TABLE_CATALOG = '
+            . $database->formatValue(Type\Type::string, $database->activeDatabase)
+            . ' AND CONSTRAINT_TYPE = \'FOREIGN KEY\''
+        )->getColumnValues(['TABLE_NAME', 'CONSTRAINT_NAME']);
+    }
+
+    public function getTableIndexesAsArray(DatabaseSQL $database)
+    {
+        return [];
+    }
+
+    public function getLanguage()
+    {
+        return 'sqlsrv';
+    }
+}
