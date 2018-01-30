@@ -215,17 +215,6 @@ class roomSource extends eventSource {
             this.addClient(clientId);
 
         this.getEvents();
-
-        // Send Pings
-        getFimApiInstance(() => {
-            fimApiInstance.ping(this.roomId);
-        });
-
-        this.pingInterval = window.setInterval((() => {
-            getFimApiInstance(() => {
-                fimApiInstance.ping(this.roomId);
-            });
-        }), 60 * 1000);
     }
 
     close() {
@@ -237,6 +226,23 @@ class roomSource extends eventSource {
         getFimApiInstance(() => {
             fimApiInstance.exitRoom(this.roomId);
         })
+    }
+
+    getEvents() {
+        super.getEvents();
+
+        getFimApiInstance(() => {
+            fimApiInstance.ping(this.roomId);
+        });
+
+        if (this.pingInterval)
+            clearInterval(this.pingInterval);
+
+        this.pingInterval = window.setInterval((() => {
+            getFimApiInstance(() => {
+                fimApiInstance.ping(this.roomId);
+            });
+        }), 60 * 1000);
     }
 
     getEventsFromStream() {
@@ -284,6 +290,7 @@ let createNotification = function(data) {
             body: data.messageText,
             icon: data.userAvatar,
             vibrate: [100, 50, 100],
+            renotify : true
         });
     }
     else {
@@ -292,6 +299,7 @@ let createNotification = function(data) {
             body: data.messageText,
             icon: data.userAvatar,
             vibrate: [100, 50, 100],
+            renotify : true
         });
     }
 };

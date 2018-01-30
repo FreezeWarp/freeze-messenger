@@ -214,15 +214,6 @@ var roomSource = /** @class */ (function (_super) {
         if (clientId)
             _this.addClient(clientId);
         _this.getEvents();
-        // Send Pings
-        getFimApiInstance(function () {
-            fimApiInstance.ping(_this.roomId);
-        });
-        _this.pingInterval = window.setInterval((function () {
-            getFimApiInstance(function () {
-                fimApiInstance.ping(_this.roomId);
-            });
-        }), 60 * 1000);
         return _this;
     }
     roomSource.prototype.close = function () {
@@ -233,6 +224,20 @@ var roomSource = /** @class */ (function (_super) {
         getFimApiInstance(function () {
             fimApiInstance.exitRoom(_this.roomId);
         });
+    };
+    roomSource.prototype.getEvents = function () {
+        var _this = this;
+        _super.prototype.getEvents.call(this);
+        getFimApiInstance(function () {
+            fimApiInstance.ping(_this.roomId);
+        });
+        if (this.pingInterval)
+            clearInterval(this.pingInterval);
+        this.pingInterval = window.setInterval((function () {
+            getFimApiInstance(function () {
+                fimApiInstance.ping(_this.roomId);
+            });
+        }), 60 * 1000);
     };
     roomSource.prototype.getEventsFromStream = function () {
         this.getEventsFromStreamGenerator('room', this.roomId, ['userStatusChange', 'newMessage', 'topicChange', 'deletedMessage', 'editedMessage']);
@@ -269,7 +274,8 @@ var createNotification = function (data) {
             tag: data.roomId,
             body: data.messageText,
             icon: data.userAvatar,
-            vibrate: [100, 50, 100]
+            vibrate: [100, 50, 100],
+            renotify: true
         });
     }
     else {
@@ -277,7 +283,8 @@ var createNotification = function (data) {
             tag: data.roomId,
             body: data.messageText,
             icon: data.userAvatar,
-            vibrate: [100, 50, 100]
+            vibrate: [100, 50, 100],
+            renotify: true
         });
     }
 };
