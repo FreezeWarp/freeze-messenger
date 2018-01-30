@@ -23,9 +23,9 @@ class WebPushHandler
     {
         self::$webPush = new WebPush([
             'VAPID' => [
-                'subject'    => 'https://messenger.josephtparsons.com',
-                'publicKey'  => \Fim\Config::$pushNotificationsPublicKey, // (recommended) uncompressed public key P-256 encoded in Base64-URL
-                'privateKey' => \Fim\Config::$pushNotificationsPrivateKey, // (recommended) in fact the secret multiplier of the private key encoded in Base64-URL
+                'subject'    => \Fim\Config::$pushNotificationsSubject,
+                'publicKey'  => \Fim\Config::$pushNotificationsPublicKey,
+                'privateKey' => \Fim\Config::$pushNotificationsPrivateKey,
             ],
         ]);
         self::$webPush->setAutomaticPadding(false);

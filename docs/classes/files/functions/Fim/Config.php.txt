@@ -664,6 +664,9 @@ class Config {
     /** @var string The Base64-encoded public key to use for push notifications. */
     public static $pushNotificationsPublicKey = "";
 
+    /** @var string Undocumented. */
+    public static $pushNotificationsSubject = "";
+
     /** @var bool Set this to false to disable events. You probably shouldn't. */
     public static $enableEvents = true;
 

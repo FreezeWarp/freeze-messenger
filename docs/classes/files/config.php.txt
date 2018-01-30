@@ -28,9 +28,9 @@ $dbConnect['integration']['driver'] = 'mysqli';
 /* $dbConnect['core']['host']
  * Defines the MySQL server to be connected to.
  * If unsure, "localhost" will work if you are connecting to a local server (which is the case most of the time) */
-$dbConnect['core']['host'] = 'p:aa1a85yfkjqf2te.cnnqqfjar9k8.us-east-2.rds.amazonaws.com';
-$dbConnect['slave']['host'] = 'p:aa1a85yfkjqf2te.cnnqqfjar9k8.us-east-2.rds.amazonaws.com';
-$dbConnect['integration']['host'] = 'p:aa1a85yfkjqf2te.cnnqqfjar9k8.us-east-2.rds.amazonaws.com';
+$dbConnect['core']['host'] = 'localhost';
+$dbConnect['slave']['host'] = 'localhost';
+$dbConnect['integration']['host'] = 'localhost';
 
 /* $dbConnect['core']['port']
  * Defines the MySQL port the MySQL server can be accessed to.
@@ -42,29 +42,29 @@ $dbConnect['integration']['port'] = '3306';
 /* $dbConnect['core']['username']
  * Defines the user of the MySQL connection to be used.
  * If unsure, PHPMyAdmin can be used to create new users, or ask your webhost/geeky friend for help. */
-$dbConnect['core']['username'] = 'josephtparsons';
-$dbConnect['slave']['username'] = 'josephtparsons';
-$dbConnect['integration']['username'] = 'josephtparsons';
+$dbConnect['core']['username'] = 'root';
+$dbConnect['slave']['username'] = 'root';
+$dbConnect['integration']['username'] = 'root';
 
 /* $dbConnect['core']['password']
  * Defines the password associated with the user specified above. */
-$dbConnect['core']['password'] = 'cXJfu5p94a1TpRuBfMCx37kh';
-$dbConnect['slave']['password'] = 'cXJfu5p94a1TpRuBfMCx37kh';
-$dbConnect['integration']['password'] = 'cXJfu5p94a1TpRuBfMCx37kh';
+$dbConnect['core']['password'] = 'R@1nD0wn';
+$dbConnect['slave']['password'] = 'R@1nD0wn';
+$dbConnect['integration']['password'] = 'R@1nD0wn';
 
 /* $dbConnect['core']['database']
  * Defines the database to connect to.
  * The above user must have permission to SELECT, INSERT, DELETE, and UPDATE in this database.
  * Note that, when integrating with forums, you __MUST__ use the same database as the forum. */
-$dbConnect['core']['database'] = 'messenger';
-$dbConnect['slave']['database'] = 'messenger';
-$dbConnect['integration']['database'] = 'messenger';
+$dbConnect['core']['database'] = 'messenge10';
+$dbConnect['slave']['database'] = 'messenge10';
+$dbConnect['integration']['database'] = 'messenge10';
 
 /* $dbConnect['vanilla']['tablePrefix']
  * A prefix used for all tables.
  * If uncertain, a random string is often the best bet.
  * If you are integrating with a forum, it is imperative you not leave this blank. */
-$dbConnect['vanilla']['tablePrefix'] = '';
+$dbConnect['vanilla']['tablePrefix'] = 'zz_';
 $dbConnect['integration']['tablePrefix'] = '';
 
 
@@ -86,13 +86,13 @@ $dbConnect['integration']['tablePrefix'] = '';
 
 /* $cacheConnectMethods['apcu']
  * If specified, this will enable APCu caching, where applicable. */
-$cacheConnectMethods['apcu'] = [];
+//$cacheConnectMethods['apcu'] = [];
 
 
 /* $cacheConnectMethods['redis']
- * If specified, this will enable Redis caching and message streaming. */
+ * If specified, this will enable Redis caching. Refer to $streamMethods['redis'] to enable streaming as well. */
 $cacheConnectMethods['redis'] = [
-    'host' => 'freezemessenger.th5sdl.0001.use2.cache.amazonaws.com',
+    'host' => '127.0.0.1',
     'port' => 6379,
     'timeout' => 0,
     'password' => false,
@@ -125,7 +125,7 @@ $cacheConnectMethods['redis'] = [
 
 
 /* $streamMethods['redis']
- * If speciifed, this will enable Redis for message streaming, which takes priority over Postgres. */
+ * If specified, this will enable Redis for message streaming, which takes priority over Postgres. */
 $streamMethods['redis'] = $cacheConnectMethods['redis'];
 
 
@@ -153,29 +153,29 @@ $loginConfig['method'] = 'vanilla';
  * Additional methods that can be enabled to allow seemless logins. */
 
 $loginConfig['extraMethods']['google'] = [
-	    'clientId' => '313060914172-jfo26r2cs4ppotqm3q3jimomvqbt5feb.apps.googleusercontent.com',
-	        'clientSecret' => '4EWVFqnyVcJaOB1nXUoNMaXF'
-	];
-$loginConfig['extraMethods']['twitter'] = [
-	    'clientId' => 'dCiuKPUEzg3F5Qqqz8t3MGyLX',
-	        'clientSecret' => 'w2CctD2v8tS3hGiKDVqa9t4zbRbMIUWRNbDubgI1N2KaSAcMko'
-	];
-$loginConfig['extraMethods']['facebook'] = [
-	    'clientId' => '1425030687532875',
-	        'clientSecret' => '2b5af7e6970219ddadddb49f38ffb337'
-	];
-$loginConfig['extraMethods']['microsoft'] = [
-    'clientId' => '93732626-fbe2-40ad-983c-56daa29364d1',
-    'clientSecret' => 'egusTZWN11=-(!agjAGJ537'
+    'clientId' => '313060914172-jfo26r2cs4ppotqm3q3jimomvqbt5feb.apps.googleusercontent.com',
+    'clientSecret' => '4EWVFqnyVcJaOB1nXUoNMaXF'
 ];
+$loginConfig['extraMethods']['twitter'] = [
+    'clientId' => 'dCiuKPUEzg3F5Qqqz8t3MGyLX',
+    'clientSecret' => 'w2CctD2v8tS3hGiKDVqa9t4zbRbMIUWRNbDubgI1N2KaSAcMko'
+];
+$loginConfig['extraMethods']['facebook'] = [
+    'clientId' => '1425030687532875',
+    'clientSecret' => '2b5af7e6970219ddadddb49f38ffb337'
+];
+/*$loginConfig['extraMethods']['microsoft'] = [
+    'clientId' => '',
+    'clientSecret' => ''
+];*/
 $loginConfig['extraMethods']['steam'] = [
-	    'clientId' => '1EB869CDBD94FEFDBC1E60F225FF2C0E',
-	        'clientSecret' => ''
-	];
+    'clientId' => '1EB869CDBD94FEFDBC1E60F225FF2C0E',
+    'clientSecret' => ''
+];
 $loginConfig['extraMethods']['reddit'] = [
-	    'clientId' => 'TC_57W5KnKDeFQ',
-	        'clientSecret' => '48xficpxAt3q8-4A2utS7GKoInU'
-	];
+    'clientId' => 'TC_57W5KnKDeFQ',
+    'clientSecret' => '48xficpxAt3q8-4A2utS7GKoInU'
+];
 
 /* $loginConfig['portableHashing']
  * Whether FreezeMessenger has been set up to use portable hashing.
@@ -209,7 +209,7 @@ $loginConfig['bannedGroups'] = array();
 ////* General *////
 
 /* $installUrl */
-$installUrl = 'https://messenger.josephtparsons.com/';
+$installUrl = 'http://localhost/messenger/';
 
 
 

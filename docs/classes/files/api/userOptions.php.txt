@@ -265,7 +265,7 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
 
         if (!$defaultRoom->exists()
             || !(\Fim\Database::instance()->hasPermission($user, $defaultRoom) & Room::ROOM_PERMISSION_VIEW))
-            $xmlData['editUserOptions']['defaultRoom'] = (new \Fim\Error('invalidRoom', 'The room specified does not exist.', null, true))->getArray();
+            $xmlData['editUserOptions']['defaultRoomId'] = (new \Fim\Error('invalidRoom', 'The room specified does not exist.', null, true))->getArray();
 
         else
             $updateArray['defaultRoomId'] = $defaultRoom->id;
