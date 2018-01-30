@@ -24,8 +24,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
             integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
             crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js"
-            integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
             crossorigin="anonymous"></script>
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
           integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
@@ -37,17 +37,17 @@
 
         try {
             // Set the lastCache if it's not available.
-            if (!localStorage.getItem("lastCache-b3")) {
-                localStorage.setItem('lastCache-b3', (new Date()).getTime());
+            if (!localStorage.getItem("lastCache-b4nightly")) {
+                localStorage.setItem('lastCache-b4nightly', (new Date()).getTime());
             }
 
             // Otherwise, update the lastCache if requested
             else if ("hash" in window.location && window.location.hash.indexOf('nocache') !== -1) {
-                localStorage.setItem('lastCache-b3', (new Date()).getTime());
+                localStorage.setItem('lastCache-b4nightly', (new Date()).getTime());
             }
 
             // And get that lastCache into memory
-            lastCache = localStorage.getItem("lastCache-b3");
+            lastCache = localStorage.getItem("lastCache-b4nightly");
         } catch (e) {
         }
 
@@ -55,7 +55,7 @@
             id : 'stylesv2',
             rel: 'stylesheet',
             type: 'text/css',
-            href: 'client/css/stylesv2.css?_=' + lastCache
+            href: 'client/css/styles.css?_=' + lastCache
         }).appendTo('head');
 
         $.when(
@@ -82,7 +82,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0" />
 </head>
-<body class="bg-light" style="max-width: 1600px; margin-left: auto; margin-right: auto;">
+<body>
 
 <!-- Todo: make all modals templates -->
 
@@ -322,7 +322,7 @@
         </div>
     </div>
 
-    <div id="page" data-role="page" class="p-1"><!-- START links -->
+    <div id="page" data-role="page"><!-- START links -->
         <nav class="navbar sticky-top navbar-expand-md navbar-dark bg-primary mb-2 mx-auto rounded" id="navbar" style="z-index: 100; max-width: 1200px;">
             <a class="navbar-brand" accesskey="h" onclick="window.location.hash = '#room=' + window.activeLogin.userData.defaultRoomId || 1" href="javascript:void(0);">FlexChat</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -331,10 +331,6 @@
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">{{mainMenu.rooms.home}} <span class="sr-only">(current)</span></a>
-                    </li>
-
                     <li class="nav-item dropdown dropdown-primary">
                         <a class="nav-link dropdown-toggle text-nowrap" href="#" accesskey="r" id="navbarRooms" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             {{mainMenu.rooms.title}}
@@ -964,11 +960,12 @@ Pending Update
                             ">
                                 {{#select settings.theme}}
                                 <option value="css">Default</option>
-                                <option value="darkly">Darkly (Experimental)</option>
-                                <option value="materia">Materia (Experimental)</option>
-                                <option value="simplex">Simplex</option>
-                                <option value="united">United</option>
                                 <option value="cerulean">Cerulean</option>
+                                <option value="darkly">Darkly</option>
+                                <option value="simplex">Simplex</option>
+                                <option value="slate">Slate</option>
+                                <option value="solar">Solar</option>
+                                <option value="united">United</option>
                                 {{/select}}
                             </select>
                         </div>

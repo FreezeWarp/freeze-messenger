@@ -75,9 +75,9 @@ function fim_renderHandlebarsInPlace(tag, extra) {
     var source   = tag.html();
     var template = Handlebars.compile(source);
 
-    $('#active-' + id).remove();
+    $('#active-' + id + '-container').remove();
 
-    $('<div id="active-' + id + '">' + template(fim_getHandlebarsPhrases(extra)) + '</div>').insertAfter(tag);
+    $('<div id="active-' + id + '-container">').append($('<div id="active-' + id + '">').html(template(fim_getHandlebarsPhrases(extra)))).insertAfter(tag);
 }
 
 function fim_renderHandlebars(tag, target, extra) {
@@ -85,9 +85,9 @@ function fim_renderHandlebars(tag, target, extra) {
     var source   = tag.html();
     var template = Handlebars.compile(source);
 
-    $('#active-' + id).remove();
+    $('#active-' + id + '-container').remove();
 
-    $(target).html($('<div id="active-' + id + '">' + template(fim_getHandlebarsPhrases(extra)) + '</div>'));
+    $(target).html($('<div id="active-' + id + '-container">').append($('<div id="active-' + id + '">').html(template(fim_getHandlebarsPhrases(extra)))));
 }
 
 function fim_getHandlebarsPhrases(extra) {
@@ -102,6 +102,7 @@ function fim_openView(viewName, options) {
     tag = $('#view-' + viewName);
     var render = function(extra) {
         fim_renderHandlebars(tag, $('#content'), extra);
+        $('#active-view-' + viewName + '-container').addClass('fim-activeViewContainer');
         $('#active-view-' + viewName).addClass('fim-activeView');
     };
 
@@ -758,11 +759,11 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
     $.when(userNameDeferred).then(function(pairs) {
         if (!window.settings.disableFormatting
             && pairs[userId].messageFormatting) {
-            tag.attr("style", tag.attr("style") + ";" + pairs[userId].messageFormatting);
+            tag.attr("style", (tag.attr("style") ? tag.attr("style") + ";" : "") + pairs[userId].messageFormatting);
         }
 
         if (window.settings.showAvatars && window.settings.bubbleFormatting) {
-            tag.addClass('messageTextFormatted');
+            tag.addClass('messageTextFormatted').addClass('badge-secondary');
         }
 
     });
@@ -780,8 +781,8 @@ function fim_getRoomNameDeferred(roomId) {
 
 function fim_loadTheme(themeName) {
     var themePath = (themeName === "css"
-        ? "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
-        : "https://maxcdn.bootstrapcdn.com/bootswatch/4.0.0-beta.3/" + themeName + "/bootstrap.min.css");
+        ? "./client/css/bootstrap.css"
+        : "./client/css/themes/" + themeName + ".css");
 
     var tag = $('#bootstrapTheme');
 

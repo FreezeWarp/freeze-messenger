@@ -1,0 +1,7 @@
+$enable-gradients: true;
+
+@import "bootstrap/scss/bootstrap";
+
+body, .fim-activeViewContainer {
+  background-color: $gray-100;
+}

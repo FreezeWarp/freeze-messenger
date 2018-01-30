@@ -7,6 +7,7 @@ body {
     font-family: Ubuntu, Calibria, Arial;
     position: relative;
     overflow-x: hidden;
+
     width: 100%;
 }
 
@@ -17,6 +18,15 @@ img {
 
 abbr {
     border-bottom: 1px dotted;
+}
+
+.fim-activeView {
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+
+    padding: .25rem;
+    padding-top: 0;
 }
 
 .view-thin {
@@ -162,18 +172,22 @@ html, body {
 }
 
 #content {
-    position: relative
+    flex: 1;
+    position: relative;
 }
 
-#active-view-room {
+#active-view-room-container {
     position: absolute;
 }
 
-html, body, #active-entry-template, #page, #content, #active-view-room, #chatContainer, #roomTemplateContainer, #activeUsersCard, #watchedRoomsCard {
+html, body,
+#active-entry-template-container, #active-entry-template, #page,
+#active-view-room-container, #active-view-room,
+#chatContainer, #roomTemplateContainer, #activeUsersCard, #watchedRoomsCard {
     height: 100%;
 }
 
-#active-view-room, #navbar {
+#active-view-room-container, #navbar {
     width: 100%;
 }
 
@@ -371,7 +385,7 @@ table.page {
     hyphens: auto;
     -ms-hyphens: auto;
     white-space: initial;
-    word-break: break-all;
+    word-break: break-word; /* IE alias for overflow-wrap */
     overflow-wrap: break-word;
 }
 
@@ -564,7 +578,9 @@ button.small.ui-widget .ui-icon {
     margin-bottom: 0;
 }
 
-.form-control-container .form-control {
+.input-group-prepend+.form-control-container .form-control {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
     width: 100% !important;
 }
 
