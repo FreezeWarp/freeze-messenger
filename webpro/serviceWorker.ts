@@ -1,118 +1,3 @@
-self.addEventListener('install', function (event) {
-    try {
-        event.waitUntil(self.skipWaiting()); // Activate worker immediately
-    } catch (e) {
-        console.log("Install error: ", e);
-    }
-});
-
-self.addEventListener('activate', function (event) {
-    try {
-        event.waitUntil(self.clients.claim()); // Become available to all pages
-    } catch (e) {
-        console.log("Activate error: ", e);
-    }
-});
-
-
-self.addEventListener('push', function (event) {
-    let data = event.data.json().data;
-    console.info("push message", data, roomSources);
-
-    if (!roomSources[String(data.roomId)] || !roomSources[String(data.roomId)].isOpen) {
-        event.waitUntil(
-            createNotification(data)
-        );
-    }
-});
-
-let createNotification = function(data) {
-    console.log("create notification", data);
-
-    if (self.registration) {
-        return self.registration.showNotification(data.roomName + ": " + data.userName, {
-            tag: data.roomId,
-            body: data.messageText,
-            icon: data.userAvatar,
-            vibrate: [100, 50, 100],
-        });
-    }
-    else {
-        return new Notification(data.roomName + ": " + data.userName, {
-            tag: data.roomId,
-            body: data.messageText,
-            icon: data.userAvatar,
-            vibrate: [100, 50, 100],
-        });
-    }
-};
-
-
-self.addEventListener('notificationclick', function(event) {
-    console.log('On notification click: ', event.notification.tag);
-    // Android doesn't close the notification when you click on it
-    // See: http://crbug.com/463146
-    event.notification.close();
-
-    // This looks to see if the current is already open and
-    // focuses if it is
-    event.waitUntil(
-        clients.matchAll({
-            type: "window"
-        })
-            .then(function(clientList) {
-                for (var i = 0; i < clientList.length; i++) {
-                    var client = clientList[i];
-                    if (client.url.match(new RegExp('\/\#room=' + event.notification.tag)) && 'focus' in client)
-                        return client.focus();
-                }
-                if (clients.openWindow) {
-                    return clients.openWindow(fimApiInstance.directory + '#room=' + event.notification.tag);
-                }
-            })
-    );
-});
-
-let isServiceWorker = false;
-let userSourceInstance = null;
-let roomSources = [];
-let isBlurred = false;
-
-let fimApiInstance;
-
-if (typeof fimApi === "undefined") {
-    // Juryrig the jQuery properties for jQuery
-    var document = self.document = {parentNode: null, nodeType: 9, toString: function() {return "FakeDocument"}};
-    var window = self.window = self;
-    var fakeElement = Object.create(document);
-    fakeElement.nodeType = 1;
-    fakeElement.toString=function() {return "FakeElement"};
-    fakeElement.parentNode = fakeElement.firstChild = fakeElement.lastChild = fakeElement;
-    fakeElement.ownerDocument = document;
-
-    document.head = document.body = fakeElement;
-    document.ownerDocument = document.documentElement = document;
-    document.getElementById = document.createElement = function() {return fakeElement;};
-    document.createDocumentFragment = function() {return this;};
-    document.getElementsByTagName = document.getElementsByClassName = function() {return [fakeElement];};
-    document.getAttribute = document.setAttribute = document.removeChild =
-        document.addEventListener = document.removeEventListener =
-            function() {return null;};
-    document.cloneNode = document.appendChild = function() {return this;};
-    document.appendChild = function(child) {return child;};
-
-    // Load AJAX-only version of jQuery
-    importScripts("client/js/jquery.ajax.min.js");
-    var $ = jQuery;
-
-    // Load fim-api
-    importScripts('client/js/fim-dev/fim-api.ts.js');
-}
-else {
-    fimApiInstance = fimApi;
-}
-
-
 /**
  * A generic event source provider.
  */
@@ -206,13 +91,15 @@ abstract class eventSource {
     getEvents() {
         this.isOpen = true;
 
-        if (fimApiInstance.serverSettings.requestMethods.serverSentEvents
-            && typeof(EventSource) !== "undefined") {
-            this.getEventsFromStream();
-        }
-        else {
-            this.getEventsFromFallback()
-        }
+        getFimApiInstance(() => {
+            if (fimApiInstance.serverSettings.requestMethods.serverSentEvents
+                && typeof(EventSource) !== "undefined") {
+                this.getEventsFromStream();
+            }
+            else {
+                this.getEventsFromFallback()
+            }
+        });
     }
 
     /**
@@ -231,26 +118,26 @@ abstract class eventSource {
         if (this.eventSource)
             this.eventSource.close();
 
-        this.eventSource = new EventSource(fimApiInstance.directory + 'stream.php?streamType=' + streamType + '&lastEvent=' + this.lastEvent + (queryId ? '&queryId=' + queryId : '') + '&access_token=' + fimApiInstance.lastSessionHash);
+        getFimApiInstance(() => {
+            this.eventSource = new EventSource(fimApiInstance.directory + 'stream.php?streamType=' + streamType + '&lastEvent=' + this.lastEvent + (queryId ? '&queryId=' + queryId : '') + '&access_token=' + fimApiInstance.lastSessionHash);
 
-        // If we get an error that causes the browser to close the connection, open a fallback connection instead
-        this.eventSource.onerror = ((e) => {
-            console.error("event source error");
+            // If we get an error that causes the browser to close the connection, open a fallback connection instead
+            this.eventSource.onerror = ((e) => {
+                if (this.eventSource.readyState === 2) {
+                    this.eventSource = null;
 
-            if (this.eventSource.readyState === 2) {
-                this.eventSource = null;
-
-                if (this.isOpen) {
-                    this.eventTimeout = setTimeout((() => {
-                        this.getEventsFromFallback();
-                    }), 1000);
+                    if (this.isOpen) {
+                        this.eventTimeout = setTimeout((() => {
+                            this.getEventsFromFallback();
+                        }), 1000);
+                    }
                 }
+            });
+
+            for (i in events) {
+                this.eventSource.addEventListener(events[i], this.eventHandler(events[i]), false);
             }
         });
-
-        for (i in events) {
-            this.eventSource.addEventListener(events[i], this.eventHandler(events[i]), false);
-        }
     }
 
     /**
@@ -265,45 +152,46 @@ abstract class eventSource {
      * @param queryId The ID of the stream, if room
      */
     getEventsFromFallbackGenerator(streamType, queryId) {
-        // todo: without fetch?
-        fimApiInstance.getEventsFallback({
-            'streamType': streamType,
-            'queryId': (queryId ? queryId : null),
-            'lastEvent': this.lastEvent
-        }, {
-            'error' : (error) => {
-                console.error("error", error);
-                let retryTime = Math.min(30, 2 * this.failureCount++) * 1000;
+        getFimApiInstance(() => {
+            fimApiInstance.getEventsFallback({
+                'streamType': streamType,
+                'queryId': (queryId ? queryId : null),
+                'lastEvent': this.lastEvent
+            }, {
+                'error' : (error) => {
+                    console.error("error", error);
+                    let retryTime = Math.min(30, 2 * this.failureCount++) * 1000;
 
-                this.eventHandler('streamFailed')({
-                    data : JSON.stringify({
-                        streamType: streamType,
-                        queryId : queryId,
-                        retryTime : retryTime,
-                    })
-                });
+                    this.eventHandler('streamFailed')({
+                        data : JSON.stringify({
+                            streamType: streamType,
+                            queryId : queryId,
+                            retryTime : retryTime,
+                        })
+                    });
 
-                if (this.isOpen) {
-                    this.eventTimeout = setTimeout((() => {
-                        this.getEventsFromFallback()
-                    }), retryTime);
+                    if (this.isOpen) {
+                        this.eventTimeout = setTimeout((() => {
+                            this.getEventsFromFallback()
+                        }), retryTime);
+                    }
+                },
+                'each' : (event) => {
+                    this.eventHandler(event.eventName)({
+                        lastEventId : Number(event.id),
+                        data : JSON.stringify(event.data)
+                    });
+                },
+                'end' : () => {
+                    if (this.isOpen) {
+                        this.eventTimeout = setTimeout((() => {
+                            this.getEvents()
+                        }), 1000);
+                    }
+
+                    this.failureCount = 0;
                 }
-            },
-            'each' : (event) => {
-                this.eventHandler(event.eventName)({
-                    lastEventId : Number(event.id),
-                    data : JSON.stringify(event.data)
-                });
-            },
-            'end' : () => {
-                if (this.isOpen) {
-                    this.eventTimeout = setTimeout((() => {
-                        this.getEvents()
-                    }), 1000);
-                }
-
-                this.failureCount = 0;
-            }
+            });
         });
     }
 }
@@ -329,9 +217,14 @@ class roomSource extends eventSource {
         this.getEvents();
 
         // Send Pings
-        fimApiInstance.ping(this.roomId);
-        this.pingInterval = window.setInterval((() => {
+        getFimApiInstance(() => {
             fimApiInstance.ping(this.roomId);
+        });
+
+        this.pingInterval = window.setInterval((() => {
+            getFimApiInstance(() => {
+                fimApiInstance.ping(this.roomId);
+            });
         }), 60 * 1000);
     }
 
@@ -341,7 +234,9 @@ class roomSource extends eventSource {
         if (this.pingInterval)
             clearInterval(this.pingInterval);
 
-        fimApiInstance.exitRoom(this.roomId);
+        getFimApiInstance(() => {
+            fimApiInstance.exitRoom(this.roomId);
+        })
     }
 
     getEventsFromStream() {
@@ -358,8 +253,11 @@ class roomSource extends eventSource {
  */
 class userSource extends eventSource {
 
-    constructor() {
+    constructor(clientId) {
         super();
+
+        if (clientId)
+            this.addClient(clientId);
 
         this.getEvents();
     }
@@ -375,28 +273,177 @@ class userSource extends eventSource {
 
 }
 
+
+
+let createNotification = function(data) {
+    console.log("create notification", data);
+
+    if (self.registration) {
+        return self.registration.showNotification(data.roomName + ": " + data.userName, {
+            tag: data.roomId,
+            body: data.messageText,
+            icon: data.userAvatar,
+            vibrate: [100, 50, 100],
+        });
+    }
+    else {
+        return new Notification(data.roomName + ": " + data.userName, {
+            tag: data.roomId,
+            body: data.messageText,
+            icon: data.userAvatar,
+            vibrate: [100, 50, 100],
+        });
+    }
+};
+
+let shimJquery = function() {
+    // Juryrig the jQuery properties for jQuery
+    var document = self.document = {parentNode: null, nodeType: 9, toString: function() {return "FakeDocument"}};
+    var window = self.window = self;
+    var fakeElement = Object.create(document);
+    fakeElement.nodeType = 1;
+    fakeElement.toString=function() {return "FakeElement"};
+    fakeElement.parentNode = fakeElement.firstChild = fakeElement.lastChild = fakeElement;
+    fakeElement.ownerDocument = document;
+
+    document.head = document.body = fakeElement;
+    document.ownerDocument = document.documentElement = document;
+    document.getElementById = document.createElement = function() {return fakeElement;};
+    document.createDocumentFragment = function() {return this;};
+    document.getElementsByTagName = document.getElementsByClassName = function() {return [fakeElement];};
+    document.getAttribute = document.setAttribute = document.removeChild =
+        document.addEventListener = document.removeEventListener =
+            function() {return null;};
+    document.cloneNode = document.appendChild = function() {return this;};
+    document.appendChild = function(child) {return child;};
+
+    // Load AJAX-only version of jQuery
+    importScripts("client/js/jquery.ajax.min.js");
+    var $ = jQuery;
+
+    // Load fim-api
+    importScripts('client/js/fim-dev/fim-api.ts.js');
+};
+
+function getFimApiInstance(callback) {
+    if (!fimApiInstance) {
+        shimJquery();
+
+        return idbKeyval.get('serverSettings').then((serverSettings) => {
+            fimApiInstance = new fimApi(serverSettings);
+            callback();
+        });
+    }
+
+    else {
+        return callback();
+    }
+};
+
+
+let idbKeyval;
+let isServiceWorker = true;
+let userSourceInstance = null;
+let roomSources = [];
+let isBlurred = false;
+let fimApiInstance;
+
+if (typeof fimApi === "undefined") {
+    idbKeyval = (() => {
+        let db;
+
+        function getDB() {
+            if (!db) {
+                db = new Promise((resolve, reject) => {
+                    const openreq = indexedDB.open('svgo-keyval', 1);
+
+                    openreq.onerror = () => {
+                        reject(openreq.error);
+                    };
+
+                    openreq.onupgradeneeded = () => {
+                        // First time setup: create an empty object store
+                        openreq.result.createObjectStore('keyval');
+                    };
+
+                    openreq.onsuccess = () => {
+                        resolve(openreq.result);
+                    };
+                });
+            }
+            return db;
+        }
+
+        async function withStore(type, callback) {
+            const db = await getDB();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction('keyval', type);
+                transaction.oncomplete = () => resolve();
+                transaction.onerror = () => reject(transaction.error);
+                callback(transaction.objectStore('keyval'));
+            });
+        }
+
+        return {
+            async get(key) {
+                let req;
+                await withStore('readonly', store => {
+                    req = store.get(key);
+                });
+                return req.result;
+            },
+            set(key, value) {
+                return withStore('readwrite', store => {
+                    store.put(value, key);
+                });
+            },
+            delete(key) {
+                return withStore('readwrite', store => {
+                    store.delete(key);
+                });
+            }
+        };
+    })();
+
+
+    shimJquery();
+}
+else {
+    isServiceWorker = false;
+    fimApiInstance = fimApi;
+}
+
+
+
 onmessage = (event) => {
-    console.log("message to service worker", event.data.eventName, event.data, event);
+    console.log("message to service worker", isServiceWorker, event.data.eventName, event.data, event);
 
     switch (event.data.eventName) {
         case 'registerApi':
-            if (!fimApiInstance)
+            if (isServiceWorker) {
                 fimApiInstance = new fimApi(event.data.serverSettings);
-
-            isServiceWorker = event.data.isServiceWorker;
+                idbKeyval.set('serverSettings', event.data.serverSettings);
+            }
             break;
 
         case 'login':
-            fimApiInstance.lastSessionHash = event.data.sessionHash;
+            getFimApiInstance(() => {
+                fimApiInstance.lastSessionHash = event.data.sessionHash;
+            });
 
-            if (userSourceInstance)
-                userSourceInstance.close();
-
-            userSourceInstance = new userSource();
+            if (!userSourceInstance)
+                userSourceInstance = new userSource(event.source && event.source.id ? event.source.id : false);
+            else if (event.source && event.source.id)
+                userSourceInstance.addClient(event.source.id);
+            else
+                userSourceInstance.getEvents();
             break;
 
         case 'logout':
-            userSourceInstance.close();
+            if (event.source && event.source.id)
+                userSourceInstance.removeClient(event.source.id);
+            else if (roomSources[String(event.data.roomId)])
+                userSourceInstance.close();
             break;
 
         case 'listenRoom':
@@ -428,3 +475,60 @@ onmessage = (event) => {
             break;
     }
 };
+
+self.addEventListener('install', function (event) {
+    try {
+        event.waitUntil(self.skipWaiting()); // Activate worker immediately
+    } catch (e) {
+        console.log("Install error: ", e);
+    }
+});
+
+self.addEventListener('activate', function (event) {
+    try {
+        event.waitUntil(self.clients.claim()); // Become available to all pages
+    } catch (e) {
+        console.log("Activate error: ", e);
+    }
+});
+
+
+self.addEventListener('push', function (event) {
+    let data = event.data.json().data;
+    console.info("push message", data, roomSources);
+
+    if (!roomSources[String(data.roomId)] || !roomSources[String(data.roomId)].isOpen) {
+        event.waitUntil(
+            createNotification(data)
+        );
+    }
+});
+
+
+self.addEventListener('notificationclick', function(event) {
+    console.log('On notification click: ', event.notification.tag);
+    // Android doesn't close the notification when you click on it
+    // See: http://crbug.com/463146
+    event.notification.close();
+
+    // This looks to see if the current is already open and
+    // focuses if it is
+    event.waitUntil(
+        clients.matchAll({
+            type: "window"
+        })
+            .then(function(clientList) {
+                for (var i = 0; i < clientList.length; i++) {
+                    var client = clientList[i];
+                    if (client.url.match(new RegExp('\/\#room=' + event.notification.tag)) && 'focus' in client)
+                        return client.focus();
+                }
+
+                if (clients.openWindow) {
+                    return getFimApiInstance(() => {
+                        clients.openWindow(fimApiInstance.directory + '#room=' + event.notification.tag);
+                    });
+                }
+            })
+    );
+});

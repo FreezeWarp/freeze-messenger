@@ -577,6 +577,7 @@ popup.prototype.room.prototype.init = function(options) {
 
                 if (roomData.permissions.view) { // If we can view the room...
                     window.roomId = roomData.id;
+                    fim_setHashParameter('room', roomData.id);
 
 
                     // Populate Active Users for the Room

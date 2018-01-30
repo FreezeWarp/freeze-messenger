@@ -324,7 +324,7 @@
 
     <div id="page" data-role="page" class="p-1"><!-- START links -->
         <nav class="navbar sticky-top navbar-expand-md navbar-dark bg-primary mb-2 mx-auto rounded" id="navbar" style="z-index: 100; max-width: 1200px;">
-            <a class="navbar-brand" accesskey="h" href="#">FlexChat</a>
+            <a class="navbar-brand" accesskey="h" onclick="window.location.hash = '#room=' + window.activeLogin.userData.defaultRoomId || 1" href="javascript:void(0);">FlexChat</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>

@@ -173,11 +173,12 @@ standard.prototype.workerCallback = function(name, data) {
 
 
 standard.prototype.createWorkerFallback = function(callback) {
+    this.serviceWorkerEnabled = false;
+    
     if (typeof onmessage === "undefined" || onmessage === null) {
         $.getScript('serviceWorker.ts.js?_=' + window.lastCache, function() {
             onmessage({data : {
                 eventName: 'registerApi',
-                isServiceWorker : false,
                 directory : fimApi.directory,
                 serverSettings: fimApi.serverSettings
             }});
@@ -205,6 +206,8 @@ standard.prototype.createWorker = function(callback) {
                 this.serviceWorkerEnabled = true;
 
                 navigator.serviceWorker.onmessage = (event) => {
+                    console.log("received live worker message", event.data.name, event);
+
                     this.workerCallback(event.data.name, event.data.data);
                 };
 

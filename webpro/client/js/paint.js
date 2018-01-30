@@ -595,7 +595,7 @@ function fim_buildMessageLine(text, flag, messageId, userId, roomId, messageTime
                             }, {
                                 name: 'flickr',
                                 url: 'https://www.flickr.com/services/oembed/?format=json&url=',
-                                regex: new RegExp("^https?:\/\/(www\.)?(flickr\.com\/photos\/|flic\.kr\/p\/).+$"),
+                                regex: new RegExp("^https?://(www\.)?(flickr\.com/photos/|flic\.kr/p/).+$"),
                                 jsoncallback: 'jsoncallback',
                                 callback: function (tag, data, sourceUrl) {
                                     // TODO: the Flickr embed JS isn't working. Not sure why.
