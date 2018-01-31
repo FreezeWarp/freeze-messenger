@@ -36,7 +36,7 @@ class Error
      * @param string $httpError {@link Fim\fimErrorThrown::$httpError}
      */
     public function __construct($code = false, $string = false, $context = array(), $return = false, $httpError = self::HTTP_403_FORBIDDEN) {
-        if ($code && !$return)
+        if (!$return)
             throw new \Fim\ErrorThrown($code, $string, $context, $httpError);
 
         else $this->instance = new \Fim\ErrorThrown($code, $string, $context, $httpError);
