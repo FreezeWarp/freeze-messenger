@@ -124,6 +124,11 @@ class Room extends DynamicObject
     protected $name = "Missingname.";
 
     /**
+     * @var bool Whether or not the room exists (if checked)
+     */
+    protected $exists = null;
+
+    /**
      * @var string The name of the room, transformed for searchability.
      */
     protected $nameSearchable = "";
@@ -506,7 +511,7 @@ class Room extends DynamicObject
      */
     public function exists(): bool
     {
-        return $this->exists = ($this->exists || ($this->isPrivateRoom() ? $this->arePrivateRoomMembersValid() : (count(\Fim\Database::instance()->getRooms([
+        return $this->exists = ($this->exists ?? ($this->isPrivateRoom() ? $this->arePrivateRoomMembersValid() : (count(\Fim\Database::instance()->getRooms([
                     'roomIds' => $this->id,
                 ])->getAsArray(false)) > 0)));
     }

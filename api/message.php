@@ -88,7 +88,7 @@ $requestHead = fim_sanitizeGPC('g', [
 
 
 /* Early Validation */
-if (!($room = new Room($requestHead['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW))
+if (!($room = \Fim\RoomFactory::getFromId($requestHead['roomId']))->exists() || !(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW))
     new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.'); // Make sure we have a valid room.
 
 if (isset($requestHead['id'])) {
