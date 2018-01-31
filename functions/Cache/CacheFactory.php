@@ -16,15 +16,8 @@
 
 namespace Cache;
 
-/* Note: "none" is used solely for speed testing. NEVER EVER EVER use it. (at least with FIM) */
-
 /**
- * Cache layer to support file caches, APC, and (eventually) memcached.
- * An explanation of the support cache methods:
- ** 'none' - If specified, all cache variables will be stored as standard variables in the class. Thus, no cache will actually be used, but all functionality should still work.
- ** 'disk' - If specified, all cache variables will be written to the disk (usually as temporary files).
- ** 'apc' - If specified, all cache variables will be stored using APC.
- ** 'memcached' - If spceified, all cache variables wil be stored using memcached. (Not yet supported.)
+ * General cache facade that can register cache methods and invoke cache functions best matching a given cache method.
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
@@ -32,7 +25,13 @@ class CacheFactory {
     public static $methods = [];
 
 
-    public static function addMethod($method, $servers) {
+    /**
+     * Add a cache method to the recognised cache types.
+     *
+     * @param string $method The name of the method.
+     * @param mixed $servers Information to instantiate the cache method, usually server information.
+     */
+    public static function addMethod(string $method, $servers) {
         $classNameSpaced = '\Cache\Driver\\' . ucfirst($method);
 
         if (!class_exists($classNameSpaced)) {
@@ -40,7 +39,7 @@ class CacheFactory {
         }
         else {
             /**
-             * @var DriverInterface
+             * @var $methodObject DriverInterface
              */
             $methodObject = new $classNameSpaced($servers);
 
@@ -53,6 +52,12 @@ class CacheFactory {
     }
 
 
+    /**
+     * Get the cache method that is most similar to the desired cache method type.
+     *
+     * @param string $preferredMethod The type of cache method, one of the {@see DriverInterface} CACHE_TYPE constants.
+     * @return mixed|null
+     */
     private static function chooseMethod($preferredMethod) {
         switch ($preferredMethod) {
             case DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL:
@@ -87,9 +92,17 @@ class CacheFactory {
     }
 
     /**
-     * {@link CacheInterface::get($index)}
+     * Check if a cache method of a given type has been registered.
      *
-     * @return mixed
+     * @param string $preferredMethod The type of cache method, one of the {@see DriverInterface} CACHE_TYPE constants.
+     * @return bool
+     */
+    public static function hasMethod($preferredMethod) {
+        return self::chooseMethod($preferredMethod) !== null;
+    }
+
+    /**
+     * {@link DriverInterface::get($index)}
      */
     public static function get($index, $preferredMethod = false) {
         if (self::chooseMethod($preferredMethod))
@@ -99,7 +112,7 @@ class CacheFactory {
     }
 
     /**
-     * {@link CacheInterface::add($index, $value, $ttl)}
+     * {@link DriverInterface::add($index, $value, $ttl)}
      */
     public static function add($index, $value, $ttl = 31536000, $preferredMethod = false) {
         if (self::chooseMethod($preferredMethod))
@@ -109,7 +122,7 @@ class CacheFactory {
     }
 
     /**
-     * {@link CacheInterface::set($index, $value, $ttl)}
+     * {@link DriverInterface::set($index, $value, $ttl)}
      */
     public static function set($index, $value, $ttl = 31536000, $preferredMethod = false) {
         if (self::chooseMethod($preferredMethod))
@@ -119,7 +132,7 @@ class CacheFactory {
     }
 
     /**
-     * {@link CacheInterface::exists($index, $value, $ttl)}
+     * {@link DriverInterface::exists($index, $value, $ttl)}
      */
     public static function exists($index, $preferredMethod = false) : bool {
         if (self::chooseMethod($preferredMethod))
@@ -130,7 +143,7 @@ class CacheFactory {
 
 
     /**
-     * {@link CacheInterface::inc($index, $amt)}
+     * {@link DriverInterface::inc($index, $amt)}
      */
     public static function inc($index, $amt = 1, $preferredMethod = false) {
         if (self::chooseMethod($preferredMethod))
@@ -145,7 +158,7 @@ class CacheFactory {
      * Redis is the best method here. At the moment, it will not fall back to any other method, though such can be specified manually.
      * All methods are supported, but with the exception of Redis they are slow and un-atomic.
      *
-     * {@link CacheInterface::setAdd($index, $value)}
+     * {@link DriverInterface::setAdd($index, $value)}
      */
     public static function setAdd($index, $value, $preferredMethod = DriverInterface::CACHE_TYPE_DISTRIBUTED) {
         if (self::chooseMethod($preferredMethod))
@@ -156,7 +169,7 @@ class CacheFactory {
 
 
     /**
-     * {@link CacheInterface::setRemove($index, $value)}
+     * {@link DriverInterface::setRemove($index, $value)}
      */
     public static function setRemove($index, $value, $preferredMethod = DriverInterface::CACHE_TYPE_DISTRIBUTED) {
         if (self::chooseMethod($preferredMethod))
@@ -167,7 +180,7 @@ class CacheFactory {
 
 
     /**
-     * {@link CacheInterface::clear($index)}
+     * {@link DriverInterface::clear($index)}
      */
     public static function clear($index, $preferredMethod = false) {
         if (self::chooseMethod($preferredMethod))
@@ -179,7 +192,7 @@ class CacheFactory {
 
 
     /**
-     * {@link CacheInterface::clearAll()}
+     * {@link DriverInterface::clearAll()}
      */
     public static function clearAll() {
         $return = true;
@@ -195,7 +208,7 @@ class CacheFactory {
     /**
      * Return a mixed value containing as much information about the driver as possible.
      *
-     * {@link CacheInterface::dump()}
+     * {@link DriverInterface::dump()}
      */
     public static function dump($driver) {
         return self::chooseMethod($driver)->dump();

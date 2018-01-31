@@ -110,30 +110,53 @@ class OAuthProvider implements
     /* OAuth2\Storage\AccessTokenInterface */
     public function getAccessToken($access_token)
     {
-        // Note: the original PDO implementation converted expires into a timestamp here as well. The FIMDatabase layer stores/fetches _all_ dates as timestamps (for reasons like this), so the conversion is unecessary.
-        return $this->db->where(array('access_token' => $access_token))->select(array($this->config['access_token_table'] => self::ACCESS_TOKEN_TABLE_FIELDS))->getAsArray(false);
+        if (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL)) {
+            return \Cache\CacheFactory::get('fim_accessToken_' . $access_token, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL);
+        }
+
+        else {
+            // Note: the original PDO implementation converted expires into a timestamp here as well. The FIMDatabase layer stores/fetches _all_ dates as timestamps (for reasons like this), so the conversion is unecessary.
+            return $this->db->where(['access_token' => $access_token])->select([$this->config['access_token_table'] => self::ACCESS_TOKEN_TABLE_FIELDS])->getAsArray(false);
+        }
     }
 
     public function setAccessToken($access_token, $client_id, $user_id, $expires, $scope = null)
     {
         global $anonId;
 
-        // Delete tokens that expired more than a minute ago.
-        $this->db->delete($this->config['access_token_table'], [
-            'expires' => $this->db->now(-60, 'lt')
-        ]);
+        $accessTokenData = [
+            'client_id'       => $client_id,
+            'expires'         => $expires,
+            'user_id'         => $user_id,
+            'scope'           => $scope,
+            'http_user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+            'ip_address'      => $_SERVER['REMOTE_ADDR'],
+            'anon_id'         => ($user_id === \Fim\User::ANONYMOUS_USER_ID ? $anonId : 0),
+        ];
 
-        return $this->db->upsert($this->config['access_token_table'], array(
-            'access_token' => $access_token
-        ), array(
-            'client_id' => $client_id,
-            'expires' => $expires,
-            'user_id' => $user_id,
-            'scope' => $scope,
-            'http_user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? ''  ,
-            'ip_address' => $_SERVER['REMOTE_ADDR'],
-            'anon_id' => ($user_id === \Fim\User::ANONYMOUS_USER_ID ? $anonId : 0),
-        ));
+        if (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL)) {
+            $accessTokenData['access_token'] = $access_token;
+
+            return \Cache\CacheFactory::set('fim_accessToken_' . $access_token, $accessTokenData, $expires - time(), \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL);
+        }
+        else {
+            // Delete tokens that expired more than a minute ago.
+            $this->db->delete($this->config['access_token_table'], [
+                'expires' => $this->db->now(-60, 'lt')
+            ]);
+
+            return $this->db->upsert($this->config['access_token_table'], [
+                'access_token' => $access_token
+            ], [
+                'client_id'       => $client_id,
+                'expires'         => $expires,
+                'user_id'         => $user_id,
+                'scope'           => $scope,
+                'http_user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+                'ip_address'      => $_SERVER['REMOTE_ADDR'],
+                'anon_id'         => ($user_id === \Fim\User::ANONYMOUS_USER_ID ? $anonId : 0),
+            ]);
+        }
     }
 
     public function unsetAccessToken($access_token)
