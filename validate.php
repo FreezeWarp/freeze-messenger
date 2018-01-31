@@ -128,14 +128,13 @@ if (!$ignoreLogin) {
     if ($loginFactory->hasLogin()) {
         $loginFactory->getLogin();
         $loginFactory->apiResponse();
-        die();
     }
 
 
     /*
      * Verify an access token. Typically used for API logins.
      */
-    elseif (isset($_REQUEST['access_token'])) {
+    elseif (!empty($_REQUEST['access_token'])) {
         // Verify the Access Token
         if ($attempt = $oauthServer->verifyResourceRequest($oauthRequest)) {
             // Get the Token
