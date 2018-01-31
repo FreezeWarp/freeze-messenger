@@ -49,11 +49,6 @@ $request = fim_sanitizeGPC('g', [
         'cast'    => 'bool',
     ],
 
-    'noping' => [
-        'default' => false,
-        'cast'    => 'bool',
-    ],
-
     'messageDateMax' => [
         'conflict' => ['id', 'messageDateMin', 'messageIdStart', 'messageIdEnd'],
         'min'      => 0,
@@ -100,11 +95,6 @@ if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMIS
     new \Fim\Error('noPerm', 'You are not allowed to view this room.'); // Don't have permission.
 
 else {
-    /* Process Ping */
-    if (!$request['noping'])
-        \Fim\Database::instance()->setUserStatus($room->id);
-
-
     /* Get Messages from Database */
     if (isset($message)) { // From message.php
         $messages = [$message];

@@ -35,7 +35,6 @@
  * @param int       $messageIdStart A lower limit on the ID of the messages.
  * @param int       $messageIdEnd   An upper limit on the ID of the messages.
  *
- * @param bool      $noPing         Disables ping; useful for archive viewing. Default is false.
  * @param string    $encode         The encoding of messages to be used on retrieval. "plaintext" is the only accepted format currently. Default is "plaintext".
  * @param bool      $showDeleted    Whether or not to show deleted messages. You will need to be a room moderator. If enabled, archive MUST be enabled as well. Default is false.
  * @param string    $search         A search keyword to restrict messages to. When used, all returned messages will contain this keyword.
