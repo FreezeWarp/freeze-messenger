@@ -25,7 +25,7 @@ if (!defined('WEBPRO_INMOD')) {
     die();
 }
 else {
-    $request = fim_sanitizeGPC('r', array(
+    $request = \Fim\Utilities::sanitizeGPC('r', array(
         'do2' => array(
             'default' => 'view',
             'valid' => ['view'],

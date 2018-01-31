@@ -35,7 +35,7 @@ if (!defined('API_INMESSAGE'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', [
+$request = \Fim\Utilities::sanitizeGPC('g', [
     'userIds' => [
         'default'  => [],
         'cast'     => 'list',
@@ -103,7 +103,7 @@ else {
         $messageResults = \Fim\Database::instance()->getMessages(
             array_merge([
                 'room' => $room,
-            ], fim_arrayFilterKeys($request, ['messageIdEnd', 'messageIdStart', 'messageDateMin', 'messageDateMax', 'showDeleted', 'messageTextSearch', 'userIds'])),
+            ], \Fim\Utilities::arrayFilterKeys($request, ['messageIdEnd', 'messageIdStart', 'messageDateMin', 'messageDateMax', 'showDeleted', 'messageTextSearch', 'userIds'])),
             ['id' => (isset($request['messageIdStart']) || isset($request['messageDateMin']) ? 'asc' : 'desc')],
             \Fim\Config::$defaultMessageLimit,
             $request['page']
@@ -115,7 +115,7 @@ else {
     /* Process Messages */
     if (count($messages) > 0) {
         foreach ($messages AS $id => $message) {
-            $xmlData['messages'][] = fim_objectArrayFilterKeys($message, ['id', 'text', 'roomId', 'userId', 'anonId', 'time', 'formatting', 'flag']);
+            $xmlData['messages'][] = \Fim\Utilities::objectArrayFilterKeys($message, ['id', 'text', 'roomId', 'userId', 'anonId', 'time', 'formatting', 'flag']);
         }
     }
 }

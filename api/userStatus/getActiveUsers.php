@@ -34,7 +34,7 @@ if (!defined('API_INUSERSTATUS'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', array(
+$request = \Fim\Utilities::sanitizeGPC('g', array(
     'roomIds' => array(
         'default' => [],
         'cast' => 'list',

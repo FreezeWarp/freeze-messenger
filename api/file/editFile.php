@@ -32,7 +32,7 @@ if (!defined('API_INFILE'))
 
 
 /* Get Request Data */
-$requestHead = array_merge($requestHead, fim_sanitizeGPC('g', array(
+$requestHead = array_merge($requestHead, \Fim\Utilities::sanitizeGPC('g', array(
     'uploadMethod' => array(
         'default' => 'raw',
         'valid' => array(
@@ -42,7 +42,7 @@ $requestHead = array_merge($requestHead, fim_sanitizeGPC('g', array(
 )));
 
 /* If the upload method is put, we read directly from php://input */
-$request = fim_sanitizeGPC(
+$request = \Fim\Utilities::sanitizeGPC(
     ($requestHead['uploadMethod'] === 'put' ? 'g' : 'p'), // If the uploadMethod is put, then we are reading from stdin, and there likely is no POST data available (since stdin is usually used to send POST data)... so use GET instead for everything.
     array(
         'fileName' => array(

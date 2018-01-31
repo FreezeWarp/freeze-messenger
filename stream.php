@@ -43,7 +43,7 @@ $serverSentRetries = 0;
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', array(
+$request = \Fim\Utilities::sanitizeGPC('g', array(
     'queryId' => array(
         'cast' => 'roomId',
         'evaltrue' => true,
@@ -108,7 +108,7 @@ else {
         echo "\nid: " . (int)$message['id'] . "\n";
         echo "event: " . $message['eventName'] . "\n";
         echo "data: " . json_encode($message['data']) . "\n\n";
-        fim_flush();
+        \Fim\Utilities::flush();
     });
 
     echo "retry: 0\n";

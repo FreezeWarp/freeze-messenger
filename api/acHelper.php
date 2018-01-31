@@ -19,7 +19,7 @@ $apiRequest = true;
 require('../global.php');
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', [
+$request = \Fim\Utilities::sanitizeGPC('g', [
     'list' => [
         'valid'   => [
             'users', 'rooms', 'groups'

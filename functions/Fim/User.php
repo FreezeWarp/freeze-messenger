@@ -811,17 +811,20 @@ class User extends DynamicObject
         }
 
         $this->populateFromArray($userParameters, true);
-        $userParameters = fim_dbCastArrayEntry($userParameters, 'privs', Type::bitfield);
+        $userParameters = \Fim\Utilities::dbCastArrayEntry($userParameters, 'privs', Type::bitfield);
 
         if ($this->id) {
             \Fim\Database::instance()->startTransaction();
 
-            if (fim_inArray(array_keys($userParameters), explode(', ', \Fim\DatabaseInstance::userHistoryColumns))) {
+            if (\Fim\Utilities::inArray(
+                array_keys($userParameters),
+                explode(', ', \Fim\DatabaseInstance::userHistoryColumns))
+            ) {
                 if ($existingUserData = \Fim\Database::instance()->getUsers([
                     'userIds' => [$this->id],
                     'columns' => \Fim\DatabaseInstance::userHistoryColumns,
                 ])->getAsArray(false)) {
-                    \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "userHistory", fim_arrayFilterKeys($existingUserData, ['userId', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
+                    \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "userHistory", \Fim\Utilities::arrayFilterKeys($existingUserData, ['userId', 'name', 'nameFormat', 'profile', 'avatar', 'mainGroupId', 'defaultMessageFormatting', 'options', 'parentalAge', 'parentalFlags', 'privs']));
                 }
             }
 

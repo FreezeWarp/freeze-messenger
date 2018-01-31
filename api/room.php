@@ -99,10 +99,10 @@ define('API_INROOM', true);
 
 
 /* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
-$requestHead = fim_sanitizeGPC('g', [
+$requestHead = \Fim\Utilities::sanitizeGPC('g', [
     '_action' => [],
 ]);
-$requestHead = array_merge($requestHead, (array)fim_sanitizeGPC('g', [
+$requestHead = array_merge($requestHead, (array)\Fim\Utilities::sanitizeGPC('g', [
     'id' => [
         'cast' => 'roomId',
         'require' => $requestHead['_action'] == 'edit'

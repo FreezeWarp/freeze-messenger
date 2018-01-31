@@ -24,7 +24,7 @@ if (!defined('WEBPRO_INMOD')) {
     die();
 }
 else {
-    $request = fim_sanitizeGPC('r', array(
+    $request = \Fim\Utilities::sanitizeGPC('r', array(
         'listId' => array(
             'cast' => 'int',
         ),
@@ -140,7 +140,7 @@ else {
                     
                     <label class="input-group">
                       <span class="input-group-addon">Type</span>
-                      ' . fimHtml_buildSelect('listType', array(
+                      ' . \Fim\Utilities::buildSelect('listType', array(
                                                          'black' => 'black',
                                                          'white' => 'white',
                                                      ), $list['listType']) . '
@@ -176,7 +176,7 @@ else {
 
 
             case 'editList2':
-                $request = array_merge($request, fim_sanitizeGPC('p', [
+                $request = array_merge($request, \Fim\Utilities::sanitizeGPC('p', [
                     'options' => [
                         'cast'      => 'list',
                         'transform' => 'bitfield',
@@ -309,7 +309,7 @@ else {
                     die('Invalid params specified.');
                 }
 
-                $selectBlock = fimHtml_buildSelect('severity', array(
+                $selectBlock = \Fim\Utilities::buildSelect('severity', array(
                     'replace' => 'replace',
                     'warn' => 'warn',
                     'confirm' => 'confirm',

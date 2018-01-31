@@ -35,7 +35,7 @@ if (!defined('API_INFILE'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', array(
+$request = \Fim\Utilities::sanitizeGPC('g', array(
     'fileIds' => [
         'default'  => [],
         'cast'     => 'list',
@@ -83,7 +83,7 @@ do {
         $xmlData['files']['file ' . $file->id] = array_merge([
             'userId' => $file->user->id,
             'roomId' => $file->room->id
-        ], fim_objectArrayFilterKeys($file, ['id', 'name', 'size', 'container', 'sha256Hash', 'webLocation']));
+        ], \Fim\Utilities::objectArrayFilterKeys($file, ['id', 'name', 'size', 'container', 'sha256Hash', 'webLocation']));
     }
 
     $request['page']++;

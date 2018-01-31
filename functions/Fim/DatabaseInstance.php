@@ -1591,7 +1591,8 @@ class DatabaseInstance extends DatabaseSQL
                 $returnBitfield = 65535;
 
             // A user blocked by parental controls has no permissions. This cannot apply to the room owner.
-            elseif (($user->parentalAge && $room->parentalAge && $room->parentalAge > $user->parentalAge) || fim_inArray($user->parentalFlags, $room->parentalFlags)) {
+            elseif (($user->parentalAge && $room->parentalAge && $room->parentalAge > $user->parentalAge)
+                || \Fim\Utilities::inArray($user->parentalFlags, $room->parentalFlags)) {
                 $returnBitfield = 0;
                 $reason = 'parentalBlock';
             }

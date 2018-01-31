@@ -20,7 +20,7 @@ require('../global.php');
 
 
 /* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
-$request = fim_sanitizeGPC('p', [
+$request = \Fim\Utilities::sanitizeGPC('p', [
     'endpoint' => [
         'require' => true
     ],

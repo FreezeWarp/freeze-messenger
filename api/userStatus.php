@@ -36,12 +36,12 @@ define('API_INUSERSTATUS', true);
 
 
 /* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
-$requestHead = fim_sanitizeGPC('g', [
+$requestHead = \Fim\Utilities::sanitizeGPC('g', [
     '_action' => [],
 ]);
 
 if ($requestHead['_action'] === 'edit') {
-    $requestHead = array_merge($requestHead, fim_sanitizeGPC('g',
+    $requestHead = array_merge($requestHead, \Fim\Utilities::sanitizeGPC('g',
         ['roomIds' => [
             'cast' => 'list',
             'filter' => 'roomId',

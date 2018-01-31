@@ -32,12 +32,12 @@ require('../global.php');
 
 
 /* Get Request */
-$requestHead = fim_sanitizeGPC('g', [
+$requestHead = \Fim\Utilities::sanitizeGPC('g', [
     '_action' => [],
 ]);
 
 if ($requestHead['_action'] === 'delete') {
-    $requestHead = array_merge($requestHead, fim_sanitizeGPC('g', [
+    $requestHead = array_merge($requestHead, \Fim\Utilities::sanitizeGPC('g', [
         'roomId' => [
             'cast'    => 'roomId',
             'require' => true

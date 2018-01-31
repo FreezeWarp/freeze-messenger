@@ -25,7 +25,7 @@ if (!defined('WEBPRO_INMOD')) {
     die();
 }
 else {
-    $request = fim_sanitizeGPC('r', array(
+    $request = \Fim\Utilities::sanitizeGPC('r', array(
         'do2' => array(
             'valid' => ['view', 'edit', 'edit2', 'delete'],
             'default' => 'view'
@@ -106,7 +106,7 @@ else {
 
             case 'edit2':
                 // Get Request
-                $request = array_merge($request, fim_sanitizeGPC('p', [
+                $request = array_merge($request, \Fim\Utilities::sanitizeGPC('p', [
                     'text' => [
                         'require' => true
                     ],
@@ -118,21 +118,21 @@ else {
                 // Log and Perform Request
                 if ($request['id']) {
                     \Fim\Database::instance()->modLog('editEmoticon', $request['id']);
-                    \Fim\Database::instance()->fullLog('editEmoticon', fim_arrayFilterKeys($request, ['id', 'text', 'file']));
+                    \Fim\Database::instance()->fullLog('editEmoticon', \Fim\Utilities::arrayFilterKeys($request, ['id', 'text', 'file']));
 
                     \Fim\Database::instance()->update(
                         \Fim\Database::$sqlPrefix . 'emoticons',
-                        fim_arrayFilterKeys($request, ['text', 'file']),
-                        fim_arrayFilterKeys($request, ['id'])
+                        \Fim\Utilities::arrayFilterKeys($request, ['text', 'file']),
+                        \Fim\Utilities::arrayFilterKeys($request, ['id'])
                     );
                 }
                 else {
                     \Fim\Database::instance()->modLog('addEmoticon', $request['text']);
-                    \Fim\Database::instance()->fullLog('addEmoticon', fim_arrayFilterKeys($request, ['text', 'file']));
+                    \Fim\Database::instance()->fullLog('addEmoticon', \Fim\Utilities::arrayFilterKeys($request, ['text', 'file']));
 
                     \Fim\Database::instance()->insert(
                         \Fim\Database::$sqlPrefix . 'emoticons',
-                        fim_arrayFilterKeys($request, ['text', 'file'])
+                        \Fim\Utilities::arrayFilterKeys($request, ['text', 'file'])
                     );
                 }
 
@@ -155,7 +155,7 @@ else {
                 // Perform the Deletion
                 \Fim\Database::instance()->delete(
                     \Fim\Database::$sqlPrefix . 'emoticons',
-                    fim_arrayFilterKeys($request, ['id'])
+                    \Fim\Utilities::arrayFilterKeys($request, ['id'])
                 );
 
                 // Clear the Cache

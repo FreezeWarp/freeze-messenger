@@ -151,7 +151,7 @@ class File extends MagicGettersSetters {
      * @return string {@see $sha256Hash}
      */
     public function getSha256Hash() {
-        return $this->sha256Hash = $this->sha256Hash ?: fim_sha256($this->contents);
+        return $this->sha256Hash = $this->sha256Hash ?: \Fim\Utilities::sha256($this->contents);
     }
 
     /**

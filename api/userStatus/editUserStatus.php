@@ -31,7 +31,7 @@ if (!defined('API_INUSERSTATUS'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('p', array(
+$request = \Fim\Utilities::sanitizeGPC('p', array(
     'status' => array(
         'default' => 'available',
         'valid' => array('', 'away', 'busy', 'available', 'invisible', 'offline')

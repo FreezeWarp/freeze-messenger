@@ -19,7 +19,7 @@ require('global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', [
+$request = \Fim\Utilities::sanitizeGPC('g', [
     'do' => [
         'cast'    => 'string',
         'valid'   => ['register'],

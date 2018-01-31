@@ -106,11 +106,11 @@ require('../global.php');
 
 
 /* Get Request Data */
-$requestHead = fim_sanitizeGPC('g', array(
+$requestHead = \Fim\Utilities::sanitizeGPC('g', array(
     '_action' => [],
 ));
 
-$request = fim_sanitizeGPC('p', array(
+$request = \Fim\Utilities::sanitizeGPC('p', array(
     'defaultRoomId' => array(
         'cast' => 'roomId',
     ),
@@ -265,7 +265,7 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
 
         if (!$defaultRoom->exists()
             || !(\Fim\Database::instance()->hasPermission($user, $defaultRoom) & Room::ROOM_PERMISSION_VIEW))
-            $xmlData['editUserOptions']['defaultRoom'] = (new \Fim\Error('invalidRoom', 'The room specified does not exist.', null, true))->getArray();
+            $xmlData['editUserOptions']['defaultRoomId'] = (new \Fim\Error('invalidRoom', 'The room specified does not exist.', null, true))->getArray();
 
         else
             $updateArray['defaultRoomId'] = $defaultRoom->id;
@@ -291,7 +291,7 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
      ************************************/
     foreach (array('defaultHighlight', 'defaultColor') AS $value) {
         if (isset($request[$value])) {
-            $rgb[$value] = fim_arrayValidate(explode(',', $request[$value]), 'int', true);
+            $rgb[$value] = \Fim\Utilities::arrayValidate(explode(',', $request[$value]), 'int', true);
 
             if (!\Fim\Config::${'defaultFormatting' . substr($value, 7)})
                 $xmlData['editUserOptions'][$value] = (new \Fim\Error('disabled', $value . ' is disabled on this server.', null, true))->getArray();

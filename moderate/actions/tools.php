@@ -24,7 +24,7 @@ if (!defined('WEBPRO_INMOD')) {
     die();
 }
 else {
-    $request = fim_sanitizeGPC('r', array(
+    $request = \Fim\Utilities::sanitizeGPC('r', array(
         'tool' => array(
             'cast' => 'string'
         ),
@@ -161,19 +161,19 @@ else {
                         \Fim\Database::instance()->holdTriggers(true);
                         if (in_array(strtolower($tableName), $showTables)) {
                             echo 'Update: ' . $tableName . ': ' . \Fim\Database::instance()->alterTable($tableName, $tableComment, $tableType, $tablePartition  ) . '<br />';
-                            fim_flush();
+                            \Fim\Utilities::flush();
                             echo 'Delete Foreign Keys : ' . $tableName . ': ' . \Fim\Database::instance()->deleteForeignKeyConstraints($tableName) . '<br />';
-                            fim_flush();
+                            \Fim\Utilities::flush();
                             \Fim\Database::instance()->createTableIndexes($tableName, $tableIndexes);
 
                             foreach ($tableColumns AS $name => $column) {
                                 if (in_array($name, $showColumns[strtolower($tableName)])) {
                                     echo 'Update: ' . $tableName . ',' . $name . ': ' . \Fim\Database::instance()->alterTableColumns($tableName, [$name => $column], $tableType) . '<br />';
-                                    fim_flush();
+                                    \Fim\Utilities::flush();
                                 }
                                 else {
                                     echo 'Create: ' . $tableName . ',' . $name . ': ' . \Fim\Database::instance()->createTableColumns($tableName, [$name => $column], $tableType) . '<br />';
-                                    fim_flush();
+                                    \Fim\Utilities::flush();
                                 }
                             }
                         }
@@ -183,7 +183,7 @@ else {
                             }
                             else {
                                 echo 'Created Table: ' . $tableName . '<br />';
-                                fim_flush();
+                                \Fim\Utilities::flush();
                             }
                         }
                         //\Fim\Database::instance()->endTransaction();
@@ -191,7 +191,7 @@ else {
                 }
 
                 echo 'Running Triggers for All Tables and Columns...<br />';
-                fim_flush();
+                \Fim\Utilities::flush();
                 \Fim\Database::instance()->holdTriggers(false);
 
                 echo '<strong>Complete.</strong>';

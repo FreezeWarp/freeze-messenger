@@ -31,7 +31,7 @@ if (!defined('API_INGROUP'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', [
+$request = \Fim\Utilities::sanitizeGPC('g', [
     'groupIds' => [
         'cast'     => 'list',
         'filter'   => 'int',
@@ -69,7 +69,7 @@ if (isset($groupData)) { // From api/user.php
 }
 else {
     $groups = \Fim\DatabaseSlave::instance()->getGroups(
-        fim_arrayFilterKeys($request, ['groupIds', 'groupNames']),
+        \Fim\Utilities::arrayFilterKeys($request, ['groupIds', 'groupNames']),
         [$request['sort'] => 'asc']
     )->getAsArray(true);
 }
@@ -78,7 +78,7 @@ else {
 
 /* Start Processing */
 foreach ($groups AS $groupData) {
-    $xmlData['groups'][$groupData['id']] = fim_arrayFilterKeys($groupData, ['id', 'name']);
+    $xmlData['groups'][$groupData['id']] = \Fim\Utilities::arrayFilterKeys($groupData, ['id', 'name']);
 }
 
 

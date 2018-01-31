@@ -28,10 +28,8 @@
 
 /* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
 
-use Fim\Error;
-
-require(__DIR__ . '/../functions/fim_general.php');
-$requestHead = fim_sanitizeGPC('g', [
+require_once(__DIR__ . '/../vendor/autoload.php'); // Various Functions
+$requestHead = \Fim\Utilities::sanitizeGPC('g', [
     'id'      => ['cast' => 'int'],
     '_action' => [],
 ]);

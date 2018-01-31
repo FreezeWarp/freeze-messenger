@@ -417,7 +417,7 @@ class Room extends DynamicObject
             foreach ($this->getPrivateRoomMembers() AS $user)
                 $userNames[] = $user->name;
 
-            $name = ($this->type === self::ROOM_TYPE_PRIVATE ? 'Private' : 'Off-the-Record') . ' Room Between ' . fim_naturalLanguageJoin(', ', $userNames);
+            $name = ($this->type === self::ROOM_TYPE_PRIVATE ? 'Private' : 'Off-the-Record') . ' Room Between ' . \Fim\Utilities::naturalLanguageJoin(', ', $userNames);
             $this->set('name', $name);
 
             return $name;
@@ -845,7 +845,7 @@ class Room extends DynamicObject
         if (!count($roomParameters))
             return;
 
-        fim_removeNullValues($roomParameters);
+        \Fim\Utilities::removeNullValues($roomParameters);
         $this->populateFromArray($roomParameters);
 
         if ($this->id) {
@@ -855,11 +855,17 @@ class Room extends DynamicObject
             ])->getAsArray(false)) {
                 \Fim\Database::instance()->startTransaction();
 
-                \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "roomHistory", fim_arrayFilterKeys(fim_removeNullValues($existingRoomData), ['roomId', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge']));
+                \Fim\Database::instance()->insert(
+                    \Fim\Database::$sqlPrefix . "roomHistory",
+                    \Fim\Utilities::arrayFilterKeys(
+                        \Fim\Utilities::removeNullValues($existingRoomData),
+                        ['roomId', 'name', 'topic', 'options', 'ownerId', 'defaultPermissions', 'parentalFlags', 'parentalAge']
+                    )
+                );
 
                 $return = \Fim\Database::instance()->update(
                     \Fim\Database::$sqlPrefix . "rooms",
-                    fim_objectArrayFilterKeys($this, ['name', 'topic', 'options', 'defaultPermissions', 'parentalFlags', 'parentalAge']),
+                    \Fim\Utilities::objectArrayFilterKeys($this, ['name', 'topic', 'options', 'defaultPermissions', 'parentalFlags', 'parentalAge']),
                     [
                         'id' => (int)$this->id,
                     ]

@@ -99,8 +99,8 @@ abstract class LoginDatabase implements LoginRunner
                     'expires'       => $oauthResponse->getParameter('expires_in'),
                     'userData'      => array_merge([
                         'permissions' => $user->getPermissionsArray()
-                    ], fim_castArrayEntry(
-                        fim_objectArrayFilterKeys(
+                    ], \Fim\Utilities::castArrayEntry(
+                        \Fim\Utilities::objectArrayFilterKeys(
                             $user,
                             ['id', 'anonId', 'name', 'nameFormat', 'mainGroupId', 'socialGroupIds', 'avatar', 'profile', 'parentalAge', 'parentalFlags', 'messageFormatting', 'defaultRoomId', 'options', 'ignoredUsers', 'friendedUsers', 'favRooms', 'privacyLevel']
                         ), ['socialGroupIds', 'parentalFlags', 'ignoredUsers', 'friendedUsers', 'favRooms'], '\Http\ApiOutputList'

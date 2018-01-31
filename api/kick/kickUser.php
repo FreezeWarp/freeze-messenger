@@ -19,7 +19,7 @@ if (!defined('API_INKICK'))
 
 
 /* Get Parameters */
-$request = fim_sanitizeGPC('p', [
+$request = \Fim\Utilities::sanitizeGPC('p', [
     'length' => [
         'require' => $requestHead['_action'] === 'create',
         'min' => \Fim\Config::$kickMinimumLength

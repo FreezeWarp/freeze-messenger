@@ -34,7 +34,7 @@ require('../global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', array(
+$request = \Fim\Utilities::sanitizeGPC('g', array(
     'listIds' => array(
         'default' => [],
         'cast' => 'list',
@@ -77,11 +77,11 @@ if ($request['includeWords']) {
 
 /* Start Processing */
 foreach ($censorLists AS $list) { // Run through each censor list retrieved.
-    $xmlData['lists']['list ' . $list->id] = fim_objectArrayFilterKeys($list, ['id', 'name', 'type', 'status', 'disableable']);
+    $xmlData['lists']['list ' . $list->id] = \Fim\Utilities::objectArrayFilterKeys($list, ['id', 'name', 'type', 'status', 'disableable']);
 
     if ($request['includeWords']) {
         foreach($censorWords[$list->id] AS $censorListWord) {
-            $xmlData['lists']['list ' . $list->id]['words'][$censorListWord['id']] = fim_arrayFilterKeys($censorListWord, ['id', 'word', 'severity', 'param']);
+            $xmlData['lists']['list ' . $list->id]['words'][$censorListWord['id']] = \Fim\Utilities::arrayFilterKeys($censorListWord, ['id', 'word', 'severity', 'param']);
         }
     }
 }

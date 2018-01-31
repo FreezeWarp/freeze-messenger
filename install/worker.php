@@ -230,8 +230,6 @@ switch ($_REQUEST['phase']) {
 
     // Note: This writes a file to the server, which is a very sensitive action (and for a reason is never done elsewhere). This is NOT secure, but should only be used by users wishing to install the product.
     case 2: // Config File
-        require('../functions/fim_general.php');
-
         $forum = $_GET['forum'];
         $forumUrl = rtrim($_GET['forum_url'], '/') . '/';
 

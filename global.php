@@ -35,9 +35,7 @@ elseif ($phpVersion < 7) {
 
 /* Require Libraries */
 require_once(__DIR__ . '/vendor/autoload.php'); // Various Functions
-
 require_once(__DIR__ . '/config.php'); // Configuration Variables
-require_once(__DIR__ . '/functions/fim_general.php'); // Various Functions
 
 
 
@@ -59,13 +57,7 @@ if (!isset($defaultLanguage)) {
 
 
 /* Better Error Handling */
-set_exception_handler('fim_exceptionHandler'); // Defined in fim_general.php
-
-
-////* Database Stuff *////
-
-/* If the connections are the same, do not make multiple below. */
-/* Connect to the Main Database */
+set_exception_handler('\Fim\Utilities::exceptionHandler');
 if (!\Fim\Database::connect(
     $dbConnect['core']['host'],
     $dbConnect['core']['port'],

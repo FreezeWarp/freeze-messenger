@@ -33,7 +33,7 @@ if (!defined('API_INROOM'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('p', [
+$request = \Fim\Utilities::sanitizeGPC('p', [
     'name' => [
         'require' => $requestHead['_action'] == 'create',
         'trim'    => true,
@@ -122,7 +122,7 @@ switch ($requestHead['_action']) {
 
         // Handle Options Flags
         if ($user->hasPriv('modRooms')) {
-            $request = array_merge($request, fim_sanitizeGPC('p', [
+            $request = array_merge($request, \Fim\Utilities::sanitizeGPC('p', [
                 'options' => [
                     'cast'      => 'bitfieldShift',
                     'source'    => ($requestHead['_action'] === 'edit'
@@ -147,7 +147,7 @@ switch ($requestHead['_action']) {
         if ($requestHead['_action'] === 'create' ||
             (\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_PROPERTIES)) {
             $room->setDatabase(array_merge(
-                fim_arrayFilterKeys($request, ['name', 'parentalFlags', 'parentalAge', 'defaultPermissions', 'options', 'ownerId'])
+                \Fim\Utilities::arrayFilterKeys($request, ['name', 'parentalFlags', 'parentalAge', 'defaultPermissions', 'options', 'ownerId'])
             ));
 
             if (isset($request['censorLists']))
@@ -171,6 +171,6 @@ switch ($requestHead['_action']) {
 
 
 /* Output Data */
-$xmlData = ['room' => fim_objectArrayFilterKeys($room, ['id', 'name']), 'request' => $request];
+$xmlData = ['room' => \Fim\Utilities::objectArrayFilterKeys($room, ['id', 'name']), 'request' => $request];
 echo new Http\ApiData($xmlData);
 ?>

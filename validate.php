@@ -59,7 +59,7 @@ $doIntegrationLogin = false;
 /******
  * Parse request information.
  ******/
-$request = fim_sanitizeGPC('r', array(
+$request = \Fim\Utilities::sanitizeGPC('r', array(
     'userId' => array('cast' => 'int'),
     'userName' => array(),
     'password' => array(),

@@ -78,7 +78,7 @@ class LoginVbulletin5 extends LoginDatabase
             $vbUserGroups = $this->loginFactory->database->select([
                 "{$this->loginFactory->database->sqlPrefix}usergroup" => 'usergroupid, title, opentag'
             ], [
-                'usergroupid' => $this->loginFactory->database->in(fim_arrayValidate($vbUserGroupIds, 'int'))
+                'usergroupid' => $this->loginFactory->database->in(\Fim\Utilities::arrayValidate($vbUserGroupIds, 'int'))
             ])->getAsArray('usergroupid');
 
 

@@ -29,7 +29,7 @@ define('API_INGROUP', true);
 
 
 /* Header parameters -- identifies what we're doing as well as the group itself, if applicable. */
-$requestHead = fim_sanitizeGPC('g', [
+$requestHead = \Fim\Utilities::sanitizeGPC('g', [
     '_action' => [],
 ]);
 

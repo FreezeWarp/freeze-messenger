@@ -27,7 +27,7 @@ if (!defined('WEBPRO_INMOD')) {
     die();
 }
 else {
-    $request = fim_sanitizeGPC('r', array(
+    $request = \Fim\Utilities::sanitizeGPC('r', array(
         'do2' => [
             'default' => 'view',
             'valid' => ['view', 'edit', 'edit2'],
@@ -54,7 +54,7 @@ else {
     if ($user->hasPriv('modPrivs')) {
         switch ($request['do2']) {
             case 'view':
-            $request = array_merge($request, fim_sanitizeGPC('g', [
+            $request = array_merge($request, \Fim\Utilities::sanitizeGPC('g', [
                 'page' => [
                     'cast' => 'int',
                     'default' => 0
@@ -69,7 +69,7 @@ else {
             ]));
 
             $usersQuery = \Fim\Database::instance()->getUsers(
-                fim_arrayFilterKeys($request, ['userNameSearch']),
+                \Fim\Utilities::arrayFilterKeys($request, ['userNameSearch']),
                 [$request['sort'] => 'asc'],
                 20,
                 $request['page']
@@ -148,7 +148,7 @@ else {
             break;
 
             case 'edit2':
-                $request = array_merge($request, fim_sanitizeGPC('p', [
+                $request = array_merge($request, \Fim\Utilities::sanitizeGPC('p', [
                     'privs' => [
                         'cast'      => 'list',
                         'transform' => 'bitfield',

@@ -24,7 +24,7 @@ if (!defined('WEBPRO_INMOD')) {
     die();
 }
 else {
-    $request = fim_sanitizeGPC('r', array(
+    $request = \Fim\Utilities::sanitizeGPC('r', array(
         'directive' => array(
             'cast' => 'string',
         ),
@@ -75,7 +75,7 @@ else {
 
                 switch($directiveType) {
                     case 'boolean':
-                        $valueBlock = fimHtml_buildSelect('value', array(
+                        $valueBlock = \Fim\Utilities::buildSelect('value', array(
                             true => 'true',
                             false => 'false',
                         ), $directiveValue);

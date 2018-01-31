@@ -129,15 +129,15 @@ $success = false;
                         <td>
                             <div class="row">
                                 <div class="col-sm-3">
-                                    <?php echo fimHtml_buildSelect('birthDay', array_merge(["0" => "Day"], range(1, 31)), $_POST['birthDay'] ?? 0); ?>
+                                    <?php echo \Fim\Utilities::buildSelect('birthDay', array_merge(["0" => "Day"], range(1, 31)), $_POST['birthDay'] ?? 0); ?>
                                 </div>
 
                                 <div class="col-sm-3">
-                                    <?php echo fimHtml_buildSelect('birthMonth', array_merge(["0" => "Month"], $phrases[$lang]['months']), $_POST['birthMonth'] ?? 0); ?>
+                                    <?php echo \Fim\Utilities::buildSelect('birthMonth', array_merge(["0" => "Month"], $phrases[$lang]['months']), $_POST['birthMonth'] ?? 0); ?>
                                 </div>
 
                                 <div class="col-sm-6">
-                                    <?php echo fimHtml_buildSelect('birthYear', array_combine(
+                                    <?php echo \Fim\Utilities::buildSelect('birthYear', array_combine(
                                         array_merge([0], range(intval(date('Y')) - \Fim\Config::$ageMinimum, intval(date('Y')) - 150)),
                                         array_merge(["Year"], range(intval(date('Y')) - \Fim\Config::$ageMinimum, intval(date('Y')) - 150))
                                     ), $_POST['birthYear'] ?? 0); ?>

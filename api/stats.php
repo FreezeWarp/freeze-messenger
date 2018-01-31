@@ -37,7 +37,7 @@ require('../global.php');
 
 
 /* Get Request */
-$request = fim_sanitizeGPC('g', array(
+$request = \Fim\Utilities::sanitizeGPC('g', array(
     'roomId' => array(
         'cast' => 'roomId',
         'require' => true,

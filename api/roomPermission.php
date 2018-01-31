@@ -31,7 +31,7 @@ require(__DIR__ . '/../global.php');
 
 
 /* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
-$requestHead = (array)fim_sanitizeGPC('g', [
+$requestHead = (array)\Fim\Utilities::sanitizeGPC('g', [
     '_action' => [],
 
     'roomId' => [
@@ -50,7 +50,7 @@ $requestHead = (array)fim_sanitizeGPC('g', [
     ],
 ]);
 
-$requestBody = fim_sanitizeGPC('p', [
+$requestBody = \Fim\Utilities::sanitizeGPC('p', [
     'permissions' => [
         'cast'      => 'list',
         'transform' => 'bitfield',
@@ -122,6 +122,6 @@ switch ($requestHead['_action']) {
     break;
 }
 
-$xmlData = ['roomPermission' => fim_objectArrayFilterKeys($room, ['id', 'name']), 'request' => $request];
+$xmlData = ['roomPermission' => \Fim\Utilities::objectArrayFilterKeys($room, ['id', 'name']), 'request' => $request];
 echo new Http\ApiData($xmlData);
 ?>

@@ -32,7 +32,7 @@ if (!defined('API_INROOM'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', [
+$request = \Fim\Utilities::sanitizeGPC('g', [
     // No matter what, the user will not be able to see rooms that he is unable to view.
     'permFilter' => [
         'default' => 'view',
@@ -116,7 +116,7 @@ do {
 
         if (!(count($privateRoomIds) > 0 && count($request['roomIds']) == 0)) {
             $roomsQuery = \Fim\DatabaseSlave::instance()->getRooms(array_merge(
-                fim_arrayFilterKeys($request, ['roomIds', 'roomNames', 'showDeleted', 'showHidden', 'roomNameSearch']),
+                \Fim\Utilities::arrayFilterKeys($request, ['roomIds', 'roomNames', 'showDeleted', 'showHidden', 'roomNameSearch']),
                 ['ownerIds' => ($request['permFilter'] === 'own' ? [$user->id] : [])]
             ), [
                 'id 1' => \Fim\Database::instance()->in($user->favRooms),
@@ -143,7 +143,7 @@ do {
         }
 
         $xmlData['rooms']["room {$roomLocal->id}"] = array_merge(
-            fim_objectArrayFilterKeys($roomLocal, ['id', 'name', 'ownerId', 'parentalAge', 'official', 'archived', 'hidden', 'deleted', 'topic', 'ownerId', 'lastMessageId', 'lastMessageTime', 'messageCount']),
+            \Fim\Utilities::objectArrayFilterKeys($roomLocal, ['id', 'name', 'ownerId', 'parentalAge', 'official', 'archived', 'hidden', 'deleted', 'topic', 'ownerId', 'lastMessageId', 'lastMessageTime', 'messageCount']),
             [
                 'defaultPermissions' => $roomLocal->getPermissionsArray($roomLocal->defaultPermissions),
                 'permissions'        => $roomLocal->getPermissionsArray($permission),

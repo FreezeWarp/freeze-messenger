@@ -24,7 +24,7 @@ if (!defined('WEBPRO_INMOD')) {
     die();
 }
 else {
-    $request = fim_sanitizeGPC('r', array(
+    $request = \Fim\Utilities::sanitizeGPC('r', array(
         'log' => array(
             'cast' => 'string',
             'default' => 'mod',
@@ -52,10 +52,10 @@ else {
         if ($request['log'] === 'query') {
             $file = fopen(\Fim\Config::$logQueriesFile, 'r') or die(container("Error", "Could not open query log file."));
 
-            fseek($file, $request['page'] * 50000 - ($request['page'] > 0 ? 2500 : 0));
-            echo "<textarea style=\"width: 100%; height: 500px;\"'>" . fread($file, 52500) . "</textarea>";
+            fseek($file, $request['page'] * 250000 - ($request['page'] > 0 ? 5000 : 0));
+            echo "<textarea style=\"width: 100%; height: 500px;\"'>" . fread($file, 255000) . "</textarea>";
 
-            $numPages = (int) (filesize(\Fim\Config::$logQueriesFile) / 50000);
+            $numPages = (int) (filesize(\Fim\Config::$logQueriesFile) / 250000);
             if ($request['page'] > 0) echo "<a href=\"./index.php?do=log&log=query&page=" . ($request['page'] - 1) . "\">Previous Page</a> | ";
             if ($request['page'] < $numPages) echo "<a href=\"./index.php?do=log&log=query&page=" . ($request['page'] + 1) . "\">Next Page</a> | ";
             echo "Jump to Page: <form style=\"display: inline\"><select id=\"page\" onchange=\"window.location = './index.php?do=log&log=query&page=' + jQuery('#page option:selected').val();\">";

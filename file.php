@@ -30,7 +30,7 @@ require('global.php');
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', array(
+$request = \Fim\Utilities::sanitizeGPC('g', array(
     'sha256hash' => array(
         'cast' => 'string',
         'require' => false,

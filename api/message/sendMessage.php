@@ -36,7 +36,7 @@ if (!defined('API_INMESSAGE'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('p', [
+$request = \Fim\Utilities::sanitizeGPC('p', [
     'message' => [
         'require' => true,
     ],

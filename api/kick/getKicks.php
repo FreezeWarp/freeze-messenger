@@ -74,7 +74,7 @@ else {
             ];
         }
 
-        $xmlData['kicks']['user ' . $kick['userId']]['kicks']['room ' . $kick['roomId']] = fim_arrayFilterKeys($kick, ['roomId', 'roomName', 'kickerId', 'kickerName', 'set', 'expires']);
+        $xmlData['kicks']['user ' . $kick['userId']]['kicks']['room ' . $kick['roomId']] = \Fim\Utilities::arrayFilterKeys($kick, ['roomId', 'roomName', 'kickerId', 'kickerName', 'set', 'expires']);
     }
 }
 

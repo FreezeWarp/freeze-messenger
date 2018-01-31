@@ -31,7 +31,7 @@ if (!defined('API_INUSER'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('g', [
+$request = \Fim\Utilities::sanitizeGPC('g', [
     'userIds' => [
         'conflict' => ['id', 'showOnly'],
         'cast'     => 'list',
@@ -105,7 +105,7 @@ else {
 
 
     $users = \Fim\DatabaseSlave::instance()->getUsers(
-        fim_arrayFilterKeys($request, ['userIds', 'userNames', 'bannedStatus']),
+        \Fim\Utilities::arrayFilterKeys($request, ['userIds', 'userNames', 'bannedStatus']),
         [$request['sort'] => 'asc'],
         10,
         $request['page']
@@ -135,8 +135,8 @@ foreach ($users AS $userData) {
 
     $xmlData['users'][$userData->id] = array_merge(
         $xmlData['users'][$userData->id],
-        fim_castArrayEntry(
-            fim_objectArrayFilterKeys($userData, $returnFields),
+        \Fim\Utilities::castArrayEntry(
+            \Fim\Utilities::objectArrayFilterKeys($userData, $returnFields),
             ['ignoredUsers', 'friendedUsers', 'favRooms', 'parentalFlags'],
             'Http\ApiOutputList'
         )

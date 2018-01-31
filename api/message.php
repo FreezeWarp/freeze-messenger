@@ -80,7 +80,7 @@ define('API_INMESSAGE', true);
 
 
 /* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
-$requestHead = fim_sanitizeGPC('g', [
+$requestHead = \Fim\Utilities::sanitizeGPC('g', [
     'roomId'  => ['cast' => 'roomId', 'require' => true],
     'id'      => ['cast' => 'int'],
     '_action' => [],

@@ -40,7 +40,7 @@ if (!defined('API_INUSER'))
 
 
 /* Get Request Data */
-$request = fim_sanitizeGPC('p', [
+$request = \Fim\Utilities::sanitizeGPC('p', [
     'name' => [
         'require' => true,
     ],
@@ -64,7 +64,7 @@ $request = fim_sanitizeGPC('p', [
 
 /* Start Processing */
 if (isset($request['birthDate']))
-    $age = fim_dobToAge($request['birthDate']);
+    $age = \Fim\Utilities::dobToAge($request['birthDate']);
 else
     $age = \Fim\Config::$parentalAgeDefault;
 
@@ -96,8 +96,8 @@ elseif (\Fim\Database::instance()->getUsers(['userNames' => [$request['name']]])
 else {
     $newUser = new User(0);
     if (!$newUser->setDatabase(array_merge(
-        fim_arrayFilterKeys($request, ['name', 'password', 'birthDate', 'email']),
-        ['parentalAge' => fim_nearestAge($age)]
+        \Fim\Utilities::arrayFilterKeys($request, ['name', 'password', 'birthDate', 'email']),
+        ['parentalAge' => \Fim\Utilities::nearestAge($age)]
     ))) {
         new \Fim\Error("userCreationFailed", "Could not create user.");
     }
