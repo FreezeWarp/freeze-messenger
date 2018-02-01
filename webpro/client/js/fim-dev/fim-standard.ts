@@ -121,20 +121,41 @@ standard.prototype.login = function(options) {
 
                     if (roomData.official)
                         $('#navbar div[name=officialRoomsList]').append(html.clone());
+
+                    try {
+                        if (window.external.msIsSiteMode()) {
+                            window.external.msSiteModeAddJumpListItem(
+                                roomData.name,
+                                "../../#room=" + escape(roomData.id),
+                                "../../images/favicon.ico"
+                            );
+                        }
+                    }
+                    catch (e) {}
                 });
+
+                try {
+                    if (window.external.msIsSiteMode()) {
+                        window.external.msSiteModeShowJumplist();
+                    }
+                }
+                catch (e) {}
             });
 
 
+            /* Create Our Service Worker */
             this.createWorker(() => {
-                if (options.finish)
-                    options.finish(activeLogin);
-
+                // Register our session hash with the worker
                 this.sendWorkerMessage({
                     eventName : 'login',
                     sessionHash : this.sessionHash
                 });
 
-                /* Private Room Form */
+                // Perform any post-login callback
+                if (options.finish)
+                    options.finish(activeLogin);
+
+                // Bind the private room form
                 $('#privateRoomForm input[name=userName]').autocompleteHelper('users');
                 $("#privateRoomForm").off('submit.home').on('submit.home', (() => {
                     window.location.hash = "#room=p" + [this.userId, $("#privateRoomForm input[name=userName]").attr('data-id')].join(',');

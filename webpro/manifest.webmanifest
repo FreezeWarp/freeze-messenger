@@ -1,0 +1,13 @@
+{
+  "name": "FreezeMessenger",
+  "short_name": "FreezeMessenger",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fff",
+  "description": "Instant Messaging Program",
+  "icons": [{
+    "src": "images/favicon-144.png",
+    "sizes": "144x144",
+    "type": "image/png"
+  }]
+}
