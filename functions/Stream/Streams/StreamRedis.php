@@ -49,9 +49,13 @@ class StreamRedis implements StreamInterface {
         }
 
         // And now subscribe to the Redis socket.
-        $this->redis->subscribe([$stream], function ($instance, $channel, $data) use ($callback) {
-            call_user_func($callback, json_decode($data, true));
-        });
+        try {
+            $this->redis->subscribe([$stream], function ($instance, $channel, $data) use ($callback) {
+                call_user_func($callback, json_decode($data, true));
+            });
+        } catch (\RedisException $ex) {
+            return;
+        }
     }
 
     public function __destruct() {
