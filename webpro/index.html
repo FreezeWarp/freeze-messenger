@@ -481,7 +481,7 @@
     </div>
 
     <div id="roomTemplateContainer" class="row mx-0">
-        <div class="col-lg-2 no-gutters py-0 pr-2 pr-lg-3 pl-0" id="watchedRoomsColumn">
+        <div id="watchedRoomsColumn" class="col-lg-2 no-gutters py-0 pr-2 pr-lg-3 pl-0">
             <div class="card border-secondary" id="watchedRoomsCard">
                 <div class="card-header" role="tab" id="watchedRoomsCardHeader">
                     <h5 class="mb-0">Followed Rooms</h5>
@@ -493,108 +493,106 @@
             </div>
         </div>
 
-        <div class="col-md-9 col-lg-8 no-gutters p-0">
-            <div id="chatContainer" class="card border-secondary">
-                <div id="messageListCardHeader" class="card-header px-0 px-sm-3 py-1 py-sm-3">
-                    <{{!}}script id="messageListCardHeaderTemplate" type="text/x-handlebars-template">
-                        <div class="row align-items-center">
-                            <div class="col text-center text-lg-left mb-2 mb-lg-0">
-                                <h4 id="roomName" class="card-title m-0">{{inner "roomData.name"}}</h4>
-                                <em id="topic" class="d-none d-sm-inline">{{inner "roomData.topic"}}</em>
-                            </div>
+        <div id="chatContainer" class="card border-secondary col-md-9 col-lg-8 no-gutters p-0">
+            <div id="messageListCardHeader" class="card-header px-0 px-sm-3 py-1 py-sm-3">
+                <{{!}}script id="messageListCardHeaderTemplate" type="text/x-handlebars-template">
+                    <div class="row align-items-center">
+                        <div class="col text-center text-lg-left mb-2 mb-lg-0">
+                            <h4 id="roomName" class="card-title m-0">{{inner "roomData.name"}}</h4>
+                            <em id="topic" class="d-none d-sm-inline">{{inner "roomData.topic"}}</em>
+                        </div>
 
-                            <div class="col-lg-auto text-center text-lg-left">
-                                <div class="btn-toolbar text-center d-inline-block" role="toolbar">
-                                    {{inner "#if roomData.permissions.moderate"}}
-                                    <div class="dropdown d-inline">
-                                        <button class="btn btn-primary dropdown-toggle" type="button" id="roomModerateMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            {{room.buttons.moderate}}
-                                        </button>
+                        <div class="col-lg-auto text-center text-lg-left">
+                            <div class="btn-toolbar text-center d-inline-block" role="toolbar">
+                                {{inner "#if roomData.permissions.moderate"}}
+                                <div class="dropdown d-inline">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" id="roomModerateMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        {{room.buttons.moderate}}
+                                    </button>
 
-                                        <div class="dropdown-menu" aria-labelledby="roomModerateMenu">
-                                            {{inner '#ifCond roomData.permissions.grant "||" roomData.permissions.properties'}}
-                                                <a class="dropdown-item" href="#editRoom" accesskey="e" onclick="$(this).attr('href', '#editRoom#room=' + window.roomId)"><i class="fa fa-cog" aria-hidden="true"></i> {{room.buttons.edit}}</a>
-                                            {{inner "/ifCond"}}
+                                    <div class="dropdown-menu" aria-labelledby="roomModerateMenu">
+                                        {{inner '#ifCond roomData.permissions.grant "||" roomData.permissions.properties'}}
+                                            <a class="dropdown-item" href="#editRoom" accesskey="e" onclick="$(this).attr('href', '#editRoom#room=' + window.roomId)"><i class="fa fa-cog" aria-hidden="true"></i> {{room.buttons.edit}}</a>
+                                        {{inner "/ifCond"}}
 
-                                            {{inner "#if roomData.permissions.moderate"}}
-                                                <a class="dropdown-item" href="#" accesskey="k" onclick="popup.kick(null, window.roomId);"><i class="fa fa-ban" aria-hidden="true"></i> {{room.buttons.kick}}</a>
-                                                <a class="dropdown-item" href="#kicks" accesskey="i"><i class="fa fa-list" aria-hidden="true"></i> {{room.buttons.kicks}}</a>
-                                            {{inner "/if"}}
-                                        </div>
+                                        {{inner "#if roomData.permissions.moderate"}}
+                                            <a class="dropdown-item" href="#" accesskey="k" onclick="popup.kick(null, window.roomId);"><i class="fa fa-ban" aria-hidden="true"></i> {{room.buttons.kick}}</a>
+                                            <a class="dropdown-item" href="#kicks" accesskey="i"><i class="fa fa-list" aria-hidden="true"></i> {{room.buttons.kicks}}</a>
+                                        {{inner "/if"}}
                                     </div>
-                                    {{inner "/if"}}
-
-                                    <button type="button"
-                                            class="btn btn-primary mx-1"
-                                            title="{{room.buttons.top}}"
-                                            name="topPosters"
-                                            accesskey="t"
-                                            onclick="popup.viewStats()">
-                                        <i class="fa fa-list-ol" aria-hidden="true"></i> <span class="d-none d-sm-inline">{{room.buttons.top}}</span>
-                                    </button>
-
-                                    <button type="button"
-                                            class="btn btn-primary"
-                                            title="{{room.buttons.archive}}"
-                                            name="archive"
-                                            accesskey="a"
-                                            onclick="location.hash='#archive#room=' + window.roomId">
-                                        <i class="fa fa-history"></i> <span class="d-none d-sm-inline">{{room.buttons.archive}}</span>
-                                    </button>
                                 </div>
-                            </div>
-                        </div>
-                    <{{!}}/script>
-                </div>
+                                {{inner "/if"}}
 
-                <div id="messageListContainer">
-                    <div id="messageList"></div>
-                </div>
-
-                <div id="textentryBoxMessage" class="card bg-primary">
-                    <form id="sendForm" action="#" method="post">
-                        <div class="card-header p-0 p-sm-2">
-                            <div class="row">
-                                <div class="col">
-                                    <button type="button"
-                                            class="btn btn-success"
-                                            id="icon_url"
-                                            title="Upload File"
-                                            onclick="window.openObjectInstance.insertDoc();"
-                                            accesskey="u">
-                                        <i class="fa fa-upload" aria-hidden="true"></i> {{room.messageBox.buttons.upload}}
-                                    </button>
-                                </div>
-                                <div class="col" style="text-align: right;">
-                                    <button type="submit"
-                                            class="btn btn-success"
-                                            id="icon_submit"
-                                            title="Submit Message">
-                                        <i class="fa fa-paper-plane" aria-hidden="true"></i> {{room.messageBox.buttons.send}}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <textarea id="messageInput" accesskey="m" class="form-control" autofocus="autofocus" placeholder="{{room.messageBox.placeholder}}"></textarea>
-
-                            <div style="position: absolute; bottom: 0; left: 0; opacity: .5; z-index: 50;" class="d-lg-none">
-                                <button class="btn btn-outline-primary btn-sm" type="button" onclick="$('#activeUsersColumn').removeClass('show'); $('#watchedRoomsColumn').toggleClass('show');">
-                                    <i class="fa fa-th-list"></i>
+                                <button type="button"
+                                        class="btn btn-primary mx-1"
+                                        title="{{room.buttons.top}}"
+                                        name="topPosters"
+                                        accesskey="t"
+                                        onclick="popup.viewStats()">
+                                    <i class="fa fa-list-ol" aria-hidden="true"></i> <span class="d-none d-sm-inline">{{room.buttons.top}}</span>
                                 </button>
-                            </div>
-                            <div style="position: absolute; bottom: 0; right: 0; opacity: .5; z-index: 50;" class="d-md-none">
-                                <button class="btn btn-outline-primary btn-sm" type="button" onclick="$('#watchedRoomsColumn').removeClass('show'); $('#activeUsersColumn').toggleClass('show');">
-                                    <i class="fa fa-users"></i>
+
+                                <button type="button"
+                                        class="btn btn-primary"
+                                        title="{{room.buttons.archive}}"
+                                        name="archive"
+                                        accesskey="a"
+                                        onclick="location.hash='#archive#room=' + window.roomId">
+                                    <i class="fa fa-history"></i> <span class="d-none d-sm-inline">{{room.buttons.archive}}</span>
                                 </button>
                             </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                <{{!}}/script>
+            </div>
+
+            <div id="messageListContainer">
+                <div id="messageList"></div>
+            </div>
+
+            <div id="textentryBoxMessage" class="card bg-primary">
+                <form id="sendForm" action="#" method="post">
+                    <div class="card-header p-0 p-sm-2">
+                        <div class="row">
+                            <div class="col">
+                                <button type="button"
+                                        class="btn btn-success"
+                                        id="icon_url"
+                                        title="Upload File"
+                                        onclick="window.openObjectInstance.insertDoc();"
+                                        accesskey="u">
+                                    <i class="fa fa-upload" aria-hidden="true"></i> {{room.messageBox.buttons.upload}}
+                                </button>
+                            </div>
+                            <div class="col" style="text-align: right;">
+                                <button type="submit"
+                                        class="btn btn-success"
+                                        id="icon_submit"
+                                        title="Submit Message">
+                                    <i class="fa fa-paper-plane" aria-hidden="true"></i> {{room.messageBox.buttons.send}}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <textarea id="messageInput" accesskey="m" class="form-control" autofocus="autofocus" placeholder="{{room.messageBox.placeholder}}"></textarea>
+
+                        <div style="position: absolute; bottom: 0; left: 0; opacity: .5; z-index: 50;" class="d-lg-none">
+                            <button class="btn btn-outline-primary btn-sm" type="button" onclick="$('#activeUsersColumn').removeClass('show'); $('#watchedRoomsColumn').toggleClass('show');">
+                                <i class="fa fa-th-list"></i>
+                            </button>
+                        </div>
+                        <div style="position: absolute; bottom: 0; right: 0; opacity: .5; z-index: 50;" class="d-md-none">
+                            <button class="btn btn-outline-primary btn-sm" type="button" onclick="$('#watchedRoomsColumn').removeClass('show'); $('#activeUsersColumn').toggleClass('show');">
+                                <i class="fa fa-users"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
-        <div class="col-md-3 col-lg-2 no-gutters py-0 pl-2 pl-lg-3 pr-0" id="activeUsersColumn">
+        <div id="activeUsersColumn" class="col-md-3 col-lg-2 no-gutters py-0 pl-2 pl-lg-3 pr-0">
             <div class="card border-secondary" id="activeUsersCard">
                 <div class="card-header" role="tab" id="activeUsersCardHeader">
                     <h5 class="mb-0">{{template.activeUsersCat}}</h5>
