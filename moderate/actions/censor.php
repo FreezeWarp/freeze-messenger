@@ -46,11 +46,11 @@ else {
             'default' => 'replace',
         ),
 
-        'listName' => array(
+        'name' => array(
             'cast' => 'string',
         ),
 
-        'listType' => array(
+        'type' => array(
             'valid' => array('black', 'white'),
             'default' => 'white',
         ),
@@ -81,16 +81,16 @@ else {
                     //if ($list['options'] & 8) $options[] = "Mature";
 
                     $rows .= '    <tr>
-                        <td>' . $list['listName'] . '</td>
-                        <td>' . ($list['listType'] == 'white'
+                        <td>' . $list['name'] . '</td>
+                        <td>' . ($list['type'] == 'white'
                             ? '<div style="border-radius: 1em; background-color: white; border: 1px solid black; width: 20px; height: 20px;"></div>'
                             : '<div style="border-radius: 1em; background-color: black; border: 1px solid white; width: 20px; height: 20px;"></div>'
                         ) . '</td>
                         <td>' . implode(', ',$options) . '</td>
                         <td>
-                            <a href="./index.php?do=censor&do2=editList&listId=' . $list['listId'] . '" class="btn btn-secondary"><i class="fas fa-edit"></i> Edit</a>
-                            <a href="./index.php?do=censor&do2=viewWords&listId=' . $list['listId'] . '" class="btn btn-secondary" title="View List"><i class="fas fa-list"></i> Words</a>
-                            <a href="./index.php?do=censor&do2=deleteList&listId=' . $list['listId'] . '" class="btn btn-danger"><i class="fas fa-trash"></i> Delete</a>
+                            <a href="./index.php?do=censor&do2=editList&listId=' . $list['id'] . '" class="btn btn-secondary"><i class="fas fa-edit"></i> Edit</a>
+                            <a href="./index.php?do=censor&do2=viewWords&listId=' . $list['id'] . '" class="btn btn-secondary" title="View List"><i class="fas fa-list"></i> Words</a>
+                            <a href="./index.php?do=censor&do2=deleteList&listId=' . $list['id'] . '" class="btn btn-danger"><i class="fas fa-trash"></i> Delete</a>
                         </td>
                     </tr>
   ';
@@ -117,33 +117,33 @@ else {
                 if ($request['listId']) {
                     $list = \Fim\Database::instance()->getCensorList($request['listId']);
 
-                    $title = 'Edit Censor List "' . $list['listName'] . '"';
+                    $title = 'Edit Censor List "' . $list['name'] . '"';
                 }
                 else {
                     $list = array(
-                        'listId' => 0,
-                        'listName' => '',
-                        'listType' => 'white',
+                        'id' => 0,
+                        'name' => '',
+                        'type' => 'white',
                         'options' => 3,
                     );
 
                     $title = 'Add New Censor List';
                 }
 
-                echo container($title, '<form action="./index.php?do=censor&do2=editList2&listId=' . $list['listId'] . '" method="post">
+                echo container($title, '<form action="./index.php?do=censor&do2=editList2&listId=' . $list['id'] . '" method="post">
                     <label class="input-group">
                         <span class="input-group-addon">Name</span>
-                        <input class="form-control" type="text" name="listName" value="' . $list['listName'] . '" />
+                        <input class="form-control" type="text" name="name" value="' . $list['name'] . '" />
                     </label>
                     <small class="form-text text-muted">This is the name that will identify the list to users.</small><br />
                     
                     
                     <label class="input-group">
                       <span class="input-group-addon">Type</span>
-                      ' . \Fim\Utilities::buildSelect('listType', array(
-                                                         'black' => 'black',
-                                                         'white' => 'white',
-                                                     ), $list['listType']) . '
+                      ' . \Fim\Utilities::buildSelect('type', array(
+                             'black' => 'black',
+                             'white' => 'white',
+                         ), $list['type']) . '
                     </label>
                     <small class="form-text text-muted">A "black list" is opt-in: rooms can choose to black list themselves, but the list won\'t be enabled by default. A "white list" is opt-out: rooms can choose to white list themselves out of the list, but it will be enabled in those rooms by default.</small><br />
                     
@@ -192,54 +192,56 @@ else {
                 if ($request['listId']) {
                     $list = \Fim\Database::instance()->getCensorList($request['listId']);
                     $newList = array(
-                        'listName' => $request['listName'],
-                        'listType' => $request['listType'],
+                        'name' => $request['name'],
+                        'type' => $request['type'],
                         'options' => $request['options'],
                     );
 
                     \Fim\Database::instance()->update(\Fim\Database::$sqlPrefix . "censorLists", $newList, array(
-                        'listId' => $request['listId'],
+                        'id' => $request['listId'],
                     ));
 
-                    \Fim\Database::instance()->modLog('changeCensorList', $list['listId']);
+                    \Fim\Database::instance()->modLog('changeCensorList', $list['id']);
                     \Fim\Database::instance()->fullLog('changeCensorList', array('list' => $list, 'newList' => $newList));
 
-                    echo container('List "' . $list['listName'] . '" Updated', 'The list has been updated.<br /><br /><form action="index.php?do=censor&do2=viewLists" method="POST"><button type="submit" class="btn btn-success">Return to Viewing Lists</button></form>');
+                    echo container('List "' . $list['name'] . '" Updated', 'The list has been updated.<br /><br /><form action="index.php?do=censor&do2=viewLists" method="POST"><button type="submit" class="btn btn-success">Return to Viewing Lists</button></form>');
                 }
                 else {
                     $list = array(
-                        'listName' => $request['listName'],
-                        'listType' => $request['listType'],
+                        'name' => $request['name'],
+                        'type' => $request['type'],
                         'options' => $request['options'],
                     );
 
                     \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "censorLists", $list);
-                    $list['listId'] = \Fim\Database::instance()->getLastInsertId();
+                    $list['id'] = \Fim\Database::instance()->getLastInsertId();
 
-                    \Fim\Database::instance()->modLog('addCensorList', $list['listId']);
+                    \Fim\Database::instance()->modLog('addCensorList', $list['id']);
                     \Fim\Database::instance()->fullLog('addCensorList', array('list' => $list));
 
-                    echo container('List "' . $list['listName'] . '" Added', 'The list has been added.<br /><br /><a class="btn btn-success" href="index.php?do=censor&do2=viewLists">Return to Viewing Lists</a>');
+                    echo container('List "' . $list['name'] . '" Added', 'The list has been added.<br /><br /><a class="btn btn-success" href="index.php?do=censor&do2=viewLists">Return to Viewing Lists</a>');
                 }
                 break;
 
 
 
             case 'deleteList':
-                $list = \Fim\Database::instance()->getCensorList($request['listid']);
-                $words = \Fim\Database::instance()->getCensorWords(array('listIds' => array($request['listIds'])))->getAsArray(true);
+                $list = \Fim\Database::instance()->getCensorList($request['listId']);
 
-                \Fim\Database::instance()->modLog('deleteCensorList', $list['listId']);
-                \Fim\Database::instance()->fullLog('deleteCensorList', array('list' => $list, 'words' => $words));
+                \Fim\Database::instance()->modLog('deleteCensorList', $list['id']);
+                \Fim\Database::instance()->fullLog('deleteCensorList', [
+                    'list' => $list,
+                    'words' => \Fim\Database::instance()->getCensorWords(array('listIds' => array($request['listId'])))->getAsArray(true)
+                ]);
 
                 \Fim\Database::instance()->delete(\Fim\Database::$sqlPrefix . "censorLists", array(
-                    'listId' => $request['listId'],
+                    'id' => $request['listId'],
                 ));
                 \Fim\Database::instance()->delete(\Fim\Database::$sqlPrefix . "censorWords", array(
                     'listId' => $request['listId'],
                 ));
 
-                echo container('List Deleted','The list and its words have been deleted.<br /><br /><a class="btn btn-success" href="index.php?do=censor&do2=viewLists">Return to Viewing Words</form>');
+                echo container('List Deleted','The list and its words have been deleted.<br /><br /><a class="btn btn-success" href="index.php?do=censor&do2=viewLists">Return to Viewing Words</a>');
                 break;
 
 
@@ -254,8 +256,8 @@ else {
                             <td>' . $word['severity'] . '</td>
                             <td>' . $word['param'] . '</td>
                             <td>
-                                <a class="btn btn-danger" href="./index.php?do=censor&do2=deleteWord&wordId=' . $word['wordId'] . '"><i class="fas fa-trash"></i> Delete</a>
-                                <a class="btn btn-secondary" href="./index.php?do=censor&do2=editWord&wordId=' . $word['wordId'] . '"><i class="fas fa-edit"></i> Edit</a>    
+                                <a class="btn btn-danger" href="./index.php?do=censor&do2=deleteWord&wordId=' . $word['id'] . '"><i class="fas fa-trash"></i> Delete</a>
+                                <a class="btn btn-secondary" href="./index.php?do=censor&do2=editWord&wordId=' . $word['id'] . '"><i class="fas fa-edit"></i> Edit</a>    
                             </td>
                         </tr>';
                     }
@@ -264,7 +266,7 @@ else {
                     $rows = '<tr><td colspan="4">No words have been added.</td></tr>';
                 }
 
-                echo container('Current Words <a class="btn btn-success float-right" href="./index.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><i class="fas fa-plus-square"></i> Add New Word</a>','<table class="table table-bordered table-striped table-align-middle">
+                echo container('Current Words <div class="float-right"><a class="btn btn-secondary" href="./index.php?do=censor&do2=viewLists"><i class="fas fa-list"></i> Back to Lists</a> <a class="btn btn-success" href="./index.php?do=censor&do2=editWord&listId=' . $request['listId'] . '"><i class="fas fa-plus-square"></i> Add New Word</a></div>','<table class="table table-bordered table-striped table-align-middle">
                     <thead class="thead">
                         <tr>
                             <th>Word</th>
@@ -298,12 +300,12 @@ else {
 
                     $word = array(
                         'word' => '',
-                        'wordId' => 0,
+                        'id' => 0,
                         'severity' => 'replace',
                         'replacement' => '',
                     );
 
-                    $title = 'Add Censor Word to "' . $list['listName'] . '"';
+                    $title = 'Add Censor Word to "' . $list['name'] . '"';
                 }
                 else {
                     die('Invalid params specified.');
@@ -335,8 +337,8 @@ else {
                     </label>
                     <small class="form-text text-muted">This is what the text will be replaced with if using the <tt>replace</tt> severity, while for <tt>warn</tt>, <tt>confirm</tt>, and <tt>block</tt> it is the message that will be displayed to the user.</small><br />
                     
-                    <input type="hidden" name="wordId" value="' . $word['wordId'] . '" />
-                    <input type="hidden" name="listId" value="' . $list['listId'] . '" />
+                    <input type="hidden" name="wordId" value="' . $word['id'] . '" />
+                    <input type="hidden" name="listId" value="' . $list['id'] . '" />
                     <button type="submit" class="btn btn-success">Submit</button>
                     <button type="reset" class="btn btn-secondary">Reset</button>
                 </form>');
@@ -357,8 +359,8 @@ else {
                         'severity' => $request['severity'],
                         'param' => $request['param'],
                     ), array(
-                                          'wordId' => $request['wordId']
-                                      ));
+                        'id' => $request['wordId']
+                    ));
 
                     echo container('Censor Word "' . $word['word'] . '" Changed', 'The word has been changed.<br /><br /><a class="btn btn-success" href="./index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '">Return to Viewing Words</a>');
                 }
@@ -372,12 +374,12 @@ else {
                     );
 
                     \Fim\Database::instance()->insert(\Fim\Database::$sqlPrefix . "censorWords", $word);
-                    $word['wordId'] = \Fim\Database::instance()->getLastInsertId();
+                    $word['id'] = \Fim\Database::instance()->getLastInsertId();
 
                     \Fim\Database::instance()->modLog('addCensorWord', $request['listId'] . ',' . \Fim\Database::instance()->getLastInsertId());
                     \Fim\Database::instance()->fullLog('addCensorWord', array('word' => $word, 'list' => $list));
 
-                    echo container('Censor Word Added To "' . $list['listName'] . '"', 'The word has been changed.<br /><br /><a class="btn btn-success" href="./index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '">Return to Viewing Words</a>');
+                    echo container('Censor Word Added To "' . $list['name'] . '"', 'The word has been changed.<br /><br /><a class="btn btn-success" href="./index.php?do=censor&do2=viewWords&listId=' . $word['listId'] . '">Return to Viewing Words</a>');
                 }
                 else {
                     die('Invalid params specified.');
@@ -391,7 +393,7 @@ else {
                 $list = \Fim\Database::instance()->getCensorList($word['listId']);
 
                 \Fim\Database::instance()->delete(\Fim\Database::$sqlPrefix . "censorWords", array(
-                    'wordId' => $request['wordId'],
+                    'id' => $request['wordId'],
                 ));
 
                 \Fim\Database::instance()->modLog('deleteCensorWord', $request['wordId']);
