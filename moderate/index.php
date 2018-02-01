@@ -153,6 +153,7 @@ require('../global.php');
     </script>
     <!-- END Scripts -->
 
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0" />
 </head>
 <body>
 <div class="row">
@@ -189,7 +190,7 @@ require('../global.php');
         <?php endif; ?>
     </div>
 
-    <div class="col">
+    <div class="col-sm-9">
         <?php
         if (!$user->id) {
             echo container('Please Login',(isset($message) ? $message : 'You have not logged in. Please login:') . '<br /><br />
