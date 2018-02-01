@@ -730,7 +730,7 @@ class Utilities {
      * @author Joseph Todd Parsons <josephtparsons@gmail.com>
      */
 
-    public static function exceptionHandler(Exception $exception) {
+    public static function exceptionHandler($exception) {
         $errorData = array(
             'contactEmail' => \Fim\Config::$email,
         );
