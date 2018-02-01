@@ -475,19 +475,6 @@
         </table>
 
 
-        <table name="unreadMessages" partitionBy="userId" type="general" comment="Unread private messages and messages made to watched rooms. Only the least recent message should be included.">
-            <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who has yet to read the message." />
-            <column name="senderId" fkey="users.id" type="int" maxlen="8" comment="The ID of the user who sent the message." />
-            <column name="roomId" type="blob" maxlen="23" comment="The ID of the room in question." />
-            <column name="messageId" type="int" maxlen="9" comment="The ID of the message." />
-            <column name="time" type="time" default="__TIME__" comment="The time the message was made." />
-            <column name="otherMessages" type="int" comment="The number of other messages that have been sent since this one." />
-
-            <key name="userId,roomId" type="primary" storage="btree" />
-            <key name="time"          type="index"   storage="btree" />
-        </table>
-
-
         <table name="users" type="general" comment="The users.">
             <!-- General -->
             <column name="id" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />
@@ -569,9 +556,12 @@
         <table name="userFavRooms" partitionBy="userId" type="general" comment="A list of starred rooms, which are monitored for new posts.">
             <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
             <column name="roomId" fkey="rooms.id" type="int" maxlen="6" comment="The room ID." />
+            <column name="unreadCount" type="int" default="0" comment="total number of unread messages in this room for this user." />
+            <column name="messageId" type="int" maxlen="9" comment="The ID of first unread message in this room for this user." />
+            <column name="messageTime" type="time" comment="The time of the first unread message in this room for this user." />
 
-            <key name="userId,roomId" type="primary" storage="btree" />
-            <key name="roomId"        type="index"   storage="hash" />
+            <key name="roomId,userId"      type="primary" storage="btree" comment="Primary key identifier, with order making it easy to look up the users who have subscribed to a room." />
+            <key name="userId,unreadCount" type="index"   storage="btree" comment="Used for looking up which rooms a user has unread messages in." />
         </table>
 
 

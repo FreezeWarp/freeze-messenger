@@ -24,8 +24,6 @@
  * @copyright Joseph T. Parsons 2017
  */
 
-use Fim\Error;
-
 $apiRequest = true;
 
 require('../global.php');
@@ -48,7 +46,7 @@ if ($requestHead['_action'] === 'delete') {
 
 /* Make Sure the User is Valid */
 if (!$user->isValid() || $user->isAnonymousUser())
-    throw new \Fim\Error('loginRequired', 'You must be logged in to get your unread messages.');
+    new \Fim\Error('loginRequired', 'You must be logged in to get your unread messages.');
 
 
 /* Perform Action */

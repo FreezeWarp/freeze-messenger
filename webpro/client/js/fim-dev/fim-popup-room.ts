@@ -788,7 +788,7 @@ popup.prototype.room.prototype.userStatusChangeHandler = function(active) {
 
     if (existingRow.length > 0) {
         if (active.status !== "offline")
-            existingRow.replaceWith(newRow)
+            existingRow.replaceWith(newRow);
         else
             existingRow.remove();
     }
@@ -841,12 +841,9 @@ popup.prototype.room.prototype.markRoomEntryUnread = function(roomId, count) {
     $('.otherMessages', watchedRooms).css('display', 'inline');
 
     let otherMessages = $('.otherMessagesCount', watchedRooms);
-    if (String(count).toNumber() > 0) {
-        otherMessages.text(String(count).toNumber() + 1);
-    }
-    else {
-        otherMessages.text(otherMessages.text().toNumber() + 1);
-    }
+    otherMessages.text(String(count).toNumber() > 0
+        ? count
+        : otherMessages.text().toNumber() + 1);
 };
 
 /**
@@ -856,7 +853,7 @@ popup.prototype.room.prototype.markRoomEntryUnread = function(roomId, count) {
 popup.prototype.room.prototype.missedMessageHandler = function(message) {
     if (message.roomId != this.options.roomId) {
         this.newRoomEntry(message.roomId);
-        this.markRoomEntryUnread(message.roomId, message.otherMessages);
+        this.markRoomEntryUnread(message.roomId, message.unreadCount);
     }
 };
 

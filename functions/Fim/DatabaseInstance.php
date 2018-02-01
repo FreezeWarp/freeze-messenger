@@ -21,7 +21,7 @@
 
 namespace Fim;
 
-use Database\Type\Type;
+use Database\Type;
 use Database\SQL\DatabaseSQL;
 
 use Fim\User;
@@ -1197,14 +1197,15 @@ class DatabaseInstance extends DatabaseSQL
 
 
     function getUnreadMessages() {
-        $columns = [$this->sqlPrefix . 'unreadMessages' => 'userId, senderId, roomId, messageId, time, otherMessages'];
+        $columns = [$this->sqlPrefix . 'userFavRooms' => 'userId, roomId, messageId, messageTime, unreadCount'];
 
         $conditions = [
             'userId' => $this->user->id,
+            'unreadCount' => $this->int(0, Type\Comparison::greaterThan)
         ];
 
         $sort = [
-            'messageId' => 'asc',
+            'roomId' => 'asc',
         ];
 
         return $this->select($columns, $conditions, $sort);
@@ -1748,7 +1749,7 @@ class DatabaseInstance extends DatabaseSQL
             'attribute' => $attribute,
             'param' => $param,
         ), array(
-            'permissions' => $this->type(Type::bitfield, $permissionsMask)
+            'permissions' => $this->type(Type\Type::bitfield, $permissionsMask)
         ));
 
         /* Delete Permissions Cache */
@@ -2271,10 +2272,14 @@ class DatabaseInstance extends DatabaseSQL
     public function markMessageRead($roomId, $userId)
     {
         if (Config::$enableUnreadMessages) {
-            return $this->delete($this->sqlPrefix . "unreadMessages", array(
+            return $this->update($this->sqlPrefix . 'userFavRooms', [
+                'unreadCount' => 0,
+                'messageId' => $this->null(),
+                'messageTime' => $this->null(),
+            ], [
                 'roomId'    => $roomId,
                 'userId'    => $userId
-            ));
+            ]);
         }
 
         return false;
@@ -2451,34 +2456,78 @@ class DatabaseInstance extends DatabaseSQL
         if (\Fim\Config::$enablePushNotifications)
             \Stream\WebPushHandler::init();
 
-        // If the contact is a private communication, create an event and add to the message unread table.
-        if ($message->room->isPrivateRoom()) {
-            foreach (($message->room->getPrivateRoomMemberIds()) AS $sendToUserId) {
-                if ($sendToUserId == $message->user->id)
-                    continue;
 
-                $this->createUnreadMessage(
-                    $sendToUserId,
-                    $message,
-                    !(isset($activeUsers[$sendToUserId]) && in_array($message->room->id, $activeUsers[$sendToUserId])), // Only insert into DB if user isn't currently in the room
-                    isset($activeUsers[$sendToUserId]) && !in_array($message->room->id, $activeUsers[$sendToUserId]), // Only insert into event stream if user is logged in and not in the room
-                    !isset($activeUsers[$sendToUserId]) // Only insert into push queue if user if offline
-                );
+        /* A list of users who shouldn't be part of database table update */
+        $ignoreDatabaseUsers = [];
+
+        foreach ($message->room->watchedByUsers AS $sendToUserId) {
+            // If the user is the message sender, add them to the database table skip, and don't do anything else
+            if ($sendToUserId == $message->user->id) {
+                $ignoreDatabaseUsers[] = $sendToUserId;
+                continue;
+            }
+
+            // Don't update database entry if user is active in the room
+            if (
+                isset($activeUsers[$sendToUserId]) // Logged in
+                && in_array($message->room->id, $activeUsers[$sendToUserId]) // In room
+            ) {
+                $ignoreDatabaseUsers[] = $sendToUserId;
+            }
+
+            // Only insert into event stream if user is logged in and not in the room
+            if (Config::$enableUnreadMessages
+                && (
+                    isset($activeUsers[$sendToUserId]) // Logged in
+                    && !in_array($message->room->id, $activeUsers[$sendToUserId]) // Not in Room
+                )
+            ) {
+                \Stream\StreamFactory::publish('user_' . $sendToUserId, 'missedMessage', [
+                    'messageId'   => $message->id,
+                    'messageText' => $message->text,
+                    'roomId'      => $message->room->id,
+                    'roomName'    => $message->room->name,
+                    'userId'      => $message->user->id,
+                    'userName'    => $message->user->name,
+                    'userAvatar'  => $message->user->avatar,
+                ]);
+            }
+
+            // Only insert into the push queue if the user is not logged in
+            // (if they are logged in, the event stream will be a more efficient way of informing them)
+            if (\Fim\Config::$enablePushNotifications
+                && !isset($activeUsers[$sendToUserId])) {
+                \Stream\WebPushHandler::push($sendToUserId, [
+                    'eventName' => 'missedMessage',
+                    'data'      => [
+                        'messageId'   => $message->id,
+                        'messageText' => $message->text,
+                        'roomId'      => $message->room->id,
+                        'roomName'    => $message->room->name,
+                        'userId'      => $message->user->id,
+                        'userName'    => $message->user->name,
+                        'userAvatar'  => $message->user->avatar,
+                    ]
+                ]);
             }
         }
-        else {
-            foreach ($message->room->watchedByUsers AS $sendToUserId) {
-                if ($sendToUserId == $message->user->id)
-                    continue;
 
-                $this->createUnreadMessage(
-                    $sendToUserId,
-                    $message,
-                    !(isset($activeUsers[$sendToUserId]) && in_array($message->room->id, $activeUsers[$sendToUserId])), // Only insert into DB if user isn't currently in the room
-                    isset($activeUsers[$sendToUserId]) && !in_array($message->room->id, $activeUsers[$sendToUserId]), // Only insert into event stream if user is logged in and not in the room
-                    !isset($activeUsers[$sendToUserId]) // Only insert into push queue if user if offline
-                );
-            }
+        /*
+         * Update database unread table (except users excluded above)
+         * Note a few decisions here:
+         * * We want to update the table in a single query for maximum scalability. If a room has a 1,000 users, it becomes quite slow to issue a 1,000 queries.
+         * * We want to exclude specific users instead of including specific users as the number of excluded users will be far fewer than the number of included users.
+         * * COALESCE is used to only set those the first time. A more portable solution should eventually be adopted.
+         */
+        if (Config::$enableUnreadMessages) {
+            $this->update($this->sqlPrefix . 'userFavRooms', [
+                'unreadCount' => $this->equation('$unreadCount + 1'),
+                'messageId'   => $this->equation('COALESCE($messageId, ' . (int)$message->id . ')'), // TODO: move into DBAL
+                'messageTime'        => $this->equation('COALESCE($messageTime, ' . (int)$message->time . ')'), // TODO: move into DBAL
+            ], [
+                'roomId'  => $message->room->id,
+                '!userId' => $this->in($ignoreDatabaseUsers),
+            ]);
         }
 
         if (\Fim\Config::$enablePushNotifications)
@@ -2547,59 +2596,6 @@ class DatabaseInstance extends DatabaseSQL
         }
 
         $this->endTransaction();
-    }
-
-
-
-
-
-    /**
-     * Add unread message data to some combination of the database store, the stream, and the push message queue.
-     *
-     * @param int     $sendToUserId The user ID who is being notified of new messages.
-     * @param Message $message The message object that is "unread".
-     * @param bool    $doDatabase If the database should be updated.
-     * @param bool    $doPublish If a publish should occur in the user stream
-     * @param bool    $doPush If a push should happen in the push queue
-     *
-     * @throws Exception
-     */
-    public function createUnreadMessage($sendToUserId, Message $message, $doDatabase = true, $doPublish = true, $doPush = true) {
-        if ($doDatabase && Config::$enableUnreadMessages) {
-            $this->upsert($this->sqlPrefix . "unreadMessages", array(
-                'userId'            => $sendToUserId,
-                'roomId'            => $message->room->id
-            ), array(
-                'otherMessages'     => $this->equation('$otherMessages + 1'),
-            ), array(
-                'time'              => $this->now(),
-                'senderId'          => $message->user->id,
-                'messageId'         => $message->id,
-                'otherMessages'     => 0,
-            ));
-        }
-
-        if ($doPublish && Config::$enableUnreadMessages) {
-            \Stream\StreamFactory::publish('user_' . $sendToUserId, 'missedMessage', [
-                'id'       => $message->id,
-                'senderId' => $message->user->id,
-                'roomId'   => $message->room->id,
-            ]);
-        }
-
-        if ($doPush && \Fim\Config::$enablePushNotifications) {
-            \Stream\WebPushHandler::push($sendToUserId, [
-                'eventName' => 'messageMessage',
-                'data'      => [
-                    'roomName'    => $message->room->name,
-                    'userName'    => $message->user->name,
-                    'userAvatar'  => $message->user->avatar,
-                    'messageText' => $message->text,
-                    'roomId'      => $message->room->id,
-                    'messageId'   => $message->room->id
-                ]
-            ]);
-        }
     }
 
 

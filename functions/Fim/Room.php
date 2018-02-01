@@ -436,8 +436,11 @@ class Room extends DynamicObject
      */
     public function getWatchedByUsers()
     {
-        if (!\Fim\Config::$enableUnreadMessages)
+        if (!\Fim\Config::$enableUnreadMessages) // If unread messages are disabled, return nothing
             return [];
+
+        else if ($this->isPrivateRoom()) // If this is private room, return all members
+            return $this->getPrivateRoomMemberIds();
 
         else {
             return $this->watchedByUsers =
