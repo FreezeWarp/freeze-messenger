@@ -76,18 +76,18 @@ try {
 /* Perform Updates */
 
 // Get the current permissions field from the database
-if (isset($request['userId'])) {
-    $param = $request['userId'];
+if (isset($requestHead['userId'])) {
+    $param = $requestHead['userId'];
     $databasePermissionsField = \Fim\Database::instance()->getPermissionsField($requestHead['roomId'], $param);
     $attribute = 'user';
 }
-elseif (isset($request['groupId'])) {
-    $param = $request['groupId'];
+elseif (isset($requestHead['groupId'])) {
+    $param = $requestHead['groupId'];
     $databasePermissionsField = \Fim\Database::instance()->getPermissionsField($requestHead['roomId'], [], $param);
     $attribute = 'group';
 }
 else
-    new \Fim\Error('roomIdOrGroupIdRequired', 'You must pass either a room ID or a group ID.');
+    new \Fim\Error('userIdOrGroupIdRequired', 'You must pass either a user ID or a group ID.');
 
 
 // If the received permission field is -1, it is invalid; default to 0.
