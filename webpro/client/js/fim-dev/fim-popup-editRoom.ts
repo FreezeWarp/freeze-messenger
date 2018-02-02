@@ -102,7 +102,12 @@ popup.prototype.editRoom = {
 
         /* Submit */
         $("#editRoomForm").off('submit').on('submit', () => {
-            fimApi.editRoom(this.options.roomId, this.action, $('#editRoomForm').serializeJSON(), {
+            let formData = $('#editRoomForm').serializeJSON();
+
+            if (!("parentalFlags" in formData))
+                formData["parentalFlags"] = [""];
+
+            fimApi.editRoom(this.options.roomId, this.action, formData, {
                 end : (room) => {
                     // Parse Allowed Users
                     if (this.action === 'create') {

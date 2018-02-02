@@ -169,7 +169,7 @@ popup.prototype.settings = {
                 "parentalAge" : $('form#changeSettingsForm select[name=parentalAge] option:selected').val(),
                 "parentalFlags" : $('form#changeSettingsForm input[name=parentalFlags]:checked').map(function(){
                     return $(this).attr('value');
-                }).get(),
+                }).get().concat([""]),
                 "privacyLevel" : $('input[name=privacyLevel]:radio:checked').val()
             }, {
                 'each' : function(value) {
