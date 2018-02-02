@@ -25,7 +25,8 @@ abstract class eventSource {
     addClient(clientId) {
         console.log("add client", clientId, this.clients);
 
-        this.clients.push(clientId);
+        if (this.clients.indexOf(clientId) === -1)
+            this.clients.push(clientId);
 
         if (!this.isOpen) {
             this.isOpen = true;
@@ -220,8 +221,10 @@ class roomSource extends eventSource {
     close() {
         super.close();
 
-        if (this.pingInterval)
+        if (this.pingInterval) {
             clearInterval(this.pingInterval);
+            this.pingInterval = false;
+        }
 
         getFimApiInstance(() => {
             fimApiInstance.exitRoom(this.roomId);
@@ -231,18 +234,17 @@ class roomSource extends eventSource {
     getEvents() {
         super.getEvents();
 
-        getFimApiInstance(() => {
-            fimApiInstance.ping(this.roomId);
-        });
-
-        if (this.pingInterval)
-            clearInterval(this.pingInterval);
-
-        this.pingInterval = window.setInterval((() => {
+        if (!this.pingInterval) {
             getFimApiInstance(() => {
                 fimApiInstance.ping(this.roomId);
             });
-        }), 60 * 1000);
+
+            this.pingInterval = window.setInterval((() => {
+                getFimApiInstance(() => {
+                    fimApiInstance.ping(this.roomId);
+                });
+            }), 60 * 1000);
+        }
     }
 
     getEventsFromStream() {

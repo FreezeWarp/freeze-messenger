@@ -94,6 +94,8 @@ standard.prototype.login = function(options) {
             this.sessionHash = window.sessionHash = activeLogin.access_token;
             fim_removeHashParameter("sessionHash");
 
+
+            /* If We Have a Refresh Token, Automatically Use it When We Are Close to Expiration */
             if (activeLogin.expires && activeLogin.refresh_token) {
                 $.cookie('webpro_refreshToken', activeLogin.refresh_token);
 
@@ -214,6 +216,12 @@ standard.prototype.createWorkerFallback = function(callback) {
 
 
 standard.prototype.createWorker = function(callback) {
+    // Don't do anything if we already have a worker
+    if (this.serviceWorkerEnabled) {
+        callback();
+        return;
+    }
+
     if ("serviceWorker" in navigator
         // Since service workers are more experimental, only enable them if push notifications are on.
         && window.settings.pushNotifications
@@ -238,6 +246,13 @@ standard.prototype.createWorker = function(callback) {
                     directory : fimApi.directory,
                     serverSettings: fimApi.serverSettings
                 });
+
+                // Send "keepAlive" requests to the worker, which should prevent it from being closed while we have a proper tab open
+                window.setInterval(() => {
+                    this.sendWorkerMessage({
+                        'eventName' : 'keepAlive'
+                    })
+                }, 1000);
 
                 callback();
             }

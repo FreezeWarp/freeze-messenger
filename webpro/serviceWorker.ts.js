@@ -58,7 +58,8 @@ var eventSource = /** @class */ (function () {
     }
     eventSource.prototype.addClient = function (clientId) {
         console.log("add client", clientId, this.clients);
-        this.clients.push(clientId);
+        if (this.clients.indexOf(clientId) === -1)
+            this.clients.push(clientId);
         if (!this.isOpen) {
             this.isOpen = true;
             this.getEvents();
@@ -219,8 +220,10 @@ var roomSource = /** @class */ (function (_super) {
     roomSource.prototype.close = function () {
         var _this = this;
         _super.prototype.close.call(this);
-        if (this.pingInterval)
+        if (this.pingInterval) {
             clearInterval(this.pingInterval);
+            this.pingInterval = false;
+        }
         getFimApiInstance(function () {
             fimApiInstance.exitRoom(_this.roomId);
         });
@@ -228,16 +231,16 @@ var roomSource = /** @class */ (function (_super) {
     roomSource.prototype.getEvents = function () {
         var _this = this;
         _super.prototype.getEvents.call(this);
-        getFimApiInstance(function () {
-            fimApiInstance.ping(_this.roomId);
-        });
-        if (this.pingInterval)
-            clearInterval(this.pingInterval);
-        this.pingInterval = window.setInterval((function () {
+        if (!this.pingInterval) {
             getFimApiInstance(function () {
                 fimApiInstance.ping(_this.roomId);
             });
-        }), 60 * 1000);
+            this.pingInterval = window.setInterval((function () {
+                getFimApiInstance(function () {
+                    fimApiInstance.ping(_this.roomId);
+                });
+            }), 60 * 1000);
+        }
     };
     roomSource.prototype.getEventsFromStream = function () {
         this.getEventsFromStreamGenerator('room', this.roomId, ['userStatusChange', 'newMessage', 'topicChange', 'deletedMessage', 'editedMessage']);
