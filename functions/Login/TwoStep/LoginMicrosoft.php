@@ -45,7 +45,7 @@ class LoginMicrosoft extends LoginTwoStep {
      * @see LoginRunner::hasLoginCredentials()
      */
     public function hasLoginCredentials(): bool {
-        return isset($_REQUEST['code']);
+        return !empty($_REQUEST['code']);
     }
 
 

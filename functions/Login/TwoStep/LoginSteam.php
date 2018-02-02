@@ -103,25 +103,18 @@ class LoginSteam extends LoginTwoStep {
                 ]);
 
                 if (isset($games['response']['games'])) {
-                    $groupNames = [];
+                    $groups = [];
+
                     foreach ($games['response']['games'] AS $game) {
                         if ($game['playtime_forever'] > 0) {
-                            $groupNames[] = 'Steam Players of ' . $game['name'];
-
-                            // create group if doesn't exist
-                            @\Fim\Database::instance()->createSocialGroup('Steam Players of ' . $game['name'], "http://media.steampowered.com/steamcommunity/public/images/apps/{$game['appid']}/{$game['img_icon_url']}.jpg");
+                            $groups[] = [
+                                'name' => "Steam Players of {$game['name']}",
+                                'avatar' => "http://media.steampowered.com/steamcommunity/public/images/apps/{$game['appid']}/{$game['img_icon_url']}.jpg"
+                            ];
                         }
                     }
 
-                    $dbGroupIds = \Fim\Database::instance()->select([
-                        \Fim\Database::$sqlPrefix . 'socialGroups' => 'id, name'
-                    ], ['name' => \Fim\Database::instance()->in($groupNames)])->getColumnValues('id');
-
-                    \Fim\Database::instance()->autoQueue(true);
-                    foreach ($dbGroupIds AS $groupId) {
-                        @\Fim\Database::instance()->enterSocialGroup($groupId, $this->loginFactory->user);
-                    }
-                    @\Fim\Database::instance()->autoQueue(false);
+                    \Fim\Database::instance()->enterSocialGroups($this->loginFactory->user->id, $groups);
                 }
 
 

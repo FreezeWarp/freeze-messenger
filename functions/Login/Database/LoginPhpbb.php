@@ -124,31 +124,20 @@ class LoginPhpbb extends LoginDatabase
 
             /* Create User Groups
              * TODO: detect group moves/renames */
-            $groupNames = [];
+            if (count($phpbbGroups) > 0) {
+                $groups = [];
 
-            \Fim\Database::instance()->autoQueue(true);
-            foreach ($phpbbGroups AS $group) {
-                $groupNames[] = $group['group_name'];
-                @\Fim\Database::instance()->createSocialGroup(
-                    $group['group_name'],
-                    $group['group_avatar']
-                        ? "{$loginConfig['url']}download/file.php?avatar={$group['group_avatar']}"
-                        : ''
-                );
+                foreach ($phpbbGroups AS $group) {
+                    $groups[] = [
+                        'name'   => $group['group_name'],
+                        'avatar' => $group['group_avatar']
+                            ? "{$loginConfig['url']}download/file.php?avatar={$group['group_avatar']}"
+                            : ''
+                    ];
+                }
+
+                \Fim\Database::instance()->enterSocialGroups($this->loginFactory->user->id, $groups);
             }
-            @\Fim\Database::instance()->autoQueue(false);
-
-
-            /* Join User Groups */
-            $dbGroupIds = \Fim\Database::instance()->select([
-                \Fim\Database::$sqlPrefix . 'socialGroups' => 'id, name'
-            ], ['name' => \Fim\Database::instance()->in($groupNames)])->getColumnValues('id');
-
-            \Fim\Database::instance()->autoQueue(true);
-            foreach ($dbGroupIds AS $groupId) {
-                @\Fim\Database::instance()->enterSocialGroup($groupId, $this->loginFactory->user);
-            }
-            @\Fim\Database::instance()->autoQueue(false);
 
             /*
              * TODO: on timer

@@ -119,23 +119,16 @@ class LoginReddit extends LoginTwoStep {
         ));
 
         if (isset($subscriptions['data'])) {
-            $subscriptionNames = [];
+            $groups = [];
 
             foreach ($subscriptions['data'] AS $subscription) {
-                $subscriptionNames[] = 'Subscribers of /r/' . $subscription['sr'];
-                @\Fim\Database::instance()->createSocialGroup('Subscribers of /r/' . $subscription['sr']);
+                $groups[] = [
+                    'name'   => 'Subscribers of /r/' . $subscription['sr'],
+                    'avatar' => ''
+                ];
             }
 
-
-            $dbGroupIds = \Fim\Database::instance()->select([
-                \Fim\Database::$sqlPrefix . 'socialGroups' => 'id, name'
-            ], ['name' => \Fim\Database::instance()->in($subscriptionNames)])->getColumnValues('id');
-
-            \Fim\Database::instance()->autoQueue(true);
-            foreach ($dbGroupIds AS $groupId) {
-                @\Fim\Database::instance()->enterSocialGroup($groupId, $this->loginFactory->user);
-            }
-            @\Fim\Database::instance()->autoQueue(false);
+            \Fim\Database::instance()->enterSocialGroups($this->loginFactory->user->id, $groups);
         }
     }
 }

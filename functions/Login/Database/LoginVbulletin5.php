@@ -131,31 +131,23 @@ class LoginVbulletin5 extends LoginDatabase
 
 
             /* Create User Groups */
-            $groupNames = [];
+            $groups = [];
 
-            \Fim\Database::instance()->autoQueue(true);
             foreach ($vbUserGroups AS $userGroup) {
-                $groupNames[] = $userGroup['title'];
-                @\Fim\Database::instance()->createSocialGroup($userGroup['title']);
+                $groups[] = [
+                    'name' => $userGroup['title'],
+                    'avatar' => '',
+                ];
             }
 
             foreach ($vbSocialGroups AS $socialGroup) {
-                $groupNames[] = 'Social Group: ' . $socialGroup['title'];
-                @\Fim\Database::instance()->createSocialGroup('Social Group: ' . $socialGroup['title'], "{$loginConfig['url']}filedata/fetch?channelid={$socialGroup['nodeid']}&type=medium");
+                $groups[] = [
+                    'name' => 'Social Group: ' . $socialGroup['title'],
+                    'avatar' => "{$loginConfig['url']}filedata/fetch?channelid={$socialGroup['nodeid']}&type=medium"
+                ];
             }
-            @\Fim\Database::instance()->autoQueue(false);
 
-
-            /* Join User Groups */
-            $dbGroupIds = \Fim\Database::instance()->select([
-                \Fim\Database::$sqlPrefix . 'socialGroups' => 'id, name'
-            ], ['name' => \Fim\Database::instance()->in($groupNames)])->getColumnValues('id');
-
-            \Fim\Database::instance()->autoQueue(true);
-            foreach ($dbGroupIds AS $groupId) {
-                @\Fim\Database::instance()->enterSocialGroup($groupId, $this->loginFactory->user);
-            }
-            @\Fim\Database::instance()->autoQueue(false);
+            \Fim\Database::instance()->enterSocialGroups($this->loginFactory->user->id, $groups);
 
 
 
