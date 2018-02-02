@@ -169,9 +169,7 @@ fimApi.prototype.login = function (params, requestSettings) {
             _this.lastSessionHash = json.login.access_token;
         }
         requestSettings.end(json.login);
-    }).fail(function (response) {
-        requestSettings.error(response.responseJSON.exception);
-    });
+    }).fail(this.fail(requestSettings));
 };
 /**
  * Obtains one or more users.

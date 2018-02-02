@@ -459,13 +459,45 @@ onmessage = function (event) {
             break;
     }
 };
+var CACHE_NAME = 'freezemessenger-v1b4nightly';
+var urlsToPrefetch = [
+    './',
+    'serviceWorker.ts.js?_=0',
+    'client/js/jquery.ajax.min.js',
+    'client/js/fim-dev/fim-api.ts.js',
+    'client/css/styles.css?_=0',
+    'client/js/jquery.plugins.min.js?_=0',
+    'client/js/fim-all.js?_=0',
+    'client/js/paint.min.js?_=0',
+    'client/data/language_enGB.json?_=0',
+    'client/data/config.json?_=0',
+    '../api/serverStatus.php?_=0',
+    'https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js',
+    'https://code.jquery.com/jquery-3.2.1.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js',
+    'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js',
+    'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
+];
 self.addEventListener('install', function (event) {
     try {
-        event.waitUntil(self.skipWaiting()); // Activate worker immediately
+        event.waitUntil(caches.open(CACHE_NAME)
+            .then(function (cache) {
+            cache.addAll(urlsToPrefetch.map(function (urlToPrefetch) {
+                return new Request(urlToPrefetch);
+            }));
+        }));
+        //event.waitUntil(self.skipWaiting()); // Activate worker immediately
     }
     catch (e) {
         console.log("Install error: ", e);
     }
+});
+self.addEventListener('fetch', function (event) {
+    console.log(event.request.url);
+    event.respondWith(caches.match(event.request).then(function (response) {
+        console.log("response", response);
+        return response || fetch(event.request);
+    }));
 });
 self.addEventListener('activate', function (event) {
     try {

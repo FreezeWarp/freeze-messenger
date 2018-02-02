@@ -168,8 +168,18 @@ standard.prototype.login = function(options) {
             });
         },
         error: (data) => {
-            if (options.error)
-                options.error(data);
+            let isOffline = function() {
+                if ("onLine" in navigator && !navigator.onLine) {
+                    dia.info("You are currently offline. Retrying in 3 seconds...", "danger");
+                    window.setTimeout(isOffline, 3000);
+                }
+                else {
+                    if (options.error)
+                        options.error(data);
+                }
+            };
+
+            isOffline();
         }
     });
 };
