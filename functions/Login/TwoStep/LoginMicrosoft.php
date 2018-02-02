@@ -109,7 +109,7 @@ class LoginMicrosoft extends LoginTwoStep {
         // store user info...
         $this->loginFactory->user = new \Fim\User([
             'integrationMethod' => 'microsoft',
-            'integrationId' => (int) $userInfo['id'],
+            'integrationId' => $userInfo['id'],
         ]);
         $this->loginFactory->user->resolveAll(); // This will resolve the ID if the user exists.
         $this->loginFactory->user->setDatabase([
