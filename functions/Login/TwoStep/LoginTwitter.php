@@ -73,6 +73,7 @@ class LoginTwitter extends LoginTwoStep {
 
         $userInfo = $this->client->get("account/verify_credentials");
 
+
         // store user info...
         $this->loginFactory->user = new \Fim\User([
             'integrationMethod' => 'twitter',
@@ -87,6 +88,27 @@ class LoginTwitter extends LoginTwoStep {
             'profile' => $userInfo->url
             //bio $userInfo->description
         ]);
+
+
+        // get groups
+        $follows = $this->client->get("friends/list", [
+            'count' => 200,
+            'skip_status' => 'true',
+            'include_user_entities' => 'false'
+        ]);
+
+        if (!empty($follows->users)) {
+            $groups = [];
+
+            foreach ($follows->users AS $user) {
+                $groups[] = [
+                    'name' => 'Twitter Followers of @' . $user->screen_name,
+                    'avatar' => $user->profile_image_url_https
+                ];
+            }
+
+            \Fim\Database::instance()->enterSocialGroups($this->loginFactory->user->id, $groups);
+        }
     }
 
 

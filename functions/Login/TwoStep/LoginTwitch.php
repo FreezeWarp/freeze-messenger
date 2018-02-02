@@ -115,7 +115,7 @@ class LoginTwitch extends LoginTwoStep {
 
             // TODO: pagination
             $follows = $this->client->getParsedResponse(
-                $this->client->getAuthenticatedRequest(AbstractProvider::METHOD_GET, 'https://api.twitch.tv/helix/users/follows?from_id=' . $userInfo['id'], $token)
+                $this->client->getAuthenticatedRequest(AbstractProvider::METHOD_GET, 'https://api.twitch.tv/helix/users/follows?first=100&from_id=' . $userInfo['id'], $token)
             );
 
             if (isset($follows['data'])) {
