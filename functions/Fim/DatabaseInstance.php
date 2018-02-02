@@ -2169,6 +2169,30 @@ class DatabaseInstance extends DatabaseSQL
     }
 
 
+    public function enterSocialGroups($userId, $groups) {
+        $groupNames = [];
+
+        foreach ($groups AS $group) {
+            $groupNames[] = $group['name'];
+
+            // create group if doesn't exist (TODO: optimise)
+            @\Fim\Database::instance()->createSocialGroup($group['name'], $group['avatar']);
+        }
+
+        // get group IDs
+        $dbGroupIds = \Fim\Database::instance()->select([
+            \Fim\Database::$sqlPrefix . 'socialGroups' => 'id, name'
+        ], ['name' => \Fim\Database::instance()->in($groupNames)])->getColumnValues('id');
+
+        // enter groups
+        \Fim\Database::instance()->autoQueue(true);
+        foreach ($dbGroupIds AS $groupId) {
+            @\Fim\Database::instance()->enterSocialGroup($groupId, $userId);
+        }
+        @\Fim\Database::instance()->autoQueue(false);
+    }
+
+
     /**
      * Creates a social group with the give name.
      *
@@ -2188,11 +2212,11 @@ class DatabaseInstance extends DatabaseSQL
      * User joins group with ID.
      *
      * @param int  $groupId Group to join.
-     * @param User $user    User joining the group.
+     * @param int  $userId  User joining the group.
      *
      * @return bool|void
      */
-    public function enterSocialGroup($groupId, User $user) {
+    public function enterSocialGroup($groupId, $userId) {
         return $this->insert($this->sqlPrefix . 'socialGroupMembers', [
             'groupId' => $groupId,
             'userId' => $user->id,

@@ -31,6 +31,7 @@ return array(
     'Fim\\' => array($baseDir . '/functions/Fim'),
     'Facebook\\' => array($vendorDir . '/facebook/graph-sdk/src/Facebook'),
     'FG\\' => array($vendorDir . '/fgrosse/phpasn1/lib'),
+    'Depotwarehouse\\OAuth2\\Client\\Twitch\\' => array($vendorDir . '/depotwarehouse/oauth2-twitch/src'),
     'Database\\' => array($baseDir . '/functions/Database'),
     'Cache\\' => array($baseDir . '/functions/Cache'),
     'Base64Url\\' => array($vendorDir . '/spomky-labs/base64url/src'),

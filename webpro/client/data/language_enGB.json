@@ -485,7 +485,8 @@
       "twitter" : "Sign in with Twitter",
       "microsoft" : "Sign in with Microsoft",
       "steam" : "Sign in with Steam",
-      "reddit" : "Sign in with Reddit"
+      "reddit" : "Sign in with Reddit",
+      "twitch" : "Sign in with Twitch.tv"
     }
   },
 
