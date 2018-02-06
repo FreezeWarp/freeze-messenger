@@ -333,11 +333,11 @@ if ($requestHead['_action'] === 'edit' || $requestHead['_action'] === 'create') 
             unset($updateArray['messageFormatting']['color']);
         }
     }
-    elseif (isset($rgb['defaultHighlight']) && $rgb['defaultHighlight'] > 127) {
+    elseif (isset($rgb['defaultHighlight']) && \Fim\Utilities::luminance($rgb['defaultHighlight'][0], $rgb['defaultHighlight'][1], $rgb['defaultHighlight'][2]) > .5) {
         $updateArray['messageFormatting'][] = 'color:rgb(25,25,25)';
     }
-    elseif (isset($rgb['defaultColor']) && $rgb['defaultColor'] < 127) {
-        $updateArray['messageFormatting'][] = 'background-color:rgb(225,225,255)';
+    elseif (isset($rgb['defaultColor']) && \Fim\Utilities::luminance($rgb['defaultColor'][0], $rgb['defaultColor'][1], $rgb['defaultColor'][2]) < .5) {
+        $updateArray['messageFormatting'][] = 'background-color:rgb(225,225,225)';
     }
 
 
