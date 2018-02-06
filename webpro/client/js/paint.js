@@ -781,8 +781,8 @@ function fim_getRoomNameDeferred(roomId) {
 
 function fim_loadTheme(themeName) {
     var themePath = (themeName === "css"
-        ? "./client/css/bootstrap.css"
-        : "./client/css/themes/" + themeName + ".css");
+        ? './client/css/bootstrap.css?_=' + lastCache
+        : './client/css/themes/' + themeName + '.css?_=' + lastCache);
 
     var tag = $('#bootstrapTheme');
 
@@ -1056,6 +1056,9 @@ var directory = window.location.pathname.split('/').splice(0, window.location.pa
     currentLocation = window.location.protocol + '//' + window.location.host + directory + 'webpro/';
 
 fim_loadTheme(settings.theme);
+
+
+
 
 $.when(
     $.ajax({ // TODO?

@@ -285,7 +285,10 @@ let createNotification = function(data) {
     }
 };
 
+
 let shimJquery = function() {
+    let cacheId = self.location.href.split('?_=')[1];
+
     // Juryrig the jQuery properties for jQuery
     var document = self.document = {parentNode: null, nodeType: 9, toString: function() {return "FakeDocument"}};
     var window = self.window = self;
@@ -307,11 +310,11 @@ let shimJquery = function() {
     document.appendChild = function(child) {return child;};
 
     // Load AJAX-only version of jQuery
-    importScripts("client/js/jquery.ajax.min.js");
+    importScripts('client/js/jquery.ajax.min.js?_=' + cacheId);
     var $ = jQuery;
 
     // Load fim-api
-    importScripts('client/js/fim-dev/fim-api.ts.js');
+    importScripts('client/js/fim-dev/fim-api.ts.js?_=' + cacheId);
 };
 
 function getFimApiInstance(callback) {
@@ -479,26 +482,30 @@ onmessage = (event) => {
 };
 
 var CACHE_NAME = 'freezemessenger-v1b4nightly';
-var urlsToPrefetch = [
-    './',
-    'serviceWorker.ts.js?_=0',
-    'client/js/jquery.ajax.min.js',
-    'client/js/fim-dev/fim-api.ts.js',
-    'client/css/styles.css?_=0',
-    'client/js/jquery.plugins.min.js?_=0',
-    'client/js/fim-all.js?_=0',
-    'client/js/paint.min.js?_=0',
-    'client/data/language_enGB.json?_=0',
-    'client/data/config.json?_=0',
-    '../api/serverStatus.php?_=0',
-    'https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js',
-    'https://code.jquery.com/jquery-3.2.1.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js',
-    'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js',
-    'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
-];
 
 self.addEventListener('install', function (event) {
+    let cacheId = self.location.href.split('?_=')[1];
+
+    let urlsToPrefetch = [
+        './',
+        'serviceWorker.ts.js?_=' + cacheId,
+        'client/js/jquery.ajax.min.js?_=' + cacheId,
+        'client/js/fim-dev/fim-api.ts.js?_=' + cacheId,
+        'client/css/styles.css?_=' + cacheId,
+        'client/css/bootstrap.css?_=' + cacheId,
+        'client/js/jquery.plugins.min.js?_=' + cacheId,
+        'client/js/fim-all.js?_=' + cacheId,
+        'client/js/paint.min.js?_=' + cacheId,
+        'client/data/language_enGB.json?_=' + cacheId,
+        'client/data/config.json?_=' + cacheId,
+        '../api/serverStatus.php?_=' + cacheId,
+        'https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js',
+        'https://code.jquery.com/jquery-3.2.1.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js',
+        'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js',
+        'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css',
+    ];
+
     try {
         event.waitUntil(
             caches.open(CACHE_NAME)
@@ -517,12 +524,8 @@ self.addEventListener('install', function (event) {
 
 self.addEventListener('fetch', function(event) {
 
-    console.log(event.request.url);
-
     event.respondWith(
         caches.match(event.request).then(function(response) {
-            console.log("response", response);
-
             return response || fetch(event.request);
         })
     );
