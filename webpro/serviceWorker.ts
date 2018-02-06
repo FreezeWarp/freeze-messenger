@@ -37,11 +37,13 @@ abstract class eventSource {
     removeClient(clientId) {
         console.log("remove client", clientId, this.clients);
 
-        this.clients.splice(this.clients.indexOf(clientId), 1);
+        let index = this.clients.indexOf(clientId);
 
-        if (this.clients.length === 0) {
+        if (index > -1)
+            this.clients.splice(this.clients.indexOf(clientId), 1);
+
+        if (this.clients.length === 0)
             this.close();
-        }
     }
 
     /**

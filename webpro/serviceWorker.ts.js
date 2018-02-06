@@ -68,10 +68,11 @@ var eventSource = /** @class */ (function () {
     };
     eventSource.prototype.removeClient = function (clientId) {
         console.log("remove client", clientId, this.clients);
-        this.clients.splice(this.clients.indexOf(clientId), 1);
-        if (this.clients.length === 0) {
+        var index = this.clients.indexOf(clientId);
+        if (index > -1)
+            this.clients.splice(this.clients.indexOf(clientId), 1);
+        if (this.clients.length === 0)
             this.close();
-        }
     };
     /**
      * Close the event source object, freeing up network resources.
