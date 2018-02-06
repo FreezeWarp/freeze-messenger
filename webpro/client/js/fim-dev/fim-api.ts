@@ -824,7 +824,7 @@ fimApi.prototype.createRoomPermissionGroup = function(roomId, groupId, permissio
 
 
 
-fimApi.prototype.editUserStatus = function(roomId, params, requestSettings) {
+fimApi.prototype.editUserStatus = function(roomIds, params, requestSettings) {
     params = this.mergeDefaults(params, {
         'status': null,
         'typing': null
@@ -836,35 +836,35 @@ fimApi.prototype.editUserStatus = function(roomId, params, requestSettings) {
         url: this.directory + 'api/userStatus.php?' + $.param({
             '_action' : 'edit',
             'access_token': this.lastSessionHash,
-            'roomIds' : [roomId]
+            'roomIds' : roomIds
         }),
         type: 'POST',
         data: params,
         timeout: requestSettings.timeout,
         cache: requestSettings.cache,
     }).done(this.done(requestSettings)).fail(this.fail(requestSettings, () => {
-        this.editUserStatus(roomId, params, requestSettings)
+        this.editUserStatus(roomIds, params, requestSettings)
     }));
 };
 
 
 
 fimApi.prototype.ping = function(roomId, requestSettings) {
-    this.editUserStatus(roomId, {"status" : ""}, requestSettings);
+    this.editUserStatus([roomId], {"status" : ""}, requestSettings);
 };
 
 fimApi.prototype.exitRoom = function(roomId, requestSettings) {
-    this.editUserStatus(roomId, {"status" : "offline"}, requestSettings);
+    this.editUserStatus([roomId], {"status" : "offline"}, requestSettings);
 };
 
 fimApi.prototype.startedTyping = function(roomId, requestSettings) {
     if (this.serverSettings.rooms.typingStatus)
-        this.editUserStatus(roomId, {"typing" : true}, requestSettings);
+        this.editUserStatus([roomId], {"typing" : true}, requestSettings);
 };
 
 fimApi.prototype.stoppedTyping = function(roomId, requestSettings) {
     if (this.serverSettings.rooms.typingStatus)
-        this.editUserStatus(roomId, {"typing" : false}, requestSettings);
+        this.editUserStatus([roomId], {"typing" : false}, requestSettings);
 };
 
 

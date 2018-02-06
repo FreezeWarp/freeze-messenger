@@ -43,6 +43,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var _this = this;
 /**
  * A generic event source provider.
  */
@@ -220,27 +221,9 @@ var roomSource = /** @class */ (function (_super) {
     roomSource.prototype.close = function () {
         var _this = this;
         _super.prototype.close.call(this);
-        if (this.pingInterval) {
-            clearInterval(this.pingInterval);
-            this.pingInterval = false;
-        }
         getFimApiInstance(function () {
             fimApiInstance.exitRoom(_this.roomId);
         });
-    };
-    roomSource.prototype.getEvents = function () {
-        var _this = this;
-        _super.prototype.getEvents.call(this);
-        if (!this.pingInterval) {
-            getFimApiInstance(function () {
-                fimApiInstance.ping(_this.roomId);
-            });
-            this.pingInterval = window.setInterval((function () {
-                getFimApiInstance(function () {
-                    fimApiInstance.ping(_this.roomId);
-                });
-            }), 60 * 1000);
-        }
     };
     roomSource.prototype.getEventsFromStream = function () {
         this.getEventsFromStreamGenerator('room', this.roomId, ['userStatusChange', 'newMessage', 'topicChange', 'deletedMessage', 'editedMessage']);
@@ -332,7 +315,7 @@ function getFimApiInstance(callback) {
 var idbKeyval;
 var isServiceWorker = true;
 var userSourceInstance = null;
-var roomSources = [];
+var roomSources = {};
 var isBlurred = false;
 var fimApiInstance;
 if (typeof fimApi === "undefined") {
@@ -420,6 +403,13 @@ onmessage = function (event) {
         case 'login':
             getFimApiInstance(function () {
                 fimApiInstance.lastSessionHash = event.data.sessionHash;
+                _this.pingInterval = window.setInterval((function () {
+                    getFimApiInstance(function () {
+                        if (Object.keys(_this.roomSources).length > 0) {
+                            fimApiInstance.editUserStatus(Object.keys(_this.roomSources), { "status": "" });
+                        }
+                    });
+                }), 60 * 1000);
             });
             if (!userSourceInstance)
                 userSourceInstance = new userSource(event.source && event.source.id ? event.source.id : false);
@@ -433,6 +423,10 @@ onmessage = function (event) {
                 userSourceInstance.removeClient(event.source.id);
             else if (roomSources[String(event.data.roomId)])
                 userSourceInstance.close();
+            if (_this.pingInterval) {
+                window.clearInterval(_this.pingInterval);
+                _this.pingInterval = false;
+            }
             break;
         case 'listenRoom':
             if (!roomSources[String(event.data.roomId)])

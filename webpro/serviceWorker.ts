@@ -221,30 +221,9 @@ class roomSource extends eventSource {
     close() {
         super.close();
 
-        if (this.pingInterval) {
-            clearInterval(this.pingInterval);
-            this.pingInterval = false;
-        }
-
         getFimApiInstance(() => {
             fimApiInstance.exitRoom(this.roomId);
         })
-    }
-
-    getEvents() {
-        super.getEvents();
-
-        if (!this.pingInterval) {
-            getFimApiInstance(() => {
-                fimApiInstance.ping(this.roomId);
-            });
-
-            this.pingInterval = window.setInterval((() => {
-                getFimApiInstance(() => {
-                    fimApiInstance.ping(this.roomId);
-                });
-            }), 60 * 1000);
-        }
     }
 
     getEventsFromStream() {
@@ -354,7 +333,7 @@ function getFimApiInstance(callback) {
 let idbKeyval;
 let isServiceWorker = true;
 let userSourceInstance = null;
-let roomSources = [];
+let roomSources = {};
 let isBlurred = false;
 let fimApiInstance;
 
@@ -439,6 +418,14 @@ onmessage = (event) => {
         case 'login':
             getFimApiInstance(() => {
                 fimApiInstance.lastSessionHash = event.data.sessionHash;
+
+                this.pingInterval = window.setInterval((() => {
+                    getFimApiInstance(() => {
+                        if (Object.keys(this.roomSources).length > 0) {
+                            fimApiInstance.editUserStatus(Object.keys(this.roomSources), {"status": ""});
+                        }
+                    });
+                }), 60 * 1000);
             });
 
             if (!userSourceInstance)
@@ -454,6 +441,11 @@ onmessage = (event) => {
                 userSourceInstance.removeClient(event.source.id);
             else if (roomSources[String(event.data.roomId)])
                 userSourceInstance.close();
+
+            if (this.pingInterval) {
+                window.clearInterval(this.pingInterval);
+                this.pingInterval = false;
+            }
             break;
 
         case 'listenRoom':
