@@ -1092,17 +1092,35 @@ $.when(
     if (window.serverSettings.installUrl !== (window.location.protocol + '//' + window.location.host + window.directory))
         dia.error(window.phrases.errorBadInstall);
 
-
-
     /* Our handful of global objects */
     window.fimApi = new fimApi(window.serverSettings);
-    fimApi.registerDefaultExceptionHandler(function(exception) {
-        dia.exception(exception);
-    });
-
-
     window.standard = new standard();
     window.popup = new popup();
+
+    /*
+     * When a fimApi call fails, show an exception message, or, if it's because of an expired token,
+     * try to relogin, rerunning the call if login is successful.
+     */
+    fimApi.registerDefaultExceptionHandler(function(exception, callback) {
+        if ("string" in exception && exception.string === "invalid_token") {
+            dia.info("You have been logged out. Attempt a relogin...", "warning");
+
+            standard.login({
+                grantType : 'refresh_token',
+                refreshToken : standard.activeLogin.refresh_token,
+                finish : function() {
+                    dia.info("Relogin successful.", "success");
+                    callback();
+                },
+                error : function() {
+                    popup.login();
+                }
+            });
+        }
+        else {
+            dia.exception(exception);
+        }
+    });
 
 
 

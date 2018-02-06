@@ -15,6 +15,7 @@ let standard = function() {
     this.watchRoomsData = {};
 
     this.lastEvent = 0;
+    this.reloginTimeout = null;
 
     this.notifications = {};
     this.serviceWorkerEnabled = false;
@@ -99,7 +100,10 @@ standard.prototype.login = function(options) {
             if (activeLogin.expires && activeLogin.refresh_token) {
                 $.cookie('webpro_refreshToken', activeLogin.refresh_token);
 
-                setTimeout(() => {
+                if (this.reloginTimeout)
+                    clearTimeout(this.reloginTimeout);
+
+                this.reloginTimeout = setTimeout(() => {
                     this.login({
                         grantType : 'refresh_token',
                         refreshToken : activeLogin.refresh_token

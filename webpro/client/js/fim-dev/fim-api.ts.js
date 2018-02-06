@@ -1,3 +1,7 @@
+/*
+ * $.ajax-to-fetch polyfill for Service Workers
+ * Still requires a minimal jQuery version to be included, for $.each, $.param, etc.
+ */
 if (typeof XMLHttpRequest === 'undefined') {
     $.ajax = function (options) {
         var params = {
@@ -65,32 +69,18 @@ var fimApi = function (serverSettings) {
     };
     this.fail = function (requestSettings, callback) {
         return function (response) {
-            if (!("responseJSON" in response) && ("responseText" in response) && response.responseText.slice(0, 1) === '{')
+            if (!("responseJSON" in response)
+                && ("responseText" in response)
+                && response.responseText.slice(0, 1) === '{')
                 response.responseJSON = JSON.parse(response.responseText);
             if (!("responseJSON" in response)) {
-                console.log("Unable to parse failure response.");
+                console.log("Unable to parse failure response.", response);
             }
             else if ("exception" in response.responseJSON) {
                 console.log("Server Exception", JSON.stringify(response.responseJSON));
-                if (response.responseJSON.exception.details == 'The access token provided has expired') {
-                    /* TODO
-                    if ($.cookie('webpro_username')) {
-                        standard.login({
-                            'username' : $.cookie('webpro_username'),
-                            'password' : $.cookie('webpro_username'),
-                            'finish' : callback
-                        });
-                    }
-                    else {
-                        standard.logout();
-                        dia.error("Your login has expired. Please login again.");
-                    } */
-                }
-                else {
-                    return requestSettings.exception(response.responseJSON.exception);
-                }
+                return requestSettings.exception(response.responseJSON.exception, callback);
             }
-            return requestSettings.error(response);
+            return requestSettings.error(response, callback);
         };
     };
     this.timer = (function (requestSettings, name, query) {
