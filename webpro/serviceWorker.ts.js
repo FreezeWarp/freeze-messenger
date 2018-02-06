@@ -253,6 +253,19 @@ var userSource = /** @class */ (function (_super) {
     };
     return userSource;
 }(eventSource));
+/**
+ * Create a system notification with the given data.
+ *
+ * @param data {object} An object containing event data.
+ * @param data.roomName {string}
+ * @param data.roomId {string}
+ * @param data.userName {string}
+ * @param data.userId {int}
+ * @param data.userAvatar {string}
+ * @param data.messageText {string}
+ *
+ * @returns {any}
+ */
 var createNotification = function (data) {
     console.log("create notification", data);
     if (self.registration) {
@@ -274,6 +287,13 @@ var createNotification = function (data) {
         });
     }
 };
+/**
+ * Load minimal jQuery for API purposes. This entails:
+ * 1.) Creating basic DOM structure.
+ * 2.) Loading jquery.ajax script.
+ * 3.) Replacing $.ajax with fetch-based polyfill (since we can use XHR here)
+ * 4.) Loading fimApi
+ */
 var shimJquery = function () {
     var cacheId = self.location.href.split('?_=')[1];
     // Juryrig the jQuery properties for jQuery
@@ -297,9 +317,39 @@ var shimJquery = function () {
     // Load AJAX-only version of jQuery
     importScripts('client/js/jquery.ajax.min.js?_=' + cacheId);
     var $ = jQuery;
+    // Replace $.ajax with fetch polyfill
+    $.ajax = function (options) {
+        var params = {
+            method: options.type ? options.type.toUpperCase() : 'GET'
+        };
+        if (options.data && params.method !== 'GET') {
+            params['body'] = new URLSearchParams($.param(options.data));
+        }
+        var url = options.url + (params.method === 'GET' && options.data ? '?' + $.param(options.data) : '');
+        console.log("request", options, url, params);
+        var promise = jQuery.Deferred();
+        $.when(fetch(url, params)).then(function (response) {
+            var contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                return response.json();
+            }
+            else {
+                promise.reject("Could not parse JSON.");
+            }
+        })
+            .then(function (json) { promise.resolve(json); })["catch"](function (error) { promise.reject(error); });
+        ;
+        return promise.promise();
+    };
     // Load fim-api
     importScripts('client/js/fim-dev/fim-api.ts.js?_=' + cacheId);
 };
+/**
+ * Get a fresh fimApi instance, usable when the service worker was destructed.
+ *
+ * @param callback Function to execute once fimApi instance has been created
+ * @returns {any}
+ */
 function getFimApiInstance(callback) {
     if (!fimApiInstance) {
         shimJquery();
@@ -317,7 +367,6 @@ var idbKeyval;
 var isServiceWorker = true;
 var userSourceInstance = null;
 var roomSources = {};
-var isBlurred = false;
 var fimApiInstance;
 if (typeof fimApi === "undefined") {
     idbKeyval = (function () {
@@ -392,19 +441,32 @@ else {
     isServiceWorker = false;
     fimApiInstance = fimApi;
 }
+/**
+ * Receive message events.
+ *
+ * @param {MessageEvent} event
+ */
 onmessage = function (event) {
     console.log("message to service worker", isServiceWorker, event.data.eventName, event.data, event);
     switch (event.data.eventName) {
+        /*
+         * Upload new server settings for API usage.
+         */
         case 'registerApi':
             if (isServiceWorker) {
                 fimApiInstance = new fimApi(event.data.serverSettings);
                 idbKeyval.set('serverSettings', event.data.serverSettings);
             }
             break;
+        /*
+         * Register a new session hash from recent login.
+         */
         case 'login':
             getFimApiInstance(function () {
                 fimApiInstance.lastSessionHash = event.data.sessionHash;
-                _this.pingInterval = window.setInterval((function () {
+                if (_this.pingInterval)
+                    clearInterval(_this.pingInterval);
+                _this.pingInterval = setInterval((function () {
                     getFimApiInstance(function () {
                         if (Object.keys(_this.roomSources).length > 0) {
                             fimApiInstance.editUserStatus(Object.keys(_this.roomSources), { "status": "" });
@@ -419,16 +481,22 @@ onmessage = function (event) {
             else
                 userSourceInstance.getEvents();
             break;
+        /*
+         * Unregister a client.
+         */
         case 'logout':
             if (event.source && event.source.id)
                 userSourceInstance.removeClient(event.source.id);
             else if (roomSources[String(event.data.roomId)])
                 userSourceInstance.close();
             if (_this.pingInterval) {
-                window.clearInterval(_this.pingInterval);
+                clearInterval(_this.pingInterval);
                 _this.pingInterval = false;
             }
             break;
+        /*
+         * Start listening for events in a room.
+         */
         case 'listenRoom':
             if (!roomSources[String(event.data.roomId)])
                 roomSources[String(event.data.roomId)] = new roomSource(event.data.roomId, (event.source && event.source.id ? event.source.id : false));
@@ -437,25 +505,28 @@ onmessage = function (event) {
             else
                 roomSources[String(event.data.roomId)].getEvents();
             break;
+        /*
+         * Stop listening to events in a room.
+         */
         case 'unlistenRoom':
             if (event.source && event.source.id)
                 roomSources[String(event.data.roomId)].removeClient(event.source.id);
             else if (roomSources[String(event.data.roomId)])
                 roomSources[String(event.data.roomId)].close();
             break;
-        case 'blur':
-            isBlurred = true;
-            break;
-        case 'unblur':
-            isBlurred = false;
-            break;
+        /*
+         * Display a notification.
+         */
         case 'requestNotification':
             createNotification(event.data);
             break;
     }
 };
-var CACHE_NAME = 'freezemessenger-v1b4nightly';
+/**
+ * At install, cache resources needed to load interface.
+ */
 self.addEventListener('install', function (event) {
+    var CACHE_NAME = 'freezemessenger-v1b4nightly';
     var cacheId = self.location.href.split('?_=')[1];
     var urlsToPrefetch = [
         './',
@@ -489,11 +560,17 @@ self.addEventListener('install', function (event) {
         console.log("Install error: ", e);
     }
 });
+/**
+ * Fetch cached resources.
+ */
 self.addEventListener('fetch', function (event) {
     event.respondWith(caches.match(event.request).then(function (response) {
         return response || fetch(event.request);
     }));
 });
+/**
+ * Inform if service worker activiation fails.
+ */
 self.addEventListener('activate', function (event) {
     try {
         event.waitUntil(self.clients.claim()); // Become available to all pages
@@ -502,6 +579,9 @@ self.addEventListener('activate', function (event) {
         console.log("Activate error: ", e);
     }
 });
+/**
+ * Receive push notifications.
+ */
 self.addEventListener('push', function (event) {
     var data = event.data.json().data;
     console.info("push message", data, roomSources);
@@ -509,6 +589,9 @@ self.addEventListener('push', function (event) {
         event.waitUntil(createNotification(data));
     }
 });
+/**
+ * Attempt to open a window for a room notification when the notification is clicked.
+ */
 self.addEventListener('notificationclick', function (event) {
     console.log('On notification click: ', event.notification.tag);
     // Android doesn't close the notification when you click on it
