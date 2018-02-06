@@ -184,6 +184,10 @@ standard.prototype.login = function(options) {
             };
 
             isOffline();
+        },
+        exception: (data) => {
+            if (options.error)
+                options.error(data);
         }
     });
 };
