@@ -1801,7 +1801,9 @@ class DatabaseInstance extends DatabaseSQL
         if (!Config::$roomPermissionsCacheEnabled)
             return -1;
 
-        elseif (($permissionsCache = \Cache\CacheFactory::get("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) !== false) {
+        elseif (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
+            $permissionsCache = \Cache\CacheFactory::get("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)
+
             if (func_num_args() > 2)
                 $reason = $permissionsCache['reason'];
 
@@ -1817,9 +1819,8 @@ class DatabaseInstance extends DatabaseSQL
                 'expires' => $this->now(0, 'gte')
             ))->getAsArray(false);
 
-            if (!empty($permissions) && func_num_args() > 2) {
+            if (!empty($permissions) && func_num_args() > 2)
                 $reason = $permissions['deniedReason'];
-            }
 
             return empty($permissions)
                 ? -1
@@ -1838,10 +1839,13 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function updatePermissionsCache($roomId, $userId, $permissions, $reason = '', $timeout = null) {
         if (Config::$roomPermissionsCacheEnabled) {
-            if (!\Cache\CacheFactory::set("permission_{$userId}_{$roomId}", [
-                'bitfield' => $permissions,
-                'reason' => $reason
-            ], $timeout ?? Config::$roomPermissionsCacheExpires, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
+            if (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
+                \Cache\CacheFactory::set("permission_{$userId}_{$roomId}", [
+                    'bitfield' => $permissions,
+                    'reason' => $reason
+                ], $timeout ?? Config::$roomPermissionsCacheExpires, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+            }
+            else {
                 $this->upsert($this->sqlPrefix . 'roomPermissionsCache', [
                     'roomId' => $roomId,
                     'userId' => $userId,
@@ -1886,13 +1890,17 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function deleteUserPermissionsCache($userId, $roomId = false) {
         if (Config::$roomPermissionsCacheEnabled) {
-            \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+            if (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
+                if ($roomId)
+                    \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+            }
+            else {
+                $conditions = ['userId' => $userId];
+                if ($roomId)
+                    $conditions['roomId'] = $roomId;
 
-            $conditions = ['userId' => $userId];
-            if ($roomId)
-                $conditions['roomId'] = $roomId;
-
-            $this->delete($this->sqlPrefix . 'roomPermissionsCache', $conditions);
+                $this->delete($this->sqlPrefix . 'roomPermissionsCache', $conditions);
+            }
         }
     }
 
@@ -1908,17 +1916,20 @@ class DatabaseInstance extends DatabaseSQL
         if (Config::$roomPermissionsCacheEnabled) {
             $userIds = $this->getSocialGroupMembers($groupId);
 
-            if ($roomId) {
-                foreach ($userIds AS $userId) {
-                    \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+            if (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
+                if ($roomId) {
+                    foreach ($userIds AS $userId) {
+                        \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+                    }
                 }
             }
+            else {
+                $conditions = ['userId' => $this->in($userIds)];
+                if ($roomId)
+                    $conditions['roomId'] = $roomId;
 
-            $conditions = ['userId' => $this->in($userIds)];
-            if ($roomId)
-                $conditions['roomId'] = $roomId;
-
-            $this->delete($this->sqlPrefix . 'roomPermissionsCache', $conditions);
+                $this->delete($this->sqlPrefix . 'roomPermissionsCache', $conditions);
+            }
         }
     }
 
@@ -1930,9 +1941,11 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function deleteRoomPermissionsCache($roomId) {
         if (Config::$roomPermissionsCacheEnabled) {
-            $this->delete($this->sqlPrefix . 'roomPermissionsCache', [
-                'roomId' => $roomId,
-            ]);
+            if (!\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
+                $this->delete($this->sqlPrefix . 'roomPermissionsCache', [
+                    'roomId' => $roomId,
+                ]);
+            }
         }
     }
 
