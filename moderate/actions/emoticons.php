@@ -44,7 +44,7 @@ else {
                 foreach ($emoticons AS $emoticon) {
                     $rows .= "<tr>
                         <td>{$emoticon['text']}</td>
-                        <td>{$emoticon['file']} (<img src='{$emoticon['emoticonFile']}' />)</td>
+                        <td>{$emoticon['file']} (<img src='{$emoticon['file']}' />)</td>
                         <td>
                             <a class='btn btn-secondary' href='./index.php?do=emoticons&do2=edit&id={$emoticon['id']}'><i class='fas fa-edit'></i> Edit</a>
                             <a class='btn btn-danger' href='./index.php?do=emoticons&do2=delete&id={$emoticon['id']}'><i class='fas fa-trash'></i> Delete</a>
