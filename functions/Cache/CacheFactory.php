@@ -209,7 +209,7 @@ class CacheFactory
     public static function delete($index, $preferredMethod = false)
     {
         if (self::chooseMethod($preferredMethod))
-            return self::chooseMethod($preferredMethod)->clear($index);
+            return self::chooseMethod($preferredMethod)->delete($index);
         else
             return false;
     }
@@ -223,7 +223,7 @@ class CacheFactory
         $return = true;
 
         foreach (self::$methods AS $method) {
-            $return = $method->clearAll() && $return;
+            $return = $method->deleteAll() && $return;
         }
 
         return $return;
