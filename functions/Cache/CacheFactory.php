@@ -21,17 +21,23 @@ namespace Cache;
  *
  * @author Joseph Todd Parsons <josephtparsons@gmail.com>
  */
-class CacheFactory {
+class CacheFactory
+{
+    /**
+     * @var DriverInterface[] The collection of cache drivers registered with the script.
+     */
     public static $methods = [];
+
 
 
     /**
      * Add a cache method to the recognised cache types.
      *
-     * @param string $method The name of the method.
-     * @param mixed $servers Information to instantiate the cache method, usually server information.
+     * @param string $method  The name of the method.
+     * @param mixed  $servers Information to instantiate the cache method, usually server information.
      */
-    public static function addMethod(string $method, $servers) {
+    public static function addMethod(string $method, $servers)
+    {
         $classNameSpaced = '\Cache\Driver\\' . ucfirst($method);
 
         if (!class_exists($classNameSpaced)) {
@@ -52,13 +58,16 @@ class CacheFactory {
     }
 
 
+
     /**
      * Get the cache method that is most similar to the desired cache method type.
      *
      * @param string $preferredMethod The type of cache method, one of the {@see DriverInterface} CACHE_TYPE constants.
+     *
      * @return mixed|null
      */
-    private static function chooseMethod($preferredMethod) {
+    private static function chooseMethod($preferredMethod)
+    {
         switch ($preferredMethod) {
             case DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL:
                 return self::$methods[DriverInterface::CACHE_TYPE_DISTRIBUTED]
@@ -91,50 +100,62 @@ class CacheFactory {
         }
     }
 
+
+
     /**
      * Check if a cache method of a given type has been registered.
      *
      * @param string $preferredMethod The type of cache method, one of the {@see DriverInterface} CACHE_TYPE constants.
+     *
      * @return bool
      */
-    public static function hasMethod($preferredMethod) {
+    public static function hasMethod($preferredMethod)
+    {
         return self::chooseMethod($preferredMethod) !== null;
     }
+
 
     /**
      * {@link DriverInterface::get($index)}
      */
-    public static function get($index, $preferredMethod = false) {
+    public static function get($index, $preferredMethod = false)
+    {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->get($index);
         else
             return false;
     }
 
+
     /**
      * {@link DriverInterface::add($index, $value, $ttl)}
      */
-    public static function add($index, $value, $ttl = 31536000, $preferredMethod = false) {
+    public static function add($index, $value, $ttl = 31536000, $preferredMethod = false)
+    {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->add($index, $value, $ttl);
         else
             return false;
     }
 
+
     /**
      * {@link DriverInterface::set($index, $value, $ttl)}
      */
-    public static function set($index, $value, $ttl = 31536000, $preferredMethod = false) {
+    public static function set($index, $value, $ttl = 31536000, $preferredMethod = false)
+    {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->set($index, $value, $ttl);
         else
             return false;
     }
 
+
     /**
      * {@link DriverInterface::exists($index, $value, $ttl)}
      */
-    public static function exists($index, $preferredMethod = false) : bool {
+    public static function exists($index, $preferredMethod = false): bool
+    {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->exists($index);
         else
@@ -145,7 +166,8 @@ class CacheFactory {
     /**
      * {@link DriverInterface::inc($index, $amt)}
      */
-    public static function inc($index, $amt = 1, $preferredMethod = false) {
+    public static function inc($index, $amt = 1, $preferredMethod = false)
+    {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->inc($index, $amt);
         else
@@ -160,7 +182,8 @@ class CacheFactory {
      *
      * {@link DriverInterface::setAdd($index, $value)}
      */
-    public static function setAdd($index, $value, $preferredMethod = DriverInterface::CACHE_TYPE_DISTRIBUTED) {
+    public static function setAdd($index, $value, $preferredMethod = DriverInterface::CACHE_TYPE_DISTRIBUTED)
+    {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->setAdd($index, $value);
         else
@@ -171,7 +194,8 @@ class CacheFactory {
     /**
      * {@link DriverInterface::setRemove($index, $value)}
      */
-    public static function setRemove($index, $value, $preferredMethod = DriverInterface::CACHE_TYPE_DISTRIBUTED) {
+    public static function setRemove($index, $value, $preferredMethod = DriverInterface::CACHE_TYPE_DISTRIBUTED)
+    {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->setRemove($index, $value);
         else
@@ -182,7 +206,8 @@ class CacheFactory {
     /**
      * {@link DriverInterface::delete($index)}
      */
-    public static function delete($index, $preferredMethod = false) {
+    public static function delete($index, $preferredMethod = false)
+    {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->clear($index);
         else
@@ -190,11 +215,11 @@ class CacheFactory {
     }
 
 
-
     /**
      * {@link DriverInterface::deleteAll()}
      */
-    public static function deleteAll() {
+    public static function deleteAll()
+    {
         $return = true;
 
         foreach (self::$methods AS $method) {
@@ -210,7 +235,8 @@ class CacheFactory {
      *
      * {@link DriverInterface::dump()}
      */
-    public static function dump($driver) {
+    public static function dump($driver)
+    {
         return self::chooseMethod($driver)->dump();
     }
 }
