@@ -363,7 +363,22 @@ function getFimApiInstance(callback) {
         return callback();
     }
 }
-;
+/**
+ * Send pings to all currently listened-to rooms.
+ */
+function sendPings() {
+    var _this = this;
+    getFimApiInstance(function () {
+        var openRooms = [];
+        for (i in _this.roomSources) {
+            if (_this.roomSources[i].isOpen) {
+                openRooms.push(i);
+            }
+        }
+        if (openRooms.length > 0)
+            fimApiInstance.editUserStatus(openRooms, { "status": "" });
+    });
+}
 var idbKeyval;
 var isServiceWorker = true;
 var userSourceInstance = null;
@@ -467,13 +482,7 @@ onmessage = function (event) {
                 fimApiInstance.lastSessionHash = event.data.sessionHash;
                 if (_this.pingInterval)
                     clearInterval(_this.pingInterval);
-                _this.pingInterval = setInterval((function () {
-                    getFimApiInstance(function () {
-                        if (Object.keys(_this.roomSources).length > 0) {
-                            fimApiInstance.editUserStatus(Object.keys(_this.roomSources), { "status": "" });
-                        }
-                    });
-                }), 60 * 1000);
+                _this.pingInterval = setInterval(sendPings, 60 * 1000);
             });
             if (!userSourceInstance)
                 userSourceInstance = new userSource(event.source && event.source.id ? event.source.id : false);
@@ -505,6 +514,7 @@ onmessage = function (event) {
                 roomSources[String(event.data.roomId)].addClient(event.source.id);
             else
                 roomSources[String(event.data.roomId)].getEvents();
+            sendPings();
             break;
         /*
          * Stop listening to events in a room.
