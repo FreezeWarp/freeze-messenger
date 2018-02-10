@@ -1657,45 +1657,6 @@
         ]
     },
     {
-        "name": "google/apiclient-services",
-        "version": "v0.44",
-        "version_normalized": "0.44.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/google/google-api-php-client-services.git",
-            "reference": "7f1b3a3f387fc3435f27003977ebf5989f8bcca2"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/7f1b3a3f387fc3435f27003977ebf5989f8bcca2",
-            "reference": "7f1b3a3f387fc3435f27003977ebf5989f8bcca2",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.4"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "~4.8"
-        },
-        "time": "2018-01-28T00:23:18+00:00",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "Google_Service_": "src"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "Apache-2.0"
-        ],
-        "description": "Client library for Google APIs",
-        "homepage": "http://developers.google.com/api-client-library/php",
-        "keywords": [
-            "google"
-        ]
-    },
-    {
         "name": "beberlei/assert",
         "version": "v2.9.2",
         "version_normalized": "2.9.2.0",
@@ -1854,5 +1815,44 @@
             }
         ],
         "description": "A Twitch provider for league/oauth2-client"
+    },
+    {
+        "name": "google/apiclient-services",
+        "version": "v0.45",
+        "version_normalized": "0.45.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/google/google-api-php-client-services.git",
+            "reference": "35909fbc909bf9f9e0d36dd05b62f4b1d5ffe3ae"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/google/google-api-php-client-services/zipball/35909fbc909bf9f9e0d36dd05b62f4b1d5ffe3ae",
+            "reference": "35909fbc909bf9f9e0d36dd05b62f4b1d5ffe3ae",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.4"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "~4.8"
+        },
+        "time": "2018-02-03T00:23:12+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Google_Service_": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "description": "Client library for Google APIs",
+        "homepage": "http://developers.google.com/api-client-library/php",
+        "keywords": [
+            "google"
+        ]
     }
 ]
