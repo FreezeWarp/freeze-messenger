@@ -1,8 +1,6 @@
 <?php
-namespace Cache\Driver;
 
-use Cache\CacheAddFallbackTrait;
-use Cache\DriverInterface;
+namespace Cache\Driver;
 
 /**
  * A standard cache driver for Redis.
@@ -10,32 +8,36 @@ use Cache\DriverInterface;
  *
  * @package Cache\Driver
  */
-class Redis implements DriverInterface {
+class Redis implements \Cache\DriverInterface
+{
     /**
      * @var \Redis
      */
     private $instance;
 
     /* setNx doesn't support ttl, so emulate */
-    use CacheAddFallbackTrait;
+    use \Cache\CacheAddFallbackTrait;
 
 
-    public static function available() : bool {
+    public static function available(): bool
+    {
         return extension_loaded('redis');
     }
 
-    public static function getCacheType(): string {
-        return DriverInterface::CACHE_TYPE_DISTRIBUTED;
+    public static function getCacheType(): string
+    {
+        return \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED;
     }
 
 
-    public function __construct($servers) {
+    public function __construct($servers)
+    {
         $servers = array_merge([
-            'host' => 'localhost',
-            'port' => 6379,
-            'timeout' => 1000,
+            'host'         => 'localhost',
+            'port'         => 6379,
+            'timeout'      => 1000,
             'persistentId' => false,
-            'password' => false
+            'password'     => false
         ], $servers);
 
         $this->instance = new \Redis();
@@ -45,7 +47,8 @@ class Redis implements DriverInterface {
     }
 
 
-    public function get($index) {
+    public function get($index)
+    {
         if ($this->instance->type($index) === \Redis::REDIS_SET) {
             return $this->instance->sMembers($index);
         }
@@ -56,48 +59,59 @@ class Redis implements DriverInterface {
         }
     }
 
-    public function set($index, $value, $ttl = 3600) {
+    public function set($index, $value, $ttl = 3600)
+    {
         if (!is_int($value))
             $value = serialize($value);
 
         return $this->instance->set($index, $value, $ttl);
     }
 
-    public function exists($index) : bool {
+    public function exists($index): bool
+    {
         return $this->instance->exists($index);
     }
 
-    public function inc($index, int $amt = 1) {
+    public function inc($index, int $amt = 1)
+    {
         return $this->instance->incrBy($index, $amt) !== false;
     }
 
 
-    public function setAdd($index, $value) {
-        $value = (array) $value;
+    public function setAdd($index, $value)
+    {
+        $value = (array)$value;
         array_unshift($value, $index);
-        return call_user_func_array(array($this->instance, 'sAdd'), $value);
+
+        return call_user_func_array([$this->instance, 'sAdd'], $value);
     }
 
-    public function setRemove($index, $value) {
-        $value = (array) $value;
+    public function setRemove($index, $value)
+    {
+        $value = (array)$value;
         array_unshift($value, $index);
-        return call_user_func_array(array($this->instance, 'sRemove'), $value);
+
+        return call_user_func_array([$this->instance, 'sRemove'], $value);
     }
 
-    public function setContains($index, $value) : bool {
+    public function setContains($index, $value): bool
+    {
         return $this->instance->sContains($index, $value);
     }
 
 
-    public function delete($index) {
+    public function delete($index)
+    {
         return $this->instance->delete($index) === 1;
     }
 
-    public function deleteAll() {
+    public function deleteAll()
+    {
         return $this->instance->flushDb();
     }
 
-    public function dump() {
+    public function dump()
+    {
         $keys = [];
 
         foreach ($this->instance->getKeys('*') AS $key) {
