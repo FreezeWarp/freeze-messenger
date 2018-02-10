@@ -1,0 +1,14 @@
+# IntelliJ
+.idea/*
+*/.idea/*
+
+# Java
+artifacts/*
+
+# Unneeded Composer Stuff
+vendor/kwn/php-rdkafka-stubs/*
+vendor/google/apiclient-services/src/Google/*
+!vendor/google/apiclient-services/src/Google/Oauth2/*
+!vendor/google/apiclient-services/src/Google/Oauth2.php
+composer.phar
+composer.lock

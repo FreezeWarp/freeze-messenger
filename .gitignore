@@ -1,20 +1,31 @@
+# IntelliJ
 .idea/*
 */.idea/*
+
+# Config
+config.php
 !functions/Fim/Config.php
 !moderate/actions/config.php
-querylog
+
+# Java
 *.class
-vendor/google/apiclient-services/src/Google/*
-!vendor/google/apiclient-services/src/Google/Oauth2/*
-!vendor/google/apiclient-services/src/Google/Oauth2.php
-vendor/kwn/php-rdkafka-stubs/*
+
+# Javascript
+webpro/client/css/bootstrap/*
 webpro/client/js/fim-dev/*.js
 !webpro/client/js/fim-dev/fim-api.ts.js
 *.js.map
 !webpro/client/js/fim-dev/autoEntry.js
 !webpro/client/js/fim-dev/fim-popup.js
+
+# Unneeded Composer Stuff
+vendor/kwn/php-rdkafka-stubs/*
+vendor/google/apiclient-services/src/Google/*
+!vendor/google/apiclient-services/src/Google/Oauth2/*
+!vendor/google/apiclient-services/src/Google/Oauth2.php
 composer.phar
 composer.lock
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
