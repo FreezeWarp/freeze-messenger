@@ -433,4 +433,3 @@ if (isset($request['friendsList'])) {
 
 /* Output Data */
 echo new Http\ApiData($xmlData);
-?>

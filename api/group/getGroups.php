@@ -84,4 +84,3 @@ foreach ($groups AS $groupData) {
 
 /* Output Data */
 echo new Http\ApiData($xmlData);
-?>

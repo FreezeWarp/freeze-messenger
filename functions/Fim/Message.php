@@ -179,4 +179,3 @@ class Message extends MagicGettersSetters
         return $this->user->id;
     }
 }
-?>

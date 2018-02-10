@@ -142,4 +142,3 @@ register_shutdown_function(function() {
 
 ////* User Login (Requires Database) *////
 require_once(dirname(__FILE__) . '/validate.php'); // This is where all the user validation stuff occurs.
-?>

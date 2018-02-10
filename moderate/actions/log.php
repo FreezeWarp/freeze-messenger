@@ -110,4 +110,3 @@ else {
         echo 'You do not have permission to view the logs.';
     }
 }
-?>

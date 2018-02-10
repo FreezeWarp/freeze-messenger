@@ -380,4 +380,3 @@ class OAuthProvider implements
         $this->db->cleanMessageFlood();
     }
 }
-?>

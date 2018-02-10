@@ -146,4 +146,3 @@ foreach ($users AS $userData) {
 
 /* Output Data */
 echo new Http\ApiData($xmlData);
-?>

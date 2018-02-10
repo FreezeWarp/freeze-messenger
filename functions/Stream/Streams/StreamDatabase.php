@@ -257,4 +257,3 @@ class StreamDatabase implements StreamInterface {
         return $this->database->getLastInsertId();
     }
 }
-?>

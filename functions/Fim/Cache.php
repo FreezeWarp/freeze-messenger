@@ -101,4 +101,3 @@ class Cache extends \Cache\CacheFactory {
         return self::clear(self::EMOTICON_KEY);
     }
 }
-?>

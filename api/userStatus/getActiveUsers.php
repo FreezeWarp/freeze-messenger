@@ -103,4 +103,3 @@ foreach ($activeUsers AS $activeUser) {
 
 /* Output Data */
 echo new Http\ApiData($xmlData);
-?>

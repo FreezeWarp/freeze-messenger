@@ -50,4 +50,3 @@ To perform an action, click a link on the sidebar. Further instructions can be f
   </tbody>
 </table>');
 }
-?>

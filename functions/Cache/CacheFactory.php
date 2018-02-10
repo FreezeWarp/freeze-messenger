@@ -214,4 +214,3 @@ class CacheFactory {
         return self::chooseMethod($driver)->dump();
     }
 }
-?>

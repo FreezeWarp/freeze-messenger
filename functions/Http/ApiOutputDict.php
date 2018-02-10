@@ -12,4 +12,3 @@ class ApiOutputDict {
         return $this->array;
     }
 }
-?>

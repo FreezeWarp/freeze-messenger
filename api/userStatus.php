@@ -62,5 +62,3 @@ switch ($requestHead['_action']) {
         require(__DIR__ . '/userStatus/getActiveUsers.php');
     break;
 }
-
-?>

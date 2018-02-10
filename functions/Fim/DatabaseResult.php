@@ -76,4 +76,3 @@ class DatabaseResult extends \Database\Result {
     }
 
 }
-?>

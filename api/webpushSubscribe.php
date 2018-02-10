@@ -37,4 +37,3 @@ $request = \Fim\Utilities::sanitizeGPC('p', [
 \Cache\CacheFactory::set('pushSubsKeys_' . $request['endpoint'], [$request['p256dh'], $request['auth']], 31536000, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
 
 echo new Http\ApiData(['webpushSubscribe' => []]);
-?>

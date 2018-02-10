@@ -50,4 +50,3 @@ A copy of the GNU License should be found under <a href="../LICENSE">LICENSE</a>
   <li>ColorPicker &copy; <a href="http://www.eyecon.ro/colorpicker/">Stefan Petr</a></li>
 </ul>');
 }
-?>

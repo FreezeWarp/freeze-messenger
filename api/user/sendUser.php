@@ -111,4 +111,3 @@ echo new Http\ApiData([
         'name' => $newUser->name,
     ],
 ]);
-?>

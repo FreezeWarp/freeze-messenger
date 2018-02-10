@@ -170,5 +170,4 @@ else {
     else {
         echo 'You do not have permission to modify admin privileges.';
     }
-}
-?>
+}

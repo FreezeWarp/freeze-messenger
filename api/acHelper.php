@@ -66,5 +66,4 @@ $xmlData = [
 
 
 /* Output Data */
-echo new Http\ApiData($xmlData);
-?>
+echo new Http\ApiData($xmlData);

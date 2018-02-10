@@ -173,4 +173,3 @@ else {
         echo 'You do not have permission to manage Configurations.';
     }
 }
-?>

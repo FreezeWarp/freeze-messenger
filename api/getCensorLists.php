@@ -90,4 +90,3 @@ foreach ($censorLists AS $list) { // Run through each censor list retrieved.
 
 /* Output Data */
 echo new Http\ApiData($xmlData);
-?>

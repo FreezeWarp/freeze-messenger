@@ -173,4 +173,3 @@ if (!$ignoreLogin) {
         die('nocontinue');
     }
 }
-?>

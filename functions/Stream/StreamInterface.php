@@ -50,4 +50,3 @@ interface StreamInterface {
      */
     public function unsubscribe($stream);
 }
-?>

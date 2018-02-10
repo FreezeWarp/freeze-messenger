@@ -266,4 +266,3 @@ if (\Fim\Config::$dev) $xmlData['request'] = $request;
 
 /* Output Data */
 echo new Http\ApiData($xmlData);
-?>

@@ -113,4 +113,3 @@ else {
 
     echo "retry: 0\n";
 }
-?>

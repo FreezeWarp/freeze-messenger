@@ -110,4 +110,3 @@ abstract class DynamicObject extends MagicGettersSetters {
      */
     abstract public function exists() : bool;
 }
-?>

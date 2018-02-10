@@ -108,4 +108,3 @@ class Redis implements DriverInterface {
         return $keys;
     }
 }
-?>

@@ -122,5 +122,3 @@ switch ($requestHead['_action']) {
         require('message/getMessages.php');
     break;
 }
-
-?>

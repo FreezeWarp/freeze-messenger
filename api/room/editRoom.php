@@ -173,4 +173,3 @@ switch ($requestHead['_action']) {
 /* Output Data */
 $xmlData = ['room' => \Fim\Utilities::objectArrayFilterKeys($room, ['id', 'name']), 'request' => $request];
 echo new Http\ApiData($xmlData);
-?>

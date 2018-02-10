@@ -857,4 +857,3 @@ class User extends DynamicObject
     }
 }
 
-?>

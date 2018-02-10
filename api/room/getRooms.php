@@ -186,4 +186,3 @@ $xmlData['metadata']['nextPage'] = $request['page'];
 
 /* Output Data Structure */
 echo new Http\ApiData($xmlData);
-?>

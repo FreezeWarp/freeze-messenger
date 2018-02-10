@@ -126,4 +126,3 @@ $xmlData['metadata']['moreResults'] = $messageResults->paginated ?? false;
 
 /* Output Data */
 echo new Http\ApiData($xmlData);
-?>

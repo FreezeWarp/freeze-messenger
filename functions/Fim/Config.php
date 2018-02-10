@@ -731,4 +731,3 @@ class Config {
 
     public static $recaptchaPrivateKey = '';
 }
-?>

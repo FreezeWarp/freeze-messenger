@@ -124,4 +124,3 @@ switch ($requestHead['_action']) {
 
 $xmlData = ['roomPermission' => \Fim\Utilities::objectArrayFilterKeys($room, ['id', 'name']), 'request' => $request];
 echo new Http\ApiData($xmlData);
-?>

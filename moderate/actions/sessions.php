@@ -63,5 +63,4 @@ else {
     else {
         echo 'Permission denied.';
     }
-}
-?>
+}

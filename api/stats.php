@@ -92,4 +92,3 @@ else {
 
 /* Output Data */
 echo new Http\ApiData($xmlData);
-?>

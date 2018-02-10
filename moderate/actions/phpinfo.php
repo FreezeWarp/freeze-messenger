@@ -47,4 +47,3 @@ else {
         echo 'You do not have permission to view PHP info.';
     }
 }
-?>

@@ -65,4 +65,3 @@ if ($redirectPage) {
 else {
     die('No action detected.');
 }
-?>

@@ -130,4 +130,3 @@ header("Cache-Control: public, max-age=365000000, immutable");
 /* Output File */
 header('Content-Type: ' . $file->mime);
 echo $file->contents;
-?>

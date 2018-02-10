@@ -68,4 +68,3 @@ function formatXmlString($xml) {
 
   return $result;
 }
-?>

@@ -227,4 +227,3 @@ class ApiData implements \ArrayAccess {
         print_r($array, true);
     }
 }
-?>

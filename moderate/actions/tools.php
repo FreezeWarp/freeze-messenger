@@ -178,4 +178,3 @@ else {
         echo 'You do not have permission to use the tools.';
     }
 }
-?>

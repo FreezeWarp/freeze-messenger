@@ -103,4 +103,3 @@ echo new Http\ApiData([
         'pushPublicKey' => \Fim\Config::$pushNotificationsPublicKey,
     ),
 ]);
-?>

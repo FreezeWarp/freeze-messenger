@@ -63,4 +63,3 @@ class AnonymousGrantType implements GrantTypeInterface
         return $accessToken->createAccessToken($client_id, $user_id, $scope);
     }
 }
-?>

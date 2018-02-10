@@ -177,4 +177,3 @@ class Xml2Array
     }
 }
 
-?>

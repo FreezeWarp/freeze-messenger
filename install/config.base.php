@@ -221,4 +221,4 @@ $installUrl = '';
  * Use this if a configuration change makes it impossible to revert said change. */
 $disableConfig = false;
 
-?>
+

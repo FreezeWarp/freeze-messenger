@@ -148,4 +148,3 @@ class RefreshTokenGrantType implements GrantTypeInterface
         return $this->refreshToken['anon_id'];
     }
 }
-?>

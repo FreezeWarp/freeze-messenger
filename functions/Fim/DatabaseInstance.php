@@ -2861,4 +2861,4 @@ class DatabaseInstance extends DatabaseSQL
         return new DatabaseResult($queryData, $reverseAlias, $sourceQuery, $database, $paginated);
     }
 }
-?>
+

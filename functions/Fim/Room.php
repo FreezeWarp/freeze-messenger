@@ -928,4 +928,3 @@ class Room extends DynamicObject
     }
 }
 
-?>

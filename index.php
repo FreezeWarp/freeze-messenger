@@ -1,6 +1,5 @@
 <?php
 
-
 $ignoreLogin = true;
 
 
@@ -34,5 +33,3 @@ else {
         die('No web-accessible interface found.');
     }
 }
-
-?>
