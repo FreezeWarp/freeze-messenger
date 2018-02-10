@@ -475,6 +475,17 @@
         </table>
 
 
+        <table name="unreadPrivateMessages" partitionBy="userId" type="general" comment="A list of new unread messages for a user in their private rooms.">
+            <column name="userId" fkey="users.id" type="int" maxlen="8" comment="The user ID." />
+            <column name="roomId" type="blob" maxlen="23" comment="The private room ID." />
+            <column name="unreadCount" type="int" default="0" comment="total number of unread messages in this room for this user." />
+            <column name="messageId" type="int" maxlen="9" comment="The ID of first unread message in this room for this user." />
+            <column name="messageTime" type="time" comment="The time of the first unread message in this room for this user." />
+
+            <key name="roomId,userId"      type="primary" storage="btree" comment="Primary key identifier, with order making it easy to look up the users who have subscribed to a room." />
+        </table>
+
+
         <table name="users" type="general" comment="The users.">
             <!-- General -->
             <column name="id" type="int" maxlen="8" autoincrement="1" comment="The unique ID of the user." />

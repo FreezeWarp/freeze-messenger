@@ -24,7 +24,7 @@ class DatabaseParameters
             ],
             \Fim\Database::$sqlPrefix . 'searchMessages'     => ['roomId' => ['\Fim\Room::encodeId', Type::blob, '\Fim\Room::decodeId']],
             \Fim\Database::$sqlPrefix . 'searchCache'        => ['roomId' => ['\Fim\Room::encodeId', Type::blob, '\Fim\Room::decodeId']],
-            \Fim\Database::$sqlPrefix . 'unreadMessages'     => ['roomId' => ['\Fim\Room::encodeId', Type::blob, '\Fim\Room::decodeId']],
+            \Fim\Database::$sqlPrefix . 'unreadPrivateMessages' => ['roomId' => ['\Fim\Room::encodeId', Type::blob, '\Fim\Room::decodeId']],
             \Fim\Database::$sqlPrefix . 'users'              => [
                 'nameSearchable' => ['\Fim\DatabaseInstance::makeSearchable', Type::string, null],
                 'defaultRoomId'  => ['\Fim\Room::encodeId', Type::blob, '\Fim\Room::decodeId'],
