@@ -1802,7 +1802,7 @@ class DatabaseInstance extends DatabaseSQL
             return -1;
 
         elseif (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
-            $permissionsCache = \Cache\CacheFactory::get("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)
+            $permissionsCache = \Cache\CacheFactory::get("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
 
             if (func_num_args() > 2)
                 $reason = $permissionsCache['reason'];
