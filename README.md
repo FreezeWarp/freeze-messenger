@@ -21,7 +21,7 @@ Headline Functionality
 -   Rooms can be age- and content- restricted. Messages can also be censored on a per-room basis.
 -   Files are easily uploaded, and thumbnails are generated for inline message display. In the browser frontend, images can even be pasted from the clipboard. Importantly, the administrator has full control over which files can be uploaded and how much space any user can use.
 -   Flood controls limit how many rooms a user can create, how many files a user can upload, how many messages a user can post in a given period, and even how many API calls of different types a user is allowed.
--   Integration with PHPBB and vBulletin is supported, as is single-sign on with Google, Twitter, Facebook, Steam, and Reddit.
+-   Integration with PHPBB 3, MyBB 1.8, and vBulletin 3/4/5 is supported, as is single-sign on with Google, Twitter, Facebook, Steam, and Reddit.
 -   In addition to fallback disk caching, APC, Memcached, and Redis can all be used for blazing fast cache performance, used to optimise the performance for checking usage rights, flood detection, and more.
 -   Compatible with MySQL, PostgreSQL, and SQL Server databases. Supports fulltext message searching with all three.
 -   Easily installable on Amazon Web Services (AWS).
@@ -405,6 +405,7 @@ Supported Login Methods
 Note that, at present, the following primary login systems are available:
 
 -   __PHPBB 3__, which provides username formatting, email, usergroups, and avatar. It also provides emoticons.
+-   __MyBB 1.8__, which provides username formatting, email, usergroups, and avatar. It also provides emoticons.
 -   __vBulletin 3/4__, which provides username formatting, email, usergroups, and avatar. It also provides emoticons. Additionally, if a user's primary usergroup is a banned usergroup, they will be marked as banned.
 -   __vBulletin 5__, which provides username formatting, email, usergroups, and avatar. It also provides emoticons. Additionally, if a user's primary usergroup is a banned usergroup, they will be marked as banned.
 
