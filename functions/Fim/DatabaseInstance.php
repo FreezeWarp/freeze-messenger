@@ -274,31 +274,6 @@ class DatabaseInstance extends DatabaseSQL
 
 
 
-    /*********************************************************
-     ************************ START **************************
-     *********************** Setters *************************
-     *********************************************************/
-
-        /**
-     * Associates $user with the database instance, such as for auditing.
-     *
-     * @param User $user
-     */
-    public function registerUser(User $user) {
-        $this->user = $user;
-    }
-
-    /*********************************************************
-     ************************* END ***************************
-     *********************** Setters *************************
-     *********************************************************/
-
-
-
-
-
-
-
 
     /*********************************************************
      ************************ START **************************
@@ -1008,7 +983,7 @@ class DatabaseInstance extends DatabaseSQL
                 'roomId' => (int) $roomId,
             ), array(
                 'expires' => $this->now($length),
-                'kickerId' => (int) $this->user->id,
+                'kickerId' => (int) \Fim\LoggedInUser::instance()->id,
                 'time' => $this->now(),
             ));
 
@@ -1196,12 +1171,26 @@ class DatabaseInstance extends DatabaseSQL
 
 
 
-    function getUnreadMessages() {
+    public function getUnreadMessages() {
         $columns = [$this->sqlPrefix . 'userFavRooms' => 'userId, roomId, messageId, messageTime, unreadCount'];
 
         $conditions = [
-            'userId' => $this->user->id,
+            'userId' => \Fim\LoggedInUser::instance()->id,
             'unreadCount' => $this->int(0, Type\Comparison::greaterThan)
+        ];
+
+        $sort = [
+            'roomId' => 'asc',
+        ];
+
+        return $this->select($columns, $conditions, $sort);
+    }
+
+    public function getUnreadPrivateMessages() {
+        $columns = [$this->sqlPrefix . 'unreadPrivateMessages' => 'userId, roomId, messageId, messageTime, unreadCount'];
+
+        $conditions = [
+            'userId' => \Fim\LoggedInUser::instance()->id
         ];
 
         $sort = [
@@ -2333,14 +2322,22 @@ class DatabaseInstance extends DatabaseSQL
     public function markMessageRead($roomId, $userId)
     {
         if (Config::$enableUnreadMessages) {
-            return $this->update($this->sqlPrefix . 'userFavRooms', [
-                'unreadCount' => 0,
-                'messageId' => $this->null(),
-                'messageTime' => $this->null(),
-            ], [
-                'roomId'    => $roomId,
-                'userId'    => $userId
-            ]);
+            if (\Fim\Room::isPrivateRoomId($roomId)) {
+                return $this->delete($this->sqlPrefix . 'unreadPrivateMessages', [
+                    'roomId'    => $roomId,
+                    'userId'    => $userId
+                ]);
+            }
+            else {
+                return $this->update($this->sqlPrefix . 'userFavRooms', [
+                    'unreadCount' => 0,
+                    'messageId' => $this->null(),
+                    'messageTime' => $this->null(),
+                ], [
+                    'roomId'    => $roomId,
+                    'userId'    => $userId
+                ]);
+            }
         }
 
         return false;
@@ -2355,7 +2352,7 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function setUserStatus($roomId, $status = null, $typing = null) {
         $conditions = array(
-            'userId' => $this->user->id,
+            'userId' => \Fim\LoggedInUser::instance()->id,
             'roomId' => $roomId
         );
 
@@ -2372,7 +2369,7 @@ class DatabaseInstance extends DatabaseSQL
             $this->upsert($this->sqlPrefix . 'ping', $conditions, $data);
 
         \Stream\StreamFactory::publish('room_' . $roomId, 'userStatusChange', [
-            'userId' => $this->user->id,
+            'userId' => \Fim\LoggedInUser::instance()->id,
             'typing' => $data['typing'] ?? false,
             'status' => $data['status'] ?? '',
         ]);
@@ -2536,6 +2533,21 @@ class DatabaseInstance extends DatabaseSQL
                 $ignoreDatabaseUsers[] = $sendToUserId;
             }
 
+            // If this is a private room, create new unread private message entries for each user
+            if (Config::$enableUnreadMessages
+                && $message->room->isPrivateRoom()) {
+                $this->upsert($this->sqlPrefix . 'unreadPrivateMessages', [
+                    'roomId'  => $message->room->id,
+                    'userId' => $sendToUserId,
+                ], [
+                    'unreadCount' => $this->equation('$unreadCount + 1'),
+                    'messageId'   => $message->id,
+                    'messageTime' => $message->time,
+                ], [
+                    'unreadCount' => 1,
+                ]);
+            }
+
             // Only insert into event stream if user is logged in and not in the room
             if (Config::$enableUnreadMessages
                 && (
@@ -2574,17 +2586,18 @@ class DatabaseInstance extends DatabaseSQL
         }
 
         /*
-         * Update database unread table (except users excluded above)
+         * Update database unread table if not a private room (except users excluded above)
          * Note a few decisions here:
          * * We want to update the table in a single query for maximum scalability. If a room has a 1,000 users, it becomes quite slow to issue a 1,000 queries.
          * * We want to exclude specific users instead of including specific users as the number of excluded users will be far fewer than the number of included users.
          * * COALESCE is used to only set those the first time. A more portable solution should eventually be adopted.
          */
-        if (Config::$enableUnreadMessages) {
+        if (Config::$enableUnreadMessages
+            && !$message->room->isPrivateRoom()) {
             $this->update($this->sqlPrefix . 'userFavRooms', [
                 'unreadCount' => $this->equation('$unreadCount + 1'),
                 'messageId'   => $this->equation('COALESCE($messageId, ' . (int)$message->id . ')'), // TODO: move into DBAL
-                'messageTime'        => $this->equation('COALESCE($messageTime, ' . (int)$message->time . ')'), // TODO: move into DBAL
+                'messageTime' => $this->equation('COALESCE($messageTime, ' . (int)$message->time . ')'), // TODO: move into DBAL
             ], [
                 'roomId'  => $message->room->id,
                 '!userId' => $this->in($ignoreDatabaseUsers),
@@ -2732,10 +2745,10 @@ class DatabaseInstance extends DatabaseSQL
 
     public function modLog($action, $data)
     {
-        if (!isset($this->user->id)) throw new Exception('database->modLog requires user->id');
+        if (!isset(\Fim\LoggedInUser::instance()->id)) throw new Exception('database->modLog requires user->id');
 
         if ($this->insert($this->sqlPrefix . "modLog", array(
-            'userId' => (int) $this->user->id,
+            'userId' => (int) \Fim\LoggedInUser::instance()->id,
             'ip'     => $_SERVER['REMOTE_ADDR'],
             'action' => $action,
             'data'   => $data,
@@ -2763,7 +2776,7 @@ class DatabaseInstance extends DatabaseSQL
     public function fullLog($action, $data)
     {
         if ($this->insert($this->sqlPrefix . "fullLog", array(
-            'userId'   => $this->user->id,
+            'userId'   => \Fim\LoggedInUser::instance()->id,
             'server' => json_encode(array_intersect_key($_SERVER,array_flip(Config::$fullLogServerDirectives))),
             'ip'     => $_SERVER['REMOTE_ADDR'],
             'action' => $action,
@@ -2792,7 +2805,7 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function accessLog($action, $data, $notLoggedIn = false)
     {
-        if (!$this->user && !$notLoggedIn) {
+        if (!\Fim\LoggedInUser::instance() && !$notLoggedIn) {
             throw new Exception('No user login registered.');
         }
 
@@ -2803,14 +2816,14 @@ class DatabaseInstance extends DatabaseSQL
         // Insert Access Log, If Enabled
         if (Config::$accessLogEnabled) {
             if ($this->insert($this->sqlPrefix . "accessLog", array(
-                'userId' => $notLoggedIn ? null : $this->user->id,
-                'sessionHash' => $notLoggedIn ? '' : $this->user->sessionHash,
+                'userId' => $notLoggedIn ? null : \Fim\LoggedInUser::instance()->id,
+                'sessionHash' => $notLoggedIn ? '' : \Fim\LoggedInUser::instance()->sessionHash,
                 'action' => $action,
                 'data' => json_encode($data),
                 'time' => $_SERVER['REQUEST_TIME_FLOAT'],
                 'executionTime' => microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'],
                 'userAgent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
-                'clientCode' => $notLoggedIn ? '' : $this->user->clientCode,
+                'clientCode' => $notLoggedIn ? '' : \Fim\LoggedInUser::instance()->clientCode,
                 'ip' => $_SERVER['REMOTE_ADDR'],
             ))
             ) {
@@ -2838,7 +2851,7 @@ class DatabaseInstance extends DatabaseSQL
             $time = time();
             $minute = $time - ($time % 60);
 
-            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{$this->user->id}_{$action}_$minute", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
+            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{\Fim\LoggedInUser::instance()->id}_{$action}_$minute", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
                 // Get Current Flood Weight
                 $floodCountMinute = $this->select([
                     $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
@@ -2848,16 +2861,16 @@ class DatabaseInstance extends DatabaseSQL
                     'period' => $this->ts($minute),
                 ])->getColumnValue('count');
 
-                \Cache\CacheFactory::set("accessFlood_{$this->user->id}_{$action}_$minute", $floodCountMinute ?: 0, 60, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+                \Cache\CacheFactory::set("accessFlood_{\Fim\LoggedInUser::instance()->id}_{$action}_$minute", $floodCountMinute ?: 0, 60, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
             }
 
 
             // Error if Flood Weight is Too Great
-            if ($floodCountMinute > Config::${'floodDetectionGlobal_' . $action . '_perMinute'} && (!$this->user || !$this->user->hasPriv('modPrivs'))) {
+            if ($floodCountMinute > Config::${'floodDetectionGlobal_' . $action . '_perMinute'} && (!\Fim\LoggedInUser::instance() || !\Fim\LoggedInUser::instance()->hasPriv('modPrivs'))) {
                 new \Fim\Error("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
             }
             else {
-                \Cache\CacheFactory::inc("accessFlood_{$this->user->id}_{$action}_$minute", 1, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+                \Cache\CacheFactory::inc("accessFlood_{\Fim\LoggedInUser::instance()->id}_{$action}_$minute", 1, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
 
                 // Increment the Flood Weight
                 $this->upsert($this->sqlPrefix . "accessFlood", [

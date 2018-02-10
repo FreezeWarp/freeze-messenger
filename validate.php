@@ -75,12 +75,6 @@ $request = \Fim\Utilities::sanitizeGPC('r', array(
 
 
 
-/* Default user object.
- * Note: As of now, this object should never be used. In all cases the script either quits or the user object is filled with anonymous information or information corresponding with a real user. However, this object is useful for dev purposes, and if a script wants to use $ignoreLogin. */
-$user = new User(0);
-
-
-
 
 if (!$ignoreLogin) {
     /******
@@ -128,6 +122,7 @@ if (!$ignoreLogin) {
     if ($loginFactory->hasLogin()) {
         $loginFactory->getLogin();
         $loginFactory->apiResponse();
+        die();
     }
 
 
@@ -146,6 +141,10 @@ if (!$ignoreLogin) {
             $user->setClientCode($token['client_id']);
             if ($token['anon_id'])
                 $user->setAnonId($token['anon_id']);
+
+            if ($hookLogin)
+                \Fim\LoggedInUser::setUser($user);
+            else die('nocontinue');
         }
 
         // Error on Failure
@@ -162,14 +161,7 @@ if (!$ignoreLogin) {
     else {
         new \Fim\Error('noLogin', 'Please specify login credentials.');
     }
-
-
-
-    if ($hookLogin) {
-        \Fim\Database::instance()->registerUser($user);
-        define('FIM_LOGINRUN', true);
-    }
-    else {
-        die('nocontinue');
-    }
 }
+
+/* TRANSITIONAL */
+$user = \Fim\LoggedInUser::instance();
