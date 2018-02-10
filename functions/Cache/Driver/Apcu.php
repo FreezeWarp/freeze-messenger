@@ -37,11 +37,11 @@ class Apcu implements DriverInterface {
         return apcu_exists($index);
     }
 
-    public function clear($index) {
+    public function delete($index) {
         return apcu_delete($index);
     }
 
-    public function clearAll() {
+    public function deleteAll() {
         return apcu_clear_cache();
     }
 

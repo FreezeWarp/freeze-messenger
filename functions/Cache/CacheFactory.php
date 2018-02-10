@@ -180,9 +180,9 @@ class CacheFactory {
 
 
     /**
-     * {@link DriverInterface::clear($index)}
+     * {@link DriverInterface::delete($index)}
      */
-    public static function clear($index, $preferredMethod = false) {
+    public static function delete($index, $preferredMethod = false) {
         if (self::chooseMethod($preferredMethod))
             return self::chooseMethod($preferredMethod)->clear($index);
         else
@@ -192,9 +192,9 @@ class CacheFactory {
 
 
     /**
-     * {@link DriverInterface::clearAll()}
+     * {@link DriverInterface::deleteAll()}
      */
-    public static function clearAll() {
+    public static function deleteAll() {
         $return = true;
 
         foreach (self::$methods AS $method) {

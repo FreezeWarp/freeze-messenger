@@ -122,14 +122,14 @@ interface DriverInterface {
      *
      * @return mixed
      */
-    public function clear($index);
+    public function delete($index);
 
     /**
      * Delete all cache entries.
      *
      * @return mixed
      */
-    public function clearAll();
+    public function deleteAll();
 
     /**
      * Return a representation of the cache object and its values.

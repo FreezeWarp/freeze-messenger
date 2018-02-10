@@ -89,11 +89,11 @@ class Redis implements DriverInterface {
     }
 
 
-    public function clear($index) {
+    public function delete($index) {
         return $this->instance->delete($index) === 1;
     }
 
-    public function clearAll() {
+    public function deleteAll() {
         return $this->instance->flushDb();
     }
 

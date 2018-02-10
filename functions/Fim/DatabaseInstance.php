@@ -1892,7 +1892,7 @@ class DatabaseInstance extends DatabaseSQL
         if (Config::$roomPermissionsCacheEnabled) {
             if (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
                 if ($roomId)
-                    \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+                    \Cache\CacheFactory::delete("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
             }
             else {
                 $conditions = ['userId' => $userId];
@@ -1919,7 +1919,7 @@ class DatabaseInstance extends DatabaseSQL
             if (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
                 if ($roomId) {
                     foreach ($userIds AS $userId) {
-                        \Cache\CacheFactory::clear("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
+                        \Cache\CacheFactory::delete("permission_{$userId}_{$roomId}", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
                     }
                 }
             }

@@ -60,11 +60,11 @@ class Memcached implements DriverInterface {
         return $this->instance->increment($index, $amt) !== false;
     }
 
-    public function clear($index) {
+    public function delete($index) {
         return $this->instance->delete($index);
     }
 
-    public function clearAll() {
+    public function deleteAll() {
         return $this->instance->flush();
     }
 

@@ -65,7 +65,7 @@ else {
                 break;
 
             case 'clearCache':
-                if (\Cache\CacheFactory::clearAll())
+                if (\Cache\CacheFactory::deleteAll())
                     echo container('Cache Cleared','The cache has been cleared.<br /><br /><form action="index.php?do=tools" method="POST"><button type="submit" class="btn btn-success">Return to Tools</button></form>');
 
                 else

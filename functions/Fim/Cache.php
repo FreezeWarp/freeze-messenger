@@ -75,7 +75,7 @@ class Cache extends \Cache\CacheFactory {
      * @return True on success, false on failure.
      */
     public static function clearConfig() {
-        return self::clear(self::CONFIG_KEY);
+        return self::delete(self::CONFIG_KEY);
     }
 
 
@@ -98,6 +98,6 @@ class Cache extends \Cache\CacheFactory {
      * @return True on success, false on failure.
      */
     public static function clearEmoticons() {
-        return self::clear(self::EMOTICON_KEY);
+        return self::delete(self::EMOTICON_KEY);
     }
 }

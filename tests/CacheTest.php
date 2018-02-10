@@ -1,10 +1,9 @@
 <?php
-use PHPUnit\Framework\TestCase;
 
 /**
  * Tests the core cache functionality of all five cache providers.
  */
-class CacheTest extends TestCase
+class CacheTest extends PHPUnit\Framework\TestCase
 {
 
     public static function cacheMethodProvider() {
@@ -13,7 +12,7 @@ class CacheTest extends TestCase
             [new \Cache\Driver\Apc()], // requires apc.enable_cli=1
             [new \Cache\Driver\Apcu()], // requires apcu.enable_cli=1
             [new \Cache\Driver\Redis([])],
-            [new \Cache\Driver\Memcached()],
+            [new \Cache\Driver\Memcached()]
         ];
     }
 
@@ -51,10 +50,10 @@ class CacheTest extends TestCase
         $object->property = 'Here we go again.';
         $this->assertNotEquals($object, $cache->get("diskTestObject"));
 
-        $cache->clear('diskTestInt');
-        $cache->clear('diskTestString');
-        $cache->clear('diskTestArray');
-        $cache->clear('diskTestObject');
+        $cache->delete('diskTestInt');
+        $cache->delete('diskTestString');
+        $cache->delete('diskTestArray');
+        $cache->delete('diskTestObject');
     }
 
     /**
@@ -68,7 +67,7 @@ class CacheTest extends TestCase
             $this->assertSame($i, $cache->get("diskTestOverwrite"));
         }
 
-        $cache->clear('diskTestOverwrite');
+        $cache->delete('diskTestOverwrite');
     }
 
     /**
@@ -86,7 +85,7 @@ class CacheTest extends TestCase
         $this->assertTrue($cache->set("diskTestAdd", "set"));
         $this->assertSame("set", $cache->get("diskTestAdd"));
 
-        $cache->clear('diskTestAdd');
+        $cache->delete('diskTestAdd');
     }
 
     /**
@@ -112,7 +111,7 @@ class CacheTest extends TestCase
         $this->assertTrue($cache->set("diskTestDelete", "not deleted"));
         $this->assertSame("not deleted", $cache->get("diskTestDelete"));
 
-        $this->assertTrue($cache->clear("diskTestDelete"));
+        $this->assertTrue($cache->delete("diskTestDelete"));
         $this->assertSame(false, $cache->get("diskTestDelete"));
     }
 
@@ -125,7 +124,7 @@ class CacheTest extends TestCase
         $this->assertTrue($cache->set("diskTestClearAll2", "not deleted"));
         $this->assertTrue($cache->set("diskTestClearAll3", "not deleted"));
 
-        $this->assertTrue($cache->clearAll());
+        $this->assertTrue($cache->deleteAll());
 
         $this->assertSame(false, $cache->get("diskTestClearAll1"));
         $this->assertSame(false, $cache->get("diskTestClearAll2"));

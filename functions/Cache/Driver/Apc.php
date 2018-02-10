@@ -37,11 +37,11 @@ class Apc implements DriverInterface {
         return apc_inc($index, $value) !== false;
     }
 
-    public function clear($index) {
+    public function delete($index) {
         return apc_delete($index);
     }
 
-    public function clearAll() {
+    public function deleteAll() {
         return apc_clear_cache('user');
     }
 
