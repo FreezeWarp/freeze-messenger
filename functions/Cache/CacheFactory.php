@@ -101,6 +101,17 @@ class CacheFactory
     }
 
 
+    /**
+     * Get a namespaced cache object, which allows for basic cache operations inside of a namespace.
+     *
+     * @return NS
+     */
+    public static function ns($namespace) : NS
+    {
+        return new NS($namespace);
+    }
+
+
 
     /**
      * Check if a cache method of a given type has been registered.

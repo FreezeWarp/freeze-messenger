@@ -130,4 +130,31 @@ class CacheTest extends PHPUnit\Framework\TestCase
         $this->assertSame(false, $cache->get("diskTestClearAll2"));
         $this->assertSame(false, $cache->get("diskTestClearAll3"));
     }
+
+    /**
+     * Tests whether namespaces work.
+     */
+    public function testNamespaces() {
+        \Cache\CacheFactory::addMethod("redis", []);
+
+        $this->assertTrue(\Cache\CacheFactory::ns("namespace-1")->set("cacheTestNamespace", 1));
+        $this->assertSame(1, \Cache\CacheFactory::ns("namespace-1")->get("cacheTestNamespace"));
+
+        $this->assertTrue(\Cache\CacheFactory::ns("namespace-1")->delete("cacheTestNamespace"));
+        $this->assertFalse(\Cache\CacheFactory::ns("namespace-1")->get("cacheTestNamespace"));
+
+        $this->assertTrue(\Cache\CacheFactory::ns("namespace-2")->set("cacheTestNamespace", 1));
+        $this->assertSame(1, \Cache\CacheFactory::ns("namespace-2")->get("cacheTestNamespace"));
+        $this->assertTrue(\Cache\CacheFactory::ns("namespace-2")->set("cacheTestNamespace2", 2));
+        $this->assertSame(2, \Cache\CacheFactory::ns("namespace-2")->get("cacheTestNamespace2"));
+
+        $namespaceString = \Cache\CacheFactory::ns("namespace-2")->__toString();
+        $this->assertSame($namespaceString, \Cache\CacheFactory::ns("namespace-2")->__toString());
+
+        $this->assertTrue(\Cache\CacheFactory::ns("namespace-2")->deleteAll());
+        $this->assertFalse(\Cache\CacheFactory::ns("namespace-2")->get("cacheTestNamespace"));
+        $this->assertFalse(\Cache\CacheFactory::ns("namespace-2")->get("cacheTestNamespace2"));
+
+        $this->assertNotSame($namespaceString, \Cache\CacheFactory::ns("namespace-2")->__toString());
+    }
 }
