@@ -648,6 +648,7 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                             <option value="vbulletin3">vBulletin 3.8 or 4.x</option>
                             <option value="vbulletin5">vBulletin 5.x</option>
                             <option value="phpbb">PHPBB 3</option>
+                            <option value="mybb">MyBB 1.8</option>
                         </select>
                         <small class="form-text text-muted">If you have a forum, you can enable more advanced features than without one, and avoid making users create more than one account.</small>
                     </td>
@@ -713,10 +714,10 @@ if (file_exists('../config.php')) $installFlags += INSTALL_ISSUE_CONFIGEXISTS;
                                 if ($installStatusDB & INSTALL_DB_POSTGRESQL) echo '<option value="pgsql">PostGreSQL, PostGreSQL Driver</option>';
                                 if ($installStatusDB & INSTALL_DB_PDO_POSTGRESQL) echo '<option value="pdoPgsql">PostGreSQL, PDO Driver</option>';
                                 if ($installStatusDB & INSTALL_DB_SQLSERVER) echo '<option value="sqlsrv">SqlServer</option>';
-                                if ($installStatusDB & INSTALL_DB_PDO_SQLSERVER) echo '<option value="pdoSqlsrv">SqlServer, PDO Driver</option>';
+                                //if ($installStatusDB & INSTALL_DB_PDO_SQLSERVER) echo '<option value="pdoSqlsrv">SqlServer, PDO Driver</option>';
                                 ?>
                             </select>
-                            <small class="form-text text-muted">The driver. If you are integrating with a forum, choose the database (either MySQL or PostgreSQL) that your forum uses. Otherwise PostgreSQL, with the PostgreSQL driver, is best if available.</small>
+                            <small class="form-text text-muted">Choose whichever driver is most appropriate for the database your forum uses.</small>
                         </td>
                     </tr>
                     <tr>
