@@ -2851,8 +2851,20 @@ class DatabaseInstance extends DatabaseSQL
             $time = time();
             $minute = $time - ($time % 60);
 
-            if (!$floodCountMinute = \Cache\CacheFactory::get("accessFlood_{\Fim\LoggedInUser::instance()->id}_{$action}_$minute", \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED)) {
-                // Get Current Flood Weight
+            if (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL)) {
+                if (($floodCountMinute = \Cache\CacheFactory::get(
+                    "accessFlood_" . \Fim\LoggedInUser::instance()->id . "_{$action}_{$minute}",
+                    \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL)
+                    ) === false) {
+                    \Cache\CacheFactory::add(
+                        "accessFlood_" . \Fim\LoggedInUser::instance()->id . "_{$action}_{$minute}",
+                        0,
+                        60,
+                        \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL
+                    );
+                }
+            }
+            else {
                 $floodCountMinute = $this->select([
                     $this->sqlPrefix . 'accessFlood' => 'action, ip, period, count'
                 ], [
@@ -2860,29 +2872,44 @@ class DatabaseInstance extends DatabaseSQL
                     'ip' => $_SERVER['REMOTE_ADDR'],
                     'period' => $this->ts($minute),
                 ])->getColumnValue('count');
-
-                \Cache\CacheFactory::set("accessFlood_{\Fim\LoggedInUser::instance()->id}_{$action}_$minute", $floodCountMinute ?: 0, 60, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
             }
-
 
             // Error if Flood Weight is Too Great
-            if ($floodCountMinute > Config::${'floodDetectionGlobal_' . $action . '_perMinute'} && (!\Fim\LoggedInUser::instance() || !\Fim\LoggedInUser::instance()->hasPriv('modPrivs'))) {
-                new \Fim\Error("flood", "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).", null, null, "HTTP/1.1 429 Too Many Requests");
+            if ($floodCountMinute > Config::${'floodDetectionGlobal_' . $action . '_perMinute'}
+                && (
+                    !\Fim\LoggedInUser::instance()
+                    || !\Fim\LoggedInUser::instance()->hasPriv('modPrivs')
+                )
+            ) {
+                new \Fim\Error(
+                    "flood",
+                    "Your IP has sent too many $action requests in the last minute ($floodCountMinute observed).",
+                    null,
+                    null,
+                    \Fim\Error::HTTP_429_TOO_MANY
+                );
             }
             else {
-                \Cache\CacheFactory::inc("accessFlood_{\Fim\LoggedInUser::instance()->id}_{$action}_$minute", 1, \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED);
-
-                // Increment the Flood Weight
-                $this->upsert($this->sqlPrefix . "accessFlood", [
-                    'action'  => $action,
-                    'ip'      => $_SERVER['REMOTE_ADDR'],
-                    'period'  => $this->ts($minute),
-                ], [
-                    'count'  => $this->equation('$count + 1'),
-                    'expires' => $this->ts($minute + 60),
-                ], [
-                    'count' => 1,
-                ]);
+                if (\Cache\CacheFactory::hasMethod(\Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL)) {
+                    \Cache\CacheFactory::inc(
+                        "accessFlood_" . \Fim\LoggedInUser::instance()->id . "_{$action}_{$minute}",
+                        1,
+                        \Cache\DriverInterface::CACHE_TYPE_DISTRIBUTED_CRITICAL
+                    );
+                }
+                else {
+                    // Increment the Flood Weight
+                    $this->upsert($this->sqlPrefix . "accessFlood", [
+                        'action' => $action,
+                        'ip'     => $_SERVER['REMOTE_ADDR'],
+                        'period' => $this->ts($minute),
+                    ], [
+                        'count'   => $this->equation('$count + 1'),
+                        'expires' => $this->ts($minute + 60),
+                    ], [
+                        'count' => 1,
+                    ]);
+                }
             }
         }
     }
