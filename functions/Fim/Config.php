@@ -353,6 +353,12 @@ class Config {
     /** @var bool Whether to allow file uploads that are not anchored to a room. */
     public static $enableGeneralUploads = false;
 
+    /** @var bool Whether uploads write to a disk location. */
+    public static $uploadsUseDisk = false;
+
+    /** @var string The base directory used to write uploads to disk. This directory must exist and be server-writable. */
+    public static $uploadsDiskDirectory = '/var/www/uploads/';
+
     /** @var bool Whether file deletions (either by a user or by an admin) are unreversible (i.e. the contents are removed from the database or filesystem). If false, files will be hidden when deleted, but still count against a user's file upload total. */
     public static $uploadDeletionsArePermanent = false;
 

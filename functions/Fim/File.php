@@ -200,4 +200,39 @@ class File extends MagicGettersSetters {
     public function getDeleted() {
         return $this->options && self::FILE_DELETED;
     }
+
+
+    /**
+     * If {@see \Fim\Config::$uploadsUseDisk} is true, this will calculate the SHA256 hash of content and write the content to disk under that hash, returning the hash itself for later lookup.
+     *
+     * @param $content
+     *
+     * @return string
+     */
+    public static function saveToDisk($content) {
+        if (\Fim\Config::$uploadsUseDisk) {
+            $hash = \Fim\Utilities::sha256($content);
+
+            file_put_contents(\Fim\Config::$uploadsDiskDirectory . $hash, $content);
+
+            return $hash;
+        }
+        else {
+            return $content;
+        }
+    }
+
+
+    /**
+     * If {@see \Fim\Config::$uploadsUseDisk} is true, this will use the hash stored in a field to return content stored at a disk location.
+     *
+     * @param $content
+     *
+     * @return string
+     */
+    public static function readFromDisk($content) {
+        return \Fim\Config::$uploadsUseDisk
+            ? file_get_contents(\Fim\Config::$uploadsDiskDirectory . $content)
+            : $content;
+    }
 }

@@ -10,6 +10,12 @@ class DatabaseParameters
     {
         $instance->setTransformationParameters([
             \Fim\Database::$sqlPrefix . 'files'              => ['roomIdLink' => ['\Fim\Room::encodeId', Type::blob, '\Fim\Room::decodeId']],
+            \Fim\Database::$sqlPrefix . 'fileVersions'       => [
+                'contents' => ['\Fim\File::saveToDisk', Type::blob, '\Fim\File::readFromDisk']
+            ],
+            \Fim\Database::$sqlPrefix . 'fileVersionThumbnails' => [
+                'contents' => ['\Fim\File::saveToDisk', Type::blob, '\Fim\File::readFromDisk']
+            ],
             \Fim\Database::$sqlPrefix . 'messages'           => ['roomId' => ['\Fim\Room::encodeId', Type::blob, '\Fim\Room::decodeId']],
             \Fim\Database::$sqlPrefix . 'messageFlood'       => ['roomId' => ['\Fim\Room::encodeId', Type::blob, '\Fim\Room::decodeId']],
             \Fim\Database::$sqlPrefix . 'messageEditHistory' => ['roomId' => ['\Fim\Room::encodeId', Type::blob, '\Fim\Room::decodeId']],
