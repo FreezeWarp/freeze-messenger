@@ -201,8 +201,7 @@ html, body,
 }
 
 
-/***** Other Crap *****/
-
+/* Video Containers */
 .video-container-container {
     width: 600px;
     max-width: 100%;
@@ -227,12 +226,11 @@ html, body,
     height:100%;
 }
 
-.userNameTable {
-    display: inline-block;
-    word-wrap: break-word;
-    white-space: nowrap;
-}
 
+/* Mobile Column Stuff */
+#roomTemplateContainer {
+    position: relative;
+}
 
 @media (max-width: 991px) {
     #watchedRoomsColumn {
@@ -262,6 +260,14 @@ html, body,
     #activeUsersColumn.show {
         transform: translateX(0%);
     }
+}
+
+
+/* Other Stuff */
+.userNameTable {
+    display: inline-block;
+    word-wrap: break-word;
+    white-space: nowrap;
 }
 
 @media screen and (max-width: 576px) {
