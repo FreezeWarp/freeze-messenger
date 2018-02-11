@@ -47,10 +47,10 @@ class Config {
     public static $avatarMinimumHeight = 10;
 
     /** @var int A regex any avatar path must match. (Vanilla logins only.) */
-    public static $avatarMustMatchRegex = false;
+    public static $avatarMustMatchRegex = "";
 
     /** @var int A regex any avatar path must NOT match. (Vanilla logins only.) */
-    public static $avatarMustNotMatchRegex = false;
+    public static $avatarMustNotMatchRegex = "";
 
     /** @var bool Whether or not a user-set avatar must exist (it will be checked by making an HTTP request). */
     public static $avatarMustExist = true;
@@ -60,10 +60,10 @@ class Config {
 
 
     /** @var int A regex any user profile must match. (Vanilla logins only.) */
-    public static $profileMustMatchRegex = false;
+    public static $profileMustMatchRegex = "";
 
     /** @var int A regex any user profile must NOT match. (Vanilla logins only.) */
-    public static $profileMustNotMatchRegex = false;
+    public static $profileMustNotMatchRegex = "";
 
     /** @var bool Whether or not a user-set profile must exist (it will be checked by making an HTTP request). */
     public static $profileMustExist = true;
@@ -376,9 +376,6 @@ class Config {
 
     /** @var int The maximum space that can be taken by the files belonging to a single user. -1 for unlimited. */
     public static $uploadMaxUserSpace = 1024 * 1024 * 512;
-
-    /** @var bool Whether uploads (and, if applicable, thumbnails) should be written to disk. In many cases, it is slightly faster to do so, but potentially harder to maintain/perform backups. (TODO) */
-    public static $uploadUseFilesystem = false;
 
     /** @var bool Whether files can be uploaded separately from a room. */
     public static $allowOrphanFiles = false;
