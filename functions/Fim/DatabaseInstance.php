@@ -2385,7 +2385,7 @@ class DatabaseInstance extends DatabaseSQL
          * Flood limit check.
          * As this is... pretty important to ensure, we perform this check at the last possible moment, here in storeMessage.
          */
-        if (Config::$floodDetectionRooms) {
+        if (Config::$floodDetectionRooms && !\Fim\LoggedInUser::instance()->hasPriv('modRooms')) {
             $time = time();
             $minute = $this->ts($time - ($time % 60));
             $messageFlood = $this->select([
@@ -2461,19 +2461,21 @@ class DatabaseInstance extends DatabaseSQL
 
 
         // Update Flood Counter
-        $time = time();
-        $minute = $this->ts($time - ($time % 60));
-        foreach ([$message->room->id, 0] AS $roomId) {
-            $this->upsert($this->sqlPrefix . "messageFlood", array(
-                'userId' => $message->user->id,
-                'roomId' => $roomId,
-                'time' => $minute,
-            ), array(
-                'ip' => $_SERVER['REMOTE_ADDR'],
-                'messages' => $this->equation('$messages + 1'),
-            ), array(
-                'messages' => 1,
-            ));
+        if (Config::$floodDetectionRooms && !\Fim\LoggedInUser::instance()->hasPriv('modRooms')) {
+            $time = time();
+            $minute = $this->ts($time - ($time % 60));
+            foreach ([$message->room->id, 0] AS $roomId) {
+                $this->upsert($this->sqlPrefix . "messageFlood", [
+                    'userId' => $message->user->id,
+                    'roomId' => $roomId,
+                    'time'   => $minute,
+                ], [
+                    'ip'       => $_SERVER['REMOTE_ADDR'],
+                    'messages' => $this->equation('$messages + 1'),
+                ], [
+                    'messages' => 1,
+                ]);
+            }
         }
 
 
@@ -2847,7 +2849,7 @@ class DatabaseInstance extends DatabaseSQL
      */
     public function accessFlood($action) {
         // If Flood Detection is Enabled...
-        if (Config::$floodDetectionGlobal) {
+        if (Config::$floodDetectionGlobal && !\Fim\LoggedInUser::instance()->hasPriv('modPrivs')) {
             $time = time();
             $minute = $time - ($time % 60);
 
