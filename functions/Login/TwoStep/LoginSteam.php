@@ -109,7 +109,7 @@ class LoginSteam extends LoginTwoStep {
                         if ($game['playtime_forever'] > 0) {
                             $groups[] = [
                                 'name' => "Steam Players of {$game['name']}",
-                                'avatar' => "http://media.steampowered.com/steamcommunity/public/images/apps/{$game['appid']}/{$game['img_icon_url']}.jpg"
+                                'avatar' => "https://media.steampowered.com/steamcommunity/public/images/apps/{$game['appid']}/{$game['img_icon_url']}.jpg"
                             ];
                         }
                     }
