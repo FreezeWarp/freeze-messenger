@@ -94,9 +94,9 @@ do {
     } catch (ErrorThrown $ex) {
         // TODO: test
         $xmlData['metadata']['nextPage'] = $request['page'];
-        echo new Http\ApiData($xmlData);
+        die(new Http\ApiData($xmlData));
     }
-} while ($filesQuery->paginated && count($xmlData['rooms']) == 0);
+} while ($filesQuery->paginated && count($xmlData['files']) === 0);
 
 
 
