@@ -21,31 +21,79 @@
 
 /* Common Resources */
 
-use Fim\Error;
+class group
+{
+    static $xmlData;
 
+    static $requestHead;
+
+    static function init()
+    {
+        self::$requestHead = \Fim\Utilities::sanitizeGPC('g', [
+            '_action' => [],
+        ]);
+
+        self::{self::$requestHead['_action']}();
+    }
+
+
+    static function get()
+    {
+        $request = \Fim\Utilities::sanitizeGPC('g', [
+            'groupIds' => [
+                'cast'     => 'list',
+                'filter'   => 'int',
+                'evaltrue' => true,
+                'default'  => [],
+                'max'      => 50,
+            ],
+
+            'groupNames' => [
+                'cast'     => 'list',
+                'filter'   => 'string',
+                'default'  => [],
+                'max'      => 50,
+            ],
+
+            'sort' => [
+                'valid'   => ['id', 'name'],
+                'default' => 'id',
+            ],
+        ]);
+
+        \Fim\Database::instance()->accessLog('getGroups', $request);
+
+
+        /* Data Predefine */
+        self::$xmlData = [
+            'groups' => [],
+        ];
+
+
+
+        /* Get Users from Database */
+        if (isset($groupData)) { // From api/user.php
+            $groups = [$groupData];
+        }
+        else {
+            $groups = \Fim\DatabaseSlave::instance()->getGroups(
+                \Fim\Utilities::arrayFilterKeys($request, ['groupIds', 'groupNames']),
+                [$request['sort'] => 'asc']
+            )->getAsArray(true);
+        }
+
+
+
+        /* Start Processing */
+        foreach ($groups AS $groupData) {
+            self::$xmlData['groups'][$groupData['id']] = \Fim\Utilities::arrayFilterKeys($groupData, ['id', 'name']);
+        }
+    }
+}
+
+
+/* Entry Point Code */
 $apiRequest = true;
 require('../global.php');
-define('API_INGROUP', true);
-
-
-/* Header parameters -- identifies what we're doing as well as the group itself, if applicable. */
-$requestHead = \Fim\Utilities::sanitizeGPC('g', [
-    '_action' => [],
-]);
-
-
-
-
-/* Load the correct file to perform the action */
-switch ($requestHead['_action']) {
-    case 'create':
-    case 'edit':
-    case 'delete':
-    case 'undelete':
-        new \Fim\Error('unimplemented', 'This functionality is not implemented in this release.');
-        break;
-
-    case 'get':
-        require('group/getGroups.php');
-        break;
-}
+group::init();
+echo new Http\ApiData(group::$xmlData);
