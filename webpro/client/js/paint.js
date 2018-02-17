@@ -218,7 +218,7 @@ function fim_hashToMap(options) {
 }
 
 function fim_getHashRegex(name) {
-    return new RegExp('#' + name + '(=([^#]+))?(#|$)');
+    return new RegExp('#' + name + '(=([^#]*))?(#|$)');
 }
 
 function fim_setHashParameter(name, value) {
