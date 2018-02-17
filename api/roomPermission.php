@@ -8,119 +8,158 @@
  *
  * Note that, to reset a user's permissions, you should use a DELETE operation on all permissions.
  * To revoke all of a user's permissions (banning them), you should use a PUT operation with no permissions.
- *
- * = GET Directives =
- *
- * @param int    $roomId             The room ID.
- * @param int    $userId             The user ID, if altering a user's permission.
- * @param int    $groupId            The group ID, if altering a group's permission.
- *
- * = POST/PUT/DELETE Directives =
- * @param list   $permissions        A list of permissions to replace the current permissions with (if PUT), add to the current permissions (if POST), or remove from the current permissions (if DELETE).
  */
 
 
 /* Common Resources */
 
-use Fim\Error;
-use Fim\Room;
+class roomPermission {
+    static $xmlData;
 
-$apiRequest = true;
-require(__DIR__ . '/../global.php');
+    static $requestHead;
 
+    static $requestBody;
 
+    /**
+     * @var \Fim\Room
+     */
+    static $room;
 
-/* Header parameters -- identifies what we're doing as well as the message itself, if applicable. */
-$requestHead = (array)\Fim\Utilities::sanitizeGPC('g', [
-    '_action' => [],
+    static $databasePermissionsField;
 
-    'roomId' => [
-        'cast' => 'roomId',
-        'require' => true,
-    ],
+    static $attribute;
 
-    'userId' => [
-        'conflict' => ['groupId'],
-        'cast' => 'int'
-    ],
-
-    'groupId' => [
-        'conflict' => ['userId'],
-        'cast' => 'int'
-    ],
-]);
-
-$requestBody = \Fim\Utilities::sanitizeGPC('p', [
-    'permissions' => [
-        'cast'      => 'list',
-        'transform' => 'bitfield',
-        'bitTable'  => Room::$permArray
-    ]
-]);
+    static $param;
 
 
+    /**
+     * Request Head Directives:
+     *
+     * @param int    $roomId             The room ID.
+     * @param int    $userId             The user ID, if altering a user's permission.
+     * @param int    $groupId            The group ID, if altering a group's permission.
+     *
+     * Request Body Directives:
+     *
+     * @param list   $permissions        A list of permissions to replace the current permissions with (if PUT), add to the current permissions (if POST), or remove from the current permissions (if DELETE).
+     */
+    static function init()
+    {
+        self::$requestHead = (array)\Fim\Utilities::sanitizeGPC('g', [
+            '_action' => [],
 
-/* Early Validation */
-try {
-    $room = \Fim\Database::instance()->getRoom($requestHead['roomId']);
+            'roomId' => [
+                'cast' => 'roomId',
+                'require' => true,
+            ],
 
-    if (!(\Fim\Database::instance()->hasPermission($user, $room) & Room::ROOM_PERMISSION_VIEW)) {
-        new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
+            'userId' => [
+                'conflict' => ['groupId'],
+                'cast' => 'int'
+            ],
+
+            'groupId' => [
+                'conflict' => ['userId'],
+                'cast' => 'int'
+            ],
+        ]);
+
+        self::$requestBody = \Fim\Utilities::sanitizeGPC('p', [
+            'permissions' => [
+                'cast'      => 'list',
+                'transform' => 'bitfield',
+                'bitTable'  => \Fim\Room::$permArray
+            ]
+        ]);
+
+
+        /* Early Validation */
+        try {
+            self::$room = \Fim\Database::instance()->getRoom(self::$requestHead['roomId']);
+
+            if (!(\Fim\Database::instance()->hasPermission(\Fim\LoggedInUser::instance(), self::$room) & \Fim\Room::ROOM_PERMISSION_VIEW)) {
+                new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
+            }
+        } catch (Exception $ex) {
+            new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
+        }
+
+
+        /* Get the current permissions field from the database */
+        if (isset(self::$requestHead['userId'])) {
+            self::$param = self::$requestHead['userId'];
+            self::$databasePermissionsField = \Fim\Database::instance()->getPermissionsField(self::$requestHead['roomId'], self::$param);
+            self::$attribute = 'user';
+        }
+        elseif (isset(self::$requestHead['groupId'])) {
+            self::$param = self::$requestHead['groupId'];
+            self::$databasePermissionsField = \Fim\Database::instance()->getPermissionsField(self::$requestHead['roomId'], [], self::$param);
+            self::$attribute = 'group';
+        }
+        else
+            new \Fim\Error('userIdOrGroupIdRequired', 'You must pass either a user ID or a group ID.');
+
+        // If the received permission field is -1, it is invalid; default to 0.
+        if (self::$databasePermissionsField === -1)
+            self::$databasePermissionsField = 0;
+
+
+        self::{self::$requestHead['_action']}();
+
+        self::$xmlData = ['roomPermission' => \Fim\Utilities::objectArrayFilterKeys(self::$room, ['id', 'name'])];
     }
-} catch (Exception $ex) {
-    new \Fim\Error('idNoExist', 'The given "id" parameter does not correspond with a real room.');
-}
 
 
-
-/* Perform Updates */
-
-// Get the current permissions field from the database
-if (isset($requestHead['userId'])) {
-    $param = $requestHead['userId'];
-    $databasePermissionsField = \Fim\Database::instance()->getPermissionsField($requestHead['roomId'], $param);
-    $attribute = 'user';
-}
-elseif (isset($requestHead['groupId'])) {
-    $param = $requestHead['groupId'];
-    $databasePermissionsField = \Fim\Database::instance()->getPermissionsField($requestHead['roomId'], [], $param);
-    $attribute = 'group';
-}
-else
-    new \Fim\Error('userIdOrGroupIdRequired', 'You must pass either a user ID or a group ID.');
+    /**
+     * Add new permissions to any existing permissions.
+     */
+    static function create()
+    {
+        \Fim\Database::instance()->setPermission(
+            self::$requestHead['roomId'],
+            self::$attribute,
+            self::$param,
+            self::$databasePermissionsField | self::$requestBody['permissions']
+        );
+    }
 
 
-// If the received permission field is -1, it is invalid; default to 0.
-if ($databasePermissionsField === -1)
-    $databasePermissionsField = 0;
+    static function edit()
+    {
+        \Fim\Database::instance()->setPermission(
+            self::$requestHead['roomId'],
+            self::$attribute,
+            self::$param,
+            self::$requestBody['permissions']
+        );
+    }
 
 
-// Remove, add, or replace permissions, depending on the action.
-switch ($requestHead['_action']) {
-    // Add new permissions to any existing permissions.
-    case 'create':
-        \Fim\Database::instance()->setPermission($requestHead['roomId'], $attribute, $param, $databasePermissionsField | $requestBody['permissions']);
-    break;
-
-    // If removing permissions results in a user having none, reset their permissions entirely.
-    // Otherwise, set them to the new permissions field. (To set a user's permission to 0, use the replace method.)
-    case 'delete':
-        if ($databasePermissionsField & ~$requestBody['permissions'] === 0)
-            \Fim\Database::instance()->clearPermission($requestHead['roomId'], $attribute, $param);
+    /**
+     * If removing permissions results in a user having none, reset their permissions entirely.
+     * Otherwise, set them to the new permissions field. (To set a user's permission to 0, use the replace method.)
+     */
+    static function delete()
+    {
+        if (self::$databasePermissionsField & ~self::$requestBody['permissions'] === 0)
+            \Fim\Database::instance()->clearPermission(self::$requestHead['roomId'], self::$attribute, self::$param);
 
         else
-            \Fim\Database::instance()->setPermission($requestHead['roomId'], $attribute, $param, $databasePermissionsField & ~$requestBody['permissions']);
-    break;
-
-    // Replace a user's permissions entirely with new permissions.
-    case 'edit':
-        \Fim\Database::instance()->setPermission($requestHead['roomId'], $attribute, $param, $requestBody['permissions']);
-    break;
-
-    default:
-        new \Fim\Error('invalidRequestMethod', 'An invalid request method was used for this request.',null,false,Error::HTTP_405_METHOD_NOT_ALLOWED);
-    break;
+            \Fim\Database::instance()->setPermission(
+                self::$requestHead['roomId'],
+                self::$attribute,
+                self::$param,
+                self::$databasePermissionsField & ~self::$requestBody['permissions']
+            );
+    }
 }
 
-$xmlData = ['roomPermission' => \Fim\Utilities::objectArrayFilterKeys($room, ['id', 'name']), 'request' => $request];
-echo new Http\ApiData($xmlData);
+//new \Fim\Error('invalidRequestMethod', 'An invalid request method was used for this request.',null,false,Error::HTTP_405_METHOD_NOT_ALLOWED);
+
+
+
+/* Entry Point Code */
+$apiRequest = true;
+require('../global.php');
+roomPermission::init();
+echo new Http\ApiData(roomPermission::$xmlData);
