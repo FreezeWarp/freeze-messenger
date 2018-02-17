@@ -32,7 +32,7 @@ class LoginReddit extends LoginTwoStep {
         $this->client = new Reddit([
             'clientId'     => $clientId,
             'clientSecret' => $clientSecret,
-            'userAgent'    => 'online:flexchat:v0.1, (by /u/freezewarp)',
+            'userAgent'    => 'online:flexchat:v0.4, (by /u/freezewarp)',
             'redirectUri'  => $installUrl . 'validate.php?integrationMethod=reddit',
         ]);
     }
@@ -75,7 +75,6 @@ class LoginReddit extends LoginTwoStep {
             session_start();
 
         if (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
-            var_dump($_SESSION); die();
             session_unset();
             new \Fim\Error('redditLoginFailed', 'Invalid state.');
         }
@@ -111,23 +110,31 @@ class LoginReddit extends LoginTwoStep {
         //todo: $userInfo['over_18']
 
 
+        header('content-type: text/plain');
+
         /* Add User Groups Based On Subscriptions */
-        $subscriptions = $this->client->getParsedResponse($this->client->getAuthenticatedRequest(
-            'GET',
-            'https://oauth.reddit.com/api/v1/me/karma',
-            $token
-        ));
+        $groups = [];
 
-        if (isset($subscriptions['data'])) {
-            $groups = [];
+        do {
+            $subscriptions = $this->client->getParsedResponse($this->client->getAuthenticatedRequest(
+                'GET',
+                'https://oauth.reddit.com/subreddits/mine/subscriber?limit=100&sr_detail=false' . (!empty($after) ? '&after=' . $after : ''),
+                $token
+            ));
 
-            foreach ($subscriptions['data'] AS $subscription) {
-                $groups[] = [
-                    'name'   => 'Subscribers of /r/' . $subscription['sr'],
-                    'avatar' => ''
-                ];
+            $after = $subscriptions['data']['after'];
+
+            if (!empty($subscriptions['data']['children'])) {
+                foreach ($subscriptions['data']['children'] AS $subscription) {
+                    $groups[] = [
+                        'name'   => 'Reddit Subscribers of /r/' . $subscription['data']['display_name'],
+                        'avatar' => $subscription['data']['icon_img']
+                    ];
+                }
             }
+        } while (!empty($after));
 
+        if (!empty($groups)) {
             \Fim\Database::instance()->enterSocialGroups($this->loginFactory->user->id, $groups);
         }
     }
