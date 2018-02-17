@@ -4,50 +4,7 @@
  ** When used with a GET request, this will retrieve kicks. If a room ID is provided, it will retrieve kicks in a single room. If a user ID is provided, it will retrieve the rooms a user has been kicked in.
  ** When used with a POST request, this will kick a user in a room.
  ** When used with a DELETE request, this will unkick a user in a room.
- *
- * =Directives=
- * ==Common Directives (must be in URL parameters)==
- *
- * @param int $roomId The ID of the room to (un)kick a user in, or get kicked users in.
- * @param int $userId The ID of the user to (un)kick, or get the rooms they have been kicked in.
- *
- * ==Kicking a User==
- * @param int $length The number of seconds the user will be kicked for.
- *
- *
- * =Errors=
- * ==General==
- * @throws roomIdNoExist If the room ID is invalid/does not exist (or the user is not allowed to view the room).
- * @throws userIdNoExist If the user ID is invalid/does not exist.
- * @throws noPerm        If trying to perform an operation on a room that the logged in user does not have permission to do.
- *
- * ==Kicking a User=
- * @throws userUnkickable If the user may not be kicked (typically, because they are a room moderator).
- *
- *
- * =Respone Tree=
- * ==Getting Kicks==
- * When getting kicks, data is returned as a collection of users, each of which contain a collection of rooms they have been kicked in. The name, name format, and avatar of every user is included to ease display (as in most cases, this information will not be cached).
- *
- * + kicks
- *   + user {userId}
- *     + userId - The ID of the kicked user.
- *     + userName - The name of the kicked user.
- *     + userNameFormat - The name format of the kicked user.
- *     + userAvatar - The avatar of the kicked user.
- *       + kicks
- *         + roomId - The ID of the room for the kick.
- *         + roomName - The name of the room for the kick.
- *         + kickerId - The ID of the kicker.
- *         + kickerName - The name of the kicker.
- *         + kickerNameFormat - The name format of the kicker.
- *         + kickerAvatar - The avatar of the kicker.
- *         + length - The number of seconds the kick lasts for.
- *         + set - The timestamp when the kick was set.
- *         + expires - The timestamp when the kick expires.
  */
-
-
 
 class kick
 {
@@ -67,6 +24,14 @@ class kick
      */
     static $user;
 
+    /**
+     * @param int $roomId The ID of the room to (un)kick a user in, or get kicked users in.
+     * @param int $userId The ID of the user to (un)kick, or get the rooms they have been kicked in.
+     *
+     * @throws roomIdNoExist If the room ID is invalid/does not exist (or the user is not allowed to view the room).
+     * @throws userIdNoExist If the user ID is invalid/does not exist.
+     * @throws noPerm        If trying to perform an operation on a room that the logged in user does not have permission to do.
+     */
     static function init()
     {
         if (!\Fim\Config::$kicksEnabled)
@@ -114,6 +79,28 @@ class kick
     }
 
 
+    /**
+     * @return {
+     * When getting kicks, data is returned as a collection of users, each of which contain a collection of rooms they have been kicked in. The name, name format, and avatar of every user is included to ease display (as in most cases, this information will not be cached).
+     *
+     * + kicks
+     *   + user {userId}
+     *     + userId - The ID of the kicked user.
+     *     + userName - The name of the kicked user.
+     *     + userNameFormat - The name format of the kicked user.
+     *     + userAvatar - The avatar of the kicked user.
+     *       + kicks
+     *         + roomId - The ID of the room for the kick.
+     *         + roomName - The name of the room for the kick.
+     *         + kickerId - The ID of the kicker.
+     *         + kickerName - The name of the kicker.
+     *         + kickerNameFormat - The name format of the kicker.
+     *         + kickerAvatar - The avatar of the kicker.
+     *         + length - The number of seconds the kick lasts for.
+     *         + set - The timestamp when the kick was set.
+     *         + expires - The timestamp when the kick expires.
+     * }
+     */
     static function get()
     {
 
@@ -159,6 +146,11 @@ class kick
     }
 
 
+    /**
+     * @param int $length The number of seconds the user will be kicked for.
+     *
+     * @throws userUnkickable If the user may not be kicked (typically, because they are a room moderator).
+     */
     static function create()
     {
         $request = \Fim\Utilities::sanitizeGPC('p', [

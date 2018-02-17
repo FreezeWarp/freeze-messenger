@@ -27,7 +27,6 @@
  * @param int [number = 10] - The number of top posters to obtain.
  */
 
-use Fim\Error;
 use Fim\Room;
 
 $apiRequest = true;

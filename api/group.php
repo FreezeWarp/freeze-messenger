@@ -15,12 +15,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
 
-/**
- * TODO
- */
-
-/* Common Resources */
-
 class group
 {
     static $xmlData;

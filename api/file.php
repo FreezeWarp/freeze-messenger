@@ -21,39 +21,9 @@
  ** When used with a PUT request, this will create a new file.
  ** (TODO) When used with a delete request, the file will be marked as deleted, though the file data may remain on the server.
  ** To view a specific file, use the /file.php API.
- *
- *
- * = Create File Directives =
- * @param string uploadMethod='raw' - How the file is being transferred from the server, either:
- ** 'raw' - File is being uploaded as an HTTP upload.
- ** 'put' - File is being transferred via PUT.
- * @param string fileName - The name of the file. [[Required.]]
- * @param int fileSize - The size of the file (in bytes), used for checks.
- * @param string md5hash - The MD5 hash of the file, used for checks.
- * @param string sha256hash - The SHA256 hash of the file, used for checks.
- * @param string crc32bhash - The CRC32b hash of the file, used for checks.
- * @param int roomId - If the image is to be directly posted to a room, specify the room ID here. This may be required, depending on server settings.
- *
- * = Errors =
- * == Creating Files ==
- * @throws tooManyFiles - The user is not allowed to upload files because they have reached the file upload limit, either for themselves or for the entire server.
- * @throws badEncoding - The encoding specified is not recognised.
- * @throws badMd5Hash - The md5 hash of the uploaded file data does not match the md5 hash sent.
- * @throws badSha256Hash - The sha256 hash of the uploaded file data does not match the sha256 hash sent.
- * @throws badSize - The size of the uploaded file data does not match the fileSize parameter sent.
- * @throws badName - No name was specified, or, potentially, the name contained characters that are not allowed but will not be removed.
- * @throws badNameParts - An extension could not be obtained because of the number of '.' characters in the file. If there are zero, or two or more, then this error will thrown. (Thus, for example, ".tar.gz" files can not be processed by the script.)
- * @throws emptyFile - The file sent was empty. This is only thrown if the server does not accept empty files.
- * @throws tooLarge - The file data exceeds the server limit.
- * @throws unrecExt - The extension of the file is not recognised by the server, and thus is not accepted.
- * @throws invalidFile - The 'fileId' parameter sent does not correspond to an existing file.
- * @throws noPerm - The active user does not have permission to perform the action requested.
- * @throws noOrphanFiles - A valid room was not provided, and the server requires that all files are associated with a room.
  */
 
 /* Common Resources */
-
-use Fim\Error;
 
 class file
 {
@@ -162,6 +132,31 @@ class file
     }
 
 
+    /**
+     * @param string uploadMethod (Default = 'raw') How the file is being transferred from the server, either:
+     ** 'raw' - File is being uploaded as an HTTP upload.
+     ** 'put' - File is being transferred via PUT.
+     * @param string fileName The name of the file. [[Required.]]
+     * @param int fileSize The size of the file (in bytes), used for checks.
+     * @param string md5hash The MD5 hash of the file, used for checks.
+     * @param string sha256hash The SHA256 hash of the file, used for checks.
+     * @param string crc32bhash The CRC32b hash of the file, used for checks.
+     * @param int roomId If the image is to be directly posted to a room, specify the room ID here. This may be required, depending on server settings.
+     *
+     * @throws tooManyFiles - The user is not allowed to upload files because they have reached the file upload limit, either for themselves or for the entire server.
+     * @throws badEncoding - The encoding specified is not recognised.
+     * @throws badMd5Hash - The md5 hash of the uploaded file data does not match the md5 hash sent.
+     * @throws badSha256Hash - The sha256 hash of the uploaded file data does not match the sha256 hash sent.
+     * @throws badSize - The size of the uploaded file data does not match the fileSize parameter sent.
+     * @throws badName - No name was specified, or, potentially, the name contained characters that are not allowed but will not be removed.
+     * @throws badNameParts - An extension could not be obtained because of the number of '.' characters in the file. If there are zero, or two or more, then this error will thrown. (Thus, for example, ".tar.gz" files can not be processed by the script.)
+     * @throws emptyFile - The file sent was empty. This is only thrown if the server does not accept empty files.
+     * @throws tooLarge - The file data exceeds the server limit.
+     * @throws unrecExt - The extension of the file is not recognised by the server, and thus is not accepted.
+     * @throws invalidFile - The 'fileId' parameter sent does not correspond to an existing file.
+     * @throws noPerm - The active user does not have permission to perform the action requested.
+     * @throws noOrphanFiles - A valid room was not provided, and the server requires that all files are associated with a room.
+     */
     static function create()
     {
         self::$requestHead = array_merge(self::$requestHead, \Fim\Utilities::sanitizeGPC('g', array(
