@@ -49,60 +49,163 @@
 
 
 
-/* Common Resources */
+class kick
+{
+    static $xmlData;
 
-use Fim\Error;
-use Fim\Room;
+    static $requestHead;
 
+    static $permission;
+
+    /**
+     * @var \Fim\Room
+     */
+    static $room;
+
+    /**
+     * @var \Fim\User
+     */
+    static $user;
+
+    static function init()
+    {
+        if (!\Fim\Config::$kicksEnabled)
+            new \Fim\Error('kicksDisabled', 'Kicks are disabled on this server.');
+
+
+        self::$requestHead = \Fim\Utilities::sanitizeGPC('g', [
+            '_action' => [],
+        ]);
+
+        self::$requestHead = array_merge(self::$requestHead, \Fim\Utilities::sanitizeGPC('g', [
+            'roomId' => [
+                'cast' => 'roomId',
+                'require' => (self::$requestHead['_action'] === 'delete' || self::$requestHead['_action'] === 'create')
+            ],
+            'userId' => [
+                'cast' => 'int',
+                'require' => (self::$requestHead['_action'] === 'delete' || self::$requestHead['_action'] === 'create')
+            ],
+        ]));
+
+
+        if (isset(self::$requestHead['roomId'])) {
+            if (!(self::$room = \Fim\RoomFactory::getFromId(self::$requestHead['roomId']))->exists()
+                || !((self::$permission = \Fim\Database::instance()->hasPermission(\Fim\LoggedInUser::instance(), self::$room)) & \Fim\Room::ROOM_PERMISSION_VIEW))
+                new \Fim\Error('roomIdNoExist', 'The given "roomId" parameter does not correspond with a real room.');
+
+            elseif (!(
+                (self::$permission & \Fim\Room::ROOM_PERMISSION_MODERATE)
+                || (
+                    isset(self::$requestHead['userId'])
+                    && self::$requestHead['userId'] === \Fim\LoggedInUser::instance()->id
+                )
+            ))
+                new \Fim\Error('noPerm', 'You do not have permission to moderate this room.');
+        }
+
+        if (isset(self::$requestHead['userId'])) {
+            if (!(self::$user = \Fim\UserFactory::getFromId(self::$requestHead['userId']))->exists())
+                new \Fim\Error('userIdNoExist', 'The given "userId" parameter does not correspond with a real user.');
+        }
+
+
+        self::{self::$requestHead['_action']}();
+    }
+
+
+    static function get()
+    {
+
+        \Fim\Database::instance()->accessLog('getKicks', self::$requestHead);
+
+
+        /* Data Predefine */
+        self::$xmlData = ['kicks' => []];
+
+
+        /* Start Processing */
+        if (!isset(self::$requestHead['roomId']) // Disallow looking at kicks sitewide...
+            && !( // Unless just checking the logged in user.
+                isset(self::$requestHead['userId'])
+                && self::$requestHead['userId'] == \Fim\LoggedInUser::instance()->id
+            )
+            && !\Fim\LoggedInUser::instance()->hasPriv('modRooms') // Or unless we're a site moderator.
+        )
+            new \Fim\Error('roomIdRequired', 'A roomId must be included unless you are a site administrator.');
+
+        else {
+            /* Get Kicks from Database */
+            $kicks = \Fim\Database::instance()->getKicks([
+                'userIds' => !empty(self::$user) ? [self::$user->id] : [],
+                'roomIds' => !empty(self::$room) ? [self::$room->id] : [],
+            ])->getAsArray(true);
+
+
+            /* Process Kicks from Database */
+            foreach ($kicks AS $kick) {
+                if (!isset(self::$xmlData['kicks']['user ' . $kick['userId']])) {
+                    self::$xmlData['kicks']['user ' . $kick['userId']] = [
+                        'userId'         => (int)$kick['userId'],
+                        'userName'       => $kick['userName'],
+                        'kicks'          => []
+                    ];
+                }
+
+                self::$xmlData['kicks']['user ' . $kick['userId']]['kicks']['room ' . $kick['roomId']] =
+                    \Fim\Utilities::arrayFilterKeys($kick, ['roomId', 'roomName', 'kickerId', 'kickerName', 'set', 'expires']);
+            }
+        }
+    }
+
+
+    static function create()
+    {
+        $request = \Fim\Utilities::sanitizeGPC('p', [
+            'length' => [
+                'require' => true,
+                'min' => \Fim\Config::$kickMinimumLength
+            ],
+        ]);
+
+        if (!(self::$permission & \Fim\Room::ROOM_PERMISSION_MODERATE))
+            new \Fim\Error('noPerm', 'You do not have permission to moderate this room.');
+
+        if (\Fim\Database::instance()->hasPermission(self::$user, self::$room) & \Fim\Room::ROOM_PERMISSION_MODERATE)
+            new \Fim\Error('unkickableUser', 'Other room moderators may not be kicked.');
+
+        else {
+            \Fim\Database::instance()->kickUser(self::$user->id, self::$room->id, $request['length']);
+
+            if (\Fim\Config::$kickSendMessage)
+                \Fim\Database::instance()->storeMessage(new \Fim\Message([
+                    'user' => \Fim\LoggedInUser::instance(),
+                    'room' => self::$room,
+                    'text'    => '/me kicked ' . self::$user->name
+                ]));
+        }
+    }
+
+
+    static function delete()
+    {
+        if (!(self::$permission & \Fim\Room::ROOM_PERMISSION_MODERATE))
+            new \Fim\Error('noPerm', 'You do not have permission to moderate this room.');
+
+        \Fim\Database::instance()->unkickUser(self::$user->id, self::$room->id);
+
+        if (\Fim\Config::$unkickSendMessage)
+            \Fim\Database::instance()->storeMessage(new \Fim\Message([
+                'user' => \Fim\LoggedInUser::instance(),
+                'room' => self::$room,
+                'text'    => '/me unkicked ' . self::$user->name
+            ]));
+    }
+}
+
+
+/* Entry Point Code */
 $apiRequest = true;
 require('../global.php');
-define('API_INKICK', true);
-
-
-/* Header parameters -- identifies what we're doing as well as the kick itself, if applicable. */
-$requestHead = \Fim\Utilities::sanitizeGPC('g', [
-    '_action' => [],
-]);
-$requestHead = array_merge($requestHead, \Fim\Utilities::sanitizeGPC('g', [
-    'roomId' => [
-        'cast' => 'roomId',
-        'require' => ($requestHead['_action'] === 'delete' || $requestHead['_action'] === 'create')
-    ],
-    'userId' => [
-        'cast' => 'int',
-        'require' => ($requestHead['_action'] === 'delete' || $requestHead['_action'] === 'create')
-    ],
-]));
-
-
-/* Early Validation */
-if (!\Fim\Config::$kicksEnabled) {
-    new \Fim\Error('kicksDisabled', 'Kicks are disabled on this server.');
-}
-
-if (isset($requestHead['roomId'])) {
-    if (!($room = \Fim\RoomFactory::getFromId($requestHead['roomId']))->exists()
-        || !(($permission = \Fim\Database::instance()->hasPermission($user, $room)) & Room::ROOM_PERMISSION_VIEW))
-        new \Fim\Error('roomIdNoExist', 'The given "roomId" parameter does not correspond with a real room.');
-
-    elseif (!(($permission & Room::ROOM_PERMISSION_MODERATE) || (isset($requestHead['userId']) && $requestHead['userId'] === $user->id)))
-        new \Fim\Error('noPerm', 'You do not have permission to moderate this room.');
-}
-
-if (isset($requestHead['userId'])) {
-    if (!($kickUser = \Fim\UserFactory::getFromId($requestHead['userId']))->exists())
-        new \Fim\Error('userIdNoExist', 'The given "userId" parameter does not correspond with a real user.');
-}
-
-
-/* Launch Correct Processing File Based on Action */
-switch ($requestHead['_action']) {
-    case 'create': // Kick
-    case 'delete': // Unkick
-        require('kick/kickUser.php');
-    break;
-
-    case 'get':
-        require('kick/getKicks.php');
-    break;
-}
+kick::init();
+echo new Http\ApiData(kick::$xmlData);
