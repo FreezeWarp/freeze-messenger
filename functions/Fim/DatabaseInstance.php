@@ -2210,12 +2210,21 @@ class DatabaseInstance extends DatabaseSQL
             \Fim\Database::$sqlPrefix . 'socialGroups' => 'id, name'
         ], ['name' => \Fim\Database::instance()->in($groupNames)])->getColumnValues('id');
 
+        $this->startTransaction();
+
+        // leave current groups
+        $this->delete($this->sqlPrefix . 'socialGroupMembers', [
+            'userId' => $userId,
+        ]);
+
         // enter groups
         \Fim\Database::instance()->autoQueue(true);
         foreach ($dbGroupIds AS $groupId) {
             @\Fim\Database::instance()->enterSocialGroup($groupId, $userId);
         }
         @\Fim\Database::instance()->autoQueue(false);
+
+        $this->endTransaction();
     }
 
 
@@ -2245,7 +2254,7 @@ class DatabaseInstance extends DatabaseSQL
     public function enterSocialGroup($groupId, $userId) {
         return $this->insert($this->sqlPrefix . 'socialGroupMembers', [
             'groupId' => $groupId,
-            'userId' => $user->id,
+            'userId' => $userId,
             'type' => 'member'
         ]);
     }
