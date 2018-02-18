@@ -109,9 +109,6 @@ class LoginReddit extends LoginTwoStep {
         ]);
         //todo: $userInfo['over_18']
 
-
-        header('content-type: text/plain');
-
         /* Add User Groups Based On Subscriptions */
         $groups = [];
 

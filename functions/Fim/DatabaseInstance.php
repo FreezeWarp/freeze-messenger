@@ -2198,12 +2198,16 @@ class DatabaseInstance extends DatabaseSQL
     public function enterSocialGroups($userId, $groups) {
         $groupNames = [];
 
+
+        \Fim\Database::instance()->autoQueue(true);
         foreach ($groups AS $group) {
             $groupNames[] = $group['name'];
 
             // create group if doesn't exist (TODO: optimise)
             @\Fim\Database::instance()->createSocialGroup($group['name'], $group['avatar']);
         }
+        @\Fim\Database::instance()->autoQueue(false);
+
 
         // get group IDs
         $dbGroupIds = \Fim\Database::instance()->select([
